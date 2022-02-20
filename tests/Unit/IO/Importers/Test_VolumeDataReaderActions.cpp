@@ -99,7 +99,7 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   using element_array = MockElementArray<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {"TestVolumeData.h5", "element_data", 0.}};
+      {"TestVolumeData*.h5", "element_data", 0.}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -166,8 +166,10 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     return ActionTesting::get_databox_tag<reader_component, tag>(runner, 0);
   };
 
-  // Collect the sample data from all elements
-  std::vector<ElementVolumeData> all_element_data{};
+  // Collect the sample data from all elements.
+  // The outer vector represents a list of files that we split the element data
+  // into, so we can test loading volume data from multiple files.
+  std::vector<std::vector<ElementVolumeData>> all_element_data(2);
   for (const auto& id : element_ids) {
     const std::string element_name = MakeString{} << id << '/';
     std::vector<TensorComponent> tensor_data(6);
@@ -179,19 +181,23 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     tensor_data[3] = TensorComponent(element_name + "T_xy"s, get<0, 1>(tensor));
     tensor_data[4] = TensorComponent(element_name + "T_yx"s, get<1, 0>(tensor));
     tensor_data[5] = TensorComponent(element_name + "T_yy"s, get<1, 1>(tensor));
-    all_element_data.push_back({{2, 2},
-                                tensor_data,
-                                {2, Spectral::Basis::Legendre},
-                                {2, Spectral::Quadrature::GaussLobatto}});
+    all_element_data[id.block_id()].push_back(
+        {{2, 2},
+         tensor_data,
+         {2, Spectral::Basis::Legendre},
+         {2, Spectral::Quadrature::GaussLobatto}});
   }
   // Write the sample data into an H5 file
-  const std::string h5_file_name = "TestVolumeData.h5";
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
+  for (size_t i = 0; i < all_element_data.size(); ++i) {
+    const std::string h5_file_name =
+        "TestVolumeData" + std::to_string(i) + ".h5";
+    if (file_system::check_if_file_exists(h5_file_name)) {
+      file_system::rm(h5_file_name, true);
+    }
+    h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name, false};
+    auto& volume_data = h5_file.insert<h5::VolumeData>("/element_data", 0);
+    volume_data.write_volume_data(0, 0., all_element_data[i]);
   }
-  h5::H5File<h5::AccessType::ReadWrite> h5_file{h5_file_name, false};
-  auto& volume_data = h5_file.insert<h5::VolumeData>("/element_data", 0);
-  volume_data.write_volume_data(0, 0., all_element_data);
 
   ActionTesting::set_phase(make_not_null(&runner),
                            Metavariables::Phase::Testing);
@@ -222,7 +228,11 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
     first_invocation = false;
   }
 
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
+  for (size_t i = 0; i < all_element_data.size(); ++i) {
+    const std::string h5_file_name =
+        "TestVolumeData" + std::to_string(i) + ".h5";
+    if (file_system::check_if_file_exists(h5_file_name)) {
+      file_system::rm(h5_file_name, true);
+    }
   }
 }

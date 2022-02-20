@@ -4,7 +4,9 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <tuple>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -18,6 +20,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Requires.hpp"
@@ -162,85 +165,102 @@ struct ReadAllVolumeDataAndDistribute {
           local_has_read_volume_data->insert(std::move(volume_data_id));
         });
 
-    // Open the volume data file
-    h5::H5File<h5::AccessType::ReadOnly> h5file(
-        Parallel::get<Tags::FileGlob<ImporterOptionsGroup>>(cache));
-    constexpr size_t version_number = 0;
-    const auto& volume_file = h5file.get<h5::VolumeData>(
-        "/" + Parallel::get<Tags::Subgroup<ImporterOptionsGroup>>(cache),
-        version_number);
-    const auto observation_id = volume_file.find_observation_id(
-        Parallel::get<Tags::ObservationValue<ImporterOptionsGroup>>(cache));
-    // Read the tensor data for all elements at once, since that's how it's
-    // stored in the file
-    tuples::tagged_tuple_from_typelist<FieldTagsList> all_tensor_data{};
-    tmpl::for_each<FieldTagsList>([&all_tensor_data, &volume_file,
-                                   &observation_id](auto field_tag_v) {
-      using field_tag = tmpl::type_from<decltype(field_tag_v)>;
-      auto& tensor_data = get<field_tag>(all_tensor_data);
-      for (size_t i = 0; i < tensor_data.size(); i++) {
-        tensor_data[i] = volume_file.get_tensor_component(
-            observation_id,
-            db::tag_name<field_tag>() +
-                tensor_data.component_suffix(tensor_data.get_tensor_index(i)));
-      }
-    });
-    // Retrieve the information needed to reconstruct which element the data
-    // belongs to
-    const auto all_grid_names = volume_file.get_grid_names(observation_id);
-    const auto all_extents = volume_file.get_extents(observation_id);
-    // Distribute the tensor data to the registered elements
-    for (auto& element_and_name : get<Tags::RegisteredElements>(box)) {
-      const CkArrayIndex& raw_element_index =
-          element_and_name.first.array_index();
-      // Check if the parallel component of the registered element matches the
-      // callback, because it's possible that elements from other components
-      // with the same index are also registered.
-      // Since the way the component is encoded in `ArrayComponentId` is
-      // private to that class, we construct one and compare.
-      if (element_and_name.first !=
-          observers::ArrayComponentId(
-              std::add_pointer_t<ReceiveComponent>{nullptr},
-              raw_element_index)) {
-        continue;
-      }
-      // Find the data offset that corresponds to this element
-      const auto element_data_offset_and_length =
-          h5::offset_and_length_for_grid(element_and_name.second,
-                                         all_grid_names, all_extents);
-      // Extract this element's data from the read-in dataset
-      tuples::tagged_tuple_from_typelist<FieldTagsList> element_data{};
-      tmpl::for_each<FieldTagsList>([&element_data,
-                                     &element_data_offset_and_length,
-                                     &all_tensor_data](auto field_tag_v) {
+    // Resolve the file glob
+    const std::string& file_glob =
+        Parallel::get<Tags::FileGlob<ImporterOptionsGroup>>(cache);
+    const std::vector<std::string> file_paths = file_system::glob(file_glob);
+
+    // Open every file in turn
+    for (const std::string& file_name : file_paths) {
+      // Open the volume data file
+      h5::H5File<h5::AccessType::ReadOnly> h5file(file_name);
+      constexpr size_t version_number = 0;
+      const auto& volume_file = h5file.get<h5::VolumeData>(
+          "/" + Parallel::get<Tags::Subgroup<ImporterOptionsGroup>>(cache),
+          version_number);
+      const auto observation_id = volume_file.find_observation_id(
+          Parallel::get<Tags::ObservationValue<ImporterOptionsGroup>>(cache));
+      // Read the tensor data for all elements at once, since that's how it's
+      // stored in the file
+      tuples::tagged_tuple_from_typelist<FieldTagsList> all_tensor_data{};
+      tmpl::for_each<FieldTagsList>([&all_tensor_data, &volume_file,
+                                     &observation_id](auto field_tag_v) {
         using field_tag = tmpl::type_from<decltype(field_tag_v)>;
-        auto& element_tensor_data = get<field_tag>(element_data);
-        // Iterate independent components of the tensor
-        for (size_t i = 0; i < element_tensor_data.size(); i++) {
-          const DataVector& data_tensor_component =
-              get<field_tag>(all_tensor_data)[i];
-          DataVector element_tensor_component{
-              element_data_offset_and_length.second};
-          // Retrieve data from slice of the contigious dataset
-          for (size_t j = 0; j < element_tensor_component.size(); j++) {
-            element_tensor_component[j] =
-                data_tensor_component[element_data_offset_and_length.first + j];
-          }
-          element_tensor_data[i] = element_tensor_component;
+        auto& tensor_data = get<field_tag>(all_tensor_data);
+        for (size_t i = 0; i < tensor_data.size(); i++) {
+          tensor_data[i] = volume_file.get_tensor_component(
+              observation_id,
+              db::tag_name<field_tag>() + tensor_data.component_suffix(
+                                              tensor_data.get_tensor_index(i)));
         }
       });
-      // Pass the data to the element
-      const auto element_index =
-          Parallel::ArrayIndex<typename ReceiveComponent::array_index>(
-              raw_element_index)
-              .get_index();
-      Parallel::receive_data<
-          Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
-          Parallel::get_parallel_component<ReceiveComponent>(
-              cache)[element_index],
-          // Using `0` for the temporal ID since we only read the volume data
-          // once, so there's no need to keep track of the temporal ID.
-          0_st, std::move(element_data));
+      // Retrieve the information needed to reconstruct which element the data
+      // belongs to
+      const auto all_grid_names = volume_file.get_grid_names(observation_id);
+      const auto all_extents = volume_file.get_extents(observation_id);
+      // Distribute the tensor data to the registered elements
+      for (auto& [element_array_component_id, grid_name] :
+           get<Tags::RegisteredElements>(box)) {
+        const CkArrayIndex& raw_element_index =
+            element_array_component_id.array_index();
+        // Check if the parallel component of the registered element matches the
+        // callback, because it's possible that elements from other components
+        // with the same index are also registered.
+        // Since the way the component is encoded in `ArrayComponentId` is
+        // private to that class, we construct one and compare.
+        if (element_array_component_id !=
+            observers::ArrayComponentId(
+                std::add_pointer_t<ReceiveComponent>{nullptr},
+                raw_element_index)) {
+          continue;
+        }
+        // Proceed with the registered element only if it's included in the
+        // volume file. It's possible that the volume file only contains data
+        // for a subset of elements, e.g., when each node of a simulation wrote
+        // volume data for its elements to a separate file.
+        if (std::find(all_grid_names.begin(), all_grid_names.end(),
+                      grid_name) == all_grid_names.end()) {
+          continue;
+        }
+        // Find the data offset that corresponds to this element
+        const auto element_data_offset_and_length =
+            h5::offset_and_length_for_grid(grid_name, all_grid_names,
+                                           all_extents);
+        // Extract this element's data from the read-in dataset
+        tuples::tagged_tuple_from_typelist<FieldTagsList> element_data{};
+        tmpl::for_each<FieldTagsList>([&element_data,
+                                       &element_data_offset_and_length,
+                                       &all_tensor_data](auto field_tag_v) {
+          using field_tag = tmpl::type_from<decltype(field_tag_v)>;
+          auto& element_tensor_data = get<field_tag>(element_data);
+          // Iterate independent components of the tensor
+          for (size_t i = 0; i < element_tensor_data.size(); i++) {
+            const DataVector& data_tensor_component =
+                get<field_tag>(all_tensor_data)[i];
+            DataVector element_tensor_component{
+                element_data_offset_and_length.second};
+            // Retrieve data from slice of the contigious dataset
+            for (size_t j = 0; j < element_tensor_component.size(); j++) {
+              element_tensor_component[j] =
+                  data_tensor_component[element_data_offset_and_length.first +
+                                        j];
+            }
+            element_tensor_data[i] = element_tensor_component;
+          }
+        });
+        // Pass the data to the element
+        const auto element_index =
+            Parallel::ArrayIndex<typename ReceiveComponent::array_index>(
+                raw_element_index)
+                .get_index();
+        Parallel::receive_data<
+            Tags::VolumeData<ImporterOptionsGroup, FieldTagsList>>(
+            Parallel::get_parallel_component<ReceiveComponent>(
+                cache)[element_index],
+            // Using `0` for the temporal ID since we only read the volume data
+            // once, so there's no need to keep track of the temporal ID.
+            0_st, std::move(element_data));
+      }
     }
   }
 };
