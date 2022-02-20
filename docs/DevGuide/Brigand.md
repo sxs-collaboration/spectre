@@ -649,8 +649,8 @@ A pair of types, with easy access to each type in the pair.
 \par
 An unordered collection of distinct types.  Trying to create a `set` with
 duplicate entries is an error (but \ref set_insert "tmpl::insert" ignores
-duplicate entries).  See the section on \ref set_operations "operations on
-sets" for details.
+duplicate entries).  See the section on \ref set_operations
+"operations on sets" for details.
 \snippet Test_TMPLDocumentation.cpp tmpl::set
 
 \par
@@ -1006,7 +1006,7 @@ also work.
 \subsubsection append append<Sequence...>
 
 \par
-Contatenates all of its arguments, keeping the head of the first (or \ref list
+Concatenates all of its arguments, keeping the head of the first (or \ref list
 "tmpl::list" if passed no arguments).
 \snippet Test_TMPLDocumentation.cpp tmpl::append
 
