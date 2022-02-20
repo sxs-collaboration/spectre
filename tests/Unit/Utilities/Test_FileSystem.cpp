@@ -95,6 +95,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
     file_system::create_directory("/"s);
     CHECK(file_system::check_if_dir_exists("/"s));
   }
+  {
+    INFO("glob");
+    std::fstream file1("glob1.txt", file1.out);
+    file1.close();
+    std::fstream file2("glob2.txt", file2.out);
+    file2.close();
+    CHECK(file_system::glob("glob*.txt") ==
+          std::vector<std::string>{"glob1.txt", "glob2.txt"});
+    file_system::rm("glob1.txt", false);
+    file_system::rm("glob2.txt", false);
+  }
 }
 
 // [[OutputRegex, Failed to find a file in the given path: '/']]

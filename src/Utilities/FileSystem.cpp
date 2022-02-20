@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
+#include <glob.h>
 #include <libgen.h>
 #include <memory>
 #include <regex>
@@ -262,5 +263,20 @@ void rm(const std::string& path, bool recursive) {
                                     << "' because an unknown error occurred.");
     // LCOV_EXCL_STOP
   }
+}
+
+std::vector<std::string> glob(const std::string& pattern) {
+  glob_t buffer;
+  const int return_value =
+      ::glob(pattern.c_str(), GLOB_TILDE, nullptr, &buffer);
+  if (return_value != 0) {
+    ERROR("Unable to resolve glob '" + pattern + "': " + std::strerror(errno));
+  }
+  std::vector<std::string> file_names(
+      buffer.gl_pathv,
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      buffer.gl_pathv + buffer.gl_pathc);
+  globfree(&buffer);
+  return file_names;
 }
 }  // namespace file_system
