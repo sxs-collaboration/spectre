@@ -19,6 +19,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
@@ -121,7 +122,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
   };
   if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
     const auto dg_prims = evolution::dg::subcell::fd::reconstruct(
-        prim_vars, dg_mesh, subcell_mesh.extents());
+        prim_vars, dg_mesh, subcell_mesh.extents(),
+        evolution::dg::subcell::fd ::ReconstructionMethod::AllDimsAtOnce);
     compute_cons(dg_prims);
   } else {
     compute_cons(prim_vars);

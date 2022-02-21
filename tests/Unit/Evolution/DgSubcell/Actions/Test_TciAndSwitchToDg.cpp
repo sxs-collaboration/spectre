@@ -29,6 +29,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -124,7 +125,8 @@ struct Metavariables {
           reconstructed_dg_vars{dg_vars.number_of_grid_points()};
       evolution::dg::subcell::fd::reconstruct(
           make_not_null(&reconstructed_dg_vars), subcell_vars, dg_mesh,
-          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+          evolution::dg::subcell::fd::mesh(dg_mesh).extents(),
+          evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
       CHECK(reconstructed_dg_vars == dg_vars);
       CHECK(approx(persson_exponent) == 5.0);  // Should be subcell_opts + 1
       tci_invoked = true;
@@ -291,7 +293,8 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
     auto reconstructed_dg_vars = inactive_evolved_vars;
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&reconstructed_dg_vars), evolved_vars, dg_mesh,
-        subcell_mesh.extents());
+        subcell_mesh.extents(),
+        evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
     if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell) {
       CHECK(reconstructed_dg_vars == inactive_vars_from_box);
     } else {
@@ -303,17 +306,20 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   }
 
   if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg) {
-    CHECK(evolution::dg::subcell::fd::reconstruct(
-              time_stepper_history.most_recent_value(), dg_mesh,
-              subcell_mesh.extents()) ==
-          time_stepper_history_from_box.most_recent_value());
+    CHECK(
+        evolution::dg::subcell::fd::reconstruct(
+            time_stepper_history.most_recent_value(), dg_mesh,
+            subcell_mesh.extents(),
+            evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce) ==
+        time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.cbegin(),
               box_it = time_stepper_history_from_box.cbegin();
          expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
       CHECK(evolution::dg::subcell::fd::reconstruct(
-                expected_it.derivative(), dg_mesh, subcell_mesh.extents()) ==
-            box_it.derivative());
+                expected_it.derivative(), dg_mesh, subcell_mesh.extents(),
+                evolution::dg::subcell::fd::ReconstructionMethod::
+                    AllDimsAtOnce) == box_it.derivative());
     }
     CHECK(tci_grid_history_from_box.empty());
   } else {

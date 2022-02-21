@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
@@ -52,7 +53,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     prim_vars->initialize(num_grid_points);
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
-        get(fd_pressure), dg_mesh, subcell_mesh.extents());
+        get(fd_pressure), dg_mesh, subcell_mesh.extents(),
+        evolution::dg::subcell::fd ::ReconstructionMethod::AllDimsAtOnce);
 
     // We only need to compute the prims if we switched to the DG grid because
     // otherwise we computed the prims during the FD TCI.

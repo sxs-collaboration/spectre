@@ -21,6 +21,7 @@
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -178,7 +179,8 @@ struct TciAndSwitchToDg {
           // Note: strictly speaking, to be conservative this should reconstruct
           // uJ instead of u.
           fd::reconstruct(inactive_vars_ptr, active_vars, dg_mesh,
-                          subcell_mesh.extents());
+                          subcell_mesh.extents(),
+                          fd::ReconstructionMethod::AllDimsAtOnce);
         },
         db::get<variables_tag>(box));
 
@@ -253,13 +255,16 @@ struct TciAndSwitchToDg {
                 dg_history{active_history_ptr->integration_order()};
             const auto end_it = active_history_ptr->end();
             for (auto it = active_history_ptr->begin(); it != end_it; ++it) {
-              dg_history.insert(it.time_step_id(),
-                                fd::reconstruct(it.derivative(), dg_mesh,
-                                                subcell_mesh.extents()));
+              dg_history.insert(
+                  it.time_step_id(),
+                  fd::reconstruct(it.derivative(), dg_mesh,
+                                  subcell_mesh.extents(),
+                                  fd::ReconstructionMethod::AllDimsAtOnce));
             }
             dg_history.most_recent_value() =
                 fd::reconstruct(active_history_ptr->most_recent_value(),
-                                dg_mesh, subcell_mesh.extents()),
+                                dg_mesh, subcell_mesh.extents(),
+                                fd::ReconstructionMethod::AllDimsAtOnce),
             *active_history_ptr = std::move(dg_history);
             *active_grid_ptr = ActiveGrid::Dg;
 

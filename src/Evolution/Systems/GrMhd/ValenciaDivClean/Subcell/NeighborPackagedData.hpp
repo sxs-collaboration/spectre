@@ -28,6 +28,7 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
@@ -223,7 +224,8 @@ struct NeighborPackagedData {
           // matter.
           auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
               packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
-              subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+              subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+              evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
           nhbr_package_data[mortar_id] = std::vector<double>{
               dg_packaged_data.data(),
               dg_packaged_data.data() + dg_packaged_data.size()};

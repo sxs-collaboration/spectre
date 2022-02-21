@@ -18,6 +18,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/PrimsAfterRollback.hpp"
@@ -116,8 +117,9 @@ void test(const gsl::not_null<std::mt19937*> gen,
             subcell_prims),
         sqrt_det_spatial_metric, spatial_metric,
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(subcell_prims));
-    dg_prims = evolution::dg::subcell::fd::reconstruct(subcell_prims, dg_mesh,
-                                                       subcell_mesh.extents());
+    dg_prims = evolution::dg::subcell::fd::reconstruct(
+        subcell_prims, dg_mesh, subcell_mesh.extents(),
+        evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
   }
 
   // The DG prims are used as an initial guess so we need to provide them

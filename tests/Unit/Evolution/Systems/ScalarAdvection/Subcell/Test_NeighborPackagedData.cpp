@@ -32,6 +32,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -302,7 +303,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
           evolution::dg::subcell::fd::reconstruct(
               expected_fd_packaged_data_on_mortar,
               dg_mesh.slice_away(mortar_id.first.dimension()),
-              subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+              subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+              evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
 
       std::vector<double> vector_to_check{
           expected_dg_packaged_data.data(),
