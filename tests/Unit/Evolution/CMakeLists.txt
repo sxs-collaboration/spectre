@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Actions)
+add_subdirectory(Ader)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(DgSubcell)
 add_subdirectory(DiscontinuousGalerkin)

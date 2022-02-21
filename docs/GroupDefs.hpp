@@ -12,6 +12,12 @@
  */
 
 /*!
+ * \defgroup AderGroup ADER
+ * \brief Functions and classes needed for ADER (Arbitrary high-order using
+ * DERivatives) time integration
+ */
+
+/*!
  * \defgroup AnalyticDataGroup Analytic Data
  * \brief Analytic data used to specify (for example) initial data to the
  * equations implemented in \ref EvolutionSystemsGroup.

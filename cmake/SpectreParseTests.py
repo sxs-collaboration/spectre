@@ -8,6 +8,7 @@ import re
 # A list of all the allowed ctest labels/Catch tags for tests
 allowed_tags = [
     "Actions",
+    "Ader",
     "ApparentHorizons",
     "Burgers",
     "Cce",
