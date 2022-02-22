@@ -51,6 +51,7 @@ target_link_libraries(
   DomainHelpers
   Framework
   GeneralRelativityHelpers
+  GrMhdAnalyticData
   HydroHelpers
   ValenciaDivClean
   )

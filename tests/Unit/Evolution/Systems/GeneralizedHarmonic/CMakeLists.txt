@@ -38,10 +38,16 @@ target_link_libraries(
   DataStructures
   DataStructuresHelpers
   Domain
-  GeneralizedHarmonic
+  DomainStructure
+  FunctionsOfTime
   GeneralRelativity
   GeneralRelativityHelpers
+  GeneralRelativitySolutions
+  GeneralizedHarmonic
   Importers
+  LinearOperators
+  MathFunctions
+  Options
   Spectral
   Utilities
 )

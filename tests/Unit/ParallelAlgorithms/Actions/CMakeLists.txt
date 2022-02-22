@@ -14,7 +14,14 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/Actions/"
   "${LIBRARY_SOURCES}"
-  "DataStructures"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DomainStructure
   )
 
 add_dependencies(
