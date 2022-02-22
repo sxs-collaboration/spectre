@@ -207,17 +207,17 @@ struct WriteTestData {
       const ParallelComponent* const /*meta*/) {
     // The data may be in a shared file, so first clean both, then write both
     clean_test_data<false>(
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box));
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Fine>>>(box));
     clean_test_data<false>(
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box));
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box));
     write_test_data<Dim>(
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box),
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Fine>>>(box),
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Fine>>>(box),
         get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Fine>>>(
             box),
         fine_volume_data<Dim>);
     write_test_data<Dim>(
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box),
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box),
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Coarse>>>(box),
         get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Coarse>>>(
             box),
@@ -237,11 +237,11 @@ struct CleanTestData {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     clean_test_data<true>(
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box));
-    if (get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box) !=
-        get<importers::Tags::FileName<VolumeDataOptions<Grid::Fine>>>(box)) {
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Fine>>>(box));
+    if (get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box) !=
+        get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Fine>>>(box)) {
       clean_test_data<true>(
-          get<importers::Tags::FileName<VolumeDataOptions<Grid::Coarse>>>(box));
+          get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box));
     }
     return {std::move(box), true};
   }

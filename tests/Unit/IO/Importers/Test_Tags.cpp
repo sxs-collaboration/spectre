@@ -24,8 +24,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   TestHelpers::db::test_simple_tag<importers::Tags::ElementDataAlreadyRead>(
       "ElementDataAlreadyRead");
   TestHelpers::db::test_simple_tag<
-      importers::Tags::FileName<ExampleVolumeData>>(
-      "FileName(ExampleVolumeData)");
+      importers::Tags::FileGlob<ExampleVolumeData>>(
+      "FileGlob(ExampleVolumeData)");
   TestHelpers::db::test_simple_tag<
       importers::Tags::Subgroup<ExampleVolumeData>>(
       "Subgroup(ExampleVolumeData)");
@@ -34,17 +34,17 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
       "ObservationValue(ExampleVolumeData)");
 
   Options::Parser<
-      tmpl::list<importers::OptionTags::FileName<ExampleVolumeData>,
+      tmpl::list<importers::OptionTags::FileGlob<ExampleVolumeData>,
                  importers::OptionTags::Subgroup<ExampleVolumeData>,
                  importers::OptionTags::ObservationValue<ExampleVolumeData>>>
       opts("");
   opts.parse(
       "Importers:\n"
       "  ExampleVolumeData:\n"
-      "    FileName: File.name\n"
+      "    FileGlob: File.name\n"
       "    Subgroup: data.group\n"
       "    ObservationValue: 1.");
-  CHECK(opts.get<importers::OptionTags::FileName<ExampleVolumeData>>() ==
+  CHECK(opts.get<importers::OptionTags::FileGlob<ExampleVolumeData>>() ==
         "File.name");
   CHECK(opts.get<importers::OptionTags::Subgroup<ExampleVolumeData>>() ==
         "data.group");

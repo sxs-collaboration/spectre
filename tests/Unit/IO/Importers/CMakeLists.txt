@@ -12,7 +12,19 @@ add_test_library(
   ${LIBRARY}
   "IO/Importers"
   "${LIBRARY_SOURCES}"
-  "Domain;IO;Importers;Options"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DomainStructure
+  IO
+  Importers
+  Options
+  Spectral
+  Utilities
   )
 
 add_dependencies(

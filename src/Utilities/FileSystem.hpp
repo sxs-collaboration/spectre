@@ -137,4 +137,10 @@ std::vector<std::string> ls(const std::string& dir_name = "./");
  * behaves like `rm -r`, otherwise like `rm` but will delete an empty directory
  */
 void rm(const std::string& path, bool recursive);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Get a list of files matching the given glob pattern
+ */
+std::vector<std::string> glob(const std::string& pattern);
 }  // namespace file_system
