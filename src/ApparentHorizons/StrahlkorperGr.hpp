@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "ApparentHorizons/TagsTypeAliases.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/TagsTypeAliases.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond

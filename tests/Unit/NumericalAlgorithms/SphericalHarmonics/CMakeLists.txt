@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_SpherepackIterator.cpp
   Test_Strahlkorper.cpp
   Test_StrahlkorperFunctions.cpp
+  Test_Tags.cpp
   Test_YlmSpherepack.cpp
   )
 

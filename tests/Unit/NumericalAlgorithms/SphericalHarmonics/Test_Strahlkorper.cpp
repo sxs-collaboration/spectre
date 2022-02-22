@@ -12,7 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/ApparentHorizons/StrahlkorperTestHelpers.hpp"
+#include "Helpers/NumericalAlgorithms/SphericalHarmonics/StrahlkorperTestHelpers.hpp"
 #include "Helpers/NumericalAlgorithms/SphericalHarmonics/YlmTestFunctions.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/SpherepackIterator.hpp"
@@ -22,7 +22,6 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
 namespace Frame {
 struct Inertial;
 }  // namespace Frame

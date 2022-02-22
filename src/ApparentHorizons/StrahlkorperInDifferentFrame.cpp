@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <optional>
 
-#include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -20,6 +19,7 @@
 #include "NumericalAlgorithms/RootFinding/RootBracketing.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 

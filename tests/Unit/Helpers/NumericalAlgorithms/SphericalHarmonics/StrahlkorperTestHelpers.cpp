@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "StrahlkorperGrTestHelpers.hpp"
+#include "StrahlkorperTestHelpers.hpp"
 
 #include <array>
 #include <cmath>
