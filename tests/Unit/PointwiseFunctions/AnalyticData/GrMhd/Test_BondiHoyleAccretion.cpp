@@ -140,100 +140,65 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
-}
 
-// [[OutputRegex, In string:.*At line 2 column 11:.Value -1.345 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleBHMassOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: -1.345\n"
-      "BhDimlessSpin: 0.3\n"
-      "RestMassDensity: 1.32\n"
-      "FlowSpeed: 4.3\n"
-      "MagFieldStrength: 0.52\n"
-      "PolytropicConstant: 0.12\n"
-      "PolytropicExponent: 1.5");
-}
-
-// [[OutputRegex, In string:.*At line 3 column 18:.Value -1.23 is below the
-// lower bound of -1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleBHSpinLowerOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: 4.4231\n"
-      "BhDimlessSpin: -1.23\n"
-      "RestMassDensity: 0.31\n"
-      "FlowSpeed: 0.11\n"
-      "MagFieldStrength: 2.4\n"
-      "PolytropicConstant: 300.0\n"
-      "PolytropicExponent: 1.4");
-}
-
-// [[OutputRegex, In string:.*At line 3 column 18:.Value 3.99 is above the
-// upper bound of 1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleBHSpinUpperOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: 0.654\n"
-      "BhDimlessSpin: 3.99\n"
-      "RestMassDensity: 5.234\n"
-      "FlowSpeed: 0.543\n"
-      "MagFieldStrength: -0.352\n"
-      "PolytropicConstant: 80.123\n"
-      "PolytropicExponent: 1.66");
-}
-
-// [[OutputRegex, In string:.*At line 4 column 20:.Value -4.21 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleDensityOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: 12.34\n"
-      "BhDimlessSpin: 0.99\n"
-      "RestMassDensity: -4.21\n"
-      "FlowSpeed: 1.3\n"
-      "MagFieldStrength: 0.21\n"
-      "PolytropicConstant: 54.16\n"
-      "PolytropicExponent: 1.598");
-}
-
-// [[OutputRegex, In string:.*At line 7 column 23:.Value -1.52 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoylePolytConstOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: 0.765\n"
-      "BhDimlessSpin: -0.324\n"
-      "RestMassDensity: 156.2\n"
-      "FlowSpeed: 0.653\n"
-      "MagFieldStrength: 1.454\n"
-      "PolytropicConstant: -1.52\n"
-      "PolytropicExponent: 2.0");
-}
-
-// [[OutputRegex, In string:.*At line 8 column 23:.Value 0.123 is below the
-// lower bound of 1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoylePolytExpOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-      "BhMass: 4.21\n"
-      "BhDimlessSpin: -0.11\n"
-      "RestMassDensity: 0.43\n"
-      "FlowSpeed: 0.435\n"
-      "MagFieldStrength: 3.44\n"
-      "PolytropicConstant: 0.653\n"
-      "PolytropicExponent: 0.123");
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: -1.345\n"
+          "BhDimlessSpin: 0.3\n"
+          "RestMassDensity: 1.32\n"
+          "FlowSpeed: 4.3\n"
+          "MagFieldStrength: 0.52\n"
+          "PolytropicConstant: 0.12\n"
+          "PolytropicExponent: 1.5"),
+      Catch::Contains("Value -1.345 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 4.4231\n"
+          "BhDimlessSpin: -1.23\n"
+          "RestMassDensity: 0.31\n"
+          "FlowSpeed: 0.11\n"
+          "MagFieldStrength: 2.4\n"
+          "PolytropicConstant: 300.0\n"
+          "PolytropicExponent: 1.4"),
+      Catch::Contains("Value -1.23 is below the lower bound of -1"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 0.654\n"
+          "BhDimlessSpin: 3.99\n"
+          "RestMassDensity: 5.234\n"
+          "FlowSpeed: 0.543\n"
+          "MagFieldStrength: -0.352\n"
+          "PolytropicConstant: 80.123\n"
+          "PolytropicExponent: 1.66"),
+      Catch::Contains("Value 3.99 is above the upper bound of 1"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 12.34\n"
+          "BhDimlessSpin: 0.99\n"
+          "RestMassDensity: -4.21\n"
+          "FlowSpeed: 1.3\n"
+          "MagFieldStrength: 0.21\n"
+          "PolytropicConstant: 54.16\n"
+          "PolytropicExponent: 1.598"),
+      Catch::Contains("Value -4.21 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 0.765\n"
+          "BhDimlessSpin: -0.324\n"
+          "RestMassDensity: 156.2\n"
+          "FlowSpeed: 0.653\n"
+          "MagFieldStrength: 1.454\n"
+          "PolytropicConstant: -1.52\n"
+          "PolytropicExponent: 2.0"),
+      Catch::Contains("Value -1.52 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 4.21\n"
+          "BhDimlessSpin: -0.11\n"
+          "RestMassDensity: 0.43\n"
+          "FlowSpeed: 0.435\n"
+          "MagFieldStrength: 3.44\n"
+          "PolytropicConstant: 0.653\n"
+          "PolytropicExponent: 0.123"),
+      Catch::Contains("Value 0.123 is below the lower bound of 1"));
 }

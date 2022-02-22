@@ -483,15 +483,8 @@ void test_get_databox() {
   db::apply<tmpl::list<Tags::DataBox>>(check_result_no_args, original_box);
   // [databox_self_tag_example]
 }
-}  // namespace
 
-// [[OutputRegex, Unable to retrieve a \(compute\) item 'DataBox' from the
-// DataBox from within a call to mutate. You must pass these either through the
-// capture list of the lambda or the constructor of a class, this restriction
-// exists to avoid complexity.]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
+void trigger_get_databox_error() {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
@@ -507,7 +500,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_databox_error",
       });
 }
 
-namespace {
+void test_get_databox_error() {
+  CHECK_THROWS_WITH(
+      trigger_get_databox_error(),
+      Catch::Contains(
+          "Unable to retrieve a (compute) item 'DataBox' from the DataBox from "
+          "within a call to mutate. You must pass these either through the "
+          "capture list of the lambda or the constructor of a class, this "
+          "restriction exists to avoid complexity."));
+}
+
 void test_mutate() {
   INFO("test mutate");
   auto original_box = db::create<
@@ -566,15 +568,8 @@ void test_mutate() {
       });
   CHECK(db::get<test_databox_tags::Pointer>(original_box) == 5);
 }
-}  // namespace
 
-// [[OutputRegex, Unable to retrieve a \(compute\) item 'Tag4' from the
-// DataBox from within a call to mutate. You must pass these either through the
-// capture list of the lambda or the constructor of a class, this restriction
-// exists to avoid complexity]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
+void trigger_mutate_locked_get() {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
@@ -591,12 +586,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_get",
       });
 }
 
-// [[OutputRegex, Unable to mutate a DataBox that is already being mutated. This
-// error occurs when mutating a DataBox from inside the invokable passed to the
-// mutate function]]
-SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
-                  "[Unit][DataStructures]") {
-  ERROR_TEST();
+void trigger_mutate_locked_mutate() {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2>,
@@ -614,7 +604,21 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_locked_mutate",
       });
 }
 
-namespace {
+void test_mutate_locked() {
+  CHECK_THROWS_WITH(
+      trigger_mutate_locked_get(),
+      Catch::Contains(
+          "Unable to retrieve a (compute) item 'Tag4' from the DataBox from "
+          "within a call to mutate. You must pass these either through the "
+          "capture list of the lambda or the constructor of a class, this "
+          "restriction exists to avoid complexity"));
+  CHECK_THROWS_WITH(
+      trigger_mutate_locked_mutate(),
+      Catch::Contains("Unable to mutate a DataBox that is already being "
+                      "mutated. This error occurs when mutating a DataBox from "
+                      "inside the invokable passed to the mutate function"));
+}
+
 struct NonCopyableFunctor {
   NonCopyableFunctor() = default;
   NonCopyableFunctor(const NonCopyableFunctor&) = delete;
@@ -2845,7 +2849,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_databox();
   test_create_argument_types();
   test_get_databox();
+  test_get_databox_error();
   test_mutate();
+  test_mutate_locked();
   test_apply();
   test_variables();
   test_variables2();

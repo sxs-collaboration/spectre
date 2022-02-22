@@ -3,9 +3,12 @@
 
 #include "Parallel/InitializationFunctions.hpp"
 
+#include <charm++.h>
 #include <exception>
+#include <sstream>
 
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/System/Abort.hpp"
 
 void setup_error_handling() {
   std::set_terminate([]() {
@@ -14,15 +17,21 @@ void setup_error_handling() {
       try {
         std::rethrow_exception(exception);
       } catch (std::exception& ex) {
-        ERROR("Terminated due to an uncaught exception: " << ex.what());
+        std::ostringstream os;
+        os << "Terminated due to an uncaught exception:\n " << ex.what();
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+        CkError("%s\n", os.str().c_str());
       } catch (...) {
-        ERROR("Terminated due to unknown exception\n");
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+        CkError("Terminated due to unknown exception\n");
       }
     } else {
-      ERROR(
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+      CkError(
           "Terminate was called for an unknown reason (not an uncaught "
           "exception), calling Charm++'s abort function to properly "
           "terminate execution.");
     }
+    sys::abort("");
   });
 }

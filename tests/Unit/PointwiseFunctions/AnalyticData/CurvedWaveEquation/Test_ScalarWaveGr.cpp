@@ -595,19 +595,8 @@ void test_curved_scalarwave_minkowski() {
   test_no_hole(curved_wave_data, wave_solution);
 }
 
-SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
-                  "[PointwiseFunctions][Unit]") {
-  test_scalarwave_bh();
-  test_scalarwave_minkowski();
-  test_curved_scalarwave_minkowski();
-}
-
-// Check restrictions on input options below
-
-// [[OutputRegex, Mass must be non-negative]]
-SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrMass",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
+namespace {
+void trigger_negative_mass() {
   CurvedScalarWave::AnalyticData::ScalarWaveGr<
       ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>
       solution(
@@ -618,11 +607,7 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrMass",
                   1., 1., 0.)));
 }
 
-// [[OutputRegex, In string:.*At line 3 column 11:.Value -0.5 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrOptM",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
+void trigger_bound_error() {
   TestHelpers::test_creation<CurvedScalarWave::AnalyticData::ScalarWaveGr<
                                  ScalarWave::Solutions::RegularSphericalWave,
                                  gr::Solutions::KerrSchild>,
@@ -639,10 +624,7 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrOptM",
       "      Center: 0.3");
 }
 
-// [[OutputRegex, Spin magnitude must be < 1]]
-SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrSpin",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
+void trigger_spin_error() {
   CurvedScalarWave::AnalyticData::ScalarWaveGr<
       ScalarWave::Solutions::RegularSphericalWave, gr::Solutions::KerrSchild>
       solution(
@@ -650,4 +632,20 @@ SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGrSpin",
           ScalarWave::Solutions::RegularSphericalWave(
               std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(
                   1., 1., 0.)));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.AnalyticData.CurvedWaveEquation.ScalarWaveGr",
+                  "[PointwiseFunctions][Unit]") {
+  test_scalarwave_bh();
+  test_scalarwave_minkowski();
+  test_curved_scalarwave_minkowski();
+
+  CHECK_THROWS_WITH(trigger_negative_mass(),
+                    Catch::Contains("Mass must be non-negative"));
+  CHECK_THROWS_WITH(
+      trigger_bound_error(),
+      Catch::Contains("Value -0.5 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(trigger_spin_error(),
+                    Catch::Contains("Spin magnitude must be < 1"));
 }

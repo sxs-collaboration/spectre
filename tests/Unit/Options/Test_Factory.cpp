@@ -366,49 +366,72 @@ SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
   test_factory_not_creatable();
 }
 
-// [[OutputRegex, In string:.*At line 1 column 1:.Expected a class to
-// create:.Known Ids:.*Test1]]
-SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
-  ERROR_TEST();
+namespace {
+void trigger_missing() {
   Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType:");
   opts.get<OptionType, Metavars<true>>();
 }
 
-// [[OutputRegex, In string:.*At line 2 column 3:.Expected a single class to
-// create, got 2]]
-SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
-  ERROR_TEST();
+void trigger_multiple() {
   Options::Parser<tmpl::list<OptionType>> opts("");
-  opts.parse("OptionType:\n"
-             "  Test1:\n"
-             "  Test2:");
+  opts.parse(
+      "OptionType:\n"
+      "  Test1:\n"
+      "  Test2:");
   opts.get<OptionType, Metavars<true>>();
 }
 
-// [[OutputRegex, In string:.*At line 1 column 13:.Expected a class or a class
-// with options]]
-SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {
-  ERROR_TEST();
+void trigger_vector() {
   Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: []");
   opts.get<OptionType, Metavars<true>>();
 }
 
-// [[OutputRegex, In string:.*At line 1 column 13:.Unknown Id 'Potato']]
-SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
-  ERROR_TEST();
+void trigger_unknown() {
   Options::Parser<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: Potato");
   opts.get<OptionType, Metavars<true>>();
 }
 
-// [[OutputRegex, In string:.*At line 2 column 1:.You did not specify the
-// option \(Arg\)]]
-SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
-  ERROR_TEST();
+void trigger_missing_arg() {
   Options::Parser<tmpl::list<OptionType>> opts("");
-  opts.parse("OptionType:\n"
-             "  TestWithArg:");
+  opts.parse(
+      "OptionType:\n"
+      "  TestWithArg:");
   opts.get<OptionType, Metavars<true>>();
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.missing", "[Unit][Options]") {
+  CHECK_THROWS_WITH(trigger_missing(),
+                    Catch::Contains("At line 1 column 1:\nExpected a class to "
+                                    "create:\nKnown Ids:\n  Test1"));
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.multiple", "[Unit][Options]") {
+  CHECK_THROWS_WITH(
+      trigger_multiple(),
+      Catch::Contains(
+          "At line 2 column 3:\nExpected a single class to create, got 2"));
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.vector", "[Unit][Options]") {
+  CHECK_THROWS_WITH(
+      trigger_vector(),
+      Catch::Contains(
+          "At line 1 column 13:\nExpected a class or a class with options"));
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.unknown", "[Unit][Options]") {
+  CHECK_THROWS_WITH(
+      trigger_unknown(),
+      Catch::Contains("At line 1 column 13:\nUnknown Id 'Potato'"));
+}
+
+SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
+  CHECK_THROWS_WITH(
+      trigger_missing_arg(),
+      Catch::Contains(
+          "At line 2 column 1:\nYou did not specify the option (Arg)"));
 }

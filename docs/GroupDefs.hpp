@@ -754,9 +754,6 @@
  * </tr>
  * </table>
  *
- * \example
- * \snippet Test_H5.cpp willfail_example_for_dev_doc
- *
  * ### Debugging Tests in GDB or LLDB
  *
  * Several tests fail intentionally at the executable level to test error

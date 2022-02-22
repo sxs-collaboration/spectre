@@ -130,14 +130,12 @@ void test_failure_value() {
 SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Initialization.AddToDataBox",
                   "[Unit][ParallelAlgorithms]") {
   TestAddToBox_detail::test();
-}
 
-// [[OutputRegex, While adding the simple tag Int that is already in the DataBox
-// we found that the value being set by the action
-// TestAddToBox_detail::FakeAction is not the same as what is already in the
-// DataBox. The value in the DataBox is: 2 while the value being added is 3]]
-SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Initialization.AddToDataBox.Error",
-                  "[Unit][ParallelAlgorithms]") {
-  ERROR_TEST();
-  TestAddToBox_detail::test_failure_value();
+  CHECK_THROWS_WITH(
+      TestAddToBox_detail::test_failure_value(),
+      Catch::Contains("While adding the simple tag Int that is already in the "
+                      "DataBox we found that the value being set by the action "
+                      "TestAddToBox_detail::FakeAction is not the same as what "
+                      "is already in the DataBox. The value in the DataBox is: "
+                      "2 while the value being added is 3"));
 }

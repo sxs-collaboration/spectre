@@ -757,36 +757,21 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Grid>>,
                         std::true_type, Frame::Grid>(
       &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
-}
-
-// [[OutputRegex, Cannot interpolate onto surface]]
-// [[Timeout, 5]]
-SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder.Error",
-    "[Unit]") {
-  ERROR_TEST();
-  domain::creators::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
-  domain::FunctionsOfTime::register_derived_with_charm();
 
   test_schwarzschild_horizon_called = 0;
-  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
-                        std::true_type, Frame::Inertial, true>(
-      &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
-}
-
-// [[OutputRegex, Cannot interpolate onto surface]]
-// [[Timeout, 5]]
-SPECTRE_TEST_CASE("Unit.Interpolator.ApparentHorizonFinder.NotConvergedError",
-                  "[Unit]") {
-  ERROR_TEST();
-  domain::creators::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
-  domain::FunctionsOfTime::register_derived_with_charm();
+  CHECK_THROWS_WITH(
+      (test_apparent_horizon<
+          tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
+          Frame::Inertial, true>(&test_schwarzschild_horizon_called, 3, 4, 1.0,
+                                 {{0.0, 0.0, 0.0}})),
+      Catch::Contains("Cannot interpolate onto surface"));
 
   test_schwarzschild_horizon_called = 0;
-  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
-                        std::true_type, Frame::Inertial, true>(
-      &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}}, 1);
+  CHECK_THROWS_WITH(
+      (test_apparent_horizon<
+          tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>, std::true_type,
+          Frame::Inertial, true>(&test_schwarzschild_horizon_called, 3, 4, 1.0,
+                                 {{0.0, 0.0, 0.0}}, 1)),
+      Catch::Contains("Cannot interpolate onto surface"));
 }
 }  // namespace

@@ -5,21 +5,33 @@
 
 #include "Utilities/ErrorHandling/AbortWithErrorMessage.hpp"
 
-// [[OutputRegex, 'a == b' violated!]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.ErrorHandling.AbortWithErrorMessage.Assert",
-    "[Unit][ErrorHandling]") {
-  ERROR_TEST();
-  abort_with_error_message("a == b", __FILE__, __LINE__,
-                           static_cast<const char*>(__PRETTY_FUNCTION__),
-                           "Test Error");
-}
-
-// [[OutputRegex, ############ ERROR]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage.Error",
-                               "[Unit][ErrorHandling]") {
-  ERROR_TEST();
-  abort_with_error_message(__FILE__, __LINE__,
-                           static_cast<const char*>(__PRETTY_FUNCTION__),
-                           "Test Error");
+SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage",
+                  "[Unit][ErrorHandling]") {
+  CHECK_THROWS_WITH(
+      abort_with_error_message("a == b", __FILE__, __LINE__,
+                               static_cast<const char*>(__PRETTY_FUNCTION__),
+                               "Test Abort"),
+      Catch::Contains("ASSERT FAILED") && Catch::Contains("a == b") &&
+          Catch::Contains("Test Abort") &&
+          Catch::Contains("Test_AbortWithErrorMessage") &&
+          Catch::Contains("Shortened stack trace is"));
+  CHECK_THROWS_WITH(
+      abort_with_error_message(__FILE__, __LINE__,
+                               static_cast<const char*>(__PRETTY_FUNCTION__),
+                               "Test Error"),
+      Catch::Contains("ERROR") && Catch::Contains("Test Error") &&
+          Catch::Contains("Test_AbortWithErrorMessage") &&
+          Catch::Contains("Shortened stack trace is"));
+  CHECK_THROWS_WITH(
+      abort_with_error_message_no_trace(
+          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
+          "Test no trace"),
+      Catch::Contains("ERROR") && Catch::Contains("Test no trace") &&
+          Catch::Contains("Test_AbortWithErrorMessage") &&
+          not Catch::Contains("Shortened stack trace is"));
+  CHECK_THROWS_AS(
+      abort_with_error_message_no_trace(
+          __FILE__, __LINE__, static_cast<const char*>(__PRETTY_FUNCTION__),
+          "Test no trace"),
+      std::runtime_error);
 }

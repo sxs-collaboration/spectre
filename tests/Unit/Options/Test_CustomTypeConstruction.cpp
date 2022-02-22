@@ -133,24 +133,30 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType", "[Unit][Options]") {
   }
 }
 
-// [[OutputRegex, In string:.*At line 2 column 3:.Option 'NotOption' is not a
-// valid option.]]
 SPECTRE_TEST_CASE("Unit.Options.CustomType.error", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<Cfo>> opts("");
-  opts.parse("Cfo:\n"
-             "  NotOption: foo");
-  opts.get<Cfo>();
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Cfo>> opts("");
+        opts.parse(
+            "Cfo:\n"
+            "  NotOption: foo");
+        opts.get<Cfo>();
+      }(),
+      Catch::Contains(
+          "At line 2 column 3:\nOption 'NotOption' is not a valid option."));
 }
 
-// [[OutputRegex, In string:.*At line 2 column 3:.Option must start with an 'f'
-// but is]]
 SPECTRE_TEST_CASE("Unit.Options.CustomType.custom_error", "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<Cfo>> opts("");
-  opts.parse("Cfo:\n"
-             "  CfoOption: zoo");
-  opts.get<Cfo>();
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<Cfo>> opts("");
+        opts.parse(
+            "Cfo:\n"
+            "  CfoOption: zoo");
+        opts.get<Cfo>();
+      }(),
+      Catch::Contains(
+          "At line 2 column 3:\nOption must start with an 'f' but is"));
 }
 
 // [enum_creation_example]
@@ -240,12 +246,16 @@ SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized_void",
          CreateFromOptionsExoticAnimal::MexicanWalkingFish);
 }
 
-// [[OutputRegex, In string:.*While parsing option CfoAnimal:.*At line 1
-// column 12:.CreateFromOptionsAnimal must be 'Cat' or 'Dog']]
 SPECTRE_TEST_CASE("Unit.Options.CustomType.specialized.error",
                   "[Unit][Options]") {
-  ERROR_TEST();
-  Options::Parser<tmpl::list<CfoAnimal>> opts("");
-  opts.parse("CfoAnimal: Mouse");
-  opts.get<CfoAnimal>();
+  CHECK_THROWS_WITH(
+      []() {
+        Options::Parser<tmpl::list<CfoAnimal>> opts("");
+        opts.parse("CfoAnimal: Mouse");
+        opts.get<CfoAnimal>();
+      }(),
+      Catch::Contains(
+          "While parsing option CfoAnimal:\nWhile creating a "
+          "CreateFromOptionsAnimal:\nAt line 1 "
+          "column 12:\nCreateFromOptionsAnimal must be 'Cat' or 'Dog'"));
 }

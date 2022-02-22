@@ -323,40 +323,28 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_tag_retrieval<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(0.0);
   test_einstein_solution<Frame::Grid>();
-}
 
-// [[OutputRegex, Spin magnitude must be < 1]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildSpin",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  gr::Solutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}});
-}
-
-// [[OutputRegex, Mass must be non-negative]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildMass",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  gr::Solutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
-                                     {{0.0, 0.0, 0.0}});
-}
-
-// [[OutputRegex, In string:.*At line 2 column 9:.Value -0.5 is below the lower
-// bound of 0]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptM",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<gr::Solutions::KerrSchild>(
-      "Mass: -0.5\n"
-      "Spin: [0.1,0.2,0.3]\n"
-      "Center: [1.0,3.0,2.0]");
-}
-
-// [[OutputRegex, In string:.*At line 2 column 3:.Spin magnitude must be < 1]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchildOptS",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<gr::Solutions::KerrSchild>(
-      "Mass: 0.5\n"
-      "Spin: [1.1,0.9,0.3]\n"
-      "Center: [1.0,3.0,2.0]");
+  CHECK_THROWS_WITH(
+      []() {
+        gr::Solutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}},
+                                           {{0.0, 0.0, 0.0}});
+      }(),
+      Catch::Contains("Spin magnitude must be < 1"));
+  CHECK_THROWS_WITH(
+      []() {
+        gr::Solutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
+                                           {{0.0, 0.0, 0.0}});
+      }(),
+      Catch::Contains("Mass must be non-negative"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+          "Mass: -0.5\n"
+          "Spin: [0.1,0.2,0.3]\n"
+          "Center: [1.0,3.0,2.0]"),
+      Catch::Contains("Value -0.5 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+                        "Mass: 0.5\n"
+                        "Spin: [1.1,0.9,0.3]\n"
+                        "Center: [1.0,3.0,2.0]"),
+                    Catch::Contains("Spin magnitude must be < 1"));
 }

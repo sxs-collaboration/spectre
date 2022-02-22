@@ -15,7 +15,7 @@
 #include <sstream>
 
 #include "Utilities/ErrorHandling/Breakpoint.hpp"
-#include "Utilities/System/Abort.hpp"
+#include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace {
@@ -85,13 +85,8 @@ template <bool ShowTrace>
      << message << "\n"
      << "############ ERROR ############\n"
      << "\n";
-  // We use CkError instead of abort to print the error message because in the
-  // case of an executable not using Charm++'s main function the call to abort
-  // will segfault before anything is printed.
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  CkError("%s", os.str().c_str());
   breakpoint();
-  sys::abort("");
+  throw SpectreError(os.str());
 }
 }  // namespace
 
@@ -110,13 +105,8 @@ void abort_with_error_message(const char* expression, const char* file,
      << message << "\n"
      << "############ ASSERT FAILED ############\n"
      << "\n";
-  // We use CkError instead of abort to print the error message because in the
-  // case of an executable not using Charm++'s main function the call to abort
-  // will segfault before anything is printed.
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  CkError("%s", os.str().c_str());
   breakpoint();
-  sys::abort("");
+  throw SpectreAssert(os.str());
 }
 
 

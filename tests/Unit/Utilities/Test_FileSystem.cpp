@@ -108,6 +108,22 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
   }
 }
 
+namespace {
+void trigger_nonexistent_absolute_path() {
+  static_cast<void>(
+      file_system::get_absolute_path("./get_absolute_path_nonexistent/"));
+}
+
+void trigger_rm_error_not_empty() {
+  const std::string dir_name("./rm_error_not_empty");
+  file_system::create_directory(dir_name);
+  CHECK(file_system::check_if_dir_exists(dir_name));
+  std::fstream file("./rm_error_not_empty/cause_error_in_rm.txt", file.out);
+  file.close();
+  file_system::rm("./rm_error_not_empty"s, false);
+}
+}  // namespace
+
 // [[OutputRegex, Failed to find a file in the given path: '/']]
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_error",
                   "[Unit][Utilities]") {
@@ -122,13 +138,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_empty_path",
   static_cast<void>(file_system::get_file_name(""));
 }
 
-// [[OutputRegex, Failed to convert to absolute path because one of the path
-// components does not exist. Relative path is]]
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path_nonexistent",
                   "[Unit][Utilities]") {
-  ERROR_TEST();
-  static_cast<void>(
-      file_system::get_absolute_path("./get_absolute_path_nonexistent/"));
+  CHECK_THROWS_WITH(
+      trigger_nonexistent_absolute_path(),
+      Catch::Contains("Failed to convert to absolute path because one of the "
+                      "path components does not exist. Relative path is"));
 }
 
 // [[OutputRegex, Failed to check if path points to a file because the path is
@@ -139,13 +154,13 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.is_file_error",
   CHECK(file_system::is_file("./is_file_error"));
 }
 
-// [[OutputRegex, Cannot get size of file './file_size_error.txt' because it
-// cannot be accessed. Either it does not exist or you do not have the
-// appropriate permissions.]]
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.file_size_error",
                   "[Unit][Utilities]") {
-  ERROR_TEST();
-  CHECK(file_system::file_size("./file_size_error.txt"));
+  CHECK_THROWS_WITH(
+      file_system::file_size("./file_size_error.txt"),
+      Catch::Contains("Cannot get size of file './file_size_error.txt' because "
+                      "it cannot be accessed. Either it does not exist or you "
+                      "do not have the appropriate permissions."));
 }
 
 // [[OutputRegex, Cannot create a directory that has no name]]
@@ -155,15 +170,10 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
   file_system::create_directory(""s);
 }
 
-// [[OutputRegex, Could not delete file './rm_error_not_empty' because the
-// directory is not empty]]
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty",
                   "[Unit][Utilities]") {
-  ERROR_TEST();
-  const std::string dir_name("./rm_error_not_empty");
-  file_system::create_directory(dir_name);
-  CHECK(file_system::check_if_dir_exists(dir_name));
-  std::fstream file("./rm_error_not_empty/cause_error_in_rm.txt", file.out);
-  file.close();
-  file_system::rm("./rm_error_not_empty"s, false);
+  CHECK_THROWS_WITH(
+      trigger_rm_error_not_empty(),
+      Catch::Contains("Could not delete file './rm_error_not_empty' because "
+                      "the directory is not empty"));
 }

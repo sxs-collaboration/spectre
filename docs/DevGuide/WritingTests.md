@@ -245,9 +245,6 @@ testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as
 the test, and also have the test call `ERROR("Failed to trigger ASSERT
 in an assertion test");` at the end of the test body.  The test body
 should be enclosed between `#%ifdef SPECTRE_DEBUG` and an `#%endif`
-For example,
-
-\snippet Test_AssertAndError.cpp assertion_test_example
 
 If the `#%ifdef SPECTRE_DEBUG` block is omitted then compilers will
 correctly flag the code as being unreachable which results in
@@ -256,9 +253,17 @@ warnings.
 You can also test `ERROR`s inside your code. These tests need to have
 the `OutputRegex`, and also call `ERROR_TEST();` at the
 beginning. They do not need the `#%ifdef SPECTRE_DEBUG` block, they
-can just call have the code that triggers an `ERROR`. For example,
+can just call have the code that triggers an `ERROR`.
 
-\snippet Test_AssertAndError.cpp error_test_example
+We are currently transforming these failure cases to use the
+`CHECK_THROWS_WITH` macro. This macro takes two arguments: the first
+is either an expression or a lambda that is expected to trigger an
+exception (which now are thrown by `ASSERT` and `ERROR` (Note: You may
+need to add `()` wrapping the lambda in order for it to compile.); the
+second is a Catch Matcher (see
+[Catch2](https://github.com/catchorg/Catch2 for complete
+documentaion), usually a `Catch::Contains()` macro that matches
+a substring of the error message of the thrown exception.
 
 Note that a `OutputRegex` can also be specified in a test that is
 supposed to succeed with output that matches the regular expression.

@@ -203,38 +203,19 @@ template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
 const ObjectType& H5File<Access_t>::get(const std::string& path,
                                         Args&&... args) const {
-  try {
-    current_object_ = nullptr;
-    // C++17: structured bindings
-    auto exists_group_name = check_if_object_exists<ObjectType>(path);
-    hid_t group_id = std::get<1>(exists_group_name).id();
-    if (not std::get<0>(exists_group_name)) {
-      current_object_ = nullptr;
-      CHECK_H5(H5Fclose(file_id_),
-               "Failed to close file: '" << file_name_ << "'");
-      ERROR("Cannot open the object '" << path + ObjectType::extension()
-                                       << "' because it does not exist.");
-    }
-    current_object_ = std::make_unique<ObjectType>(
-        std::get<0>(exists_group_name),
-        std::move(std::get<1>(exists_group_name)), group_id,
-        std::move(std::get<2>(exists_group_name)), std::forward<Args>(args)...);
-    return dynamic_cast<const ObjectType&>(*current_object_);
-    // LCOV_EXCL_START
-  } catch (const std::bad_cast& e) {
-    current_object_ = nullptr;
-    CHECK_H5(H5Fclose(file_id_),
-             "Failed to close file: '" << file_name_ << "'");
-    ERROR("Failed to cast " << path << " to "
-                            << pretty_type::get_name<ObjectType>()
-                            << ".\nCast error: " << e.what());
-  } catch (const std::exception& e) {
-    current_object_ = nullptr;
-    CHECK_H5(H5Fclose(file_id_),
-             "Failed to close file: '" << file_name_ << "'");
-    ERROR("Unknown exception caught: " << e.what());
-    // LCOV_EXCL_STOP
+  current_object_ = nullptr;
+  // C++17: structured bindings
+  auto exists_group_name = check_if_object_exists<ObjectType>(path);
+  hid_t group_id = std::get<1>(exists_group_name).id();
+  if (not std::get<0>(exists_group_name)) {
+    ERROR("Cannot open the object '" << path + ObjectType::extension()
+                                     << "' because it does not exist.");
   }
+  current_object_ = std::make_unique<ObjectType>(
+      std::get<0>(exists_group_name), std::move(std::get<1>(exists_group_name)),
+      group_id, std::move(std::get<2>(exists_group_name)),
+      std::forward<Args>(args)...);
+  return dynamic_cast<const ObjectType&>(*current_object_);
 }
 
 template <AccessType Access_t>
@@ -246,9 +227,6 @@ ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
   // C++17: structured bindings
   auto exists_group_name = check_if_object_exists<ObjectType>(path);
   if (std::get<0>(exists_group_name)) {
-    current_object_ = nullptr;
-    CHECK_H5(H5Fclose(file_id_),
-             "Failed to close file: '" << file_name_ << "'");
     ERROR(
         "Cannot insert an Object that already exists. Failed to add Object "
         "named: "

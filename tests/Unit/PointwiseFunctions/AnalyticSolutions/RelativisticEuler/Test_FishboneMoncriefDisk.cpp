@@ -230,84 +230,55 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
   test_sin_theta_squared(DataVector(5));
 
   test_solution();
-}
 
-// [[OutputRegex, In string:.*At line 2 column 11:.Value -1.5 is below the lower
-// bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHMassOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-      "BhMass: -1.5\n"
-      "BhDimlessSpin: 0.3\n"
-      "InnerEdgeRadius: 4.3\n"
-      "MaxPressureRadius: 6.7\n"
-      "PolytropicConstant: 0.12\n"
-      "PolytropicExponent: 1.5");
-}
-
-// [[OutputRegex, In string:.*At line 3 column 18:.Value -0.24 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHSpinLowerOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-      "BhMass: 1.5\n"
-      "BhDimlessSpin: -0.24\n"
-      "InnerEdgeRadius: 5.76\n"
-      "MaxPressureRadius: 13.2\n"
-      "PolytropicConstant: 0.002\n"
-      "PolytropicExponent: 1.34");
-}
-
-// [[OutputRegex, In string:.*At line 3 column 18:.Value 1.24 is above the
-// upper bound of 1.]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHSpinUpperOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-      "BhMass: 1.5\n"
-      "BhDimlessSpin: 1.24\n"
-      "InnerEdgeRadius: 5.76\n"
-      "MaxPressureRadius: 13.2\n"
-      "PolytropicConstant: 0.002\n"
-      "PolytropicExponent: 1.34");
-}
-
-// [[OutputRegex, In string:.*At line 6 column 23:.Value -0.12 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytConstOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-      "BhMass: 1.5\n"
-      "BhDimlessSpin: 0.3\n"
-      "InnerEdgeRadius: 4.3\n"
-      "MaxPressureRadius: 6.7\n"
-      "PolytropicConstant: -0.12\n"
-      "PolytropicExponent: 1.5");
-}
-
-// [[OutputRegex, In string:.*At line 7 column 23:.Value 0.25 is below the
-// lower bound of 1]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskPolytExpOpt",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-      "BhMass: 1.5\n"
-      "BhDimlessSpin: 0.3\n"
-      "InnerEdgeRadius: 4.3\n"
-      "MaxPressureRadius: 6.7\n"
-      "PolytropicConstant: 0.123\n"
-      "PolytropicExponent: 0.25");
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "BhMass: -1.5\n"
+          "BhDimlessSpin: 0.3\n"
+          "InnerEdgeRadius: 4.3\n"
+          "MaxPressureRadius: 6.7\n"
+          "PolytropicConstant: 0.12\n"
+          "PolytropicExponent: 1.5"),
+      Catch::Contains("Value -1.5 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "BhMass: 1.5\n"
+          "BhDimlessSpin: -0.24\n"
+          "InnerEdgeRadius: 5.76\n"
+          "MaxPressureRadius: 13.2\n"
+          "PolytropicConstant: 0.002\n"
+          "PolytropicExponent: 1.34"),
+      Catch::Contains("Value -0.24 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "BhMass: 1.5\n"
+          "BhDimlessSpin: 1.24\n"
+          "InnerEdgeRadius: 5.76\n"
+          "MaxPressureRadius: 13.2\n"
+          "PolytropicConstant: 0.002\n"
+          "PolytropicExponent: 1.34"),
+      Catch::Contains("Value 1.24 is above the upper bound of 1"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "BhMass: 1.5\n"
+          "BhDimlessSpin: 0.3\n"
+          "InnerEdgeRadius: 4.3\n"
+          "MaxPressureRadius: 6.7\n"
+          "PolytropicConstant: -0.12\n"
+          "PolytropicExponent: 1.5"),
+      Catch::Contains("Value -0.12 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+          "BhMass: 1.5\n"
+          "BhDimlessSpin: 0.3\n"
+          "InnerEdgeRadius: 4.3\n"
+          "MaxPressureRadius: 6.7\n"
+          "PolytropicConstant: 0.123\n"
+          "PolytropicExponent: 0.25"),
+      Catch::Contains("Value 0.25 is below the lower bound of 1"));
 }
