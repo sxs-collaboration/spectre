@@ -54,7 +54,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
         get(fd_pressure), dg_mesh, subcell_mesh.extents(),
-        evolution::dg::subcell::fd ::ReconstructionMethod::AllDimsAtOnce);
+        // Always do dim-by-dim reconstruction because it's fast
+        evolution::dg::subcell::fd ::ReconstructionMethod::DimByDim);
 
     // We only need to compute the prims if we switched to the DG grid because
     // otherwise we computed the prims during the FD TCI.

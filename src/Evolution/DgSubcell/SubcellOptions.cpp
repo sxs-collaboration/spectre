@@ -4,6 +4,7 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 
 #include <pup.h>
+#include <pup_stl.h>
 
 namespace evolution::dg::subcell {
 SubcellOptions::SubcellOptions(double initial_data_rdmp_delta0,
@@ -11,14 +12,16 @@ SubcellOptions::SubcellOptions(double initial_data_rdmp_delta0,
                                double rdmp_delta0, double rdmp_epsilon,
                                double initial_data_persson_exponent,
                                double persson_exponent,
-                               bool always_use_subcells)
+                               bool always_use_subcells,
+                               fd::ReconstructionMethod recons_method)
     : initial_data_rdmp_delta0_(initial_data_rdmp_delta0),
       initial_data_rdmp_epsilon_(initial_data_rdmp_epsilon),
       rdmp_delta0_(rdmp_delta0),
       rdmp_epsilon_(rdmp_epsilon),
       initial_data_persson_exponent_(initial_data_persson_exponent),
       persson_exponent_(persson_exponent),
-      always_use_subcells_(always_use_subcells) {}
+      always_use_subcells_(always_use_subcells),
+      reconstruction_method_(recons_method) {}
 
 void SubcellOptions::pup(PUP::er& p) {
   p | initial_data_rdmp_delta0_;
@@ -28,6 +31,7 @@ void SubcellOptions::pup(PUP::er& p) {
   p | initial_data_persson_exponent_;
   p | persson_exponent_;
   p | always_use_subcells_;
+  p | reconstruction_method_;
 }
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
@@ -38,7 +42,8 @@ bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs) {
          lhs.initial_data_persson_exponent() ==
              rhs.initial_data_persson_exponent() and
          lhs.persson_exponent() == rhs.persson_exponent() and
-         lhs.always_use_subcells() == rhs.always_use_subcells();
+         lhs.always_use_subcells() == rhs.always_use_subcells() and
+         lhs.reconstruction_method() == rhs.reconstruction_method();
 }
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs) {

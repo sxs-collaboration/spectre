@@ -29,7 +29,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
-#include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -199,7 +199,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
-      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell}}};
+      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}}};
 
   const TimeStepId time_step_id{true, self_starting ? -1 : 1,
                                 Time{Slab{1.0, 2.0}, {0, 10}}};

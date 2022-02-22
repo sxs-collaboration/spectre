@@ -174,13 +174,13 @@ struct TciAndSwitchToDg {
 
     db::mutate<Tags::Inactive<variables_tag>>(
         make_not_null(&box),
-        [&dg_mesh, &subcell_mesh](const auto inactive_vars_ptr,
-                                  const auto& active_vars) {
+        [&dg_mesh, &subcell_mesh, &subcell_options](
+            const auto inactive_vars_ptr, const auto& active_vars) {
           // Note: strictly speaking, to be conservative this should reconstruct
           // uJ instead of u.
           fd::reconstruct(inactive_vars_ptr, active_vars, dg_mesh,
                           subcell_mesh.extents(),
-                          fd::ReconstructionMethod::AllDimsAtOnce);
+                          subcell_options.reconstruction_method());
         },
         db::get<variables_tag>(box));
 
@@ -235,7 +235,7 @@ struct TciAndSwitchToDg {
                  subcell::Tags::NeighborDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::TciGridHistory>(
           make_not_null(&box),
-          [&dg_mesh, &subcell_mesh](
+          [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto inactive_vars_ptr,
               const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
@@ -259,12 +259,12 @@ struct TciAndSwitchToDg {
                   it.time_step_id(),
                   fd::reconstruct(it.derivative(), dg_mesh,
                                   subcell_mesh.extents(),
-                                  fd::ReconstructionMethod::AllDimsAtOnce));
+                                  subcell_options.reconstruction_method()));
             }
             dg_history.most_recent_value() =
                 fd::reconstruct(active_history_ptr->most_recent_value(),
                                 dg_mesh, subcell_mesh.extents(),
-                                fd::ReconstructionMethod::AllDimsAtOnce),
+                                subcell_options.reconstruction_method()),
             *active_history_ptr = std::move(dg_history);
             *active_grid_ptr = ActiveGrid::Dg;
 

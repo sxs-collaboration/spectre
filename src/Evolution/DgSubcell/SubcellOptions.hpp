@@ -6,6 +6,7 @@
 #include <limits>
 #include <string>
 
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -93,11 +94,19 @@ class SubcellOptions {
         "instead of DG."};
     using type = bool;
   };
+  /// Method to use for reconstructing the DG solution from the subcell
+  /// solution.
+  struct SubcellToDgReconstructionMethod {
+    static constexpr Options::String help{
+        "Method to use for reconstructing the DG solution from the subcell "
+        "solution."};
+    using type = fd::ReconstructionMethod;
+  };
 
   using options =
       tmpl::list<InitialDataRdmpDelta0, InitialDataRdmpEpsilon, RdmpDelta0,
                  RdmpEpsilon, InitialDataPerssonExponent, PerssonExponent,
-                 AlwaysUseSubcells>;
+                 AlwaysUseSubcells, SubcellToDgReconstructionMethod>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -106,7 +115,8 @@ class SubcellOptions {
   SubcellOptions(double initial_data_rdmp_delta0,
                  double initial_data_rdmp_epsilon, double rdmp_delta0,
                  double rdmp_epsilon, double initial_data_persson_exponent,
-                 double persson_exponent, bool always_use_subcells);
+                 double persson_exponent, bool always_use_subcells,
+                 fd::ReconstructionMethod recons_method);
 
   void pup(PUP::er& p);
 
@@ -128,6 +138,10 @@ class SubcellOptions {
 
   bool always_use_subcells() const { return always_use_subcells_; }
 
+  fd::ReconstructionMethod reconstruction_method() const {
+    return reconstruction_method_;
+  }
+
  private:
   double initial_data_rdmp_delta0_ =
       std::numeric_limits<double>::signaling_NaN();
@@ -139,6 +153,8 @@ class SubcellOptions {
       std::numeric_limits<double>::signaling_NaN();
   double persson_exponent_ = std::numeric_limits<double>::signaling_NaN();
   bool always_use_subcells_ = false;
+  fd::ReconstructionMethod reconstruction_method_ =
+      fd::ReconstructionMethod::AllDimsAtOnce;
 };
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);

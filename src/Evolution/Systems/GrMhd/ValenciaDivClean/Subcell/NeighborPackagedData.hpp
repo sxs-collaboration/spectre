@@ -29,9 +29,11 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -97,6 +99,8 @@ struct NeighborPackagedData {
     const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(box);
     const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(box);
+    const auto& subcell_options =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
 
     const auto volume_prims = evolution::dg::subcell::fd::project(
         db::get<typename System::primitive_variables_tag>(box), dg_mesh,
@@ -112,7 +116,8 @@ struct NeighborPackagedData {
         derived_boundary_corrections>([&box, &boundary_correction, &dg_mesh,
                                        &mortars_to_reconstruct_to,
                                        &nhbr_package_data, &nhbr_subcell_data,
-                                       &recons, &subcell_mesh, &volume_prims](
+                                       &recons, &subcell_mesh, &subcell_options,
+                                       &volume_prims](
                                           auto derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -225,7 +230,7 @@ struct NeighborPackagedData {
           auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
               packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
               subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
-              evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
+              subcell_options.reconstruction_method());
           nhbr_package_data[mortar_id] = std::vector<double>{
               dg_packaged_data.data(),
               dg_packaged_data.data() + dg_packaged_data.size()};
