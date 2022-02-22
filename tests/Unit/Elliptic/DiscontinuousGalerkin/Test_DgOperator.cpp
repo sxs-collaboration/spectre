@@ -122,10 +122,11 @@ struct ElementArray {
                                     domain::Tags::InitialExtents<Dim>>>,
                      ::Actions::SetupDataBox,
                      ::elliptic::dg::Actions::InitializeDomain<Dim>,
-                     ::elliptic::Actions::InitializeAnalyticSolution<
+                     ::elliptic::Actions::InitializeOptionalAnalyticSolution<
                          analytic_solution_tag,
                          tmpl::append<typename System::primal_fields,
-                                      typename System::primal_fluxes>>,
+                                      typename System::primal_fluxes>,
+                         typename metavariables::analytic_solution>,
                      ::elliptic::Actions::InitializeFixedSources<
                          System, analytic_solution_tag>,
                      ::elliptic::dg::Actions::initialize_operator<System>,

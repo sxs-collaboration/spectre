@@ -31,7 +31,7 @@ set(INTERPOLATION_LIBS_TO_LINK
 
 function(add_curved_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    "EvolveCurvedScalarWave${EXECUTABLE_NAME}${DIM}D"
     EvolveCurvedScalarWave
     Evolution/Executables/CurvedScalarWave
     "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
@@ -41,7 +41,7 @@ endfunction(add_curved_scalar_wave_executable)
 
 function(add_interpolating_curved_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
   add_spectre_parallel_executable(
-    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    "EvolveCurvedScalarWave${EXECUTABLE_NAME}${DIM}D"
     EvolveCurvedScalarWave
     Evolution/Executables/CurvedScalarWave
     "EvolutionMetavars<${DIM},${INITIAL_DATA}>"

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolvePlaneWaveMinkowski2D
+# Executable: EvolveCurvedScalarWavePlaneWaveMinkowski2D
 # Check: parse;execute
 
 AnalyticData:

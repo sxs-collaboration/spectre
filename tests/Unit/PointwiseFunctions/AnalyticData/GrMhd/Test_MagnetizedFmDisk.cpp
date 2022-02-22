@@ -12,13 +12,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/MagnetizedFmDisk.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -32,11 +33,10 @@
 namespace {
 
 static_assert(
-    not evolution::is_analytic_solution_v<
-        grmhd::AnalyticData::MagnetizedFmDisk>,
+    not is_analytic_solution_v<grmhd::AnalyticData::MagnetizedFmDisk>,
     "MagnetizedFmDisk should be analytic_data, and not an analytic_solution");
 static_assert(
-    evolution::is_analytic_data_v<grmhd::AnalyticData::MagnetizedFmDisk>,
+    is_analytic_data_v<grmhd::AnalyticData::MagnetizedFmDisk>,
     "MagnetizedFmDisk should be analytic_data, and not an analytic_solution");
 struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   using grmhd::AnalyticData::MagnetizedFmDisk::MagnetizedFmDisk;

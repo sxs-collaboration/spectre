@@ -38,7 +38,6 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -66,7 +65,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -114,8 +115,7 @@ struct EvolutionMetavars {
   // solution.
   using initial_data = RadiationTransport::M1Grey::Solutions::ConstantM1;
   static_assert(
-      evolution::is_analytic_data_v<initial_data> xor
-          evolution::is_analytic_solution_v<initial_data>,
+      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data or an analytic_solution");
 
   // Set list of neutrino species to be used by M1 code
@@ -125,7 +125,7 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
@@ -149,9 +149,8 @@ struct EvolutionMetavars {
                     tmpl::append<
                         typename system::variables_tag::tags_list,
                         typename system::primitive_variables_tag::tags_list>,
-                    tmpl::conditional_t<
-                        evolution::is_analytic_solution_v<initial_data>,
-                        analytic_variables_tags, tmpl::list<>>,
+                    tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                                        analytic_variables_tags, tmpl::list<>>,
                     tmpl::list<>>,
                 Events::time_events<system>>>>,
         tmpl::pair<
@@ -245,12 +244,11 @@ struct EvolutionMetavars {
                                ComputeM1Closure<neutrino_species>>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>,
-      tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  3, initial_data_tag, analytic_variables_tags>>>,
-          tmpl::list<>>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                          Initialization::Actions::AddComputeTags<tmpl::list<
+                              evolution::Tags::AnalyticSolutionsCompute<
+                                  3, analytic_variables_tags>>>,
+                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

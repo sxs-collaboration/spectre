@@ -174,8 +174,9 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        const auto error = tensor[i] - get<::Tags::Analytic<tensor_tag>>(
-                                           analytic_solutions)[i];
+        const auto error =
+            tensor[i] - get<::Tags::detail::AnalyticImpl<tensor_tag>>(
+                            analytic_solutions)[i];
         local_square_error += alg::accumulate(square(error), 0.0);
       }
       get<LocalSquareError<tensor_tag>>(local_square_errors) =

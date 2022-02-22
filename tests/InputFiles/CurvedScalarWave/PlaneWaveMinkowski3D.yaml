@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolvePlaneWaveMinkowski3D
+# Executable: EvolveCurvedScalarWavePlaneWaveMinkowski3D
 # Check: parse;execute_check_output
 # Timeout: 15
 # ExpectedOutput:

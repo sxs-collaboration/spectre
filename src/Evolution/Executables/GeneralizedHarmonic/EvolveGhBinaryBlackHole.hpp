@@ -168,11 +168,10 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-          volume_dim, use_damped_harmonic_rollon>,
-      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
-      Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions =
+      tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
+                     volume_dim, use_damped_harmonic_rollon>,
+                 Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -276,14 +275,28 @@ struct EvolutionMetavars {
       Tags::deriv<GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>,
                   tmpl::size_t<3>, Frame::Inertial>>;
 
-  using observe_fields = tmpl::list<
-      gr::Tags::Lapse<DataVector>,
-      ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::GaugeConstraint<
-          volume_dim, Frame::Inertial>>,
-      ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-          volume_dim, Frame::Inertial>>,
-      ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::FourIndexConstraint<
-          volume_dim, Frame::Inertial>>>;
+  using observe_fields = tmpl::append<
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 GeneralizedHarmonic::Tags::GaugeConstraintCompute<
+                     volume_dim, ::Frame::Inertial>,
+                 GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
+                     volume_dim, ::Frame::Inertial>,
+                 // following tags added to observe constraints
+                 ::Tags::PointwiseL2NormCompute<
+                     GeneralizedHarmonic::Tags::GaugeConstraint<
+                         volume_dim, ::Frame::Inertial>>,
+                 ::Tags::PointwiseL2NormCompute<
+                     GeneralizedHarmonic::Tags::ThreeIndexConstraint<
+                         volume_dim, ::Frame::Inertial>>>,
+      // The 4-index constraint is only implemented in 3d
+      tmpl::conditional_t<
+          volume_dim == 3,
+          tmpl::list<GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
+                         3, ::Frame::Inertial>,
+                     ::Tags::PointwiseL2NormCompute<
+                         GeneralizedHarmonic::Tags::FourIndexConstraint<
+                             3, ::Frame::Inertial>>>,
+          tmpl::list<>>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

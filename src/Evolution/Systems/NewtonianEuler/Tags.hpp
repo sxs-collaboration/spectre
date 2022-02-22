@@ -9,8 +9,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
 /// \cond
@@ -134,7 +134,7 @@ template <typename InitialDataType>
 struct SourceTerm : SourceTermBase, db::SimpleTag {
   using type = typename InitialDataType::source_term_type;
   using option_tags = tmpl::list<
-      tmpl::conditional_t<evolution::is_analytic_solution_v<InitialDataType>,
+      tmpl::conditional_t<is_analytic_solution_v<InitialDataType>,
                           ::OptionTags::AnalyticSolution<InitialDataType>,
                           ::OptionTags::AnalyticData<InitialDataType>>>;
 

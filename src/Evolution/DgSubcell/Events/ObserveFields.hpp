@@ -28,7 +28,6 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
@@ -42,6 +41,7 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Literals.hpp"
@@ -196,8 +196,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const component) const {
-    std::optional<
-        Variables<tmpl::list<::Tags::Analytic<AnalyticSolutionTensors>...>>>
+    std::optional<Variables<
+        tmpl::list<::Tags::detail::AnalyticImpl<AnalyticSolutionTensors>...>>>
         analytic_solution_variables{};
     const auto set_analytic_soln =
         [&analytic_solution_variables, &cache, &observation_value](
@@ -205,7 +205,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
                 inertial_coords) {
           if constexpr (sizeof...(AnalyticSolutionTensors) > 0 and
-                        evolution::is_analytic_solution_v<
+                        is_analytic_solution_v<
                             typename Metavariables::initial_data>) {
             Variables<tmpl::list<AnalyticSolutionTensors...>> soln_vars{
                 mesh.number_of_grid_points()};

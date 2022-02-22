@@ -18,7 +18,6 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -105,7 +104,7 @@ class DirichletAnalytic final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
       const AnalyticSolutionOrData& analytic_solution_or_data) const {
     auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (evolution::is_analytic_solution_v<AnalyticSolutionOrData>) {
+      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
         return analytic_solution_or_data.variables(
             coords, time,
             tmpl::list<

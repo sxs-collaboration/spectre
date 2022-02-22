@@ -89,7 +89,9 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/NewtonianEuler/KhInstability.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
@@ -138,8 +140,7 @@ struct EvolutionMetavars {
 
   using initial_data = InitialData;
   static_assert(
-      evolution::is_analytic_data_v<initial_data> xor
-          evolution::is_analytic_solution_v<initial_data>,
+      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data or an analytic_solution");
 
   using equation_of_state_type = typename initial_data::equation_of_state_type;
@@ -152,7 +153,7 @@ struct EvolutionMetavars {
   static constexpr bool local_time_stepping = false;
 
   using initial_data_tag =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                           Tags::AnalyticSolution<initial_data>,
                           Tags::AnalyticData<initial_data>>;
 
@@ -175,7 +176,7 @@ struct EvolutionMetavars {
       tmpl::append<typename system::variables_tag::tags_list,
                    typename system::primitive_variables_tag::tags_list>;
   using analytic_solution_fields =
-      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
                           typename system::primitive_variables_tag::tags_list,
                           tmpl::list<>>;
   struct factory_creation
@@ -280,12 +281,11 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,
                      NewtonianEuler::Tags::SoundSpeedCompute<DataVector>>>,
-      tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
-          Initialization::Actions::AddComputeTags<
-              tmpl::list<evolution::Tags::AnalyticCompute<
-                  Dim, initial_data_tag, analytic_variables_tags>>>,
-          tmpl::list<>>,
+      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
+                          Initialization::Actions::AddComputeTags<tmpl::list<
+                              evolution::Tags::AnalyticSolutionsCompute<
+                                  Dim, analytic_variables_tags>>>,
+                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

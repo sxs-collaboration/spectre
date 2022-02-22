@@ -23,11 +23,11 @@
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
-#include "Evolution/TypeTraits.hpp"  // IWYU pragma: keep
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
@@ -67,7 +67,7 @@ void verify_time_independent_einstein_solution(
     const Solution& solution, const size_t grid_size_each_dimension,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound, const double error_tolerance) {
-  static_assert(evolution::is_analytic_solution_v<Solution>,
+  static_assert(is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
