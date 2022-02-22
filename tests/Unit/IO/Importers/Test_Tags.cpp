@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/TagName.hpp"
+#include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
@@ -49,6 +50,17 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   CHECK(opts.get<importers::OptionTags::Subgroup<ExampleVolumeData>>() ==
         "data.group");
   CHECK(
-      opts.get<importers::OptionTags::ObservationValue<ExampleVolumeData>>() ==
+      std::get<double>(
+          opts.get<
+              importers::OptionTags::ObservationValue<ExampleVolumeData>>()) ==
       1.);
+
+  CHECK(std::get<importers::ObservationSelector>(
+            TestHelpers::test_option_tag<
+                importers::OptionTags::ObservationValue<ExampleVolumeData>>(
+                "First")) == importers::ObservationSelector::First);
+  CHECK(std::get<importers::ObservationSelector>(
+            TestHelpers::test_option_tag<
+                importers::OptionTags::ObservationValue<ExampleVolumeData>>(
+                "Last")) == importers::ObservationSelector::Last);
 }

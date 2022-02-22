@@ -94,12 +94,13 @@ struct Metavariables {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
+void test_actions(const std::variant<double, importers::ObservationSelector>&
+                      observation_selection) {
   using reader_component = MockVolumeDataReader<Metavariables>;
   using element_array = MockElementArray<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {"TestVolumeData*.h5", "element_data", 0.}};
+      {"TestVolumeData*.h5", "element_data", observation_selection}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -235,4 +236,10 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
       file_system::rm(h5_file_name, true);
     }
   }
+}
+
+SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
+  test_actions(0.);
+  test_actions(importers::ObservationSelector::First);
+  test_actions(importers::ObservationSelector::Last);
 }

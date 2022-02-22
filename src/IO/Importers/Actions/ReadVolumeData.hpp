@@ -4,8 +4,10 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
+#include <variant>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -15,14 +17,17 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
+#include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -171,6 +176,7 @@ struct ReadAllVolumeDataAndDistribute {
     const std::vector<std::string> file_paths = file_system::glob(file_glob);
 
     // Open every file in turn
+    std::optional<size_t> prev_observation_id{};
     for (const std::string& file_name : file_paths) {
       // Open the volume data file
       h5::H5File<h5::AccessType::ReadOnly> h5file(file_name);
@@ -178,8 +184,35 @@ struct ReadAllVolumeDataAndDistribute {
       const auto& volume_file = h5file.get<h5::VolumeData>(
           "/" + Parallel::get<Tags::Subgroup<ImporterOptionsGroup>>(cache),
           version_number);
-      const auto observation_id = volume_file.find_observation_id(
+
+      // Select observation ID
+      const size_t observation_id = std::visit(
+          make_overloader(
+              [&volume_file](const double local_obs_value) {
+                return volume_file.find_observation_id(local_obs_value);
+              },
+              [&volume_file](const ObservationSelector local_obs_selector) {
+                const std::vector<size_t> all_observation_ids =
+                    volume_file.list_observation_ids();
+                switch (local_obs_selector) {
+                  case ObservationSelector::First:
+                    return all_observation_ids.front();
+                  case ObservationSelector::Last:
+                    return all_observation_ids.back();
+                  default:
+                    ERROR("Unknown importers::ObservationSelector: "
+                          << local_obs_selector);
+                }
+              }),
           Parallel::get<Tags::ObservationValue<ImporterOptionsGroup>>(cache));
+      if (prev_observation_id.has_value() and
+          prev_observation_id.value() != observation_id) {
+        ERROR("Inconsistent selection of observation ID in file "
+              << file_name
+              << ". Make sure all files select the same observation ID.");
+      }
+      prev_observation_id = observation_id;
+
       // Read the tensor data for all elements at once, since that's how it's
       // stored in the file
       tuples::tagged_tuple_from_typelist<FieldTagsList> all_tensor_data{};
