@@ -19,23 +19,48 @@ set_property(TARGET Blaze PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
 set_property(TARGET Blaze PROPERTY
   INTERFACE_LINK_LIBRARIES Lapack)
+target_link_libraries(
+  Blaze
+  INTERFACE
+  Blas
+  GSL::gsl # for BLAS header
+  Lapack
+  )
 
+# Configure Blaze. Some of the Blaze configuration options could be optimized
+# for the machine we are running on. See documentation:
+# https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20and%20Installation#!step-2-configuration
 target_compile_definitions(Blaze
   INTERFACE
-  # Override SMP configurations
+  # - Enable external BLAS kernels
+  BLAZE_BLAS_MODE=1
+  # - Use BLAS header from GSL. We could also find and include a <cblas.h> (or
+  #   similarly named) header that may be distributed with the BLAS
+  #   implementation, but it's not guaranteed to be available and may conflict
+  #   with the GSL header. Since we use GSL anyway, it's easier to use their
+  #   BLAS header.
+  BLAZE_BLAS_INCLUDE_FILE=<gsl/gsl_cblas.h>
+  # - Set default matrix storage order to column-major, since many of our
+  #   functions are implemented for column-major layout. This default reduces
+  #   conversions.
+  BLAZE_DEFAULT_STORAGE_ORDER=blaze::columnMajor
+  # - Disable SMP parallelization. This disables SMP parallelization for all
+  #   possible backends (OpenMP, C++11 threads, Boost, HPX):
+  #   https://bitbucket.org/blaze-lib/blaze/wiki/Serial%20Execution#!option-3-deactivation-of-parallel-execution
   BLAZE_USE_SHARED_MEMORY_PARALLELIZATION=0
-  BLAZE_OPENMP_PARALLEL_MODE=0
-  BLAZE_CPP_THREADS_PARALLEL_MODE=0
-  BLAZE_BOOST_THREADS_PARALLEL_MODE=0
-  # Disable MPI parallelization
+  # - Disable MPI parallelization
   BLAZE_MPI_PARALLEL_MODE=0
-  # Disable HPX parallelization
-  BLAZE_HPX_PARALLEL_MODE=0
+  # - Using the default cache size, which may have been configured automatically
+  #   by the Blaze CMake configuration for the machine we are running on. We
+  #   could override it here explicitly to tune performance.
+  # BLAZE_CACHE_SIZE
   BLAZE_USE_PADDING=0
-  # Enable non-temporal stores for cache optimization of large data structures
+  # - Always enable non-temporal stores for cache optimization of large data
+  #   structures: https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20Files#!streaming-non-temporal-stores
   BLAZE_USE_STREAMING=1
-  BLAZE_USE_OPTIMIZED_KERNELS=1
-  # Skip initializing default-constructed structures for fundamental types
+  # - We could use SLEEF for vectorized implementations of sin, cos, exp, etc.:
+  # BLAZE_USE_SLEEF
+  # - Skip initializing default-constructed structures for fundamental types
   BLAZE_USE_DEFAULT_INITIALIZATON=0
   )
 
