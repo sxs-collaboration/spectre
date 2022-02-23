@@ -213,14 +213,14 @@ struct WriteTestData {
     write_test_data<Dim>(
         get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Fine>>>(box),
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Fine>>>(box),
-        get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Fine>>>(
-            box),
+        std::get<double>(get<importers::Tags::ObservationValue<
+                             VolumeDataOptions<Grid::Fine>>>(box)),
         fine_volume_data<Dim>);
     write_test_data<Dim>(
         get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box),
         get<importers::Tags::Subgroup<VolumeDataOptions<Grid::Coarse>>>(box),
-        get<importers::Tags::ObservationValue<VolumeDataOptions<Grid::Coarse>>>(
-            box),
+        std::get<double>(get<importers::Tags::ObservationValue<
+                             VolumeDataOptions<Grid::Coarse>>>(box)),
         coarse_volume_data<Dim>);
     return {std::move(box), true};
   }

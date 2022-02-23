@@ -7,8 +7,10 @@
 #include <map>
 #include <string>
 #include <unordered_set>
+#include <variant>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -69,7 +71,7 @@ struct ObservationValue {
       std::is_same_v<typename ImporterOptionsGroup::group, Group>,
       "The importer options should be placed in the 'Importers' option "
       "group. Add a type alias `using group = importers::OptionTags::Group`.");
-  using type = double;
+  using type = std::variant<double, ObservationSelector>;
   static constexpr Options::String help =
       "The observation value at which to read data";
   using group = ImporterOptionsGroup;
@@ -120,7 +122,7 @@ struct ObservationValue : db::SimpleTag {
     return "ObservationValue(" + Options::name<ImporterOptionsGroup>() +
            ")";
   }
-  using type = double;
+  using type = std::variant<double, ObservationSelector>;
   using option_tags =
       tmpl::list<OptionTags::ObservationValue<ImporterOptionsGroup>>;
 

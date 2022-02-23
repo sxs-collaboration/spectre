@@ -129,9 +129,8 @@ void test() {
   const auto& volume_file =
       my_file.get<h5::VolumeData>("/element_data", version_number);
   const auto read_observation_ids = volume_file.list_observation_ids();
-  CHECK(alg::all_of(read_observation_ids, [&observation_ids](const size_t id) {
-    return alg::found(observation_ids, id);
-  }));
+  // The observation IDs should be sorted by their observation value
+  CHECK(read_observation_ids == std::vector<size_t>{size_t(-1), 8435087234});
   {
     INFO("Test find_observation_id");
     std::vector<size_t> found_observation_ids(observation_values.size());

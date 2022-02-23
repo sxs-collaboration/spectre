@@ -273,8 +273,13 @@ std::vector<size_t> VolumeData::list_observation_ids() const {
   const auto helper = [](const std::string& s) {
     return std::stoul(s.substr(std::string("ObservationId").size()));
   };
-  return {boost::make_transform_iterator(names.begin(), helper),
-          boost::make_transform_iterator(names.end(), helper)};
+  std::vector<size_t> obs_ids{
+      boost::make_transform_iterator(names.begin(), helper),
+      boost::make_transform_iterator(names.end(), helper)};
+  alg::sort(obs_ids, [this](const size_t lhs, const size_t rhs) {
+    return this->get_observation_value(lhs) < this->get_observation_value(rhs);
+  });
+  return obs_ids;
 }
 
 double VolumeData::get_observation_value(const size_t observation_id) const {

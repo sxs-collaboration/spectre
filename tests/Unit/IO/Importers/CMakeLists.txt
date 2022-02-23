@@ -43,7 +43,22 @@ function(add_algorithm_test TEST_NAME DIM)
     ${HPP_NAME}
     IO/Importers
     Metavariables<${DIM}>
-    "DataStructures;Domain;ErrorHandling;Informer;IO;Options;Parallel;SystemUtilities"
+    ""
+    )
+
+  target_link_libraries(
+    ${EXECUTABLE_NAME}
+    PRIVATE
+    DataStructures
+    DomainStructure
+    ErrorHandling
+    Importers
+    Informer
+    IO
+    Options
+    Parallel
+    SystemUtilities
+    Utilities
     )
 
   add_standalone_test(
