@@ -20,11 +20,74 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"  // IWYU pragma: keep
+#include "Utilities/StaticCache.hpp"
 
 namespace evolution::dg::subcell::fd {
+const Matrix& projection_matrix(const Mesh<1>& dg_mesh,
+                                const size_t subcell_extents) {
+  ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre,
+         "FD Subcell projection only supports Legendre basis right now but got "
+         "basis "
+             << dg_mesh.basis(0));
+  switch (dg_mesh.quadrature(0)) {
+    case Spectral::Quadrature::GaussLobatto: {
+      static const auto cache_gl = make_static_cache<
+          CacheRange<
+              Spectral::minimum_number_of_points<
+                  Spectral::Basis::Legendre,
+                  Spectral::Quadrature::GaussLobatto>,
+              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
+                  1>,
+          CacheRange<Spectral::minimum_number_of_points<
+                         Spectral::Basis::FiniteDifference,
+                         Spectral::Quadrature::CellCentered>,
+                     Spectral::maximum_number_of_points<
+                         Spectral::Basis::FiniteDifference> +
+                         1>>(
+          [](const size_t local_num_dg_points,
+             const size_t local_num_fd_points) {
+            return Spectral::interpolation_matrix<
+                Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
+                local_num_dg_points,
+                Spectral::collocation_points<
+                    Spectral::Basis::FiniteDifference,
+                    Spectral::Quadrature::CellCentered>(local_num_fd_points));
+          });
+      return cache_gl(dg_mesh.extents(0), subcell_extents);
+    }
+    case Spectral::Quadrature::Gauss: {
+      static const auto cache_g = make_static_cache<
+          CacheRange<
+              Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
+                                                 Spectral::Quadrature::Gauss>,
+              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
+                  1>,
+          CacheRange<Spectral::minimum_number_of_points<
+                         Spectral::Basis::FiniteDifference,
+                         Spectral::Quadrature::CellCentered>,
+                     Spectral::maximum_number_of_points<
+                         Spectral::Basis::FiniteDifference> +
+                         1>>(
+          [](const size_t local_num_dg_points,
+             const size_t local_num_fd_points) {
+            return Spectral::interpolation_matrix<Spectral::Basis::Legendre,
+                                                  Spectral::Quadrature::Gauss>(
+                local_num_dg_points,
+                Spectral::collocation_points<
+                    Spectral::Basis::FiniteDifference,
+                    Spectral::Quadrature::CellCentered>(local_num_fd_points));
+          });
+      return cache_g(dg_mesh.extents(0), subcell_extents);
+    }
+    default:
+      ERROR("Unsupported quadrature type in FD subcell projection matrix");
+  };
+}
+
+namespace {
 template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints1d,
           size_t Dim>
-Matrix projection_matrix_cache_impl_helper(const Index<Dim>& subcell_extents) {
+Matrix projection_matrix_all_dimensions(const Index<Dim>& subcell_extents) {
   // We currently require all dimensions to have the same number of grid
   // points, but this is checked in the calling function.
   const Index<Dim> dg_extents{NumDgGridPoints1d};
@@ -59,58 +122,6 @@ Matrix projection_matrix_cache_impl_helper(const Index<Dim>& subcell_extents) {
   }
 
   return proj_matrix;
-}
-
-template <Spectral::Quadrature QuadratureType, size_t NumDgGridPoints,
-          size_t Dim>
-const Matrix& projection_matrix_cache_impl(const Index<Dim>& subcell_extents) {
-  static const Matrix result =
-      projection_matrix_cache_impl_helper<QuadratureType, NumDgGridPoints>(
-          subcell_extents);
-  return result;
-}
-
-template <Spectral::Quadrature QuadratureType, size_t... Is, size_t Dim>
-const Matrix& projection_matrix_impl(
-    const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
-    std::index_sequence<Is...> /*num_dg_grid_points*/) {
-  ASSERT(
-      dg_mesh.extents() == Index<Dim>(dg_mesh.extents(0)),
-      "The mesh must have the same extents in all directions but has extents "
-          << dg_mesh.extents());
-  static const std::array<const Matrix& (*)(const Index<Dim>&), sizeof...(Is)>
-      cache{{&projection_matrix_cache_impl<QuadratureType, Is>...}};
-  return gsl::at(cache, dg_mesh.extents(0))(subcell_extents);
-}
-
-template <size_t Dim>
-const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
-                                const Index<Dim>& subcell_extents) {
-  ASSERT(dg_mesh.basis(0) == Spectral::Basis::Legendre,
-         "FD Subcell projection only supports Legendre basis right now but got "
-         "basis "
-             << dg_mesh.basis(0));
-  ASSERT(dg_mesh == Mesh<Dim>(dg_mesh.extents(0), dg_mesh.basis(0),
-                              dg_mesh.quadrature(0)),
-         "The mesh must be uniform but is " << dg_mesh);
-  ASSERT(subcell_extents == Index<Dim>(subcell_extents[0]),
-         "The subcell mesh must be uniform but is " << subcell_extents);
-  switch (dg_mesh.quadrature(0)) {
-    case Spectral::Quadrature::GaussLobatto:
-      return projection_matrix_impl<Spectral::Quadrature::GaussLobatto>(
-          dg_mesh, subcell_extents,
-          std::make_index_sequence<
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
-              1>{});
-    case Spectral::Quadrature::Gauss:
-      return projection_matrix_impl<Spectral::Quadrature::Gauss>(
-          dg_mesh, subcell_extents,
-          std::make_index_sequence<
-              Spectral::maximum_number_of_points<Spectral::Basis::Legendre> +
-              1>{});
-    default:
-      ERROR("Unsupported quadrature type in FD subcell projection matrix");
-  };
 }
 
 double get_sixth_order_integration_coefficient(const size_t num_pts,
@@ -192,7 +203,9 @@ double get_sixth_order_integration_coefficient(const size_t num_pts,
                                2483. / 5760., 3583. / 2880., 1823. / 1920.,
                                5777. / 5760., 1.}},
 
-        index <= 7 ? index : index >= num_pts - 8 ? num_pts - 1 - index : 7);
+        index <= 7             ? index
+        : index >= num_pts - 8 ? num_pts - 1 - index
+                               : 7);
   }
   ERROR("Cannot get coefficients for a mesh with only '"
         << num_pts << "' points. We need at least 5 points.");
@@ -218,7 +231,7 @@ Matrix reconstruction_matrix_cache_impl_helper(
   // points.
   const Index<Dim> dg_extents{NumDgGridPoints1d};
   const Matrix& proj_matrix =
-      projection_matrix_cache_impl<QuadratureType, NumDgGridPoints1d>(
+      projection_matrix_all_dimensions<QuadratureType, NumDgGridPoints1d>(
           subcell_extents);
   const size_t num_pts = dg_extents.product();
   const size_t num_subcells = subcell_extents.product();
@@ -315,6 +328,7 @@ const Matrix& reconstruction_matrix_impl(
       cache{{&reconstruction_matrix_cache_impl<QuadratureType, Is, Dim>...}};
   return gsl::at(cache, dg_mesh.extents(0))(subcell_extents);
 }
+}  // namespace
 
 template <size_t Dim>
 const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
@@ -347,8 +361,6 @@ const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                             \
-  template const Matrix& projection_matrix(const Mesh<GET_DIM(data)>&,     \
-                                           const Index<GET_DIM(data)>&);   \
   template const Matrix& reconstruction_matrix(const Mesh<GET_DIM(data)>&, \
                                                const Index<GET_DIM(data)>&);
 

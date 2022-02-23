@@ -16,12 +16,10 @@ class Mesh;
 namespace evolution::dg::subcell::fd {
 /*!
  * \ingroup DgSubcellGroup
- * \brief Computes the projection matrix in `Dim` dimensions going from a DG
+ * \brief Computes the projection matrix in 1 dimension going from a DG
  * mesh to a conservative finite difference subcell mesh.
  */
-template <size_t Dim>
-const Matrix& projection_matrix(const Mesh<Dim>& dg_mesh,
-                                const Index<Dim>& subcell_extents);
+const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents);
 
 /*!
  * \ingroup DgSubcellGroup
