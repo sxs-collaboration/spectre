@@ -5,6 +5,7 @@
 
 #include <array>
 #include <blaze/math/CompressedMatrix.h>
+#include <blaze/math/DynamicVector.h>
 #include <blaze/math/StaticMatrix.h>
 #include <blaze/math/StaticVector.h>
 #include <utility>
@@ -13,7 +14,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -44,8 +44,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
     const DenseMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{matrix};
     DenseMatrix<double> matrix_representation(2, 2);
-    DenseVector<double> operand_buffer(2, 0.);
-    DenseVector<double> result_buffer(2, 0.);
+    blaze::DynamicVector<double> operand_buffer(2, 0.);
+    blaze::DynamicVector<double> result_buffer(2, 0.);
     build_matrix(make_not_null(&matrix_representation),
                  make_not_null(&operand_buffer), make_not_null(&result_buffer),
                  linear_operator);

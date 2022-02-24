@@ -8,7 +8,7 @@
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -65,12 +65,12 @@ DenseMatrix<double> combine_matrix_slices(
 }
 
 template <typename Tag>
-DenseVector<double> extend_subdomain_data(
+blaze::DynamicVector<double> extend_subdomain_data(
     const LinearSolver::Schwarz::ElementCenteredSubdomainData<
         1, tmpl::list<Tag>>& subdomain_data,
     const size_t element_index, const size_t num_elements,
     const size_t num_points_per_element, const size_t overlap_extent) {
-  DenseVector<double> extended_subdomain_data(
+  blaze::DynamicVector<double> extended_subdomain_data(
       num_elements * num_points_per_element, 0.);
   blaze::subvector(
       extended_subdomain_data, element_index * num_points_per_element,
@@ -96,9 +96,10 @@ void restrict_to_subdomain(
     const gsl::not_null<LinearSolver::Schwarz::ElementCenteredSubdomainData<
         1, tmpl::list<Tag>>*>
         result,
-    const DenseVector<double>& extended_result, const size_t element_index,
-    const size_t num_points_per_element, const size_t overlap_extent) {
-  const DenseVector<double> restricted_element_data =
+    const blaze::DynamicVector<double>& extended_result,
+    const size_t element_index, const size_t num_points_per_element,
+    const size_t overlap_extent) {
+  const blaze::DynamicVector<double> restricted_element_data =
       blaze::subvector(extended_result, element_index * num_points_per_element,
                        num_points_per_element);
   std::copy(restricted_element_data.begin(), restricted_element_data.end(),
@@ -110,9 +111,10 @@ void restrict_to_subdomain(
                                                 ? (element_index - 1)
                                                 : (element_index + 1);
     Scalar<DataVector> extended_result_on_element{num_points_per_element};
-    const DenseVector<double> restricted_overlap_data = blaze::subvector(
-        extended_result, overlapped_element_index * num_points_per_element,
-        num_points_per_element);
+    const blaze::DynamicVector<double> restricted_overlap_data =
+        blaze::subvector(extended_result,
+                         overlapped_element_index * num_points_per_element,
+                         num_points_per_element);
     std::copy(restricted_overlap_data.begin(), restricted_overlap_data.end(),
               get(extended_result_on_element).begin());
     LinearSolver::Schwarz::data_on_overlap(
@@ -160,7 +162,7 @@ struct SubdomainOperator : LinearSolver::Schwarz::SubdomainOperator<1> {
                               num_points_per_element, overlap_extents[0]);
 
     // Apply matrix to extended subdomain data
-    const DenseVector<double> extended_result =
+    const blaze::DynamicVector<double> extended_result =
         operator_matrix * extended_operand;
 
     // Restrict the result back to the subdomain

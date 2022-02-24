@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -24,11 +24,11 @@ namespace {
 struct TestOptionsGroup {};
 
 struct FieldsTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 struct SourceTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 struct CheckRunIfSkippedTag : db::SimpleTag {
@@ -93,8 +93,8 @@ void test_make_identity_if_skipped(const bool skipped,
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
-      {has_converged, DenseVector<double>{3, 1.}, DenseVector<double>{3, 2.},
-       false});
+      {has_converged, blaze::DynamicVector<double>{3, 1.},
+       blaze::DynamicVector<double>{3, 2.}, false});
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
   while (not ActionTesting::get_terminate<element_array>(runner, 0)) {
@@ -104,9 +104,10 @@ void test_make_identity_if_skipped(const bool skipped,
     using tag = std::decay_t<decltype(tag_v)>;
     return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
   };
-  CHECK(get_tag(SourceTag{}) == DenseVector<double>{3, 2.});
-  CHECK(get_tag(FieldsTag{}) ==
-        (skipped ? DenseVector<double>{3, 2.} : DenseVector<double>{3, 1.}));
+  CHECK(get_tag(SourceTag{}) == blaze::DynamicVector<double>{3, 2.});
+  CHECK(get_tag(FieldsTag{}) == (skipped
+                                     ? blaze::DynamicVector<double>{3, 2.}
+                                     : blaze::DynamicVector<double>{3, 1.}));
   if (check_run_if_skipped) {
     CHECK(get_tag(CheckRunIfSkippedTag{}) == skipped);
   }

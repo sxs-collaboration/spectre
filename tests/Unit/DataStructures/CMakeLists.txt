@@ -18,7 +18,6 @@ set(LIBRARY_SOURCES
   Test_DataVectorBinaryOperations.cpp
   Test_DenseMatrix.cpp
   Test_DenseMatrixAsserts.cpp
-  Test_DenseVector.cpp
   Test_DiagonalModalOperator.cpp
   Test_DynamicBuffer.cpp
   Test_FixedHashMap.cpp

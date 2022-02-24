@@ -10,7 +10,7 @@
 #include <pup.h>
 
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Gsl.hpp"
@@ -20,8 +20,9 @@ namespace TestHelpers::LinearSolver {
 struct ApplyMatrix {
   DenseMatrix<double> matrix;
   mutable size_t invocations = 0;
-  void operator()(const gsl::not_null<DenseVector<double>*> result,
-                  const DenseVector<double>& operand) const {
+  template <typename ResultVectorType, typename OperandVectorType>
+  void operator()(const gsl::not_null<ResultVectorType*> result,
+                  const OperandVectorType& operand) const {
     *result = matrix * operand;
     ++invocations;
   }
@@ -30,9 +31,9 @@ struct ApplyMatrix {
 // Use the exact inverse of the matrix as preconditioner. This should solve
 // problems in 1 iteration.
 struct ExactInversePreconditioner {
-  void solve(const gsl::not_null<DenseVector<double>*> solution,
-             const ApplyMatrix& linear_operator,
-             const DenseVector<double>& source,
+  template <typename SolutionVectorType, typename SourceVectorType>
+  void solve(const gsl::not_null<SolutionVectorType*> solution,
+             const ApplyMatrix& linear_operator, const SourceVectorType& source,
              const std::tuple<>& /*operator_args*/) const {
     if (not inv_matrix_.has_value()) {
       inv_matrix_ = blaze::inv(linear_operator.matrix);
@@ -54,12 +55,12 @@ struct ExactInversePreconditioner {
 
 // Use the inverse of the diagonal as preconditioner.
 struct JacobiPreconditioner {
-  void solve(const gsl::not_null<DenseVector<double>*> solution,
-             const ApplyMatrix& linear_operator,
-             const DenseVector<double>& source,
+  template <typename SolutionVectorType, typename SourceVectorType>
+  void solve(const gsl::not_null<SolutionVectorType*> solution,
+             const ApplyMatrix& linear_operator, const SourceVectorType& source,
              const std::tuple<>& /*operator_args*/) const {
     if (not inv_diagonal_.has_value()) {
-      inv_diagonal_ = DenseVector<double>(source.size(), 1.);
+      inv_diagonal_ = blaze::DynamicVector<double>(source.size(), 1.);
       for (size_t i = 0; i < source.size(); ++i) {
         (*inv_diagonal_)[i] /= linear_operator.matrix(i, i);
       }
@@ -75,7 +76,7 @@ struct JacobiPreconditioner {
   void pup(PUP::er& p) { p | inv_diagonal_; }  // NOLINT
 
  private:
-  mutable std::optional<DenseVector<double>> inv_diagonal_{};
+  mutable std::optional<blaze::DynamicVector<double>> inv_diagonal_{};
 };
 
 // Run a few Richardson iterations as preconditioner.
@@ -86,9 +87,10 @@ struct RichardsonPreconditioner {
       : relaxation_parameter_(relaxation_parameter),
         num_iterations_(num_iterations) {}
 
+  template <typename SolutionVectorType, typename SourceVectorType>
   void solve(
-      const gsl::not_null<DenseVector<double>*> initial_guess_in_solution_out,
-      const ApplyMatrix& linear_operator, const DenseVector<double>& source,
+      const gsl::not_null<SolutionVectorType*> initial_guess_in_solution_out,
+      const ApplyMatrix& linear_operator, const SourceVectorType& source,
       const std::tuple<>& /*operator_args*/) const {
     for (size_t i = 0; i < num_iterations_; ++i) {
       linear_operator(make_not_null(&correction_buffer_),
@@ -111,7 +113,7 @@ struct RichardsonPreconditioner {
  private:
   double relaxation_parameter_{};
   size_t num_iterations_{};
-  mutable DenseVector<double> correction_buffer_{};
+  mutable blaze::DynamicVector<double> correction_buffer_{};
 };
 
 }  // namespace TestHelpers::LinearSolver

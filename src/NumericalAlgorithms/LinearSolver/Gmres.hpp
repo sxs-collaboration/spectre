@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
@@ -68,16 +68,16 @@ void arnoldi_orthogonalize(
 // of `H` from the previous iteration with a Givens rotation.
 void solve_minimal_residual(
     gsl::not_null<DenseMatrix<double>*> orthogonalization_history,
-    gsl::not_null<DenseVector<double>*> residual_history,
-    gsl::not_null<DenseVector<double>*> givens_sine_history,
-    gsl::not_null<DenseVector<double>*> givens_cosine_history,
+    gsl::not_null<blaze::DynamicVector<double>*> residual_history,
+    gsl::not_null<blaze::DynamicVector<double>*> givens_sine_history,
+    gsl::not_null<blaze::DynamicVector<double>*> givens_cosine_history,
     size_t iteration);
 
 // Find the vector that minimizes the residual by inverting the upper
 // triangular matrix obtained above.
-DenseVector<double> minimal_residual_vector(
+blaze::DynamicVector<double> minimal_residual_vector(
     const DenseMatrix<double>& orthogonalization_history,
-    const DenseVector<double>& residual_history);
+    const blaze::DynamicVector<double>& residual_history);
 
 }  // namespace gmres::detail
 
@@ -285,11 +285,11 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   // The `residual_history_` holds the remaining residual in its last entry, and
   // the other entries `g` "source" the minimum residual vector `y` in
   // `R * y = g` where `R` is the upper-triangular `orthogonalization_history_`.
-  mutable DenseVector<double> residual_history_{};
+  mutable blaze::DynamicVector<double> residual_history_{};
   // These represent the accumulated Givens rotations up to the current
   // iteration.
-  mutable DenseVector<double> givens_sine_history_{};
-  mutable DenseVector<double> givens_cosine_history_{};
+  mutable blaze::DynamicVector<double> givens_sine_history_{};
+  mutable blaze::DynamicVector<double> givens_cosine_history_{};
   // These represent the orthogonal Krylov-subspace basis that is constructed
   // iteratively by Arnoldi-orthogonalizing a new vector in each iteration and
   // appending it to the `basis_history_`.

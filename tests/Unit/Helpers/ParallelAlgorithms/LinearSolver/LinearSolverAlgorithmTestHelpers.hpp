@@ -15,7 +15,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -55,15 +55,15 @@ struct LinearOperator {
 };
 struct Source {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 struct InitialGuess {
   static constexpr Options::String help = "The initial guess for the vector x.";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 struct ExpectedResult {
   static constexpr Options::String help = "The solution x in the equation Ax=b";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 struct ExpectedConvergenceReason {
   static std::string name() { return "ConvergenceReason"; }
@@ -84,34 +84,29 @@ struct LinearOperator : db::SimpleTag {
 };
 
 struct Source : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
   static constexpr bool pass_metavariables = false;
-  static DenseVector<double> create_from_options(
-      const DenseVector<double>& source) {
-    return source;
-  }
+  static type create_from_options(const type& source) { return source; }
 };
 
 struct InitialGuess : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   using option_tags = tmpl::list<OptionTags::InitialGuess>;
 
   static constexpr bool pass_metavariables = false;
-  static DenseVector<double> create_from_options(
-      const DenseVector<double>& initial_guess) {
+  static type create_from_options(const type& initial_guess) {
     return initial_guess;
   }
 };
 
 struct ExpectedResult : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
   static constexpr bool pass_metavariables = false;
-  static DenseVector<double> create_from_options(
-      const DenseVector<double>& expected_result) {
+  static type create_from_options(const type& expected_result) {
     return expected_result;
   }
 };
@@ -128,7 +123,7 @@ struct ExpectedConvergenceReason : db::SimpleTag {
 
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;
@@ -149,10 +144,10 @@ struct ComputeOperatorAction {
       const ParallelComponent* const /*meta*/) {
     db::mutate<LinearSolver::Tags::OperatorAppliedTo<OperandTag>>(
         make_not_null(&box),
-        [](const gsl::not_null<DenseVector<double>*>
+        [](const gsl::not_null<blaze::DynamicVector<double>*>
                operator_applied_to_operand,
            const DenseMatrix<double>& linear_operator,
-           const DenseVector<double>& operand) {
+           const blaze::DynamicVector<double>& operand) {
           *operator_applied_to_operand = linear_operator * operand;
         },
         get<LinearOperator>(box), get<OperandTag>(box));

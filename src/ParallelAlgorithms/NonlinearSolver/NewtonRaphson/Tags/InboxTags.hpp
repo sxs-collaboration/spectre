@@ -5,11 +5,8 @@
 
 #include <cstddef>
 #include <map>
-#include <optional>
-#include <tuple>
 #include <variant>
 
-#include "DataStructures/DenseVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/PupStlCpp17.hpp"

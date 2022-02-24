@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
@@ -147,8 +147,8 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   mutable DenseMatrix<double, blaze::columnMajor> inverse_{};
 
   // Buffers to avoid re-allocating memory for applying the operator
-  mutable DenseVector<double> source_workspace_{};
-  mutable DenseVector<double> solution_workspace_{};
+  mutable blaze::DynamicVector<double> source_workspace_{};
+  mutable blaze::DynamicVector<double> solution_workspace_{};
 };
 
 template <typename LinearSolverRegistrars>

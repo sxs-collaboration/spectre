@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <blaze/math/DynamicVector.h>
 #include <cstddef>
 #include <tuple>
 #include <utility>
@@ -10,7 +11,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
@@ -163,9 +163,10 @@ struct StoreOrthogonalization {
     DenseMatrix<double> qr_R;
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
     // Compute the residual vector from the QR decomposition
-    DenseVector<double> beta(num_rows, 0.);
+    blaze::DynamicVector<double> beta(num_rows, 0.);
     beta[0] = get<initial_residual_magnitude_tag>(box);
-    DenseVector<double> minres = blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
+    blaze::DynamicVector<double> minres =
+        blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
     const double residual_magnitude =
         blaze::length(beta - orthogonalization_history * minres);
 

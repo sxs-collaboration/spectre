@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <blaze/math/DynamicVector.h>
 #include <cstddef>
 #include <memory>
 #include <random>
@@ -13,7 +14,6 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -331,10 +331,10 @@ struct TestSubdomainOperatorMatrix {
     // Check the matrix is equivalent to the operator by applying it to the
     // data. We need to do the matrix multiplication on a contiguous buffer
     // because the `ElementCenteredSubdomainData` is not contiguous.
-    DenseVector<double> contiguous_operand(operator_size);
+    blaze::DynamicVector<double> contiguous_operand(operator_size);
     std::copy(subdomain_data.begin(), subdomain_data.end(),
               contiguous_operand.begin());
-    const DenseVector<double> contiguous_result =
+    const blaze::DynamicVector<double> contiguous_result =
         operator_matrix * contiguous_operand;
     std::copy(contiguous_result.begin(), contiguous_result.end(),
               result_buffer.begin());

@@ -3,11 +3,11 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <blaze/math/DynamicVector.h>
 #include <string>
 #include <utility>
 
 #include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: keep
-#include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -31,9 +31,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DenseMatrix", "[DataStructures][Unit]") {
   CHECK(A * B == DenseMatrix<int>{{5, 2}, {3, 2}});
   CHECK(B * A == DenseMatrix<int>{{2, 1}, {6, 5}});
 
-  const DenseVector<int> a{1, 3};
-  CHECK(A * a == DenseVector<int>{5, 3});
-  CHECK(trans(a) * A == DenseVector<int>{2, 4});
+  const blaze::DynamicVector<int> a{1, 3};
+  CHECK(A * a == blaze::DynamicVector<int>{5, 3});
+  CHECK(trans(a) * A == blaze::DynamicVector<int>{2, 4});
 
   Matrix matrix{{1., 0., 2.}, {3., 1.5, 0.5}};
   CHECK(matrix.rows() == 2);

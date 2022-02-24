@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <blaze/math/DynamicVector.h>
 #include <functional>
 #include <utility>
 
@@ -10,7 +11,6 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -39,9 +39,9 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
     INFO("Solve a simple matrix");
     const DenseMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{matrix};
-    const DenseVector<double> source{1., 2.};
-    const DenseVector<double> expected_solution{-1., 5.};
-    DenseVector<double> solution(2);
+    const blaze::DynamicVector<double> source{1., 2.};
+    const blaze::DynamicVector<double> expected_solution{-1., 5.};
+    blaze::DynamicVector<double> solution(2);
     const ExplicitInverse<> solver{};
     const auto has_converged =
         solver.solve(make_not_null(&solution), linear_operator, source);
@@ -56,8 +56,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.ExplicitInverse",
       resetting_solver.reset();
       const DenseMatrix<double> matrix2{{4., 1.}, {1., 3.}};
       const helpers::ApplyMatrix linear_operator2{matrix2};
-      const DenseVector<double> expected_solution2{0.0909090909090909,
-                                                   0.6363636363636364};
+      const blaze::DynamicVector<double> expected_solution2{0.0909090909090909,
+                                                            0.6363636363636364};
       resetting_solver.solve(make_not_null(&solution), linear_operator2,
                              source);
       CHECK_MATRIX_APPROX(resetting_solver.matrix_representation(),

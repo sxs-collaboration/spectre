@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
@@ -44,7 +44,7 @@ namespace {
 struct TestLinearSolver {};
 
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;
@@ -252,7 +252,8 @@ SPECTRE_TEST_CASE(
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.4615384615384615]
     const auto& minres = get<1>(element_inbox);
     CHECK(minres.size() == 1);
-    CHECK_ITERABLE_APPROX(minres, DenseVector<double>({0.4615384615384615}));
+    CHECK_ITERABLE_APPROX(minres,
+                          blaze::DynamicVector<double>({0.4615384615384615}));
     // r = beta - H * minres = [0.6153846153846154, -0.923076923076923]
     // |r| = 1.1094003924504583
     const double residual_magnitude = 1.1094003924504583;
@@ -301,7 +302,7 @@ SPECTRE_TEST_CASE(
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [2.]
     const auto& minres = get<1>(element_inbox);
     CHECK(minres.size() == 1);
-    CHECK_ITERABLE_APPROX(minres, DenseVector<double>({2.}));
+    CHECK_ITERABLE_APPROX(minres, blaze::DynamicVector<double>({2.}));
     // r = beta - H * minres = [0., 0.]
     // |r| = 0.
     const auto& has_converged = get<2>(element_inbox);
@@ -351,7 +352,8 @@ SPECTRE_TEST_CASE(
     const auto& minres = get<1>(element_inbox);
     CHECK(minres.size() == 2);
     CHECK_ITERABLE_APPROX(
-        minres, DenseVector<double>({0.1317829457364342, 0.0310077519379845}));
+        minres,
+        blaze::DynamicVector<double>({0.1317829457364342, 0.0310077519379845}));
     // r = beta - H * minres = [0.77519, -0.38759, -0.15503]
     // |r| = 0.8804509063256237
     const auto& has_converged = get<2>(element_inbox);
@@ -387,7 +389,7 @@ SPECTRE_TEST_CASE(
     // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.6]
     const auto& minres = get<1>(element_inbox);
     CHECK(minres.size() == 1);
-    CHECK_ITERABLE_APPROX(minres, DenseVector<double>({0.6}));
+    CHECK_ITERABLE_APPROX(minres, blaze::DynamicVector<double>({0.6}));
     // r = beta - H * minres = [0.2, -0.6]
     // |r| = 0.6324555320336759
     // |r| / |r_initial| = 0.31622776601683794

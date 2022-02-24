@@ -18,7 +18,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -73,11 +73,11 @@ struct LinearOperator {
 // M each, so that they constitute a vector of total size N*M (see above).
 struct Source {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
 };
 struct ExpectedResult {
   static constexpr Options::String help = "The solution x in the equation Ax=b";
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
 };
 }  // namespace OptionTags
 
@@ -97,23 +97,19 @@ struct LinearOperator : db::SimpleTag {
 // [array_allocation_tag]
 
 struct Source : db::SimpleTag {
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& source) {
-    return source;
-  }
+  static type create_from_options(const type& source) { return source; }
 };
 
 struct ExpectedResult : db::SimpleTag {
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& expected_result) {
+  static type create_from_options(const type& expected_result) {
     return expected_result;
   }
 };
