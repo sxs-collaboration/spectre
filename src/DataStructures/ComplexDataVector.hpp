@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <blaze/math/GroupTag.h>
 #include <complex>
 #include <cstddef>
 #include <functional>  // for std::reference_wrapper
@@ -163,7 +164,7 @@ template <typename Abs, typename Power>
 struct DVecNormHelper<
     blaze::CustomVector<std::complex<double>, blaze::AlignmentFlag::unaligned,
                         blaze::PaddingFlag::unpadded,
-                        blaze::defaultTransposeFlag, blaze_default_group,
+                        blaze::defaultTransposeFlag, blaze::GroupTag<0>,
                         ComplexDataVector>,
     Abs, Power> {};
 }  // namespace blaze

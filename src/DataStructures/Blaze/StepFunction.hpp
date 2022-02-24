@@ -1,16 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Includes Blaze library with specific configs
-
 #pragma once
 
-#include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
-#include <blaze/math/GroupTag.h>
-
-using blaze_default_group = blaze::GroupTag<0>;
+#include <blaze/math/constraints/SIMDPack.h>
+#include <blaze/math/simd/BasicTypes.h>
+#include <blaze/system/Inline.h>
+#include <blaze/system/Vectorization.h>
 
 namespace blaze {
 // This vectorized implementation of the step function is necessary because
