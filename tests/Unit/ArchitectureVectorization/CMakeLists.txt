@@ -35,6 +35,7 @@ add_spectre_executable(
 
   # The following lines list the source files with tests in them to be
   # compiled into the executable.
+  ../DataStructures/Test_BlazeInteroperability.cpp
   ../DataStructures/Test_DataVector.cpp
   ../DataStructures/Test_DataVectorBinaryOperations.cpp
   ../DataStructures/Test_ComplexDataVector.cpp
