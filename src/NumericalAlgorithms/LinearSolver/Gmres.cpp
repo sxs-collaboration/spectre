@@ -4,12 +4,12 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 
 #include <blaze/math/Column.h>
+#include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Subvector.h>
 #include <blaze/math/lapack/trsv.h>
 
-#include "DataStructures/DenseMatrix.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -55,7 +55,8 @@ void apply_and_update_givens_rotation(
 }  // namespace
 
 void solve_minimal_residual(
-    const gsl::not_null<DenseMatrix<double>*> orthogonalization_history,
+    const gsl::not_null<blaze::DynamicMatrix<double>*>
+        orthogonalization_history,
     const gsl::not_null<blaze::DynamicVector<double>*> residual_history,
     const gsl::not_null<blaze::DynamicVector<double>*> givens_sine_history,
     const gsl::not_null<blaze::DynamicVector<double>*> givens_cosine_history,
@@ -81,7 +82,7 @@ void solve_minimal_residual(
 }
 
 blaze::DynamicVector<double> minimal_residual_vector(
-    const DenseMatrix<double>& orthogonalization_history,
+    const blaze::DynamicMatrix<double>& orthogonalization_history,
     const blaze::DynamicVector<double>& residual_history) {
   const size_t length = orthogonalization_history.columns();
   blaze::DynamicVector<double> minres =

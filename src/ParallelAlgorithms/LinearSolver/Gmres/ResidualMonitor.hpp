@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DenseMatrix.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"

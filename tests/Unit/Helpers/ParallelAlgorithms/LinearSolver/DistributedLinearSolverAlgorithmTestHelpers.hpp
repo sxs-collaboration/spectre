@@ -17,7 +17,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -67,7 +67,7 @@ namespace OptionTags {
 // DG discretization, M is the number of collocation points per element.
 struct LinearOperator {
   static constexpr Options::String help = "The linear operator A to invert.";
-  using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using type = std::vector<blaze::DynamicMatrix<double>>;
 };
 // Both of the following options expect a list of N vectors that have a size of
 // M each, so that they constitute a vector of total size N*M (see above).
@@ -83,14 +83,11 @@ struct ExpectedResult {
 
 // [array_allocation_tag]
 struct LinearOperator : db::SimpleTag {
-  using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using type = std::vector<blaze::DynamicMatrix<double>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseMatrix<double, blaze::columnMajor>>
-  create_from_options(
-      const std::vector<DenseMatrix<double, blaze::columnMajor>>&
-          linear_operator) {
+  static type create_from_options(const type& linear_operator) {
     return linear_operator;
   }
 };

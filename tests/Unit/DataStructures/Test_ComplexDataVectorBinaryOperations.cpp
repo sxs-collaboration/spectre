@@ -18,8 +18,6 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 
-// IWYU pragma: no_include "DataStructures/DenseMatrix.hpp"
-
 void test_complex_data_vector_multiple_operand_math() {
   const TestHelpers::VectorImpl::Bound generic{{-10.0, 10.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.1, 10.0}};

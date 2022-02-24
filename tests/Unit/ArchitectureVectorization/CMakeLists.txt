@@ -37,7 +37,6 @@ add_spectre_executable(
   # compiled into the executable.
   ../DataStructures/Test_DataVector.cpp
   ../DataStructures/Test_DataVectorBinaryOperations.cpp
-  ../DataStructures/Test_DenseMatrix.cpp
   ../DataStructures/Test_ComplexDataVector.cpp
   ../DataStructures/Test_ComplexDataVectorBinaryOperations.cpp
   )

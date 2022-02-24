@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -40,11 +40,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   {
     // [gmres_example]
     INFO("Solve a symmetric 2x2 matrix");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 3.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
@@ -127,11 +123,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Solve a non-symmetric 2x2 matrix");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 3.;
-    matrix(1, 1) = 1.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
@@ -178,16 +170,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Restarting");
-    DenseMatrix<double> matrix(3, 3);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(0, 2) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 1.;
-    matrix(1, 2) = 3.;
-    matrix(2, 0) = 0.;
-    matrix(2, 1) = 2.;
-    matrix(2, 2) = 0.;
+    blaze::DynamicMatrix<double> matrix{
+        {4., 1., 1.}, {1., 1., 3.}, {0., 2., 0.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2., 1.};
     blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1., 0.};
@@ -208,11 +192,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Preconditioning");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 3.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
     const blaze::DynamicVector<double> source{1., 2.};
     const blaze::DynamicVector<double> expected_solution{0.0909090909090909,

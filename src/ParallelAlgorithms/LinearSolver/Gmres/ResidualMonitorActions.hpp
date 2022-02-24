@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 #include <cstddef>
 #include <tuple>
@@ -10,7 +11,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DenseMatrix.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
@@ -159,8 +159,8 @@ struct StoreOrthogonalization {
     const auto& orthogonalization_history =
         get<orthogonalization_history_tag>(box);
     const auto num_rows = orthogonalization_iteration_id + 1;
-    DenseMatrix<double> qr_Q;
-    DenseMatrix<double> qr_R;
+    blaze::DynamicMatrix<double> qr_Q;
+    blaze::DynamicMatrix<double> qr_R;
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
     // Compute the residual vector from the QR decomposition
     blaze::DynamicVector<double> beta(num_rows, 0.);

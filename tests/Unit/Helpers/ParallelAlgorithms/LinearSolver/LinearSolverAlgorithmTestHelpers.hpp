@@ -14,7 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -51,7 +51,7 @@ namespace LinearSolverAlgorithmTestHelpers {
 namespace OptionTags {
 struct LinearOperator {
   static constexpr Options::String help = "The linear operator A to invert.";
-  using type = DenseMatrix<double>;
+  using type = blaze::DynamicMatrix<double>;
 };
 struct Source {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
@@ -73,12 +73,11 @@ struct ExpectedConvergenceReason {
 }  // namespace OptionTags
 
 struct LinearOperator : db::SimpleTag {
-  using type = DenseMatrix<double>;
+  using type = blaze::DynamicMatrix<double>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
   static constexpr bool pass_metavariables = false;
-  static DenseMatrix<double> create_from_options(
-      const DenseMatrix<double>& linear_operator) {
+  static type create_from_options(const type& linear_operator) {
     return linear_operator;
   }
 };
@@ -146,7 +145,7 @@ struct ComputeOperatorAction {
         make_not_null(&box),
         [](const gsl::not_null<blaze::DynamicVector<double>*>
                operator_applied_to_operand,
-           const DenseMatrix<double>& linear_operator,
+           const blaze::DynamicMatrix<double>& linear_operator,
            const blaze::DynamicVector<double>& operand) {
           *operator_applied_to_operand = linear_operator * operand;
         },

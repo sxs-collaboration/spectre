@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/LogicalCoordinates.hpp"
@@ -46,8 +46,7 @@ struct LinearOperator {
       "each matrix corresponds to the number of grid points in the element, "
       "and the number of rows corresponds to the total number of grid points "
       "in the domain.";
-  using type =
-      std::vector<std::vector<DenseMatrix<double, blaze::columnMajor>>>;
+  using type = std::vector<std::vector<blaze::DynamicMatrix<double>>>;
 };
 struct OperatorIsMassive {
   static constexpr Options::String help =
@@ -58,8 +57,7 @@ struct OperatorIsMassive {
 }  // namespace OptionTags
 
 struct LinearOperator : db::SimpleTag {
-  using type =
-      std::vector<std::vector<DenseMatrix<double, blaze::columnMajor>>>;
+  using type = std::vector<std::vector<blaze::DynamicMatrix<double>>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& linear_operator) {
@@ -154,8 +152,8 @@ struct ComputeOperatorAction {
 
     typename OperandTag::type operator_applied_to_operand{
         number_of_grid_points * number_of_elements};
-    // Could use apply_matrices here once it works with `DenseMatrix`, or
-    // `Matrix` is option-creatable
+    // Could use apply_matrices here once it works with `blaze::DynamicMatrix`,
+    // or `Matrix` is option-creatable
     dgemv_('N', linear_operator.rows(), linear_operator.columns(), 1,
            linear_operator.data(), linear_operator.spacing(), operand.data(), 1,
            0, operator_applied_to_operand.data(), 1);

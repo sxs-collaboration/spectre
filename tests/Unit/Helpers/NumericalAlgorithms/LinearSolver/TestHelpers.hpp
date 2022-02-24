@@ -9,7 +9,7 @@
 #include <optional>
 #include <pup.h>
 
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "DataStructures/DynamicVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
@@ -18,7 +18,7 @@
 namespace TestHelpers::LinearSolver {
 
 struct ApplyMatrix {
-  DenseMatrix<double> matrix;
+  blaze::DynamicMatrix<double> matrix;
   mutable size_t invocations = 0;
   template <typename ResultVectorType, typename OperandVectorType>
   void operator()(const gsl::not_null<ResultVectorType*> result,
@@ -50,7 +50,7 @@ struct ExactInversePreconditioner {
   static constexpr Options::String help{"halp"};
 
  private:
-  mutable std::optional<DenseMatrix<double>> inv_matrix_{};
+  mutable std::optional<blaze::DynamicMatrix<double>> inv_matrix_{};
 };
 
 // Use the inverse of the diagonal as preconditioner.

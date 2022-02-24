@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <blaze/math/DynamicMatrix.h>
 #include <blaze/math/DynamicVector.h>
 #include <cstddef>
 #include <memory>
@@ -13,7 +14,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -315,8 +315,8 @@ struct TestSubdomainOperatorMatrix {
     const auto& subdomain_operator =
         db::get<SubdomainOperatorTag<SubdomainOperator>>(box);
     const size_t operator_size = subdomain_data.size();
-    DenseMatrix<double, blaze::columnMajor> operator_matrix{operator_size,
-                                                            operator_size};
+    blaze::DynamicMatrix<double, blaze::columnMajor> operator_matrix{
+        operator_size, operator_size};
     auto operand_buffer =
         make_with_value<std::decay_t<decltype(subdomain_data)>>(subdomain_data,
                                                                 0.);
