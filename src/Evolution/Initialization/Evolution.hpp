@@ -62,7 +62,10 @@ namespace Actions {
 ///
 /// Since we have not started the evolution yet, we initialize the state
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
-/// and `Tags::Next<Tags::TimeStepId>` is the initial time.
+/// and `Tags::Next<Tags::TimeStepId>` is the initial time. `::Tags::Time` is
+/// set to the initial time so it is available to dependent compute items, e.g.,
+/// Jacobians of time-dependent domains that are needed to take numerical
+/// derivatives of initial data.
 ///
 /// DataBox changes:
 /// - Adds:
@@ -157,8 +160,8 @@ struct TimeAndTimeStep {
     Initialization::mutate_assign<tmpl::list<
         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time,
         ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
-        make_not_null(&box), TimeStepId{}, time_id,
-        std::numeric_limits<double>::signaling_NaN(), initial_dt, initial_dt);
+        make_not_null(&box), TimeStepId{}, time_id, initial_time.value(),
+        initial_dt, initial_dt);
     return std::make_tuple(std::move(box));
   }
 
