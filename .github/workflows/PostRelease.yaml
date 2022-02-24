@@ -43,19 +43,30 @@ jobs:
         shell: spack-python {0}
         run: |
           import spack.stage
+          import spack.repo
+          import os
 
           # The tag name includes the 'v' prefix
           release_name = '${{ github.event.release.tag_name }}'[1:]
 
+          # Get the URL for the release tarball. The
+          # 'github.event.release.tarball_url' points to a slightly different
+          # 'https://api.github.com/...' URL, which has a different checksum
+          # than the tarball listed on the GitHub release page and used by
+          # Spack.
+          pkg = spack.repo.get('spectre')
+          release_url = pkg.url_for_version(release_name)
+
           version_lines = spack.stage.get_checksums_for_versions(
             url_dict={
-              release_name: '${{ github.event.release.tarball_url }}',
+              release_name: release_url,
             },
-            name='spectre',
+            name=pkg.name,
             batch=True,
+            fetch_options=pkg.fetch_options,
           ).split('\n')
 
-          package_file = './var/spack/repos/builtin/packages/spectre/package.py'
+          package_file = os.path.join(pkg.package_dir, 'package.py')
           with open(package_file, 'r') as open_package_file:
             package_file_lines = open_package_file.readlines()
           with open(package_file, 'w') as open_package_file:
