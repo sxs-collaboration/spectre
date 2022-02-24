@@ -5,6 +5,7 @@ set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
   Test_ApplyMatrices.cpp
+  Test_BlazeInteroperability.cpp
   Test_CachedTempBuffer.cpp
   Test_ComplexDataVector.cpp
   Test_ComplexDataVectorAsserts.cpp
