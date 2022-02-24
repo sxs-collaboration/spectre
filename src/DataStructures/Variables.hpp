@@ -26,6 +26,7 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/MathWrapper.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -967,3 +968,25 @@ struct Subitems<Tag, Requires<Variables_detail::is_a_variables_tag_v<Tag>>> {
   }
 };
 }  // namespace db
+
+namespace Variables_detail {
+template <typename Tags>
+using MathWrapperVectorType = tmpl::conditional_t<
+    std::is_same_v<typename Variables<Tags>::value_type, double>, DataVector,
+    ComplexDataVector>;
+}  // namespace Variables_detail
+
+template <typename Tags>
+auto make_math_wrapper(const gsl::not_null<Variables<Tags>*> data) {
+  using Vector = Variables_detail::MathWrapperVectorType<Tags>;
+  Vector referencing(data->data(), data->size());
+  return make_math_wrapper(&referencing);
+}
+
+template <typename Tags>
+auto make_math_wrapper(const Variables<Tags>& data) {
+  using Vector = Variables_detail::MathWrapperVectorType<Tags>;
+  const Vector referencing(
+      const_cast<typename Vector::value_type*>(data.data()), data.size());
+  return make_math_wrapper(referencing);
+}

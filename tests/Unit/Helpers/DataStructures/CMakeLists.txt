@@ -4,6 +4,7 @@
 set(LIBRARY "DataStructuresHelpers")
 
 set(LIBRARY_SOURCES
+  MathWrapper.cpp
   RandomUnitNormal.cpp
   )
 
