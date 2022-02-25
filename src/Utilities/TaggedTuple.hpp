@@ -673,6 +673,7 @@ ReturnedTaggedTuple reorder(TaggedTuple<Tags...> input) {
 }
 
 /// Stream operator for TaggedTuple
+using ::operator<<;
 template <class... Tags>
 std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
   os << "(";

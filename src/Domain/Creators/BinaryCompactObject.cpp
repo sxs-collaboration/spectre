@@ -190,7 +190,7 @@ BinaryCompactObject::BinaryCompactObject(
   };
   const auto add_outer_region = [this](const std::string& region_name) {
     for (const std::string& wedge_direction : wedge_directions) {
-      for (const std::string& leftright : {"Left", "Right"}) {
+      for (const std::string& leftright : {"Left"s, "Right"s}) {
         if ((wedge_direction == "UpperX" and leftright == "Left") or
             (wedge_direction == "LowerX" and leftright == "Right")) {
           // The outer regions are divided in half perpendicular to the

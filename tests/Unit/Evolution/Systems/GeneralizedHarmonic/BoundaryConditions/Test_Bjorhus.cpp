@@ -33,7 +33,7 @@ void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
   for (const std::string& bc_string :
-       {"ConstraintPreserving", "ConstraintPreservingPhysical"}) {
+       {"ConstraintPreserving"s, "ConstraintPreservingPhysical"s}) {
     CAPTURE(bc_string);
 
     helpers::test_boundary_condition_with_python<

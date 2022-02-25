@@ -26,7 +26,7 @@ template <size_t Dim>
 void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
-  for (const std::string& bc_string : {"Sommerfeld", "BaylissTurkel"}) {
+  for (const std::string& bc_string : {"Sommerfeld"s, "BaylissTurkel"s}) {
     CAPTURE(bc_string);
     helpers::test_boundary_condition_with_python<
         ScalarWave::BoundaryConditions::SphericalRadiation<Dim>,
