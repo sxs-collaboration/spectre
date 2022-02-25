@@ -130,6 +130,12 @@ EXAMPLE_PATTERNS       =
 
 EXAMPLE_RECURSIVE      = NO
 
+# Input filters run over content before it is parsed by Doxygen. They are
+# invoked with a file name as additional argument. We run the following filters:
+# - Format markdown math for Doxygen. See the documentation in
+#   `markdown-math-filter.pl` for details.
+INPUT_FILTER           = "@PERL_EXECUTABLE@ -0777 -p @PROJECT_SOURCE_DIR@/docs/config/markdown-math-filter.pl"
+
 #---------------------------------------------------------------------------
 # configuration options related to the output
 #---------------------------------------------------------------------------

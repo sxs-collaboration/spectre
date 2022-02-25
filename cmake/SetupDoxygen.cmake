@@ -7,6 +7,11 @@ find_package(Doxygen)
 if (DOXYGEN_FOUND)
   set(SPECTRE_DOXYGEN_GROUPS "${CMAKE_BINARY_DIR}/docs/tmp/GroupDefs.hpp")
 
+  # For INPUT_FILTER in Doxyfile. Using Python instead of Perl here increases
+  # docs generation time by ~25%. Runtimes are 102s (no filter), 108s (Perl) and
+  # 135s (Python) at the time of writing (Mar 2022).
+  find_package(Perl)
+
   set(SPECTRE_DOX_GENERATE_HTML "YES")
   set(SPECTRE_DOX_GENERATE_XML "NO")
   configure_file(
