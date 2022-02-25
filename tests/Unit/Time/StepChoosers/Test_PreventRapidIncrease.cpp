@@ -83,9 +83,8 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       return TimeStepId(direction > 0, slab_number, Time(time_slab, frac));
     };
 
-    // Silly type.  The step chooser should not care.
     struct Tag : db::SimpleTag {
-      using type = std::nullptr_t;
+      using type = double;
     };
     using history_tag = Tags::HistoryEvolvedVariables<Tag>;
     typename history_tag::type lts_history{};
@@ -101,8 +100,8 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
     };
 
     for (size_t i = 1; i < times.size(); ++i) {
-      lts_history.insert_initial(make_time_id(i), nullptr);
-      gts_history.insert_initial(make_gts_time_id(i), nullptr);
+      lts_history.insert_initial(make_time_id(i), 0.0);
+      gts_history.insert_initial(make_gts_time_id(i), 0.0);
     }
 
     const auto check = [&cache, &expected](auto box, const Time& current_time) {

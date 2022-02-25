@@ -182,16 +182,16 @@ void DormandPrince5::update_u(const gsl::not_null<Vars*> u,
                       std::tuple_size_v<std::decay_t<decltype(coeffs_this)>>,
                   "Unexpected coefficient vector sizes.");
     *u = history->most_recent_value() +
-         coeffs_this.back() * dt * (history->end() - 1).derivative();
+         coeffs_this.back() * dt * *(history->end() - 1).derivative();
     for (size_t i = 0; i < coeffs_last.size(); ++i) {
       *u += (gsl::at(coeffs_this, i) - gsl::at(coeffs_last, i)) * dt *
-            (history->begin() + static_cast<int>(i)).derivative();
+            *(history->begin() + static_cast<int>(i)).derivative();
     }
   };
 
   if (substep == 0) {
     *u = history->most_recent_value() +
-         (a2_[0] * dt) * history->begin().derivative();
+         (a2_[0] * dt) * *history->begin().derivative();
   } else if (substep == 1) {
     increment_u(a2_, a3_);
   } else if (substep == 2) {
@@ -225,10 +225,10 @@ bool DormandPrince5::update_u(const gsl::not_null<Vars*> u,
 
     const double dt = time_step.value();
 
-    *u_error = -b_alt_.back() * dt * (history->end() - 1).derivative();
+    *u_error = -b_alt_.back() * dt * *(history->end() - 1).derivative();
     for (size_t i = 0; i < b_.size(); ++i) {
       *u_error -= (gsl::at(b_alt_, i) - gsl::at(b_, i)) * dt *
-                  (history->begin() + static_cast<int>(i)).derivative();
+                  *(history->begin() + static_cast<int>(i)).derivative();
     }
   } else {
     ERROR("Substep in adaptive DP5 should be one of 0,1,2,3,4,5,6, not "
@@ -275,13 +275,13 @@ bool DormandPrince5::dense_update_u(const gsl::not_null<Vars*> u,
   *u = history.most_recent_value() +
        dt * (1.0 - output_fraction) *
            ((1.0 - output_fraction) *
-                ((common(0) + output_fraction) * history.begin().derivative() +
-                 common(2) * (history.begin() + 2).derivative() +
-                 common(3) * (history.begin() + 3).derivative() +
-                 common(4) * (history.begin() + 4).derivative() +
-                 common(5) * (history.begin() + 5).derivative()) +
+                ((common(0) + output_fraction) * *history.begin().derivative() +
+                 common(2) * *(history.begin() + 2).derivative() +
+                 common(3) * *(history.begin() + 3).derivative() +
+                 common(4) * *(history.begin() + 4).derivative() +
+                 common(5) * *(history.begin() + 5).derivative()) +
             square(output_fraction) * ((1.0 - output_fraction) * d_[6] - 1.0) *
-                (history.begin() + 6).derivative());
+                *(history.begin() + 6).derivative());
   return true;
 }
 }  // namespace TimeSteppers

@@ -18,6 +18,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -97,7 +98,7 @@ void check_history_state(const HistoryType& hist) {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.derivative() == entry_num + 0.5);
+      CHECK(*it.derivative() == entry_num + 0.5);
     }
     CHECK(it == hist.end());
   }
@@ -144,6 +145,70 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
 
   check_history_state(history);
 
+  // Test DerivIterator
+  {
+    CHECK(static_cast<size_t>(history.derivatives_end() -
+                              history.derivatives_begin()) == history.size());
+    auto it = history.begin();
+    auto deriv_it = history.derivatives_begin();
+    ASSERT(history.size() > 1,
+           "Test logic error: Not all conditions will be reached.");
+    for (size_t i = 0; i < history.size(); ++i, ++it, ++deriv_it) {
+      CHECK(deriv_it == deriv_it);
+      CHECK_FALSE(deriv_it != deriv_it);
+      CHECK_FALSE(deriv_it < deriv_it);
+      CHECK_FALSE(deriv_it > deriv_it);
+      CHECK(deriv_it <= deriv_it);
+      CHECK(deriv_it >= deriv_it);
+
+      CHECK(deriv_it.time_step_id() == it.time_step_id());
+      CHECK(*deriv_it == *it.derivative());
+      CHECK(deriv_it.operator->() == &*deriv_it);
+      CHECK(&deriv_it[0] == &*deriv_it);
+      CHECK(&history.derivatives_begin()[static_cast<int>(i)] == &*deriv_it);
+      if (i > 0) {
+        auto copy = deriv_it;
+        auto previous = deriv_it;
+        CHECK(&*--previous == &deriv_it[-1]);
+        CHECK(&*(copy--) == &*deriv_it);
+        CHECK(copy == previous);
+        if (i > 1) {
+          auto copy2 = deriv_it;
+          CHECK(&(copy2 -= 2) == &copy2);
+          CHECK(copy2 == --copy);
+          CHECK(deriv_it - 2 == copy2);
+        }
+        CHECK_FALSE(previous == deriv_it);
+        CHECK(previous != deriv_it);
+        CHECK(previous < deriv_it);
+        CHECK_FALSE(previous > deriv_it);
+        CHECK(previous <= deriv_it);
+        CHECK_FALSE(previous >= deriv_it);
+      }
+      if (i < history.size() - 1) {
+        auto copy = deriv_it;
+        auto next = deriv_it;
+        CHECK(&*++next == &deriv_it[1]);
+        CHECK(&*(copy++) == &*deriv_it);
+        CHECK(copy == next);
+        if (i < history.size() - 2) {
+          auto copy2 = deriv_it;
+          CHECK(&(copy2 += 2) == &copy2);
+          CHECK(copy2 == ++copy);
+          CHECK(deriv_it + 2 == copy2);
+          CHECK(2 + deriv_it == copy2);
+        }
+        CHECK_FALSE(next == deriv_it);
+        CHECK(next != deriv_it);
+        CHECK_FALSE(next < deriv_it);
+        CHECK(next > deriv_it);
+        CHECK_FALSE(next <= deriv_it);
+        CHECK(next >= deriv_it);
+      }
+    }
+    CHECK(deriv_it == history.derivatives_end());
+  }
+
   // We check this later, to make sure we don't somehow depend on the
   // original object.
   const auto copy = serialize_and_deserialize(history);
@@ -162,7 +227,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.derivative() == entry_num + 0.5);
+      CHECK(*it.derivative() == entry_num + 0.5);
     }
     CHECK(it == history.end());
   }

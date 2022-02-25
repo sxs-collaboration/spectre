@@ -417,7 +417,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
   for (auto history_entry = history_start;
        history_entry != history.end();
        ++history_entry, ++coefficient) {
-    *u += time_step.value() * *coefficient * history_entry.derivative();
+    *u += time_step.value() * *coefficient * *history_entry.derivative();
   }
 }
 

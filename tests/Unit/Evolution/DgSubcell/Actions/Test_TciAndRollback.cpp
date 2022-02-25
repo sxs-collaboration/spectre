@@ -320,21 +320,22 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         evolution::dg::subcell::fd::project(
             time_stepper_history.most_recent_value(), dg_mesh,
             subcell_mesh.extents());
-    const auto end_it = std::prev(time_stepper_history.end());
-    for (auto it = time_stepper_history.begin(); it != end_it; ++it) {
+    const auto end_it = std::prev(time_stepper_history.derivatives_end());
+    for (auto it = time_stepper_history.derivatives_begin(); it != end_it;
+         ++it) {
       time_stepper_history_subcells.insert(
           it.time_step_id(),
-          evolution::dg::subcell::fd::project(it.derivative(), dg_mesh,
+          evolution::dg::subcell::fd::project(*it, dg_mesh,
                                               subcell_mesh.extents()));
     }
     REQUIRE(time_stepper_history_subcells.size() ==
             time_stepper_history_from_box.size());
-    for (auto expected_it = time_stepper_history_subcells.begin(),
-              it = time_stepper_history_from_box.begin();
-         expected_it != time_stepper_history_subcells.end();
+    for (auto expected_it = time_stepper_history_subcells.derivatives_begin(),
+              it = time_stepper_history_from_box.derivatives_begin();
+         expected_it != time_stepper_history_subcells.derivatives_end();
          ++it, ++expected_it) {
       CHECK(it.time_step_id() == expected_it.time_step_id());
-      CHECK(it.derivative() == expected_it.derivative());
+      CHECK(*it == *expected_it);
     }
 
     CHECK(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
@@ -370,11 +371,12 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           time_stepper_history.integration_order());
     CHECK(time_stepper_history_from_box.most_recent_value() ==
           time_stepper_history.most_recent_value());
-    for (auto expected_it = time_stepper_history.begin(),
-              it = time_stepper_history_from_box.begin();
-         expected_it != time_stepper_history.end(); ++it, ++expected_it) {
+    for (auto expected_it = time_stepper_history.derivatives_begin(),
+              it = time_stepper_history_from_box.derivatives_begin();
+         expected_it != time_stepper_history.derivatives_end();
+         ++it, ++expected_it) {
       CHECK(it.time_step_id() == expected_it.time_step_id());
-      CHECK(it.derivative() == expected_it.derivative());
+      CHECK(*it == *expected_it);
     }
 
     if (with_neighbors) {

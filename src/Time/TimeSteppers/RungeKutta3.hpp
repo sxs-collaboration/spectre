@@ -129,7 +129,7 @@ void RungeKutta3::update_u(const gsl::not_null<Vars*> u,
       // from (5.32) of Hesthaven
       // v^(1) = u^n + dt*RHS(u^n,t^n)
       *u = history->most_recent_value() +
-           time_step.value() * history->begin().derivative();
+           time_step.value() * *history->begin().derivative();
       break;
     }
     case 1: {
@@ -137,8 +137,8 @@ void RungeKutta3::update_u(const gsl::not_null<Vars*> u,
       // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
       *u = history->most_recent_value() -
            0.25 * time_step.value() *
-               (3.0 * history->begin().derivative() -
-                (history->begin() + 1).derivative());
+               (3.0 * *history->begin().derivative() -
+                *(history->begin() + 1).derivative());
       break;
     }
     case 2: {
@@ -146,9 +146,9 @@ void RungeKutta3::update_u(const gsl::not_null<Vars*> u,
       // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
       *u = history->most_recent_value() -
            (1.0 / 12.0) * time_step.value() *
-               (history->begin().derivative() +
-                (history->begin() + 1).derivative() -
-                8.0 * (history->begin() + 2).derivative());
+               (*history->begin().derivative() +
+                *(history->begin() + 1).derivative() -
+                8.0 * *(history->begin() + 2).derivative());
       break;
     }
     default:
@@ -171,8 +171,8 @@ bool RungeKutta3::update_u(const gsl::not_null<Vars*> u,
     // estimate. See e.g. Chapter II.4 of Harrier, Norsett, and Wagner 1993
     *u_error =
         -(1.0 / 3.0) * time_step.value() *
-        (history->begin().derivative() + (history->begin() + 1).derivative() -
-         2.0 * (history->begin() + 2).derivative());
+        (*history->begin().derivative() + *(history->begin() + 1).derivative() -
+         2.0 * *(history->begin() + 2).derivative());
     return true;
   }
   return false;
@@ -208,10 +208,10 @@ bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
   // arXiv:1605.02429
   *u = history.most_recent_value() -
        (1.0 / 6.0) * time_step * (1.0 - output_fraction) *
-           ((1.0 - 5.0 * output_fraction) * history.begin().derivative() +
+           ((1.0 - 5.0 * output_fraction) * *history.begin().derivative() +
             (1.0 + output_fraction) *
-                ((history.begin() + 1).derivative() +
-                 4.0 * (history.begin() + 2).derivative()));
+                (*(history.begin() + 1).derivative() +
+                 4.0 * *(history.begin() + 2).derivative()));
   return true;
 }
 }  // namespace TimeSteppers

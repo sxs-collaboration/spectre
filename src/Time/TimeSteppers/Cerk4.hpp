@@ -175,33 +175,33 @@ void Cerk4::update_u(const gsl::not_null<Vars*> u,
 
   switch (substep) {
     case 0: {
-      *u = u0 + (a2_ * dt) * history->begin().derivative();
+      *u = u0 + (a2_ * dt) * *history->begin().derivative();
       break;
     }
     case 1: {
-      *u = u0 + ((a3_[0] - a2_) * dt) * history->begin().derivative() +
-           (a3_[1] * dt) * (history->begin() + 1).derivative();
+      *u = u0 + ((a3_[0] - a2_) * dt) * *history->begin().derivative() +
+           (a3_[1] * dt) * *(history->begin() + 1).derivative();
       break;
     }
     case 2: {
-      *u = u0 + ((a4_[0] - a3_[0]) * dt) * history->begin().derivative() +
-           ((a4_[1] - a3_[1]) * dt) * (history->begin() + 1).derivative() +
-           (a4_[2] * dt) * (history->begin() + 2).derivative();
+      *u = u0 + ((a4_[0] - a3_[0]) * dt) * *history->begin().derivative() +
+           ((a4_[1] - a3_[1]) * dt) * *(history->begin() + 1).derivative() +
+           (a4_[2] * dt) * *(history->begin() + 2).derivative();
       break;
     }
     case 3: {
-      *u = u0 + ((a5_[0] - a4_[0]) * dt) * history->begin().derivative() +
-           ((a5_[1] - a4_[1]) * dt) * (history->begin() + 1).derivative() +
-           ((a5_[2] - a4_[2]) * dt) * (history->begin() + 2).derivative() +
-           (a5_[3] * dt) * (history->begin() + 3).derivative();
+      *u = u0 + ((a5_[0] - a4_[0]) * dt) * *history->begin().derivative() +
+           ((a5_[1] - a4_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a5_[2] - a4_[2]) * dt) * *(history->begin() + 2).derivative() +
+           (a5_[3] * dt) * *(history->begin() + 3).derivative();
       break;
     }
     case 4: {
-      *u = u0 + ((a6_[0] - a5_[0]) * dt) * history->begin().derivative() +
-           ((a6_[1] - a5_[1]) * dt) * (history->begin() + 1).derivative() +
-           ((a6_[2] - a5_[2]) * dt) * (history->begin() + 2).derivative() +
-           ((a6_[3] - a5_[3]) * dt) * (history->begin() + 3).derivative() +
-           (a6_[4] * dt) * (history->begin() + 4).derivative();
+      *u = u0 + ((a6_[0] - a5_[0]) * dt) * *history->begin().derivative() +
+           ((a6_[1] - a5_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a6_[2] - a5_[2]) * dt) * *(history->begin() + 2).derivative() +
+           ((a6_[3] - a5_[3]) * dt) * *(history->begin() + 3).derivative() +
+           (a6_[4] * dt) * *(history->begin() + 4).derivative();
       break;
     }
     default:
@@ -221,11 +221,11 @@ bool Cerk4::update_u(const gsl::not_null<Vars*> u,
   const size_t current_substep = (history->end() - 1).time_step_id().substep();
   if (current_substep == 4) {
     const double dt = time_step.value();
-    *u_error = ((e_[0] - a6_[0]) * dt) * history->begin().derivative() +
-               ((e_[1] - a6_[1]) * dt) * (history->begin() + 1).derivative() +
-               ((e_[2] - a6_[2]) * dt) * (history->begin() + 2).derivative() +
-               ((e_[3] - a6_[3]) * dt) * (history->begin() + 3).derivative() -
-               (a6_[4] * dt) * (history->begin() + 4).derivative();
+    *u_error = ((e_[0] - a6_[0]) * dt) * *history->begin().derivative() +
+               ((e_[1] - a6_[1]) * dt) * *(history->begin() + 1).derivative() +
+               ((e_[2] - a6_[2]) * dt) * *(history->begin() + 2).derivative() +
+               ((e_[3] - a6_[3]) * dt) * *(history->begin() + 3).derivative() -
+               (a6_[4] * dt) * *(history->begin() + 4).derivative();
     return true;
   }
   return false;
@@ -262,19 +262,19 @@ bool Cerk4::dense_update_u(const gsl::not_null<Vars*> u,
   const auto& u_n_plus_1 = history.most_recent_value();
 
   // We need the following: k1, k2, k3, k4, k5, k6
-  const auto& k1 = history.begin().derivative();
-  const auto& k2 = (history.begin() + 1).derivative();
-  const auto& k3 = (history.begin() + 2).derivative();
-  const auto& k4 = (history.begin() + 3).derivative();
-  const auto& k5 = (history.begin() + 4).derivative();
-  const auto& k6 = (history.begin() + 5).derivative();
+  const auto k1 = history.begin().derivative();
+  const auto k2 = (history.begin() + 1).derivative();
+  const auto k3 = (history.begin() + 2).derivative();
+  const auto k4 = (history.begin() + 3).derivative();
+  const auto k5 = (history.begin() + 4).derivative();
+  const auto k6 = (history.begin() + 5).derivative();
 
-  *u = u_n_plus_1 + (dt * evaluate_polynomial(b1_, output_fraction)) * k1 +
-       (dt * b2_) * k2 +  //
-       (dt * evaluate_polynomial(b3_, output_fraction)) * k3 +
-       (dt * evaluate_polynomial(b4_, output_fraction)) * k4 +
-       (dt * evaluate_polynomial(b5_, output_fraction)) * k5 +
-       (dt * evaluate_polynomial(b6_, output_fraction)) * k6;
+  *u = u_n_plus_1 + (dt * evaluate_polynomial(b1_, output_fraction)) * *k1 +
+       (dt * b2_) * *k2 +  //
+       (dt * evaluate_polynomial(b3_, output_fraction)) * *k3 +
+       (dt * evaluate_polynomial(b4_, output_fraction)) * *k4 +
+       (dt * evaluate_polynomial(b5_, output_fraction)) * *k5 +
+       (dt * evaluate_polynomial(b6_, output_fraction)) * *k6;
   return true;
 }
 }  // namespace TimeSteppers

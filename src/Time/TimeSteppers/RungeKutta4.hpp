@@ -149,7 +149,7 @@ void RungeKutta4::update_u(const gsl::not_null<Vars*> u,
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(1) = u^n + dt * \mathcal{L}(u^n,t^n)/2
       *u = history->most_recent_value() +
-           0.5 * time_step.value() * history->begin().derivative();
+           0.5 * time_step.value() * *history->begin().derivative();
       break;
     }
     case 1: {
@@ -157,16 +157,16 @@ void RungeKutta4::update_u(const gsl::not_null<Vars*> u,
       // v^(2) = u^n + dt * \mathcal{L}(v^(1), t^n + (1/2)*dt)/2
       *u = history->most_recent_value() -
            0.5 * time_step.value() *
-               (history->begin().derivative() -
-                (history->begin() + 1).derivative());
+               (*history->begin().derivative() -
+                *(history->begin() + 1).derivative());
       break;
     }
     case 2: {
       // from (17.1.3) of Numerical Recipes 3rd Edition
       // v^(3) = u^n + dt * \mathcal{L}(v^(2), t^n + (1/2)*dt))
       *u = history->most_recent_value() +
-           time_step.value() * (-0.5 * (history->begin() + 1).derivative() +
-                                (history->begin() + 2).derivative());
+           time_step.value() * (-0.5 * *(history->begin() + 1).derivative() +
+                                *(history->begin() + 2).derivative());
       break;
     }
     case 3: {
@@ -177,10 +177,10 @@ void RungeKutta4::update_u(const gsl::not_null<Vars*> u,
       //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
       *u = history->most_recent_value() +
            (1.0 / 3.0) * time_step.value() *
-               (0.5 * history->begin().derivative() +
-                (history->begin() + 1).derivative() -
-                2.0 * (history->begin() + 2).derivative() +
-                0.5 * (history->begin() + 3).derivative());
+               (0.5 * *history->begin().derivative() +
+                *(history->begin() + 1).derivative() -
+                2.0 * *(history->begin() + 2).derivative() +
+                0.5 * *(history->begin() + 3).derivative());
       break;
     }
     default:
@@ -204,10 +204,10 @@ bool RungeKutta4::update_u(const gsl::not_null<Vars*> u,
       case 3: {
         *u = history->most_recent_value() +
              (1.0 / 32.0) * time_step.value() *
-                 (5.0 * history->begin().derivative() +
-                  7.0 * (history->begin() + 1).derivative() -
-                  19.0 * (history->begin() + 2).derivative() -
-                  (history->begin() + 3).derivative());
+                 (5.0 * *history->begin().derivative() +
+                  7.0 * *(history->begin() + 1).derivative() -
+                  19.0 * *(history->begin() + 2).derivative() -
+                  *(history->begin() + 3).derivative());
         break;
       }
       case 4: {
@@ -218,19 +218,19 @@ bool RungeKutta4::update_u(const gsl::not_null<Vars*> u,
         //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
         *u = history->most_recent_value() +
              (1.0 / 96.0) * time_step.value() *
-                 (history->begin().derivative() +
-                  11.0 * (history->begin() + 1).derivative() -
-                  7.0 * (history->begin() + 2).derivative() +
-                  19.0 * (history->begin() + 3).derivative());
+                 (*history->begin().derivative() +
+                  11.0 * *(history->begin() + 1).derivative() -
+                  7.0 * *(history->begin() + 2).derivative() +
+                  19.0 * *(history->begin() + 3).derivative());
 
         // See Butcher Tableau of Zonneveld 4(3) embedded scheme with five
         // substeps in Table 4.2 of Hairer, Norsett, and Wanner
         *u_error = (2.0 / 3.0) * time_step.value() *
-                   (history->begin().derivative() -
-                    3.0 * ((history->begin() + 1).derivative() +
-                           (history->begin() + 2).derivative() +
-                           (history->begin() + 3).derivative()) +
-                    8.0 * (history->begin() + 4).derivative());
+                   (*history->begin().derivative() -
+                    3.0 * (*(history->begin() + 1).derivative() +
+                           *(history->begin() + 2).derivative() +
+                           *(history->begin() + 3).derivative()) +
+                    8.0 * *(history->begin() + 4).derivative());
         break;
       }
       default:
@@ -274,12 +274,12 @@ bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
   *u = history.most_recent_value() -
        (1.0 / 3.0) * time_step * (1.0 - output_fraction) *
            ((1.0 - output_fraction) *
-                ((0.5 - 2.0 * output_fraction) * history.begin().derivative() +
+                ((0.5 - 2.0 * output_fraction) * *history.begin().derivative() +
                  (1.0 + 2.0 * output_fraction) *
-                     ((history.begin() + 1).derivative() +
-                      (history.begin() + 2).derivative() +
-                      0.5 * (history.begin() + 3).derivative())) +
-            3.0 * square(output_fraction) * (history.end() - 1).derivative());
+                     (*(history.begin() + 1).derivative() +
+                      *(history.begin() + 2).derivative() +
+                      0.5 * *(history.begin() + 3).derivative())) +
+            3.0 * square(output_fraction) * *(history.end() - 1).derivative());
   return true;
 }
 }  // namespace TimeSteppers
