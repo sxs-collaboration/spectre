@@ -3,6 +3,24 @@
 
 find_package(Python REQUIRED)
 
+# Targets to preprocess the documentation
+# - Convert all `.ipynb` files in `docs/` to markdown, so they get picked up by
+#   Doxygen.
+get_filename_component(_PY_BIN_DIR ${Python_EXECUTABLE} DIRECTORY)
+find_program(NBCONVERT jupyter-nbconvert HINTS ${_PY_BIN_DIR})
+if (NBCONVERT STREQUAL "NBCONVERT-NOTFOUND")
+  message(STATUS "jupyter-nbconvert not found. Preprocessing .ipynb files for \
+documentation disabled.")
+else()
+  message(STATUS "Found jupyter-nbconvert: ${NBCONVERT}")
+  add_custom_target(
+    doc-notebooks-to-markdown
+    COMMAND find ${CMAKE_SOURCE_DIR}/docs -name "*.ipynb"
+      | xargs ${NBCONVERT} --to markdown
+        --output-dir ${CMAKE_BINARY_DIR}/docs/tmp/notebooks_md
+    )
+endif()
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   set(SPECTRE_DOXYGEN_GROUPS "${CMAKE_BINARY_DIR}/docs/tmp/GroupDefs.hpp")
@@ -138,6 +156,12 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
     ${PROJECT_BINARY_DIR}/docs/DoxyfileXml
     ${SPECTRE_DOXYGEN_GROUPS}
     )
+
+  if (TARGET doc-notebooks-to-markdown)
+    add_dependencies(doc doc-notebooks-to-markdown)
+    add_dependencies(doc-check doc-notebooks-to-markdown)
+    add_dependencies(doc-xml doc-notebooks-to-markdown)
+  endif()
 
   find_program(LCOV lcov)
   find_program(GENHTML genhtml)
