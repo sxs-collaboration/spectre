@@ -45,6 +45,10 @@ static_assert(
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
                              TestHelpers::Tags::Vector<DataVector>>>>::value);
 
+static_assert(not std::is_convertible_v<
+              DataVector,
+              Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>>>);
+
 namespace {
 std::string repeat_string_with_commas(const std::string& str,
                                       const size_t repeats) {

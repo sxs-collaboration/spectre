@@ -49,6 +49,8 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 template <typename TagsList>
 class Variables;
+template <typename T, typename VectorType>
+class VectorImpl;
 namespace Tags {
 template <typename TagsList>
 class Variables;
@@ -267,6 +269,13 @@ class Variables<tmpl::list<Tags...>> {
 
   template <typename VT, bool VF>
   Variables& operator=(const blaze::DenseVector<VT, VF>& expression);
+
+  // Prevent the previous two declarations from implicitly converting
+  // DataVectors and similar to Variables.
+  template <typename T, typename VectorType>
+  Variables(const VectorImpl<T, VectorType>&) = delete;
+  template <typename T, typename VectorType>
+  Variables& operator=(const VectorImpl<T, VectorType>&) = delete;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same_v<
