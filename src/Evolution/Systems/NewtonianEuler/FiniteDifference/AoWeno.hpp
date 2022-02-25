@@ -32,15 +32,16 @@ template <size_t Dim>
 class AoWeno53Prim : public Reconstructor<Dim> {
  private:
   // Conservative vars tags
-  using MassDensityCons = Tags::MassDensityCons;
-  using EnergyDensity = Tags::EnergyDensity;
-  using MomentumDensity = Tags::MomentumDensity<Dim>;
+  using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
+  using EnergyDensity = NewtonianEuler::Tags::EnergyDensity;
+  using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
 
   // Primitive vars tags
-  using MassDensity = Tags::MassDensity<DataVector>;
-  using Velocity = Tags::Velocity<DataVector, Dim>;
-  using SpecificInternalEnergy = Tags::SpecificInternalEnergy<DataVector>;
-  using Pressure = Tags::Pressure<DataVector>;
+  using MassDensity = NewtonianEuler::Tags::MassDensity<DataVector>;
+  using Velocity = NewtonianEuler::Tags::Velocity<DataVector, Dim>;
+  using SpecificInternalEnergy =
+      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>;
+  using Pressure = NewtonianEuler::Tags::Pressure<DataVector>;
 
   using prims_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;
