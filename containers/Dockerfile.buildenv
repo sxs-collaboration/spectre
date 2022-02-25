@@ -76,8 +76,8 @@ RUN apt-get update -y \
 # - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
 #   to aid in tracking down anything that depends on python 2. However, many
 #   scripts use `/usr/bin/env python` to find python so restore it.
-# - We need `coverxygen`, `beautifulsoup4` and `pybtex` for both Python 2 and
-# Python 3 so that people can build the documentation with either.
+# - We need `coverxygen`, `beautifulsoup4` and `pybtex` to build documentation
+#   on CI. `nbconvert` is used to process ipynb files.
 # - We need `yapf` so the CI can check Python formatting. We use a specific
 # version of it in order to avoid formatting differences between versions.
 # `futures` is needed for `yapf` parallelization on Python 2.
@@ -89,9 +89,9 @@ RUN add-apt-repository universe \
     && apt-get install -y python3-pip python-is-python3 \
     && pip3 --no-cache-dir install -U pip \
     && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
+      coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
     && pip3 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
-    && pip2 --no-cache-dir install coverxygen beautifulsoup4 pybtex pyyaml \
-    && pip3 --no-cache-dir install coverxygen beautifulsoup4 pybtex pyyaml \
+      coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
     && pip2 --no-cache-dir install yapf==0.29.0 futures unittest2 \
     && pip3 --no-cache-dir install yapf==0.29.0
 
