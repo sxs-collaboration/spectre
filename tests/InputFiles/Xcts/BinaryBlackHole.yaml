@@ -9,12 +9,12 @@ Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]
     ObjectA:
-      Kerr: &kerr_left
+      KerrSchild: &kerr_left
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
     ObjectB:
-      Kerr: &kerr_right
+      KerrSchild: &kerr_right
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
