@@ -93,6 +93,7 @@ CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
 # details).
 INPUT = @PROJECT_SOURCE_DIR@/docs/Installation \
         @PROJECT_SOURCE_DIR@/docs/Tutorials \
+        @PROJECT_SOURCE_DIR@/docs/Examples \
         @PROJECT_SOURCE_DIR@/docs/Contributing \
         @PROJECT_SOURCE_DIR@/docs/DevGuide \
         @PROJECT_SOURCE_DIR@/docs/PublicationPolicy.md \
