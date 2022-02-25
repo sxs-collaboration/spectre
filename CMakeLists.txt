@@ -114,6 +114,7 @@ include(SetupPapi)
 include(SetupPybind11)
 include(SetupStl)
 include(SetupLibsharp)
+include(SetupXsimd)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
