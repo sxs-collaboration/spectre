@@ -15,6 +15,7 @@ spectre_target_headers(
   ObserveNorms.hpp
   ObserveTimeStep.hpp
   ObserveVolumeIntegrals.hpp
+  Tags.hpp
   )
 
 target_link_libraries(
@@ -28,6 +29,7 @@ target_link_libraries(
   Interpolation
   LinearOperators
   Options
+  Spectral
   Time
   Utilities
   )

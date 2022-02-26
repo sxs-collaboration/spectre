@@ -15,6 +15,8 @@ spectre_target_headers(
   Jacobians.hpp
   Mesh.hpp
   NeighborData.hpp
+  ObserverCoordinates.hpp
+  ObserverMesh.hpp
   OnSubcellFaces.hpp
   OnSubcells.hpp
   SubcellOptions.hpp
@@ -22,4 +24,10 @@ spectre_target_headers(
   Tags.hpp
   TciGridHistory.hpp
   TciStatus.hpp
+  )
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  ObserverMesh.cpp
   )

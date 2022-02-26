@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"

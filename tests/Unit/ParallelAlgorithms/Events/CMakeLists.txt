@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_ObserveNorms.cpp
   Test_ObserveTimeStep.cpp
   Test_ObserveVolumeIntegrals.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
