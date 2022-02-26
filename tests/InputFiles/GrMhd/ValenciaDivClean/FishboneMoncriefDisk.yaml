@@ -54,6 +54,7 @@ SpatialDiscretization:
         RdmpEpsilon: 1.0e-3
         PerssonExponent: 4.0
       AlwaysUseSubcells: false
+      SubcellToDgReconstructionMethod: DimByDim
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfTildeTau: 1.0e-50

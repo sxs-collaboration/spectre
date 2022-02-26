@@ -34,9 +34,11 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -238,7 +240,8 @@ double test(const size_t num_dg_pts) {
           typename system::primitive_variables_tag, variables_tag,
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
           evolution::dg::Tags::MortarData<Dim>, domain::Tags::MeshVelocity<Dim>,
-          evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
+          evolution::dg::subcell::Tags::SubcellOptions>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
       MetaVars<Dim>{}, element, dg_mesh, subcell_mesh,
@@ -251,7 +254,10 @@ double test(const size_t num_dg_pts) {
       typename variables_tag::type{dg_mesh.number_of_grid_points()},
       neighbor_data, typename evolution::dg::Tags::MortarData<Dim>::type{},
       std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>{},
-      normal_vectors);
+      normal_vectors,
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
 
   db::mutate_apply<NewtonianEuler::ConservativeFromPrimitive<Dim>>(
       make_not_null(&box));

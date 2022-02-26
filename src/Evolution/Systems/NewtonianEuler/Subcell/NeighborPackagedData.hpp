@@ -28,8 +28,11 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -96,6 +99,8 @@ struct NeighborPackagedData {
     const Mesh<Dim>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& dg_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+    const auto& subcell_options =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
 
     const auto volume_prims = evolution::dg::subcell::fd::project(
         db::get<typename system::primitive_variables_tag>(box), dg_mesh,
@@ -112,7 +117,8 @@ struct NeighborPackagedData {
                                        &mortars_to_reconstruct_to,
                                        &neighbor_package_data,
                                        &neighbor_subcell_data, &recons,
-                                       &subcell_mesh, &volume_prims](
+                                       &subcell_mesh, &subcell_options,
+                                       &volume_prims](
                                           auto derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
       if (typeid(boundary_correction) == typeid(DerivedCorrection)) {
@@ -190,6 +196,7 @@ struct NeighborPackagedData {
 
           if constexpr (Dim == 1) {
             (void)dg_mesh;
+            (void)subcell_options;
             neighbor_package_data[mortar_id] = std::vector<double>{
                 packaged_data.data(),
                 packaged_data.data() + packaged_data.size()};
@@ -200,7 +207,8 @@ struct NeighborPackagedData {
             // matter.
             auto dg_packaged_data = evolution::dg::subcell::fd::reconstruct(
                 packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
-                subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+                subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+                subcell_options.reconstruction_method());
             neighbor_package_data[mortar_id] = std::vector<double>{
                 dg_packaged_data.data(),
                 dg_packaged_data.data() + dg_packaged_data.size()};

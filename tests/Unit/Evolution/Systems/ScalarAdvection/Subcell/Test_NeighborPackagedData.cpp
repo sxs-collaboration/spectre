@@ -32,11 +32,14 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
@@ -179,7 +182,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
       subcell_velocity_field, subcell_faces_velocity_field,
       domain::Tags::MeshVelocity<Dim>,
-      evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>>(
+      evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
+      evolution::dg::subcell::Tags::SubcellOptions>>(
       element, dg_mesh, subcell_mesh, volume_vars_dg, neighbor_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
@@ -196,7 +200,10 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       std::array<typename subcell_faces_velocity_field::type::value_type,
                  Dim>{},
       std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>{},
-      normal_vectors);
+      normal_vectors,
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
 
   // Compute face-centered velocity field and add it to the box. This action
   // needs to be called in prior since NeighborPackagedData::apply() internally
@@ -302,7 +309,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
           evolution::dg::subcell::fd::reconstruct(
               expected_fd_packaged_data_on_mortar,
               dg_mesh.slice_away(mortar_id.first.dimension()),
-              subcell_mesh.extents().slice_away(mortar_id.first.dimension()));
+              subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
+              evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
 
       std::vector<double> vector_to_check{
           expected_dg_packaged_data.data(),

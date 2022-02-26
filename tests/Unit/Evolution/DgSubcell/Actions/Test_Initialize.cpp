@@ -27,6 +27,7 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
@@ -174,8 +175,9 @@ void test(const bool always_use_subcell, const bool interior_element) {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
       {SystemAnalyticSolution{},
-       evolution::dg::subcell::SubcellOptions{1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4,
-                                              4.0, 4.1, always_use_subcell}}};
+       evolution::dg::subcell::SubcellOptions{
+           1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, always_use_subcell,
+           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}}};
   Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,

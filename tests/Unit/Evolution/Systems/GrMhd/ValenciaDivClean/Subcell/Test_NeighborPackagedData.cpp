@@ -28,10 +28,12 @@
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -227,7 +229,8 @@ double test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
           Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>,
           domain::Tags::MeshVelocity<3>,
-          evolution::dg::Tags::NormalCovectorAndMagnitude<3>>,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
+          evolution::dg::subcell::Tags::SubcellOptions>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
       element, dg_mesh, subcell_mesh,
@@ -242,7 +245,10 @@ double test(const size_t num_dg_pts) {
       typename variables_tag::type{dg_mesh.number_of_grid_points()},
       face_centered_gr_tags(subcell_mesh, time, coordinate_map, soln),
       neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{},
-      std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors);
+      std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   std::vector<std::pair<Direction<3>, ElementId<3>>>

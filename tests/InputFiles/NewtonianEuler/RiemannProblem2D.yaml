@@ -36,6 +36,7 @@ SpatialDiscretization:
       RdmpEpsilon: 1.0e-3
       PerssonExponent: 4.0
       AlwaysUseSubcells: false
+      SubcellToDgReconstructionMethod: DimByDim
   SubcellSolver:
     Reconstructor:
       MonotisedCentralPrim:

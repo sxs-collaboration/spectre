@@ -26,6 +26,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Helpers/Evolution/DgSubcell/ProjectionTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -84,10 +85,13 @@ auto make_map() {
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
           Spectral::Quadrature QuadratureType>
-void test_reconstruct_fd(const std::vector<double>& eps) {
+void test_reconstruct_fd(const std::vector<double>& eps,
+                         const evolution::dg::subcell::fd::ReconstructionMethod
+                             reconstruction_method) {
   CAPTURE(Dim);
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
+  CAPTURE(reconstruction_method);
 
   // For FD reconstruction we need to set up a coordinate map since we need
   // Jacobians to do the integration.
@@ -136,8 +140,8 @@ void test_reconstruct_fd(const std::vector<double>& eps) {
 
     const DataVector reconstructed_datavector =
         evolution::dg::subcell::fd::reconstruct(
-            subcell_values * projected_det_jac, dg_mesh,
-            subcell_mesh.extents()) /
+            subcell_values * projected_det_jac, dg_mesh, subcell_mesh.extents(),
+            reconstruction_method) /
         dg_det_jac;
 
     // Test reconstruction of a DataVector
@@ -179,16 +183,17 @@ void test_reconstruct_fd(const std::vector<double>& eps) {
       }
     };
 
-    Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>
-        reconstructed_vars = evolution::dg::subcell::fd::reconstruct(
-            cell_values_vars, dg_mesh, subcell_mesh.extents());
+    Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>> reconstructed_vars =
+        evolution::dg::subcell::fd::reconstruct(cell_values_vars, dg_mesh,
+                                                subcell_mesh.extents(),
+                                                reconstruction_method);
     check_each_field_in_vars(reconstructed_vars);
 
     // Check not_null with no prefix tags that we correctly resize the buffer.
     reconstructed_vars.initialize(0);
-    evolution::dg::subcell::fd::reconstruct(make_not_null(&reconstructed_vars),
-                                            cell_values_vars, dg_mesh,
-                                            subcell_mesh.extents());
+    evolution::dg::subcell::fd::reconstruct(
+        make_not_null(&reconstructed_vars), cell_values_vars, dg_mesh,
+        subcell_mesh.extents(), reconstruction_method);
     check_each_field_in_vars(reconstructed_vars);
 
     // Check with the prefix on the subcell vars
@@ -196,9 +201,9 @@ void test_reconstruct_fd(const std::vector<double>& eps) {
         tmpl::list<Tags::Prefix<Tags::Scalar>, Tags::Prefix<Tags::Vector<Dim>>>>
         prefixed_cell_values_vars(subcell_mesh.number_of_grid_points());
     prefixed_cell_values_vars = cell_values_vars;
-    evolution::dg::subcell::fd::reconstruct(make_not_null(&reconstructed_vars),
-                                            prefixed_cell_values_vars, dg_mesh,
-                                            subcell_mesh.extents());
+    evolution::dg::subcell::fd::reconstruct(
+        make_not_null(&reconstructed_vars), prefixed_cell_values_vars, dg_mesh,
+        subcell_mesh.extents(), reconstruction_method);
     check_each_field_in_vars(reconstructed_vars);
 
     // Check with prefix tag on the DG vars
@@ -207,38 +212,46 @@ void test_reconstruct_fd(const std::vector<double>& eps) {
         prefixed_reconstructed_vars{dg_mesh.number_of_grid_points()};
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&prefixed_reconstructed_vars), cell_values_vars, dg_mesh,
-        subcell_mesh.extents());
+        subcell_mesh.extents(), reconstruction_method);
     check_each_field_in_vars(prefixed_reconstructed_vars);
 
     // Check with the prefix on the DG and subcell vars
     prefixed_reconstructed_vars.initialize(0);
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&prefixed_reconstructed_vars), prefixed_cell_values_vars,
-        dg_mesh, subcell_mesh.extents());
+        dg_mesh, subcell_mesh.extents(), reconstruction_method);
     check_each_field_in_vars(prefixed_reconstructed_vars);
   }
 }
 
-// [[TimeOut, 15]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
                   "[Evolution][Unit]") {
-  test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto>({1.0e-13});
-  test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::Gauss>({5.0e-14});
+  for (const auto reconstruction_method :
+       {evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce,
+        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}) {
+    test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto>(
+        {1.0e-13}, reconstruction_method);
+    test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::Gauss>({5.0e-14},
+                                                     reconstruction_method);
 
-  test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto>(
-      {1.0e-14, 2.0e-13, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10});
-  test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::Gauss>(
-      {1.0e-14, 1.0e-14, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10});
+    test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto>(
+        {1.0e-14, 2.0e-13, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10},
+        reconstruction_method);
+    test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::Gauss>(
+        {1.0e-14, 1.0e-14, 5.0e-7, 3.0e-7, 3.0e-8, 1.0e-9, 1.0e-10},
+        reconstruction_method);
 
-  test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::GaussLobatto>(
-      {1.0e-14, 1.0e-14, 3.0e-6, 3.0e-7, 3.0e-8});
-  test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
-                      Spectral::Quadrature::Gauss>(
-      {1.0e-14, 1.0e-14, 1.0e-6, 3.0e-7, 3.0e-8});
+    test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::GaussLobatto>(
+        {1.0e-14, 1.0e-14, 3.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
+    test_reconstruct_fd<6, 3, Spectral::Basis::Legendre,
+                        Spectral::Quadrature::Gauss>(
+        {1.0e-14, 1.0e-14, 1.0e-6, 3.0e-7, 3.0e-8}, reconstruction_method);
+  }
 }
 }  // namespace

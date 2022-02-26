@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -23,7 +24,8 @@ template <size_t Dim>
 void reconstruct_impl(gsl::span<double> dg_u,
                       gsl::span<const double> subcell_u_times_projected_det_jac,
                       const Mesh<Dim>& dg_mesh,
-                      const Index<Dim>& subcell_extents);
+                      const Index<Dim>& subcell_extents,
+                      ReconstructionMethod reconstruction_method);
 }  // namespace detail
 
 /// @{
@@ -51,17 +53,20 @@ void reconstruct_impl(gsl::span<double> dg_u,
 template <size_t Dim>
 DataVector reconstruct(const DataVector& subcell_u_times_projected_det_jac,
                        const Mesh<Dim>& dg_mesh,
-                       const Index<Dim>& subcell_extents);
+                       const Index<Dim>& subcell_extents,
+                       ReconstructionMethod reconstruction_method);
 
 template <size_t Dim>
 void reconstruct(gsl::not_null<DataVector*> dg_u,
                  const DataVector& subcell_u_times_projected_det_jac,
-                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents);
+                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
+                 ReconstructionMethod reconstruction_method);
 
 template <typename SubcellTagList, typename DgTagList, size_t Dim>
 void reconstruct(const gsl::not_null<Variables<DgTagList>*> dg_u,
                  const Variables<SubcellTagList>& subcell_u,
-                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents) {
+                 const Mesh<Dim>& dg_mesh, const Index<Dim>& subcell_extents,
+                 const ReconstructionMethod reconstruction_method) {
   ASSERT(subcell_u.number_of_grid_points() == subcell_extents.product(),
          "Incorrect subcell size of u: " << subcell_u.number_of_grid_points()
                                          << " but should be "
@@ -73,15 +78,17 @@ void reconstruct(const gsl::not_null<Variables<DgTagList>*> dg_u,
   detail::reconstruct_impl(
       gsl::span<double>{dg_u->data(), dg_u->size()},
       gsl::span<const double>{subcell_u.data(), subcell_u.size()}, dg_mesh,
-      subcell_extents);
+      subcell_extents, reconstruction_method);
 }
 
 template <typename TagList, size_t Dim>
-Variables<TagList> reconstruct(const Variables<TagList>& subcell_u,
-                               const Mesh<Dim>& dg_mesh,
-                               const Index<Dim>& subcell_extents) {
+Variables<TagList> reconstruct(
+    const Variables<TagList>& subcell_u, const Mesh<Dim>& dg_mesh,
+    const Index<Dim>& subcell_extents,
+    const ReconstructionMethod reconstruction_method) {
   Variables<TagList> dg_u(dg_mesh.number_of_grid_points());
-  reconstruct(make_not_null(&dg_u), subcell_u, dg_mesh, subcell_extents);
+  reconstruct(make_not_null(&dg_u), subcell_u, dg_mesh, subcell_extents,
+              reconstruction_method);
   return dg_u;
 }
 /// @}

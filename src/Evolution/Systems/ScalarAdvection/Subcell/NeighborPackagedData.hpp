@@ -25,9 +25,12 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/BoundaryCorrection.hpp"
@@ -88,6 +91,8 @@ struct NeighborPackagedData {
     const Mesh<Dim>& dg_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
+    const auto& subcell_options =
+        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
     const auto volume_vars_subcell = evolution::dg::subcell::fd::project(
         db::get<typename System<Dim>::variables_tag>(box), dg_mesh,
         subcell_mesh.extents());
@@ -204,7 +209,8 @@ struct NeighborPackagedData {
                     packaged_data,
                     dg_mesh.slice_away(mortar_id.first.dimension()),
                     subcell_mesh.extents().slice_away(
-                        mortar_id.first.dimension()));
+                        mortar_id.first.dimension()),
+                    subcell_options.reconstruction_method());
             neighbor_package_data[mortar_id] = std::vector<double>{
                 dg_packaged_data.data(),
                 dg_packaged_data.data() + dg_packaged_data.size()};

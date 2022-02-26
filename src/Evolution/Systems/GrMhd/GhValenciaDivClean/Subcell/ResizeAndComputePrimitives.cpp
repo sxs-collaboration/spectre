@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/KastaunEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
@@ -51,7 +52,9 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     prim_vars->initialize(num_grid_points);
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&get(get<hydro::Tags::Pressure<DataVector>>(*prim_vars))),
-        get(fd_pressure), dg_mesh, subcell_mesh.extents());
+        get(fd_pressure), dg_mesh, subcell_mesh.extents(),
+        // Always do dim-by-dim reconstruction because it's fast
+        evolution::dg::subcell::fd ::ReconstructionMethod::DimByDim);
 
     // Compute the spatial metric, inverse spatial metric, and sqrt{det{spatial
     // metric}} on the DG grid since we need these for the prim recovery.

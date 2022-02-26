@@ -29,6 +29,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
+#include "Evolution/DgSubcell/ReconstructionMethod.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -113,18 +114,22 @@ struct Metavariables {
     using argument_tags =
         tmpl::list<evolution::dg::subcell::Tags::Inactive<
                        Tags::Variables<tmpl::list<Var1>>>,
-                   Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>>;
+                   Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
+                   evolution::dg::subcell::Tags::SubcellOptions>;
 
     static bool apply(
         const Variables<
             tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>& dg_vars,
         const Variables<tmpl::list<Var1>>& subcell_vars,
-        const Mesh<Dim>& dg_mesh, const double persson_exponent) {
+        const Mesh<Dim>& dg_mesh,
+        const evolution::dg::subcell::SubcellOptions& subcell_options,
+        const double persson_exponent) {
       Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
           reconstructed_dg_vars{dg_vars.number_of_grid_points()};
       evolution::dg::subcell::fd::reconstruct(
           make_not_null(&reconstructed_dg_vars), subcell_vars, dg_mesh,
-          evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+          evolution::dg::subcell::fd::mesh(dg_mesh).extents(),
+          subcell_options.reconstruction_method());
       CHECK(reconstructed_dg_vars == dg_vars);
       CHECK(approx(persson_exponent) == 5.0);  // Should be subcell_opts + 1
       tci_invoked = true;
@@ -153,9 +158,11 @@ std::unique_ptr<TimeStepper> make_time_stepper(
 }
 
 template <size_t Dim>
-void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
-               const bool tci_fails, const bool always_use_subcell,
-               const bool self_starting, const bool in_substep) {
+void test_impl(
+    const bool multistep_time_stepper, const bool rdmp_fails,
+    const bool tci_fails, const bool always_use_subcell,
+    const bool self_starting, const bool in_substep,
+    const evolution::dg::subcell::fd::ReconstructionMethod recons_method) {
   CAPTURE(Dim);
   CAPTURE(multistep_time_stepper);
   CAPTURE(rdmp_fails);
@@ -163,6 +170,7 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   CAPTURE(always_use_subcell);
   CAPTURE(self_starting);
   CAPTURE(in_substep);
+  CAPTURE(recons_method);
   if (in_substep and multistep_time_stepper) {
     ERROR("Can't both be taking a substep and using a multistep time stepper");
   }
@@ -175,7 +183,8 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
-      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell}}};
+      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell,
+      recons_method}}};
 
   TimeStepId time_step_id{true, self_starting ? -1 : 1,
                           Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -291,7 +300,7 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
     auto reconstructed_dg_vars = inactive_evolved_vars;
     evolution::dg::subcell::fd::reconstruct(
         make_not_null(&reconstructed_dg_vars), evolved_vars, dg_mesh,
-        subcell_mesh.extents());
+        subcell_mesh.extents(), recons_method);
     if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell) {
       CHECK(reconstructed_dg_vars == inactive_vars_from_box);
     } else {
@@ -305,15 +314,15 @@ void test_impl(const bool multistep_time_stepper, const bool rdmp_fails,
   if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg) {
     CHECK(evolution::dg::subcell::fd::reconstruct(
               time_stepper_history.most_recent_value(), dg_mesh,
-              subcell_mesh.extents()) ==
+              subcell_mesh.extents(), recons_method) ==
           time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.cbegin(),
               box_it = time_stepper_history_from_box.cbegin();
          expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
       CHECK(evolution::dg::subcell::fd::reconstruct(
-                expected_it.derivative(), dg_mesh, subcell_mesh.extents()) ==
-            box_it.derivative());
+                expected_it.derivative(), dg_mesh, subcell_mesh.extents(),
+                recons_method) == box_it.derivative());
     }
     CHECK(tci_grid_history_from_box.empty());
   } else {
@@ -351,11 +360,18 @@ void test() {
       for (const bool tci_fails : {false, true}) {
         for (const bool always_use_subcell : {false, true}) {
           for (const bool self_starting : {false, true}) {
-            test_impl<Dim>(use_multistep_time_stepper, rdmp_fails, tci_fails,
-                           always_use_subcell, self_starting, false);
-            if (not use_multistep_time_stepper) {
+            for (const auto recons_method :
+                 {evolution::dg::subcell::fd::ReconstructionMethod::
+                      AllDimsAtOnce,
+                  evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}) {
               test_impl<Dim>(use_multistep_time_stepper, rdmp_fails, tci_fails,
-                             always_use_subcell, self_starting, true);
+                             always_use_subcell, self_starting, false,
+                             recons_method);
+              if (not use_multistep_time_stepper) {
+                test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
+                               tci_fails, always_use_subcell, self_starting,
+                               true, recons_method);
+              }
             }
           }
         }
