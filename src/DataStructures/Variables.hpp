@@ -704,6 +704,9 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
     const blaze::DenseVector<VT, VF>& expression) {
+  ASSERT((*expression).size() % number_of_independent_components == 0,
+         "Invalid size " << (*expression).size() << " for a Variables with "
+         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
@@ -713,6 +716,9 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const blaze::DenseVector<VT, VF>& expression) {
+  ASSERT((*expression).size() % number_of_independent_components == 0,
+         "Invalid size " << (*expression).size() << " for a Variables with "
+         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
