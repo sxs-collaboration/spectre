@@ -11,12 +11,15 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Xcts/Kerr.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::Solutions {
 namespace {
+
+using Kerr = WrappedGr<gr::Solutions::KerrSchild>;
 
 void test_solution(const double mass, const std::array<double, 3> spin,
                    const std::array<double, 3>& center,
@@ -53,7 +56,7 @@ void test_solution(const double mass, const std::array<double, 3> spin,
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Xcts.Kerr",
                   "[PointwiseFunctions][Unit]") {
   test_solution(0.43, {{0.1, 0.2, 0.3}}, {{1., 2., 3.}},
-                "Kerr:\n"
+                "KerrSchild:\n"
                 "  Mass: 0.43\n"
                 "  Spin: [0.1, 0.2, 0.3]\n"
                 "  Center: [1., 2., 3.]");

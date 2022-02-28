@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 #include <pup.h>
 
 #include "DataStructures/CachedTempBuffer.hpp"
@@ -14,7 +15,6 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
@@ -26,9 +26,23 @@
 namespace Xcts::Solutions {
 namespace detail {
 
+template <typename DataType, size_t Dim>
+using gr_solution_vars = tmpl::list<
+    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    gr::Tags::Lapse<DataType>,
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial>,
+    gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>;
+
 template <typename DataType>
-using KerrVariablesCache = cached_temp_buffer_from_typelist<
-    tmpl::push_back<
+using WrappedGrVariablesCache =
+    cached_temp_buffer_from_typelist<tmpl::push_back<
         common_tags<DataType>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
@@ -36,32 +50,28 @@ using KerrVariablesCache = cached_temp_buffer_from_typelist<
             gr::Tags::MomentumDensity<3, Frame::Inertial, DataType>, 0>>>;
 
 template <typename DataType>
-struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
+struct WrappedGrVariables
+    : CommonVariables<DataType, WrappedGrVariablesCache<DataType>> {
   static constexpr size_t Dim = 3;
-  using Cache = KerrVariablesCache<DataType>;
-  using Base = CommonVariables<DataType, KerrVariablesCache<DataType>>;
+  using Cache = WrappedGrVariablesCache<DataType>;
+  using Base = CommonVariables<DataType, WrappedGrVariablesCache<DataType>>;
   using Base::operator();
 
-  KerrVariables(
+  WrappedGrVariables(
       std::optional<std::reference_wrapper<const Mesh<Dim>>> local_mesh,
       std::optional<std::reference_wrapper<const InverseJacobian<
           DataType, Dim, Frame::ElementLogical, Frame::Inertial>>>
           local_inv_jacobian,
       const tnsr::I<DataType, 3>& local_x,
-      gr::Solutions::KerrSchild::IntermediateVars<DataType>
-          local_kerr_schild_cache,
-      gr::Solutions::KerrSchild::IntermediateComputer<DataType>
-          local_kerr_schild_computer)
+      const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
+          local_gr_solution)
       : Base(std::move(local_mesh), std::move(local_inv_jacobian)),
         x(local_x),
-        kerr_schild_cache(std::move(local_kerr_schild_cache)),
-        kerr_schild_computer(std::move(local_kerr_schild_computer)) {}
+        gr_solution(local_gr_solution) {}
 
   const tnsr::I<DataType, Dim>& x;
-  mutable gr::Solutions::KerrSchild::IntermediateVars<DataType>
-      kerr_schild_cache;
-  gr::Solutions::KerrSchild::IntermediateComputer<DataType>
-      kerr_schild_computer;
+  const tuples::tagged_tuple_from_typelist<gr_solution_vars<DataType, Dim>>&
+      gr_solution;
 
   void operator()(
       gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
@@ -145,15 +155,25 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
 }  // namespace detail
 
 /*!
- * \brief Kerr spacetime in general relativity
+ * \brief XCTS quantities for a solution of the Einstein equations
  *
- * This class implements the Kerr solution to the XCTS equations. It is
- * currently implemented in Kerr-Schild coordinates only and derives most
- * quantities from the `gr::Solution::KerrSchild` class. It poses a
- * non-conformally-flat problem to the XCTS equations.
+ * This class computes all XCTS quantities from the `GrSolution`. To do so, it
+ * chooses the conformal factor
  *
- * The conformal factor in this solution is set to \f$\psi=1\f$, so the
- * conformal background-metric is the spatial Kerr metric. It is possible to
+ * \f{equation}{
+ *   \psi = 1
+ *   \text{,}
+ * \f}
+ *
+ * so the spatial metric of the `GrSolution` is used as conformal metric,
+ * \f$\bar{\gamma}_{ij = \gamma_{ij}\f$. This is particularly useful for
+ * superpositions, because it means that the superposed conformal metric of two
+ * `WrappedGr` solutions is probably a good conformal background to solve for a
+ * binary solution (see Xcts::AnalyticData::Binary).
+ *
+ * For example, when the `GrSolution` is `gr::Solutions::KerrSchild`, the
+ * conformal metric is the spatial Kerr metric in Kerr-Schild coordinates and
+ * \f$\psi = 1\f$. It is also possible to
  * choose a different \f$\psi\f$ so the solution is non-trivial in this
  * variable, though that is probably only useful for testing and currently not
  * implemented. It should be noted, however, that the combination of
@@ -167,24 +187,31 @@ struct KerrVariables : CommonVariables<DataType, KerrVariablesCache<DataType>> {
  * initial guess than flatness, such as a superposition of Kerr solutions for
  * black-hole binary initial data.
  */
-class Kerr : public elliptic::analytic_data::AnalyticSolution,
-             public gr::Solutions::KerrSchild {
+template <typename GrSolution>
+class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
+                  public GrSolution {
  public:
-  using KerrSchild::KerrSchild;
+  static constexpr size_t Dim = 3;
+
+  using options = typename GrSolution::options;
+  static constexpr Options::String help = GrSolution::help;
+  static std::string name() { return Options::name<GrSolution>(); }
+
+  using GrSolution::GrSolution;
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(Kerr);
+  WRAPPED_PUPable_decl_template(WrappedGr<GrSolution>);
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(
       const tnsr::I<DataType, 3, Frame::Inertial>& x,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::KerrVariables<DataType>;
+    const auto gr_solution =
+        GrSolution::variables(x, std::numeric_limits<double>::signaling_NaN(),
+                              detail::gr_solution_vars<DataType, Dim>{});
+    using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
     typename VarsComputer::Cache cache{num_points};
-    const VarsComputer computer{
-        std::nullopt, std::nullopt, x,
-        gr::Solutions::KerrSchild::IntermediateVars<DataType>{num_points},
-        gr::Solutions::KerrSchild::IntermediateComputer<DataType>{*this, x}};
+    const VarsComputer computer{std::nullopt, std::nullopt, x, gr_solution};
     return {cache.get_var(computer, RequestedTags{})...};
   }
 
@@ -194,18 +221,18 @@ class Kerr : public elliptic::analytic_data::AnalyticSolution,
       const InverseJacobian<DataVector, 3, Frame::ElementLogical,
                             Frame::Inertial>& inv_jacobian,
       tmpl::list<RequestedTags...> /*meta*/) const {
-    using VarsComputer = detail::KerrVariables<DataType>;
+    const auto gr_solution =
+        GrSolution::variables(x, std::numeric_limits<double>::signaling_NaN(),
+                              detail::gr_solution_vars<DataType, Dim>{});
+    using VarsComputer = detail::WrappedGrVariables<DataType>;
     const size_t num_points = get_size(*x.begin());
-    typename VarsComputer::Cache cache{get_size(*x.begin())};
-    VarsComputer computer{
-        mesh, inv_jacobian, x,
-        gr::Solutions::KerrSchild::IntermediateVars<DataType>{num_points},
-        gr::Solutions::KerrSchild::IntermediateComputer<DataType>{*this, x}};
+    typename VarsComputer::Cache cache{num_points};
+    VarsComputer computer{mesh, inv_jacobian, x, gr_solution};
     return {cache.get_var(computer, RequestedTags{})...};
   }
 
   void pup(PUP::er& p) override {
-    gr::Solutions::KerrSchild::pup(p);
+    GrSolution::pup(p);
     elliptic::analytic_data::AnalyticSolution::pup(p);
   }
 };

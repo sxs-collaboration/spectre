@@ -10,8 +10,8 @@ spectre_target_sources(
   PRIVATE
   ConstantDensityStar.cpp
   Flatness.cpp
-  Kerr.cpp
   Schwarzschild.cpp
+  WrappedGr.cpp
   )
 
 spectre_target_headers(
@@ -23,8 +23,8 @@ spectre_target_headers(
   ConstantDensityStar.hpp
   Factory.hpp
   Flatness.hpp
-  Kerr.hpp
   Schwarzschild.hpp
+  WrappedGr.hpp
   )
 
 target_link_libraries(
