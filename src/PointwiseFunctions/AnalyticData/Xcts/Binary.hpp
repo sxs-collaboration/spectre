@@ -109,16 +109,23 @@ struct BinaryVariables
   const std::array<tuples::tagged_tuple_from_typelist<superposed_tags>, 2>
       isolated_vars;
 
-  template <typename Tag,
+  template <bool ApplyWindow = true, typename Tag,
             Requires<tmpl::list_contains_v<superposed_tags, Tag>> = nullptr>
   void superposition(gsl::not_null<typename Tag::type*> superposed_var,
                      gsl::not_null<Cache*> /*cache*/, Tag /*meta*/) const {
     for (size_t i = 0; i < superposed_var->size(); ++i) {
-      (*superposed_var)[i] =
-          get<Tag>(flat_vars)[i] +
-          windows[0] *
-              (get<Tag>(isolated_vars[0])[i] - get<Tag>(flat_vars)[i]) +
-          windows[1] * (get<Tag>(isolated_vars[1])[i] - get<Tag>(flat_vars)[i]);
+      if constexpr (ApplyWindow) {
+        (*superposed_var)[i] =
+            get<Tag>(flat_vars)[i] +
+            windows[0] *
+                (get<Tag>(isolated_vars[0])[i] - get<Tag>(flat_vars)[i]) +
+            windows[1] *
+                (get<Tag>(isolated_vars[1])[i] - get<Tag>(flat_vars)[i]);
+      } else {
+        (*superposed_var)[i] = get<Tag>(isolated_vars[0])[i] +
+                               get<Tag>(isolated_vars[1])[i] -
+                               get<Tag>(flat_vars)[i];
+      }
     }
   }
 
@@ -170,13 +177,13 @@ struct BinaryVariables
       const gsl::not_null<Scalar<DataType>*> conformal_energy_density,
       const gsl::not_null<Cache*> cache,
       gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0> meta) const {
-    superposition(conformal_energy_density, cache, meta);
+    superposition<false>(conformal_energy_density, cache, meta);
   }
   void operator()(
       const gsl::not_null<Scalar<DataType>*> conformal_stress_trace,
       const gsl::not_null<Cache*> cache,
       gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0> meta) const {
-    superposition(conformal_stress_trace, cache, meta);
+    superposition<false>(conformal_stress_trace, cache, meta);
   }
   void operator()(
       const gsl::not_null<tnsr::I<DataType, Dim>*> conformal_momentum_density,
@@ -184,7 +191,7 @@ struct BinaryVariables
       gr::Tags::Conformal<
           gr::Tags::MomentumDensity<Dim, Frame::Inertial, DataType>, 0>
           meta) const {
-    superposition(conformal_momentum_density, cache, meta);
+    superposition<false>(conformal_momentum_density, cache, meta);
   }
   void operator()(const gsl::not_null<Scalar<DataType>*> conformal_factor,
                   const gsl::not_null<Cache*> cache,
@@ -231,8 +238,9 @@ struct BinaryVariables
  * where \f$\gamma^\alpha_{ij}\f$ and \f$K^\alpha\f$ denote the spatial metric
  * and extrinsic-curvature trace of the two individual solutions, \f$r_\alpha\f$
  * is the Euclidean coordinate-distance from the center of each object and
- * \f$w_\alpha\f$ are parameters describing Gaussian falloff-widths. The
- * Gaussian falloffs facilitate that the influence of either of the two objects
+ * \f$w_\alpha\f$ are parameters describing the falloff widths of Gaussian
+ * window functions. The window functions
+ * facilitate that the influence of either of the two objects
  * at the position of the other is strongly damped, and they also avoid
  * logarithmic scaling of the solution at large distances where we would
  * typically employ an inverse-radial coordinate map and asymptotically-flat
@@ -242,6 +250,17 @@ struct BinaryVariables
  * The falloff can be disabled by passing `std::nullopt` to the constructor, or
  * `None` in the input file.
  *
+ * \par Matter sources
+ * Matter sources are superposed without the window functions. The analytic
+ * matter sources are of
+ * limited use anyway, because in a binary setting they don't take the
+ * gravitational influence of the other body into account. Therefore, the matter
+ * sources should typically be solved-for alongside the gravity sector to impose
+ * conditions such as hydrostatic equilibrium. For scenarios where we just want
+ * to superpose the isolated matter solutions and compute the resulting gravity,
+ * the matter sources are simply added.
+ *
+ * \par Orbital motion
  * The remaining quantities that this class implements relate to the orbital
  * motion of the two objects. To obtain initial data in "co-rotating"
  * coordinates where the two objects are initially at rest we prescribe the
