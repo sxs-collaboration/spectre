@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <optional>
 #include <pup_stl.h>
 #include <utility>
