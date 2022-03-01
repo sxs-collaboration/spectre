@@ -45,6 +45,10 @@ static_assert(
         Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
                              TestHelpers::Tags::Vector<DataVector>>>>::value);
 
+static_assert(not std::is_convertible_v<
+              DataVector,
+              Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>>>);
+
 namespace {
 std::string repeat_string_with_commas(const std::string& str,
                                       const size_t repeats) {
@@ -1035,6 +1039,39 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
   get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
       Scalar<DataVector>{{{{0.}}}};
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Variables.BadSize.constructor",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                       TestHelpers::Tags::Scalar2<DataVector>>>
+      source(2, -3.0);
+  // Multiply by one to convert to an expression template.
+  (void)static_cast<
+      Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(1.0 *
+                                                                    source);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.Variables.BadSize.assignment",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                       TestHelpers::Tags::Scalar2<DataVector>>>
+      source(2, -3.0);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> destination;
+  // Multiply by one to convert to an expression template.
+  destination = 1.0 * source;
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

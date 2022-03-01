@@ -49,6 +49,8 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 template <typename TagsList>
 class Variables;
+template <typename T, typename VectorType>
+class VectorImpl;
 namespace Tags {
 template <typename TagsList>
 class Variables;
@@ -267,6 +269,13 @@ class Variables<tmpl::list<Tags...>> {
 
   template <typename VT, bool VF>
   Variables& operator=(const blaze::DenseVector<VT, VF>& expression);
+
+  // Prevent the previous two declarations from implicitly converting
+  // DataVectors and similar to Variables.
+  template <typename T, typename VectorType>
+  Variables(const VectorImpl<T, VectorType>&) = delete;
+  template <typename T, typename VectorType>
+  Variables& operator=(const VectorImpl<T, VectorType>&) = delete;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same_v<
@@ -695,6 +704,9 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>::Variables(
     const blaze::DenseVector<VT, VF>& expression) {
+  ASSERT((*expression).size() % number_of_independent_components == 0,
+         "Invalid size " << (*expression).size() << " for a Variables with "
+         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
 }
@@ -704,6 +716,9 @@ template <typename... Tags>
 template <typename VT, bool VF>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const blaze::DenseVector<VT, VF>& expression) {
+  ASSERT((*expression).size() % number_of_independent_components == 0,
+         "Invalid size " << (*expression).size() << " for a Variables with "
+         << number_of_independent_components << " components.");
   initialize((*expression).size() / number_of_independent_components);
   variable_data_ = expression;
   return *this;
