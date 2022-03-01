@@ -117,7 +117,8 @@ void test_outer_product_double(const DataType& used_for_size) {
     for (size_t j = 0; j < dim; j++) {
       CHECK(Lij_from_R_Sij.get(i, j) == 5.6 * S.get(i, j));
       CHECK(Lij_from_Sij_R.get(i, j) == S.get(i, j) * -8.1);
-      CHECK(Lij_from_R_Sij_T.get(i, j) == -1.7 * S.get(i, j) * 0.6);
+      CHECK_ITERABLE_APPROX(Lij_from_R_Sij_T.get(i, j),
+                            -1.7 * S.get(i, j) * 0.6);
     }
   }
 }
