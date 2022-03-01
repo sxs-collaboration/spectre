@@ -179,13 +179,32 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
           typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
                                                   ArgsList<Args...>>::type,
           IndexList<Indices...>, ArgsList<Args...>> {
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = X;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using symmetry =
       typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
                                               ArgsList<Args...>>::type;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = IndexList<Indices...>;
-  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+  /// The list of generic `TensorIndex`s of the result of the expression
   using args_list = ArgsList<Args...>;
+  /// The number of tensor indices in the result of the expression
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_left_child = 0;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_right_child = 0;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_subtree = 0;
 
   /// Construct an expression from a Tensor
   explicit TensorAsExpression(const Tensor<X, Symm, IndexList<Indices...>>& t)
@@ -207,6 +226,7 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
   }
 
  private:
+  /// `Tensor` represented by this expression
   const Tensor<X, Symm, IndexList<Indices...>>* t_ = nullptr;
 };
 }  // namespace tenex

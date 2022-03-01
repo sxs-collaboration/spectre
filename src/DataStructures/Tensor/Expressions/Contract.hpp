@@ -454,6 +454,19 @@ struct TensorContract
   /// The number of terms to sum for this expression's contraction
   static constexpr size_t num_terms_summed = contracted_type::num_terms_summed;
 
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child =
+      T::num_ops_subtree * num_terms_summed + num_terms_summed - 1;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand. This is 0 because this expression represents a unary
+  /// operation.
+  static constexpr size_t num_ops_right_child = 0;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree = num_ops_left_child;
+
   explicit TensorContract(
       const TensorExpression<T, X, Symm, IndexList, ArgsList>& t)
       : t_(~t) {}

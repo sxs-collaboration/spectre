@@ -35,11 +35,30 @@ struct SquareRoot
       "Can only take the square root of a tensor expression that evaluates to "
       "a rank 0 tensor.");
 
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = typename T::type;
+  /// The ::Symmetry of the result of the expression
   using symmetry = typename T::symmetry;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = typename T::index_list;
+  /// The list of generic `TensorIndex`s of the result of the expression
   using args_list = tmpl::list<Args...>;
+  /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = sizeof...(Args);
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child = T::num_ops_subtree;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand. This is 0 because this expression represents a unary
+  /// operation.
+  static constexpr size_t num_ops_right_child = 0;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree = num_ops_left_child + 1;
 
   SquareRoot(T t) : t_(std::move(t)) {}
   ~SquareRoot() override = default;
@@ -49,7 +68,7 @@ struct SquareRoot
   ///
   /// \details
   /// SquareRoot only supports tensor expressions that evaluate to a rank 0
-  /// Tensor. This is why `multi_index` is always an array of size 0.
+  /// Tensor This is why `multi_index` is always an array of size 0.
   ///
   /// \param multi_index the multi-index of the component of which to take the
   /// square root
@@ -61,6 +80,7 @@ struct SquareRoot
   }
 
  private:
+  /// Operand expression
   T t_;
 };
 }  // namespace tenex

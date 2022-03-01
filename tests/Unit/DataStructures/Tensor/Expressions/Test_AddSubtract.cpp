@@ -36,6 +36,27 @@ void assign_unique_values_to_tensor(
   }
 }
 
+// Checks that the number of ops in the expressions match what is expected
+void test_tensor_ops_properties() {
+  const Scalar<double> G{};
+  const double H = 0.0;
+  const tnsr::ii<double, 3> R{};
+  const tnsr::ij<double, 3> S{};
+  const tnsr::aa<double, 3> T{};
+
+  const auto scalar_expression = H - G() - H;
+  const auto R_plus_S = R(ti::i, ti::j) + S(ti::i, ti::j);
+  const auto R_minus_T = R(ti::i, ti::j) - T(ti::j, ti::i);
+  const auto large_expression = R(ti::i, ti::j) + S(ti::i, ti::j) -
+                                T(ti::j, ti::i) + S(ti::j, ti::i) +
+                                S(ti::i, ti::j) - R(ti::j, ti::i);
+
+  CHECK(scalar_expression.num_ops_subtree == 2);
+  CHECK(R_plus_S.num_ops_subtree == 1);
+  CHECK(R_minus_T.num_ops_subtree == 1);
+  CHECK(large_expression.num_ops_subtree == 5);
+}
+
 // \brief Test the sum and difference of a `double` and tensor expression is
 // correctly evaluated
 //
@@ -99,6 +120,9 @@ void test_addsub_double(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                   "[DataStructures][Unit]") {
+  test_tensor_ops_properties();
+
+  // Test adding and subtracting `double`s
   test_addsub_double(std::numeric_limits<double>::signaling_NaN());
   test_addsub_double(
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));

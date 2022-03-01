@@ -295,33 +295,63 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
                 "Invalid Sign provided for addition or subtraction of Tensor "
                 "elements. Sign must be 1 (addition) or -1 (subtraction).");
 
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = typename detail::AddSubType<T1, T2>::type;
+  /// The ::Symmetry of the result of the expression
   using symmetry = typename detail::AddSubType<T1, T2>::symmetry;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = typename detail::AddSubType<T1, T2>::index_list;
-  // number of indices in the tensor resulting from addition or subtraction
-  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
-  // number of indices in the second operand in the addition or subtraction
-  static constexpr auto num_tensor_indices_op2 = sizeof...(Args2);
+  /// The list of generic `TensorIndex`s of the result of the
+  /// expression
   using args_list = typename T1::args_list;
+  /// The number of tensor indices in the result of the expression. This also
+  /// doubles as the left operand's number of indices.
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+  /// The number of tensor indices in the right operand expression
+  static constexpr auto num_tensor_indices_op2 = sizeof...(Args2);
+  /// Mapping from the left operand's index order to the right operand's index
+  /// order
   static constexpr std::array<size_t, num_tensor_indices_op2>
       operand_index_transformation =
           compute_tensorindex_transformation<num_tensor_indices,
                                              num_tensor_indices_op2>(
               {{Args1::value...}}, {{Args2::value...}});
-  // positions of indices in first operand where generic spatial indices are
-  // used for spacetime indices
+  /// Positions of indices in first operand where generic spatial indices are
+  /// used for spacetime indices
   static constexpr auto op1_spatial_spacetime_index_positions =
       detail::get_spatial_spacetime_index_positions<typename T1::index_list,
                                                     ArgsList1<Args1...>>();
-  // positions of indices in second operand where generic spatial indices are
-  // used for spacetime indices
+  /// Positions of indices in second operand where generic spatial indices are
+  /// used for spacetime indices
   static constexpr auto op2_spatial_spacetime_index_positions =
       detail::get_spatial_spacetime_index_positions<typename T2::index_list,
                                                     ArgsList2<Args2...>>();
 
+  /// Whether or not the two operands have the same `TensorIndex`s in the same
+  /// order (including concrete time indices)
   static constexpr bool ops_have_generic_indices_at_same_positions =
       generic_indices_at_same_positions<tmpl::list<Args1...>,
                                         tmpl::list<Args2...>>::value;
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand
+  static constexpr size_t num_ops_right_child = T2::num_ops_subtree;
+  // This helps ensure we are minimizing breadth in the overall tree when we
+  // have addition (subtraction is not commutative)
+  static_assert(Sign == -1 or num_ops_left_child >= num_ops_right_child,
+                "The left operand of an AddSub expression performing addition "
+                "should be a subtree with equal or more tensor operations than "
+                "the right operand's subtree.");
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree =
+      num_ops_left_child + num_ops_right_child + 1;
 
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
@@ -480,7 +510,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   }
 
  private:
+  /// Left operand expression
   T1 t1_;
+  /// Right operand expression
   T2 t2_;
 };
 }  // namespace tenex
@@ -506,7 +538,11 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when adding two tensors must be equal. This error "
       "occurs from expressions like R(ti::a, ti::b) + S(ti::c, ti::a)");
-  return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
+  if constexpr (T1::num_ops_subtree >= T2::num_ops_subtree) {
+    return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
+  } else {
+    return tenex::AddSub<T2, T1, Args2, Args1, 1>(~t2, ~t1);
+  }
 }
 
 /// @{
@@ -558,7 +594,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       (... and tt::is_time_index<Args>::value),
       "Can only add a number to a tensor expression that evaluates to a rank 0"
       "tensor.");
-  return tenex::NumberAsExpression(number) + t;
+  return t + tenex::NumberAsExpression(number);
 }
 /// @}
 
@@ -582,8 +618,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
   static_assert(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when subtracting two tensors must be equal. This "
-      "error "
-      "occurs from expressions like R(ti::a, ti::b) - S(ti::c, ti::a)");
+      "error occurs from expressions like R(ti::a, ti::b) - S(ti::c, ti::a)");
   return tenex::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
 
@@ -625,7 +660,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return t - tenex::NumberAsExpression(number);
+  return t + tenex::NumberAsExpression(-number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args>

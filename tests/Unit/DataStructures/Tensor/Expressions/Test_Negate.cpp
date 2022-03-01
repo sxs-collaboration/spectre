@@ -13,6 +13,26 @@
 #include "Utilities/Gsl.hpp"
 
 namespace {
+// Checks that the number of ops in the expressions match what is expected
+void test_tensor_ops_properties() {
+  const Scalar<double> G{5.0};
+  const double H = 5.0;
+  const tnsr::ii<double, 3> R{};
+  const tnsr::ij<double, 3> S{};
+
+  const auto neg_G = -G();
+  const auto neg_R = -R(ti::i, ti::j);
+  // Below, -H should be `NumberAsExpression(-H)`, so the * should be the only
+  // op for this expression
+  const auto neg_H_times_G = -H * G();
+  const auto neg_S_minus_R_times_G = -(S(ti::j, ti::i) - R(ti::i, ti::j) * G());
+
+  CHECK(neg_G.num_ops_subtree == 1);
+  CHECK(neg_R.num_ops_subtree == 1);
+  CHECK(neg_H_times_G.num_ops_subtree == 1);
+  CHECK(neg_S_minus_R_times_G.num_ops_subtree == 3);
+}
+
 // \brief Test the unary `-` correctly negates a tensor expression
 //
 // \details
@@ -61,6 +81,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Negate",
                   "[DataStructures][Unit]") {
   MAKE_GENERATOR(generator);
 
+  test_tensor_ops_properties();
   test_negate(make_not_null(&generator),
               std::numeric_limits<double>::signaling_NaN());
   test_negate(make_not_null(&generator),

@@ -45,20 +45,40 @@ struct Divide : public TensorExpression<
                 "expression that evaluates to "
                 "a rank 0 tensor.");
 
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type =
       std::conditional_t<std::is_same<typename T1::type, DataVector>::value or
                              std::is_same<typename T2::type, DataVector>::value,
                          DataVector, double>;
+  /// The ::Symmetry of the result of the expression
   using symmetry = typename T1::symmetry;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = typename T1::index_list;
+  /// The list of generic `TensorIndex`s of the result of the expression
   using args_list = typename T1::args_list;
+  /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices =
       tmpl::size<typename T1::index_list>::value;
+  /// The number of tensor indices in the left operand expression
   static constexpr auto op2_num_tensor_indices =
       tmpl::size<typename T2::index_list>::value;
-  // the denominator has no indices or all time indices
+  /// The multi-index for the denominator
   static constexpr auto op2_multi_index =
       make_array<op2_num_tensor_indices, size_t>(0);
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand
+  static constexpr size_t num_ops_right_child = T2::num_ops_subtree;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree =
+      num_ops_left_child + num_ops_right_child + 1;
 
   Divide(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~Divide() override = default;
@@ -76,7 +96,9 @@ struct Divide : public TensorExpression<
   }
 
  private:
+  /// Left operand (numerator)
   T1 t1_;
+  /// Right operand (denominator)
   T2 t2_;
 };
 }  // namespace tenex

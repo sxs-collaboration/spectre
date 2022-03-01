@@ -72,15 +72,41 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
                     std::is_same<T2, NumberAsExpression>::value,
                 "Cannot product Tensors holding different data types.");
 
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = typename detail::OuterProductType<T1, T2>::type;
+  /// The ::Symmetry of the result of the expression
   using symmetry = typename detail::OuterProductType<T1, T2>::symmetry;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = typename detail::OuterProductType<T1, T2>::index_list;
+  /// The list of generic `TensorIndex`s of the result of the
+  /// expression
   using args_list = typename detail::OuterProductType<T1, T2>::tensorindex_list;
+  /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+  /// The number of tensor indices in the left operand expression
   static constexpr auto op1_num_tensor_indices =
       tmpl::size<typename T1::index_list>::value;
+  /// The number of tensor indices in the right operand expression
   static constexpr auto op2_num_tensor_indices =
       num_tensor_indices - op1_num_tensor_indices;
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand
+  static constexpr size_t num_ops_right_child = T2::num_ops_subtree;
+  // This helps ensure we are minimizing breadth in the overall tree
+  static_assert(num_ops_left_child >= num_ops_right_child,
+                "The left operand should be a subtree with equal or more "
+                "tensor operations than the right operand's subtree.");
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree =
+      num_ops_left_child + num_ops_right_child + 1;
 
   OuterProduct(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~OuterProduct() override = default;
@@ -121,7 +147,9 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   }
 
  private:
+  /// Left operand expression
   T1 t1_;
+  /// Right operand expression
   T2 t2_;
 };
 }  // namespace tenex
@@ -156,7 +184,11 @@ SPECTRE_ALWAYS_INLINE auto operator*(
                            typename T1::index_list, ArgsList1>& t1,
     const TensorExpression<T2, typename T2::type, typename T2::symmetry,
                            typename T2::index_list, ArgsList2>& t2) {
-  return tenex::contract(tenex::OuterProduct<T1, T2>(~t1, ~t2));
+  if constexpr (T1::num_ops_subtree >= T2::num_ops_subtree) {
+    return tenex::contract(tenex::OuterProduct<T1, T2>(~t1, ~t2));
+  } else {
+    return tenex::contract(tenex::OuterProduct<T2, T1>(~t2, ~t1));
+  }
 }
 
 /// @{
@@ -186,6 +218,6 @@ SPECTRE_ALWAYS_INLINE auto operator*(
     const double number,
     const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
                            ArgsList>& t) {
-  return tenex::NumberAsExpression(number) * t;
+  return t * tenex::NumberAsExpression(number);
 }
 /// @}

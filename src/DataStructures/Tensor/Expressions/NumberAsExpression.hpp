@@ -16,21 +16,35 @@ namespace tenex {
 struct NumberAsExpression
     : public TensorExpression<NumberAsExpression, double, tmpl::list<>,
                               tmpl::list<>, tmpl::list<>> {
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = double;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using symmetry = tmpl::list<>;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = tmpl::list<>;
+  /// The list of generic `TensorIndex`s of the result of the expression
   using args_list = tmpl::list<>;
+  /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = 0;
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_left_child = 0;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_right_child = 0;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_subtree = 0;
 
   NumberAsExpression(const double number) : number_(number) {}
   ~NumberAsExpression() override = default;
 
   /// \brief Returns the number represented by the expression
-  ///
-  /// \details
-  /// While a NumberAsExpression does not store a rank 0 Tensor, it does
-  /// represent one. This is why the multi-index argument is always an array of
-  /// size 0.
   ///
   /// \return the number represented by this expression
   SPECTRE_ALWAYS_INLINE double get(
@@ -39,6 +53,7 @@ struct NumberAsExpression
   }
 
  private:
+  /// Number represented by this expression
   double number_;
 };
 }  // namespace tenex

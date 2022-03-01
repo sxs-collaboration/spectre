@@ -16,6 +16,27 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {
+// Checks that the number of ops in the expressions match what is expected
+void test_tensor_ops_properties() {
+  const Scalar<double> G{5.0};
+  const double H = 5.0;
+  const tnsr::ii<double, 3> R{};
+  const tnsr::ij<double, 3> S{};
+
+  const auto H_over_G = H / G();
+  const auto H_over_G_over_H = H / G() / H;
+  const auto R_over_G = R(ti::i, ti::j) / G();
+  const auto S_over_H = S(ti::i, ti::j) / H;
+  const auto R_plus_S_over_G_times_H =
+      (R(ti::i, ti::j) + S(ti::i, ti::j)) / (G() * H);
+
+  CHECK(H_over_G.num_ops_subtree == 1);
+  CHECK(H_over_G_over_H.num_ops_subtree == 2);
+  CHECK(R_over_G.num_ops_subtree == 1);
+  CHECK(S_over_H.num_ops_subtree == 1);
+  CHECK(R_plus_S_over_G_times_H.num_ops_subtree == 3);
+}
+
 // \brief Test the division of a tensor expression over a `double` is correctly
 // evaluated
 //
@@ -282,6 +303,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Divide",
                   "[DataStructures][Unit]") {
   MAKE_GENERATOR(generator);
 
+  test_tensor_ops_properties();
   test_divide(make_not_null(&generator),
               std::numeric_limits<double>::signaling_NaN());
   test_divide(make_not_null(&generator),
