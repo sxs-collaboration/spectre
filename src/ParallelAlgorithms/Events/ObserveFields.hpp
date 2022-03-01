@@ -197,23 +197,18 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
 
   using argument_tags =
       tmpl::list<::Tags::ObservationBox, ObservationValueTag,
-                 domain::Tags::Mesh<VolumeDim>, coordinates_tag,
-                 AnalyticSolutionTensors..., NonSolutionTensors...>;
+                 domain::Tags::Mesh<VolumeDim>, coordinates_tag>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ParallelComponent>
-  void operator()(
-      const ObservationBox<DataBoxType, ComputeTagsList>& box,
-      const typename ObservationValueTag::type& observation_value,
-      const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-          inertial_coordinates,
-      const typename AnalyticSolutionTensors::
-          type&... analytic_solution_tensors,
-      const typename NonSolutionTensors::type&... non_solution_tensors,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const component) const {
+  void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
+                  const typename ObservationValueTag::type& observation_value,
+                  const Mesh<VolumeDim>& mesh,
+                  const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
+                      inertial_coordinates,
+                  Parallel::GlobalCache<Metavariables>& cache,
+                  const ElementId<VolumeDim>& array_index,
+                  const ParallelComponent* const component) const {
     // Skip observation on elements that are not part of a section
     const std::optional<std::string> section_observation_key =
         observers::get_section_observation_key<ArraySectionIdTag>(box);
@@ -231,15 +226,15 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     }();
     call_operator_impl(
         subfile_path_ + *section_observation_key, variables_to_observe_,
-        interpolation_mesh_, observation_value, mesh, inertial_coordinates,
-        analytic_solution_tensors..., non_solution_tensors...,
+        interpolation_mesh_, observation_value, mesh, inertial_coordinates, box,
         optional_analytic_solutions, cache, array_index, component);
   }
 
   // We factor out the work into a static member function so it can  be shared
   // with other field observing events, like the one that deals with DG-subcell
   // where there are two grids. This is to avoid copy-pasting all of the code.
-  template <typename OptionalAnalyticSolutions, typename Metavariables,
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename OptionalAnalyticSolutions, typename Metavariables,
             typename ParallelComponent>
   static void call_operator_impl(
       const std::string& subfile_path,
@@ -250,9 +245,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const Mesh<VolumeDim>& mesh,
       const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
           inertial_coordinates,
-      const typename AnalyticSolutionTensors::
-          type&... analytic_solution_tensors,
-      const typename NonSolutionTensors::type&... non_solution_tensors,
+      const ObservationBox<DataBoxType, ComputeTagsList>& box,
       const OptionalAnalyticSolutions& optional_analytic_solutions,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
@@ -288,64 +281,74 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             NonSolutionTensors::type::size()...},
         0_st));
 
-    const auto record_tensor_components = [&components, &element_name,
-                                           &interpolant, &variables_to_observe](
-                                              const auto tensor_tag_v,
-                                              const auto& tensor) {
-      using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-      if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
-        const auto floating_point_type =
-            variables_to_observe.at(db::tag_name<tensor_tag>());
-        for (size_t i = 0; i < tensor.size(); ++i) {
-          const auto tensor_component = interpolant.interpolate(tensor[i]);
-          if (floating_point_type == FloatingPointType::Float) {
-            components.emplace_back(element_name + db::tag_name<tensor_tag>() +
-                                        tensor.component_suffix(i),
-                                    std::vector<float>{tensor_component.begin(),
-                                                       tensor_component.end()});
-          } else {
-            components.emplace_back(element_name + db::tag_name<tensor_tag>() +
-                                        tensor.component_suffix(i),
-                                    tensor_component);
+    const auto record_tensor_component_impl =
+        [&components, &element_name, &interpolant](
+            const auto& tensor, const FloatingPointType floating_point_type,
+            const std::string& tag_name) {
+          for (size_t i = 0; i < tensor.size(); ++i) {
+            const auto tensor_component = interpolant.interpolate(tensor[i]);
+            if (floating_point_type == FloatingPointType::Float) {
+              components.emplace_back(
+                  element_name + tag_name + tensor.component_suffix(i),
+                  std::vector<float>{tensor_component.begin(),
+                                     tensor_component.end()});
+            } else {
+              components.emplace_back(
+                  element_name + tag_name + tensor.component_suffix(i),
+                  tensor_component);
+            }
           }
-        }
-      }
-    };
-    record_tensor_components(tmpl::type_<coordinates_tag>{},
-                             inertial_coordinates);
-    EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
-        tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
-    EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
-        tmpl::type_<NonSolutionTensors>{}, non_solution_tensors));
+        };
+    const auto record_tensor_components =
+        [&box, &record_tensor_component_impl,
+         &variables_to_observe](const auto tensor_tag_v) {
+          using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
+          const std::string tag_name = db::tag_name<tensor_tag>();
+          if (const auto var_to_observe = variables_to_observe.find(tag_name);
+              var_to_observe != variables_to_observe.end()) {
+            const auto& tensor = get<tensor_tag>(box);
+            const auto floating_point_type = var_to_observe->second;
+            record_tensor_component_impl(tensor, floating_point_type, tag_name);
+          }
+        };
+    record_tensor_component_impl(
+        inertial_coordinates,
+        variables_to_observe.at(db::tag_name<coordinates_tag>()),
+        db::tag_name<coordinates_tag>());
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        record_tensor_components(tmpl::type_<AnalyticSolutionTensors>{}));
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        record_tensor_components(tmpl::type_<NonSolutionTensors>{}));
 
     if (analytic_solutions.has_value()) {
       const auto record_errors =
-          [&analytic_solutions, &components, &element_name, &interpolant,
-           &variables_to_observe](const auto tensor_tag_v, const auto& tensor) {
+          [&analytic_solutions, &box, &components, &element_name, &interpolant,
+           &variables_to_observe](const auto tensor_tag_v) {
             using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-            if (variables_to_observe.count(db::tag_name<tensor_tag>()) == 1) {
+            const std::string tag_name = db::tag_name<tensor_tag>();
+            if (variables_to_observe.count(tag_name) == 1) {
               const auto floating_point_type =
-                  variables_to_observe.at(db::tag_name<tensor_tag>());
+                  variables_to_observe.at(tag_name);
+              const auto& tensor = get<tensor_tag>(box);
               for (size_t i = 0; i < tensor.size(); ++i) {
                 DataVector error = interpolant.interpolate(DataVector(
                     tensor[i] - get<::Tags::detail::AnalyticImpl<tensor_tag>>(
                                     analytic_solutions->get())[i]));
                 if (floating_point_type == FloatingPointType::Float) {
                   components.emplace_back(
-                      element_name + "Error(" + db::tag_name<tensor_tag>() +
-                          ")" + tensor.component_suffix(i),
+                      element_name + "Error(" + tag_name + ")" +
+                          tensor.component_suffix(i),
                       std::vector<float>{error.begin(), error.end()});
                 } else {
-                  components.emplace_back(element_name + "Error(" +
-                                              db::tag_name<tensor_tag>() + ")" +
-                                              tensor.component_suffix(i),
+                  components.emplace_back(element_name + "Error(" + tag_name +
+                                              ")" + tensor.component_suffix(i),
                                           std::move(error));
                 }
               }
             }
           };
-      EXPAND_PACK_LEFT_TO_RIGHT(record_errors(
-          tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
+      EXPAND_PACK_LEFT_TO_RIGHT(
+          record_errors(tmpl::type_<AnalyticSolutionTensors>{}));
 
       (void)(record_errors);  // Silence GCC warning about unused variable
     }

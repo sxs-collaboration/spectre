@@ -167,32 +167,22 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
   using argument_tags =
-      tmpl::list<ObservationValueTag, ::domain::Tags::Mesh<VolumeDim>,
-                 subcell::Tags::Mesh<VolumeDim>, subcell::Tags::ActiveGrid,
-                 ::domain::Tags::Coordinates<VolumeDim, Frame::Grid>,
-                 subcell::Tags::Coordinates<VolumeDim, Frame::Grid>,
+      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
                  ::domain::CoordinateMaps::Tags::CoordinateMap<
                      VolumeDim, Frame::Grid, Frame::Inertial>,
-                 ::domain::Tags::FunctionsOfTime, AnalyticSolutionTensors...,
-                 NonSolutionTensors...>;
+                 ::domain::Tags::FunctionsOfTime>;
 
-  template <typename Metavariables, typename ParallelComponent>
+  template <typename DataBoxType, typename ComputeTagsList,
+            typename Metavariables, typename ParallelComponent>
   void operator()(
-      const double observation_value, const Mesh<VolumeDim>& dg_mesh,
-      const Mesh<VolumeDim>& subcell_mesh,
-      const subcell::ActiveGrid active_grid,
-      const tnsr::I<DataVector, VolumeDim, Frame::Grid>& dg_grid_coordinates,
-      const tnsr::I<DataVector, VolumeDim, Frame::Grid>&
-          subcell_grid_coordinates,
+      const ObservationBox<DataBoxType, ComputeTagsList>& box,
+      const double observation_value,
       const ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,
                                         VolumeDim>& grid_to_inertial_map,
       const std::unordered_map<
           std::string,
           std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time,
-      const typename AnalyticSolutionTensors::
-          type&... analytic_solution_tensors,
-      const typename NonSolutionTensors::type&... non_solution_tensors,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const component) const {
@@ -220,7 +210,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
             (void)observation_value;
           }
         };
-    if (active_grid == subcell::ActiveGrid::Dg) {
+    if (const subcell::ActiveGrid active_grid =
+            get<subcell::Tags::ActiveGrid>(box);
+        active_grid == subcell::ActiveGrid::Dg) {
+      const auto& dg_mesh = get<::domain::Tags::Mesh<VolumeDim>>(box);
+      const auto& dg_grid_coordinates =
+          get<::domain::Tags::Coordinates<VolumeDim, Frame::Grid>>(box);
       const auto dg_inertial_coords = grid_to_inertial_map(
           dg_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(dg_mesh, dg_inertial_coords);
@@ -231,38 +226,22 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                                   tmpl::list<NonSolutionTensors...>>::
           call_operator_impl(
               subfile_path_, variables_to_observe_, interpolation_mesh_,
-              observation_value, dg_mesh, dg_inertial_coords,
-              analytic_solution_tensors..., non_solution_tensors...,
+              observation_value, dg_mesh, dg_inertial_coords, box,
               analytic_solution_variables, cache, array_index, component);
     } else {
       ASSERT(active_grid == subcell::ActiveGrid::Subcell,
              "Active grid must be either Dg or Subcell");
+      const auto& subcell_mesh = get<subcell::Tags::Mesh<VolumeDim>>(box);
+      const auto& subcell_grid_coordinates =
+          get<subcell::Tags::Coordinates<VolumeDim, Frame::Grid>>(box);
       const auto subcell_inertial_coords = grid_to_inertial_map(
           subcell_grid_coordinates, observation_value, functions_of_time);
       set_analytic_soln(subcell_mesh, subcell_inertial_coords);
       dg_observe_fields::call_operator_impl(
           subfile_path_, variables_to_observe_, interpolation_mesh_,
-          observation_value, subcell_mesh, subcell_inertial_coords,
-          analytic_solution_tensors..., non_solution_tensors...,
+          observation_value, subcell_mesh, subcell_inertial_coords, box,
           analytic_solution_variables, cache, array_index, component);
     }
-  }
-
-  // This overload is called when the list of analytic-solution tensors is
-  // empty, i.e. it is clear at compile-time that no analytic solutions are
-  // available
-  template <typename Metavariables, typename ParallelComponent>
-  void operator()(
-      const double observation_value, const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-          inertial_coordinates,
-      const typename NonSolutionTensors::type&... non_solution_tensors,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<VolumeDim>& array_index,
-      const ParallelComponent* const component) const {
-    this->operator()(observation_value, mesh, inertial_coordinates,
-                     non_solution_tensors..., std::nullopt, cache, array_index,
-                     component);
   }
 
   using observation_registration_tags = tmpl::list<>;
