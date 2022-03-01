@@ -716,7 +716,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 // Already the resolution used for the tests is very low
 // (lmax=3, num_pts_per_dim=3 to 7) and the error
 // tolerance Approx::custom().epsilon() is pretty large (1e-2 and 1e-3).
-// [[TimeOut, 10]]
+// [[TimeOut, 20]]
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
@@ -753,6 +753,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
 }
 
 // [[OutputRegex, Cannot interpolate onto surface]]
+// [[Timeout, 5]]
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder.Error",
     "[Unit]") {
@@ -768,6 +769,7 @@ SPECTRE_TEST_CASE(
 }
 
 // [[OutputRegex, Cannot interpolate onto surface]]
+// [[Timeout, 5]]
 SPECTRE_TEST_CASE("Unit.Interpolator.ApparentHorizonFinder.NotConvergedError",
                   "[Unit]") {
   ERROR_TEST();
