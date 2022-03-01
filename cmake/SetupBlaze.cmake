@@ -1,6 +1,24 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+option(USE_SLEEF "Use Sleef to add more vectorized instructions." OFF)
+
+if(USE_SLEEF)
+  # Try to find Sleef to increase vectorization
+  find_package(Sleef)
+endif()
+
+if(SLEEF_FOUND)
+  message(STATUS "Sleef libs: ${SLEEF_LIBRARIES}")
+  message(STATUS "Sleef incl: ${SLEEF_INCLUDE_DIR}")
+  message(STATUS "Sleef vers: ${SLEEF_VERSION}")
+
+  file(APPEND
+    "${CMAKE_BINARY_DIR}/BuildInfo.txt"
+    "Sleef version: ${SLEEF_VERSION}\n"
+  )
+endif()
+
 # Every time we've upgraded blaze compatibility in the past, we've had to change
 # vector code, so we should expect to need changes again on each subsequent
 # release, so we specify an exact version requirement.
@@ -17,8 +35,6 @@ file(APPEND
 add_library(Blaze INTERFACE IMPORTED)
 set_property(TARGET Blaze PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES ${BLAZE_INCLUDE_DIR})
-set_property(TARGET Blaze PROPERTY
-  INTERFACE_LINK_LIBRARIES Lapack)
 target_link_libraries(
   Blaze
   INTERFACE
@@ -26,6 +42,20 @@ target_link_libraries(
   GSL::gsl # for BLAS header
   Lapack
   )
+set(_BLAZE_USE_SLEEF 0)
+
+if(SLEEF_FOUND)
+  target_link_libraries(
+    Blaze
+    INTERFACE
+    Sleef
+    )
+  set_property(
+    GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+    Sleef
+    )
+  set(_BLAZE_USE_SLEEF 1)
+endif()
 
 # Configure Blaze. Some of the Blaze configuration options could be optimized
 # for the machine we are running on. See documentation:
@@ -58,10 +88,10 @@ target_compile_definitions(Blaze
   # - Always enable non-temporal stores for cache optimization of large data
   #   structures: https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20Files#!streaming-non-temporal-stores
   BLAZE_USE_STREAMING=1
-  # - We could use SLEEF for vectorized implementations of sin, cos, exp, etc.:
-  # BLAZE_USE_SLEEF
   # - Skip initializing default-constructed structures for fundamental types
   BLAZE_USE_DEFAULT_INITIALIZATON=0
+  # Use Sleef for vectorization of more math functions
+  BLAZE_USE_SLEEF=${_BLAZE_USE_SLEEF}
   )
 
 add_interface_lib_headers(

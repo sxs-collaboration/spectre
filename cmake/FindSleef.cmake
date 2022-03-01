@@ -1,0 +1,76 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Find Sleef: https://github.com/shibatch/sleef
+# If not in one of the default paths specify -D SLEEF_ROOT=/path/to/Sleef
+# to search there as well.
+
+if(NOT SLEEF_ROOT)
+  # Need to set to empty to avoid warnings with --warn-uninitialized
+  set(SLEEF_ROOT "")
+  set(SLEEF_ROOT $ENV{SLEEF_ROOT})
+endif()
+
+# find the SLEEF include directory
+find_path(SLEEF_INCLUDE_DIR sleef.h
+  PATH_SUFFIXES include
+  HINTS ${SLEEF_ROOT})
+
+find_library(SLEEF_LIBRARIES
+  NAMES sleef
+  PATH_SUFFIXES lib64 lib
+  HINTS ${SLEEF_ROOT})
+
+set(SLEEF_VERSION "")
+
+if (EXISTS "${SLEEF_INCLUDE_DIR}/sleef.h")
+
+  file(READ "${SLEEF_INCLUDE_DIR}/sleef.h" SLEEF_FIND_HEADER_CONTENTS)
+
+  set(SLEEF_MAJOR_PREFIX "#define SLEEF_VERSION_MAJOR ")
+  set(SLEEF_MINOR_PREFIX "#define SLEEF_VERSION_MINOR ")
+  set(SLEEF_PATCH_PREFIX "#define SLEEF_VERSION_PATCHLEVEL ")
+
+  string(REGEX MATCH "${SLEEF_MAJOR_PREFIX}[0-9]+"
+    SLEEF_MAJOR_VERSION "${SLEEF_FIND_HEADER_CONTENTS}")
+  string(REPLACE "${SLEEF_MAJOR_PREFIX}" "" SLEEF_MAJOR_VERSION
+    "${SLEEF_MAJOR_VERSION}")
+
+  string(REGEX MATCH "${SLEEF_MINOR_PREFIX}[0-9]+"
+    SLEEF_MINOR_VERSION "${SLEEF_FIND_HEADER_CONTENTS}")
+  string(REPLACE "${SLEEF_MINOR_PREFIX}" "" SLEEF_MINOR_VERSION
+    "${SLEEF_MINOR_VERSION}")
+
+  string(REGEX MATCH "${SLEEF_PATCH_PREFIX}[0-9]+"
+    SLEEF_SUBMINOR_VERSION "${SLEEF_FIND_HEADER_CONTENTS}")
+  string(REPLACE "${SLEEF_PATCH_PREFIX}" "" SLEEF_SUBMINOR_VERSION
+    "${SLEEF_SUBMINOR_VERSION}")
+
+  set(SLEEF_VERSION
+    "${SLEEF_MAJOR_VERSION}.${SLEEF_MINOR_VERSION}.${SLEEF_SUBMINOR_VERSION}"
+    )
+endif()
+
+set(Sleef_VERSION ${SLEEF_VERSION})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(
+  Sleef
+  FOUND_VAR SLEEF_FOUND
+  REQUIRED_VARS SLEEF_INCLUDE_DIR SLEEF_LIBRARIES
+  VERSION_VAR SLEEF_VERSION)
+mark_as_advanced(SLEEF_INCLUDE_DIR SLEEF_LIBRARIES
+  SLEEF_MAJOR_VERSION SLEEF_MINOR_VERSION SLEEF_PATCH_VERSION
+  SLEEF_VERSION Sleef_VERSION)
+
+add_library(Sleef INTERFACE IMPORTED)
+set_property(TARGET Sleef PROPERTY
+  INTERFACE_INCLUDE_DIRECTORIES ${SLEEF_INCLUDE_DIR})
+set_property(TARGET Sleef
+  APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${SLEEF_LIBRARIES})
+
+add_interface_lib_headers(
+  TARGET Sleef
+  HEADERS
+  sleef.h
+  )
