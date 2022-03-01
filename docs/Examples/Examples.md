@@ -5,3 +5,4 @@ See LICENSE.txt for details.
 # Examples {#examples}
 
 - \subpage example_bbh_id
+- \subpage examples_find_horizons
