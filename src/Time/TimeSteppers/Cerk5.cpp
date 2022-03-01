@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 
+#include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -70,6 +71,159 @@ TimeStepId Cerk5::next_time_id_for_error(const TimeStepId& current_id,
   return next_time_id(current_id, time_step);
 }
 
+template <typename T>
+void Cerk5::update_u_impl(const gsl::not_null<T*> u,
+                          const gsl::not_null<UntypedHistory<T>*> history,
+                          const TimeDelta& time_step) const {
+  ASSERT(history->integration_order() == 5,
+         "Fixed-order stepper cannot run at order "
+             << history->integration_order());
+  const size_t substep = (history->end() - 1).time_step_id().substep();
+
+  // Clean up old history
+  if (substep == 0) {
+    history->mark_unneeded(history->end() - 1);
+  }
+
+  const auto u0 = history->untyped_most_recent_value();
+  const double dt = time_step.value();
+
+  switch (substep) {
+    case 0: {
+      *u = *u0 + (a2_ * dt) * *history->begin().derivative();
+      break;
+    }
+    case 1: {
+      *u = *u0 + ((a3_[0] - a2_) * dt) * *history->begin().derivative() +
+           (a3_[1] * dt) * *(history->begin() + 1).derivative();
+      break;
+    }
+    case 2: {
+      *u = *u0 + ((a4_[0] - a3_[0]) * dt) * *history->begin().derivative() +
+           ((a4_[1] - a3_[1]) * dt) * *(history->begin() + 1).derivative() +
+           (a4_[2] * dt) * *(history->begin() + 2).derivative();
+      break;
+    }
+    case 3: {
+      *u = *u0 + ((a5_[0] - a4_[0]) * dt) * *history->begin().derivative() +
+           ((a5_[1] - a4_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a5_[2] - a4_[2]) * dt) * *(history->begin() + 2).derivative() +
+           (a5_[3] * dt) * *(history->begin() + 3).derivative();
+      break;
+    }
+    case 4: {
+      *u = *u0 + ((a6_[0] - a5_[0]) * dt) * *history->begin().derivative() +
+           ((a6_[1] - a5_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a6_[2] - a5_[2]) * dt) * *(history->begin() + 2).derivative() +
+           ((a6_[3] - a5_[3]) * dt) * *(history->begin() + 3).derivative() +
+           (a6_[4] * dt) * *(history->begin() + 4).derivative();
+      break;
+    }
+    case 5: {
+      *u = *u0 + ((a7_[0] - a6_[0]) * dt) * *history->begin().derivative() +
+           ((a7_[1] - a6_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a7_[2] - a6_[2]) * dt) * *(history->begin() + 2).derivative() +
+           ((a7_[3] - a6_[3]) * dt) * *(history->begin() + 3).derivative() +
+           ((a7_[4] - a6_[4]) * dt) * *(history->begin() + 4).derivative() +
+           (a7_[5] * dt) * *(history->begin() + 5).derivative();
+      break;
+    }
+    case 6: {
+      *u = *u0 + ((a8_[0] - a7_[0]) * dt) * *history->begin().derivative() +
+           ((a8_[1] - a7_[1]) * dt) * *(history->begin() + 1).derivative() +
+           ((a8_[2] - a7_[2]) * dt) * *(history->begin() + 2).derivative() +
+           ((a8_[3] - a7_[3]) * dt) * *(history->begin() + 3).derivative() +
+           ((a8_[4] - a7_[4]) * dt) * *(history->begin() + 4).derivative() +
+           ((a8_[5] - a7_[5]) * dt) * *(history->begin() + 5).derivative() +
+           (a8_[6] * dt) * *(history->begin() + 6).derivative();
+      break;
+    }
+    default:
+      ERROR("Bad substep value in CERK5: " << substep);
+  }
+}
+
+template <typename T>
+bool Cerk5::update_u_impl(const gsl::not_null<T*> u,
+                          const gsl::not_null<T*> u_error,
+                          const gsl::not_null<UntypedHistory<T>*> history,
+                          const TimeDelta& time_step) const {
+  ASSERT(history->integration_order() == 5,
+         "Fixed-order stepper cannot run at order "
+             << history->integration_order());
+  update_u_impl(u, history, time_step);
+  const size_t current_substep = (history->end() - 1).time_step_id().substep();
+  if (current_substep == 6) {
+    const double dt = time_step.value();
+    *u_error = ((e_[0] - a8_[0]) * dt) * *history->begin().derivative() +
+               ((e_[1] - a8_[1]) * dt) * *(history->begin() + 1).derivative() +
+               ((e_[2] - a8_[2]) * dt) * *(history->begin() + 2).derivative() +
+               ((e_[3] - a8_[3]) * dt) * *(history->begin() + 3).derivative() +
+               ((e_[4] - a8_[4]) * dt) * *(history->begin() + 4).derivative() +
+               ((e_[5] - a8_[5]) * dt) * *(history->begin() + 5).derivative() -
+               a8_[6] * dt * *(history->begin() + 6).derivative();
+    return true;
+  }
+  return false;
+}
+
+template <typename T>
+bool Cerk5::dense_update_u_impl(const gsl::not_null<T*> u,
+                                const UntypedHistory<T>& history,
+                                const double time) const {
+  if ((history.end() - 1).time_step_id().substep() != 0) {
+    return false;
+  }
+  const double t0 = history[0].value();
+  const double t_end = history[history.size() - 1].value();
+  if (time == t_end) {
+    // Special case necessary for dense output at the initial time,
+    // before taking a step.
+    *u = *history.untyped_most_recent_value();
+    return true;
+  }
+  const evolution_less<double> before{t_end > t0};
+  if (history.size() == 1 or before(t_end, time)) {
+    return false;
+  }
+  const double dt = t_end - t0;
+  const double output_fraction = (time - t0) / dt;
+  ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
+                                     << time << ", but already progressed past "
+                                     << t0);
+  ASSERT(output_fraction <= 1.0, "Requested time ("
+                                     << time << ") not within step [" << t0
+                                     << ", " << t0 + dt << "]");
+
+  const auto u_n_plus_1 = history.untyped_most_recent_value();
+
+  // We need the following: k1, k2, k3, k4, k5, k6, k7, k8
+  const auto k1 = history.begin().derivative();
+  const auto k2 = (history.begin() + 1).derivative();
+  const auto k3 = (history.begin() + 2).derivative();
+  const auto k4 = (history.begin() + 3).derivative();
+  const auto k5 = (history.begin() + 4).derivative();
+  const auto k6 = (history.begin() + 5).derivative();
+  const auto k7 = (history.begin() + 6).derivative();
+  const auto k8 = (history.begin() + 7).derivative();
+
+  *u = *u_n_plus_1 + (dt * evaluate_polynomial(b1_, output_fraction)) * *k1 +
+       (dt * b2_) * *k2 +  //
+       (dt * evaluate_polynomial(b3_, output_fraction)) * *k3 +
+       (dt * evaluate_polynomial(b4_, output_fraction)) * *k4 +
+       (dt * evaluate_polynomial(b5_, output_fraction)) * *k5 +
+       (dt * evaluate_polynomial(b6_, output_fraction)) * *k6 +
+       (dt * evaluate_polynomial(b7_, output_fraction)) * *k7 +
+       (dt * evaluate_polynomial(b8_, output_fraction)) * *k8;
+  return true;
+}
+
+template <typename T>
+bool Cerk5::can_change_step_size_impl(
+    const TimeStepId& time_id, const UntypedHistory<T>& /*history*/) const {
+  return time_id.substep() == 0;
+}
+
 // NOLINTNEXTLINE(readability-redundant-declaration)
 constexpr double Cerk5::a2_;
 // NOLINTNEXTLINE(readability-redundant-declaration)
@@ -104,6 +258,8 @@ constexpr std::array<double, 6> Cerk5::b8_;
 constexpr std::array<double, 8> Cerk5::e_;
 const std::array<Time::rational_t, 6> Cerk5::c_ = {
     {{1, 6}, {1, 4}, {1, 2}, {1, 2}, {9, 14}, {7, 8}}};
+
+TIME_STEPPER_DEFINE_OVERLOADS(Cerk5)
 }  // namespace TimeSteppers
 
 PUP::able::PUP_ID TimeSteppers::Cerk5::my_PUP_ID =  // NOLINT

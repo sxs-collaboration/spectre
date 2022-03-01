@@ -15,29 +15,25 @@
 #include <map>
 #include <pup.h>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/EvolutionOrdering.hpp"
-#include "Time/SelfStart.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace TimeSteppers {
-template <typename Vars>
-class History;
+template <typename T>
+class UntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -110,19 +106,6 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   AdamsBashforthN(AdamsBashforthN&&) = default;
   AdamsBashforthN& operator=(AdamsBashforthN&&) = default;
   ~AdamsBashforthN() override = default;
-
-  template <typename Vars>
-  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars, typename ErrVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars>
-  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
-                      double time) const;
 
   /*!
    * An explanation of the computation being performed by this
@@ -258,10 +241,6 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
 
-  template <typename Vars>
-  bool can_change_step_size(const TimeStepId& time_id,
-                            const TimeSteppers::History<Vars>& history) const;
-
   WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
 
   explicit AdamsBashforthN(CkMigrateMessage* /*unused*/) {}
@@ -279,10 +258,27 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   // ApproximateTime.  The former cases will detect and optimize the
   // constant-time-step case, while the latter are necessary for dense
   // output.
+  template <typename T>
+  void update_u_impl(gsl::not_null<T*> u,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
 
-  template <typename UpdateVars, typename Vars, typename Delta>
-  void update_u_impl(gsl::not_null<UpdateVars*> u, const History<Vars>& history,
-                     const Delta& time_step, size_t order) const;
+  template <typename T>
+  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool dense_update_u_impl(gsl::not_null<T*> u,
+                           const UntypedHistory<T>& history, double time) const;
+
+  template <typename T, typename Delta>
+  void update_u_common(gsl::not_null<T*> u, const UntypedHistory<T>& history,
+                       const Delta& time_step, size_t order) const;
+
+  template <typename T>
+  bool can_change_step_size_impl(const TimeStepId& time_id,
+                                 const UntypedHistory<T>& history) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
@@ -345,81 +341,12 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
     }
   };
 
+  TIME_STEPPER_DECLARE_OVERLOADS
+
   size_t order_ = 3;
 };
 
 bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs);
-
-template <typename Vars>
-void AdamsBashforthN::update_u(const gsl::not_null<Vars*> u,
-                               const gsl::not_null<History<Vars>*> history,
-                               const TimeDelta& time_step) const {
-  ASSERT(history->size() >= history->integration_order(),
-         "Insufficient data to take an order-" << history->integration_order()
-         << " step.  Have " << history->size() << " times, need "
-         << history->integration_order());
-  history->mark_unneeded(
-      history->end() -
-      static_cast<typename decltype(history->end())::difference_type>(
-          history->integration_order()));
-  update_u_impl(u, *history, time_step, history->integration_order());
-}
-
-template <typename Vars, typename ErrVars>
-bool AdamsBashforthN::update_u(const gsl::not_null<Vars*> u,
-                               const gsl::not_null<ErrVars*> u_error,
-                               const gsl::not_null<History<Vars>*> history,
-                               const TimeDelta& time_step) const {
-  ASSERT(history->size() >= history->integration_order(),
-         "Insufficient data to take an order-" << history->integration_order()
-         << " step.  Have " << history->size() << " times, need "
-         << history->integration_order());
-  history->mark_unneeded(
-      history->end() -
-      static_cast<typename decltype(history->end())::difference_type>(
-          history->integration_order()));
-  update_u_impl(u, *history, time_step, history->integration_order());
-  // the error estimate is only useful once the history has enough elements to
-  // do more than one order of step
-  update_u_impl(u_error, *history, time_step, history->integration_order() - 1);
-  *u_error = *u - *u_error;
-  return true;
-}
-
-template <typename Vars>
-bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
-                                     const History<Vars>& history,
-                                     const double time) const {
-  const ApproximateTimeDelta time_step{time - history.back().value()};
-  update_u_impl(u, history, time_step, history.integration_order());
-  return true;
-}
-
-template <typename UpdateVars, typename Vars, typename Delta>
-void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
-                                    const History<Vars>& history,
-                                    const Delta& time_step,
-                                    const size_t order) const {
-  ASSERT(
-      history.size() > 0,
-      "Cannot meaningfully update the evolved variables with an empty history");
-  ASSERT(order <= order_,
-         "Requested integration order higher than integrator order");
-
-  const auto history_start =
-      history.end() -
-      static_cast<typename History<Vars>::difference_type>(order);
-  const auto coefficients =
-      get_coefficients(history_start, history.end(), time_step);
-
-  *u = history.most_recent_value();
-  auto coefficient = coefficients.rbegin();
-  for (auto history_entry = history_start;
-       history_entry != history.end();
-       ++history_entry, ++coefficient) {
-    *u += time_step.value() * *coefficient * *history_entry.derivative();
-  }
-}
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
 void AdamsBashforthN::add_boundary_delta(
@@ -712,22 +639,6 @@ void AdamsBashforthN::boundary_impl(
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step
-}
-
-template <typename Vars>
-bool AdamsBashforthN::can_change_step_size(
-    const TimeStepId& time_id,
-    const TimeSteppers::History<Vars>& history) const {
-  // We need to forbid local time-stepping before initialization is
-  // complete.  The self-start procedure itself should never consider
-  // changing the step size, but we need to wait during the main
-  // evolution until the self-start history has been replaced with
-  // "real" values.
-  const evolution_less<Time> less{time_id.time_runs_forward()};
-  return not ::SelfStart::is_self_starting(time_id) and
-         (history.size() == 0 or
-          (less(history.back(), time_id.step_time()) and
-           std::is_sorted(history.begin(), history.end(), less)));
 }
 
 template <typename Iterator, typename Delta>

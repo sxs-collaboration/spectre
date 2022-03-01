@@ -5,8 +5,11 @@
 
 #include <algorithm>
 
+#include "Time/History.hpp"
+#include "Time/SelfStart.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Math.hpp"
 
 namespace TimeSteppers {
@@ -134,6 +137,94 @@ void AdamsBashforthN::pup(PUP::er& p) {
   p | order_;
 }
 
+template <typename T>
+void AdamsBashforthN::update_u_impl(
+    const gsl::not_null<T*> u, const gsl::not_null<UntypedHistory<T>*> history,
+    const TimeDelta& time_step) const {
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
+  update_u_common(u, *history, time_step, history->integration_order());
+}
+
+template <typename T>
+bool AdamsBashforthN::update_u_impl(
+    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
+    const gsl::not_null<UntypedHistory<T>*> history,
+    const TimeDelta& time_step) const {
+  ASSERT(history->size() >= history->integration_order(),
+         "Insufficient data to take an order-" << history->integration_order()
+         << " step.  Have " << history->size() << " times, need "
+         << history->integration_order());
+  history->mark_unneeded(
+      history->end() -
+      static_cast<typename decltype(history->end())::difference_type>(
+          history->integration_order()));
+  update_u_common(u, *history, time_step, history->integration_order());
+  // the error estimate is only useful once the history has enough elements to
+  // do more than one order of step
+  update_u_common(u_error, *history, time_step,
+                  history->integration_order() - 1);
+  *u_error = *u - *u_error;
+  return true;
+}
+
+template <typename T>
+bool AdamsBashforthN::dense_update_u_impl(const gsl::not_null<T*> u,
+                                          const UntypedHistory<T>& history,
+                                          const double time) const {
+  const ApproximateTimeDelta time_step{time - history.back().value()};
+  update_u_common(make_not_null(&*make_math_wrapper(u)), history, time_step,
+                  history.integration_order());
+  return true;
+}
+
+template <typename T, typename Delta>
+void AdamsBashforthN::update_u_common(const gsl::not_null<T*> u,
+                                      const UntypedHistory<T>& history,
+                                      const Delta& time_step,
+                                      const size_t order) const {
+  ASSERT(
+      history.size() > 0,
+      "Cannot meaningfully update the evolved variables with an empty history");
+  ASSERT(order <= order_,
+         "Requested integration order higher than integrator order");
+
+  const auto history_start =
+      history.end() -
+      static_cast<typename UntypedHistory<T>::difference_type>(order);
+  const auto coefficients =
+      get_coefficients(history_start, history.end(), time_step);
+
+  *u = *history.untyped_most_recent_value();
+  auto coefficient = coefficients.rbegin();
+  for (auto history_entry = history_start;
+       history_entry != history.end();
+       ++history_entry, ++coefficient) {
+    *u += time_step.value() * *coefficient * *history_entry.derivative();
+  }
+}
+
+template <typename T>
+bool AdamsBashforthN::can_change_step_size_impl(
+    const TimeStepId& time_id, const UntypedHistory<T>& history) const {
+  // We need to forbid local time-stepping before initialization is
+  // complete.  The self-start procedure itself should never consider
+  // changing the step size, but we need to wait during the main
+  // evolution until the self-start history has been replaced with
+  // "real" values.
+  const evolution_less<Time> less{time_id.time_runs_forward()};
+  return not ::SelfStart::is_self_starting(time_id) and
+         (history.size() == 0 or
+          (less(history.back(), time_id.step_time()) and
+           std::is_sorted(history.begin(), history.end(), less)));
+}
+
 bool operator==(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
   return lhs.order_ == rhs.order_;
 }
@@ -141,6 +232,8 @@ bool operator==(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
 bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
   return not(lhs == rhs);
 }
+
+TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforthN)
 }  // namespace TimeSteppers
 
 PUP::able::PUP_ID TimeSteppers::AdamsBashforthN::my_PUP_ID =  // NOLINT

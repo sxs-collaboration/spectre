@@ -38,6 +38,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Boost::boost
+  DataStructures
   ErrorHandling
   EventsAndTriggers
   Options

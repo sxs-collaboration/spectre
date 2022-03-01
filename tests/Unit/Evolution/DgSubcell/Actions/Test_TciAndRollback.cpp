@@ -41,6 +41,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

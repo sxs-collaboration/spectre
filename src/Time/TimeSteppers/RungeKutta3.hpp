@@ -25,8 +25,8 @@
 /// \cond
 struct TimeStepId;
 namespace TimeSteppers {
-template <typename Vars>
-class History;
+template <typename T>
+class UntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -39,7 +39,7 @@ namespace TimeSteppers {
 /// 5.7.
 ///
 /// The CFL factor/stable step size is 1.25637266330916.
-class RungeKutta3 : public TimeStepper::Inherit {
+class RungeKutta3 : public TimeStepper {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -51,19 +51,6 @@ class RungeKutta3 : public TimeStepper::Inherit {
   RungeKutta3(RungeKutta3&&) = default;
   RungeKutta3& operator=(RungeKutta3&&) = default;
   ~RungeKutta3() override = default;
-
-  template <typename Vars>
-  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars, typename ErrVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars>
-  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
-                      double time) const;
 
   size_t order() const override;
 
@@ -83,21 +70,30 @@ class RungeKutta3 : public TimeStepper::Inherit {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
-  template <typename Vars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars>& /*history*/) const {
-    return time_id.substep() == 0;
-  }
-
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 
   explicit RungeKutta3(CkMigrateMessage* /*unused*/) {}
 
-  // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) override {  // NOLINT
-    TimeStepper::Inherit::pup(p);
-  }
+ private:
+  template <typename T>
+  void update_u_impl(gsl::not_null<T*> u,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool dense_update_u_impl(gsl::not_null<T*> u,
+                           const UntypedHistory<T>& history, double time) const;
+
+  template <typename T>
+  bool can_change_step_size_impl(const TimeStepId& time_id,
+                                 const UntypedHistory<T>& history) const;
+
+  TIME_STEPPER_DECLARE_OVERLOADS
 };
 
 inline bool constexpr operator==(const RungeKutta3& /*lhs*/,
@@ -108,110 +104,5 @@ inline bool constexpr operator==(const RungeKutta3& /*lhs*/,
 inline bool constexpr operator!=(const RungeKutta3& /*lhs*/,
                                  const RungeKutta3& /*rhs*/) {
   return false;
-}
-
-template <typename Vars>
-void RungeKutta3::update_u(const gsl::not_null<Vars*> u,
-                           const gsl::not_null<History<Vars>*> history,
-                           const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 3,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
-
-  switch (substep) {
-    case 0: {
-      // from (5.32) of Hesthaven
-      // v^(1) = u^n + dt*RHS(u^n,t^n)
-      *u = history->most_recent_value() +
-           time_step.value() * *history->begin().derivative();
-      break;
-    }
-    case 1: {
-      // from (5.32) of Hesthaven
-      // v^(2) = (1/4)*( 3*u^n + v^(1) + dt*RHS(v^(1),t^n + dt) )
-      *u = history->most_recent_value() -
-           0.25 * time_step.value() *
-               (3.0 * *history->begin().derivative() -
-                *(history->begin() + 1).derivative());
-      break;
-    }
-    case 2: {
-      // from (5.32) of Hesthaven
-      // u^(n+1) = (1/3)*( u^n + 2*v^(2) + 2*dt*RHS(v^(2),t^n + (1/2)*dt) )
-      *u = history->most_recent_value() -
-           (1.0 / 12.0) * time_step.value() *
-               (*history->begin().derivative() +
-                *(history->begin() + 1).derivative() -
-                8.0 * *(history->begin() + 2).derivative());
-      break;
-    }
-    default:
-      ERROR("Bad substep value in RK3: " << substep);
-  }
-}
-
-template <typename Vars, typename ErrVars>
-bool RungeKutta3::update_u(const gsl::not_null<Vars*> u,
-                           const gsl::not_null<ErrVars*> u_error,
-                           const gsl::not_null<History<Vars>*> history,
-                           const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 3,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  update_u(u, history, time_step);
-  // error estimate is only available when completing a full step
-  if ((history->end() - 1).time_step_id().substep() == 2) {
-    // error is estimated by comparing the order 3 step result with an order 2
-    // estimate. See e.g. Chapter II.4 of Harrier, Norsett, and Wagner 1993
-    *u_error =
-        -(1.0 / 3.0) * time_step.value() *
-        (*history->begin().derivative() + *(history->begin() + 1).derivative() -
-         2.0 * *(history->begin() + 2).derivative());
-    return true;
-  }
-  return false;
-}
-
-template <typename Vars>
-bool RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
-                                 const History<Vars>& history,
-                                 const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
-    return false;
-  }
-  const double step_start = history.front().value();
-  const double step_end = history.back().value();
-  if (time == step_end) {
-    // Special case necessary for dense output at the initial time,
-    // before taking a step.
-    *u = history.most_recent_value();
-    return true;
-  }
-  const evolution_less<double> before{step_end > step_start};
-  if (history.size() == 1 or before(step_end, time)) {
-    return false;
-  }
-  const double time_step = step_end - step_start;
-  const double output_fraction = (time - step_start) / time_step;
-  ASSERT(output_fraction >= 0, "Attempting dense output at time " << time
-         << ", but already progressed past " << step_start);
-  ASSERT(output_fraction <= 1,
-         "Requested time (" << time << " not within step [" << step_start
-         << ", " << step_end << "]");
-
-  // arXiv:1605.02429
-  *u = history.most_recent_value() -
-       (1.0 / 6.0) * time_step * (1.0 - output_fraction) *
-           ((1.0 - 5.0 * output_fraction) * *history.begin().derivative() +
-            (1.0 + output_fraction) *
-                (*(history.begin() + 1).derivative() +
-                 4.0 * *(history.begin() + 2).derivative()));
-  return true;
 }
 }  // namespace TimeSteppers

@@ -25,8 +25,8 @@
 /// \cond
 struct TimeStepId;
 namespace TimeSteppers {
-template <typename Vars>
-class History;
+template <typename T>
+class UntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -59,7 +59,7 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.3926467817026411.
  */
-class RungeKutta4 : public TimeStepper::Inherit {
+class RungeKutta4 : public TimeStepper {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -71,19 +71,6 @@ class RungeKutta4 : public TimeStepper::Inherit {
   RungeKutta4(RungeKutta4&&) = default;
   RungeKutta4& operator=(RungeKutta4&&) = default;
   ~RungeKutta4() override = default;
-
-  template <typename Vars>
-  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars, typename ErrVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars>
-  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
-                      double time) const;
 
   size_t order() const override;
 
@@ -103,21 +90,30 @@ class RungeKutta4 : public TimeStepper::Inherit {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
-  template <typename Vars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars>& /*history*/) const {
-    return time_id.substep() == 0;
-  }
-
   WRAPPED_PUPable_decl_template(RungeKutta4);  // NOLINT
 
   explicit RungeKutta4(CkMigrateMessage* /*unused*/) {}
 
-  // clang-tidy: do not pass by non-const reference
-  void pup(PUP::er& p) override {  // NOLINT
-    TimeStepper::Inherit::pup(p);
-  }
+ private:
+  template <typename T>
+  void update_u_impl(gsl::not_null<T*> u,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool dense_update_u_impl(gsl::not_null<T*> u,
+                           const UntypedHistory<T>& history, double time) const;
+
+  template <typename T>
+  bool can_change_step_size_impl(const TimeStepId& time_id,
+                                 const UntypedHistory<T>& history) const;
+
+  TIME_STEPPER_DECLARE_OVERLOADS
 };
 
 inline bool constexpr operator==(const RungeKutta4& /*lhs*/,
@@ -128,158 +124,5 @@ inline bool constexpr operator==(const RungeKutta4& /*lhs*/,
 inline bool constexpr operator!=(const RungeKutta4& /*lhs*/,
                                  const RungeKutta4& /*rhs*/) {
   return false;
-}
-
-template <typename Vars>
-void RungeKutta4::update_u(const gsl::not_null<Vars*> u,
-                           const gsl::not_null<History<Vars>*> history,
-                           const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
-
-  switch (substep) {
-    case 0: {
-      // from (17.1.3) of Numerical Recipes 3rd Edition
-      // v^(1) = u^n + dt * \mathcal{L}(u^n,t^n)/2
-      *u = history->most_recent_value() +
-           0.5 * time_step.value() * *history->begin().derivative();
-      break;
-    }
-    case 1: {
-      // from (17.1.3) of Numerical Recipes 3rd Edition
-      // v^(2) = u^n + dt * \mathcal{L}(v^(1), t^n + (1/2)*dt)/2
-      *u = history->most_recent_value() -
-           0.5 * time_step.value() *
-               (*history->begin().derivative() -
-                *(history->begin() + 1).derivative());
-      break;
-    }
-    case 2: {
-      // from (17.1.3) of Numerical Recipes 3rd Edition
-      // v^(3) = u^n + dt * \mathcal{L}(v^(2), t^n + (1/2)*dt))
-      *u = history->most_recent_value() +
-           time_step.value() * (-0.5 * *(history->begin() + 1).derivative() +
-                                *(history->begin() + 2).derivative());
-      break;
-    }
-    case 3: {
-      // from (17.1.3) of Numerical Recipes 3rd Edition
-      // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3) + v^(4) - 3*u0)/6
-      // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this gives
-      // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
-      //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-      *u = history->most_recent_value() +
-           (1.0 / 3.0) * time_step.value() *
-               (0.5 * *history->begin().derivative() +
-                *(history->begin() + 1).derivative() -
-                2.0 * *(history->begin() + 2).derivative() +
-                0.5 * *(history->begin() + 3).derivative());
-      break;
-    }
-    default:
-      ERROR("Substep in RK4 should be one of 0,1,2,3, not " << substep);
-  }
-}
-
-template <typename Vars, typename ErrVars>
-bool RungeKutta4::update_u(const gsl::not_null<Vars*> u,
-                           const gsl::not_null<ErrVars*> u_error,
-                           const gsl::not_null<History<Vars>*> history,
-                           const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-  if (substep < 3) {
-    update_u(u, history, time_step);
-  } else {
-    switch (substep) {
-      case 3: {
-        *u = history->most_recent_value() +
-             (1.0 / 32.0) * time_step.value() *
-                 (5.0 * *history->begin().derivative() +
-                  7.0 * *(history->begin() + 1).derivative() -
-                  19.0 * *(history->begin() + 2).derivative() -
-                  *(history->begin() + 3).derivative());
-        break;
-      }
-      case 4: {
-        // from (17.1.3) of Numerical Recipes 3rd Edition
-        // u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3) + v^(4) - 3*u0)/6
-        // Note: v^(4) = u0 + dt * \mathcal{L}(t+dt, v^(3)); inserting this
-        // gives u^(n+1) = (2v^(1) + 4*v^(2) + 2*v^(3)
-        //         + dt*\mathcal{L}(t+dt,v^(3)) - 2*u0)/6
-        *u = history->most_recent_value() +
-             (1.0 / 96.0) * time_step.value() *
-                 (*history->begin().derivative() +
-                  11.0 * *(history->begin() + 1).derivative() -
-                  7.0 * *(history->begin() + 2).derivative() +
-                  19.0 * *(history->begin() + 3).derivative());
-
-        // See Butcher Tableau of Zonneveld 4(3) embedded scheme with five
-        // substeps in Table 4.2 of Hairer, Norsett, and Wanner
-        *u_error = (2.0 / 3.0) * time_step.value() *
-                   (*history->begin().derivative() -
-                    3.0 * (*(history->begin() + 1).derivative() +
-                           *(history->begin() + 2).derivative() +
-                           *(history->begin() + 3).derivative()) +
-                    8.0 * *(history->begin() + 4).derivative());
-        break;
-      }
-      default:
-        ERROR("Substep in adaptive RK4 should be one of 0,1,2,3,4, not "
-              << substep);
-    }
-  }
-  return substep == 4;
-}
-
-template <typename Vars>
-bool RungeKutta4::dense_update_u(const gsl::not_null<Vars*> u,
-                                 const History<Vars>& history,
-                                 const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
-    return false;
-  }
-  const double step_start = history.front().value();
-  const double step_end = history.back().value();
-  if (time == step_end) {
-    // Special case necessary for dense output at the initial time,
-    // before taking a step.
-    *u = history.most_recent_value();
-    return true;
-  }
-  const evolution_less<double> before{step_end > step_start};
-  if (history.size() == 1 or before(step_end, time)) {
-    return false;
-  }
-  const double time_step = step_end - step_start;
-  const double output_fraction = (time - step_start) / time_step;
-  ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
-                                     << time << ", but already progressed past "
-                                     << step_start);
-  ASSERT(output_fraction <= 1.0, "Requested time ("
-                                     << time << ") not within step ["
-                                     << step_start << ", " << step_end << "]");
-
-  // Numerical Recipes Eq. (17.2.15). This implements cubic interpolation
-  // throughout the step.
-  *u = history.most_recent_value() -
-       (1.0 / 3.0) * time_step * (1.0 - output_fraction) *
-           ((1.0 - output_fraction) *
-                ((0.5 - 2.0 * output_fraction) * *history.begin().derivative() +
-                 (1.0 + 2.0 * output_fraction) *
-                     (*(history.begin() + 1).derivative() +
-                      *(history.begin() + 2).derivative() +
-                      0.5 * *(history.begin() + 3).derivative())) +
-            3.0 * square(output_fraction) * *(history.end() - 1).derivative());
-  return true;
 }
 }  // namespace TimeSteppers

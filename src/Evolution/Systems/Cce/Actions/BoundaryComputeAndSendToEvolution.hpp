@@ -20,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
+#include "Time/SelfStart.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
