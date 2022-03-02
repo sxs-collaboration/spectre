@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+find_package(Python REQUIRED)
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   set(SPECTRE_DOXYGEN_GROUPS "${CMAKE_BINARY_DIR}/docs/tmp/GroupDefs.hpp")
@@ -52,51 +54,44 @@ function correctly. Use Doxygen version 1.9.3 or higher.")
 ! (${GENERATE_DOCS_COMMAND}) 2>&1 | grep -A 6 -i 'warning' >&2\n"
     )
 
-  # We need Python for postprocessing the documentation
-  find_package(Python)
-  if (Python_FOUND)
-    include(FindPythonModule)
-    find_python_module(bs4 FALSE)
-    find_python_module(pybtex FALSE)
-    if (PY_BS4 AND PY_PYBTEX)
-      # Construct the command that runs the postprocessing over the Doxygen HTML
-      # output
-      set(
-        DOCS_POST_PROCESS_COMMAND
-        "${Python_EXECUTABLE} \
+  include(FindPythonModule)
+  find_python_module(bs4 FALSE)
+  find_python_module(pybtex FALSE)
+  if (PY_BS4 AND PY_PYBTEX)
+    # Construct the command that runs the postprocessing over the Doxygen HTML
+    # output
+    set(
+      DOCS_POST_PROCESS_COMMAND
+      "${Python_EXECUTABLE} \
 ${CMAKE_SOURCE_DIR}/docs/config/postprocess_docs.py \
 --html-dir ${PROJECT_BINARY_DIR}/docs/html \
 --references-file ${CMAKE_SOURCE_DIR}/docs/References.bib"
-        )
-      # Append postprocessing to doxygen commands
-      # The commands are supposed to run the postprocessing even if the doc
-      # generation failed with warnings, so that we output useful documentation
-      # in any case. The commands exit successfully only if both generation and
-      # postprocessing succeeded.
-      set(
-        GENERATE_DOCS_COMMAND
-        "${GENERATE_DOCS_COMMAND} && ${DOCS_POST_PROCESS_COMMAND} -v"
-        )
-      set(
-        GENERATE_AND_CHECK_DOCS_SCRIPT "${GENERATE_AND_CHECK_DOCS_SCRIPT}\
+      )
+    # Append postprocessing to doxygen commands
+    # The commands are supposed to run the postprocessing even if the doc
+    # generation failed with warnings, so that we output useful documentation
+    # in any case. The commands exit successfully only if both generation and
+    # postprocessing succeeded.
+    set(
+      GENERATE_DOCS_COMMAND
+      "${GENERATE_DOCS_COMMAND} && ${DOCS_POST_PROCESS_COMMAND} -v"
+      )
+    set(
+      GENERATE_AND_CHECK_DOCS_SCRIPT "${GENERATE_AND_CHECK_DOCS_SCRIPT}\
 generate_docs_exit=$?\n\
 ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
-        )
-    else (PY_BS4 AND PY_PYBTEX)
-      message(WARNING "Doxygen documentation postprocessing is disabled because"
-      " Python dependencies were not found:")
-      if (NOT PY_BS4)
-        message(WARNING "BeautifulSoup4 missing. "
-          "Install with: pip install beautifulsoup4")
-      endif()
-      if (NOT PY_PYBTEX)
-        message(WARNING "Pybtex missing. Install with: pip install pybtex")
-      endif()
-    endif (PY_BS4 AND PY_PYBTEX)
-  else (Python_FOUND)
-    message(WARNING "Doxygen documentation postprocessing is disabled because a"
-    " Python interpreter was not found.")
-  endif (Python_FOUND)
+      )
+  else (PY_BS4 AND PY_PYBTEX)
+    message(WARNING "Doxygen documentation postprocessing is disabled because"
+    " Python dependencies were not found:")
+    if (NOT PY_BS4)
+      message(WARNING "BeautifulSoup4 missing. "
+        "Install with: pip install beautifulsoup4")
+    endif()
+    if (NOT PY_PYBTEX)
+      message(WARNING "Pybtex missing. Install with: pip install pybtex")
+    endif()
+  endif (PY_BS4 AND PY_PYBTEX)
 
   # Parse the command into a CMake list for the `add_custom_target`
   separate_arguments(GENERATE_DOCS_COMMAND)
