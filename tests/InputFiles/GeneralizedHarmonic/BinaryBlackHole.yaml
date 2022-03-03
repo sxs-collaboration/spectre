@@ -226,11 +226,25 @@ ApparentHorizons:
 
 # initial_data.h5 should contain numerical initial data
 # on the same grid as specified by the domain given above
+# - One way to produce initial data is with the `SolveXcts` executable. See the
+#   example in `docs/Examples/BbhInitialData`.
+# - You can also produce initial data with SpEC, interpolate it (using SpEC) to
+#   the domain given above (using the `ExportCoordinates` executable to get the
+#   coordinates of all grid points in the domain), and then load it here by
+#   selecting either the GH variables (`SpacetimeMetric`, `Pi`, `Phi`) or the
+#   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
 Importers:
   NumericInitialData:
     FileGlob: "/path/to/initial_data.h5"
-    Subgroup: "element_data"
+    Subgroup: "VolumeData"
     ObservationValue: Last
+    Variables:
+      Lapse: Lapse
+      # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`
+      # for details.
+      Shift: ShiftExcess
+      SpatialMetric: SpatialMetric
+      ExtrinsicCurvature: ExtrinsicCurvature
 
 # control.h5 should contain data for FunctionsOfTime that can be
 # read by ReadSpecPiecewisePolynomial.

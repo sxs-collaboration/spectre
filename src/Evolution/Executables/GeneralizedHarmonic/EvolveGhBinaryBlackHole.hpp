@@ -33,6 +33,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/NumericInitialData.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
@@ -46,8 +47,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
-#include "IO/Importers/Actions/ReadVolumeData.hpp"
-#include "IO/Importers/Actions/ReceiveVolumeData.hpp"
 #include "IO/Importers/Actions/RegisterWithElementDataReader.hpp"
 #include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
@@ -487,12 +486,10 @@ struct EvolutionMetavars {
                          Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::ImportInitialData,
-              tmpl::list<importers::Actions::ReadVolumeData<
-                             evolution::OptionTags::NumericInitialData,
-                             typename system::variables_tag::tags_list>,
-                         importers::Actions::ReceiveVolumeData<
-                             evolution::OptionTags::NumericInitialData,
-                             typename system::variables_tag::tags_list>,
+              tmpl::list<GeneralizedHarmonic::Actions::ReadNumericInitialData<
+                             evolution::OptionTags::NumericInitialData>,
+                         GeneralizedHarmonic::Actions::SetNumericInitialData<
+                             evolution::OptionTags::NumericInitialData>,
                          Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::InitializeInitialDataDependentQuantities,

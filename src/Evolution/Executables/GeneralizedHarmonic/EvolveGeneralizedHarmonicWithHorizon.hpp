@@ -14,6 +14,7 @@
 #include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Executables/GeneralizedHarmonic/GeneralizedHarmonicBase.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Options/FactoryHelpers.hpp"
@@ -169,13 +170,12 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
                       Phase, Phase::ImportInitialData,
-                      tmpl::list<importers::Actions::ReadVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 importers::Actions::ReceiveVolumeData<
-                                     evolution::OptionTags::NumericInitialData,
-                                     typename system::variables_tag::tags_list>,
-                                 Parallel::Actions::TerminatePhase>>>,
+                      tmpl::list<
+                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          GeneralizedHarmonic::Actions::SetNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
               Phase, Phase::InitializeInitialDataDependentQuantities,
