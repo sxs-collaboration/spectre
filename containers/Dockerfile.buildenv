@@ -76,6 +76,8 @@ RUN apt-get update -y \
 # - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
 #   to aid in tracking down anything that depends on python 2. However, many
 #   scripts use `/usr/bin/env python` to find python so restore it.
+# - We pin the Numpy version because v1.22 segfaults in Pypp tests, see issue
+#   https://github.com/sxs-collaboration/spectre/issues/3844
 # - We need `coverxygen`, `beautifulsoup4` and `pybtex` to build documentation
 #   on CI. `nbconvert` is used to process ipynb files.
 # - We need `yapf` so the CI can check Python formatting. We use a specific
@@ -90,7 +92,8 @@ RUN add-apt-repository universe \
     && pip3 --no-cache-dir install -U pip \
     && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
       coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
-    && pip3 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
+    && pip3 --no-cache-dir install pybind11~=2.6.1 \
+      numpy~=1.21.5 scipy h5py matplotlib \
       coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
     && pip2 --no-cache-dir install yapf==0.29.0 futures unittest2 \
     && pip3 --no-cache-dir install yapf==0.29.0
