@@ -13,6 +13,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -25,6 +26,7 @@ template <typename Label, typename Measurement>
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
+  static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
   static constexpr size_t deriv_order = 2;
   using simple_tags = tmpl::list<>;
@@ -47,6 +49,7 @@ struct MockControlComponent {
                  control_system::Tags::Averager<2>,
                  control_system::Tags::TimescaleTuner,
                  control_system::Tags::ControlSystemName,
+                 control_system::Tags::WriteDataToDisk,
                  control_system::Tags::Controller<2>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -75,11 +78,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   Controller<2> controller_empty{};
   std::string controlsys_name{"LabelA"};
   std::string controlsys_name_empty{};
+  bool write_data = false;
 
   tuples::tagged_tuple_from_typelist<tags> init_tuple{
       control_system::OptionHolder<mock_control_sys>{averager, controller,
                                                      tuner},
-      averager_empty, tuner_empty, controlsys_name_empty, controller_empty};
+      averager_empty,
+      tuner_empty,
+      controlsys_name_empty,
+      write_data,
+      controller_empty};
 
   MockRuntimeSystem runner{{}};
   ActionTesting::emplace_singleton_component_and_initialize<component>(
@@ -106,13 +114,17 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
       ActionTesting::get_databox_tag<component,
                                      control_system::Tags::ControlSystemName>(
           runner, 0);
+  const auto& box_write_data =
+      ActionTesting::get_databox_tag<component,
+                                     control_system::Tags::WriteDataToDisk>(
+          runner, 0);
 
   // Check that things haven't been initialized
   CHECK(box_averager != averager);
   CHECK(box_tuner != tuner);
   CHECK(box_controlsys_name != controlsys_name);
   // We don't check the controller now because one of its members is
-  // inititalized with signaling_NaN() so comparing now would throw an FPE.
+  // initialized with signaling_NaN() so comparing now would throw an FPE.
 
   // Now initialize everything
   runner.next_action<component>(0);
@@ -122,4 +134,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   CHECK(box_tuner == tuner);
   CHECK(box_controlsys_name == controlsys_name);
   CHECK(box_controller == controller);
+  CHECK_FALSE(box_write_data);
 }

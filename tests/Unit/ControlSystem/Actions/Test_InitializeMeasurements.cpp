@@ -35,6 +35,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -85,6 +86,7 @@ struct SystemB;
 
 struct SystemA : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "A"; }
+  static std::string component_name(const size_t i) { return get_output(i); }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
   struct process_measurement {
@@ -95,6 +97,7 @@ struct SystemA : tt::ConformsTo<control_system::protocols::ControlSystem> {
 
 struct SystemB : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "B"; }
+  static std::string component_name(const size_t /*i*/) { return ""; }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
   struct process_measurement {
@@ -105,6 +108,7 @@ struct SystemB : tt::ConformsTo<control_system::protocols::ControlSystem> {
 
 struct SystemC : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "C"; }
+  static std::string component_name(const size_t /*i*/) { return ""; }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemC>>;
   struct process_measurement {

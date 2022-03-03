@@ -33,6 +33,7 @@ namespace Actions {
  *   - `control_system::Tags::Controller<2>`
  *   - `control_system::Tags::TimescaleTuner`
  *   - `control_system::Tags::ControlSystemName`
+ *   - `control_system::Tags::WriteDataToDisk`
  * - Removes: Nothing
  * - Modifies:
  *   - `control_system::Tags::Controller<2>`
@@ -46,7 +47,11 @@ struct Initialize {
   static constexpr size_t deriv_order = ControlSystem::deriv_order;
 
   using initialization_tags =
-      tmpl::list<control_system::Tags::ControlSystemInputs<ControlSystem>>;
+      tmpl::list<control_system::Tags::ControlSystemInputs<ControlSystem>,
+                 control_system::Tags::WriteDataToDisk>;
+
+  using initialization_tags_to_keep =
+      tmpl::list<control_system::Tags::WriteDataToDisk>;
 
   using tags_to_be_initialized =
       tmpl::list<control_system::Tags::Averager<deriv_order>,
