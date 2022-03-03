@@ -7,6 +7,7 @@
 namespace RelativisticEuler {
 namespace Solutions {
 class FishboneMoncriefDisk;
+class RotatingStar;
 class TovStar;
 }  // namespace Solutions
 }  // namespace RelativisticEuler

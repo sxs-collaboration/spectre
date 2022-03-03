@@ -210,6 +210,7 @@ long_lines() {
               'docs/MainSite/Main.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
+              'RotatingStarId.dat$' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
@@ -361,6 +362,7 @@ license() {
               'docs/config/layout.xml' \
               'docs/config/MathJax.js$' \
               'external/*' \
+              'RotatingStarId.dat$' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
