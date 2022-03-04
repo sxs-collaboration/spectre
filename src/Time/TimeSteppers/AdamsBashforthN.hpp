@@ -246,17 +246,15 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   compute_boundary_delta(
-      const Coupling& coupling,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
-      const TimeDelta& time_step) const;
+      const TimeDelta& time_stepm, const Coupling& coupling) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   boundary_dense_output(
-      const Coupling& coupling,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      double time) const;
+      double time, const Coupling& coupling) const;
 
   size_t order() const override;
 
@@ -298,9 +296,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)> boundary_impl(
-      const Coupling& coupling,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      const TimeType& end_time) const;
+      const TimeType& end_time, const Coupling& coupling) const;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
@@ -435,10 +432,9 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 template <typename LocalVars, typename RemoteVars, typename Coupling>
 std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::compute_boundary_delta(
-    const Coupling& coupling,
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
-    const TimeDelta& time_step) const {
+    const TimeDelta& time_step, const Coupling& coupling) const {
   const auto signed_order =
       static_cast<typename decltype(history->local_end())::difference_type>(
           history->integration_order());
@@ -470,26 +466,24 @@ AdamsBashforthN::compute_boundary_delta(
     history->remote_mark_unneeded(remote_step_for_step_start - signed_order);
   }
 
-  return boundary_impl(coupling, *history,
-                       *(history->local_end() - 1) + time_step);
+  return boundary_impl(*history, *(history->local_end() - 1) + time_step,
+                       coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
 std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::boundary_dense_output(
-    const Coupling& coupling,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const double time) const {
-  return boundary_impl(coupling, history, ApproximateTime{time});
+    const double time, const Coupling& coupling) const {
+  return boundary_impl(history, ApproximateTime{time}, coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling,
           typename TimeType>
 std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
 AdamsBashforthN::boundary_impl(
-    const Coupling& coupling,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const TimeType& end_time) const {
+    const TimeType& end_time, const Coupling& coupling) const {
   // Might be different from order_ during self-start.
   const auto current_order = history.integration_order();
 

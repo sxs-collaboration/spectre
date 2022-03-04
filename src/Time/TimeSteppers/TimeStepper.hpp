@@ -180,26 +180,24 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   compute_boundary_delta(
-      const Coupling& coupling,
       const gsl::not_null<TimeSteppers::BoundaryHistory<
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
           history,
-      const TimeDelta& time_step) const {
+      const TimeDelta& time_step, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_compute_boundary_delta<
-        creatable_classes>(this, coupling, history, time_step);
+        creatable_classes>(this, history, time_step, coupling);
   }
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
   boundary_dense_output(
-      const Coupling& coupling,
       const TimeSteppers::BoundaryHistory<
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
-      const double time) const {
+      const double time, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
-        creatable_classes>(this, coupling, history, time);
+        creatable_classes>(this, history, time, coupling);
   }
 
   /// Substep LTS integrators are not supported, so this is always 1.

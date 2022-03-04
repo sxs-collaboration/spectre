@@ -615,13 +615,13 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             if constexpr (DenseOutput) {
               (void)time_step;
               lifted_data = time_stepper.boundary_dense_output(
-                  compute_correction_coupling, mortar_data_history,
-                  dense_output_time);
+                  mortar_data_history, dense_output_time,
+                  compute_correction_coupling);
             } else {
               (void)dense_output_time;
               lifted_data = time_stepper.compute_boundary_delta(
-                  compute_correction_coupling,
-                  make_not_null(&mortar_data_history), time_step);
+                  make_not_null(&mortar_data_history), time_step,
+                  compute_correction_coupling);
             }
           } else {
             (void)time_step;

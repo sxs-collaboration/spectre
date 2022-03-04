@@ -897,8 +897,8 @@ void test_impl(const Spectral::Quadrature quadrature,
       auto& mortar_data_hist = mortar_id_and_data.second;
       mortar_id_ptr = &mortar_id;
       auto lifted_volume_data = time_stepper.compute_boundary_delta(
-          compute_correction_coupling, make_not_null(&mortar_data_hist),
-          time_step);
+          make_not_null(&mortar_data_hist), time_step,
+          compute_correction_coupling);
       if (quadrature == Spectral::Quadrature::GaussLobatto) {
         const auto& direction = mortar_id.first;
         // Add the flux contribution to the volume data
