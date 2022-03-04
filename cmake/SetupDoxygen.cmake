@@ -1,9 +1,34 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+find_package(Python REQUIRED)
+
+# Targets to preprocess the documentation
+# - Convert all `.ipynb` files in `docs/` to markdown, so they get picked up by
+#   Doxygen.
+get_filename_component(_PY_BIN_DIR ${Python_EXECUTABLE} DIRECTORY)
+find_program(NBCONVERT jupyter-nbconvert HINTS ${_PY_BIN_DIR})
+if (NBCONVERT STREQUAL "NBCONVERT-NOTFOUND")
+  message(STATUS "jupyter-nbconvert not found. Preprocessing .ipynb files for \
+documentation disabled.")
+else()
+  message(STATUS "Found jupyter-nbconvert: ${NBCONVERT}")
+  add_custom_target(
+    doc-notebooks-to-markdown
+    COMMAND find ${CMAKE_SOURCE_DIR}/docs -name "*.ipynb"
+      | xargs ${NBCONVERT} --to markdown
+        --output-dir ${CMAKE_BINARY_DIR}/docs/tmp/notebooks_md
+    )
+endif()
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   set(SPECTRE_DOXYGEN_GROUPS "${CMAKE_BINARY_DIR}/docs/tmp/GroupDefs.hpp")
+
+  # For INPUT_FILTER in Doxyfile. Using Python instead of Perl here increases
+  # docs generation time by ~25%. Runtimes are 102s (no filter), 108s (Perl) and
+  # 135s (Python) at the time of writing (Mar 2022).
+  find_package(Perl)
 
   set(SPECTRE_DOX_GENERATE_HTML "YES")
   set(SPECTRE_DOX_GENERATE_XML "NO")
@@ -52,51 +77,44 @@ function correctly. Use Doxygen version 1.9.3 or higher.")
 ! (${GENERATE_DOCS_COMMAND}) 2>&1 | grep -A 6 -i 'warning' >&2\n"
     )
 
-  # We need Python for postprocessing the documentation
-  find_package(Python)
-  if (Python_FOUND)
-    include(FindPythonModule)
-    find_python_module(bs4 FALSE)
-    find_python_module(pybtex FALSE)
-    if (PY_BS4 AND PY_PYBTEX)
-      # Construct the command that runs the postprocessing over the Doxygen HTML
-      # output
-      set(
-        DOCS_POST_PROCESS_COMMAND
-        "${Python_EXECUTABLE} \
+  include(FindPythonModule)
+  find_python_module(bs4 FALSE)
+  find_python_module(pybtex FALSE)
+  if (PY_BS4 AND PY_PYBTEX)
+    # Construct the command that runs the postprocessing over the Doxygen HTML
+    # output
+    set(
+      DOCS_POST_PROCESS_COMMAND
+      "${Python_EXECUTABLE} \
 ${CMAKE_SOURCE_DIR}/docs/config/postprocess_docs.py \
 --html-dir ${PROJECT_BINARY_DIR}/docs/html \
 --references-file ${CMAKE_SOURCE_DIR}/docs/References.bib"
-        )
-      # Append postprocessing to doxygen commands
-      # The commands are supposed to run the postprocessing even if the doc
-      # generation failed with warnings, so that we output useful documentation
-      # in any case. The commands exit successfully only if both generation and
-      # postprocessing succeeded.
-      set(
-        GENERATE_DOCS_COMMAND
-        "${GENERATE_DOCS_COMMAND} && ${DOCS_POST_PROCESS_COMMAND} -v"
-        )
-      set(
-        GENERATE_AND_CHECK_DOCS_SCRIPT "${GENERATE_AND_CHECK_DOCS_SCRIPT}\
+      )
+    # Append postprocessing to doxygen commands
+    # The commands are supposed to run the postprocessing even if the doc
+    # generation failed with warnings, so that we output useful documentation
+    # in any case. The commands exit successfully only if both generation and
+    # postprocessing succeeded.
+    set(
+      GENERATE_DOCS_COMMAND
+      "${GENERATE_DOCS_COMMAND} && ${DOCS_POST_PROCESS_COMMAND} -v"
+      )
+    set(
+      GENERATE_AND_CHECK_DOCS_SCRIPT "${GENERATE_AND_CHECK_DOCS_SCRIPT}\
 generate_docs_exit=$?\n\
 ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
-        )
-    else (PY_BS4 AND PY_PYBTEX)
-      message(WARNING "Doxygen documentation postprocessing is disabled because"
-      " Python dependencies were not found:")
-      if (NOT PY_BS4)
-        message(WARNING "BeautifulSoup4 missing. "
-          "Install with: pip install beautifulsoup4")
-      endif()
-      if (NOT PY_PYBTEX)
-        message(WARNING "Pybtex missing. Install with: pip install pybtex")
-      endif()
-    endif (PY_BS4 AND PY_PYBTEX)
-  else (Python_FOUND)
-    message(WARNING "Doxygen documentation postprocessing is disabled because a"
-    " Python interpreter was not found.")
-  endif (Python_FOUND)
+      )
+  else (PY_BS4 AND PY_PYBTEX)
+    message(WARNING "Doxygen documentation postprocessing is disabled because"
+    " Python dependencies were not found:")
+    if (NOT PY_BS4)
+      message(WARNING "BeautifulSoup4 missing. "
+        "Install with: pip install beautifulsoup4")
+    endif()
+    if (NOT PY_PYBTEX)
+      message(WARNING "Pybtex missing. Install with: pip install pybtex")
+    endif()
+  endif (PY_BS4 AND PY_PYBTEX)
 
   # Parse the command into a CMake list for the `add_custom_target`
   separate_arguments(GENERATE_DOCS_COMMAND)
@@ -138,6 +156,12 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
     ${PROJECT_BINARY_DIR}/docs/DoxyfileXml
     ${SPECTRE_DOXYGEN_GROUPS}
     )
+
+  if (TARGET doc-notebooks-to-markdown)
+    add_dependencies(doc doc-notebooks-to-markdown)
+    add_dependencies(doc-check doc-notebooks-to-markdown)
+    add_dependencies(doc-xml doc-notebooks-to-markdown)
+  endif()
 
   find_program(LCOV lcov)
   find_program(GENHTML genhtml)

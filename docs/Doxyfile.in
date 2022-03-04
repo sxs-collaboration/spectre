@@ -88,12 +88,17 @@ CITE_BIB_FILES         = @PROJECT_SOURCE_DIR@/docs/References.bib
 
 # Add the documentation pages in the order they should appear in the tree view.
 # Use `\subpage` within the pages to establish a hierarchy.
+# We also pick up notebooks converted to markdown by the
+# `doc-notebooks-to-markdown` target (see `cmake/SetupDoxygen.cmake` for
+# details).
 INPUT = @PROJECT_SOURCE_DIR@/docs/Installation \
         @PROJECT_SOURCE_DIR@/docs/Tutorials \
+        @PROJECT_SOURCE_DIR@/docs/Examples \
         @PROJECT_SOURCE_DIR@/docs/Contributing \
         @PROJECT_SOURCE_DIR@/docs/DevGuide \
         @PROJECT_SOURCE_DIR@/docs/PublicationPolicy.md \
         @PROJECT_SOURCE_DIR@/docs \
+        @CMAKE_BINARY_DIR@/docs/tmp/notebooks_md \
         @SPECTRE_DOXYGEN_GROUPS@ \
         @PROJECT_SOURCE_DIR@/src \
         @PROJECT_SOURCE_DIR@/tests/Unit/Framework \
@@ -130,6 +135,12 @@ EXAMPLE_PATTERNS       =
 
 EXAMPLE_RECURSIVE      = NO
 
+# Input filters run over content before it is parsed by Doxygen. They are
+# invoked with a file name as additional argument. We run the following filters:
+# - Format markdown math for Doxygen. See the documentation in
+#   `markdown-math-filter.pl` for details.
+INPUT_FILTER           = "@PERL_EXECUTABLE@ -0777 -p @PROJECT_SOURCE_DIR@/docs/config/markdown-math-filter.pl"
+
 #---------------------------------------------------------------------------
 # configuration options related to the output
 #---------------------------------------------------------------------------
@@ -140,7 +151,8 @@ HTML_HEADER            = @PROJECT_SOURCE_DIR@/docs/config/header.html
 
 HTML_FOOTER            = @PROJECT_SOURCE_DIR@/docs/config/footer.html
 
-IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/Images/
+IMAGE_PATH             = @PROJECT_SOURCE_DIR@/docs/ \
+                         @CMAKE_BINARY_DIR@/docs/tmp/notebooks_md
 
 GENERATE_LATEX         = NO
 

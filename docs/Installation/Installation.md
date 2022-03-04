@@ -88,8 +88,10 @@ all of these dependencies.
 * [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 or later — to
   generate documentation
 * [Python](https://www.python.org/) with
-  [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/) and
-  [Pybtex](https://pybtex.org) — for documentation post-processing
+  [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/),
+  [Pybtex](https://pybtex.org),
+  [nbconvert](https://nbconvert.readthedocs.io/)
+  — for documentation pre- and post-processing
 * [Google Benchmark](https://github.com/google/benchmark) - to do
   microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and

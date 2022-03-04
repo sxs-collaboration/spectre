@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Matplotlib style suitable for notebooks that get rendered in our documentation
+#
+# These settings configure matplotlib plots so they look good in our online
+# documentation, and have a consistent style. In a notebook, or when plotting
+# in a script, apply the style like this:
+#
+#   import matplotlib.pyplot as plt
+#   plt.style.use('path/to/plots.mplstyle')
+
+figure.dpi: 150
+figure.facecolor: white
