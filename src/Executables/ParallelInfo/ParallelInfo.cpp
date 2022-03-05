@@ -41,9 +41,9 @@ ParallelInfo::ParallelInfo(CkArgMsg* msg) {
       "[4]Number Of Nodes    (number_of_nodes)\n"
       "[5]Procs On Node      (procs_on_node)\n"
       "[6]My Local Rank      (my_local_rank)\n"
-      "[6]First Proc On Node (first_proc_on_node)\n"
-      "[7]Node Of This PE    (node_of)\n"
-      "[8]Local Rank Of PE   (local_rank_of)\n");
+      "[7]First Proc On Node (first_proc_on_node)\n"
+      "[8]Node Of This PE    (node_of)\n"
+      "[9]Local Rank Of PE   (local_rank_of)\n");
   start_pe_group_check();
 }
 
