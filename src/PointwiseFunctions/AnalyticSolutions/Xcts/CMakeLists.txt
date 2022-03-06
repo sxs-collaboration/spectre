@@ -35,6 +35,7 @@ target_link_libraries(
   ErrorHandling
   GeneralRelativity
   GeneralRelativitySolutions
+  InitialDataUtilities
   Options
   Parallel
   Utilities
