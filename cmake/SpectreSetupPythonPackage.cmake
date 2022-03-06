@@ -1,11 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SPECTRE_PYTHON_INSTALL_LIBDIR
-  "lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages"
-  CACHE STRING "Location where the Python package is installed. Defaults to \
-CMAKE_INSTALL_PREFIX/lib/pythonX.Y/site-packages/.")
-
 spectre_define_test_timeout_factor_option(PYTHON "Python")
 
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
@@ -23,10 +18,28 @@ if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
     "__all__ = []")
 endif()
 
-# Write a file for installing the Python modules
+# Create the root __main__.py entry point
 configure_file(
-  "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.py"
-  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.py")
+  "${CMAKE_SOURCE_DIR}/support/Python/__main__.py"
+  "${SPECTRE_PYTHON_PREFIX}/__main__.py"
+)
+# Also link the main entry point to bin/
+set(PYTHON_SCRIPT_LOCATION "spectre")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
+  "${CMAKE_BINARY_DIR}/tmp/spectre")
+file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
+  DESTINATION "${CMAKE_BINARY_DIR}/bin"
+  FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
+    GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+# Write configuration files for installing the Python modules
+configure_file(
+  "${CMAKE_SOURCE_DIR}/src/PythonBindings/pyproject.toml"
+  "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
+configure_file(
+  "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.cfg"
+  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
 set(_JEMALLOC_MESSAGE "")
 if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
@@ -47,10 +60,17 @@ configure_file(
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "${CMAKE_BINARY_DIR}/bin/LoadPython.sh")
 
-# Install the SpECTRE Python package to the user-specified location.
+# Install the SpECTRE Python package to the CMAKE_INSTALL_PREFIX, using pip.
+# This will install the package into the expected subdirectory, typically
+# `lib/pythonX.Y/site-packages/`. It also creates symlinks to entry points
+# specified in `setup.py`.
 install(
-  DIRECTORY ${SPECTRE_PYTHON_PREFIX}
-  DESTINATION ${SPECTRE_PYTHON_INSTALL_LIBDIR}
+  CODE "execute_process(\
+    COMMAND ${Python_EXECUTABLE} -m pip install \
+      --no-deps --no-input --no-cache-dir --no-index --ignore-installed \
+      --disable-pip-version-check --no-build-isolation \
+      --prefix ${CMAKE_INSTALL_PREFIX} ${SPECTRE_PYTHON_PREFIX_PARENT} \
+    )"
   )
 
 add_custom_target(all-pybindings)
@@ -257,6 +277,8 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     # Write an executable in `${CMAKE_BINARY_DIR}/bin` that runs the Python
     # script in the correct Python environment
     if(${PYTHON_FILE} IN_LIST ARG_PYTHON_EXECUTABLES)
+      set(PYTHON_SCRIPT_LOCATION
+        "${PYTHON_MODULE_LOCATION}.${PYTHON_FILE_JUST_NAME_WE}")
       configure_file(
         "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
         "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}")
