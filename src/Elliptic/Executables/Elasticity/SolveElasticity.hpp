@@ -168,8 +168,8 @@ struct Metavariables {
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::append<
       analytic_solution_fields, error_tags,
-      tmpl::list<Elasticity::Tags::Strain<volume_dim>,
-                 Elasticity::Tags::PotentialEnergyDensity<volume_dim>,
+      tmpl::list<Elasticity::Tags::StrainCompute<volume_dim>,
+                 Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>,
                  domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
@@ -232,9 +232,6 @@ struct Metavariables {
       typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
-      Initialization::Actions::AddComputeTags<tmpl::list<
-          Elasticity::Tags::StrainCompute<volume_dim>,
-          Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag,
           tmpl::append<typename system::primal_fields,
