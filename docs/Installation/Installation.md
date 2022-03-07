@@ -82,6 +82,9 @@ all of these dependencies.
   Install with `pip3 install -r support/Python/requirements.txt`.
   Make sure you are working in a [Python venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
   before installing packages.
+  Alternatively, you can set `BOOTSTRAP_PY_DEPS=ON` when configuring a build
+  with CMake to install missing Python packages into the build directory
+  automatically.
   <details>
   \include support/Python/requirements.txt
   </details>
