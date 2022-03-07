@@ -70,8 +70,12 @@ LinearSolver:
 
 EventsAndTriggers:
   ? HasConverged
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: ErrorNorms
+        TensorsToObserve:
+          - Name: Error(Field)
+            NormType: L2Norm
+            Components: Sum
     - ObserveFields:
         SubfileName: VolumeData
         VariablesToObserve: [Field]

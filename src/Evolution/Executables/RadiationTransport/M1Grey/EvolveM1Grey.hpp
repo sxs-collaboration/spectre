@@ -135,24 +135,32 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
+  using analytic_compute =
+      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
+                                                analytic_variables_tags>;
+  using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
+  using observe_fields = tmpl::push_back<
+      tmpl::append<typename system::variables_tag::tags_list,
+                   typename system::primitive_variables_tag::tags_list,
+                   error_tags>,
+      domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 analytic_compute, error_compute>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                dg::Events::field_observations<
-                    volume_dim, Tags::Time,
-                    tmpl::append<
-                        typename system::variables_tag::tags_list,
-                        typename system::primitive_variables_tag::tags_list>,
-                    tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                                        analytic_variables_tags, tmpl::list<>>,
-                    tmpl::list<>>,
-                Events::time_events<system>>>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  non_tensor_compute_tags>,
+                              Events::time_events<system>>>>,
         tmpl::pair<
             RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
                 metavariables::neutrino_species>,
@@ -244,11 +252,6 @@ struct EvolutionMetavars {
                                ComputeM1Closure<neutrino_species>>,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>,
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Initialization::Actions::AddComputeTags<tmpl::list<
-                              evolution::Tags::AnalyticSolutionsCompute<
-                                  3, analytic_variables_tags>>>,
-                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

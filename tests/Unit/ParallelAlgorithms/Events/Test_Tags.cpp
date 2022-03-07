@@ -25,7 +25,7 @@ void test(const Mesh<Dim>& mesh) {
                         domain::Tags::Coordinates<Dim, Frame::Grid>,
                         domain::Tags::Coordinates<Dim, Frame::Inertial>>,
       db::AddComputeTags<
-          Events::Tags::ObserverMeshCompute<Dim>,
+          ::Events::Tags::ObserverMeshCompute<Dim>,
           Events::Tags::ObserverCoordinatesCompute<Dim, Frame::Grid>,
           Events::Tags::ObserverCoordinatesCompute<Dim, Frame::Inertial>>>(
       mesh, grid_coords, inertial_coords);
@@ -36,7 +36,7 @@ void test(const Mesh<Dim>& mesh) {
         inertial_coords);
   TestHelpers::db::test_simple_tag<Events::Tags::ObserverMesh<Dim>>(
       "ObserverMesh");
-  TestHelpers::db::test_compute_tag<Events::Tags::ObserverMeshCompute<Dim>>(
+  TestHelpers::db::test_compute_tag<::Events::Tags::ObserverMeshCompute<Dim>>(
       "ObserverMesh");
   TestHelpers::db::test_simple_tag<
       Events::Tags::ObserverCoordinates<Dim, Frame::Grid>>("GridCoordinates");

@@ -57,6 +57,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -135,17 +136,24 @@ struct EvolutionMetavars {
       typename system::gradient_variables>;
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields>;
+  using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
 
-  using observe_fields =
-      tmpl::push_back<tmpl::append<typename system::variables_tag::tags_list,
-                                   typename deriv_compute::type::tags_list>,
-                      ScalarWave::Tags::EnergyDensityCompute<volume_dim>,
-                      ScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
-                      ScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
-                      ::Tags::PointwiseL2NormCompute<
-                          ScalarWave::Tags::OneIndexConstraint<volume_dim>>,
-                      ::Tags::PointwiseL2NormCompute<
-                          ScalarWave::Tags::TwoIndexConstraint<volume_dim>>>;
+  using observe_fields = tmpl::push_back<
+      tmpl::append<typename system::variables_tag::tags_list,
+                   typename deriv_compute::type::tags_list, error_tags>,
+      ScalarWave::Tags::EnergyDensityCompute<volume_dim>,
+      ScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
+      ScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
+      ::Tags::PointwiseL2NormCompute<
+          ScalarWave::Tags::OneIndexConstraint<volume_dim>>,
+      ::Tags::PointwiseL2NormCompute<
+          ScalarWave::Tags::TwoIndexConstraint<volume_dim>>,
+      domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>, deriv_compute,
+                 analytic_compute, error_compute>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -155,10 +163,9 @@ struct EvolutionMetavars {
         tmpl::pair<Event,
                    tmpl::flatten<tmpl::list<
                        Events::Completion,
-                       dg::Events::field_observations<
-                           volume_dim, Tags::Time, observe_fields,
-                           analytic_solution_fields,
-                           tmpl::list<deriv_compute, analytic_compute>>,
+                       dg::Events::field_observations<volume_dim, Tags::Time,
+                                                      observe_fields,
+                                                      non_tensor_compute_tags>,
                        dg::Events::ObserveVolumeIntegrals<
                            volume_dim, Tags::Time,
                            tmpl::list<ScalarWave::Tags::EnergyDensityCompute<

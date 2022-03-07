@@ -74,8 +74,18 @@ EventsAndDenseTriggers:
   ? Times:
       Specified:
         Values: [*initial_time]
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: Errors
+        TensorsToObserve:
+          - Name: Error(Psi)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Phi)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Pi)
+            NormType: L2Norm
+            Components: Sum
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave2DVolume"

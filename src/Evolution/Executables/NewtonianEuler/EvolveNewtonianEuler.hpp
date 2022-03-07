@@ -24,9 +24,10 @@
 #include "Evolution/DgSubcell/Actions/TakeTimeStep.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndRollback.hpp"
 #include "Evolution/DgSubcell/Actions/TciAndSwitchToDg.hpp"
-#include "Evolution/DgSubcell/Events/ObserveFields.hpp"
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
@@ -79,7 +80,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -172,34 +173,47 @@ struct EvolutionMetavars {
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
-  using observe_fields =
+  using analytic_compute =
+      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
+                                                analytic_variables_tags>;
+  using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
+  using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list,
-                   typename system::primitive_variables_tag::tags_list>;
-  using analytic_solution_fields =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          typename system::primitive_variables_tag::tags_list,
-                          tmpl::list<>>;
+                   typename system::primitive_variables_tag::tags_list,
+                   error_tags,
+                   tmpl::conditional_t<
+                       use_dg_subcell,
+                       tmpl::list<evolution::dg::subcell::Tags::TciStatus>,
+                       tmpl::list<>>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,
+                                                                   Frame::Grid>,
+          domain::Tags::Coordinates<volume_dim, Frame::Grid>>,
+      tmpl::conditional_t<
+          use_dg_subcell,
+          evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
+              volume_dim, Frame::Inertial>,
+          domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+  using non_tensor_compute_tags = tmpl::list<
+      tmpl::conditional_t<
+          use_dg_subcell,
+          evolution::dg::subcell::Tags::ObserverMeshCompute<volume_dim>,
+          ::Events::Tags::ObserverMeshCompute<volume_dim>>,
+      analytic_compute, error_compute>;
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<DenseTrigger, DenseTriggers::standard_dense_triggers>,
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
-        tmpl::pair<
-            Event,
-            tmpl::flatten<tmpl::list<
-                Events::Completion,
-                tmpl::conditional_t<
-                    use_dg_subcell,
-                    evolution::dg::subcell::Events::ObserveFields<
-                        volume_dim, Tags::Time,
-                        tmpl::push_back<observe_fields, evolution::dg::subcell::
-                                                            Tags::TciStatus>,
-                        analytic_solution_fields>,
-                    dg::Events::field_observations<
-                        volume_dim, Tags::Time, observe_fields,
-                        analytic_solution_fields, tmpl::list<>>>,
-
-                Events::time_events<system>>>>,
+        tmpl::pair<Event, tmpl::flatten<tmpl::list<
+                              Events::Completion,
+                              dg::Events::field_observations<
+                                  volume_dim, Tags::Time, observe_fields,
+                                  non_tensor_compute_tags>,
+                              Events::time_events<system>>>>,
         tmpl::pair<
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
@@ -281,11 +295,6 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,
                      NewtonianEuler::Tags::SoundSpeedCompute<DataVector>>>,
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Initialization::Actions::AddComputeTags<tmpl::list<
-                              evolution::Tags::AnalyticSolutionsCompute<
-                                  Dim, analytic_variables_tags>>>,
-                          tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,

@@ -49,8 +49,15 @@ EventsAndTriggers:
       EvenlySpaced:
         Interval: 3
         Offset: 5
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: Errors
+        TensorsToObserve:
+          - Name: Error(TildeE_ElectronNeutrinos1)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(TildeS_ElectronNeutrinos1)
+            NormType: L2Norm
+            Components: Sum
   ? Slabs:
       Specified:
         Values: [10]

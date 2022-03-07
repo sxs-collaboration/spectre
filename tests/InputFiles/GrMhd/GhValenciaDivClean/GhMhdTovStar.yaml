@@ -115,8 +115,42 @@ EventsAndTriggers:
       EvenlySpaced:
         Interval: 1
         Offset: 0
-  : - ObserveErrorNorms:
+  : - ObserveNorms:
         SubfileName: Errors
+        TensorsToObserve:
+          - Name: Error(SpacetimeMetric)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Pi)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Phi)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(RestMassDensity)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(SpecificInternalEnergy)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(SpatialVelocity)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(MagneticField)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(DivergenceCleaningField)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(LorentzFactor)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(Pressure)
+            NormType: L2Norm
+            Components: Sum
+          - Name: Error(SpecificEnthalpy)
+            NormType: L2Norm
+            Components: Sum
   ? Slabs:
       EvenlySpaced:
         Interval: 2

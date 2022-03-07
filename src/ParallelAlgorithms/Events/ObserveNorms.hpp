@@ -34,16 +34,11 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/OptionalHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Events {
-/// \cond
-template <typename ObservationValueTag, typename ObservableTensorTagsList,
-          typename NonTensorComputeTagsList = tmpl::list<>,
-          typename ArraySectionIdTag = void>
-class ObserveNorms;
-/// \endcond
-
+/// @{
 /*!
  * \brief Compute norms of tensors in the DataBox and write them to disk.
  *
@@ -78,6 +73,11 @@ class ObserveNorms;
  * available in the DataBox. It identifies the section and is used as a suffix
  * for the path in the output file.
  */
+template <typename ObservationValueTag, typename ObservableTensorTagsList,
+          typename NonTensorComputeTagsList = tmpl::list<>,
+          typename ArraySectionIdTag = void>
+class ObserveNorms;
+
 template <typename ObservationValueTag, typename... ObservableTensorTags,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
@@ -170,11 +170,9 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
         "List specifying each tensor to observe and how it is reduced."};
   };
 
-  /// \cond
   explicit ObserveNorms(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(ObserveNorms);  // NOLINT
-  /// \endcond
 
   using options = tmpl::list<SubfileName, TensorsToObserve>;
 
@@ -247,6 +245,7 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   std::vector<std::string> tensor_norm_types_{};
   std::vector<std::string> tensor_components_{};
 };
+/// @}
 
 /// \cond
 template <typename ObservationValueTag, typename... ObservableTensorTags,
@@ -336,9 +335,17 @@ operator()(const typename ObservationValueTag::type& observation_value,
     const std::string tensor_name = db::tag_name<tag>();
     for (size_t i = 0; i < tensor_names_.size(); ++i) {
       if (tensor_name == tensor_names_[i]) {
+        if (UNLIKELY(not has_value(get<tag>(box)))) {
+          ERROR("Cannot observe a norm of '"
+                << tensor_name
+                << "' because it is a std::optional and wasn't able to be "
+                   "computed. This can happen when you try to observe errors "
+                   "without an analytic solution.");
+        }
+        const auto& tensor = value(get<tag>(box));
+
         auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
-        const auto [component_names, components] =
-            get<tag>(box).get_vector_of_data();
+        const auto [component_names, components] = tensor.get_vector_of_data();
         if (number_of_points != 0 and
             components[0].size() != number_of_points) {
           ERROR("The number of grid points previously was "

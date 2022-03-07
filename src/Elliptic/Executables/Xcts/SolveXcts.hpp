@@ -40,6 +40,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -191,9 +192,16 @@ struct Metavariables {
                  gr::Tags::Lapse<DataVector>,
                  gr::Tags::Shift<3, Frame::Inertial, DataVector>,
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
-  using observe_fields =
+  using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
+  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
+  using observe_fields = tmpl::push_back<
       tmpl::append<analytic_solution_fields, typename system::background_fields,
-                   typename spacetime_quantities_compute::tags_list>;
+                   typename spacetime_quantities_compute::tags_list,
+                   error_tags>,
+      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 spacetime_quantities_compute, error_compute>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -222,12 +230,7 @@ struct Metavariables {
                        Events::Completion,
                        dg::Events::field_observations<
                            volume_dim, nonlinear_solver_iteration_id,
-                           observe_fields, analytic_solution_fields,
-                           tmpl::list<spacetime_quantities_compute>,
-                           LinearSolver::multigrid::Tags::IsFinestGrid>,
-                       Events::ObserveNorms<
-                           nonlinear_solver_iteration_id, observe_fields,
-                           tmpl::list<spacetime_quantities_compute>,
+                           observe_fields, non_tensor_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;

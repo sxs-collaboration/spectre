@@ -71,10 +71,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -286,7 +282,9 @@ struct EvolutionMetavars {
                          volume_dim, ::Frame::Inertial>>,
                  ::Tags::PointwiseL2NormCompute<
                      GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-                         volume_dim, ::Frame::Inertial>>>,
+                         volume_dim, ::Frame::Inertial>>,
+                 ::domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+                 ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
       // The 4-index constraint is only implemented in 3d
       tmpl::conditional_t<
           volume_dim == 3,
@@ -296,6 +294,8 @@ struct EvolutionMetavars {
                          GeneralizedHarmonic::Tags::FourIndexConstraint<
                              3, ::Frame::Inertial>>>,
           tmpl::list<>>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -308,10 +308,9 @@ struct EvolutionMetavars {
                 intrp::Events::Interpolate<3, AhA, interpolator_source_vars>,
                 intrp::Events::Interpolate<3, AhB, interpolator_source_vars>,
                 Events::Completion,
-                Events::ObserveNorms<::Tags::Time, observe_fields>,
                 dg::Events::field_observations<volume_dim, Tags::Time,
-                                               observe_fields, tmpl::list<>,
-                                               tmpl::list<>>,
+                                               observe_fields,
+                                               non_tensor_compute_tags>,
                 Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,

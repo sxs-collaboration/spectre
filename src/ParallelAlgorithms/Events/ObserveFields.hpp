@@ -36,6 +36,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -43,6 +44,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/OptionalHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -63,10 +65,7 @@ namespace Events {
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
           typename NonTensorComputeTagsList = tmpl::list<>,
-          typename AnalyticSolutionTensors = tmpl::list<>,
-          typename ArraySectionIdTag = void,
-          typename NonSolutionTensors =
-              tmpl::list_difference<Tensors, AnalyticSolutionTensors>>
+          typename ArraySectionIdTag = void>
 class ObserveFields;
 /// \endcond
 
@@ -75,11 +74,13 @@ class ObserveFields;
  * \brief %Observe volume tensor fields.
  *
  * A class that writes volume quantities to an h5 file during the simulation.
- * The observed quantitites are:
- * - `InertialCoordinates`
- * - Tensors listed in `Tensors` template parameter
- * - `Error(*)` = errors in `AnalyticSolutionTensors` =
- *   \f$\text{value} - \text{analytic solution}\f$
+ * The observed quantitites are specified in the `VariablesToObserve` option.
+ * Any `Tensor` in the `db::DataBox` can be observed but must be listed in the
+ * `Tensors` template parameter. Any additional compute tags that hold a
+ * `Tensor` can also be added to the `Tensors` template parameter. Finally,
+ * `Variables` and other non-tensor compute tags can be listed in the
+ * `NonTensorComputeTags` to facilitate observing. Note that the
+ * `InertialCoordinates` are always observed.
  *
  * The user may specify an `interpolation_mesh` to which the
  * data is interpolated.
@@ -95,21 +96,10 @@ class ObserveFields;
  * for the path in the output file.
  */
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
-          typename ArraySectionIdTag, typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-                    tmpl::list<NonTensorComputeTags...>,
-                    tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
-                    tmpl::list<NonSolutionTensors...>> : public Event {
- private:
-  static_assert(
-      std::is_same_v<
-          tmpl::list_difference<tmpl::list<AnalyticSolutionTensors...>,
-                                tmpl::list<Tensors...>>,
-          tmpl::list<>>,
-      "All AnalyticSolutionTensors must be listed in Tensors.");
-  using coordinates_tag = domain::Tags::Coordinates<VolumeDim, Frame::Inertial>;
-
+                    tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>
+    : public Event {
  public:
   /// The name of the subfile inside the HDF5 file
   struct SubfileName {
@@ -154,10 +144,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         "Must be specified once for all data or individually  for each "
         "variable being observed.";
     using type = std::vector<FloatingPointType>;
-    static size_t upper_bound_on_size() {
-      return sizeof...(Tensors) + sizeof...(AnalyticSolutionTensors) +
-             sizeof...(NonSolutionTensors);
-    }
+    static size_t upper_bound_on_size() { return sizeof...(Tensors); }
     static size_t lower_bound_on_size() { return 1; }
   };
 
@@ -179,9 +166,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       "\n"
       "Writes volume quantities:\n"
       " * InertialCoordinates\n"
-      " * Tensors listed in Tensors template parameter\n"
-      " * Error(*) = errors in AnalyticSolutionTensors\n"
-      "            = value - analytic solution\n";
+      " * Tensors listed in the 'VariablesToObserve' option\n";
 
   ObserveFields() = default;
 
@@ -195,17 +180,14 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using compute_tags_for_observation_box =
       tmpl::list<Tensors..., NonTensorComputeTags...>;
 
-  using argument_tags =
-      tmpl::list<::Tags::ObservationBox, ObservationValueTag,
-                 domain::Tags::Mesh<VolumeDim>, coordinates_tag>;
+  using argument_tags = tmpl::list<::Tags::ObservationBox, ObservationValueTag,
+                                   ::Events::Tags::ObserverMesh<VolumeDim>>;
 
   template <typename DataBoxType, typename ComputeTagsList,
             typename Metavariables, typename ParallelComponent>
   void operator()(const ObservationBox<DataBoxType, ComputeTagsList>& box,
                   const typename ObservationValueTag::type& observation_value,
                   const Mesh<VolumeDim>& mesh,
-                  const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-                      inertial_coordinates,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* const component) const {
@@ -215,27 +197,17 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     if (not section_observation_key.has_value()) {
       return;
     }
-    // Get analytic solutions
-    auto&& optional_analytic_solutions = [&box]() -> decltype(auto) {
-      if constexpr (sizeof...(AnalyticSolutionTensors) > 0) {
-        return get<::Tags::AnalyticSolutionsBase>(box);
-      } else {
-        (void)box;
-        return std::nullopt;
-      }
-    }();
-    call_operator_impl(
-        subfile_path_ + *section_observation_key, variables_to_observe_,
-        interpolation_mesh_, observation_value, mesh, inertial_coordinates, box,
-        optional_analytic_solutions, cache, array_index, component);
+    call_operator_impl(subfile_path_ + *section_observation_key,
+                       variables_to_observe_, interpolation_mesh_,
+                       observation_value, mesh, box, cache, array_index,
+                       component);
   }
 
   // We factor out the work into a static member function so it can  be shared
   // with other field observing events, like the one that deals with DG-subcell
   // where there are two grids. This is to avoid copy-pasting all of the code.
   template <typename DataBoxType, typename ComputeTagsList,
-            typename OptionalAnalyticSolutions, typename Metavariables,
-            typename ParallelComponent>
+            typename Metavariables, typename ParallelComponent>
   static void call_operator_impl(
       const std::string& subfile_path,
       const std::unordered_map<std::string, FloatingPointType>&
@@ -243,23 +215,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const std::optional<Mesh<VolumeDim>>& interpolation_mesh,
       const typename ObservationValueTag::type& observation_value,
       const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-          inertial_coordinates,
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
-      const OptionalAnalyticSolutions& optional_analytic_solutions,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) {
-    const auto analytic_solutions = [&optional_analytic_solutions]() {
-      if constexpr (tt::is_a_v<std::optional, OptionalAnalyticSolutions>) {
-        return optional_analytic_solutions.has_value()
-                   ? std::make_optional(std::cref(*optional_analytic_solutions))
-                   : std::nullopt;
-      } else {
-        return std::make_optional(std::cref(optional_analytic_solutions));
-      }
-    }();
-
     const std::string element_name =
         MakeString{} << ElementId<VolumeDim>(array_index) << '/';
 
@@ -275,10 +234,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     // size is nontrivial.
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
-            inertial_coordinates.size(),
-            (analytic_solutions.has_value() ? 2 : 1) *
-                AnalyticSolutionTensors::type::size()...,
-            NonSolutionTensors::type::size()...},
+            std::decay_t<decltype(value(typename Tensors::type{}))>::size()...},
         0_st));
 
     const auto record_tensor_component_impl =
@@ -307,51 +263,20 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
           if (const auto var_to_observe = variables_to_observe.find(tag_name);
               var_to_observe != variables_to_observe.end()) {
             const auto& tensor = get<tensor_tag>(box);
+            if (not has_value(tensor)) {
+              // This will only print a warning the first time it's called on a
+              // node.
+              [[maybe_unused]] static bool t =
+                  ObserveFields::print_warning_about_optional<tensor_tag>();
+              return;
+            }
             const auto floating_point_type = var_to_observe->second;
-            record_tensor_component_impl(tensor, floating_point_type, tag_name);
+            record_tensor_component_impl(value(tensor), floating_point_type,
+                                         tag_name);
           }
         };
-    record_tensor_component_impl(
-        inertial_coordinates,
-        variables_to_observe.at(db::tag_name<coordinates_tag>()),
-        db::tag_name<coordinates_tag>());
     EXPAND_PACK_LEFT_TO_RIGHT(
-        record_tensor_components(tmpl::type_<AnalyticSolutionTensors>{}));
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        record_tensor_components(tmpl::type_<NonSolutionTensors>{}));
-
-    if (analytic_solutions.has_value()) {
-      const auto record_errors =
-          [&analytic_solutions, &box, &components, &element_name, &interpolant,
-           &variables_to_observe](const auto tensor_tag_v) {
-            using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-            const std::string tag_name = db::tag_name<tensor_tag>();
-            if (variables_to_observe.count(tag_name) == 1) {
-              const auto floating_point_type =
-                  variables_to_observe.at(tag_name);
-              const auto& tensor = get<tensor_tag>(box);
-              for (size_t i = 0; i < tensor.size(); ++i) {
-                DataVector error = interpolant.interpolate(DataVector(
-                    tensor[i] - get<::Tags::detail::AnalyticImpl<tensor_tag>>(
-                                    analytic_solutions->get())[i]));
-                if (floating_point_type == FloatingPointType::Float) {
-                  components.emplace_back(
-                      element_name + "Error(" + tag_name + ")" +
-                          tensor.component_suffix(i),
-                      std::vector<float>{error.begin(), error.end()});
-                } else {
-                  components.emplace_back(element_name + "Error(" + tag_name +
-                                              ")" + tensor.component_suffix(i),
-                                          std::move(error));
-                }
-              }
-            }
-          };
-      EXPAND_PACK_LEFT_TO_RIGHT(
-          record_errors(tmpl::type_<AnalyticSolutionTensors>{}));
-
-      (void)(record_errors);  // Silence GCC warning about unused variable
-    }
+        record_tensor_components(tmpl::type_<Tensors>{}));
 
     // Send data to volume observer
     auto& local_observer =
@@ -407,18 +332,27 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   }
 
  private:
+  template <typename Tag>
+  static bool print_warning_about_optional() {
+    Parallel::printf(
+        "Warning: ObserveFields is trying to dump the tag %s "
+        "but it is stored as a std::optional and has not been "
+        "evaluated. This most commonly occurs when you are "
+        "trying to either observe an analytic solution or errors when "
+        "no analytic solution is available.\n",
+        db::tag_name<Tag>());
+    return false;
+  }
+
   std::string subfile_path_;
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
 };
 
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
-          typename ArraySectionIdTag, typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
-              tmpl::list<NonTensorComputeTags...>,
-              tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
-              tmpl::list<NonSolutionTensors...>>::
+              tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
     ObserveFields(const std::string& subfile_name,
                   const FloatingPointType coordinates_floating_point_type,
                   const std::vector<FloatingPointType>& floating_point_types,
@@ -455,6 +389,11 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   using ::operator<<;
   const std::unordered_set<std::string> valid_tensors{
       db::tag_name<Tensors>()...};
+  ASSERT(
+      valid_tensors.count("InertialCoordinates") == 1,
+      "There is no tag with name 'InertialCoordinates' specified "
+      "for the observer. Please make sure you specify a tag in the 'Tensors' "
+      "list that has the 'db::tag_name()' 'InertialCoordinates'.");
   for (const auto& [name, floating_point_type] : variables_to_observe_) {
     (void)floating_point_type;
     if (valid_tensors.count(name) != 1) {
@@ -467,19 +406,17 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       PARSE_ERROR(context, name << " specified multiple times");
     }
   }
-  variables_to_observe_[coordinates_tag::name()] =
+  variables_to_observe_["InertialCoordinates"] =
       coordinates_floating_point_type;
 }
 
 /// \cond
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
-          typename... NonTensorComputeTags, typename... AnalyticSolutionTensors,
-          typename ArraySectionIdTag, typename... NonSolutionTensors>
+          typename... NonTensorComputeTags, typename ArraySectionIdTag>
 PUP::able::PUP_ID
     ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                   tmpl::list<NonTensorComputeTags...>,
-                  tmpl::list<AnalyticSolutionTensors...>, ArraySectionIdTag,
-                  tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
+                  ArraySectionIdTag>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events
 }  // namespace dg

@@ -10,7 +10,6 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Factory.hpp
-  ObserveErrorNorms.hpp
   ObserveFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp

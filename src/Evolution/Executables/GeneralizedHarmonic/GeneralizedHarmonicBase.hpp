@@ -64,10 +64,8 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
-#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
-#include "ParallelAlgorithms/Events/ObserveFields.hpp"
-#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveTimeStep.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -199,7 +197,10 @@ struct GeneralizedHarmonicTemplateBase<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
-                                                              frame>>>,
+                                                              frame>>,
+          ::domain::Tags::Coordinates<volume_dim, Frame::Grid>,
+          ::domain::Tags::Coordinates<volume_dim, Frame::Inertial>>,
+      error_tags,
       // The 4-index constraint is only implemented in 3d
       tmpl::conditional_t<
           volume_dim == 3,
@@ -208,6 +209,9 @@ struct GeneralizedHarmonicTemplateBase<
               ::Tags::PointwiseL2NormCompute<
                   GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>>,
           tmpl::list<>>>;
+  using non_tensor_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 analytic_compute, error_compute>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -216,13 +220,9 @@ struct GeneralizedHarmonicTemplateBase<
         tmpl::pair<DomainCreator<volume_dim>, domain_creators<volume_dim>>,
         tmpl::pair<Event, tmpl::flatten<tmpl::list<
                               Events::Completion,
-                              Events::ObserveNorms<
-                                  ::Tags::Time, observe_fields,
-                                  tmpl::list<analytic_compute, error_compute>>,
                               dg::Events::field_observations<
                                   volume_dim, Tags::Time, observe_fields,
-                                  analytic_solution_fields,
-                                  tmpl::list<analytic_compute, error_compute>>,
+                                  non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
         tmpl::pair<GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<
                        volume_dim>,
