@@ -457,6 +457,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D SPECTRE_INPUT_FILE_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D SPECTRE_PYTHON_TEST_TIMEOUT_FACTOR=${TEST_TIMEOUT_FACTOR:-'1'}
           -D CMAKE_INSTALL_PREFIX=/work/spectre_install
+          -D BUILD_DOCS=OFF
           --warn-uninitialized
           $GITHUB_WORKSPACE 2>&1 | tee CMakeOutput.txt 2>&1
       - name: Check for CMake warnings
@@ -598,6 +599,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D USE_CCACHE=OFF
           -D BUILD_PYTHON_BINDINGS=OFF
           -D MEMORY_ALLOCATOR=${MEMORY_ALLOCATOR:-'SYSTEM'}
+          -D BUILD_DOCS=OFF
           ..
 
           make EvolveBurgersStep -j2
@@ -622,7 +624,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake ccache cmake doxygen pkg-config
+        autoconf automake ccache cmake pkg-config
       # We install these packages with Spack and cache them. The full specs are
       # listed in support/DevEnvironments/spack.yaml. This list is only needed
       # to create the cache.
@@ -680,7 +682,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack env create spectre support/DevEnvironments/spack.yaml
           spack env activate spectre
-          spack remove jemalloc
+          spack remove doxygen jemalloc py-nbconvert
           spack concretize --reuse
           spack install --no-check-signature
           spack find -v
@@ -729,6 +731,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D USE_CCACHE=ON \
             -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
             -D CMAKE_INSTALL_PREFIX=../install \
+            -D BUILD_DOCS=OFF \
             $GITHUB_WORKSPACE
       - name: Build tests
         working-directory: build
@@ -965,6 +968,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D STUB_LIBRARY_OBJECT_FILES=ON\
             -D USE_PCH=ON\
             -D USE_CCACHE=ON\
+            -D BUILD_DOCS=OFF\
             $GITHUB_WORKSPACE
 
             make -j2 TestArchitectureVectorization

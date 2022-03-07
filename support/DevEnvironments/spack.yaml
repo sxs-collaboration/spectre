@@ -60,6 +60,7 @@ spack:
   - openblas
   - 'python@3.7:'
   - py-h5py -mpi
+  - py-nbconvert
   - py-numpy
   - py-matplotlib
   - 'py-pybind11@2.6:'
