@@ -194,12 +194,11 @@ struct Metavariables {
                  gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
   using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
-  using observe_fields = tmpl::push_back<
-      tmpl::append<analytic_solution_fields, typename system::background_fields,
-                   typename spacetime_quantities_compute::tags_list,
-                   error_tags>,
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
-  using non_tensor_compute_tags =
+  using observe_fields = tmpl::append<
+      analytic_solution_fields, typename system::background_fields,
+      typename spacetime_quantities_compute::tags_list, error_tags,
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+  using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  spacetime_quantities_compute, error_compute>;
 
@@ -230,7 +229,7 @@ struct Metavariables {
                        Events::Completion,
                        dg::Events::field_observations<
                            volume_dim, nonlinear_solver_iteration_id,
-                           observe_fields, non_tensor_compute_tags,
+                           observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;

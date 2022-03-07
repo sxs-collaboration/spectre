@@ -166,15 +166,14 @@ struct Metavariables {
   using analytic_solution_fields = typename system::primal_fields;
   using error_compute = ::Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
-  using observe_fields = tmpl::push_back<
-      tmpl::append<
-          analytic_solution_fields, error_tags,
-          tmpl::list<Elasticity::Tags::Strain<volume_dim>,
-                     Elasticity::Tags::PotentialEnergyDensity<volume_dim>>>,
-      domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
-  using non_tensor_compute_tags =
-      tmpl::flatten<tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                               error_compute>>;
+  using observe_fields = tmpl::append<
+      analytic_solution_fields, error_tags,
+      tmpl::list<Elasticity::Tags::StrainCompute<volume_dim>,
+                 Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>,
+                 domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+  using observer_compute_tags =
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 error_compute>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -204,7 +203,7 @@ struct Metavariables {
                        Events::Completion,
                        dg::Events::field_observations<
                            volume_dim, linear_solver_iteration_id,
-                           observe_fields, non_tensor_compute_tags,
+                           observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>,
                        dg::Events::ObserveVolumeIntegrals<
                            volume_dim, linear_solver_iteration_id,
@@ -233,9 +232,6 @@ struct Metavariables {
       typename schwarz_smoother::initialize_element,
       elliptic::Actions::InitializeFields<system, initial_guess_tag>,
       elliptic::Actions::InitializeFixedSources<system, background_tag>,
-      Initialization::Actions::AddComputeTags<tmpl::list<
-          Elasticity::Tags::StrainCompute<volume_dim>,
-          Elasticity::Tags::PotentialEnergyDensityCompute<volume_dim>>>,
       elliptic::Actions::InitializeOptionalAnalyticSolution<
           background_tag,
           tmpl::append<typename system::primal_fields,
