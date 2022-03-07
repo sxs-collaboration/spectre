@@ -199,7 +199,7 @@ struct Metavariables {
                    typename spacetime_quantities_compute::tags_list,
                    error_tags>,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
-  using non_tensor_compute_tags =
+  using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  spacetime_quantities_compute, error_compute>;
 
@@ -230,7 +230,7 @@ struct Metavariables {
                        Events::Completion,
                        dg::Events::field_observations<
                            volume_dim, nonlinear_solver_iteration_id,
-                           observe_fields, non_tensor_compute_tags,
+                           observe_fields, observer_compute_tags,
                            LinearSolver::multigrid::Tags::IsFinestGrid>>>>,
         tmpl::pair<Trigger, elliptic::Triggers::all_triggers<
                                 typename nonlinear_solver::options_group>>>;
