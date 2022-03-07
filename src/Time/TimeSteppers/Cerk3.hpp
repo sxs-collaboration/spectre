@@ -22,7 +22,7 @@
 /// \cond
 struct TimeStepId;
 namespace TimeSteppers {
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class History;
 }  // namespace TimeSteppers
 /// \endcond
@@ -66,19 +66,17 @@ class Cerk3 : public TimeStepper::Inherit {
   Cerk3& operator=(Cerk3&&) = default;
   ~Cerk3() override = default;
 
-  template <typename Vars, typename DerivVars>
-  void update_u(gsl::not_null<Vars*> u,
-                gsl::not_null<History<Vars, DerivVars>*> history,
+  template <typename Vars>
+  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
                 const TimeDelta& time_step) const;
 
-  template <typename Vars, typename ErrVars, typename DerivVars>
+  template <typename Vars, typename ErrVars>
   bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars, DerivVars>*> history,
+                gsl::not_null<History<Vars>*> history,
                 const TimeDelta& time_step) const;
 
-  template <typename Vars, typename DerivVars>
-  bool dense_update_u(gsl::not_null<Vars*> u,
-                      const History<Vars, DerivVars>& history,
+  template <typename Vars>
+  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
                       double time) const;
 
   size_t order() const override;
@@ -99,10 +97,10 @@ class Cerk3 : public TimeStepper::Inherit {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
-  template <typename Vars, typename DerivVars>
+  template <typename Vars>
   bool can_change_step_size(
       const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const {
+      const TimeSteppers::History<Vars>& /*history*/) const {
     return time_id.substep() == 0;
   }
 
@@ -143,9 +141,9 @@ inline bool constexpr operator!=(const Cerk3& /*lhs*/, const Cerk3& /*rhs*/) {
   return false;
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 void Cerk3::update_u(const gsl::not_null<Vars*> u,
-                     const gsl::not_null<History<Vars, DerivVars>*> history,
+                     const gsl::not_null<History<Vars>*> history,
                      const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
@@ -181,10 +179,10 @@ void Cerk3::update_u(const gsl::not_null<Vars*> u,
   }
 }
 
-template <typename Vars, typename ErrVars, typename DerivVars>
+template <typename Vars, typename ErrVars>
 bool Cerk3::update_u(const gsl::not_null<Vars*> u,
                      const gsl::not_null<ErrVars*> u_error,
-                     const gsl::not_null<History<Vars, DerivVars>*> history,
+                     const gsl::not_null<History<Vars>*> history,
                      const TimeDelta& time_step) const {
   ASSERT(history->integration_order() == 3,
          "Fixed-order stepper cannot run at order "
@@ -201,9 +199,9 @@ bool Cerk3::update_u(const gsl::not_null<Vars*> u,
   return false;
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 bool Cerk3::dense_update_u(const gsl::not_null<Vars*> u,
-                           const History<Vars, DerivVars>& history,
+                           const History<Vars>& history,
                            const double time) const {
   if ((history.end() - 1).time_step_id().substep() != 0) {
     return false;

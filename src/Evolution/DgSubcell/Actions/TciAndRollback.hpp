@@ -96,7 +96,6 @@ struct TciAndRollback {
         "action list of a phase.");
 
     using variables_tag = typename Metavariables::system::variables_tag;
-    using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
     const ActiveGrid active_grid = db::get<Tags::ActiveGrid>(box);
     ASSERT(active_grid == ActiveGrid::Dg,
@@ -186,8 +185,7 @@ struct TciAndRollback {
 
               // Project the time stepper history to the subcells, excluding the
               // most recent inadmissible history.
-              TimeSteppers::History<typename variables_tag::type,
-                                    typename dt_variables_tag::type>
+              TimeSteppers::History<typename variables_tag::type>
                   subcell_history{active_history_ptr->integration_order()};
               const auto end_it = std::prev(active_history_ptr->end());
               for (auto it = active_history_ptr->begin(); it != end_it; ++it) {

@@ -345,7 +345,7 @@ void test(const bool time_runs_forward) {
   using PrimsType = typename primitives_tag::type;
   using DtVarsType =
       typename db::add_tag_prefix<::Tags::dt, variables_tag>::type;
-  using History = TimeSteppers::History<VarsType, DtVarsType>;
+  using History = TimeSteppers::History<VarsType>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,
@@ -526,7 +526,7 @@ void test_lts(const bool time_runs_forward) {
   using PrimsType = typename primitives_tag::type;
   using DtVarsType =
       typename db::add_tag_prefix<::Tags::dt, variables_tag>::type;
-  using History = TimeSteppers::History<VarsType, DtVarsType>;
+  using History = TimeSteppers::History<VarsType>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,

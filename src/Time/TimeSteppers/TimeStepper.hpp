@@ -20,7 +20,7 @@ namespace TimeSteppers {
 class AdamsBashforthN;  // IWYU pragma: keep
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 class BoundaryHistory;
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class History;
 }  // namespace TimeSteppers
 /// \endcond
@@ -62,11 +62,10 @@ class TimeStepper : public PUP::able {
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
   /// Add the change for the current substep to u.
-  template <typename Vars, typename DerivVars>
-  void update_u(
-      const gsl::not_null<Vars*> u,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars>
+  void update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
   }
@@ -79,11 +78,11 @@ class TimeStepper : public PUP::able {
   /// when a sufficient number of steps are available in the `history` to
   /// compare two orders of step. Whenever the error measure is unavailable,
   /// `u_error` is unchanged and the function return is `false`.
-  template <typename Vars, typename ErrVars, typename DerivVars>
-  bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars, typename ErrVars>
+  bool update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<ErrVars*> u_error,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, u_error, history, time_step);
   }
@@ -93,9 +92,9 @@ class TimeStepper : public PUP::able {
   /// the step containing the time.  The function returns true on
   /// success, otherwise the call should be retried after the next
   /// substep.
-  template <typename Vars, typename DerivVars>
+  template <typename Vars>
   bool dense_update_u(const gsl::not_null<Vars*> u,
-                      const TimeSteppers::History<Vars, DerivVars>& history,
+                      const TimeSteppers::History<Vars>& history,
                       const double time) const {
     return TimeStepper_detail::fake_virtual_dense_update_u<creatable_classes>(
         this, u, history, time);
@@ -138,10 +137,9 @@ class TimeStepper : public PUP::able {
 
   /// Whether a change in the step size is allowed before taking
   /// a step.
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const {
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const {
     return TimeStepper_detail::fake_virtual_can_change_step_size<
         creatable_classes>(this, time_id, history);
   }
@@ -220,26 +218,24 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   // methods.  Here the base class method is actually what we want
   // because we are not a most-derived class, so we forward to the
   // TimeStepper version.
-  template <typename Vars, typename DerivVars>
-  void update_u(
-      const gsl::not_null<Vars*> u,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars>
+  void update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, history, time_step);
   }
 
-  template <typename Vars, typename ErrVars, typename DerivVars>
-  bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars, typename ErrVars>
+  bool update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<ErrVars*> u_error,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, u_error, history, time_step);
   }
 
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const {
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const {
     return TimeStepper::can_change_step_size(time_id, history);
   }
   /// \endcond
