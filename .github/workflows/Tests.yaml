@@ -672,7 +672,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           source $HOME/spack/share/spack/setup-env.sh
           spack debug report
           spack compiler find && spack compiler list
-          spack external find && spack config get packages
+          spack external find && spack external find perl
+          spack config get packages
           spack mirror add dependencies file://$HOME/dependencies/spack
       # Install the remaining dependencies from source with Spack. We install
       # them in an environment that we can activate later. After building the
