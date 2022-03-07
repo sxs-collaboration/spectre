@@ -45,6 +45,11 @@ authors:
   family-names: Bonilla
   given-names: Gabriel S.
   orcid: https://orcid.org/0000-0003-4502-528X
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Kim
+  given-names: Yoonsoo
+  orcid: https://orcid.org/0000-0002-4305-6026
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Kumar
@@ -56,6 +61,17 @@ authors:
   family-names: Lovelace
   given-names: Geoffrey
   orcid: https://orcid.org/0000-0002-7084-1070
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Macedo
+  given-names: Alexandra
+  orcid: https://orcid.org/0000-0001-5139-9013
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Nelli
+  given-names: Kyle C.
+  orcid: https://orcid.org/0000-0003-2426-8768
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: O'Shea
@@ -77,6 +93,11 @@ authors:
   family-names: Teukolsky
   given-names: Saul A.
   orcid: https://orcid.org/0000-0001-9765-4526
+- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
+    Am Mühlenberg 1, Potsdam 14476, Germany
+  family-names: Wittek
+  given-names: Nikolas A.
+  orcid: https://orcid.org/0000-0001-8575-5450
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Anantpurkar
@@ -87,6 +108,12 @@ authors:
   family-names: Boyle
   given-names: Michael
   orcid: https://orcid.org/0000-0002-5075-5116
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Carpenter
+  given-names: Alexander
+  orcid: https://orcid.org/0000-0002-9183-8006
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Chaudhary
@@ -97,6 +124,12 @@ authors:
   family-names: Foucart
   given-names: Francois
   orcid: https://orcid.org/0000-0003-4617-4738
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Ghadiri
+  given-names: Noora
+  orcid: https://orcid.org/0000-0001-9162-4449
 - affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
   family-names: Giesler
@@ -111,11 +144,6 @@ authors:
   family-names: Iozzo
   given-names: Dante A. B.
   orcid: https://orcid.org/0000-0002-7244-1900
-- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
-    California Institute of Technology, Pasadena, CA 91125, USA
-  family-names: Kim
-  given-names: Yoonsoo
-  orcid: https://orcid.org/0000-0002-4305-6026
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Legred
@@ -134,12 +162,6 @@ authors:
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
-  family-names: Macedo
-  given-names: Alexandra
-  orcid: https://orcid.org/0000-0001-5139-9013
-- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
-    Astronomy, California State University, Fullerton, Fullerton, California 92831,
-    USA
   family-names: Melchor
   given-names: Denyz
   orcid: https://orcid.org/0000-0002-7854-1953
@@ -149,11 +171,6 @@ authors:
   family-names: Morales
   given-names: Marlo
   orcid: https://orcid.org/0000-0002-0593-4318
-- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
-    California Institute of Technology, Pasadena, CA 91125, USA
-  family-names: Nelli
-  given-names: Kyle C.
-  orcid: https://orcid.org/0000-0003-2426-8768
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -185,17 +202,12 @@ authors:
   orcid: https://orcid.org/0000-0001-8019-0390
 - affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
     Am Mühlenberg 1, Potsdam 14476, Germany
-  family-names: Wittek
-  given-names: Nikolas A.
-  orcid: https://orcid.org/0000-0001-8575-5450
-- affiliation: Max Planck Institute for Gravitational Physics (Albert Einstein Institute),
-    Am Mühlenberg 1, Potsdam 14476, Germany
   family-names: Wlodarczyk
   given-names: Tom
   orcid: https://orcid.org/0000-0003-0005-348X
 cff-version: 1.1.0
-date-released: 2022-02-17
-doi: 10.5281/zenodo.6127519
+date-released: 2022-03-07
+doi: 10.5281/zenodo.6335350
 keywords:
 - Software
 - Astrophysics
@@ -213,4 +225,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.02.17
+version: 2022.03.07
