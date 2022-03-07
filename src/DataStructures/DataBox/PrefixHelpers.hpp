@@ -8,6 +8,8 @@
 #include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
+template <typename TagsList>
+class Variables;
 namespace db {
 struct PrefixTag;
 struct SimpleTag;
@@ -99,4 +101,26 @@ struct remove_all_prefixes_impl<Tags::Variables<TagList>> {
 template <typename Tag>
 using remove_all_prefixes =
     typename detail::remove_all_prefixes_impl<Tag>::type;
+
+namespace detail {
+template <template <typename...> typename Wrapper, typename T, typename... Args>
+struct prefix_variables {
+  using type = T;
+};
+
+template <template <typename...> typename Wrapper, typename Tags,
+          typename... Args>
+struct prefix_variables<Wrapper, Variables<Tags>, Args...> {
+  using type = Variables<::db::wrap_tags_in<Wrapper, Tags, Args...>>;
+};
+}  // namespace detail
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Add a prefix to all tags in a Variables, leaving the
+/// argument unchanged if it is not a Variables.
+///
+/// \see wrap_tags_in
+template <template <typename...> class Wrapper, typename T, typename... Args>
+using prefix_variables =
+    typename detail::prefix_variables<Wrapper, T, Args...>::type;
 }  // namespace db
