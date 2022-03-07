@@ -3,6 +3,17 @@
 
 spectre_define_test_timeout_factor_option(PYTHON "Python")
 
+option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
+that Python files are symlinked rather than copied to the build directory" OFF)
+function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
+  if(PY_DEV_MODE)
+    execute_process(COMMAND
+      ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
+  else()
+    configure_file(${SOURCE_FILE} ${TARGET_FILE})
+  endif()
+endfunction()
+
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
@@ -19,7 +30,7 @@ if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
 endif()
 
 # Create the root __main__.py entry point
-configure_file(
+configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/support/Python/__main__.py"
   "${SPECTRE_PYTHON_PREFIX}/__main__.py"
 )
@@ -34,10 +45,10 @@ file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # Write configuration files for installing the Python modules
-configure_file(
+configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/src/PythonBindings/pyproject.toml"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")
-configure_file(
+configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.cfg"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.cfg")
 
@@ -255,7 +266,7 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     # Configure file
     get_filename_component(PYTHON_FILE_JUST_NAME
       "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME)
-    configure_file(
+    configure_or_symlink_py_file(
       "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}"
       "${MODULE_LOCATION}/${PYTHON_FILE_JUST_NAME}"
       )
