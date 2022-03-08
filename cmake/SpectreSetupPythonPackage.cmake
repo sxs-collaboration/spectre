@@ -7,6 +7,9 @@ option(PY_DEV_MODE "Enable development mode for the Python package, meaning \
 that Python files are symlinked rather than copied to the build directory" OFF)
 function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
   if(PY_DEV_MODE)
+    get_filename_component(_TARGET_FILE_DIR ${TARGET_FILE} DIRECTORY)
+    execute_process(COMMAND
+      ${CMAKE_COMMAND} -E make_directory ${_TARGET_FILE_DIR})
     execute_process(COMMAND
       ${CMAKE_COMMAND} -E create_symlink ${SOURCE_FILE} ${TARGET_FILE})
   else()
