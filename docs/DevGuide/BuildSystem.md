@@ -218,6 +218,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     third-party libraries accidentally end up using different allocators, which
     is undefined behavior and will result in complete chaos.
     (default is `JEMALLOC`)
+- PY_DEV_MODE
+  - Enable development mode for the Python package, meaning that Python files
+    are symlinked rather than copied to the build directory. Allows to edit and
+    test Python code much easier, in particular when it uses compiled Python
+    bindings, but doesn't replace CMake placeholders in the Python code such as
+    the project version. (default is `OFF`)
 - SPECTRE_TEST_RUNNER
   - Run test executables through a wrapper.  This might be `charmrun`, for
     example.  (default is to not use one)
