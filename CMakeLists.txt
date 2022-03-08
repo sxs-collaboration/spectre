@@ -45,14 +45,16 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 include(SpectreGetGitHash)
 include(SpectreSetSiteName)
 
+option(BUILD_DOCS "Enable building documentation" ON)
 option(
   DOCS_ONLY
   "Skip all initialization not required for rendering documentation"
+  OFF
 )
-if (DOCS_ONLY)
+if (BUILD_DOCS AND DOCS_ONLY)
   include(SetupDoxygen)
   return()
-endif (DOCS_ONLY)
+endif()
 
 include(SpectreInitializeVariables)
 
@@ -132,8 +134,10 @@ include(SetupClangFormat)
 include(SetupClangTidy)
 include(SetupIwyu)
 include(SetupCppCheck)
-include(SetupDoxygen)
-include(SetupSphinx)
+if(BUILD_DOCS)
+  include(SetupDoxygen)
+  include(SetupSphinx)
+endif()
 include(CodeCoverageDetection)
 include(SpectreAddLibraries)
 

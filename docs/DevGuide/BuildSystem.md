@@ -168,6 +168,10 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     (default is `OFF`)
 - BUILD_TESTING
   - Enable building tests. (default is `ON`)
+- BUILD_DOCS
+  - Enable building documentation. (default is `ON`)
+- DOCS_ONLY
+  - Build _only_ documentation (default is `OFF`). Requires `BUILD_DOCS=ON`.
 - CHARM_ROOT
   - The path to the build directory of `Charm++`
 - CMAKE_BUILD_TYPE
