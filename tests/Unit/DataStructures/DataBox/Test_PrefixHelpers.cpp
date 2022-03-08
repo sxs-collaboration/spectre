@@ -197,3 +197,18 @@ static_assert(
     std::is_same_v<
         db::prefix_variables<PrefixWithArgs, Variables<vars_list>, float, char>,
         Variables<args_vars_list<float, char>>>);
+
+static_assert(std::is_same_v<db::unprefix_variables<double>, double>);
+static_assert(std::is_same_v<db::unprefix_variables<SomeType<int, int, int>>,
+                             SomeType<int, int, int>>);
+static_assert(std::is_same_v<db::unprefix_variables<SomeType<int, int, int>>,
+                             SomeType<int, int, int>>);
+static_assert(
+    std::is_same_v<db::unprefix_variables<Variables<prefix_vars_list>>,
+                   Variables<vars_list>>);
+static_assert(
+    std::is_same_v<db::unprefix_variables<Variables<double_prefix_vars_list>>,
+                   Variables<prefix_vars_list>>);
+static_assert(std::is_same_v<
+              db::unprefix_variables<Variables<args_vars_list<float, char>>>,
+              Variables<vars_list>>);

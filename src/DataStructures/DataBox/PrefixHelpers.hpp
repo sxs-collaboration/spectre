@@ -5,7 +5,6 @@
 
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits/IsA.hpp"
 
 /// \cond
 template <typename TagsList>
@@ -119,8 +118,28 @@ struct prefix_variables<Wrapper, Variables<Tags>, Args...> {
 /// \brief Add a prefix to all tags in a Variables, leaving the
 /// argument unchanged if it is not a Variables.
 ///
-/// \see wrap_tags_in
+/// \see unprefix_variables, wrap_tags_in
 template <template <typename...> class Wrapper, typename T, typename... Args>
 using prefix_variables =
     typename detail::prefix_variables<Wrapper, T, Args...>::type;
+
+namespace detail {
+template <typename T>
+struct unprefix_variables {
+  using type = T;
+};
+
+template <typename... Tags>
+struct unprefix_variables<Variables<tmpl::list<Tags...>>> {
+  using type = Variables<tmpl::list<tmpl::front<Tags>...>>;
+};
+}  // namespace detail
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Remove the outer prefix from all tags in a Variables,
+/// leaving the argument unchanged if it is not a Variables.
+///
+/// \see prefix_variables
+template <typename T>
+using unprefix_variables = typename detail::unprefix_variables<T>::type;
 }  // namespace db
