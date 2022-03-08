@@ -66,6 +66,7 @@ spack:
   - py-matplotlib
   - 'py-pybind11@2.6:'
   - py-pyyaml
+  - py-rich
   - py-scipy
   - yaml-cpp@0.6.3
   concretizer:

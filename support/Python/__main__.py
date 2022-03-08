@@ -2,6 +2,9 @@
 # See LICENSE.txt for details.
 
 import click
+import logging
+import rich.logging
+import rich.traceback
 
 SPECTRE_VERSION = "@SPECTRE_VERSION@"
 
@@ -21,8 +24,22 @@ class Cli(click.MultiCommand):
              help=f"SpECTRE version: {SPECTRE_VERSION}",
              cls=Cli)
 @click.version_option(version=SPECTRE_VERSION, message="%(version)s")
-def cli():
-    pass
+@click.option('--debug', 'log_level', flag_value=logging.DEBUG)
+@click.option('--silent', 'log_level', flag_value=logging.CRITICAL)
+def cli(log_level):
+    if log_level is None:
+        log_level = logging.INFO
+    # Configure logging
+    logging.basicConfig(level=log_level,
+                        format="%(message)s",
+                        datefmt="[%X]",
+                        handlers=[rich.logging.RichHandler()])
+    # Format tracebacks with rich
+    # - Suppress traceback entries from modules that we don't care about
+    rich.traceback.install(
+        show_locals=log_level <= logging.DEBUG,
+        extra_lines=(3 if log_level <= logging.DEBUG else 0),
+        suppress=[click])
 
 
 if __name__ == "__main__":

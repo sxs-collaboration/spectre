@@ -22,4 +22,6 @@ h5py >= 3.0.0
 numpy < 1.22.0
 matplotlib
 pyyaml
+# Rich: to format CLI output and tracebacks
+rich
 scipy
