@@ -174,7 +174,6 @@ class NCd {
 
 NCd operator*(double a, const NCd& b) { return NCd(a * b()); }
 NCd& operator+=(NCd& a, NCd&& b) { return a = NCd(a() + b()); }
-NCd& operator*=(NCd& a, double b) { return a = NCd(a() * b); }
 
 // Random numbers
 constexpr double c10 = 0.949716728952811;
@@ -198,18 +197,7 @@ double quartic_answer(double x) {
                      + x * ((c10 * c22 + c11 * c21) / 3
                             + x * (c11 * c22 / 4))));
 }
-}  // namespace
 
-namespace MakeWithValueImpls {
-template <>
-template <typename ValueType>
-SPECTRE_ALWAYS_INLINE NCd
-MakeWithValueImpl<NCd, NCd>::apply(const NCd& /*unused*/, ValueType value) {
-  return NCd(value);
-}
-}  // namespace MakeWithValueImpls
-
-namespace {
 void do_lts_test(const std::array<TimeDelta, 2>& dt) {
   // For general time steppers the boundary stepper cannot be run
   // without simultaneously running the volume stepper.  For
@@ -249,7 +237,7 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
     }
   }
 
-  double y = quartic_answer(t.value());
+  NCd y(quartic_answer(t.value()));
   Time next_check = t + dt[0];
   std::array<Time, 2> next{{t, t}};
   for (;;) {
@@ -269,9 +257,9 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
 
     ASSERT(not simulation_less(next_check, t), "Screwed up arithmetic");
     if (t == next_check) {
-      y += ab4.compute_boundary_delta(
-          make_not_null(&history), dt[0], quartic_coupling)();
-      CHECK(y == approx(quartic_answer(t.value())));
+      ab4.add_boundary_delta(&y, make_not_null(&history), dt[0],
+                             quartic_coupling);
+      CHECK(y() == approx(quartic_answer(t.value())));
       if (t.is_at_slab_boundary()) {
         break;
       }
@@ -312,7 +300,7 @@ void check_lts_vts() {
       {slab.duration() / 6, slab.duration() / 6, slab.duration() * 2 / 9,
             slab.duration() * 4 / 9}}};
 
-  double y = quartic_answer(t.value());
+  NCd y(quartic_answer(t.value()));
   Time next_check = t + dt[0][0];
   std::array<Time, 2> next{{t, t}};
   for (;;) {
@@ -333,9 +321,9 @@ void check_lts_vts() {
     gsl::at(next, side) += this_dt;
 
     if (*std::min_element(next.cbegin(), next.cend()) == next_check) {
-      y += ab4.compute_boundary_delta(
-          make_not_null(&history), next_check - t, quartic_coupling)();
-      CHECK(y == approx(quartic_answer(next_check.value())));
+      ab4.add_boundary_delta(&y, make_not_null(&history), next_check - t,
+                             quartic_coupling);
+      CHECK(y() == approx(quartic_answer(next_check.value())));
       if (next_check.is_at_slab_boundary()) {
         break;
       }
@@ -433,8 +421,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
   add_history(TimeStepId(true, 0, slab.end()));
   add_history(TimeStepId(true, 1, slab.start() + slab.duration() / 3));
   double y = f(1. / 3.);
-  y += ab3.compute_boundary_delta(
-      make_not_null(&history), slab.duration() / 3,
+  ab3.add_boundary_delta(
+      &y, make_not_null(&history), slab.duration() / 3,
       [](const double local, const double /*remote*/) { return local; });
   CHECK(y == approx(f(2. / 3.)));
 }

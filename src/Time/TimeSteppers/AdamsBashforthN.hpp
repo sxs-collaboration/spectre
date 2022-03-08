@@ -244,15 +244,17 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
    * union times from step \f$n\f$ to step \f$n+1\f$.
    */
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  compute_boundary_delta(
+  void add_boundary_delta(
+      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+          result,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
       const TimeDelta& time_stepm, const Coupling& coupling) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  boundary_dense_output(
+  void boundary_dense_output(
+      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+          result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       double time, const Coupling& coupling) const;
 
@@ -295,7 +297,9 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)> boundary_impl(
+  void boundary_impl(
+      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+          result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       const TimeType& end_time, const Coupling& coupling) const;
 
@@ -430,8 +434,10 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::compute_boundary_delta(
+void AdamsBashforthN::add_boundary_delta(
+    const gsl::not_null<
+        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+        result,
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step, const Coupling& coupling) const {
@@ -466,22 +472,26 @@ AdamsBashforthN::compute_boundary_delta(
     history->remote_mark_unneeded(remote_step_for_step_start - signed_order);
   }
 
-  return boundary_impl(*history, *(history->local_end() - 1) + time_step,
-                       coupling);
+  boundary_impl(result, *history, *(history->local_end() - 1) + time_step,
+                coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::boundary_dense_output(
+void AdamsBashforthN::boundary_dense_output(
+    const gsl::not_null<
+        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+        result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const double time, const Coupling& coupling) const {
-  return boundary_impl(history, ApproximateTime{time}, coupling);
+  return boundary_impl(result, history, ApproximateTime{time}, coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling,
           typename TimeType>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::boundary_impl(
+void AdamsBashforthN::boundary_impl(
+    const gsl::not_null<
+        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+        result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const TimeType& end_time, const Coupling& coupling) const {
   // Might be different from order_ during self-start.
@@ -503,17 +513,6 @@ AdamsBashforthN::boundary_impl(
   const Time start_time = *(history.local_end() - 1);
   const auto time_step = end_time - start_time;
 
-  // Result variable.  We evaluate the coupling only for the
-  // structure.  This evaluation may be expensive, but by choosing the
-  // most recent times on both sides we should guarantee that it is a
-  // result we need later, so this will serve to get it into the
-  // coupling cache so we don't have to compute it when we actually use it.
-  auto accumulated_change =
-      make_with_value<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>(
-          history.coupling(coupling, history.local_end() - 1,
-                           history.remote_end() - 1),
-          0.);
-
   // We define the local_begin and remote_begin variables as the start
   // of the part of the history relevant to this calculation.
   // Boundary history cleanup happens immediately before the step, but
@@ -533,12 +532,10 @@ AdamsBashforthN::boundary_impl(
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
-      accumulated_change +=
-          *coefficients_it * history.coupling(coupling, local_it, remote_it);
+      *result += time_step.value() * *coefficients_it *
+                 history.coupling(coupling, local_it, remote_it);
     }
-    accumulated_change *= time_step.value();
-
-    return accumulated_change;
+    return;
   }
 
   ASSERT(current_order == order_,
@@ -724,14 +721,12 @@ AdamsBashforthN::boundary_impl(
       if (deriv_coef != 0.) {
         // Skip the (potentially expensive) coupling calculation if
         // the coefficient is zero.
-        accumulated_change +=
+        *result +=
             deriv_coef * history.coupling(coupling, local_evaluation_step,
                                           remote_evaluation_step);
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step
-
-  return accumulated_change;
 }
 
 template <typename Vars>

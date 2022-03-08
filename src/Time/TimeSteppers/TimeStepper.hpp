@@ -151,7 +151,7 @@ class TimeStepper : public PUP::able {
 // class if LtsTimeStepper is included first.
 namespace LtsTimeStepper_detail {
 DEFINE_FAKE_VIRTUAL(boundary_dense_output)
-DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
+DEFINE_FAKE_VIRTUAL(add_boundary_delta)
 }  // namespace LtsTimeStepper_detail
 
 /// \ingroup TimeSteppersGroup
@@ -162,7 +162,7 @@ class LtsTimeStepper : public TimeStepper::Inherit {
  public:
   using Inherit =
       LtsTimeStepper_detail::FakeVirtualInherit_boundary_dense_output<
-          LtsTimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
+          LtsTimeStepper_detail::FakeVirtualInherit_add_boundary_delta<
               LtsTimeStepper>>;
   // When you add a class here, remember to add it to TimeStepper as well.
   using creatable_classes = tmpl::list<TimeSteppers::AdamsBashforthN>;
@@ -177,27 +177,35 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   /// quantity.  These values may be used to form a linear combination
   /// internally, so the result should have appropriate mathematical
   /// operators defined to allow that.
+  ///
+  /// \note
+  /// Unlike the `update_u` methods, which overwrite the `result`
+  /// argument, this function adds the result to the existing value.
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  compute_boundary_delta(
+  void add_boundary_delta(
+      const gsl::not_null<
+          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+          result,
       const gsl::not_null<TimeSteppers::BoundaryHistory<
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
           history,
       const TimeDelta& time_step, const Coupling& coupling) const {
-    return LtsTimeStepper_detail::fake_virtual_compute_boundary_delta<
-        creatable_classes>(this, history, time_step, coupling);
+    return LtsTimeStepper_detail::fake_virtual_add_boundary_delta<
+        creatable_classes>(this, result, history, time_step, coupling);
   }
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  boundary_dense_output(
+  void boundary_dense_output(
+      const gsl::not_null<
+          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+          result,
       const TimeSteppers::BoundaryHistory<
           LocalVars, RemoteVars,
           std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
       const double time, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
-        creatable_classes>(this, history, time, coupling);
+        creatable_classes>(this, result, history, time, coupling);
   }
 
   /// Substep LTS integrators are not supported, so this is always 1.

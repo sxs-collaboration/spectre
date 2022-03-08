@@ -446,14 +446,17 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                    "mortars in one of the initialization actions.");
           }
 
+          const Mesh<volume_dim - 1> face_mesh =
+              volume_mesh.slice_away(direction.dimension());
+
           const auto compute_correction_coupling =
               [&boundary_correction, &direction, dg_formulation,
                &dt_boundary_correction_on_mortar, &face_det_jacobian,
-               &face_normal_covector_and_magnitude, &local_data_on_mortar,
-               local_time_stepping, &mortar_id, &mortar_meshes, &mortar_sizes,
-               &neighbor_data_on_mortar, using_gauss_lobatto_points,
-               &volume_det_jacobian, &volume_det_inv_jacobian,
-               &volume_dt_correction,
+               &face_mesh, &face_normal_covector_and_magnitude,
+               &local_data_on_mortar, local_time_stepping, &mortar_id,
+               &mortar_meshes, &mortar_sizes, &neighbor_data_on_mortar,
+               using_gauss_lobatto_points, &volume_det_jacobian,
+               &volume_det_inv_jacobian, &volume_dt_correction,
                &volume_mesh](const MortarData<volume_dim>& local_mortar_data,
                              const MortarData<volume_dim>& neighbor_mortar_data)
               -> DtVariables {
@@ -506,8 +509,6 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
             const std::array<Spectral::MortarSize, volume_dim - 1>&
                 mortar_size = mortar_sizes.at(mortar_id);
-            const Mesh<volume_dim - 1> face_mesh =
-                volume_mesh.slice_away(direction.dimension());
 
             // This cannot reuse an allocation because it is initialized
             // via move-assignment.  (If it is used at all.)
@@ -604,24 +605,32 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             }
           };
 
-          // Choose an allocation cache that may be empty, so we might
-          // be able to reuse the allocation obtained for the lifted
-          // data.
-          auto& lifted_data = using_gauss_lobatto_points
-                                  ? dt_boundary_correction_on_mortar
-                                  : volume_dt_correction;
           if constexpr (Metavariables::local_time_stepping) {
+            DtVariables lifted_data(using_gauss_lobatto_points
+                                        ? face_mesh.number_of_grid_points()
+                                        : volume_mesh.number_of_grid_points(),
+                                    0.0);
             auto& mortar_data_history = mortar_id_and_data.second;
             if constexpr (DenseOutput) {
               (void)time_step;
-              lifted_data = time_stepper.boundary_dense_output(
-                  mortar_data_history, dense_output_time,
+              time_stepper.boundary_dense_output(
+                  &lifted_data, mortar_data_history, dense_output_time,
                   compute_correction_coupling);
             } else {
               (void)dense_output_time;
-              lifted_data = time_stepper.compute_boundary_delta(
-                  make_not_null(&mortar_data_history), time_step,
+              time_stepper.add_boundary_delta(
+                  &lifted_data, make_not_null(&mortar_data_history), time_step,
                   compute_correction_coupling);
+            }
+
+            if (using_gauss_lobatto_points) {
+              // Add the flux contribution to the volume data
+              add_slice_to_data(
+                  variables_or_dt_variables_ptr, lifted_data,
+                  volume_mesh.extents(), direction.dimension(),
+                  index_to_slice_at(volume_mesh.extents(), direction));
+            } else {
+              *variables_or_dt_variables_ptr += lifted_data;
             }
           } else {
             (void)time_step;
@@ -629,27 +638,33 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             (void)dense_output_time;
 
             const auto& mortar_data = mortar_id_and_data.second;
-            // This may be a self assignment, depending on the code
-            // paths taken, but handling the results this way makes
-            // the GTS and LTS paths more similar because the LTS code
-            // always stores the result in the history and so
-            // sometimes benefits from moving into the return value of
-            // compute_correction_coupling.
+
+            // Choose an allocation cache that may be empty, so we
+            // might be able to reuse the allocation obtained for the
+            // lifted data.  This may result in a self assignment,
+            // depending on the code paths taken, but handling the
+            // results this way makes the GTS and LTS paths more
+            // similar because the LTS code always stores the result
+            // in the history and so sometimes benefits from moving
+            // into the return value of compute_correction_coupling.
+            auto& lifted_data = using_gauss_lobatto_points
+                                    ? dt_boundary_correction_on_mortar
+                                    : volume_dt_correction;
             lifted_data = compute_correction_coupling(mortar_data, mortar_data);
             // Remove data since it's tagged with the time. In the future we
             // _might_ be able to reuse allocations, but this optimization
             // should only be done after profiling.
             mortar_id_and_data.second.extract();
-          }
 
-          if (using_gauss_lobatto_points) {
-            // Add the flux contribution to the volume data
-            add_slice_to_data(
-                variables_or_dt_variables_ptr, lifted_data,
-                volume_mesh.extents(), direction.dimension(),
-                index_to_slice_at(volume_mesh.extents(), direction));
-          } else {
-            *variables_or_dt_variables_ptr += lifted_data;
+            if (using_gauss_lobatto_points) {
+              // Add the flux contribution to the volume data
+              add_slice_to_data(
+                  variables_or_dt_variables_ptr, lifted_data,
+                  volume_mesh.extents(), direction.dimension(),
+                  index_to_slice_at(volume_mesh.extents(), direction));
+            } else {
+              *variables_or_dt_variables_ptr += lifted_data;
+            }
           }
         }
       };

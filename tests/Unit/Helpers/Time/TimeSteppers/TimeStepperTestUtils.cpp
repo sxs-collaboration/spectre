@@ -406,8 +406,8 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
 
       stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
                        step_size);
-      y += stepper.compute_boundary_delta(
-          make_not_null(&boundary_history), step_size, coupling);
+      stepper.add_boundary_delta(&y, make_not_null(&boundary_history),
+                                 step_size, coupling);
       time_id = stepper.next_time_id(time_id, step_size);
     }
     CHECK(y == approx(analytic(time_id.substep_time().value())));
@@ -598,10 +598,12 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) {
     gsl::at(next, side) += this_dt;
 
     if (std::min(next[0], next[1]) == next_check) {
-      const double dense_result =
-          stepper.boundary_dense_output(history, next_check.value(), coupling);
-      const double delta = stepper.compute_boundary_delta(
-          make_not_null(&history), next_check - t, coupling);
+      double dense_result = 0.0;
+      stepper.boundary_dense_output(&dense_result, history, next_check.value(),
+                                    coupling);
+      double delta = 0.0;
+      stepper.add_boundary_delta(&delta, make_not_null(&history),
+                                 next_check - t, coupling);
       CHECK(dense_result == approx(delta));
       if (next_check.is_at_slab_boundary()) {
         break;
