@@ -606,10 +606,14 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
           };
 
           if constexpr (Metavariables::local_time_stepping) {
-            DtVariables lifted_data(using_gauss_lobatto_points
-                                        ? face_mesh.number_of_grid_points()
-                                        : volume_mesh.number_of_grid_points(),
-                                    0.0);
+            typename variables_tag::type lgl_lifted_data{};
+            auto& lifted_data = using_gauss_lobatto_points
+                                    ? lgl_lifted_data
+                                    : *variables_or_dt_variables_ptr;
+            if (using_gauss_lobatto_points) {
+              lifted_data.initialize(face_mesh.number_of_grid_points(), 0.0);
+            }
+
             auto& mortar_data_history = mortar_id_and_data.second;
             if constexpr (DenseOutput) {
               (void)time_step;
@@ -629,8 +633,6 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
                   variables_or_dt_variables_ptr, lifted_data,
                   volume_mesh.extents(), direction.dimension(),
                   index_to_slice_at(volume_mesh.extents(), direction));
-            } else {
-              *variables_or_dt_variables_ptr += lifted_data;
             }
           } else {
             (void)time_step;

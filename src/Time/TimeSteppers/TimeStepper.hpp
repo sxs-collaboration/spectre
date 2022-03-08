@@ -8,6 +8,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/FakeVirtual.hpp"
@@ -169,6 +170,20 @@ class LtsTimeStepper : public TimeStepper::Inherit {
 
   WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
 
+  // These two are defined as separate type aliases to keep the
+  // doxygen page width somewhat under control.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  using BoundaryHistoryType = TimeSteppers::BoundaryHistory<
+      LocalVars, RemoteVars,
+      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+
+  /// Return type of boundary-related functions.  The coupling returns
+  /// the derivative of the variables, but this is multiplied by the
+  /// time step so the return type should not have `dt` prefixes.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  using BoundaryReturn = db::unprefix_variables<
+      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+
   /// \brief Compute the change in a boundary quantity due to the
   /// coupling on the interface.
   ///
@@ -183,12 +198,9 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   /// argument, this function adds the result to the existing value.
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void add_boundary_delta(
-      const gsl::not_null<
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
           result,
-      const gsl::not_null<TimeSteppers::BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
+      const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
       const TimeDelta& time_step, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_add_boundary_delta<
@@ -197,12 +209,9 @@ class LtsTimeStepper : public TimeStepper::Inherit {
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void boundary_dense_output(
-      const gsl::not_null<
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
           result,
-      const TimeSteppers::BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
+      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       const double time, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
         creatable_classes>(this, result, history, time, coupling);

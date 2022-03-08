@@ -36,8 +36,6 @@
 
 /// \cond
 namespace TimeSteppers {
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-class BoundaryHistory;  // IWYU pragma: keep
 template <typename Vars>
 class History;
 }  // namespace TimeSteppers
@@ -125,13 +123,6 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   template <typename Vars>
   bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
                       double time) const;
-
-  // This is defined as a separate type alias to keep the doxygen page
-  // width somewhat under control.
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  using BoundaryHistoryType =
-      BoundaryHistory<LocalVars, RemoteVars,
-                      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
 
   /*!
    * An explanation of the computation being performed by this
@@ -245,16 +236,14 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
    */
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void add_boundary_delta(
-      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
-          result,
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
       const TimeDelta& time_stepm, const Coupling& coupling) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void boundary_dense_output(
-      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
-          result,
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       double time, const Coupling& coupling) const;
 
@@ -298,8 +287,7 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
   void boundary_impl(
-      gsl::not_null<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
-          result,
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
       const TimeType& end_time, const Coupling& coupling) const;
 
@@ -435,8 +423,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
 void AdamsBashforthN::add_boundary_delta(
-    const gsl::not_null<
-        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
         result,
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
@@ -478,8 +465,7 @@ void AdamsBashforthN::add_boundary_delta(
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
 void AdamsBashforthN::boundary_dense_output(
-    const gsl::not_null<
-        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
         result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const double time, const Coupling& coupling) const {
@@ -489,8 +475,7 @@ void AdamsBashforthN::boundary_dense_output(
 template <typename LocalVars, typename RemoteVars, typename Coupling,
           typename TimeType>
 void AdamsBashforthN::boundary_impl(
-    const gsl::not_null<
-        std::result_of_t<const Coupling&(LocalVars, RemoteVars)>*>
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
         result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const TimeType& end_time, const Coupling& coupling) const {

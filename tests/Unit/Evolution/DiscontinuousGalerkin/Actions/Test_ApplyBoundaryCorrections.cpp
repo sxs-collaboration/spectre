@@ -897,7 +897,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       const auto& direction = mortar_id.first;
       auto& mortar_data_hist = mortar_id_and_data.second;
       mortar_id_ptr = &mortar_id;
-      Variables<dt_variables_tags> lifted_volume_data{
+      Variables<variables_tags> lifted_volume_data{
           quadrature == Spectral::Quadrature::GaussLobatto
               ? mesh.slice_away(direction.dimension()).number_of_grid_points()
               : mesh.number_of_grid_points(),
