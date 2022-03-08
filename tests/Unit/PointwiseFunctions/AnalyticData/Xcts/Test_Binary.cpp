@@ -35,7 +35,11 @@ using test_tags = tmpl::list<
     Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
     Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<DataVector, 3,
                                                             Frame::Inertial>,
-    Tags::ConformalFactor<DataVector>>;
+    Tags::ConformalFactor<DataVector>,
+    gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
+    gr::Tags::Conformal<gr::Tags::StressTrace<DataVector>, 0>,
+    gr::Tags::Conformal<
+        gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>>;
 
 template <typename IsolatedObjectBase, typename IsolatedObjectClasses>
 struct BinaryProxy {
@@ -103,7 +107,10 @@ void test_data(const std::array<double, 2>& x_coords,
          "deriv_conformal_metric_" + py_functions_suffix,
          "extrinsic_curvature_trace_" + py_functions_suffix, "shift_background",
          "longitudinal_shift_background_" + py_functions_suffix,
-         "conformal_factor_" + py_functions_suffix},
+         "conformal_factor_" + py_functions_suffix,
+         "energy_density_" + py_functions_suffix,
+         "stress_trace_" + py_functions_suffix,
+         "momentum_density_" + py_functions_suffix},
         {{{x_coords[0] * 2, x_coords[1] * 2}}}, std::make_tuple(),
         DataVector(5));
   }

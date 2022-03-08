@@ -40,3 +40,15 @@ def conformal_factor_bbh_isotropic(x):
     r2 = np.sqrt((x[0] - centers[1])**2 + x[1]**2 + x[2]**2)
     return 1. + 0.5 * (np.exp(-r1**2 / falloff_widths[0]**2) * masses[0] / r1 +
                        np.exp(-r2**2 / falloff_widths[1]**2) * masses[1] / r2)
+
+
+def energy_density_bbh_isotropic(x):
+    return 0.
+
+
+def stress_trace_bbh_isotropic(x):
+    return 0.
+
+
+def momentum_density_bbh_isotropic(x):
+    return np.zeros(3)
