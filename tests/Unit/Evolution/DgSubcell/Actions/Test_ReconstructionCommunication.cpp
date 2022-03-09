@@ -307,7 +307,7 @@ void test() {
         runner, east_id);
     CHECK_ITERABLE_APPROX(
         expected_east_data,
-        *std::get<1>(east_data.at(time_step_id)
+        *std::get<2>(east_data.at(time_step_id)
                          .at(std::pair{Direction<Dim>::lower_xi(), self_id})));
   }
   if constexpr (Dim > 1) {
@@ -335,7 +335,7 @@ void test() {
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
         runner, south_id);
     CHECK(expected_south_data ==
-          *std::get<1>(
+          *std::get<2>(
               south_data.at(time_step_id)
                   .at(std::pair{orientation(direction.opposite()), self_id})));
   }
@@ -364,9 +364,12 @@ void test() {
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{std::pair{Direction<Dim>::upper_xi(), east_id},
-                      std::tuple{face_mesh, east_ghost_cells_and_rdmp,
-                                 boundary_data, next_time_step_id}});
+            std::pair{
+                std::pair{Direction<Dim>::upper_xi(), east_id},
+                std::tuple{// subcell_mesh because we are sending the projected
+                           // data right now.
+                           subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
+                           boundary_data, next_time_step_id}});
   }
   [[maybe_unused]] std::vector<double> south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
@@ -382,9 +385,12 @@ void test() {
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
         insert_into_inbox(
             make_not_null(&self_inbox), time_step_id,
-            std::pair{std::pair{Direction<Dim>::lower_eta(), south_id},
-                      std::tuple{face_mesh, south_ghost_cells_and_rdmp,
-                                 std::nullopt, next_time_step_id}});
+            std::pair{
+                std::pair{Direction<Dim>::lower_eta(), south_id},
+                std::tuple{// subcell_mesh because we are sending the projected
+                           // data right now.
+                           subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
+                           std::nullopt, next_time_step_id}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id

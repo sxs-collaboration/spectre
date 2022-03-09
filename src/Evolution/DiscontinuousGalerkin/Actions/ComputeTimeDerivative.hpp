@@ -486,6 +486,10 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
 
     std::optional<DirectionMap<volume_dim, std::vector<double>>>
         all_neighbor_data_for_reconstruction = std::nullopt;
+    // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
+    // projection.
+    Mesh<volume_dim> ghost_cell_mesh =
+        db::get<domain::Tags::Mesh<volume_dim>>(*box);
     if constexpr (using_subcell_v<Metavariables>) {
       all_neighbor_data_for_reconstruction =
           evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
@@ -537,9 +541,11 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
           }
         }();
 
-        std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
+        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                   std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
-            data{neighbor_boundary_data_on_mortar.first,
+            data{ghost_cell_mesh,
+                 neighbor_boundary_data_on_mortar.first,
                  ghost_and_subcell_data,
                  {std::move(neighbor_boundary_data_on_mortar.second)},
                  next_time_step_id};

@@ -59,7 +59,8 @@ void neighbor_reconstructed_face_solution(
             maximum_number_of_neighbors(Metavariables::volume_dim),
             std::pair<Direction<Metavariables::volume_dim>,
                       ElementId<Metavariables::volume_dim>>,
-            std::tuple<Mesh<Metavariables::volume_dim - 1>,
+            std::tuple<Mesh<Metavariables::volume_dim>,
+                       Mesh<Metavariables::volume_dim - 1>,
                        std::optional<std::vector<double>>,
                        std::optional<std::vector<double>>, ::TimeStepId>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
@@ -81,11 +82,11 @@ bool receive_boundary_data_global_time_stepping(
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
   std::map<
       TimeStepId,
-      FixedHashMap<
-          maximum_number_of_neighbors(volume_dim), Key,
-          std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
-                     std::optional<std::vector<double>>, ::TimeStepId>,
-          boost::hash<Key>>>& inbox =
+      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                              std::optional<std::vector<double>>,
+                              std::optional<std::vector<double>>, ::TimeStepId>,
+                   boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
@@ -132,16 +133,16 @@ bool receive_boundary_data_global_time_stepping(
                      << " but actually received at time "
                      << received_temporal_id_and_data->first);
           mortar_next_time_step_id->at(mortar_id) =
-              std::get<3>(received_mortar_data.second);
+              std::get<4>(received_mortar_data.second);
           ASSERT(using_subcell_v<Metavariables> or
-                     std::get<2>(received_mortar_data.second).has_value(),
+                     std::get<3>(received_mortar_data.second).has_value(),
                  "Must receive number boundary correction data when not using "
                  "DG-subcell.");
-          if (std::get<2>(received_mortar_data.second).has_value()) {
+          if (std::get<3>(received_mortar_data.second).has_value()) {
             mortar_data->at(mortar_id).insert_neighbor_mortar_data(
                 received_temporal_id_and_data->first,
-                std::get<0>(received_mortar_data.second),
-                std::move(*std::get<2>(received_mortar_data.second)));
+                std::get<1>(received_mortar_data.second),
+                std::move(*std::get<3>(received_mortar_data.second)));
           }
         }
       });
@@ -172,11 +173,11 @@ bool receive_boundary_data_local_time_stepping(
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
   std::map<
       TimeStepId,
-      FixedHashMap<
-          maximum_number_of_neighbors(volume_dim), Key,
-          std::tuple<Mesh<volume_dim - 1>, std::optional<std::vector<double>>,
-                     std::optional<std::vector<double>>, ::TimeStepId>,
-          boost::hash<Key>>>& inbox =
+      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                              std::optional<std::vector<double>>,
+                              std::optional<std::vector<double>>, ::TimeStepId>,
+                   boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
 
@@ -232,7 +233,7 @@ bool receive_boundary_data_local_time_stepping(
                 // - the current TimeStepId of the neighbor
                 // - the current face mesh of the neighbor
                 // - the current boundary correction data of the neighbor
-                ASSERT(std::get<2>(received_mortar_data->second).has_value(),
+                ASSERT(std::get<3>(received_mortar_data->second).has_value(),
                        "Did not receive boundary correction data from the "
                        "neighbor\nMortarId: "
                            << mortar_id
@@ -253,11 +254,11 @@ bool receive_boundary_data_local_time_stepping(
                   return false;
                 }
                 mortar_next_time_step_id->at(mortar_id) =
-                    std::get<3>(received_mortar_data->second);
+                    std::get<4>(received_mortar_data->second);
                 neighbor_mortar_data.insert_neighbor_mortar_data(
                     receive_temporal_id,
-                    std::get<0>(received_mortar_data->second),
-                    std::move(*std::get<2>(received_mortar_data->second)));
+                    std::get<1>(received_mortar_data->second),
+                    std::move(*std::get<3>(received_mortar_data->second)));
                 boundary_data_history->at(mortar_id).remote_insert(
                     receive_temporal_id, std::move(neighbor_mortar_data));
               }
