@@ -126,7 +126,8 @@ void test_solution(const double mass,
     const double inner_radius = expected_radius_at_horizon;
     const double outer_radius = 3. * expected_radius_at_horizon;
     pypp::check_with_random_values<1>(
-        &SchwarzschildProxy::field_variables, solution_proxy, "Schwarzschild",
+        &SchwarzschildProxy::field_variables, solution_proxy,
+        "SchwarzschildIsotropic",
         {"conformal_factor_" + py_functions_suffix,
          "lapse_times_conformal_factor_" + py_functions_suffix,
          "shift_" + py_functions_suffix,
@@ -135,14 +136,15 @@ void test_solution(const double mass,
          "shift_strain_" + py_functions_suffix},
         {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
     pypp::check_with_random_values<1>(
-        &SchwarzschildProxy::flux_variables, solution_proxy, "Schwarzschild",
+        &SchwarzschildProxy::flux_variables, solution_proxy,
+        "SchwarzschildIsotropic",
         {"conformal_factor_gradient_" + py_functions_suffix,
          "lapse_times_conformal_factor_gradient_" + py_functions_suffix,
          "longitudinal_shift_" + py_functions_suffix},
         {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
     pypp::check_with_random_values<1>(
         &SchwarzschildProxy::background_variables, solution_proxy,
-        "Schwarzschild",
+        "SchwarzschildIsotropic",
         {"conformal_metric_" + py_functions_suffix,
          "inv_conformal_metric_" + py_functions_suffix,
          "deriv_conformal_metric_" + py_functions_suffix,
@@ -153,14 +155,17 @@ void test_solution(const double mass,
         {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
     pypp::check_with_random_values<1>(
         &SchwarzschildProxy::matter_source_variables, solution_proxy,
-        "Schwarzschild", {"energy_density", "stress_trace", "momentum_density"},
+        "SchwarzschildIsotropic",
+        {"energy_density", "stress_trace", "momentum_density"},
         {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
     pypp::check_with_random_values<1>(
-        &SchwarzschildProxy::gr_variables, solution_proxy, "Schwarzschild",
+        &SchwarzschildProxy::gr_variables, solution_proxy,
+        "SchwarzschildIsotropic",
         {"lapse_" + py_functions_suffix, "shift_" + py_functions_suffix},
         {{{inner_radius, outer_radius}}}, std::make_tuple(mass), DataVector(5));
     pypp::check_with_random_values<1>(
-        &SchwarzschildProxy::derived_variables, solution_proxy, "Schwarzschild",
+        &SchwarzschildProxy::derived_variables, solution_proxy,
+        "SchwarzschildIsotropic",
         {"shift_dot_extrinsic_curvature_trace_gradient_" + py_functions_suffix,
          "longitudinal_shift_minus_dt_conformal_metric_square_" +
              py_functions_suffix,
