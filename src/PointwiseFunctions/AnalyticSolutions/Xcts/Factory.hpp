@@ -9,7 +9,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Xcts::Solutions {
+namespace Xcts {
+/// Analytic solutions of the XCTS equations
+namespace Solutions {
 using all_analytic_solutions =
     tmpl::list<Flatness, WrappedGr<gr::Solutions::KerrSchild>, Schwarzschild>;
-}  // namespace Xcts::Solutions
+}  // namespace Solutions
+}  // namespace Xcts
