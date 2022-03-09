@@ -55,7 +55,7 @@ enum class SchwarzschildCoordinates {
    * \psi=1+\frac{M}{2\bar{r}}
    * \f}
    *
-   * (Table 2.1 in \cite BaumgarteShapiro). Its lapse transforms to
+   * (Table 2.1 in \cite BaumgarteShapiro). The lapse in the conformal radius is
    *
    * \f{equation}
    * \alpha=\frac{1-M/(2\bar{r})}{1+M/(2\bar{r})}
@@ -68,6 +68,90 @@ enum class SchwarzschildCoordinates {
    * \f$\bar{r}=\frac{M}{2}\f$ due to the radial transformation from \f$r=2M\f$.
    */
   Isotropic,
+  /*!
+   * \brief Painlevé-Gullstrand coordinates
+   *
+   * In these coordinates the spatial metric is flat and the lapse is trivial,
+   * but contrary to (isotropic) Schwarzschild coordinates the shift is
+   * nontrivial,
+   *
+   * \begin{align}
+   *   \gamma_{ij} &= \eta_{ij} \\
+   *   \alpha &= 1 \\
+   *   \beta^i &= \sqrt{\frac{2M}{r}} \frac{x^i}{r} \\
+   *   K &= \frac{3}{2}\sqrt{\frac{2M}{r^3}}
+   * \end{align}
+   *
+   * (Table 2.1 in \cite BaumgarteShapiro).
+   */
+  PainleveGullstrand,
+  /*!
+   * \brief Isotropic Kerr-Schild coordinates
+   *
+   * Kerr-Schild coordinates with a radial transformation such that the spatial
+   * metric is conformally flat.
+   *
+   * The Schwarzschild spacetime in canonical (areal) Kerr-Schild coordinates is
+   *
+   * \begin{align}
+   *   \gamma_{ij} &= \eta_{ij} + \frac{2M}{r}\frac{x^i x^j}{r^2} \\
+   *   \alpha &= \sqrt{1 + \frac{2M}{r}}^{-1} \\
+   *   \beta^i &= \frac{2M\alpha^2}{r} \frac{x^i}{r} \\
+   *   K &= \frac{2M\alpha^3}{r^2} \left(1 + \frac{3M}{r}\right)
+   *   \text{.}
+   * \end{align}
+   *
+   * (Table 2.1 in \cite BaumgarteShapiro). Since the Schwarzschild spacetime is
+   * spherically symmetric we can transform to a radial coordinate $\bar{r}$ in
+   * which it is conformally flat (see, e.g., Sec. 7.4.1 in \cite Pfeiffer2005zm
+   * for details):
+   *
+   * \begin{equation}
+   *   {}^{(3)}\mathrm{d}s^2
+   *     = \left(1 + \frac{2M}{r}\right)\mathrm{d}r^2 + r^2 \mathrm{d}\Omega^2
+   *     = \psi^4 \left(\mathrm{d}\bar{r}^2 +
+   *       \bar{r}^2 \mathrm{d}\Omega^2\right)
+   * \end{equation}
+   *
+   * Therefore, the conformal factor is $\psi^2 = r / \bar{r}$ and
+   *
+   * \begin{equation}
+   *   \frac{\mathrm{d}\bar{r}}{\mathrm{d}r}
+   *     = \frac{\bar{r}}{r} \sqrt{1 + \frac{2M}{r}}
+   *     = \frac{\bar{r}}{r} \frac{1}{\alpha}
+   *   \text{,}
+   * \end{equation}
+   *
+   * which has the solution
+   *
+   * \begin{equation}
+   *   \bar{r} = \frac{r}{4} \left(1 + \sqrt{1 + \frac{2M}{r}}\right)^2
+   *     e^{2 - 2\sqrt{1 + 2M / r}}
+   * \end{equation}
+   *
+   * when we impose $\bar{r} \rightarrow r$ as $r \rightarrow \infty$. We can
+   * invert this transformation law with a numerical root find to obtain the
+   * areal radius $r$ for any isotropic radius $\bar{r}$.
+   *
+   * In the isotropic radial coordinate $\bar{r}$ the solution is then:
+   *
+   * \begin{align}
+   *   \gamma_{ij} &= \psi^4 \eta_{ij} \\
+   *   \psi &= \sqrt{\frac{r}{\bar{r}}}
+   *     = \frac{2e^{\sqrt{1 + 2M / r} - 1}}{1 + \sqrt{1 + 2M / r}} \\
+   *   \alpha &= \sqrt{1 + \frac{2M}{r}}^{-1} \\
+   *   \beta^i
+   *     &= \frac{\mathrm{d}\bar{r}}{\mathrm{d}r} \beta^r \frac{x^i}{\bar{r}}
+   *      = \frac{2M\alpha}{r^2} x^i \\
+   *   K &= \frac{2M\alpha^3}{r^2} \left(1 + \frac{3M}{r}\right)
+   * \end{align}
+   *
+   * Here, $x^i$ are the (isotropic) Cartesian coordinates from which we compute
+   * the isotropic radius $\bar{r}$, $r$ is the areal radius we can obtain from
+   * the isotropic radius by a root find, and $\beta^r$ is the magnitude of the
+   * shift in areal coordinates, as given above.
+   */
+  KerrSchildIsotropic,
 };
 
 std::ostream& operator<<(std::ostream& os, SchwarzschildCoordinates coords);
@@ -139,10 +223,22 @@ bool operator==(const SchwarzschildImpl& lhs, const SchwarzschildImpl& rhs);
 
 bool operator!=(const SchwarzschildImpl& lhs, const SchwarzschildImpl& rhs);
 
+namespace Tags {
 template <typename DataType>
-using SchwarzschildVariablesCache = cached_temp_buffer_from_typelist<
-    tmpl::push_front<
-        common_tags<DataType>,
+struct Radius : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+template <typename DataType>
+struct ArealRadius : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+}  // namespace Tags
+
+template <typename DataType>
+using SchwarzschildVariablesCache =
+    cached_temp_buffer_from_typelist<tmpl::push_front<
+        common_tags<DataType>, detail::Tags::Radius<DataType>,
+        detail::Tags::ArealRadius<DataType>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -173,19 +269,26 @@ struct SchwarzschildVariables
   double mass;
   SchwarzschildCoordinates coordinate_system;
 
-  void operator()(gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+  void operator()(gsl::not_null<Scalar<DataType>*> radius,
                   gsl::not_null<Cache*> cache,
-                  Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+                  detail::Tags::Radius<DataType> /*meta*/) const;
+  void operator()(gsl::not_null<Scalar<DataType>*> areal_radius,
+                  gsl::not_null<Cache*> cache,
+                  detail::Tags::ArealRadius<DataType> /*meta*/) const;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, 3>*> conformal_metric,
+      gsl::not_null<Cache*> cache,
+      Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
       gsl::not_null<tnsr::II<DataType, 3>*> inv_conformal_metric,
       gsl::not_null<Cache*> cache,
-      Tags::InverseConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
+      Xcts::Tags::InverseConformalMetric<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
   void operator()(
       gsl::not_null<tnsr::ijj<DataType, 3>*> deriv_conformal_metric,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+      ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
                     tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
@@ -201,9 +304,10 @@ struct SchwarzschildVariables
       gsl::not_null<Cache*> cache,
       ::Tags::dt<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/)
       const override;
-  void operator()(gsl::not_null<Scalar<DataType>*> conformal_factor,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ConformalFactor<DataType> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<Scalar<DataType>*> conformal_factor,
+      gsl::not_null<Cache*> cache,
+      Xcts::Tags::ConformalFactor<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*> conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
@@ -215,30 +319,33 @@ struct SchwarzschildVariables
   void operator()(
       gsl::not_null<Scalar<DataType>*> lapse_times_conformal_factor,
       gsl::not_null<Cache*> cache,
-      Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
+      Xcts::Tags::LapseTimesConformalFactor<DataType> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::i<DataType, 3>*>
           lapse_times_conformal_factor_gradient,
       gsl::not_null<Cache*> cache,
-      ::Tags::deriv<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
-                    Frame::Inertial> /*meta*/) const override;
-  void operator()(gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
-                  gsl::not_null<Cache*> cache,
-                  Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
+      ::Tags::deriv<Xcts::Tags::LapseTimesConformalFactor<DataType>,
+                    tmpl::size_t<3>, Frame::Inertial> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<tnsr::I<DataType, 3>*> shift_background,
+      gsl::not_null<Cache*> cache,
+      Xcts::Tags::ShiftBackground<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
   void operator()(gsl::not_null<tnsr::II<DataType, 3, Frame::Inertial>*>
                       longitudinal_shift_background_minus_dt_conformal_metric,
                   gsl::not_null<Cache*> cache,
-                  Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+                  Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
                       DataType, 3, Frame::Inertial> /*meta*/) const override;
   void operator()(
       gsl::not_null<tnsr::I<DataType, 3>*> shift_excess,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/) const override;
+      Xcts::Tags::ShiftExcess<DataType, 3, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<tnsr::ii<DataType, 3>*> shift_strain,
       gsl::not_null<Cache*> cache,
-      Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/) const override;
+      Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,
