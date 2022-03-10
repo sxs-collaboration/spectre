@@ -16,7 +16,7 @@ else()
   add_custom_target(
     doc-notebooks-to-markdown
     COMMAND find ${CMAKE_SOURCE_DIR}/docs -name "*.ipynb"
-      | xargs ${NBCONVERT} --to markdown
+      | xargs ${NBCONVERT} --to markdown --log-level=WARN
         --output-dir ${CMAKE_BINARY_DIR}/docs/tmp/notebooks_md
     )
 endif()
