@@ -190,11 +190,16 @@ struct GeneralizedHarmonicTemplateBase<
       tmpl::push_back<
           analytic_solution_fields, gr::Tags::Lapse<DataVector>,
           GeneralizedHarmonic::Tags::GaugeConstraintCompute<volume_dim, frame>,
+          GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<volume_dim,
+                                                                 frame>,
           GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<volume_dim,
                                                                  frame>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
+          ::Tags::PointwiseL2NormCompute<
+              GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim,
+                                                              frame>>,
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
                                                               frame>>,
@@ -206,8 +211,12 @@ struct GeneralizedHarmonicTemplateBase<
           volume_dim == 3,
           tmpl::list<
               GeneralizedHarmonic::Tags::FourIndexConstraintCompute<3, frame>,
+              GeneralizedHarmonic::Tags::FConstraintCompute<3, frame>,
               ::Tags::PointwiseL2NormCompute<
-                  GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>>,
+              GeneralizedHarmonic::Tags::FConstraint<3, frame>>,
+              ::Tags::PointwiseL2NormCompute<
+                  GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>,
+              GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3, frame>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
