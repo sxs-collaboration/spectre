@@ -26,10 +26,10 @@ struct Psi : db::SimpleTag {
 };
 
 /*!
- * \brief Auxiliary variable which is analytically the time derivative of the
- * scalar field.
+ * \brief Auxiliary variable which is analytically the negative time derivative
+ * of the scalar field.
  * \details If \f$\Psi\f$ is the scalar field then we define
- * \f$\Pi = \partial_t \Psi\f$
+ * \f$\Pi = -\partial_t \Psi\f$
  */
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
