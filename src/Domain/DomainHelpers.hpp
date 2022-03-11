@@ -150,18 +150,14 @@ enum class ShellWedges {
 /// sub-shells between `inner_radius` and `outer_radius`. Set the
 /// `radial_distribution` to select the radial distribution of grid points in
 /// the spherical shells.
-template <typename TargetFrame>
-auto sph_wedge_coordinate_maps(
+std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     double inner_radius, double outer_radius, double inner_sphericity,
     double outer_sphericity, bool use_equiangular_map,
-    double x_coord_of_shell_center = 0.0, bool use_half_wedges = false,
-    double aspect_ratio = 1.0, size_t index_polar_axis = 2,
+    bool use_half_wedges = false,
     const std::vector<double>& radial_partitioning = {},
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution = {domain::CoordinateMaps::Distribution::Linear},
-    ShellWedges which_wedges = ShellWedges::All)
-    -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
+    ShellWedges which_wedges = ShellWedges::All);
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact

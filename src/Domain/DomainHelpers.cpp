@@ -598,15 +598,10 @@ size_t which_wedge_index(const ShellWedges& which_wedges) {
 }
 }  // namespace
 
-template <typename TargetFrame>
-std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
-sph_wedge_coordinate_maps(
+std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
     const double inner_radius, const double outer_radius,
     const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_half_wedges, const double aspect_ratio,
-    const size_t index_polar_axis,
+    const bool use_equiangular_map, const bool use_half_wedges,
     const std::vector<double>& radial_partitioning,
     const std::vector<domain::CoordinateMaps::Distribution>&
         radial_distribution,
@@ -679,23 +674,7 @@ sph_wedge_coordinate_maps(
       temp_inner_radius = radial_partitioning.at(layer_i);
     }
   }
-
-  // Set up translation map:
-  using Identity2D = domain::CoordinateMaps::Identity<2>;
-  using Affine = domain::CoordinateMaps::Affine;
-  const auto translation =
-      domain::CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-          Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
-                 1.0 + x_coord_of_shell_center},
-          Identity2D{});
-
-  // Set up compression map:
-  const auto compression = domain::CoordinateMaps::EquatorialCompression{
-      aspect_ratio, index_polar_axis};
-
-  return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                 TargetFrame, 3>(
-      std::move(wedges_for_all_layers), compression, translation);
+  return wedges_for_all_layers;
 }
 
 template <typename TargetFrame>
@@ -1417,30 +1396,6 @@ ShellWedges Options::create_from_yaml<ShellWedges>::create<void>(
               "WhichWedges must be 'All', 'FourOnEquator' or 'OneAlongMinusX'");
 }
 
-template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-sph_wedge_coordinate_maps(
-    const double inner_radius, const double outer_radius,
-    const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_wedge_halves, const double aspect_ratio,
-    const size_t index_pole_axis,
-    const std::vector<double>& radial_partitioning,
-    const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution,
-    const ShellWedges which_wedges);
-template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
-sph_wedge_coordinate_maps(
-    const double inner_radius, const double outer_radius,
-    const double inner_sphericity, const double outer_sphericity,
-    const bool use_equiangular_map, const double x_coord_of_shell_center,
-    const bool use_wedge_halves, const double aspect_ratio,
-    const size_t index_pole_axis,
-    const std::vector<double>& radial_partitioning,
-    const std::vector<domain::CoordinateMaps::Distribution>&
-        radial_distribution,
-    const ShellWedges which_wedges);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,

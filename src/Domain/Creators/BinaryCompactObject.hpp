@@ -150,58 +150,44 @@ namespace creators {
  * map about the z axis.
  */
 class BinaryCompactObject : public DomainCreator<3> {
+ private:
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Identity2D = CoordinateMaps::Identity<2>;
+  using Translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
+  using Equiangular = CoordinateMaps::Equiangular;
+  using Equiangular3D =
+      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+  using RotationZ = domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
+      domain::CoordinateMaps::TimeDependent::Rotation<2>,
+      domain::CoordinateMaps::Identity<1>>;
+
  public:
   using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Identity<2>>>,
+                            Equiangular3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D,
+                            Translation>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::DiscreteRotation<3>,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular>,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Identity<2>>>,
+                            CoordinateMaps::DiscreteRotation<3>, Affine3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                            Equiangular3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Equiangular3D,
+                            Translation>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Frustum>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             CoordinateMaps::Wedge<3>>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                            CoordinateMaps::Wedge<3>, Translation>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
-          domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
-              domain::CoordinateMaps::TimeDependent::Rotation<2>,
-              domain::CoordinateMaps::Identity<1>>>,
+          domain::CoordinateMaps::TimeDependent::CubicScale<3>, RotationZ>,
       domain::CoordinateMap<
           Frame::Grid, Frame::Inertial,
           domain::CoordinateMaps::TimeDependent::SphericalCompression<false>,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>,
-          domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
-              domain::CoordinateMaps::TimeDependent::Rotation<2>,
-              domain::CoordinateMaps::Identity<1>>>>;
+          domain::CoordinateMaps::TimeDependent::CubicScale<3>, RotationZ>>;
 
   /// Options for an excision region in the domain
   struct Excision {

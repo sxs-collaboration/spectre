@@ -36,6 +36,7 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Domain.hpp"
@@ -347,21 +348,45 @@ Domain<3> BinaryCompactObject::create_domain() const {
               : domain::CoordinateMaps::Distribution::Linear};
 
   Maps maps{};
+
   // ObjectA/B is on the left/right, respectively.
-  Maps maps_center_A = sph_wedge_coordinate_maps<Frame::Inertial>(
-      object_A_.inner_radius, object_A_.outer_radius, inner_sphericity_A, 1.0,
-      use_equiangular_map_, object_A_.x_coord, false, 1.0, 2, {},
-      object_A_radial_distribution);
-  Maps maps_cube_A = sph_wedge_coordinate_maps<Frame::Inertial>(
-      object_A_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
-      use_equiangular_map_, object_A_.x_coord, false);
-  Maps maps_center_B = sph_wedge_coordinate_maps<Frame::Inertial>(
-      object_B_.inner_radius, object_B_.outer_radius, inner_sphericity_B, 1.0,
-      use_equiangular_map_, object_B_.x_coord, false, 1.0, 2, {},
-      object_B_radial_distribution);
-  Maps maps_cube_B = sph_wedge_coordinate_maps<Frame::Inertial>(
-      object_B_.outer_radius, sqrt(3.0) * 0.5 * length_inner_cube_, 1.0, 0.0,
-      use_equiangular_map_, object_B_.x_coord, false);
+  const Translation translation_A{
+      Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord},
+      Identity2D{}};
+  const Translation translation_B{
+      Affine{-1.0, 1.0, -1.0 + object_B_.x_coord, 1.0 + object_B_.x_coord},
+      Identity2D{}};
+
+  Maps maps_center_A =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_A_.inner_radius,
+                                    object_A_.outer_radius, inner_sphericity_A,
+                                    1.0, use_equiangular_map_, false, {},
+                                    object_A_radial_distribution),
+          translation_A);
+  Maps maps_cube_A =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_A_.outer_radius,
+                                    sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
+                                    0.0, use_equiangular_map_),
+          translation_A);
+  Maps maps_center_B =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_B_.inner_radius,
+                                    object_B_.outer_radius, inner_sphericity_B,
+                                    1.0, use_equiangular_map_, false, {},
+                                    object_B_radial_distribution),
+          translation_B);
+  Maps maps_cube_B =
+      domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                              Frame::Inertial, 3>(
+          sph_wedge_coordinate_maps(object_B_.outer_radius,
+                                    sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
+                                    0.0, use_equiangular_map_),
+          translation_B);
   Maps maps_frustums = frustum_coordinate_maps<Frame::Inertial>(
       length_inner_cube_, length_outer_cube_, use_equiangular_map_,
       {{-translation_, 0.0, 0.0}}, projective_scale_factor_,
@@ -406,14 +431,15 @@ Domain<3> BinaryCompactObject::create_domain() const {
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  Maps maps_first_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
+  Maps maps_first_outer_shell = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
       radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
-      1.0, use_equiangular_map_, 0.0, true, 1.0, 2, {},
-      {domain::CoordinateMaps::Distribution::Linear}, ShellWedges::All);
-  Maps maps_second_outer_shell = sph_wedge_coordinate_maps<Frame::Inertial>(
+      1.0, use_equiangular_map_, true, {},
+      {domain::CoordinateMaps::Distribution::Linear}));
+  Maps maps_second_outer_shell = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
       radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
-      use_equiangular_map_, 0.0, true, 1.0, 2, {},
-      {radial_distribution_outer_shell_}, ShellWedges::All);
+      use_equiangular_map_, true, {}, {radial_distribution_outer_shell_}));
   if (outer_boundary_condition_ != nullptr) {
     // The outer 10 wedges all have to have the outer boundary condition
     // applied
@@ -434,22 +460,10 @@ Domain<3> BinaryCompactObject::create_domain() const {
             std::back_inserter(maps));
 
   // Set up the maps for the central cubes, if any exist.
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3D =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
-  using Identity2D = CoordinateMaps::Identity<2>;
   if (not object_A_.is_excised()) {
     if (outer_boundary_condition_ != nullptr) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
-
-    auto shift_1d_A =
-        Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord};
-    const auto translation_A =
-        CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_A,
-                                                           Identity2D{});
 
     const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
@@ -477,11 +491,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
     }
 
-    auto shift_1d_B =
-        Affine{-1.0, 1.0, -1.0 + object_B_.x_coord, 1.0 + object_B_.x_coord};
-    const auto translation_B =
-        CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(shift_1d_B,
-                                                           Identity2D{});
     const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(

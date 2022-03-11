@@ -25,12 +25,7 @@
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
-class EquatorialCompression;
 class Equiangular;
-template <size_t VolumeDim>
-class Identity;
-template <typename Map1, typename Map2>
-class ProductOf2Maps;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
 template <size_t Dim>
@@ -48,22 +43,20 @@ namespace creators {
 /// and a central cube. For an image showing how the wedges are aligned in
 /// this Domain, see the documentation for Shell.
 class Sphere : public DomainCreator<3> {
+ private:
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Equiangular = CoordinateMaps::Equiangular;
+  using Equiangular3D =
+      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+
  public:
   using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
-                            CoordinateMaps::ProductOf3Maps<
-                                CoordinateMaps::Affine, CoordinateMaps::Affine,
-                                CoordinateMaps::Affine>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial,
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular,
-                                         CoordinateMaps::Equiangular>>,
-      domain::CoordinateMap<
-          Frame::BlockLogical, Frame::Inertial, CoordinateMaps::Wedge<3>,
-          CoordinateMaps::EquatorialCompression,
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Identity<2>>>>;
+                            Equiangular3D>,
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
+                            CoordinateMaps::Wedge<3>>>;
 
   struct InnerRadius {
     using type = double;
