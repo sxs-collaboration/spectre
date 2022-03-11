@@ -26,7 +26,7 @@
 /// It is frequently useful to default the registrar list in a derived
 /// class to the registrar for that class.  This ensures that any
 /// methods in the base class using the registrar list (such as those
-/// using `DEFINE_FAKE_VIRTUAL()` or `call_with_dynamic_type()`) work
+/// using `call_with_dynamic_type()`) work
 /// as expected on an explicitly constructed derived class with the
 /// list omitted.
 namespace Registration {

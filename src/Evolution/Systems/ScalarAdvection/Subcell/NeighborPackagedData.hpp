@@ -43,7 +43,7 @@
 #include "Evolution/Systems/ScalarAdvection/System.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace ScalarAdvection::subcell {

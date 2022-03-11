@@ -21,10 +21,10 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts::BoundaryConditions {

@@ -7,7 +7,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup EventsAndTriggersGroup

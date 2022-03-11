@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
