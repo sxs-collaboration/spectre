@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -222,7 +223,7 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
-      const TimeDelta& time_stepm, const Coupling& coupling) const;
+      const TimeDelta& time_step, const Coupling& coupling) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
   void boundary_dense_output(
@@ -280,12 +281,10 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   bool can_change_step_size_impl(const TimeStepId& time_id,
                                  const UntypedHistory<T>& history) const;
 
-  template <typename LocalVars, typename RemoteVars, typename Coupling,
-            typename TimeType>
-  void boundary_impl(
-      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
-      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      const TimeType& end_time, const Coupling& coupling) const;
+  template <typename T, typename TimeType>
+  void boundary_impl(gsl::not_null<T*> result,
+                     const BoundaryHistoryEvaluator<T>& coupling,
+                     const TimeType& end_time) const;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
@@ -355,39 +354,40 @@ void AdamsBashforthN::add_boundary_delta(
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
     const TimeDelta& time_step, const Coupling& coupling) const {
+  const auto cleaner = history->cleaner();
   const auto signed_order =
-      static_cast<typename decltype(history->local_end())::difference_type>(
-          history->integration_order());
+      static_cast<typename decltype(cleaner.local_end())::difference_type>(
+          cleaner.integration_order());
 
-  ASSERT(history->local_size() >= history->integration_order(),
-         "Insufficient data to take an order-" << history->integration_order()
-         << " step.  Have " << history->local_size() << " times, need "
-         << history->integration_order());
-  history->local_mark_unneeded(history->local_end() - signed_order);
+  ASSERT(cleaner.local_size() >= cleaner.integration_order(),
+         "Insufficient data to take an order-" << cleaner.integration_order()
+         << " step.  Have " << cleaner.local_size() << " times, need "
+         << cleaner.integration_order());
+  cleaner.local_mark_unneeded(cleaner.local_end() - signed_order);
 
-  if (std::equal(history->local_begin(), history->local_end(),
-                 history->remote_end() - signed_order)) {
+  if (std::equal(cleaner.local_begin(), cleaner.local_end(),
+                 cleaner.remote_end() - signed_order)) {
     // GTS
-    ASSERT(history->remote_size() >= history->integration_order(),
-           "Insufficient data to take an order-" << history->integration_order()
-           << " step.  Have " << history->remote_size() << " times, need "
-           << history->integration_order());
-    history->remote_mark_unneeded(history->remote_end() - signed_order);
+    ASSERT(cleaner.remote_size() >= cleaner.integration_order(),
+           "Insufficient data to take an order-" << cleaner.integration_order()
+           << " step.  Have " << cleaner.remote_size() << " times, need "
+           << cleaner.integration_order());
+    cleaner.remote_mark_unneeded(cleaner.remote_end() - signed_order);
   } else {
     const auto remote_step_for_step_start =
-        std::upper_bound(history->remote_begin(), history->remote_end(),
-                         *(history->local_end() - 1),
+        std::upper_bound(cleaner.remote_begin(), cleaner.remote_end(),
+                         *(cleaner.local_end() - 1),
                          evolution_less<Time>{time_step.is_positive()});
-    ASSERT(remote_step_for_step_start - history->remote_begin() >= signed_order,
-           "Insufficient data to take an order-" << history->integration_order()
+    ASSERT(remote_step_for_step_start - cleaner.remote_begin() >= signed_order,
+           "Insufficient data to take an order-" << cleaner.integration_order()
            << " step.  Have "
-           << remote_step_for_step_start - history->remote_begin()
-           << " times before the step, need " << history->integration_order());
-    history->remote_mark_unneeded(remote_step_for_step_start - signed_order);
+           << remote_step_for_step_start - cleaner.remote_begin()
+           << " times before the step, need " << cleaner.integration_order());
+    cleaner.remote_mark_unneeded(remote_step_for_step_start - signed_order);
   }
 
-  boundary_impl(result, *history, *(history->local_end() - 1) + time_step,
-                coupling);
+  boundary_impl(&*make_math_wrapper(result), history->evaluator(coupling),
+                *(cleaner.local_end() - 1) + time_step);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
@@ -396,33 +396,31 @@ void AdamsBashforthN::boundary_dense_output(
         result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
     const double time, const Coupling& coupling) const {
-  return boundary_impl(result, history, ApproximateTime{time}, coupling);
+  return boundary_impl(&*make_math_wrapper(result), history.evaluator(coupling),
+                       ApproximateTime{time});
 }
 
-template <typename LocalVars, typename RemoteVars, typename Coupling,
-          typename TimeType>
-void AdamsBashforthN::boundary_impl(
-    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
-        result,
-    const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const TimeType& end_time, const Coupling& coupling) const {
+template <typename T, typename TimeType>
+void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
+                                    const BoundaryHistoryEvaluator<T>& coupling,
+                                    const TimeType& end_time) const {
   // Might be different from order_ during self-start.
-  const auto current_order = history.integration_order();
+  const auto current_order = coupling.integration_order();
 
   ASSERT(current_order <= order_,
          "Local history is too long for target order (" << current_order
          << " should not exceed " << order_ << ")");
-  ASSERT(history.remote_size() >= current_order,
-         "Remote history is too short (" << history.remote_size()
+  ASSERT(coupling.remote_size() >= current_order,
+         "Remote history is too short (" << coupling.remote_size()
          << " should be at least " << current_order << ")");
 
   // Avoid billions of casts
-  const auto order_s = static_cast<typename BoundaryHistoryType<
-      LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
+  const auto order_s = static_cast<
+      typename BoundaryHistoryEvaluator<T>::iterator::difference_type>(
       current_order);
 
   // Start and end of the step we are trying to take
-  const Time start_time = *(history.local_end() - 1);
+  const Time start_time = *(coupling.local_end() - 1);
   const auto time_step = end_time - start_time;
 
   // We define the local_begin and remote_begin variables as the start
@@ -431,21 +429,21 @@ void AdamsBashforthN::boundary_impl(
   // boundary dense output happens before that, so there may be data
   // left over that was needed for the previous step and has not been
   // cleaned out yet.
-  const auto local_begin = history.local_end() - order_s;
+  const auto local_begin = coupling.local_end() - order_s;
 
-  if (std::equal(local_begin, history.local_end(),
-                 history.remote_end() - order_s)) {
+  if (std::equal(local_begin, coupling.local_end(),
+                 coupling.remote_end() - order_s)) {
     // No local time-stepping going on.
     const auto coefficients =
-        get_coefficients(local_begin, history.local_end(), time_step);
+        get_coefficients(local_begin, coupling.local_end(), time_step);
 
     auto local_it = local_begin;
-    auto remote_it = history.remote_end() - order_s;
+    auto remote_it = coupling.remote_end() - order_s;
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
-      *result += time_step.value() * *coefficients_it *
-                 history.coupling(coupling, local_it, remote_it);
+      *result +=
+          time_step.value() * *coefficients_it * *coupling(local_it, remote_it);
     }
     return;
   }
@@ -455,26 +453,26 @@ void AdamsBashforthN::boundary_impl(
 
   const evolution_less<> less{time_step.is_positive()};
   const auto remote_begin =
-      std::upper_bound(history.remote_begin(), history.remote_end(),
+      std::upper_bound(coupling.remote_begin(), coupling.remote_end(),
                        start_time, less) -
       order_s;
 
-  ASSERT(std::is_sorted(local_begin, history.local_end(), less),
+  ASSERT(std::is_sorted(local_begin, coupling.local_end(), less),
          "Local history not in order");
-  ASSERT(std::is_sorted(remote_begin, history.remote_end(), less),
+  ASSERT(std::is_sorted(remote_begin, coupling.remote_end(), less),
          "Remote history not in order");
   ASSERT(not less(start_time, *(remote_begin + (order_s - 1))),
          "Remote history does not extend far enough back");
-  ASSERT(less(*(history.remote_end() - 1), end_time),
-         "Please supply only older data: " << *(history.remote_end() - 1)
+  ASSERT(less(*(coupling.remote_end() - 1), end_time),
+         "Please supply only older data: " << *(coupling.remote_end() - 1)
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
-  const auto union_times = [&history, &local_begin, &remote_begin, &less]() {
+  const auto union_times = [&coupling, &local_begin, &remote_begin, &less]() {
     std::vector<Time> ret;
-    ret.reserve(history.local_size() + history.remote_size());
-    std::set_union(local_begin, history.local_end(), remote_begin,
-                   history.remote_end(), std::back_inserter(ret), less);
+    ret.reserve(coupling.local_size() + coupling.remote_size());
+    std::set_union(local_begin, coupling.local_end(), remote_begin,
+                   coupling.remote_end(), std::back_inserter(ret), less);
     return ret;
   }();
 
@@ -542,11 +540,11 @@ void AdamsBashforthN::boundary_impl(
   };
 
   for (auto local_evaluation_step = local_begin;
-       local_evaluation_step != history.local_end();
+       local_evaluation_step != coupling.local_end();
        ++local_evaluation_step) {
     const auto union_local_evaluation_step = union_step(*local_evaluation_step);
     for (auto remote_evaluation_step = remote_begin;
-         remote_evaluation_step != history.remote_end();
+         remote_evaluation_step != coupling.remote_end();
          ++remote_evaluation_step) {
       double deriv_coef = 0.;
 
@@ -581,7 +579,7 @@ void AdamsBashforthN::boundary_impl(
         // use as the coupling value for that time.  If there is an
         // actual evaluation at that time then skip this because the
         // Lagrange polynomial will be zero.
-        if (not std::binary_search(local_begin, history.local_end(),
+        if (not std::binary_search(local_begin, coupling.local_end(),
                                    *remote_evaluation_step, less)) {
           const auto union_step_upper_bound =
               advance_within_step(union_remote_evaluation_step);
@@ -594,18 +592,18 @@ void AdamsBashforthN::boundary_impl(
               lagrange_polynomial(make_lagrange_iterator(local_evaluation_step),
                                   remote_evaluation_step->value(),
                                   make_lagrange_iterator(local_begin),
-                                  make_lagrange_iterator(history.local_end()));
+                                  make_lagrange_iterator(coupling.local_end()));
         }
 
         // Same qualitative calculation as the previous block, but
         // interpolating over the remote times.  This case is somewhat
         // more complicated because the latest remote time that can be
         // used varies for the different segments making up the step.
-        if (not std::binary_search(remote_begin, history.remote_end(),
+        if (not std::binary_search(remote_begin, coupling.remote_end(),
                                    *local_evaluation_step, less)) {
           auto union_step_upper_bound =
               advance_within_step(union_local_evaluation_step);
-          if (history.remote_end() - remote_evaluation_step > order_s) {
+          if (coupling.remote_end() - remote_evaluation_step > order_s) {
             union_step_upper_bound = std::min(
                 union_step_upper_bound,
                 union_step(*(remote_evaluation_step + order_s)));
@@ -633,9 +631,8 @@ void AdamsBashforthN::boundary_impl(
       if (deriv_coef != 0.) {
         // Skip the (potentially expensive) coupling calculation if
         // the coefficient is zero.
-        *result +=
-            deriv_coef * history.coupling(coupling, local_evaluation_step,
-                                          remote_evaluation_step);
+        *result += deriv_coef *
+                   *coupling(local_evaluation_step, remote_evaluation_step);
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step

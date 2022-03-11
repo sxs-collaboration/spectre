@@ -81,45 +81,83 @@ void check_iterator(Iterator it) {
   check_cmp(it, it + 1);
 }
 
-// Must take a non-const arg for coupling caching
-size_t check_boundary_state(const gsl::not_null<BoundaryHistoryType*> hist) {
-  CHECK(hist->local_size() == 4);
+template <bool EvaluatorOwnsCoupling>
+size_t check_boundary_state(const BoundaryHistoryType& hist) {
+  std::string local_arg;
+  std::vector<int> remote_arg;
+  double coupling_return = std::numeric_limits<double>::signaling_NaN();
+
+  struct NonCopyableCoupling {
+    NonCopyableCoupling(const NonCopyableCoupling&) = delete;
+    NonCopyableCoupling& operator=(const NonCopyableCoupling&) = delete;
+    double operator()(const std::string& local,
+                      const std::vector<int>& remote) const {
+      local_arg_ = local;
+      remote_arg_ = remote;
+      return coupling_return_;
+    }
+
+    std::string& local_arg_;
+    std::vector<int>& remote_arg_;
+    double& coupling_return_;
+  };
+  const NonCopyableCoupling unowned_coupling{local_arg, remote_arg,
+                                             coupling_return};
+
+  // Test correct handling of lvalues and rvalues.
+  struct CouplingChooser {
+    auto operator()(std::true_type) const {
+      // Capture pointers by value to try to ensure that the lambda
+      // object has actual member variables that will go out of scope
+      // if the lambda is destroyed.  I'm not sure that references
+      // could not be resolved at compile time, but these are harder
+      // to optimize out.
+      return [local_arg_capture = local_arg_, remote_arg_capture = remote_arg_,
+              coupling_return_capture = coupling_return_](
+                 const std::string& local, const std::vector<int>& remote) {
+        *local_arg_capture = local;
+        *remote_arg_capture = remote;
+        return *coupling_return_capture;
+      };
+    };
+    const auto& operator()(std::false_type) const { return unowned_coupling_; }
+
+    gsl::not_null<std::string*> local_arg_;
+    gsl::not_null<std::vector<int>*> remote_arg_;
+    gsl::not_null<const double*> coupling_return_;
+    const NonCopyableCoupling& unowned_coupling_;
+  };
+  const CouplingChooser coupling_chooser{&local_arg, &remote_arg,
+                                         &coupling_return, unowned_coupling};
+
+  const auto evaluator = hist.evaluator(
+      coupling_chooser(std::bool_constant<EvaluatorOwnsCoupling>{}));
+
+  CHECK(hist.local_size() == 4);
   {
-    auto it = hist->local_begin();
-    for (size_t i = 0; i < hist->local_size(); ++i, ++it) {
+    auto it = hist.local_begin();
+    for (size_t i = 0; i < hist.local_size(); ++i, ++it) {
       const auto entry_num = static_cast<double>(i) - 1.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }
-    CHECK(it == hist->local_end());
+    CHECK(it == hist.local_end());
   }
 
-  CHECK(hist->remote_size() == 6);
+  CHECK(hist.remote_size() == 6);
   {
-    auto it = hist->remote_begin();
-    for (size_t i = 0; i < hist->remote_size(); ++i, ++it) {
+    auto it = hist.remote_begin();
+    for (size_t i = 0; i < hist.remote_size(); ++i, ++it) {
       const auto entry_num = static_cast<double>(i) - 2.0;
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
     }
-    CHECK(it == hist->remote_end());
+    CHECK(it == hist.remote_end());
   }
-
-  std::string local_arg;
-  std::vector<int> remote_arg;
-  double coupling_return = std::numeric_limits<double>::signaling_NaN();
-  const auto coupling = [&local_arg, &remote_arg, &coupling_return](
-                            const std::string& local,
-                            const std::vector<int>& remote) {
-    local_arg = local;
-    remote_arg = remote;
-    return coupling_return;
-  };
 
   size_t coupling_calls = 0;
   coupling_return = 3.5;
-  CHECK(3.5 ==
-        hist->coupling(coupling, hist->local_begin(), hist->remote_begin()));
+  CHECK(3.5 == *evaluator(hist.local_begin(), hist.remote_begin()));
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
   } else {
@@ -131,8 +169,7 @@ size_t check_boundary_state(const gsl::not_null<BoundaryHistoryType*> hist) {
   remote_arg.clear();
 
   coupling_return = 6.5;
-  CHECK(6.5 == hist->coupling(coupling, hist->local_begin() + 3,
-                              hist->remote_begin() + 2));
+  CHECK(6.5 == *evaluator(hist.local_begin() + 3, hist.remote_begin() + 2));
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
   } else {
@@ -141,11 +178,19 @@ size_t check_boundary_state(const gsl::not_null<BoundaryHistoryType*> hist) {
     CHECK(remote_arg == std::vector<int>{0});
   }
 
+  CHECK(hist.integration_order() == evaluator.integration_order());
+  CHECK(hist.local_begin() == evaluator.local_begin());
+  CHECK(hist.local_end() == evaluator.local_end());
+  CHECK(hist.remote_begin() == evaluator.remote_begin());
+  CHECK(hist.remote_end() == evaluator.remote_end());
+  CHECK(hist.local_size() == evaluator.local_size());
+  CHECK(hist.remote_size() == evaluator.remote_size());
+
   return coupling_calls;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
+template <bool EvaluatorOwnsCoupling>
+void test_boundary_history() {
   BoundaryHistoryType history{3};
 
   CHECK(history.integration_order() == 3);
@@ -177,20 +222,21 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   history.remote_insert_initial(make_time_id(-2.), std::vector<int>{-2});
   history.remote_insert(make_time_id(3.), std::vector<int>{3});
 
-  CHECK(check_boundary_state(&history) == 2);
+  CHECK(check_boundary_state<EvaluatorOwnsCoupling>(history) == 2);
 
   // We check this later, to make sure we don't somehow depend on the
   // original object.
   auto copy = serialize_and_deserialize(history);
 
-  history.local_mark_unneeded(history.local_begin());
+  const auto cleaner = history.cleaner();
+  cleaner.local_mark_unneeded(history.local_begin());
   CHECK(history.local_size() == 4);
-  history.local_mark_unneeded(history.local_begin() + 2);
+  cleaner.local_mark_unneeded(history.local_begin() + 2);
   CHECK(history.local_size() == 2);
 
-  history.remote_mark_unneeded(history.remote_begin());
+  cleaner.remote_mark_unneeded(history.remote_begin());
   CHECK(history.remote_size() == 6);
-  history.remote_mark_unneeded(history.remote_begin() + 2);
+  cleaner.remote_mark_unneeded(history.remote_begin() + 2);
   CHECK(history.remote_size() == 4);
 
   {
@@ -203,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
     CHECK(it == history.local_end());
   }
 
-  history.local_mark_unneeded(history.local_end());
+  cleaner.local_mark_unneeded(history.local_end());
   CHECK(history.local_size() == 0);
 
   CHECK(history.remote_size() == 4);
@@ -217,8 +263,22 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
     CHECK(it == history.remote_end());
   }
 
-  CHECK(check_boundary_state(&copy) == 0);
+  CHECK(history.integration_order() == cleaner.integration_order());
+  CHECK(history.local_begin() == cleaner.local_begin());
+  CHECK(history.local_end() == cleaner.local_end());
+  CHECK(history.remote_begin() == cleaner.remote_begin());
+  CHECK(history.remote_end() == cleaner.remote_end());
+  CHECK(history.local_size() == cleaner.local_size());
+  CHECK(history.remote_size() == cleaner.remote_size());
+
+  CHECK(check_boundary_state<EvaluatorOwnsCoupling>(copy) == 0);
   check_iterator(copy.local_begin() + 1);
   check_iterator(copy.remote_begin() + 2);
   CHECK(copy.integration_order() == 2);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
+  test_boundary_history<true>();
+  test_boundary_history<false>();
 }

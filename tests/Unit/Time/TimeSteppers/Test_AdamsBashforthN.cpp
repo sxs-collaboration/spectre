@@ -11,6 +11,7 @@
 #include <deque>
 #include <initializer_list>
 
+#include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
@@ -166,14 +167,18 @@ class NCd {
   NCd& operator=(NCd&&) = default;
   ~NCd() = default;
 
-  double operator()() const { return x_; }
+  const double& operator()() const { return x_; }
+  double& operator()() { return x_; }
 
  private:
   double x_;
 };
 
-NCd operator*(double a, const NCd& b) { return NCd(a * b()); }
-NCd& operator+=(NCd& a, NCd&& b) { return a = NCd(a() + b()); }
+auto make_math_wrapper(const gsl::not_null<NCd*> x) {
+  return ::make_math_wrapper(&(*x)());
+}
+
+auto make_math_wrapper(const NCd& x) { return ::make_math_wrapper(x()); }
 
 // Random numbers
 constexpr double c10 = 0.949716728952811;
