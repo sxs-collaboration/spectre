@@ -389,7 +389,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
   //    stay on subcell
   // 5. Check if RDMP is not triggered, but tci_mutator is, we stay on subcell
   // 6. check if RDMP & TCI not triggered, switch to DG.
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
+                                        TimeSteppers::RungeKutta3>();
   test<1>();
   test<2>();
   test<3>();

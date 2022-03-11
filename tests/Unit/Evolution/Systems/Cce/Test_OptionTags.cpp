@@ -30,6 +30,7 @@
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -164,8 +165,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "  ExtractionRadius: 40.0\n"
       "  Amplitude: 0.1\n"
       "  Duration: 3.0");
-  TestHelpers::test_option_tag<Cce::OptionTags::CceEvolutionPrefix<
-      ::OptionTags::TimeStepper<TimeStepper>>>("RungeKutta3:");
+  TestHelpers::test_option_tag_factory_creation<
+      Cce::OptionTags::CceEvolutionPrefix<
+          ::OptionTags::TimeStepper<TimeStepper>>,
+      TimeSteppers::RungeKutta3>("RungeKutta3:");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {

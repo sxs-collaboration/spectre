@@ -169,7 +169,7 @@ void check(const bool time_runs_forward,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
   Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
   Parallel::register_factory_classes_with_charm<Metavariables>();
   const Slab slab(-5., -2.);

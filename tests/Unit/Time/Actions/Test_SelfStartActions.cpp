@@ -449,7 +449,7 @@ void test_convergence(const size_t order, const bool forward_in_time) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
   for (size_t order = 1; order < 5; ++order) {
     CAPTURE(order);
     for (const int step_denominator : {1, -1, 2, -2, 20, -20}) {

@@ -25,16 +25,7 @@ class TimeDelta;
 /// \ingroup TimeSteppersGroup
 ///
 /// Holds classes that take time steps.
-namespace TimeSteppers {
-class AdamsBashforthN;  // IWYU pragma: keep
-class Cerk2;
-class Cerk3;
-class Cerk4;
-class Cerk5;
-class DormandPrince5;
-class RungeKutta3;  // IWYU pragma: keep
-class RungeKutta4;
-}  // namespace TimeSteppers
+namespace TimeSteppers {}
 
 /// \cond
 #define TIME_STEPPER_WRAPPED_TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -54,12 +45,6 @@ class RungeKutta4;
 /// in the cpp file.
 class TimeStepper : public PUP::able {
  public:
-  using creatable_classes =
-      tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::Cerk2,
-                 TimeSteppers::Cerk3, TimeSteppers::Cerk4, TimeSteppers::Cerk5,
-                 TimeSteppers::DormandPrince5, TimeSteppers::RungeKutta3,
-                 TimeSteppers::RungeKutta4>;
-
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
   /// \cond
@@ -303,9 +288,6 @@ class TimeStepper : public PUP::able {
 /// placed in the cpp file.
 class LtsTimeStepper : public TimeStepper {
  public:
-  // When you add a class here, remember to add it to TimeStepper as well.
-  using creatable_classes = tmpl::list<TimeSteppers::AdamsBashforthN>;
-
   WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
 
   // These two are defined as separate type aliases to keep the
@@ -454,13 +436,3 @@ class LtsTimeStepper : public TimeStepper {
 #define LTS_TIME_STEPPER_DEFINE_OVERLOADS(derived_class)          \
   GENERATE_INSTANTIATIONS(LTS_TIME_STEPPER_DEFINE_OVERLOADS_IMPL, \
                           (MATH_WRAPPER_TYPES), (derived_class))
-
-
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"  // IWYU pragma: keep
-#include "Time/TimeSteppers/Cerk2.hpp"
-#include "Time/TimeSteppers/Cerk3.hpp"
-#include "Time/TimeSteppers/Cerk4.hpp"
-#include "Time/TimeSteppers/Cerk5.hpp"
-#include "Time/TimeSteppers/DormandPrince5.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"  // IWYU pragma: keep
-#include "Time/TimeSteppers/RungeKutta4.hpp"  // IWYU pragma: keep

@@ -146,7 +146,7 @@ struct metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeCharacteristicEvolution",
     "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;

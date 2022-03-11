@@ -179,7 +179,7 @@ struct initialize_elements_and_queue_simple_actions {
 void test_send_time_to_cce(const bool substep) {
   Parallel::register_derived_classes_with_charm<
       Cce::InterfaceManagers::GhInterfaceManager>();
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   using metavars = test_metavariables;
   using elem_component = mock_element<metavars>;
   TimeStepId time_step_id;

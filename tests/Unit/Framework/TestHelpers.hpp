@@ -82,7 +82,7 @@ void test_serialization_via_base(Args&&... args) {
   static_assert(std::is_base_of_v<B, D>,
                 "passed input type is not derived from specified base");
   static_assert(tt::has_equivalence_v<D>, "No operator== for derived class");
-  Parallel::register_derived_classes_with_charm<B>();
+  Parallel::register_classes_with_charm<D>();
   std::unique_ptr<B> base = std::make_unique<D>(args...);
   std::unique_ptr<B> pupped_base = serialize_and_deserialize(base);
   CHECK_FALSE(nullptr == dynamic_cast<const D*>(pupped_base.get()));

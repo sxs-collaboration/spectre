@@ -6,6 +6,7 @@
 #include <cmath>
 #include <limits>
 
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"

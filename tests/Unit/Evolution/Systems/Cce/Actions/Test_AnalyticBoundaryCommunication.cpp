@@ -165,7 +165,7 @@ SPECTRE_TEST_CASE(
     "[Unit][Cce]") {
   Parallel::register_classes_with_charm<
       Cce::Solutions::RotatingSchwarzschild>();
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::DormandPrince5>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component =
       mock_analytic_worldtube_boundary<test_metavariables>;

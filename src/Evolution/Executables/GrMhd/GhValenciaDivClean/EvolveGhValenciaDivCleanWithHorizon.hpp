@@ -147,7 +147,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &grmhd::GhValenciaDivClean::BoundaryCorrections::
         register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

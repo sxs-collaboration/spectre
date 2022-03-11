@@ -241,7 +241,7 @@ ComplexDataVector compute_expected_field_from_pypp(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   Parallel::register_classes_with_charm<
       Cce::Solutions::RotatingSchwarzschild>();
   Parallel::register_classes_with_charm<Cce::Solutions::TeukolskyWave>();
