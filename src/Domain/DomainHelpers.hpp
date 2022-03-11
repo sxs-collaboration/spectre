@@ -49,6 +49,7 @@ class ProductOf3Maps;
 class Interval;
 template <size_t Dim>
 class Wedge;
+class Frustum;
 }  // namespace domain::CoordinateMaps
 /// \endcond
 
@@ -170,14 +171,11 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
 /// that moves the center of the two joined inner cubes away from the origin
 /// and to `-origin_preimage`. `projective_scale_factor` acts to change the
 /// gridpoint distribution in the radial direction. \see Frustum for details.
-template <typename TargetFrame>
-auto frustum_coordinate_maps(
+std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
-    double projective_scale_factor = 1.0, double sphericity = 0.0)
-    -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>;
+    double projective_scale_factor = 1.0, double sphericity = 0.0);
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.

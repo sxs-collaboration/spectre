@@ -27,6 +27,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Interval.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -387,10 +388,11 @@ Domain<3> BinaryCompactObject::create_domain() const {
                                     sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
                                     0.0, use_equiangular_map_),
           translation_B);
-  Maps maps_frustums = frustum_coordinate_maps<Frame::Inertial>(
-      length_inner_cube_, length_outer_cube_, use_equiangular_map_,
-      {{-translation_, 0.0, 0.0}}, projective_scale_factor_,
-      frustum_sphericity_);
+  Maps maps_frustums = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(
+      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
+                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
+                              projective_scale_factor_, frustum_sphericity_));
 
   if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_A.size(); ++i) {

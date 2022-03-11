@@ -677,15 +677,11 @@ std::vector<domain::CoordinateMaps::Wedge<3>> sph_wedge_coordinate_maps(
   return wedges_for_all_layers;
 }
 
-template <typename TargetFrame>
-std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, 3>>>
-frustum_coordinate_maps(const double length_inner_cube,
-                        const double length_outer_cube,
-                        const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor,
-                        const double sphericity) {
+std::vector<domain::CoordinateMaps::Frustum> frustum_coordinate_maps(
+    const double length_inner_cube, const double length_outer_cube,
+    const bool use_equiangular_map,
+    const std::array<double, 3>& origin_preimage,
+    const double projective_scale_factor, const double sphericity) {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
          "of the outer cube.");
@@ -769,12 +765,7 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 projective_scale_factor,
                                 false,
                                 sphericity});
-
-  // clang-tidy: trivially copyable
-  return domain::make_vector_coordinate_map_base<Frame::BlockLogical,
-                                                 TargetFrame,
-                                                 3>(
-      std::move(frustums));  // NOLINT
+  return frustums;
 }
 
 namespace {
@@ -1396,22 +1387,6 @@ ShellWedges Options::create_from_yaml<ShellWedges>::create<void>(
               "WhichWedges must be 'All', 'FourOnEquator' or 'OneAlongMinusX'");
 }
 
-template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-frustum_coordinate_maps(const double length_inner_cube,
-                        const double length_outer_cube,
-                        const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor,
-                        const double sphericity);
-template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::BlockLogical, Frame::Grid, 3>>>
-frustum_coordinate_maps(const double length_inner_cube,
-                        const double length_outer_cube,
-                        const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage,
-                        const double projective_scale_factor,
-                        const double sphericity);
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
 cyl_wedge_coordinate_maps(

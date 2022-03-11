@@ -11,6 +11,9 @@
 #include "Domain/Block.hpp"                   // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -67,9 +70,11 @@ FrustalCloak::FrustalCloak(
 Domain<3> FrustalCloak::create_domain() const {
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-      coord_maps = frustum_coordinate_maps<Frame::Inertial>(
-          length_inner_cube_, length_outer_cube_, use_equiangular_map_,
-          origin_preimage_, projection_factor_);
+      coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                           Frame::Inertial, 3>(
+          frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
+                                  use_equiangular_map_, origin_preimage_,
+                                  projection_factor_));
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions_all_blocks{};

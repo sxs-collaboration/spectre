@@ -411,135 +411,127 @@ void test_all_frustum_directions() {
 
   const double projective_scale_factor = 0.3;
   for (const bool use_equiangular_map : {true, false}) {
-    const auto expected_coord_maps =
-        make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            FrustumMap{{{{{-2.0 * lower - displacement1[0],
-                           -lower - displacement1[1]}},
-                         {{-displacement1[0], lower - displacement1[1]}},
-                         {{-top, -top}},
-                         {{0.0, top}}}},
-                       lower - displacement1[2],
-                       top,
-                       OrientationMap<3>{},
-                       use_equiangular_map,
-                       projective_scale_factor},
-            FrustumMap{
-                {{{{-displacement2[0], -lower - displacement2[1]}},
-                  {{2.0 * lower - displacement2[0], lower - displacement2[1]}},
-                  {{0.0, -top}},
-                  {{top, top}}}},
-                lower - displacement2[2],
-                top,
-                OrientationMap<3>{},
-                use_equiangular_map,
-                projective_scale_factor},
-            FrustumMap{{{{{-2.0 * lower - displacement3[0],
-                           -lower - displacement3[1]}},
-                         {{-displacement3[0], lower - displacement3[1]}},
-                         {{-top, -top}},
-                         {{0.0, top}}}},
-                       lower - displacement3[2],
-                       top,
-                       OrientationMap<3>{std::array<Direction<3>, 3>{
-                           {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                            Direction<3>::lower_zeta()}}},
-                       use_equiangular_map,
-                       projective_scale_factor},
-            FrustumMap{
-                {{{{-displacement4[0], -lower - displacement4[1]}},
-                  {{2.0 * lower - displacement4[0], lower - displacement4[1]}},
-                  {{0.0, -top}},
-                  {{top, top}}}},
-                lower - displacement4[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-                     Direction<3>::lower_zeta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            FrustumMap{
-                {{{{-2.0 * lower - displacement5[0],
-                    -lower - displacement5[1]}},
-                  {{-displacement5[0], lower - displacement5[1]}},
-                  {{-top, -top}},
-                  {{0.0, top}}}},
-                lower - displacement5[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                     Direction<3>::lower_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            FrustumMap{
-                {{{{-displacement6[0], -lower - displacement6[1]}},
-                  {{2.0 * lower - displacement6[0], lower - displacement6[1]}},
-                  {{0.0, -top}},
-                  {{top, top}}}},
-                lower - displacement6[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
-                     Direction<3>::lower_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            FrustumMap{
-                {{{{-2.0 * lower - displacement7[0],
-                    -lower - displacement7[1]}},
-                  {{-displacement7[0], lower - displacement7[1]}},
-                  {{-top, -top}},
-                  {{0.0, top}}}},
-                lower - displacement7[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                     Direction<3>::upper_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            FrustumMap{
-                {{{{-displacement8[0], -lower - displacement8[1]}},
-                  {{2.0 * lower - displacement8[0], lower - displacement8[1]}},
-                  {{0.0, -top}},
-                  {{top, top}}}},
-                lower - displacement8[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
-                     Direction<3>::upper_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            // Frustum on right half in the +x direction
-            FrustumMap{
-                {{{{-lower - displacement9[0], -lower - displacement9[1]}},
-                  {{lower - displacement9[0], lower - displacement9[1]}},
-                  {{-top, -top}},
-                  {{top, top}}}},
-                2.0 * lower - displacement9[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
-                     Direction<3>::upper_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor},
-            // Frustum on left half in the -x direction
-            FrustumMap{
-                {{{{-lower - displacement10[0], -lower - displacement10[1]}},
-                  {{lower - displacement10[0], lower - displacement10[1]}},
-                  {{-top, -top}},
-                  {{top, top}}}},
-                2.0 * lower - displacement10[2],
-                top,
-                OrientationMap<3>{std::array<Direction<3>, 3>{
-                    {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
-                     Direction<3>::upper_eta()}}},
-                use_equiangular_map,
-                projective_scale_factor});
+    const auto expected_coord_maps = make_vector(
+        FrustumMap{
+            {{{{-2.0 * lower - displacement1[0], -lower - displacement1[1]}},
+              {{-displacement1[0], lower - displacement1[1]}},
+              {{-top, -top}},
+              {{0.0, top}}}},
+            lower - displacement1[2],
+            top,
+            OrientationMap<3>{},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-displacement2[0], -lower - displacement2[1]}},
+              {{2.0 * lower - displacement2[0], lower - displacement2[1]}},
+              {{0.0, -top}},
+              {{top, top}}}},
+            lower - displacement2[2],
+            top,
+            OrientationMap<3>{},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-2.0 * lower - displacement3[0], -lower - displacement3[1]}},
+              {{-displacement3[0], lower - displacement3[1]}},
+              {{-top, -top}},
+              {{0.0, top}}}},
+            lower - displacement3[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                 Direction<3>::lower_zeta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-displacement4[0], -lower - displacement4[1]}},
+              {{2.0 * lower - displacement4[0], lower - displacement4[1]}},
+              {{0.0, -top}},
+              {{top, top}}}},
+            lower - displacement4[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+                 Direction<3>::lower_zeta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-2.0 * lower - displacement5[0], -lower - displacement5[1]}},
+              {{-displacement5[0], lower - displacement5[1]}},
+              {{-top, -top}},
+              {{0.0, top}}}},
+            lower - displacement5[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                 Direction<3>::lower_eta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-displacement6[0], -lower - displacement6[1]}},
+              {{2.0 * lower - displacement6[0], lower - displacement6[1]}},
+              {{0.0, -top}},
+              {{top, top}}}},
+            lower - displacement6[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
+                 Direction<3>::lower_eta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-2.0 * lower - displacement7[0], -lower - displacement7[1]}},
+              {{-displacement7[0], lower - displacement7[1]}},
+              {{-top, -top}},
+              {{0.0, top}}}},
+            lower - displacement7[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                 Direction<3>::upper_eta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        FrustumMap{
+            {{{{-displacement8[0], -lower - displacement8[1]}},
+              {{2.0 * lower - displacement8[0], lower - displacement8[1]}},
+              {{0.0, -top}},
+              {{top, top}}}},
+            lower - displacement8[2],
+            top,
+            OrientationMap<3>{std::array<Direction<3>, 3>{
+                {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
+                 Direction<3>::upper_eta()}}},
+            use_equiangular_map,
+            projective_scale_factor},
+        // Frustum on right half in the +x direction
+        FrustumMap{{{{{-lower - displacement9[0], -lower - displacement9[1]}},
+                     {{lower - displacement9[0], lower - displacement9[1]}},
+                     {{-top, -top}},
+                     {{top, top}}}},
+                   2.0 * lower - displacement9[2],
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map,
+                   projective_scale_factor},
+        // Frustum on left half in the -x direction
+        FrustumMap{{{{{-lower - displacement10[0], -lower - displacement10[1]}},
+                     {{lower - displacement10[0], lower - displacement10[1]}},
+                     {{-top, -top}},
+                     {{top, top}}}},
+                   2.0 * lower - displacement10[2],
+                   top,
+                   OrientationMap<3>{std::array<Direction<3>, 3>{
+                       {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
+                        Direction<3>::upper_eta()}}},
+                   use_equiangular_map,
+                   projective_scale_factor});
 
-    const auto maps = frustum_coordinate_maps<Frame::Inertial>(
+    const auto maps = frustum_coordinate_maps(
         2.0 * lower, 2.0 * top, use_equiangular_map, origin_preimage, 0.3);
-    for (size_t i = 0; i < maps.size(); i++) {
-      INFO(i);
-      CHECK(*expected_coord_maps[i] == *maps[i]);
-    }
+    CHECK(maps == expected_coord_maps);
   }
 }
 
@@ -554,9 +546,9 @@ void test_all_frustum_directions() {
   const double length_outer_cube = 1.5;
   const bool use_equiangular_map = true;
   const std::array<double, 3> origin_preimage = {{0.0, 0.0, 0.0}};
-  static_cast<void>(frustum_coordinate_maps<Frame::Inertial>(
-      length_inner_cube, length_outer_cube, use_equiangular_map,
-      origin_preimage));
+  static_cast<void>(
+      frustum_coordinate_maps(length_inner_cube, length_outer_cube,
+                              use_equiangular_map, origin_preimage));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -572,9 +564,9 @@ void test_all_frustum_directions() {
   const double length_outer_cube = 3;
   const bool use_equiangular_map = true;
   const std::array<double, 3> origin_preimage = {{0.6, 0.0, 0.0}};
-  static_cast<void>(frustum_coordinate_maps<Frame::Inertial>(
-      length_inner_cube, length_outer_cube, use_equiangular_map,
-      origin_preimage));
+  static_cast<void>(
+      frustum_coordinate_maps(length_inner_cube, length_outer_cube,
+                              use_equiangular_map, origin_preimage));
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
