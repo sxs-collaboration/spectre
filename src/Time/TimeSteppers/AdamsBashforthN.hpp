@@ -11,7 +11,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

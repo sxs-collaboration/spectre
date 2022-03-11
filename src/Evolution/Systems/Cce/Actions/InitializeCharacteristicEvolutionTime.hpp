@@ -14,6 +14,7 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"

@@ -40,7 +40,7 @@
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/Factory.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
