@@ -97,6 +97,11 @@ class Shape {
       std::string function_of_time_name);
 
   Shape() = default;
+  ~Shape() = default;
+  Shape(Shape&&) = default;
+  Shape& operator=(Shape&&) = default;
+  Shape(const Shape& rhs);
+  Shape& operator=(const Shape& rhs);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(

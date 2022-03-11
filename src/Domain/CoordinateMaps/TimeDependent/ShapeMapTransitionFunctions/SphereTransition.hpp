@@ -45,6 +45,10 @@ class SphereTransition final : public ShapeMapTransitionFunction {
   explicit SphereTransition(CkMigrateMessage* const msg);
   void pup(PUP::er& p) override;
 
+  std::unique_ptr<ShapeMapTransitionFunction> get_clone() const override {
+    return std::make_unique<SphereTransition>(*this);
+  }
+
   bool operator==(const ShapeMapTransitionFunction& other) const override;
   bool operator!=(const ShapeMapTransitionFunction& other) const override;
 

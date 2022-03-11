@@ -264,6 +264,7 @@ void test_map_helpers(const TransitionFunction& transition_func, size_t l_max,
   // Check map against a suite of functions in
   // tests/Unit/Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp
   test_serialization(map);
+  test_copy_semantics(map);
   CHECK_FALSE(map != map);
   test_coordinate_map_argument_types(map, random_point, time,
                                      functions_of_time);
