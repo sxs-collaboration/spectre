@@ -15,6 +15,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AoWeno.hpp
+  BoundaryGhostData.hpp
   Factory.hpp
   FiniteDifference.hpp
   MonotisedCentral.hpp

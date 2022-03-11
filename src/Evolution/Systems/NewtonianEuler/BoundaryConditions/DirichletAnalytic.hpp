@@ -12,26 +12,33 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/ElementMap.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "Evolution/TypeTraits.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-namespace domain::Tags {
-template <size_t Dim, typename Frame>
-struct Coordinates;
-}  // namespace domain::Tags
-/// \endcond
 
 namespace NewtonianEuler::BoundaryConditions {
 /*!
@@ -129,6 +136,84 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
                               get<Tags::Pressure<DataVector>>(boundary_values));
 
     return {};
+  }
+
+  using fd_interior_evolved_variables_tags = tmpl::list<>;
+  using fd_interior_temporary_tags = tmpl::list<
+      evolution::dg::subcell::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>;
+  using fd_interior_primitive_variables_tags = tmpl::list<>;
+  using fd_gridless_tags =
+      tmpl::list<::Tags::Time, domain::Tags::FunctionsOfTime,
+                 domain::Tags::ElementMap<Dim, Frame::Grid>,
+                 domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                             Frame::Inertial>,
+                 fd::Tags::Reconstructor<Dim>, ::Tags::AnalyticSolutionOrData>;
+
+  template <typename AnalyticSolutionOrData>
+  void fd_ghost(
+      const gsl::not_null<Scalar<DataVector>*> mass_density,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
+      const gsl::not_null<Scalar<DataVector>*> pressure,
+      const Direction<Dim>& direction, const Mesh<Dim> subcell_mesh,
+      const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+          subcell_logical_coords,
+      const double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time,
+      const ElementMap<Dim, Frame::Grid>& logical_to_grid_map,
+      const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
+          grid_to_inertial_map,
+      const fd::Reconstructor<Dim>& reconstructor,
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
+    const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
+
+    // slice logical coordinates and shift it to compute inertial coordinates of
+    // ghost points
+    auto shifted_logical_coords =
+        evolution::dg::subcell::slice_tensor_for_subcell(
+            subcell_logical_coords, subcell_mesh.extents(), ghost_zone_size,
+            direction);
+    // Note: assumes isotropic subcell extents
+    ASSERT(
+        subcell_mesh == Mesh<Dim>(subcell_mesh.extents(0),
+                                  subcell_mesh.basis(0),
+                                  subcell_mesh.quadrature(0)),
+        "The subcell/FD mesh must be isotropic for the FD Dirichlet analytic "
+        "boundary condition but got "
+            << subcell_mesh);
+    const double delta_x{subcell_logical_coords.get(0)[1] -
+                         subcell_logical_coords.get(0)[0]};
+    const size_t dim_to_slice{direction.dimension()};
+    shifted_logical_coords.get(dim_to_slice) =
+        shifted_logical_coords.get(dim_to_slice) +
+        direction.sign() * delta_x * ghost_zone_size;
+    const auto shifted_inertial_coords = grid_to_inertial_map(
+        logical_to_grid_map(shifted_logical_coords), time, functions_of_time);
+
+    // Compute FD ghost data (prims) with the analytic data or solution
+    auto boundary_values = [&analytic_solution_or_data,
+                            &shifted_inertial_coords, &time]() {
+      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
+        return analytic_solution_or_data.variables(
+            shifted_inertial_coords, time,
+            tmpl::list<Tags::MassDensity<DataVector>,
+                       Tags::Velocity<DataVector, Dim>,
+                       Tags::Pressure<DataVector>>{});
+      } else {
+        (void)time;
+        return analytic_solution_or_data.variables(
+            shifted_inertial_coords, tmpl::list<Tags::MassDensity<DataVector>,
+                                                Tags::Velocity<DataVector, Dim>,
+                                                Tags::Pressure<DataVector>>{});
+      }
+    }();
+
+    *mass_density = get<Tags::MassDensity<DataVector>>(boundary_values);
+    *velocity = get<Tags::Velocity<DataVector, Dim>>(boundary_values);
+    *pressure = get<Tags::Pressure<DataVector>>(boundary_values);
   }
 };
 }  // namespace NewtonianEuler::BoundaryConditions

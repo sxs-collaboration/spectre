@@ -27,6 +27,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/BoundaryGhostData.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
@@ -99,8 +100,17 @@ struct TimeDerivative {
         db::get<NewtonianEuler::fd::Tags::Reconstructor<Dim>>(*box);
 
     const Element<Dim>& element = db::get<domain::Tags::Element<Dim>>(*box);
-    ASSERT(element.external_boundaries().size() == 0,
-           "Can't have external boundaries right now with subcell. ElementID "
+
+    const bool element_is_not_on_external_boundary =
+        element.external_boundaries().size() == 0;
+    constexpr bool subcell_enabled_at_external_boundary =
+        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
+
+    ASSERT(element_is_not_on_external_boundary or
+               subcell_enabled_at_external_boundary,
+           "Element is on external boundary while subcell is disabled on it. "
+           "ElementID "
                << element.id());
 
     // Now package the data and compute the correction
@@ -109,6 +119,15 @@ struct TimeDerivative {
     using derived_boundary_corrections =
         typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
     std::array<Variables<evolved_vars_tags>, Dim> boundary_corrections{};
+
+    // If the element has external boundaries and subcell is enabled for
+    // boundary elements, compute FD ghost data with a given boundary condition.
+    if constexpr (subcell_enabled_at_external_boundary) {
+      if (element.external_boundaries().size() != 0) {
+        fd::BoundaryGhostData::apply(box, element, recons);
+      }
+    }
+
     tmpl::for_each<derived_boundary_corrections>([&boundary_correction,
                                                   &reconstructed_num_pts,
                                                   &recons, &box, &element,

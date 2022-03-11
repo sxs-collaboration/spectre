@@ -9,12 +9,10 @@
 #include <pup.h>
 #include <string>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -59,12 +57,12 @@ std::optional<std::string> Reflection<Dim>::dg_ghost(
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
         outward_directed_normal_covector,
 
-    const Scalar<DataVector>& interior_mass_desity,
+    const Scalar<DataVector>& interior_mass_density,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& interior_velocity,
     const Scalar<DataVector>& interior_specific_internal_energy,
     const Scalar<DataVector>& interior_pressure) const {
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>>> buffer{
-      get(interior_mass_desity).size()};
+      get(interior_mass_density).size()};
   auto& normal_dot_velocity = get<::Tags::TempScalar<0>>(buffer);
   dot_product(make_not_null(&normal_dot_velocity),
               outward_directed_normal_covector, interior_velocity);
@@ -86,7 +84,7 @@ std::optional<std::string> Reflection<Dim>::dg_ghost(
   *specific_internal_energy = interior_specific_internal_energy;
 
   ConservativeFromPrimitive<Dim>::apply(
-      mass_density, momentum_density, energy_density, interior_mass_desity,
+      mass_density, momentum_density, energy_density, interior_mass_density,
       *velocity, interior_specific_internal_energy);
   ComputeFluxes<Dim>::apply(flux_mass_density, flux_momentum_density,
                             flux_energy_density, *momentum_density,

@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -17,12 +18,15 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -30,6 +34,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
@@ -45,6 +50,9 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 
 namespace NewtonianEuler {
 namespace {
@@ -135,6 +143,9 @@ struct SmoothFlowMetaVars {
     return initial_data{make_array<Dim>(0.0), make_array<Dim>(-0.2), 0.5, 1.5,
                         0.01};
   }
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
 };
 
 struct LaneEmdenStarMetaVars {
@@ -145,6 +156,9 @@ struct LaneEmdenStarMetaVars {
   using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
   static constexpr bool has_source_terms = true;
   static auto solution() { return initial_data{0.7, 250.0}; }
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
 };
 
 template <typename Metavariables>
@@ -215,6 +229,19 @@ std::array<double, 3> test(const size_t num_dg_pts) {
         neighbor_data_in_direction;
   }
 
+  // Below are also dummy variables required for compilation due to boundary FD
+  // ghost data. Since the element used for test here has neighbors at all
+  // faces, BoundaryGhostData::apply() is not actually called so it is okay to
+  // leave these variables somewhat poorly initialized.
+  Domain<dim> dummy_domain{};
+  std::optional<tnsr::I<DataVector, dim>> dummy_volume_mesh_velocity{};
+  typename evolution::dg::Tags::NormalCovectorAndMagnitude<dim>::type
+      dummy_normal_covector_and_magnitude{};
+  const double dummy_time{0.0};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      dummy_functions_of_time{};
+
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<metavariables>,
@@ -228,7 +255,15 @@ std::array<double, 3> test(const size_t num_dg_pts) {
           typename system::primitive_variables_tag, dt_variables_tag,
           variables_tag,
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<dim>,
-          evolution::dg::Tags::MortarData<dim>>,
+          evolution::dg::Tags::MortarData<dim>,
+          // below: dummy
+          domain::Tags::ElementMap<dim, Frame::Grid>,
+          domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
+                                                      Frame::Inertial>,
+          domain::Tags::Domain<dim>,
+          domain::Tags::MeshVelocity<dim, Frame::Inertial>,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<dim>, ::Tags::Time,
+          domain::Tags::FunctionsOfTimeInitialize>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<dim>>>(
       metavariables{}, typename metavariables::source_term_tag::type{}, soln,
@@ -242,7 +277,17 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
       typename variables_tag::type{}, neighbor_data,
-      typename evolution::dg::Tags::MortarData<dim>::type{});
+      typename evolution::dg::Tags::MortarData<dim>::type{},
+      // below: dummy
+      ElementMap<dim, Frame::Grid>{
+          ElementId<dim>{0},
+          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+              domain::CoordinateMaps::Identity<dim>{})},
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<dim>{}),
+      std::move(dummy_domain), dummy_volume_mesh_velocity,
+      dummy_normal_covector_and_magnitude, dummy_time,
+      clone_unique_ptrs(dummy_functions_of_time));
   db::mutate_apply<ConservativeFromPrimitive<dim>>(make_not_null(&box));
 
   InverseJacobian<DataVector, dim, Frame::ElementLogical, Frame::Grid>

@@ -11,8 +11,11 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -84,5 +87,38 @@ class Outflow final : public BoundaryCondition<Dim> {
       const Scalar<DataVector>& specific_internal_energy,
       const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
           equation_of_state);
+
+  using fd_interior_evolved_variables_tags = tmpl::list<>;
+  using fd_interior_temporary_tags =
+      tmpl::list<evolution::dg::subcell::Tags::Mesh<Dim>>;
+  using fd_interior_primitive_variables_tags = tmpl::list<
+      NewtonianEuler::Tags::MassDensity<DataVector>,
+      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Inertial>,
+      NewtonianEuler::Tags::Pressure<DataVector>,
+      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>;
+  using fd_gridless_tags = tmpl::list<hydro::Tags::EquationOfStateBase,
+                                      fd::Tags::Reconstructor<Dim>>;
+
+  template <size_t ThermodynamicDim>
+  static void fd_outflow(
+      const gsl::not_null<Scalar<DataVector>*> mass_density,
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> velocity,
+      const gsl::not_null<Scalar<DataVector>*> pressure,
+      const Direction<Dim>& direction,
+
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          face_mesh_velocity,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          outward_directed_normal_covector,
+
+      const Mesh<Dim>& subcell_mesh,
+      const Scalar<DataVector>& interior_mass_density,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& interior_velocity,
+      const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_specific_internal_energy,
+
+      const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
+          equation_of_state,
+      const fd::Reconstructor<Dim>& reconstructor);
 };
 }  // namespace NewtonianEuler::BoundaryConditions

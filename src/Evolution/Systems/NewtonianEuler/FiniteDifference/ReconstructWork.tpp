@@ -89,20 +89,30 @@ void reconstruct_prims_work(
         }
 
         DirectionMap<Dim, gsl::span<const double>> ghost_cell_vars{};
+
         for (const auto& direction : Direction<Dim>::all_directions()) {
-          const auto& neighbors_in_direction =
-              element.neighbors().at(direction);
-          ASSERT(neighbors_in_direction.size() == 1,
-                 "Currently only support one neighbor in each direction, but "
-                 "got "
-                     << neighbors_in_direction.size() << " in direction "
-                     << direction);
-          ghost_cell_vars[direction] = gsl::make_span(
-              &neighbor_data.at(std::pair{
-                  direction,
-                  *neighbors_in_direction
-                       .begin()})[vars_in_neighbor_count * neighbor_num_pts],
-              number_of_components * neighbor_num_pts);
+          if (element.neighbors().contains(direction)) {
+            const auto& neighbors_in_direction =
+                element.neighbors().at(direction);
+            ASSERT(neighbors_in_direction.size() == 1,
+                   "Currently only support one neighbor in each direction, but "
+                   "got "
+                       << neighbors_in_direction.size() << " in direction "
+                       << direction);
+            ghost_cell_vars[direction] = gsl::make_span(
+                &neighbor_data.at(std::pair{
+                    direction,
+                    *neighbors_in_direction
+                         .begin()})[vars_in_neighbor_count * neighbor_num_pts],
+                number_of_components * neighbor_num_pts);
+          } else {
+            // retrieve boundary ghost data from neighbor_data
+            ghost_cell_vars[direction] = gsl::make_span(
+                &neighbor_data.at(std::pair{
+                    direction, ElementId<Dim>::external_boundary_id()})
+                     [vars_in_neighbor_count * neighbor_num_pts],
+                number_of_components * neighbor_num_pts);
+          }
         }
 
         reconstruct(make_not_null(&upper_face_vars),
