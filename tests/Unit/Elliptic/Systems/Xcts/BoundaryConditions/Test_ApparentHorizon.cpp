@@ -411,7 +411,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       {},
       false};
   const domain::CoordinateMaps::KerrHorizonConforming horizon_map{
-      dimensionless_spin};
+      mass, dimensionless_spin};
   const auto coord_map =
       domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           wedge_map, horizon_map);

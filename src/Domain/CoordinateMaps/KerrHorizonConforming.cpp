@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -17,8 +18,16 @@
 
 namespace domain::CoordinateMaps {
 
-KerrHorizonConforming::KerrHorizonConforming(std::array<double, 3> spin)
-    : spin_(spin), spin_mag_sq_(dot(spin, spin)) {}
+KerrHorizonConforming::KerrHorizonConforming(
+    const double mass, const std::array<double, 3> dimensionless_spin)
+    : spin_(mass * dimensionless_spin),
+      spin_mag_sq_(square(mass) * dot(dimensionless_spin, dimensionless_spin)) {
+  ASSERT(magnitude(dimensionless_spin) < 1.,
+         "Dimensionless spin magnitude must be < 1. Given dimensionless spin: "
+             << dimensionless_spin << " with magnitude "
+             << magnitude(dimensionless_spin));
+  ASSERT(mass > 0., "Mass must be positive. Given mass: " << mass);
+}
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 3> KerrHorizonConforming::operator()(
