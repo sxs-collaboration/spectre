@@ -26,8 +26,8 @@ SphereTransition::SphereTransition(const double r_min, const double r_max)
         "r_max =  "
         << r_max << ", and r_min = " << r_min);
   }
-  a_ = -1. / (r_max - r_min);
-  b_ = r_max / (r_max - r_min);
+  a_ = -r_min / (r_max - r_min);
+  b_ = r_min * r_max / (r_max - r_min);
 }
 
 double SphereTransition::operator()(

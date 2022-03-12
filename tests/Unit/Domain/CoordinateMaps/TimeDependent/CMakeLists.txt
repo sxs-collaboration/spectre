@@ -4,6 +4,7 @@
 set(LIBRARY "Test_CoordinateMapsTimeDependent")
 
 set(LIBRARY_SOURCES
+  ShapeMapTransitionFunctions/Test_SphereTransition.cpp
   Test_CubicScale.cpp
   Test_ProductMaps.cpp
   Test_Rotation.cpp
@@ -17,5 +18,18 @@ add_test_library(
   ${LIBRARY}
   "Domain/CoordinateMaps/TimeDependent"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;FunctionsOfTime"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  Domain
+  DataStructuresHelpers
+  FunctionsOfTime
+  SphericalHarmonics
+  Spectral
+  Utilities
+)
