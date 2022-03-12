@@ -166,7 +166,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Shape::jacobian(
   // cartesian gradient.
   SpherepackIterator extended_iter(l_max_ + 1, m_max_ + 1);
   SpherepackIterator iter(l_max_, m_max_);
-  for (size_t l = 2; l <= l_max_; ++l) {
+  for (size_t l = 0; l <= l_max_; ++l) {
     const int m_max = std::min(l, m_max_);
     for (int m = -m_max; m <= m_max; ++m) {
       iter.set(l, m);
@@ -300,18 +300,6 @@ void Shape::check_coefficients([[maybe_unused]] const DataVector& coefs) const {
          "Spectral coefficients are expected to be in YlmSpherepack format "
          "with size 2 * (l_max + 1) * (m_max + 1) = "
              << ylm_.spectral_size() << ", but have size " << coefs.size());
-
-  SpherepackIterator iter(l_max_, m_max_);
-  const std::vector<std::pair<size_t, int>> mono_and_dipole{
-      {0, 0}, {1, 0}, {1, -1}, {1, 1}};
-  for (const auto& [l, m] : mono_and_dipole) {
-    iter.set(l, m);
-    ASSERT(
-        coefs[iter()] == 0.,
-        "The shape map expects the values of the mono- and dipole (l = 0, 1) "
-        "to be zero, but the coefficients for l = "
-            << l << ", m = " << m << " have value " << coefs[iter()]);
-  }
 #endif  // SPECTRE_DEBUG
 }
 
