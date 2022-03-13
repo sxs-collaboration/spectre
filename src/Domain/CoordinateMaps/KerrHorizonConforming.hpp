@@ -100,7 +100,7 @@ class KerrHorizonConforming {
       const std::array<T, 3>& source_coords) const;
 
   bool is_identity() const {
-    return spin_ == std::array<double, 3>{0., 0., 0.};
+    return spin_parameter_ == std::array<double, 3>{0., 0., 0.};
   }
 
   friend bool operator==(const KerrHorizonConforming& lhs,
@@ -114,7 +114,7 @@ class KerrHorizonConforming {
       const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
       const std::array<T, 3>& source_coords) const;
 
-  std::array<double, 3> spin_;
+  std::array<double, 3> spin_parameter_;
   double spin_mag_sq_;
 };
 bool operator!=(const KerrHorizonConforming& lhs,
