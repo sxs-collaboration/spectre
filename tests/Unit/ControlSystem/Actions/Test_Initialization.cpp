@@ -28,6 +28,7 @@ struct MockControlSystem
   static std::string name() { return pretty_type::short_name<Label>(); }
   static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
+  using control_error = control_system::TestHelpers::ControlError;
   static constexpr size_t deriv_order = 2;
   using simple_tags = tmpl::list<>;
 };
@@ -50,6 +51,7 @@ struct MockControlComponent {
                  control_system::Tags::TimescaleTuner,
                  control_system::Tags::ControlSystemName,
                  control_system::Tags::WriteDataToDisk,
+                 control_system::Tags::ControlError<mock_control_sys>,
                  control_system::Tags::Controller<2>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -79,14 +81,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   std::string controlsys_name{"LabelA"};
   std::string controlsys_name_empty{};
   bool write_data = false;
+  const control_system::TestHelpers::ControlError control_error{};
 
   tuples::tagged_tuple_from_typelist<tags> init_tuple{
       control_system::OptionHolder<mock_control_sys>{averager, controller,
-                                                     tuner},
+                                                     tuner, control_error},
       averager_empty,
       tuner_empty,
       controlsys_name_empty,
       write_data,
+      control_error,
       controller_empty};
 
   MockRuntimeSystem runner{{}};
@@ -118,6 +122,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
       ActionTesting::get_databox_tag<component,
                                      control_system::Tags::WriteDataToDisk>(
           runner, 0);
+  // We don't check the control error because the example one is empty and
+  // doesn't have a comparison operator. Once a control error is added that
+  // contains member data (and thus, options), then it can be tested
 
   // Check that things haven't been initialized
   CHECK(box_averager != averager);

@@ -32,6 +32,7 @@ struct FakeControlSystem
   using measurement = control_system::TestHelpers::Measurement<
       control_system::TestHelpers::TestStructs_detail::LabelA>;
   using simple_tags = tmpl::list<>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     using argument_tags = tmpl::list<>;
   };
@@ -91,10 +92,11 @@ void test_measurement_tag() {
     const Averager<2> averager(averaging_fraction, true);
     const double update_fraction = 0.3;
     const Controller<2> controller(update_fraction);
+    const control_system::TestHelpers::ControlError control_error{};
 
-    OptionHolder<1> option_holder1(averager, controller, tuner1);
-    OptionHolder<2> option_holder2(averager, controller, tuner1);
-    OptionHolder<3> option_holder3(averager, controller, tuner2);
+    OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
+    OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
+    OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
 
     const measurement_tag::type timescales =
         measurement_tag::create_from_options<Metavariables>(
@@ -159,10 +161,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.MeasurementTimescales.Backwards",
   const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
   const Averager<2> averager(0.25, true);
   const Controller<2> controller(0.3);
+  const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner1);
-  OptionHolder<2> option_holder2(averager, controller, tuner1);
-  OptionHolder<3> option_holder3(averager, controller, tuner2);
+  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
+  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
+  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   measurement_tag::create_from_options<Metavariables>(

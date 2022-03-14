@@ -16,3 +16,6 @@ static_assert(
 static_assert(
     tt::assert_conforms_to<control_system::TestHelpers::ExampleControlSystem,
                            control_system::protocols::ControlSystem>);
+static_assert(
+    tt::assert_conforms_to<control_system::TestHelpers::ExampleControlError,
+                           control_system::protocols::ControlError>);

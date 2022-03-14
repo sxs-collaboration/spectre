@@ -29,6 +29,7 @@
 #include "Framework/MockDistributedObject.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
+#include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -89,6 +90,7 @@ struct SystemA : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string component_name(const size_t i) { return get_output(i); }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
@@ -100,6 +102,7 @@ struct SystemB : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string component_name(const size_t /*i*/) { return ""; }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
@@ -111,6 +114,7 @@ struct SystemC : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string component_name(const size_t /*i*/) { return ""; }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemC>>;
+  using control_error = control_system::TestHelpers::ControlError;
   struct process_measurement {
     template <typename Submeasurement>
     using argument_tags = tmpl::list<>;
