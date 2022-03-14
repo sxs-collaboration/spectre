@@ -63,7 +63,7 @@ SpatialDiscretization:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
+  InitialTimeStep: 0.5
   TimeStepper:
     AdamsBashforthN:
       Order: 1
@@ -71,7 +71,7 @@ Evolution:
 EventsAndTriggers:
   ? TimeCompares:
       Comparison: GreaterThanOrEqualTo
-      Value: 0.08
+      Value: 1.0
   : - Completion
 
 Observers:
