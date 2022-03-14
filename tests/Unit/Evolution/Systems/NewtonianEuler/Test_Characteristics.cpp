@@ -26,6 +26,8 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"

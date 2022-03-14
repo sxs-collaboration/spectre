@@ -16,6 +16,7 @@ spectre_target_headers(
   HEADERS
   DarkEnergyFluid.hpp
   EquationOfState.hpp
+  Factory.hpp
   IdealFluid.hpp
   PolytropicFluid.hpp
   Spectral.hpp
