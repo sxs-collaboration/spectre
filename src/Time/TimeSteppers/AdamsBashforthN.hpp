@@ -36,9 +36,7 @@
 
 /// \cond
 namespace TimeSteppers {
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-class BoundaryHistory;  // IWYU pragma: keep
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class History;
 }  // namespace TimeSteppers
 /// \endcond
@@ -113,27 +111,18 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   AdamsBashforthN& operator=(AdamsBashforthN&&) = default;
   ~AdamsBashforthN() override = default;
 
-  template <typename Vars, typename DerivVars>
-  void update_u(gsl::not_null<Vars*> u,
-                gsl::not_null<History<Vars, DerivVars>*> history,
+  template <typename Vars>
+  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
                 const TimeDelta& time_step) const;
 
-  template <typename Vars, typename ErrVars, typename DerivVars>
+  template <typename Vars, typename ErrVars>
   bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars, DerivVars>*> history,
+                gsl::not_null<History<Vars>*> history,
                 const TimeDelta& time_step) const;
 
-  template <typename Vars, typename DerivVars>
-  bool dense_update_u(gsl::not_null<Vars*> u,
-                      const History<Vars, DerivVars>& history,
+  template <typename Vars>
+  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
                       double time) const;
-
-  // This is defined as a separate type alias to keep the doxygen page
-  // width somewhat under control.
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  using BoundaryHistoryType =
-      BoundaryHistory<LocalVars, RemoteVars,
-                      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
 
   /*!
    * An explanation of the computation being performed by this
@@ -246,19 +235,17 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
    * union times from step \f$n\f$ to step \f$n+1\f$.
    */
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  compute_boundary_delta(
-      const Coupling& coupling,
+  void add_boundary_delta(
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
-      const TimeDelta& time_step) const;
+      const TimeDelta& time_stepm, const Coupling& coupling) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  boundary_dense_output(
-      const Coupling& coupling,
+  void boundary_dense_output(
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      double time) const;
+      double time, const Coupling& coupling) const;
 
   size_t order() const override;
 
@@ -271,10 +258,9 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
 
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const;
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const;
 
   WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
 
@@ -294,18 +280,16 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   // constant-time-step case, while the latter are necessary for dense
   // output.
 
-  template <typename UpdateVars, typename Vars, typename DerivVars,
-            typename Delta>
-  void update_u_impl(gsl::not_null<UpdateVars*> u,
-                     const History<Vars, DerivVars>& history,
+  template <typename UpdateVars, typename Vars, typename Delta>
+  void update_u_impl(gsl::not_null<UpdateVars*> u, const History<Vars>& history,
                      const Delta& time_step, size_t order) const;
 
   template <typename LocalVars, typename RemoteVars, typename Coupling,
             typename TimeType>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)> boundary_impl(
-      const Coupling& coupling,
+  void boundary_impl(
+      gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*> result,
       const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      const TimeType& end_time) const;
+      const TimeType& end_time, const Coupling& coupling) const;
 
   /// Get coefficients for a time step.  Arguments are an iterator
   /// pair to past times, oldest to newest, and the time step to take.
@@ -366,11 +350,10 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
 bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs);
 
-template <typename Vars, typename DerivVars>
-void AdamsBashforthN::update_u(
-    const gsl::not_null<Vars*> u,
-    const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const {
+template <typename Vars>
+void AdamsBashforthN::update_u(const gsl::not_null<Vars*> u,
+                               const gsl::not_null<History<Vars>*> history,
+                               const TimeDelta& time_step) const {
   ASSERT(history->size() >= history->integration_order(),
          "Insufficient data to take an order-" << history->integration_order()
          << " step.  Have " << history->size() << " times, need "
@@ -382,11 +365,11 @@ void AdamsBashforthN::update_u(
   update_u_impl(u, *history, time_step, history->integration_order());
 }
 
-template <typename Vars, typename ErrVars, typename DerivVars>
-bool AdamsBashforthN::update_u(
-    const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-    const gsl::not_null<History<Vars, DerivVars>*> history,
-    const TimeDelta& time_step) const {
+template <typename Vars, typename ErrVars>
+bool AdamsBashforthN::update_u(const gsl::not_null<Vars*> u,
+                               const gsl::not_null<ErrVars*> u_error,
+                               const gsl::not_null<History<Vars>*> history,
+                               const TimeDelta& time_step) const {
   ASSERT(history->size() >= history->integration_order(),
          "Insufficient data to take an order-" << history->integration_order()
          << " step.  Have " << history->size() << " times, need "
@@ -403,19 +386,18 @@ bool AdamsBashforthN::update_u(
   return true;
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 bool AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
-                                     const History<Vars, DerivVars>& history,
+                                     const History<Vars>& history,
                                      const double time) const {
   const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_impl(u, history, time_step, history.integration_order());
   return true;
 }
 
-template <typename UpdateVars, typename Vars, typename DerivVars,
-          typename Delta>
+template <typename UpdateVars, typename Vars, typename Delta>
 void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
-                                    const History<Vars, DerivVars>& history,
+                                    const History<Vars>& history,
                                     const Delta& time_step,
                                     const size_t order) const {
   ASSERT(
@@ -426,7 +408,7 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 
   const auto history_start =
       history.end() -
-      static_cast<typename History<Vars, DerivVars>::difference_type>(order);
+      static_cast<typename History<Vars>::difference_type>(order);
   const auto coefficients =
       get_coefficients(history_start, history.end(), time_step);
 
@@ -440,12 +422,12 @@ void AdamsBashforthN::update_u_impl(const gsl::not_null<UpdateVars*> u,
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::compute_boundary_delta(
-    const Coupling& coupling,
+void AdamsBashforthN::add_boundary_delta(
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
+        result,
     const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
         history,
-    const TimeDelta& time_step) const {
+    const TimeDelta& time_step, const Coupling& coupling) const {
   const auto signed_order =
       static_cast<typename decltype(history->local_end())::difference_type>(
           history->integration_order());
@@ -477,26 +459,26 @@ AdamsBashforthN::compute_boundary_delta(
     history->remote_mark_unneeded(remote_step_for_step_start - signed_order);
   }
 
-  return boundary_impl(coupling, *history,
-                       *(history->local_end() - 1) + time_step);
+  boundary_impl(result, *history, *(history->local_end() - 1) + time_step,
+                coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::boundary_dense_output(
-    const Coupling& coupling,
+void AdamsBashforthN::boundary_dense_output(
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
+        result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const double time) const {
-  return boundary_impl(coupling, history, ApproximateTime{time});
+    const double time, const Coupling& coupling) const {
+  return boundary_impl(result, history, ApproximateTime{time}, coupling);
 }
 
 template <typename LocalVars, typename RemoteVars, typename Coupling,
           typename TimeType>
-std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-AdamsBashforthN::boundary_impl(
-    const Coupling& coupling,
+void AdamsBashforthN::boundary_impl(
+    const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
+        result,
     const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-    const TimeType& end_time) const {
+    const TimeType& end_time, const Coupling& coupling) const {
   // Might be different from order_ during self-start.
   const auto current_order = history.integration_order();
 
@@ -515,17 +497,6 @@ AdamsBashforthN::boundary_impl(
   // Start and end of the step we are trying to take
   const Time start_time = *(history.local_end() - 1);
   const auto time_step = end_time - start_time;
-
-  // Result variable.  We evaluate the coupling only for the
-  // structure.  This evaluation may be expensive, but by choosing the
-  // most recent times on both sides we should guarantee that it is a
-  // result we need later, so this will serve to get it into the
-  // coupling cache so we don't have to compute it when we actually use it.
-  auto accumulated_change =
-      make_with_value<std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>(
-          history.coupling(coupling, history.local_end() - 1,
-                           history.remote_end() - 1),
-          0.);
 
   // We define the local_begin and remote_begin variables as the start
   // of the part of the history relevant to this calculation.
@@ -546,12 +517,10 @@ AdamsBashforthN::boundary_impl(
     for (auto coefficients_it = coefficients.rbegin();
          coefficients_it != coefficients.rend();
          ++coefficients_it, ++local_it, ++remote_it) {
-      accumulated_change +=
-          *coefficients_it * history.coupling(coupling, local_it, remote_it);
+      *result += time_step.value() * *coefficients_it *
+                 history.coupling(coupling, local_it, remote_it);
     }
-    accumulated_change *= time_step.value();
-
-    return accumulated_change;
+    return;
   }
 
   ASSERT(current_order == order_,
@@ -737,20 +706,18 @@ AdamsBashforthN::boundary_impl(
       if (deriv_coef != 0.) {
         // Skip the (potentially expensive) coupling calculation if
         // the coefficient is zero.
-        accumulated_change +=
+        *result +=
             deriv_coef * history.coupling(coupling, local_evaluation_step,
                                           remote_evaluation_step);
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step
-
-  return accumulated_change;
 }
 
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 bool AdamsBashforthN::can_change_step_size(
     const TimeStepId& time_id,
-    const TimeSteppers::History<Vars, DerivVars>& history) const {
+    const TimeSteppers::History<Vars>& history) const {
   // We need to forbid local time-stepping before initialization is
   // complete.  The self-start procedure itself should never consider
   // changing the step size, but we need to wait during the main

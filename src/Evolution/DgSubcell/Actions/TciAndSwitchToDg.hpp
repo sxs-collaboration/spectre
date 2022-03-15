@@ -248,10 +248,7 @@ struct TciAndSwitchToDg {
 
             // Reconstruct the DG solution for each time in the time stepper
             // history
-            using dt_variables_tag =
-                db::add_tag_prefix<::Tags::dt, variables_tag>;
-            TimeSteppers::History<typename variables_tag::type,
-                                  typename dt_variables_tag::type>
+            TimeSteppers::History<typename variables_tag::type>
                 dg_history{active_history_ptr->integration_order()};
             const auto end_it = active_history_ptr->end();
             for (auto it = active_history_ptr->begin(); it != end_it; ++it) {

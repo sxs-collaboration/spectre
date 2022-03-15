@@ -137,7 +137,7 @@ class GhLocalTimeStepping : public GhInterfaceManager {
       pre_history_;
   std::deque<TimeStepId> requests_;
 
-  TimeSteppers::History<gh_variables, dt_gh_variables> boundary_history_;
+  TimeSteppers::History<gh_variables> boundary_history_;
   TimeStepId latest_next_;
   TimeSteppers::AdamsBashforthN time_stepper_;
 };

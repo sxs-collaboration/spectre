@@ -8,6 +8,7 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/FakeVirtual.hpp"
@@ -20,7 +21,7 @@ namespace TimeSteppers {
 class AdamsBashforthN;  // IWYU pragma: keep
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 class BoundaryHistory;
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class History;
 }  // namespace TimeSteppers
 /// \endcond
@@ -62,11 +63,10 @@ class TimeStepper : public PUP::able {
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
   /// Add the change for the current substep to u.
-  template <typename Vars, typename DerivVars>
-  void update_u(
-      const gsl::not_null<Vars*> u,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars>
+  void update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, history, time_step);
   }
@@ -79,11 +79,11 @@ class TimeStepper : public PUP::able {
   /// when a sufficient number of steps are available in the `history` to
   /// compare two orders of step. Whenever the error measure is unavailable,
   /// `u_error` is unchanged and the function return is `false`.
-  template <typename Vars, typename ErrVars, typename DerivVars>
-  bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars, typename ErrVars>
+  bool update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<ErrVars*> u_error,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
         this, u, u_error, history, time_step);
   }
@@ -93,9 +93,9 @@ class TimeStepper : public PUP::able {
   /// the step containing the time.  The function returns true on
   /// success, otherwise the call should be retried after the next
   /// substep.
-  template <typename Vars, typename DerivVars>
+  template <typename Vars>
   bool dense_update_u(const gsl::not_null<Vars*> u,
-                      const TimeSteppers::History<Vars, DerivVars>& history,
+                      const TimeSteppers::History<Vars>& history,
                       const double time) const {
     return TimeStepper_detail::fake_virtual_dense_update_u<creatable_classes>(
         this, u, history, time);
@@ -138,10 +138,9 @@ class TimeStepper : public PUP::able {
 
   /// Whether a change in the step size is allowed before taking
   /// a step.
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const {
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const {
     return TimeStepper_detail::fake_virtual_can_change_step_size<
         creatable_classes>(this, time_id, history);
   }
@@ -153,7 +152,7 @@ class TimeStepper : public PUP::able {
 // class if LtsTimeStepper is included first.
 namespace LtsTimeStepper_detail {
 DEFINE_FAKE_VIRTUAL(boundary_dense_output)
-DEFINE_FAKE_VIRTUAL(compute_boundary_delta)
+DEFINE_FAKE_VIRTUAL(add_boundary_delta)
 }  // namespace LtsTimeStepper_detail
 
 /// \ingroup TimeSteppersGroup
@@ -164,12 +163,26 @@ class LtsTimeStepper : public TimeStepper::Inherit {
  public:
   using Inherit =
       LtsTimeStepper_detail::FakeVirtualInherit_boundary_dense_output<
-          LtsTimeStepper_detail::FakeVirtualInherit_compute_boundary_delta<
+          LtsTimeStepper_detail::FakeVirtualInherit_add_boundary_delta<
               LtsTimeStepper>>;
   // When you add a class here, remember to add it to TimeStepper as well.
   using creatable_classes = tmpl::list<TimeSteppers::AdamsBashforthN>;
 
   WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
+
+  // These two are defined as separate type aliases to keep the
+  // doxygen page width somewhat under control.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  using BoundaryHistoryType = TimeSteppers::BoundaryHistory<
+      LocalVars, RemoteVars,
+      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
+
+  /// Return type of boundary-related functions.  The coupling returns
+  /// the derivative of the variables, but this is multiplied by the
+  /// time step so the return type should not have `dt` prefixes.
+  template <typename LocalVars, typename RemoteVars, typename Coupling>
+  using BoundaryReturn = db::unprefix_variables<
+      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
 
   /// \brief Compute the change in a boundary quantity due to the
   /// coupling on the interface.
@@ -179,29 +192,29 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   /// quantity.  These values may be used to form a linear combination
   /// internally, so the result should have appropriate mathematical
   /// operators defined to allow that.
+  ///
+  /// \note
+  /// Unlike the `update_u` methods, which overwrite the `result`
+  /// argument, this function adds the result to the existing value.
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  compute_boundary_delta(
-      const Coupling& coupling,
-      const gsl::not_null<TimeSteppers::BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>*>
+  void add_boundary_delta(
+      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
+          result,
+      const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
           history,
-      const TimeDelta& time_step) const {
-    return LtsTimeStepper_detail::fake_virtual_compute_boundary_delta<
-        creatable_classes>(this, coupling, history, time_step);
+      const TimeDelta& time_step, const Coupling& coupling) const {
+    return LtsTimeStepper_detail::fake_virtual_add_boundary_delta<
+        creatable_classes>(this, result, history, time_step, coupling);
   }
 
   template <typename LocalVars, typename RemoteVars, typename Coupling>
-  std::result_of_t<const Coupling&(LocalVars, RemoteVars)>
-  boundary_dense_output(
-      const Coupling& coupling,
-      const TimeSteppers::BoundaryHistory<
-          LocalVars, RemoteVars,
-          std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>& history,
-      const double time) const {
+  void boundary_dense_output(
+      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
+          result,
+      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
+      const double time, const Coupling& coupling) const {
     return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
-        creatable_classes>(this, coupling, history, time);
+        creatable_classes>(this, result, history, time, coupling);
   }
 
   /// Substep LTS integrators are not supported, so this is always 1.
@@ -220,26 +233,24 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   // methods.  Here the base class method is actually what we want
   // because we are not a most-derived class, so we forward to the
   // TimeStepper version.
-  template <typename Vars, typename DerivVars>
-  void update_u(
-      const gsl::not_null<Vars*> u,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars>
+  void update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, history, time_step);
   }
 
-  template <typename Vars, typename ErrVars, typename DerivVars>
-  bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-      const gsl::not_null<TimeSteppers::History<Vars, DerivVars>*> history,
-      const TimeDelta& time_step) const {
+  template <typename Vars, typename ErrVars>
+  bool update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<ErrVars*> u_error,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     return TimeStepper::update_u(u, u_error, history, time_step);
   }
 
-  template <typename Vars, typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars, DerivVars>& history) const {
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const {
     return TimeStepper::can_change_step_size(time_id, history);
   }
   /// \endcond

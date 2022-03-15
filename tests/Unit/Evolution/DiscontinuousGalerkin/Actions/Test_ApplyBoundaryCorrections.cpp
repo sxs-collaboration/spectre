@@ -894,13 +894,18 @@ void test_impl(const Spectral::Quadrature quadrature,
   if (UseLocalTimeStepping) {
     for (auto& mortar_id_and_data : mortar_data_history) {
       const auto& mortar_id = mortar_id_and_data.first;
+      const auto& direction = mortar_id.first;
       auto& mortar_data_hist = mortar_id_and_data.second;
       mortar_id_ptr = &mortar_id;
-      auto lifted_volume_data = time_stepper.compute_boundary_delta(
-          compute_correction_coupling, make_not_null(&mortar_data_hist),
-          time_step);
+      Variables<variables_tags> lifted_volume_data{
+          quadrature == Spectral::Quadrature::GaussLobatto
+              ? mesh.slice_away(direction.dimension()).number_of_grid_points()
+              : mesh.number_of_grid_points(),
+          0.0};
+      time_stepper.add_boundary_delta(&lifted_volume_data,
+                                      make_not_null(&mortar_data_hist),
+                                      time_step, compute_correction_coupling);
       if (quadrature == Spectral::Quadrature::GaussLobatto) {
-        const auto& direction = mortar_id.first;
         // Add the flux contribution to the volume data
         add_slice_to_data(make_not_null(&expected_evolved_variables),
                           lifted_volume_data, mesh.extents(),

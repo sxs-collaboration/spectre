@@ -44,8 +44,7 @@ void integrate_error_test(const TimeStepper& stepper, size_t order,
 template <typename F1, typename F2, typename EvolvedType>
 void initialize_history(
     Time time,
-    const gsl::not_null<TimeSteppers::History<EvolvedType, EvolvedType>*>
-        history,
+    const gsl::not_null<TimeSteppers::History<EvolvedType>*> history,
     F1&& analytic, F2&& rhs, TimeDelta step_size,
     const size_t number_of_past_steps) {
   int64_t slab_number = -1;

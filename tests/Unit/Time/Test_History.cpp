@@ -85,7 +85,7 @@ void check_iterator(Iterator it) {
   check_cmp(it, it + 1);
 }
 
-using HistoryType = TimeSteppers::History<double, std::string>;
+using HistoryType = TimeSteppers::History<double>;
 
 void check_history_state(const HistoryType& hist) {
   CHECK(hist.size() == 4);
@@ -97,7 +97,7 @@ void check_history_state(const HistoryType& hist) {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.derivative() == get_output(entry_num));
+      CHECK(it.derivative() == entry_num + 0.5);
     }
     CHECK(it == hist.end());
   }
@@ -125,11 +125,11 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(history.begin() == history.cbegin());
   CHECK(history.end() == history.cend());
 
-  history.insert(make_time_id(0.), get_output(0));
-  history.insert_initial(make_time_id(-1.), get_output(-1));
-  history.insert(make_time_id(1.), get_output(1));
-  history.insert_initial(make_time_id(-2.), get_output(-2));
-  history.insert_initial(make_time_id(-3.), get_output(-3));
+  history.insert(make_time_id(0.), 0.5);
+  history.insert_initial(make_time_id(-1.), -0.5);
+  history.insert(make_time_id(1.), 1.5);
+  history.insert_initial(make_time_id(-2.), -1.5);
+  history.insert_initial(make_time_id(-3.), -2.5);
 
   history.mark_unneeded(history.begin());
   CHECK(history.size() == 5);
@@ -138,7 +138,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(history.size() == 3);
   CHECK(history.capacity() == 5);
 
-  history.insert(make_time_id(2.), get_output(2));
+  history.insert(make_time_id(2.), 2.5);
   CHECK(history.size() == 4);
   CHECK(history.capacity() == 5);
 
@@ -162,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
       CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
-      CHECK(it.derivative() == get_output(entry_num));
+      CHECK(it.derivative() == entry_num + 0.5);
     }
     CHECK(it == history.end());
   }

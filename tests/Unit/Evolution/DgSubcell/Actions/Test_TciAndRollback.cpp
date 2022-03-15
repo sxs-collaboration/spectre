@@ -235,9 +235,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
       inactive_evolved_vars{subcell_mesh.number_of_grid_points(), 1.0};
   constexpr size_t history_size = 5;
-  TimeSteppers::History<
-      Variables<evolved_vars_tags>,
-      Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>>>
+  TimeSteppers::History<Variables<evolved_vars_tags>>
       time_stepper_history{history_size};
   for (size_t i = 0; i < history_size; ++i) {
     Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
@@ -316,9 +314,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     CHECK(time_stepper_history_from_box.size() == history_size - 1);
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
-    TimeSteppers::History<
-        Variables<evolved_vars_tags>,
-        Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>>>
+    TimeSteppers::History<Variables<evolved_vars_tags>>
         time_stepper_history_subcells{time_stepper_history.integration_order()};
     time_stepper_history_subcells.most_recent_value() =
         evolution::dg::subcell::fd::project(

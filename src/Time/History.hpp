@@ -9,6 +9,8 @@
 #include <tuple>
 #include <utility>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 
@@ -22,22 +24,23 @@ class er;
 
 namespace TimeSteppers {
 
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class HistoryIterator;
 
 /// \ingroup TimeSteppersGroup
 /// History data used by a TimeStepper.
 /// \tparam Vars type of variables being integrated
-/// \tparam DerivVars type of derivative variables
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class History {
  public:
   using value_type = Time;
   using const_reference = const value_type&;
-  using const_iterator = HistoryIterator<Vars, DerivVars>;
+  using const_iterator = HistoryIterator<Vars>;
   using difference_type =
       typename std::iterator_traits<const_iterator>::difference_type;
   using size_type = size_t;
+
+  using DerivVars = db::prefix_variables<::Tags::dt, Vars>;
 
   History() = default;
   History(const History&) = default;
@@ -129,8 +132,12 @@ class History {
 /// \ingroup TimeSteppersGroup
 /// Iterator over history data used by a TimeStepper.  See History for
 /// details.
-template <typename Vars, typename DerivVars>
+template <typename Vars>
 class HistoryIterator {
+ public:
+  using DerivVars = db::prefix_variables<::Tags::dt, Vars>;
+
+ private:
   using Base =
       typename std::deque<std::tuple<TimeStepId, DerivVars>>::const_iterator;
 
@@ -174,7 +181,7 @@ class HistoryIterator {
   const DerivVars& derivative() const { return std::get<1>(*base_); }
 
  private:
-  friend class History<Vars, DerivVars>;
+  friend class History<Vars>;
 
   friend difference_type operator-(const HistoryIterator& a,
                                    const HistoryIterator& b) {
@@ -202,9 +209,9 @@ class HistoryIterator {
 
 // ================================================================
 
-template <typename Vars, typename DerivVars>
-void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
-                                      const DerivVars& deriv) {
+template <typename Vars>
+void History<Vars>::insert(const TimeStepId& time_step_id,
+                           const DerivVars& deriv) {
   if (first_needed_entry_ == 0) {
     data_.emplace_back(time_step_id, deriv);
   } else {
@@ -219,21 +226,20 @@ void History<Vars, DerivVars>::insert(const TimeStepId& time_step_id,
   }
 }
 
-template <typename Vars, typename DerivVars>
-inline void History<Vars, DerivVars>::insert_initial(TimeStepId time_step_id,
-                                                     DerivVars deriv) {
+template <typename Vars>
+inline void History<Vars>::insert_initial(TimeStepId time_step_id,
+                                          DerivVars deriv) {
   // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
   data_.emplace_front(std::move(time_step_id), std::move(deriv));
 }
 
-template <typename Vars, typename DerivVars>
-inline void History<Vars, DerivVars>::mark_unneeded(
-    const const_iterator& first_needed) {
+template <typename Vars>
+inline void History<Vars>::mark_unneeded(const const_iterator& first_needed) {
   first_needed_entry_ = static_cast<size_t>(first_needed.base_ - data_.begin());
 }
 
-template <typename Vars, typename DerivVars>
-inline void History<Vars, DerivVars>::shrink_to_fit() {
+template <typename Vars>
+inline void History<Vars>::shrink_to_fit() {
   data_.erase(
       data_.begin(),
       data_.begin() +
@@ -242,25 +248,25 @@ inline void History<Vars, DerivVars>::shrink_to_fit() {
   first_needed_entry_ = 0;
 }
 
-template <typename Vars, typename DerivVars>
-inline HistoryIterator<Vars, DerivVars> operator+(
-    HistoryIterator<Vars, DerivVars> it,
-    typename HistoryIterator<Vars, DerivVars>::difference_type n) {
+template <typename Vars>
+inline HistoryIterator<Vars> operator+(
+    HistoryIterator<Vars> it,
+    typename HistoryIterator<Vars>::difference_type n) {
   it += n;
   return it;
 }
 
-template <typename Vars, typename DerivVars>
-inline HistoryIterator<Vars, DerivVars> operator+(
-    typename HistoryIterator<Vars, DerivVars>::difference_type n,
-    HistoryIterator<Vars, DerivVars> it) {
+template <typename Vars>
+inline HistoryIterator<Vars> operator+(
+    typename HistoryIterator<Vars>::difference_type n,
+    HistoryIterator<Vars> it) {
   return std::move(it) + n;
 }
 
-template <typename Vars, typename DerivVars>
-inline HistoryIterator<Vars, DerivVars> operator-(
-    HistoryIterator<Vars, DerivVars> it,
-    typename HistoryIterator<Vars, DerivVars>::difference_type n) {
+template <typename Vars>
+inline HistoryIterator<Vars> operator-(
+    HistoryIterator<Vars> it,
+    typename HistoryIterator<Vars>::difference_type n) {
   return std::move(it) + (-n);
 }
 }  // namespace TimeSteppers

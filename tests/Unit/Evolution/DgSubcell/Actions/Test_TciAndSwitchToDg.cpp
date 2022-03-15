@@ -226,10 +226,7 @@ void test_impl(
   }
   const Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
       inactive_evolved_vars{dg_mesh.number_of_grid_points(), 1.0};
-  TimeSteppers::History<
-      Variables<evolved_vars_tags>,
-      Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>>>
-      time_stepper_history{};
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{};
   for (size_t i = 0; i < time_stepper->order(); ++i) {
     Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
         subcell_mesh.number_of_grid_points()};
