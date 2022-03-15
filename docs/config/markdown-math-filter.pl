@@ -22,6 +22,9 @@
 # Wrap inline math in \f$...\f$
 # - Match code blocks (wrapped in ```) and inline code (wrapped in `), and print
 #   them directly to the output ($1 and $2) with no changes.
+# - Match display math blocks (wrapped in \f[...\f], \f{...\f}, or
+#   \begin...\end), and print them directly to the output ($3, $4, and $5) with
+#   no changes.
 # - Replace $...$ by \f$...\f$, unless already preceded by '\f$'.
 # - The '?' makes the pattern match lazily, i.e., match as few characters as
 #   possible.
@@ -34,8 +37,11 @@
 #     x: Ignore spaces for better readability
 s{ (```.*?```)
    | (`.*?`)
+   | (\\f\[.*?\\f\])
+   | (\\f\{.*?\\f\})
+   | (\\begin\{(.*?)\}(.*?)\\end\{\6\})
    | (?<!\\f)\$(.*?)\$
-}{ $1 // $2 // "\\f\$$3\\f\$" }sgex;
+}{ $1 // $2 // $3 // $4 // $5 // "\\f\$$8\\f\$" }sgex;
 
 # Wrap display math in \f{equation}{ ... \f}
 # - Match code blocks (wrapped in ```) and Doxygen-style display equations
