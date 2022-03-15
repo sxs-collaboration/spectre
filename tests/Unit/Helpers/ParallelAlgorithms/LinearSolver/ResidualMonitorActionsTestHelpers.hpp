@@ -78,6 +78,31 @@ struct MockWriteReductionData {
   }
 };
 
+struct MockWriteReductionDataRow {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex, typename... Ts,
+            Requires<tmpl::list_contains_v<DbTagsList, CheckSubfileNameTag>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& subfile_name,
+                    std::vector<std::string>&& legend,
+                    std::tuple<Ts...>&& in_reduction_data) {
+    db::mutate<CheckSubfileNameTag, CheckReductionNamesTag,
+               CheckReductionDataTag>(
+        make_not_null(&box),
+        [subfile_name, legend, in_reduction_data](
+            const auto check_subfile_name, const auto check_reduction_names,
+            const auto check_reduction_data) {
+          *check_subfile_name = subfile_name;
+          *check_reduction_names = legend;
+          *check_reduction_data = in_reduction_data;
+        });
+  }
+};
+
 template <typename Metavariables>
 struct MockObserverWriter {
   using metavariables = Metavariables;
@@ -89,8 +114,10 @@ struct MockObserverWriter {
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 
   using replace_these_threaded_actions =
-      tmpl::list<observers::ThreadedActions::WriteReductionData>;
-  using with_these_threaded_actions = tmpl::list<MockWriteReductionData>;
+      tmpl::list<observers::ThreadedActions::WriteReductionData,
+                 observers::ThreadedActions::WriteReductionDataRow>;
+  using with_these_threaded_actions =
+      tmpl::list<MockWriteReductionData, MockWriteReductionDataRow>;
 };
 
 }  // namespace ResidualMonitorActionsTestHelpers
