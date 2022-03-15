@@ -83,7 +83,7 @@ SPECTRE_COMMAND="${SPECTRE_EXECUTABLE} ++np ${SLURM_NNODES} \
 # spectre environment between the start of the remote session and starting the
 # spectre executable
 echo "#!/bin/sh
-source /home/moxon/spectre/support/Environments/caltech_hpc_gcc.sh
+source ${SPECTRE_HOME}/support/Environments/caltech_hpc_gcc.sh
 module use ${SPECTRE_MODULE_DIR}
 spectre_load_modules
 \$@
