@@ -33,7 +33,23 @@ add_test_library(
   ${LIBRARY}
   "Domain/CoordinateMaps"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;FunctionsOfTime"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  DataStructuresHelpers
+  Domain
+  DomainStructure
+  ErrorHandling
+  FunctionsOfTime
+  GeneralRelativitySolutions
+  RootFinding
+  Spectral
+  Utilities
+)
 
 add_subdirectory(TimeDependent)

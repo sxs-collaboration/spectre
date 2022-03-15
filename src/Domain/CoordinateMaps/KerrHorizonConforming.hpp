@@ -15,7 +15,7 @@ namespace domain::CoordinateMaps {
 
 /*!
  * \brief Distorts cartesian coordinates \f$x^i\f$ such that a coordinate sphere
- * \f$\delta_{ij}x^ix^j=C\f$ is mapped to an ellipsoid of constant
+ * \f$\delta_{ij}x^ix^j=C^2\f$ is mapped to an ellipsoid of constant
  * Kerr-Schild radius \f$r=C\f$.
  *
  * The Kerr-Schild radius \f$r\f$ is defined as the largest positive
@@ -68,10 +68,21 @@ class KerrHorizonConforming {
   KerrHorizonConforming() = default;
   static constexpr size_t dim = 3;
   /*!
-   * constructs a Kerr horizon conforming map.
-   * \param spin : the dimensionless spin
+   * \brief Constructs a Kerr horizon conforming map.
+   *
+   * \param mass The Kerr mass parameter $M$
+   * \param dimensionless_spin The dimensionless spin $\vec{\chi} = \vec{a} / M
+   * = \vec{S} / M^2$, where $M$ is the Kerr mass parameter, $\vec{S}$ is the
+   * angular momentum or quasilocal spin, and $\vec{a}$ is the Kerr spin
+   * parameter.
+   *
+   * \note The horizon depends only on the dimensionful spin parameter $\vec{a}
+   * = M \vec{\chi}$. This constructor takes $M$ and $\vec{\chi}$ separately for
+   * consistency with other code such as gr::Solutions::KerrSchild, and hence to
+   * avoid bugs where the wrong spin quantity is used accidentally.
    */
-  explicit KerrHorizonConforming(std::array<double, 3> spin);
+  explicit KerrHorizonConforming(const double mass,
+                                 std::array<double, 3> dimensionless_spin);
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> operator()(
@@ -89,7 +100,7 @@ class KerrHorizonConforming {
       const std::array<T, 3>& source_coords) const;
 
   bool is_identity() const {
-    return spin_ == std::array<double, 3>{0., 0., 0.};
+    return spin_parameter_ == std::array<double, 3>{0., 0., 0.};
   }
 
   friend bool operator==(const KerrHorizonConforming& lhs,
@@ -103,7 +114,7 @@ class KerrHorizonConforming {
       const gsl::not_null<tt::remove_cvref_wrap_t<T>*> result,
       const std::array<T, 3>& source_coords) const;
 
-  std::array<double, 3> spin_;
+  std::array<double, 3> spin_parameter_;
   double spin_mag_sq_;
 };
 bool operator!=(const KerrHorizonConforming& lhs,

@@ -35,6 +35,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
 #include "Utilities/TMPL.hpp"
@@ -380,7 +381,7 @@ void test_with_random_values() {
 void test_consistency_with_kerr(const bool compute_expansion) {
   INFO("Consistency with Kerr solution");
   CAPTURE(compute_expansion);
-  const double mass = 1.;
+  const double mass = 0.45;
   const std::array<double, 3> center{{0., 0., 0.}};
   const std::array<double, 3> dimensionless_spin{{0., 0., 0.8}};
   const double horizon_kerrschild_radius =
@@ -411,7 +412,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
       {},
       false};
   const domain::CoordinateMaps::KerrHorizonConforming horizon_map{
-      dimensionless_spin};
+      mass, dimensionless_spin};
   const auto coord_map =
       domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           wedge_map, horizon_map);
@@ -433,6 +434,15 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   const size_t slice_index = index_to_slice_at(mesh.extents(), direction);
   const auto x = data_on_slice(inertial_coords, mesh.extents(),
                                direction.dimension(), slice_index);
+
+  // Make sure the face is indeed horizon conforming
+  const std::array<DataVector, 2> theta_phi{
+      {atan2(sqrt(square(get<0>(x)) + square(get<1>(x))), get<2>(x)),
+       atan2(get<1>(x), get<0>(x))}};
+  const DataVector expected_horizon_radii = get(
+      gr::Solutions::kerr_horizon_radius(theta_phi, mass, dimensionless_spin));
+  CHECK_ITERABLE_APPROX(get(magnitude(x)), expected_horizon_radii);
+
   // Get background fields from the solution
   const auto background_fields = solution.variables(
       x,
