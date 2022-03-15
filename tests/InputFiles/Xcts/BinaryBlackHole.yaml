@@ -168,6 +168,15 @@ EventsAndTriggers:
   : - ObserveNorms:
         SubfileName: Norms
         TensorsToObserve:
+          - Name: ConformalFactor
+            NormType: Max
+            Components: Individual
+          - Name: Lapse
+            NormType: Min
+            Components: Individual
+          - Name: Magnitude(ShiftExcess)
+            NormType: Max
+            Components: Individual
           - Name: HamiltonianConstraint
             NormType: L2Norm
             Components: Individual

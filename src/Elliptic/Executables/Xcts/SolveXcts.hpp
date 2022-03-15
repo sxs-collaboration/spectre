@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Creators/Factory3D.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
@@ -197,7 +198,10 @@ struct Metavariables {
   using observe_fields = tmpl::append<
       analytic_solution_fields, typename system::background_fields,
       typename spacetime_quantities_compute::tags_list, error_tags,
-      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>>;
+      tmpl::list<domain::Tags::Coordinates<volume_dim, Frame::Inertial>,
+                 ::Tags::NonEuclideanMagnitude<
+                     Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
+                     gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>>;
   using observer_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
                  spacetime_quantities_compute, error_compute>;
