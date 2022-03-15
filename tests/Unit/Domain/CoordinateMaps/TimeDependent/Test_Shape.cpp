@@ -166,10 +166,6 @@ std::vector<std::vector<std::complex<double>>> generate_random_coefs(
     coefs.emplace_back(tmp);
   }
 
-  // set monopole and dipole to zero
-  coefs.at(0).at(0) = 0.;
-  coefs.at(1).at(0) = 0.;
-  coefs.at(1).at(1) = 0.;
   return coefs;
 }
 

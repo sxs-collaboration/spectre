@@ -41,11 +41,8 @@ namespace domain::CoordinateMaps::TimeDependent {
  * applying a spherical harmonic expansion with time-dependent coefficients
  * \f$\lambda_{lm}(t)\f$. An additional domain-dependent transition function
  * \f$f(r, \theta, \phi)\f$ ensures that the distortion falls off correctly to
- * zero at the boundary of the domain. The monopole and dipole coefficients \f$
- * \lambda_{00}, \lambda_{10}, \lambda_{11}\f$ are expected to be zero since
- * these degrees of freedoms are controlled by the `SphericalCompression` and
- * `Translation` map, respectively. The shape map maps the unmapped coordinates
- * \f$\xi^i\f$ to coordinates \f$x^i\f$:
+ * zero at the boundary of the domain. The shape map maps the unmapped
+ * coordinates \f$\xi^i\f$ to coordinates \f$x^i\f$:
  *
  * \f{equation}{
  * x^i = \xi^i - (\xi^i - x_c^i) f(r, \theta, \phi) \sum_{lm}
