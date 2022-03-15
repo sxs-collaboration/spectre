@@ -514,18 +514,44 @@ Domain<3> BinaryCompactObject::create_domain() const {
               translation_B));
     }
   }
+
+  // Excision spheres
+  // - Block 0 through 5 enclose object A, and 12 through 17 enclose object B.
+  // - The 3D wedge map is oriented such that the lower-zeta logical direction
+  //   points radially inward.
+  std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
+  if (object_A_.is_excised()) {
+    excision_spheres.emplace(
+        "ObjectAExcisionSphere",
+        ExcisionSphere<3>{object_A_.inner_radius,
+                          {{object_A_.x_coord, 0.0, 0.0}},
+                          {{0, Direction<3>::lower_zeta()},
+                           {1, Direction<3>::lower_zeta()},
+                           {2, Direction<3>::lower_zeta()},
+                           {3, Direction<3>::lower_zeta()},
+                           {4, Direction<3>::lower_zeta()},
+                           {5, Direction<3>::lower_zeta()}}});
+  }
+  if (object_B_.is_excised()) {
+    excision_spheres.emplace(
+        "ObjectBExcisionSphere",
+        ExcisionSphere<3>{object_B_.inner_radius,
+                          {{object_B_.x_coord, 0.0, 0.0}},
+                          {{12, Direction<3>::lower_zeta()},
+                           {13, Direction<3>::lower_zeta()},
+                           {14, Direction<3>::lower_zeta()},
+                           {15, Direction<3>::lower_zeta()},
+                           {16, Direction<3>::lower_zeta()},
+                           {17, Direction<3>::lower_zeta()}}});
+  }
+
   Domain<3> domain{
       std::move(maps),
       corners_for_biradially_layered_domains(2, 3, not object_A_.is_excised(),
                                              not object_B_.is_excised()),
       {},
       std::move(boundary_conditions_all_blocks),
-      {{"ObjectAExcisionSphere",
-        ExcisionSphere<3>{object_A_.inner_radius,
-                          {{object_A_.x_coord, 0.0, 0.0}}}},
-       {"ObjectBExcisionSphere",
-        ExcisionSphere<3>{object_B_.inner_radius,
-                          {{object_B_.x_coord, 0.0, 0.0}}}}}};
+      std::move(excision_spheres)};
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {

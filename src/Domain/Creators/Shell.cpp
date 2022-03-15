@@ -170,14 +170,29 @@ Domain<3> Shell::create_domain() const {
     }
   }
 
+  // Excision spheres
+  // - The first 6 blocks enclose the excised sphere, see
+  //   sph_wedge_coordinate_maps
+  // - The 3D wedge map is oriented such that the lower-zeta logical direction
+  //   points radially inward.
+  std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{
+      {"CentralExcisionSphere",
+       ExcisionSphere<3>{inner_radius_,
+                         {{0.0, 0.0, 0.0}},
+                         {{0, Direction<3>::lower_zeta()},
+                          {1, Direction<3>::lower_zeta()},
+                          {2, Direction<3>::lower_zeta()},
+                          {3, Direction<3>::lower_zeta()},
+                          {4, Direction<3>::lower_zeta()},
+                          {5, Direction<3>::lower_zeta()}}}}};
+
   Domain<3> domain{
       std::move(coord_maps),
       corners_for_radially_layered_domains(
           number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_),
       {},
       std::move(boundary_conditions_all_blocks),
-      {{"CentralExcisionSphere",
-        ExcisionSphere<3>{inner_radius_, {{0.0, 0.0, 0.0}}}}}};
+      std::move(excision_spheres)};
 
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();
