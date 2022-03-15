@@ -25,7 +25,7 @@ spectre_unload_modules() {
     module unload cmake/3.18.5
     module unload git-2.19.2-gcc-7.3.0-jfnpgdh
     module unload blaze/3.8
-    module unload brigand-master-gcc-7.3.0-3m5ibui
+    module unload brigand-master-gcc-7.3.0-gwg63zg
     module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module unload catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module unload gsl-2.5-gcc-7.3.0-i7icadp
@@ -52,7 +52,7 @@ spectre_load_modules() {
     module load cmake/3.18.5
     module load git-2.19.2-gcc-7.3.0-jfnpgdh
     module load blaze/3.8
-    module load brigand-master-gcc-7.3.0-3m5ibui
+    module load brigand-master-gcc-7.3.0-gwg63zg
     module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module load catch2-2.11.3-gcc-7.3.0-l7lqzrg
     module load gsl-2.5-gcc-7.3.0-i7icadp
