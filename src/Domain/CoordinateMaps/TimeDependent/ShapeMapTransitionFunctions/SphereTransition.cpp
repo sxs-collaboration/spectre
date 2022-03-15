@@ -26,8 +26,8 @@ SphereTransition::SphereTransition(const double r_min, const double r_max)
         "r_max =  "
         << r_max << ", and r_min = " << r_min);
   }
-  a_ = -1. / (r_max - r_min);
-  b_ = r_max / (r_max - r_min);
+  a_ = -r_min / (r_max - r_min);
+  b_ = r_min * r_max / (r_max - r_min);
 }
 
 double SphereTransition::operator()(
@@ -115,8 +115,10 @@ bool SphereTransition::operator!=(
 template <typename T>
 void SphereTransition::check_magnitudes([[maybe_unused]] const T& mag) const {
 #ifdef SPECTRE_DEBUG
+  const double eps = std::numeric_limits<double>::epsilon() * 100;
   for (size_t i = 0; i < get_size(mag); ++i) {
-    if (get_element(mag, i) < r_min_ or get_element(mag, i) > r_max_) {
+    if (get_element(mag, i) + eps < r_min_ or
+        get_element(mag, i) - eps > r_max_) {
       ERROR(
           "The sphere transition map was called with coordinates outside the "
           "set minimum and maximum radius. The minimum radius is "
