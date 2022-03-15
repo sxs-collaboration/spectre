@@ -95,6 +95,10 @@ std::string get_template_parameters_as_string() {
   if (template_params.find('}') != std::string::npos) {
     template_params.erase(template_params.find('}'), template_params.size());
   }
+  // Remove all spaces
+  const auto new_end =
+      std::remove(template_params.begin(), template_params.end(), ' ');
+  template_params.erase(new_end, template_params.end());
   return template_params;
 }
 
@@ -164,7 +168,7 @@ struct RegisterParallelComponent : RegistrationHelper {
   bool is_registering_chare() const override { return true; }
 
   std::string name() const override {
-    return get_template_parameters_as_string<RegisterParallelComponent>();
+    return get_template_parameters_as_string<algorithm>();
   }
 
   static bool registrar;
@@ -212,7 +216,7 @@ struct RegisterChare : RegistrationHelper {
   bool is_registering_chare() const override { return true; }
 
   std::string name() const override {
-    return get_template_parameters_as_string<RegisterChare>();
+    return get_template_parameters_as_string<Chare>();
   }
 
   static bool registrar;
