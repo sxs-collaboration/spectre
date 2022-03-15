@@ -30,6 +30,7 @@ spectre_target_sources(
   WeylElectric.cpp
   WeylMagnetic.cpp
   WeylPropagating.cpp
+  WeylTypeD1.cpp
   )
 
 spectre_target_headers(
@@ -61,6 +62,7 @@ spectre_target_headers(
   WeylElectric.hpp
   WeylMagnetic.hpp
   WeylPropagating.hpp
+  WeylTypeD1.hpp
   )
 
 target_link_libraries(
