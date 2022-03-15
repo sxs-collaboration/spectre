@@ -10,6 +10,10 @@
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
@@ -132,12 +136,15 @@ Shell::Shell(
 }
 
 Domain<3> Shell::create_domain() const {
-  std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-      coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
-          inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
-          false, aspect_ratio_, index_polar_axis_, radial_partitioning_,
-          radial_distribution_, which_wedges_);
+  const domain::CoordinateMaps::EquatorialCompression compression{
+      aspect_ratio_, index_polar_axis_};
+
+  auto coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                            Frame::Inertial, 3>(
+      sph_wedge_coordinate_maps(
+          inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, false,
+          radial_partitioning_, radial_distribution_, which_wedges_),
+      compression);
 
   std::vector<DirectionMap<
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>

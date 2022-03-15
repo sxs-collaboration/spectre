@@ -294,12 +294,6 @@ void test_shell_construction(
   } else {
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio, index_polar_axis};
-    // Set up translation map:
-    using Identity2D = domain::CoordinateMaps::Identity<2>;
-    using Affine = domain::CoordinateMaps::Affine;
-    const auto translation =
-        domain::CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-            Affine{-1.0, 1.0, -1.0, 1.0}, Identity2D{});
     using TargetFrame = tmpl::conditional_t<sizeof...(FuncsOfTime) == 0,
                                             Frame::Inertial, Frame::Grid>;
     auto vector_of_maps = make_vector(
@@ -307,14 +301,14 @@ void test_shell_construction(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{}, use_equiangular_map, Halves::Both,
                        radial_distribution},
-            compression, translation),
+            compression),
         make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{inner_radius, outer_radius, 1.0, 1.0,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                             Direction<3>::lower_zeta()}}},
                        use_equiangular_map, Halves::Both, radial_distribution},
-            compression, translation),
+            compression),
         make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
@@ -322,7 +316,7 @@ void test_shell_construction(
                     {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                      Direction<3>::lower_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
-            compression, translation),
+            compression),
         make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
@@ -330,7 +324,7 @@ void test_shell_construction(
                     {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
-            compression, translation),
+            compression),
         make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
@@ -338,7 +332,7 @@ void test_shell_construction(
                     {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
-            compression, translation),
+            compression),
         make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
             Wedge3DMap{
                 inner_radius, outer_radius, 1.0, 1.0,
@@ -346,7 +340,7 @@ void test_shell_construction(
                     {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                      Direction<3>::upper_eta()}}},
                 use_equiangular_map, Halves::Both, radial_distribution},
-            compression, translation));
+            compression));
     if (UNLIKELY(which_wedges == ShellWedges::FourOnEquator)) {
       vector_of_maps.erase(vector_of_maps.begin(), vector_of_maps.begin() + 2);
     } else if (UNLIKELY(which_wedges == ShellWedges::OneAlongMinusX)) {

@@ -110,6 +110,9 @@ class ShapeMapTransitionFunction : public PUP::able {
       const std::array<double, 3>& source_coords) const = 0;
   virtual std::array<DataVector, 3> gradient(
       const std::array<DataVector, 3>& source_coords) const = 0;
+
+  virtual std::unique_ptr<ShapeMapTransitionFunction> get_clone() const = 0;
+
   /// @}
   virtual bool operator==(const ShapeMapTransitionFunction& other) const = 0;
   virtual bool operator!=(const ShapeMapTransitionFunction& other) const = 0;

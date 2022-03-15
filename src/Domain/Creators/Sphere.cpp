@@ -15,6 +15,7 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -60,18 +61,13 @@ Sphere::Sphere(typename InnerRadius::type inner_radius,
 }
 
 Domain<3> Sphere::create_domain() const {
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
-  using Equiangular = CoordinateMaps::Equiangular;
-  using Equiangular3D =
-      CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
   std::vector<std::array<size_t, 8>> corners =
       corners_for_radially_layered_domains(1, true);
 
-  std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
-      coord_maps = sph_wedge_coordinate_maps<Frame::Inertial>(
-          inner_radius_, outer_radius_, 0.0, 1.0, use_equiangular_map_);
+  auto coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
+                                                            Frame::Inertial, 3>(
+      sph_wedge_coordinate_maps(inner_radius_, outer_radius_, 0.0, 1.0,
+                                use_equiangular_map_));
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(

@@ -23,6 +23,8 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Shape.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/ShapeMapTransitionFunctions/RegisterDerivedWithCharm.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/SphericalCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/Factory.hpp"
@@ -64,5 +66,8 @@ void register_derived_with_charm() {
       tmpl::remove_duplicates<tmpl::append<all_maps, maps_to_grid>>;
 
   Parallel::register_classes_with_charm(maps_to_register{});
+
+  domain::CoordinateMaps::ShapeMapTransitionFunctions::
+      register_derived_with_charm();
 }
 }  // namespace domain::creators
