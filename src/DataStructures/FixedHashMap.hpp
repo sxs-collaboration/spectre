@@ -263,10 +263,7 @@ class FixedHashMapIterator {
   }
 
   FixedHashMapIterator& operator++();
-  // clang-tidy wants this to return a const object.  Returning const
-  // objects is very strange, and as of June 2018 clang-tidy's
-  // explanation for the lint is a dead link.
-  FixedHashMapIterator operator++(int);  // NOLINT(cert-dcl21-cpp)
+  FixedHashMapIterator operator++(int);
 
  private:
   friend class FixedHashMap<MaxSize, Key, typename value_type::second_type,
@@ -339,7 +336,6 @@ FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::operator++() {
 
 template <size_t MaxSize, class Key, class ValueType, class Hash,
           class KeyEqual>
-// NOLINTNEXTLINE(cert-dcl21-cpp) see declaration
 FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>
 FixedHashMapIterator<MaxSize, Key, ValueType, Hash, KeyEqual>::operator++(int) {
   const auto ret = *this;

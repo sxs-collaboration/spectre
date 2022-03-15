@@ -38,14 +38,12 @@ class BlockId {
     return *this;
   }
 
-  // NOLINTNEXTLINE(cert-dcl21-cpp) returned object doesn't need to be const
   BlockId operator++(int) {
     BlockId temp = *this;
     id_++;
     return temp;
   }
 
-  // NOLINTNEXTLINE(cert-dcl21-cpp) returned object doesn't need to be const
   BlockId operator--(int) {
     BlockId temp = *this;
     id_--;

@@ -172,7 +172,6 @@ HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++() {
 }
 
 template <size_t ElementDim, size_t HypercubeDim>
-// NOLINTNEXTLINE(cert-dcl21-cpp) see declaration
 HypercubeElementsIterator<ElementDim, HypercubeDim>
 HypercubeElementsIterator<ElementDim, HypercubeDim>::operator++(int) {
   const auto ret = *this;

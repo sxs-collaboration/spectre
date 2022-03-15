@@ -160,14 +160,12 @@ class HistoryIterator {
     ++base_;
     return *this;
   }
-  // clang-tidy: return const... Really? What?
-  HistoryIterator operator++(int) { return base_++; }  // NOLINT
+  HistoryIterator operator++(int) { return base_++; }
   HistoryIterator& operator--() {
     --base_;
     return *this;
   }
-  // clang-tidy: return const... Really? What?
-  HistoryIterator operator--(int) { return base_--; }  // NOLINT
+  HistoryIterator operator--(int) { return base_--; }
   HistoryIterator& operator+=(difference_type n) {
     base_ += n;
     return *this;
