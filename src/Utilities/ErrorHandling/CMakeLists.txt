@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AbortWithErrorMessage.cpp
   Breakpoint.cpp
+  CanSafelyThrow.cpp
   FloatingPointExceptions.cpp
   )
 
@@ -20,6 +21,7 @@ spectre_target_headers(
   AbortWithErrorMessage.hpp
   Assert.hpp
   Breakpoint.hpp
+  CanSafelyThrow.hpp
   Error.hpp
   Exceptions.hpp
   ExpectsAndEnsures.hpp

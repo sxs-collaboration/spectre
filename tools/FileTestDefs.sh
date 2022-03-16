@@ -537,10 +537,13 @@ standard_checks+=(enable_if)
 # Check for noexcept
 noexcept() {
     is_c++ "$1" && \
-        whitelist "$1" \
-                  'src/Options/Options.hpp$' \
-                  'src/Utilities/TypeTraits/FunctionInfo.hpp$' \
-                  'tests/Unit/Utilities/TypeTraits/Test_FunctionInfo.cpp$' && \
+        whitelist \
+            "$1" \
+            'src/Options/Options.hpp$' \
+            'src/Utilities/ErrorHandling/CanSafelyThrow..pp$' \
+            'src/Utilities/TypeTraits/FunctionInfo.hpp$' \
+            'tests/Unit/Utilities/ErrorHandling/Test_CanSafelyThrow.cpp$' \
+            'tests/Unit/Utilities/TypeTraits/Test_FunctionInfo.cpp$' && \
         staged_grep -q noexcept "$1"
 }
 noexcept_report() {
