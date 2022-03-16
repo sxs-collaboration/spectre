@@ -347,6 +347,11 @@ struct SchwarzschildVariables
       gsl::not_null<Cache*> cache,
       Xcts::Tags::ShiftStrain<DataType, 3, Frame::Inertial> /*meta*/)
       const override;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/)
+      const override;
   void operator()(gsl::not_null<Scalar<DataType>*> energy_density,
                   gsl::not_null<Cache*> cache,
                   gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>,

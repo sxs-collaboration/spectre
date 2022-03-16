@@ -28,6 +28,37 @@ namespace detail {
 
 template <typename DataType>
 void WrappedGrVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/) const {
+  *spatial_metric =
+      get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(gr_solution);
+}
+
+template <typename DataType>
+void WrappedGrVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
+    const {
+  *inv_spatial_metric =
+      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>(
+          gr_solution);
+}
+
+template <typename DataType>
+void WrappedGrVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
+    const gsl::not_null<Cache*> /*cache*/,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+  *deriv_spatial_metric =
+      get<::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                        tmpl::size_t<Dim>, Frame::Inertial>>(gr_solution);
+}
+
+template <typename DataType>
+void WrappedGrVariables<DataType>::operator()(
     const gsl::not_null<tnsr::ii<DataType, Dim>*> conformal_metric,
     const gsl::not_null<Cache*> cache,
     Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial> /*meta*/)
@@ -223,6 +254,16 @@ void WrappedGrVariables<DataType>::operator()(
   Elasticity::strain(shift_strain, deriv_shift, conformal_metric,
                      deriv_conformal_metric, conformal_christoffel_first_kind,
                      shift);
+}
+
+template <typename DataType>
+void WrappedGrVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
+    const gsl::not_null<Cache*> /*cache*/,
+    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+  *extrinsic_curvature =
+      get<gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>(
+          gr_solution);
 }
 
 template <typename DataType>

@@ -82,6 +82,64 @@ void CommonVariables<DataType, Cache>::operator()(
 
 template <typename DataType, typename Cache>
 void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/) const {
+  *spatial_metric = cache->get_var(
+      *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataType>{});
+  for (size_t i = 0; i < spatial_metric->size(); ++i) {
+    (*spatial_metric)[i] *= pow<4>(get(conformal_factor));
+  }
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
+    const {
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataType>{});
+  *inv_spatial_metric = cache->get_var(
+      *this, Tags::InverseConformalMetric<DataType, Dim, Frame::Inertial>{});
+  for (size_t i = 0; i < inv_spatial_metric->size(); ++i) {
+    (*inv_spatial_metric)[i] /= pow<4>(get(conformal_factor));
+  }
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
+    const gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
+    const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const {
+  const auto& conformal_metric = cache->get_var(
+      *this, Tags::ConformalMetric<DataType, Dim, Frame::Inertial>{});
+  const auto& conformal_factor =
+      cache->get_var(*this, Tags::ConformalFactor<DataType>{});
+  const auto& deriv_conformal_factor = cache->get_var(
+      *this, ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
+                           Frame::Inertial>{});
+  *deriv_spatial_metric = cache->get_var(
+      *this,
+      ::Tags::deriv<Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
+                    tmpl::size_t<3>, Frame::Inertial>{});
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = 0; k <= j; ++k) {
+        deriv_spatial_metric->get(i, j, k) *= pow<4>(get(conformal_factor));
+        deriv_spatial_metric->get(i, j, k) +=
+            4. * pow<3>(get(conformal_factor)) * deriv_conformal_factor.get(i) *
+            conformal_metric.get(j, k);
+      }
+    }
+  }
+}
+
+template <typename DataType, typename Cache>
+void CommonVariables<DataType, Cache>::operator()(
     const gsl::not_null<Scalar<DataType>*>
         longitudinal_shift_minus_dt_conformal_metric_square,
     const gsl::not_null<Cache*> cache,

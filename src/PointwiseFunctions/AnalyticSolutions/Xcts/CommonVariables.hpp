@@ -21,8 +21,13 @@ using common_tags = tmpl::push_back<
     // Solved variables
     Tags::ConformalFactor<DataType>, Tags::LapseTimesConformalFactor<DataType>,
     Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
-    // GR lapse and shift
+    // ADM variables
     gr::Tags::Lapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
+    gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+                  tmpl::size_t<3>, Frame::Inertial>,
+    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
     // Derivatives of solved variables
     ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
                   Frame::Inertial>,
@@ -63,6 +68,20 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
                           gsl::not_null<Cache*> cache,
                           gr::Tags::Lapse<DataType> /*meta*/) const = 0;
   virtual void operator()(
+      gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/) const;
+  virtual void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
+      const;
+  virtual void operator()(
+      gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/) const;
+  virtual void operator()(
       gsl::not_null<tnsr::i<DataType, Dim>*> deriv_conformal_factor,
       gsl::not_null<Cache*> cache,
       ::Tags::deriv<Tags::ConformalFactor<DataType>, tmpl::size_t<Dim>,
@@ -94,6 +113,11 @@ struct CommonVariables : AnalyticData::CommonVariables<DataType, Cache> {
   virtual void operator()(
       gsl::not_null<tnsr::I<DataType, Dim>*> shift, gsl::not_null<Cache*> cache,
       gr::Tags::Shift<Dim, Frame::Inertial, DataType> /*meta*/) const;
+  virtual void operator()(
+      gsl::not_null<tnsr::ii<DataType, Dim>*> extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType> /*meta*/)
+      const = 0;
   virtual void operator()(
       gsl::not_null<Scalar<DataType>*>
           longitudinal_shift_minus_dt_conformal_metric_square,
