@@ -148,7 +148,7 @@ void test_solution(const double mass,
 
 }  // namespace
 
-// [[Timeout, 8]]
+// [[Timeout, 15]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.Xcts.Schwarzschild",
     "[PointwiseFunctions][Unit]") {
