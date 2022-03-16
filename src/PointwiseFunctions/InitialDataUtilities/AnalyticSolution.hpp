@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include <pup.h>
 
 #include "Parallel/CharmPupable.hpp"
@@ -34,5 +35,7 @@ class AnalyticSolution : public elliptic::analytic_data::InitialGuess,
   explicit AnalyticSolution(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(AnalyticSolution);
   /// \endcond
+
+  virtual std::unique_ptr<AnalyticSolution> get_clone() const = 0;
 };
 }  // namespace elliptic::analytic_data

@@ -139,6 +139,10 @@ class BentBeam : public elliptic::analytic_data::AnalyticSolution {
   BentBeam(BentBeam&&) = default;
   BentBeam& operator=(BentBeam&&) = default;
   ~BentBeam() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<BentBeam>(*this);
+  }
 
   /// \cond
   explicit BentBeam(CkMigrateMessage* m)

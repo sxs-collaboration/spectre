@@ -75,6 +75,10 @@ class ProductOfSinusoids : public elliptic::analytic_data::AnalyticSolution {
   ProductOfSinusoids(ProductOfSinusoids&&) = default;
   ProductOfSinusoids& operator=(ProductOfSinusoids&&) = default;
   ~ProductOfSinusoids() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<ProductOfSinusoids>(*this);
+  }
 
   /// \cond
   explicit ProductOfSinusoids(CkMigrateMessage* m)

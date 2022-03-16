@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <memory>
 #include <ostream>
 
 #include "DataStructures/CachedTempBuffer.hpp"
@@ -388,6 +389,10 @@ class Schwarzschild : public elliptic::analytic_data::AnalyticSolution,
       : elliptic::analytic_data::AnalyticSolution(m) {}
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(Schwarzschild);
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Schwarzschild>(*this);
+  }
   /// \endcond
 
   template <typename DataType, typename... RequestedTags>

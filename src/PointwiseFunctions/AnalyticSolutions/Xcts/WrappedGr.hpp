@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/CachedTempBuffer.hpp"
@@ -202,6 +203,10 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
   using GrSolution::GrSolution;
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr<GrSolution>);
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<WrappedGr<GrSolution>>(*this);
+  }
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(

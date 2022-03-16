@@ -34,6 +34,10 @@ class Zero : public elliptic::analytic_data::AnalyticSolution {
   Zero(Zero&&) = default;
   Zero& operator=(Zero&&) = default;
   ~Zero() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Zero>(*this);
+  }
 
   /// \cond
   explicit Zero(CkMigrateMessage* m)

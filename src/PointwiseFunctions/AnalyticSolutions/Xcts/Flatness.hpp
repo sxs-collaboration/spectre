@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <memory>
 #include <ostream>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -41,6 +42,10 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
   Flatness(Flatness&&) = default;
   Flatness& operator=(Flatness&&) = default;
   ~Flatness() = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Flatness>(*this);
+  }
 
   /// \cond
   explicit Flatness(CkMigrateMessage* m)

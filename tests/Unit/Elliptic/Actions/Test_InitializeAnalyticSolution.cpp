@@ -52,6 +52,10 @@ struct AnalyticSolution : elliptic::analytic_data::AnalyticSolution {
   explicit AnalyticSolution(CkMigrateMessage* m)
       : elliptic::analytic_data::AnalyticSolution(m) {}
   WRAPPED_PUPable_decl_template(AnalyticSolution);
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<AnalyticSolution>(*this);
+  }
 
   static tuples::TaggedTuple<ScalarFieldTag> variables(
       const tnsr::I<DataVector, 1>& x, tmpl::list<ScalarFieldTag> /*meta*/) {
