@@ -58,13 +58,13 @@ void test_calculate_measurement_timescales() {
   const double update_fraction = 0.25;
   const Controller<DerivOrder> controller(update_fraction);
 
-  const auto measurment_timescales =
+  const auto measurement_timescales =
       control_system::calculate_measurement_timescales(controller, tuner);
 
   const DataVector expected_measurement_timescales =
       DataVector{{timescale}} * update_fraction / double(DerivOrder + 1);
 
-  CHECK(expected_measurement_timescales == measurment_timescales);
+  CHECK(expected_measurement_timescales == measurement_timescales);
 }
 
 template <size_t Index>
