@@ -8,14 +8,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Logging/Tags.hpp"
-#include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
-#include "ParallelAlgorithms/NonlinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
 
 /// \cond
@@ -40,16 +38,10 @@ struct ResidualMonitor {
                  NonlinearSolver::Tags::SufficientDecrease<OptionsGroup>,
                  NonlinearSolver::Tags::MaxGlobalizationSteps<OptionsGroup>>;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox,
-                     InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
-              NonlinearSolver::observe_detail::Registration<OptionsGroup>>>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<::Actions::SetupDataBox,
+                 InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

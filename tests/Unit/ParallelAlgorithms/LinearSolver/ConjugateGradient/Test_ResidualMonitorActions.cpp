@@ -157,9 +157,6 @@ SPECTRE_TEST_CASE(
                         TestLinearSolver>{})
                     .at(0));
     // Test observer writer state
-    CHECK(
-        get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
-        observers::ObservationId{0, "(anonymous namespace)::TestLinearSolver"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
@@ -228,9 +225,6 @@ SPECTRE_TEST_CASE(
     const auto& has_converged = get<1>(element_inbox);
     CHECK_FALSE(has_converged);
     // Test observer writer state
-    CHECK(
-        get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
-        observers::ObservationId{1, "(anonymous namespace)::TestLinearSolver"});
     CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/TestLinearSolverResiduals");
     CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==

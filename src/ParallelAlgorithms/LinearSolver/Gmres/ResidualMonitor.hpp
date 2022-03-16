@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Logging/Tags.hpp"
-#include "IO/Observer/Actions/RegisterSingleton.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -18,7 +17,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "ParallelAlgorithms/LinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -45,16 +43,10 @@ struct ResidualMonitor {
   // The actions in `ResidualMonitorActions.hpp` are invoked as simple actions
   // on this component as the result of reductions from the actions in
   // `ElementActions.hpp`. See `LinearSolver::gmres::Gmres` for details.
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox,
-                     InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
-              LinearSolver::observe_detail::Registration<OptionsGroup>>>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<::Actions::SetupDataBox,
+                 InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
