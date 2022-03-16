@@ -10,6 +10,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit
   HEADERS
   Examples.hpp
+  SystemHelpers.hpp
   TestStructs.hpp
   )
 
@@ -17,6 +18,7 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   ControlSystem
+  Domain
   DataStructures
   Parallel
   Time
