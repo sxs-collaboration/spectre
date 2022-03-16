@@ -62,7 +62,7 @@ the developers of code that enabled them.
   - Send a message on Slack.
   - Knock on their office door.
   - Send an email to one of the core developers, or to
-    [spectre-core-devs@black-holes.org](mailto:spectre-core-devs@black-holes.org).
+    [core-devs@spectre-code.org](mailto:core-devs@spectre-code.org).
     Possible wording of the email:
 
     > Dear SpECTRE core devs,
