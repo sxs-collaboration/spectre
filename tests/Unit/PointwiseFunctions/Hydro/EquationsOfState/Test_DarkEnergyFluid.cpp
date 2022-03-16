@@ -14,6 +14,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 
 namespace {
 void check_bounds() {

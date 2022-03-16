@@ -98,6 +98,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"

@@ -407,8 +407,3 @@ class EquationOfState<IsRelativistic, 2>
       BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                 \
           BOOST_PP_SUB(DIM, 1),                                   \
           (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
-
-#include "PointwiseFunctions/Hydro/EquationsOfState/DarkEnergyFluid.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"

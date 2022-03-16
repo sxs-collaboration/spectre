@@ -11,7 +11,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
