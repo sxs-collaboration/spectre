@@ -12,7 +12,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "ErrorHandling"
+  "Utilities/ErrorHandling"
   "${LIBRARY_SOURCES}"
   "ErrorHandling"
   )

@@ -13,8 +13,9 @@
 // directly call the fpe_signal_handler in these tests so that they pass.
 
 // [[OutputRegex, Floating point exception!]]
-SPECTRE_TEST_CASE("Unit.ErrorHandling.FloatingPointExceptions.Invalid",
-                  "[ErrorHandling][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.Utilities.ErrorHandling.FloatingPointExceptions.Invalid",
+    "[Utilities][ErrorHandling][Unit]") {
   ERROR_TEST();
 
 #ifdef __APPLE__

@@ -8,8 +8,8 @@
 
 // [assertion_test_example]
 // [[OutputRegex, Testing assert]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.Assert",
-                               "[Unit][ErrorHandling]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.ErrorHandling.Assert",
+                               "[Unit][Utilities][ErrorHandling]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   ASSERT(false, "Testing assert");

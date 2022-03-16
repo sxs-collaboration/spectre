@@ -7,8 +7,8 @@
 
 // [[OutputRegex, 'a == b' violated!]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.ErrorHandling.AbortWithErrorMessage.Assert",
-    "[Unit][ErrorHandling]") {
+    "Unit.Utilities.ErrorHandling.AbortWithErrorMessage.Assert",
+    "[Unit][Utilities][ErrorHandling]") {
   ERROR_TEST();
   abort_with_error_message("a == b", __FILE__, __LINE__,
                            static_cast<const char*>(__PRETTY_FUNCTION__),
