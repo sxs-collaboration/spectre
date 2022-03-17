@@ -318,6 +318,30 @@ struct get_array_index;
  *
  * \snippet Test_ActionTesting.cpp constructor const global cache tags unknown
  *
+ * ### Mutable global cache tags
+ *
+ * Similarly to const global cache tags, sometimes Actions will want to change
+ * the data of a tag in the `Parallel::GlobalCache`. Consider this tag:
+ *
+ * \snippet Test_ActionTesting.cpp mutable cache tag
+ *
+ * To indicate that this tag in the global cache may be changed, it is added
+ * by, for example, the metavariables:
+ *
+ * \snippet Test_ActionTesting.cpp mutable global cache metavars
+ *
+ * Then, exactly like the const global cache tags, the constructor of
+ * `ActionTesting::MockRuntimeSystem` takes a `tuples::TaggedTuple` of the
+ * mutable global cache tags as its *second* argument. The mutable global cache
+ * tags are empty by default so you need not specify a `tuples::TaggedTuple` if
+ * you don't have any mutable global cache tags. Here is how you would specify
+ * zero const global cache tags and one mutable global cache tag:
+ *
+ * \snippet Test_ActionTesting.cpp mutable global cache runner
+ *
+ * To mutate a tag in the mutable global cache, use the `Parallel::mutate`
+ * function just like you would in a charm-aware situation.
+ *
  * ### Inbox tags introspection
  *
  * The inbox tags can also be retrieved from a component by using the
@@ -331,8 +355,6 @@ struct get_array_index;
  *
  * The non-const version can be used like in the above example to clear or
  * otherwise manipulate the inbox tags.
- *
- * ###
  */
 namespace ActionTesting {}
 

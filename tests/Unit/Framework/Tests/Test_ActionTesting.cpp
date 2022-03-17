@@ -941,9 +941,11 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {
 }  // namespace TestNodesAndCores
 
 namespace TestMutableGlobalCache {
+// [mutable cache tag]
 struct CacheTag : db::SimpleTag {
   using type = int;
 };
+// [mutable cache tag]
 
 template <int Value>
 struct CacheTagUpdater {
@@ -980,7 +982,9 @@ struct SimpleActionToTest {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
+  // [mutable global cache metavars]
   using mutable_global_cache_tags = tmpl::list<CacheTag>;
+  // [mutable global cache metavars]
 
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -989,7 +993,9 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   using metavars = Metavariables;
   using component = Component<metavars>;
 
+  // [mutable global cache runner]
   ActionTesting::MockRuntimeSystem<metavars> runner{{}, {0}};
+  // [mutable global cache runner]
   ActionTesting::emplace_array_component<component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0);
 
