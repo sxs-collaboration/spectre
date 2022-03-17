@@ -95,8 +95,7 @@ struct add_new_stored_double {
                     const ArrayIndex& /*array_index*/) {
     // [mutate_global_cache_item]
     Parallel::mutate<Tags::VectorOfDoubles,
-                     MutationFunctions::add_stored_double>(cache.thisProxy,
-                                                           42.0);
+                     MutationFunctions::add_stored_double>(cache, 42.0);
     // [mutate_global_cache_item]
   }
 };

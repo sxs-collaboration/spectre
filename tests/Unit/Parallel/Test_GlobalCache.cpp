@@ -275,7 +275,7 @@ void TestArrayChare<Metavariables>::run_test_one() {
                                     .number_of_sides());
 
   // Mutate the weight to 150.
-  Parallel::mutate<weight, modify_value<double>>(global_cache_proxy_, 150.0);
+  Parallel::mutate<weight, modify_value<double>>(local_cache, 150.0);
   run_test_two();
 }
 
@@ -299,9 +299,9 @@ void TestArrayChare<Metavariables>::run_test_two() {
 
     // Now the weight is 150, so mutate the email.
     Parallel::mutate<email, modify_value<std::string>>(
-        global_cache_proxy_, std::string("albert@einstein.de"));
+        local_cache, std::string("albert@einstein.de"));
     // ... and make the arthropod into a lobster.
-    Parallel::mutate<animal, modify_number_of_legs>(global_cache_proxy_, 10_st);
+    Parallel::mutate<animal, modify_number_of_legs>(local_cache, 10_st);
     run_test_three();
   }
 }
@@ -326,7 +326,7 @@ void TestArrayChare<Metavariables>::run_test_three() {
                              Parallel::get<email>(local_cache));
 
     // Now make the arthropod into a spider.
-    Parallel::mutate<animal, modify_number_of_legs>(global_cache_proxy_, 8_st);
+    Parallel::mutate<animal, modify_number_of_legs>(local_cache, 8_st);
     run_test_four();
   }
 }
@@ -351,8 +351,7 @@ void TestArrayChare<Metavariables>::run_test_four() {
         8 == Parallel::get<animal>(local_cache).number_of_legs());
 
     // Make the arthropod into a Scutigera coleoptrata.
-    Parallel::mutate<animal_base, modify_number_of_legs>(global_cache_proxy_,
-                                                         30_st);
+    Parallel::mutate<animal_base, modify_number_of_legs>(local_cache, 30_st);
 
     run_test_five();
   }

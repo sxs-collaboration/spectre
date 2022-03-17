@@ -687,7 +687,7 @@ compute items are considered.
 To modify a mutable item, pass `Parallel::mutate` two template
 parameters: the tag to mutate, and a struct with an `apply` function
 that does the mutating. `Parallel::mutate` takes two arguments:
-a proxy to the GlobalCache, and a tuple that is passed into the
+a reference to the local GlobalCache, and a tuple that is passed into the
 mutator function.  For the following example,
 
 \snippet Test_AlgorithmGlobalCache.cpp mutate_global_cache_item
