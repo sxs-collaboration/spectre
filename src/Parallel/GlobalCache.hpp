@@ -121,7 +121,7 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   auto get() const
       -> const GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>&;
 
-  // Entry method to mutate the object indentified by `GlobalCacheTag`.
+  // Entry method to mutate the object identified by `GlobalCacheTag`.
   // Internally calls Function::apply(), where
   // Function is a struct, and Function::apply is a user-defined
   // static function that mutates the object.  Function::apply() takes
