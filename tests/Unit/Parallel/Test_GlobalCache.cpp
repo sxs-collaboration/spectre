@@ -17,7 +17,6 @@
 #include <string>
 #include <tuple>
 
-#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -422,21 +421,21 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() {
                            Parallel::get<animal_base>(cache).number_of_legs());
 
   // Check that we can modify the non-const items.
-  ActionTesting::mutate<weight, modify_value<double>>(cache, 150.0);
-  ActionTesting::mutate<email, modify_value<std::string>>(
+  Parallel::mutate<weight, modify_value<double>>(cache, 150.0);
+  Parallel::mutate<email, modify_value<std::string>>(
       cache, std::string("nobody@nowhere.com"));
   SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(cache));
   SPECTRE_PARALLEL_REQUIRE("nobody@nowhere.com" == Parallel::get<email>(cache));
-  ActionTesting::mutate<email, modify_value<std::string>>(
+  Parallel::mutate<email, modify_value<std::string>>(
       cache, std::string("isaac@newton.com"));
   SPECTRE_PARALLEL_REQUIRE("isaac@newton.com" == Parallel::get<email>(cache));
   // Make the arthropod into a spider.
-  ActionTesting::mutate<animal, modify_number_of_legs>(cache, 8_st);
+  Parallel::mutate<animal, modify_number_of_legs>(cache, 8_st);
   SPECTRE_PARALLEL_REQUIRE(8 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(8 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
   // Make the arthropod into a Scutigera coleoptrata.
-  ActionTesting::mutate<animal_base, modify_number_of_legs>(cache, 30_st);
+  Parallel::mutate<animal_base, modify_number_of_legs>(cache, 30_st);
   SPECTRE_PARALLEL_REQUIRE(30 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());

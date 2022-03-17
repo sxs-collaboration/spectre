@@ -90,8 +90,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
       ActionTesting::cache<TestSingleton<TestingMetavariables>>(runsys, 0_st);
 
   for (auto& name : {pp_name, quatfot_name}) {
-    ActionTesting::mutate<domain::Tags::FunctionsOfTime,
-                          control_system::UpdateFunctionOfTime>(
+    Parallel::mutate<domain::Tags::FunctionsOfTime,
+                     control_system::UpdateFunctionOfTime>(
         cache, name, update_time, updated_deriv, new_expiration_time);
   }
 
@@ -115,8 +115,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
   // Update functions of time in global cache with new expiration time
   const double newer_expiration_time = new_expiration_time + 1.0;
   for (auto& name : {pp_name, quatfot_name}) {
-    ActionTesting::mutate<domain::Tags::FunctionsOfTime,
-                          control_system::ResetFunctionOfTimeExpirationTime>(
+    Parallel::mutate<domain::Tags::FunctionsOfTime,
+                     control_system::ResetFunctionOfTimeExpirationTime>(
         cache, name, newer_expiration_time);
   }
 

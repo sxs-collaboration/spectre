@@ -127,9 +127,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Trigger", "[Domain][Unit]") {
 
   CHECK(not trigger.is_ready(box, cache, 0, component_p));
 
-  ActionTesting::mutate<control_system::Tags::MeasurementTimescales,
-                        control_system::UpdateFunctionOfTime>(
-      cache, "LabelB"s, 0.5, DataVector{4.0}, 4.0);
+  Parallel::mutate<control_system::Tags::MeasurementTimescales,
+                   control_system::UpdateFunctionOfTime>(cache, "LabelB"s, 0.5,
+                                                         DataVector{4.0}, 4.0);
 
   CHECK(trigger.is_ready(box, cache, 0, component_p));
   {
