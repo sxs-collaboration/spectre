@@ -66,62 +66,29 @@ struct ApproximateTime {
     return s << t.value();
   }
 };
-}  // namespace
 
-AdamsBashforthN::AdamsBashforthN(const size_t order) : order_(order) {
-  if (order_ < 1 or order_ > maximum_order) {
-    ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
-          << maximum_order);
+std::vector<double> constant_coefficients(const size_t order) {
+  switch (order) {
+    case 1: return {1.};
+    case 2: return {1.5, -0.5};
+    case 3: return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
+    case 4: return {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0};
+    case 5: return {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0,
+          -637.0 / 360.0, 251.0 / 720.0};
+    case 6: return {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0,
+          -3649.0 / 720.0, 959.0 / 480.0, -95.0 / 288.0};
+    case 7: return {198721.0 / 60480.0, -18637.0 / 2520.0, 235183.0 / 20160.0,
+          -10754.0 / 945.0, 135713.0 / 20160.0, -5603.0 / 2520.0,
+          19087.0 / 60480.0};
+    case 8: return {16083.0 / 4480.0, -1152169.0 / 120960.0, 242653.0 / 13440.0,
+          -296053.0 / 13440.0, 2102243.0 / 120960.0, -115747.0 / 13440.0,
+          32863.0 / 13440.0, -5257.0 / 17280.0};
+    default:
+      ERROR("Bad order: " << order);
   }
 }
 
-size_t AdamsBashforthN::order() const { return order_; }
-
-size_t AdamsBashforthN::error_estimate_order() const { return order_ - 1; }
-
-size_t AdamsBashforthN::number_of_past_steps() const { return order_ - 1; }
-
-double AdamsBashforthN::stable_step() const {
-  if (order_ == 1) {
-    return 1.;
-  }
-
-  // This is the condition that the characteristic polynomial of the
-  // recurrence relation defined by the method has the correct sign at
-  // -1.  It is not clear whether this is actually sufficient.
-  const auto& coefficients = constant_coefficients(order_);
-  double invstep = 0.;
-  double sign = 1.;
-  for (const auto coef : coefficients) {
-    invstep += sign * coef;
-    sign = -sign;
-  }
-  return 1. / invstep;
-}
-
-TimeStepId AdamsBashforthN::next_time_id(const TimeStepId& current_id,
-                                         const TimeDelta& time_step) const {
-  ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
-  return {current_id.time_runs_forward(), current_id.slab_number(),
-          current_id.step_time() + time_step};
-}
-
-std::vector<double> AdamsBashforthN::get_coefficients_impl(
-    const std::vector<double>& steps) {
-  const size_t order = steps.size();
-  ASSERT(order >= 1 and order <= maximum_order, "Bad order" << order);
-  if (std::all_of(steps.begin(), steps.end(), [&steps](const double s) {
-        return equal_within_roundoff(
-            s, steps[0], 10.0 * std::numeric_limits<double>::epsilon(), 0.0);
-      })) {
-    return constant_coefficients(order);
-  }
-
-  return variable_coefficients(steps);
-}
-
-std::vector<double> AdamsBashforthN::variable_coefficients(
-    const std::vector<double>& steps) {
+std::vector<double> variable_coefficients(const std::vector<double>& steps) {
   const size_t order = steps.size();  // "k" in below equations
   std::vector<double> result;
   result.reserve(order);
@@ -165,25 +132,75 @@ std::vector<double> AdamsBashforthN::variable_coefficients(
   return result;
 }
 
-std::vector<double> AdamsBashforthN::constant_coefficients(const size_t order) {
-  switch (order) {
-    case 1: return {1.};
-    case 2: return {1.5, -0.5};
-    case 3: return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
-    case 4: return {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -3.0 / 8.0};
-    case 5: return {1901.0 / 720.0, -1387.0 / 360.0, 109.0 / 30.0,
-          -637.0 / 360.0, 251.0 / 720.0};
-    case 6: return {4277.0 / 1440.0, -2641.0 / 480.0, 4991.0 / 720.0,
-          -3649.0 / 720.0, 959.0 / 480.0, -95.0 / 288.0};
-    case 7: return {198721.0 / 60480.0, -18637.0 / 2520.0, 235183.0 / 20160.0,
-          -10754.0 / 945.0, 135713.0 / 20160.0, -5603.0 / 2520.0,
-          19087.0 / 60480.0};
-    case 8: return {16083.0 / 4480.0, -1152169.0 / 120960.0, 242653.0 / 13440.0,
-          -296053.0 / 13440.0, 2102243.0 / 120960.0, -115747.0 / 13440.0,
-          32863.0 / 13440.0, -5257.0 / 17280.0};
-    default:
-      ERROR("Bad order: " << order);
+// Get coefficients for a time step.  Arguments are an iterator
+// pair to past times, oldest to newest, and the time step to take.
+template <typename Iterator, typename Delta>
+std::vector<double> get_coefficients(const Iterator& times_begin,
+                                     const Iterator& times_end,
+                                     const Delta& step) {
+  if (times_begin == times_end) {
+    return {};
   }
+  std::vector<double> steps;
+  // This may be slightly more space than we need, but we can't get
+  // the exact amount without iterating through the iterators, which
+  // is not necessarily cheap depending on the iterator type.
+  steps.reserve(AdamsBashforthN::maximum_order);
+  for (auto t = times_begin; std::next(t) != times_end; ++t) {
+    steps.push_back((*std::next(t) - *t).value());
+  }
+  steps.push_back(step.value());
+
+  const size_t order = steps.size();
+  ASSERT(order >= 1 and order <= AdamsBashforthN::maximum_order,
+         "Bad order" << order);
+  if (std::all_of(steps.begin(), steps.end(), [&steps](const double s) {
+        return equal_within_roundoff(
+            s, steps[0], 10.0 * std::numeric_limits<double>::epsilon(), 0.0);
+      })) {
+    return constant_coefficients(order);
+  }
+
+  return variable_coefficients(steps);
+}
+}  // namespace
+
+AdamsBashforthN::AdamsBashforthN(const size_t order) : order_(order) {
+  if (order_ < 1 or order_ > maximum_order) {
+    ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
+          << maximum_order);
+  }
+}
+
+size_t AdamsBashforthN::order() const { return order_; }
+
+size_t AdamsBashforthN::error_estimate_order() const { return order_ - 1; }
+
+size_t AdamsBashforthN::number_of_past_steps() const { return order_ - 1; }
+
+double AdamsBashforthN::stable_step() const {
+  if (order_ == 1) {
+    return 1.;
+  }
+
+  // This is the condition that the characteristic polynomial of the
+  // recurrence relation defined by the method has the correct sign at
+  // -1.  It is not clear whether this is actually sufficient.
+  const auto& coefficients = constant_coefficients(order_);
+  double invstep = 0.;
+  double sign = 1.;
+  for (const auto coef : coefficients) {
+    invstep += sign * coef;
+    sign = -sign;
+  }
+  return 1. / invstep;
+}
+
+TimeStepId AdamsBashforthN::next_time_id(const TimeStepId& current_id,
+                                         const TimeDelta& time_step) const {
+  ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
+  return {current_id.time_runs_forward(), current_id.slab_number(),
+          current_id.step_time() + time_step};
 }
 
 void AdamsBashforthN::pup(PUP::er& p) {
@@ -563,24 +580,6 @@ void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
       }
     }  // for remote_evaluation_step
   }  // for local_evaluation_step
-}
-
-template <typename Iterator, typename Delta>
-std::vector<double> AdamsBashforthN::get_coefficients(
-    const Iterator& times_begin, const Iterator& times_end, const Delta& step) {
-  if (times_begin == times_end) {
-    return {};
-  }
-  std::vector<double> steps;
-  // This may be slightly more space than we need, but we can't get
-  // the exact amount without iterating through the iterators, which
-  // is not necessarily cheap depending on the iterator type.
-  steps.reserve(maximum_order);
-  for (auto t = times_begin; std::next(t) != times_end; ++t) {
-    steps.push_back((*std::next(t) - *t).value());
-  }
-  steps.push_back(step.value());
-  return get_coefficients_impl(steps);
 }
 
 bool operator==(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
