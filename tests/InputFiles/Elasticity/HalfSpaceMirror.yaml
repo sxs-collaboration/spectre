@@ -11,7 +11,7 @@
 #   - Label: Discretization error
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: ElasticHalfSpaceMirrorReductions.h5
-#     SkipColumns: [0, 1]
+#     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 5.e-4
 
 Background:
