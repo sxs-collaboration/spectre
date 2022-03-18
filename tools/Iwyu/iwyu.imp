@@ -9,11 +9,6 @@
   { include: ["@<brigand/.*>", private,
               "\"Utilities/TMPL.hpp\"", public]},
 
-  { include: ["@<blaze/.*>", private,
-              "\"DataStructures/DenseMatrix.hpp\"", public]},
-  { include: ["@<blaze/.*>", private,
-              "\"DataStructures/DenseVector.hpp\"", public]},
-
   { include: ["<ckmessage.h>", private,
               "<charm++.h>", public]},
   { include: ["<ckreduction.h>", private,

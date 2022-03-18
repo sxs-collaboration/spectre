@@ -14,8 +14,6 @@
 #include "Helpers/DataStructures/VectorImplTestHelper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
-// IWYU pragma: no_include "DataStructures/DenseMatrix.hpp"
-
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexDataVector.ExpressionAssignError",

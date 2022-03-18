@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -28,7 +28,7 @@ namespace {
 struct DummyOptionsGroup {};
 
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;
@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE(
   // Setup mock element array
 
   ActionTesting::emplace_component_and_initialize<element_array>(
-      make_not_null(&runner), 0, {DenseVector<double>(3, 0.)});
+      make_not_null(&runner), 0, {blaze::DynamicVector<double>(3, 0.)});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
   }
@@ -151,8 +151,8 @@ SPECTRE_TEST_CASE(
                                                   has_converged) {
     const size_t iteration_id = 0;
     set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}, iteration_id);
-    set_tag(operand_tag{}, DenseVector<double>(3, 2.));
-    set_tag(residual_tag{}, DenseVector<double>(3, 1.));
+    set_tag(operand_tag{}, blaze::DynamicVector<double>(3, 2.));
+    set_tag(residual_tag{}, blaze::DynamicVector<double>(3, 1.));
     runner.template force_next_action_to_be<
         element_array, LinearSolver::cg::detail::UpdateOperand<
                            fields_tag, DummyOptionsGroup, DummyOptionsGroup>>(
@@ -168,7 +168,7 @@ SPECTRE_TEST_CASE(
     inbox[iteration_id] = std::make_tuple(res_ratio, has_converged);
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
-          DenseVector<double>(3, 5.));
+          blaze::DynamicVector<double>(3, 5.));
     CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) == 1);
     CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==
           has_converged);

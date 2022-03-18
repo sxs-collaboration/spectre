@@ -7,7 +7,7 @@
 #include <map>
 #include <tuple>
 
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,8 +33,9 @@ template <typename OptionsGroup>
 struct FinalOrthogonalization
     : Parallel::InboxInserters::Value<FinalOrthogonalization<OptionsGroup>> {
   using temporal_id = size_t;
-  using type = std::map<temporal_id, std::tuple<double, DenseVector<double>,
-                                                Convergence::HasConverged>>;
+  using type =
+      std::map<temporal_id, std::tuple<double, blaze::DynamicVector<double>,
+                                       Convergence::HasConverged>>;
 };
 
 }  // namespace LinearSolver::gmres::detail::Tags

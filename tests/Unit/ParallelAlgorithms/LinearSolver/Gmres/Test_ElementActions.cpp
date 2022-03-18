@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -30,7 +30,7 @@ namespace {
 struct DummyOptionsGroup {};
 
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;
@@ -95,7 +95,7 @@ void test_element_actions() {
 
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
-      make_not_null(&runner), 0, {DenseVector<double>(3, 0.)});
+      make_not_null(&runner), 0, {blaze::DynamicVector<double>(3, 0.)});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
   }
@@ -151,10 +151,10 @@ void test_element_actions() {
         const size_t iteration_id = 0;
         set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{},
                 iteration_id);
-        set_tag(operand_tag{}, DenseVector<double>(3, 2.));
-        set_tag(basis_history_tag{},
-                std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                                 DenseVector<double>(3, 1.5)});
+        set_tag(operand_tag{}, blaze::DynamicVector<double>(3, 2.));
+        set_tag(basis_history_tag{}, std::vector<blaze::DynamicVector<double>>{
+                                         blaze::DynamicVector<double>(3, 0.5),
+                                         blaze::DynamicVector<double>(3, 1.5)});
         REQUIRE_FALSE(ActionTesting::next_action_if_ready<element_array>(
             make_not_null(&runner), 0));
         auto& inbox = ActionTesting::get_inbox_tag<
@@ -166,8 +166,9 @@ void test_element_actions() {
         inbox[iteration_id] =
             std::make_tuple(residual_magnitude, has_converged);
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-        CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
-                              DenseVector<double>(3, has_converged ? 2. : 0.5));
+        CHECK_ITERABLE_APPROX(
+            get_tag(operand_tag{}),
+            blaze::DynamicVector<double>(3, has_converged ? 2. : 0.5));
         CHECK(get_tag(basis_history_tag{}).size() == (has_converged ? 2 : 3));
         if (not has_converged) {
           CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
@@ -190,11 +191,11 @@ void test_element_actions() {
         const size_t iteration_id = 2;
         set_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{},
                 iteration_id);
-        set_tag(initial_fields_tag{}, DenseVector<double>(3, -1.));
-        set_tag(operand_tag{}, DenseVector<double>(3, 2.));
-        set_tag(basis_history_tag{},
-                std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                                 DenseVector<double>(3, 1.5)});
+        set_tag(initial_fields_tag{}, blaze::DynamicVector<double>(3, -1.));
+        set_tag(operand_tag{}, blaze::DynamicVector<double>(3, 2.));
+        set_tag(basis_history_tag{}, std::vector<blaze::DynamicVector<double>>{
+                                         blaze::DynamicVector<double>(3, 0.5),
+                                         blaze::DynamicVector<double>(3, 1.5)});
         if constexpr (Preconditioned) {
           set_tag(preconditioned_basis_history_tag{},
                   get_tag(basis_history_tag{}));
@@ -211,17 +212,18 @@ void test_element_actions() {
                                FinalOrthogonalization<DummyOptionsGroup>>(
             make_not_null(&runner), 0);
         const double normalization = 4.;
-        const DenseVector<double> minres{2., 4.};
+        const blaze::DynamicVector<double> minres{2., 4.};
         CAPTURE(has_converged);
         inbox[iteration_id] =
             std::make_tuple(normalization, minres, has_converged);
         ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
         CHECK_ITERABLE_APPROX(get_tag(operand_tag{}),
-                              DenseVector<double>(3, 0.5));
+                              blaze::DynamicVector<double>(3, 0.5));
         CHECK(get_tag(basis_history_tag{}).size() == 3);
         CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
         // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
-        CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
+        CHECK_ITERABLE_APPROX(get_tag(VectorTag{}),
+                              blaze::DynamicVector<double>(3, 6.));
         CHECK(get_tag(Convergence::Tags::IterationId<DummyOptionsGroup>{}) ==
               3);
         CHECK(get_tag(Convergence::Tags::HasConverged<DummyOptionsGroup>{}) ==

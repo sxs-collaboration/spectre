@@ -7,8 +7,8 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -40,19 +40,15 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   {
     // [gmres_example]
     INFO("Solve a symmetric 2x2 matrix");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 3.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
-    const DenseVector<double> source{1., 2.};
-    DenseVector<double> initial_guess_in_solution_out{2., 1.};
-    const DenseVector<double> expected_solution{0.0909090909090909,
-                                                0.6363636363636364};
+    const blaze::DynamicVector<double> source{1., 2.};
+    blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
+    const blaze::DynamicVector<double> expected_solution{0.0909090909090909,
+                                                         0.6363636363636364};
     const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
-    const Gmres<DenseVector<double>> gmres{convergence_criteria,
-                                           ::Verbosity::Verbose};
+    const Gmres<blaze::DynamicVector<double>> gmres{convergence_criteria,
+                                                    ::Verbosity::Verbose};
     CHECK_FALSE(gmres.has_preconditioner());
     std::vector<double> recorded_residuals;
     const auto has_converged = gmres.solve(
@@ -93,10 +89,10 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     const auto check_second_solve = [&linear_operator](
                                         const auto& local_gmres) {
       linear_operator.invocations = 0;
-      DenseVector<double> local_initial_guess_in_solution_out{0., 0.};
+      blaze::DynamicVector<double> local_initial_guess_in_solution_out{0., 0.};
       const auto local_has_converged = local_gmres.solve(
           make_not_null(&local_initial_guess_in_solution_out), linear_operator,
-          DenseVector<double>{2, 1});
+          blaze::DynamicVector<double>{2, 1});
       REQUIRE(local_has_converged);
       // The initial guess is zero, so the initial operator should have been
       // skipped, leaving only two operator applications for two iterations
@@ -104,8 +100,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       CHECK(local_has_converged.reason() ==
             Convergence::Reason::AbsoluteResidual);
       CHECK(local_has_converged.num_iterations() == 2);
-      const DenseVector<double> expected_local_solution{0.454545454545455,
-                                                         0.181818181818182};
+      const blaze::DynamicVector<double> expected_local_solution{
+          0.454545454545455, 0.181818181818182};
       CHECK_ITERABLE_APPROX(local_initial_guess_in_solution_out,
                             expected_local_solution);
     };
@@ -127,18 +123,14 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Solve a non-symmetric 2x2 matrix");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 3.;
-    matrix(1, 1) = 1.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
-    const DenseVector<double> source{1., 2.};
-    DenseVector<double> initial_guess_in_solution_out{2., 1.};
-    const DenseVector<double> expected_solution{-1., 5.};
+    const blaze::DynamicVector<double> source{1., 2.};
+    blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1.};
+    const blaze::DynamicVector<double> expected_solution{-1., 5.};
     const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
-    const Gmres<DenseVector<double>> gmres{convergence_criteria,
-                                           ::Verbosity::Verbose};
+    const Gmres<blaze::DynamicVector<double>> gmres{convergence_criteria,
+                                                    ::Verbosity::Verbose};
     const auto has_converged = gmres.solve(
         make_not_null(&initial_guess_in_solution_out), linear_operator, source);
     REQUIRE(has_converged);
@@ -178,27 +170,19 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Restarting");
-    DenseMatrix<double> matrix(3, 3);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(0, 2) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 1.;
-    matrix(1, 2) = 3.;
-    matrix(2, 0) = 0.;
-    matrix(2, 1) = 2.;
-    matrix(2, 2) = 0.;
+    blaze::DynamicMatrix<double> matrix{
+        {4., 1., 1.}, {1., 1., 3.}, {0., 2., 0.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
-    const DenseVector<double> source{1., 2., 1.};
-    DenseVector<double> initial_guess_in_solution_out{2., 1., 0.};
-    const DenseVector<double> expected_solution{0., 0.5, 0.5};
+    const blaze::DynamicVector<double> source{1., 2., 1.};
+    blaze::DynamicVector<double> initial_guess_in_solution_out{2., 1., 0.};
+    const blaze::DynamicVector<double> expected_solution{0., 0.5, 0.5};
     const Convergence::Criteria convergence_criteria{100, 1.e-14, 0.};
     // Restart every other iteration. The algorithm would converge in 3
     // iterations without restarting, so restarting is of course ridiculously
     // inefficient for this problem size. The number of iterations rises to 59.
     const size_t restart = 2;
-    const Gmres<DenseVector<double>> gmres{convergence_criteria,
-                                           ::Verbosity::Verbose, restart};
+    const Gmres<blaze::DynamicVector<double>> gmres{
+        convergence_criteria, ::Verbosity::Verbose, restart};
     const auto has_converged = gmres.solve(
         make_not_null(&initial_guess_in_solution_out), linear_operator, source);
     REQUIRE(has_converged);
@@ -208,21 +192,17 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
   }
   {
     INFO("Preconditioning");
-    DenseMatrix<double> matrix(2, 2);
-    matrix(0, 0) = 4.;
-    matrix(0, 1) = 1.;
-    matrix(1, 0) = 1.;
-    matrix(1, 1) = 3.;
+    blaze::DynamicMatrix<double> matrix{{4., 1.}, {1., 3.}};
     const helpers::ApplyMatrix linear_operator{std::move(matrix)};
-    const DenseVector<double> source{1., 2.};
-    const DenseVector<double> expected_solution{0.0909090909090909,
-                                                0.6363636363636364};
+    const blaze::DynamicVector<double> source{1., 2.};
+    const blaze::DynamicVector<double> expected_solution{0.0909090909090909,
+                                                         0.6363636363636364};
     const Convergence::Criteria convergence_criteria{2, 1.e-14, 0.};
     const auto check_solve = [&linear_operator, &source, &expected_solution](
                                  const auto& local_gmres,
                                  const size_t expected_num_iterations) {
       REQUIRE(local_gmres.has_preconditioner());
-      DenseVector<double> local_initial_guess_in_solution_out{2., 1.};
+      blaze::DynamicVector<double> local_initial_guess_in_solution_out{2., 1.};
       std::vector<double> local_recorded_residuals;
       const auto local_has_converged = local_gmres.solve(
           make_not_null(&local_initial_guess_in_solution_out), linear_operator,
@@ -245,7 +225,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       // Use the exact inverse of the matrix as preconditioner. This
       // should solve the problem in 1 iteration.
       helpers::ExactInversePreconditioner preconditioner{};
-      const Gmres<DenseVector<double>, helpers::ExactInversePreconditioner>
+      const Gmres<blaze::DynamicVector<double>,
+                  helpers::ExactInversePreconditioner>
           preconditioned_gmres{convergence_criteria, ::Verbosity::Verbose,
                                std::nullopt, std::move(preconditioner)};
       check_solve(preconditioned_gmres, 1);
@@ -268,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       INFO("Diagonal (Jacobi) preconditioner");
       // Use the inverse of the diagonal as preconditioner.
       helpers::JacobiPreconditioner preconditioner{};
-      const Gmres<DenseVector<double>, helpers::JacobiPreconditioner>
+      const Gmres<blaze::DynamicVector<double>, helpers::JacobiPreconditioner>
           preconditioned_gmres{convergence_criteria, ::Verbosity::Verbose,
                                std::nullopt, std::move(preconditioner)};
       check_solve(preconditioned_gmres, 2);
@@ -283,7 +264,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
           0.2857142857142857,
           // Run two Richardson iterations
           2};
-      const Gmres<DenseVector<double>, helpers::RichardsonPreconditioner>
+      const Gmres<blaze::DynamicVector<double>,
+                  helpers::RichardsonPreconditioner>
           preconditioned_gmres{convergence_criteria, ::Verbosity::Verbose,
                                std::nullopt, std::move(preconditioner)};
       check_solve(preconditioned_gmres, 1);
@@ -293,7 +275,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       // Running another GMRES solver for 2 iterations as preconditioner. It
       // should already solve the problem, so the preconditioned solve only
       // needs a single iteration.
-      const Gmres<DenseVector<double>, Gmres<DenseVector<double>>>
+      const Gmres<blaze::DynamicVector<double>,
+                  Gmres<blaze::DynamicVector<double>>>
           preconditioned_gmres{convergence_criteria,
                                ::Verbosity::Verbose,
                                std::nullopt,
@@ -305,14 +288,15 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       // Also running another GMRES solver as preconditioner, but passing it as
       // a factory-created abstract `LinearSolver` type.
       using LinearSolverRegistrars =
-          tmpl::list<Registrars::Gmres<DenseVector<double>>>;
+          tmpl::list<Registrars::Gmres<blaze::DynamicVector<double>>>;
       using LinearSolverFactory = LinearSolver<LinearSolverRegistrars>;
-      const Gmres<DenseVector<double>, LinearSolverFactory,
+      const Gmres<blaze::DynamicVector<double>, LinearSolverFactory,
                   LinearSolverRegistrars>
           preconditioned_gmres{
               convergence_criteria, ::Verbosity::Verbose, std::nullopt,
-              std::make_unique<Gmres<DenseVector<double>, LinearSolverFactory,
-                                     LinearSolverRegistrars>>(
+              std::make_unique<
+                  Gmres<blaze::DynamicVector<double>, LinearSolverFactory,
+                        LinearSolverRegistrars>>(
                   Convergence::Criteria{2, 0., 0.}, ::Verbosity::Verbose)};
       check_solve(preconditioned_gmres, 1);
       {
@@ -335,7 +319,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     INFO("Option-creation");
     {
       const auto solver =
-          TestHelpers::test_creation<Gmres<DenseVector<double>>>(
+          TestHelpers::test_creation<Gmres<blaze::DynamicVector<double>>>(
               "ConvergenceCriteria:\n"
               "  MaxIterations: 2\n"
               "  AbsoluteResidual: 0.1\n"
@@ -349,8 +333,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       CHECK_FALSE(solver.has_preconditioner());
     }
     {
-      const auto solver = TestHelpers::test_creation<
-          Gmres<DenseVector<double>, helpers::ExactInversePreconditioner>>(
+      const auto solver = TestHelpers::test_creation<Gmres<
+          blaze::DynamicVector<double>, helpers::ExactInversePreconditioner>>(
           "ConvergenceCriteria:\n"
           "  MaxIterations: 2\n"
           "  AbsoluteResidual: 0.1\n"
@@ -365,8 +349,8 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
       CHECK_FALSE(solver.has_preconditioner());
     }
     {
-      const auto solver = TestHelpers::test_creation<
-          Gmres<DenseVector<double>, helpers::ExactInversePreconditioner>>(
+      const auto solver = TestHelpers::test_creation<Gmres<
+          blaze::DynamicVector<double>, helpers::ExactInversePreconditioner>>(
           "ConvergenceCriteria:\n"
           "  MaxIterations: 2\n"
           "  AbsoluteResidual: 0.1\n"
@@ -382,7 +366,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
     }
     {
       using LinearSolverRegistrars =
-          tmpl::list<Registrars::Gmres<DenseVector<double>>>;
+          tmpl::list<Registrars::Gmres<blaze::DynamicVector<double>>>;
       using LinearSolverFactory = LinearSolver<LinearSolverRegistrars>;
       const auto solver =
           TestHelpers::test_creation<std::unique_ptr<LinearSolverFactory>>(
@@ -403,7 +387,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.Gmres",
               "      Verbosity: Verbose\n"
               "      Preconditioner: None\n");
       REQUIRE(solver);
-      using Derived = Gmres<DenseVector<double>, LinearSolverFactory,
+      using Derived = Gmres<blaze::DynamicVector<double>, LinearSolverFactory,
                             LinearSolverRegistrars>;
       REQUIRE_FALSE(nullptr == dynamic_cast<const Derived*>(solver.get()));
       const auto& derived = dynamic_cast<const Derived&>(*solver);

@@ -8,8 +8,8 @@
 #include <tuple>
 #include <vector>
 
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/LinearSolver.hpp"
@@ -123,7 +123,10 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
 
   /// The matrix representation of the solver. This matrix approximates the
   /// inverse of the subdomain operator.
-  const DenseMatrix<double>& matrix_representation() const { return inverse_; }
+  const blaze::DynamicMatrix<double, blaze::columnMajor>&
+  matrix_representation() const {
+    return inverse_;
+  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
@@ -144,11 +147,11 @@ class ExplicitInverse : public LinearSolver<LinearSolverRegistrars> {
   mutable size_t size_ = std::numeric_limits<size_t>::max();
   // We currently store the matrix representation in a dense matrix because
   // Blaze doesn't support the inversion of sparse matrices (yet).
-  mutable DenseMatrix<double, blaze::columnMajor> inverse_{};
+  mutable blaze::DynamicMatrix<double, blaze::columnMajor> inverse_{};
 
   // Buffers to avoid re-allocating memory for applying the operator
-  mutable DenseVector<double> source_workspace_{};
-  mutable DenseVector<double> solution_workspace_{};
+  mutable blaze::DynamicVector<double> source_workspace_{};
+  mutable blaze::DynamicVector<double> solution_workspace_{};
 };
 
 template <typename LinearSolverRegistrars>

@@ -5,6 +5,8 @@
 
 #include <array>
 #include <blaze/math/CompressedMatrix.h>
+#include <blaze/math/DynamicMatrix.h>
+#include <blaze/math/DynamicVector.h>
 #include <blaze/math/StaticMatrix.h>
 #include <blaze/math/StaticVector.h>
 #include <utility>
@@ -12,8 +14,6 @@
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -41,11 +41,11 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
                   "[Unit][NumericalAlgorithms][LinearSolver]") {
   {
     INFO("Build a simple dense matrix");
-    const DenseMatrix<double> matrix{{4., 1.}, {3., 1.}};
+    const blaze::DynamicMatrix<double> matrix{{4., 1.}, {3., 1.}};
     const helpers::ApplyMatrix linear_operator{matrix};
-    DenseMatrix<double> matrix_representation(2, 2);
-    DenseVector<double> operand_buffer(2, 0.);
-    DenseVector<double> result_buffer(2, 0.);
+    blaze::DynamicMatrix<double> matrix_representation(2, 2);
+    blaze::DynamicVector<double> operand_buffer(2, 0.);
+    blaze::DynamicVector<double> result_buffer(2, 0.);
     build_matrix(make_not_null(&matrix_representation),
                  make_not_null(&operand_buffer), make_not_null(&result_buffer),
                  linear_operator);
@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.LinearSolver.Serial.BuildMatrix",
                      Index<1>{2});
     };
 
-    DenseMatrix<double> matrix_representation(5, 5);
+    blaze::DynamicMatrix<double> matrix_representation(5, 5);
     SubdomainData operand_buffer{3};
     get(get<ScalarFieldTag>(operand_buffer.element_data)) = DataVector(3, 0.);
     operand_buffer.overlap_data.emplace(overlap_id,

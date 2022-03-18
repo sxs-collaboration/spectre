@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: export
+#include "DataStructures/DynamicMatrix.hpp"
 
 /*!
  * \ingroup DataStructuresGroup
@@ -16,8 +16,8 @@
  * [Blaze documentation](https://bitbucket.org/blaze-lib/blaze/wiki/Matrices)
  * for information on how to use it.
  */
-class Matrix : public DenseMatrix<double, blaze::columnMajor> {
+class Matrix : public blaze::DynamicMatrix<double, blaze::columnMajor> {
  public:
   // Inherit constructors
-  using DenseMatrix<double, blaze::columnMajor>::DenseMatrix;
+  using blaze::DynamicMatrix<double, blaze::columnMajor>::DynamicMatrix;
 };

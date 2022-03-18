@@ -13,8 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -43,21 +42,21 @@ namespace TestHelpers::NonlinearSolver {
 
 struct Source : db::SimpleTag {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<Source>;
   static type create_from_options(const type& option) { return option; }
 };
 struct InitialGuess : db::SimpleTag {
   static constexpr Options::String help = "The initial guess for the vector x.";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<InitialGuess>;
   static type create_from_options(const type& option) { return option; }
 };
 struct ExpectedResult : db::SimpleTag {
   static constexpr Options::String help = "The solution x in the equation Ax=b";
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   static constexpr bool pass_metavariables = false;
   using option_tags = tmpl::list<ExpectedResult>;
   static type create_from_options(const type& option) { return option; }
@@ -65,7 +64,7 @@ struct ExpectedResult : db::SimpleTag {
 
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
   static std::string name() { return "VectorTag"; }
 };
 

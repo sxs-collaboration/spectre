@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <blaze/math/typetraits/IsColumnMajorMatrix.h>
+#include <blaze/math/typetraits/IsDenseMatrix.h>
 #include <catch.hpp>
 #include <csignal>
 #include <cstddef>
@@ -255,6 +257,8 @@ struct check_matrix_approx {
     // generalize to a row-major matrix because the iterator
     // `blaze::DynamicMatrix<T, SO>::cbegin(i)` traverses either a row or a
     // column, and takes its index as argument.
+    static_assert(blaze::IsColumnMajorMatrix_v<M> and
+                  blaze::IsDenseMatrix_v<M>);
     CHECK(a.columns() == b.columns());
     for (size_t j = 0; j < a.columns(); j++) {
       CAPTURE(a);

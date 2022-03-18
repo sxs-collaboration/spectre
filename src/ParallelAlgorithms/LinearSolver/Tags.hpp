@@ -15,7 +15,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/DenseMatrix.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
 #include "Utilities/Gsl.hpp"
 
 /*!
@@ -141,7 +141,7 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearOrthogonalizationHistory(" + db::tag_name<Tag>() + ")";
   }
-  using type = DenseMatrix<double>;
+  using type = blaze::DynamicMatrix<double>;
   using tag = Tag;
 };
 

@@ -31,8 +31,6 @@ spectre_target_headers(
   CompressedMatrix.hpp
   CompressedVector.hpp
   DataVector.hpp
-  DenseMatrix.hpp
-  DenseVector.hpp
   DiagonalModalOperator.hpp
   DynamicBuffer.hpp
   DynamicMatrix.hpp

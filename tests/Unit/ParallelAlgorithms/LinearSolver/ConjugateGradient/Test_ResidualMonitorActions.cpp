@@ -13,7 +13,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ParallelAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
 #include "IO/Logging/Verbosity.hpp"
@@ -43,7 +43,7 @@ namespace {
 struct TestLinearSolver {};
 
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;

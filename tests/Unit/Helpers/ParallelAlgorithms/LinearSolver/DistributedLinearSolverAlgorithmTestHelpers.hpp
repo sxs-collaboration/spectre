@@ -17,8 +17,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicMatrix.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -67,53 +67,46 @@ namespace OptionTags {
 // DG discretization, M is the number of collocation points per element.
 struct LinearOperator {
   static constexpr Options::String help = "The linear operator A to invert.";
-  using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using type = std::vector<blaze::DynamicMatrix<double>>;
 };
 // Both of the following options expect a list of N vectors that have a size of
 // M each, so that they constitute a vector of total size N*M (see above).
 struct Source {
   static constexpr Options::String help = "The source b in the equation Ax=b.";
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
 };
 struct ExpectedResult {
   static constexpr Options::String help = "The solution x in the equation Ax=b";
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
 };
 }  // namespace OptionTags
 
 // [array_allocation_tag]
 struct LinearOperator : db::SimpleTag {
-  using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using type = std::vector<blaze::DynamicMatrix<double>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseMatrix<double, blaze::columnMajor>>
-  create_from_options(
-      const std::vector<DenseMatrix<double, blaze::columnMajor>>&
-          linear_operator) {
+  static type create_from_options(const type& linear_operator) {
     return linear_operator;
   }
 };
 // [array_allocation_tag]
 
 struct Source : db::SimpleTag {
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& source) {
-    return source;
-  }
+  static type create_from_options(const type& source) { return source; }
 };
 
 struct ExpectedResult : db::SimpleTag {
-  using type = std::vector<DenseVector<double>>;
+  using type = std::vector<blaze::DynamicVector<double>>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
   static constexpr bool pass_metavariables = false;
-  static std::vector<DenseVector<double>> create_from_options(
-      const std::vector<DenseVector<double>>& expected_result) {
+  static type create_from_options(const type& expected_result) {
     return expected_result;
   }
 };

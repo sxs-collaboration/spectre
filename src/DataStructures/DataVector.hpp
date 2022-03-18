@@ -31,7 +31,9 @@ DECLARE_GENERAL_VECTOR_BLAZE_TRAITS(DataVector);
  * Refer to the \ref DataStructuresGroup documentation for a list of other
  * available types. In particular, to represent a generic vector that supports
  * common vector and matrix operations and whose meaning may not be of function
- * values at points, use DenseVector instead.
+ * values at points, use any of the
+ * [Blaze vector types](https://bitbucket.org/blaze-lib/blaze/wiki/Vector%20Types)
+ * instead.
  *
  * DataVectors support a variety of mathematical operations that are applicable
  * to nodal coefficients. In addition to common arithmetic operations such as

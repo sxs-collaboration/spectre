@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
-#include "DataStructures/DenseVector.hpp"
+#include "DataStructures/DynamicVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
@@ -31,7 +31,7 @@ namespace {
 struct TestSolver {};
 
 struct VectorTag : db::SimpleTag {
-  using type = DenseVector<double>;
+  using type = blaze::DynamicVector<double>;
 };
 
 using fields_tag = VectorTag;
@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   const int element_id = 0;
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
-      {DenseVector<double>{}, DenseVector<double>{}});
+      {blaze::DynamicVector<double>{}, blaze::DynamicVector<double>{}});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
@@ -165,9 +165,10 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   }
   {
     INFO("PrepareSolve");
-    set_tag(fields_tag{}, DenseVector<double>{1., 2., 3.});
-    set_tag(source_tag{}, DenseVector<double>{4., 5., 6.});
-    set_tag(operator_applied_to_fields_tag{}, DenseVector<double>{7., 8., 9.});
+    set_tag(fields_tag{}, blaze::DynamicVector<double>{1., 2., 3.});
+    set_tag(source_tag{}, blaze::DynamicVector<double>{4., 5., 6.});
+    set_tag(operator_applied_to_fields_tag{},
+            blaze::DynamicVector<double>{7., 8., 9.});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     CHECK(get_tag(Convergence::Tags::IterationId<TestSolver>{}) == 0);
@@ -179,9 +180,9 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   }
   {
     INFO("CompleteStep");
-    set_tag(fields_tag{}, DenseVector<double>{10., 11., 12.});
+    set_tag(fields_tag{}, blaze::DynamicVector<double>{10., 11., 12.});
     set_tag(operator_applied_to_fields_tag{},
-            DenseVector<double>{13., 14., 15});
+            blaze::DynamicVector<double>{13., 14., 15});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     CHECK(get_tag(Convergence::Tags::IterationId<TestSolver>{}) == 1);

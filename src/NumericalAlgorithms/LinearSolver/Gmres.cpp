@@ -4,12 +4,12 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 
 #include <blaze/math/Column.h>
+#include <blaze/math/DynamicMatrix.h>
+#include <blaze/math/DynamicVector.h>
 #include <blaze/math/Submatrix.h>
 #include <blaze/math/Subvector.h>
 #include <blaze/math/lapack/trsv.h>
 
-#include "DataStructures/DenseMatrix.hpp"
-#include "DataStructures/DenseVector.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -32,8 +32,9 @@ void update_givens_rotation(const gsl::not_null<double*> givens_cosine,
 
 template <typename Arg>
 void apply_and_update_givens_rotation(
-    Arg argument, const gsl::not_null<DenseVector<double>*> givens_sine_history,
-    const gsl::not_null<DenseVector<double>*> givens_cosine_history,
+    Arg argument,
+    const gsl::not_null<blaze::DynamicVector<double>*> givens_sine_history,
+    const gsl::not_null<blaze::DynamicVector<double>*> givens_cosine_history,
     const size_t iteration) {
   const size_t k = iteration + 1;
   for (size_t i = 0; i < k - 1; ++i) {
@@ -54,10 +55,11 @@ void apply_and_update_givens_rotation(
 }  // namespace
 
 void solve_minimal_residual(
-    const gsl::not_null<DenseMatrix<double>*> orthogonalization_history,
-    const gsl::not_null<DenseVector<double>*> residual_history,
-    const gsl::not_null<DenseVector<double>*> givens_sine_history,
-    const gsl::not_null<DenseVector<double>*> givens_cosine_history,
+    const gsl::not_null<blaze::DynamicMatrix<double>*>
+        orthogonalization_history,
+    const gsl::not_null<blaze::DynamicVector<double>*> residual_history,
+    const gsl::not_null<blaze::DynamicVector<double>*> givens_sine_history,
+    const gsl::not_null<blaze::DynamicVector<double>*> givens_cosine_history,
     const size_t iteration) {
   residual_history->resize(iteration + 2);
   givens_sine_history->resize(iteration + 1);
@@ -79,11 +81,12 @@ void solve_minimal_residual(
       (*givens_cosine_history)[iteration] * (*residual_history)[iteration];
 }
 
-DenseVector<double> minimal_residual_vector(
-    const DenseMatrix<double>& orthogonalization_history,
-    const DenseVector<double>& residual_history) {
+blaze::DynamicVector<double> minimal_residual_vector(
+    const blaze::DynamicMatrix<double>& orthogonalization_history,
+    const blaze::DynamicVector<double>& residual_history) {
   const size_t length = orthogonalization_history.columns();
-  DenseVector<double> minres = blaze::subvector(residual_history, 0, length);
+  blaze::DynamicVector<double> minres =
+      blaze::subvector(residual_history, 0, length);
   blaze::trsv(blaze::submatrix(orthogonalization_history, 0, 0, length, length),
               minres, 'U', 'N', 'N');
   return minres;
