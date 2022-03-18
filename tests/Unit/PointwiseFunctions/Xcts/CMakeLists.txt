@@ -4,6 +4,7 @@
 set(LIBRARY Test_XctsPointwiseFunctions)
 
 set(LIBRARY_SOURCES
+  Test_ExtrinsicCurvature.cpp
   Test_LongitudinalOperator.cpp
   Test_SpacetimeQuantities.cpp
   )
