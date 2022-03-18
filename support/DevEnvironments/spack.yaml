@@ -43,7 +43,7 @@
 spack:
   specs:
   - blaze@3.8
-  - 'boost@1.60:'
+  - 'boost@1.60:+math+program_options'
   - brigand@master
   - 'catch2@2.8:'
   # Charm++:
