@@ -171,6 +171,28 @@ struct EvolutionMetavars {
 
   using limiter = Tags::Limiter<NewtonianEuler::Limiters::Minmod<Dim>>;
 
+  enum class Phase {
+    Initialization,
+    InitializeTimeStepperHistory,
+    Register,
+    LoadBalancing,
+    WriteCheckpoint,
+    Evolve,
+    Exit
+  };
+
+  static std::string phase_name(Phase phase) {
+    if (phase == Phase::LoadBalancing) {
+      return "LoadBalancing";
+    } else if (phase == Phase::WriteCheckpoint) {
+      return "WriteCheckpoint";
+    }
+    ERROR(
+        "Passed phase that should not be used in input file. Integer "
+        "corresponding to phase is: "
+        << static_cast<int>(phase));
+  }
+
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
@@ -219,6 +241,13 @@ struct EvolutionMetavars {
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                                  EvolutionMetavars, Phase::LoadBalancing>,
+                              PhaseControl::VisitAndReturn<
+                                  EvolutionMetavars, Phase::WriteCheckpoint>,
+                              PhaseControl::CheckpointAndExitAfterWallclock<
+                                  EvolutionMetavars>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -237,41 +266,11 @@ struct EvolutionMetavars {
       observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
-  enum class Phase {
-    Initialization,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
-
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    } else if (phase == Phase::WriteCheckpoint) {
-      return "WriteCheckpoint";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<EvolutionMetavars,
-                                                          Phase::LoadBalancing>,
-                 PhaseControl::Registrars::VisitAndReturn<
-                     EvolutionMetavars, Phase::WriteCheckpoint>,
-                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
-                     EvolutionMetavars>>;
-
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+      PhaseControl::InitializePhaseChangeDecisionData;
 
   using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
+      PhaseControl::get_phase_change_tags<EvolutionMetavars>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -400,10 +399,9 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                  step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>;
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -424,8 +422,7 @@ struct EvolutionMetavars {
           tmpl::list<>>,
       initial_data_tag,
       tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
-      Tags::EventsAndTriggers,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+      Tags::EventsAndTriggers, PhaseControl::Tags::PhaseChangeAndTriggers>;
 
   static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};
@@ -436,10 +433,9 @@ struct EvolutionMetavars {
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase =
-        PhaseControl::arbitrate_phase_change<phase_changes>(
-            phase_change_decision_data, current_phase,
-            *(cache_proxy.ckLocalBranch()));
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
+        phase_change_decision_data, current_phase,
+        *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
       return next_phase.value();
     }
@@ -477,8 +473,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &NewtonianEuler::BoundaryCorrections::register_derived_with_charm,
     &NewtonianEuler::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

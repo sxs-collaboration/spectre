@@ -8,15 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-template <typename PhaseChangeRegistrars>
-struct PhaseChange;
-/// \endcond
 
 namespace PhaseControl {
 namespace OptionTags {
@@ -43,9 +38,7 @@ namespace OptionTags {
 ///     - - PhaseChange3
 ///       - PhaseChange4
 /// ```
-template <typename PhaseChangeRegistrars>
 struct PhaseChangeAndTriggers {
-  using phase_change_type = PhaseChange<PhaseChangeRegistrars>;
   static constexpr Options::String help{
       "A collection of pairs of triggers and collections of phase change "
       "objects to determine runtime phase control-flow decisions. The order of "
@@ -54,7 +47,7 @@ struct PhaseChangeAndTriggers {
 
   using type =
       std::vector<std::pair<std::unique_ptr<Trigger>,
-                            std::vector<std::unique_ptr<phase_change_type>>>>;
+                            std::vector<std::unique_ptr<PhaseChange>>>>;
 };
 }  // namespace OptionTags
 
@@ -62,15 +55,12 @@ namespace Tags {
 /// Tag for the collection of triggers that indicate synchronization points at
 /// which phase changes should be considered, and the associated `PhaseChange`
 /// objects for making the phase change decisions.
-template <typename PhaseChangeRegistrars>
 struct PhaseChangeAndTriggers : db::SimpleTag {
-  using phase_change_type = PhaseChange<PhaseChangeRegistrars>;
   using type =
       std::vector<std::pair<std::unique_ptr<Trigger>,
-                            std::vector<std::unique_ptr<phase_change_type>>>>;
+                            std::vector<std::unique_ptr<PhaseChange>>>>;
 
-  using option_tags =
-      tmpl::list<OptionTags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>;
+  using option_tags = tmpl::list<OptionTags::PhaseChangeAndTriggers>;
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& phase_control_and_triggers) {
     return deserialize<type>(
@@ -104,11 +94,12 @@ struct get_phase_change_tags_and_combines {
 
 /// Metafunction for determining the merged collection of tags in
 /// `phase_change_tags_and_combines_list`s from all `PhaseChange` derived
-/// classes registered in `PhaseChangeRegistrars`
-template <typename PhaseChangeRegistrars>
-using get_phase_change_tags =
-    tmpl::push_back<tmpl::flatten<tmpl::transform<
-                        Registration::registrants<PhaseChangeRegistrars>,
-                        detail::get_phase_change_tags_and_combines<tmpl::_1>>>,
-                    TagsAndCombines::UsePhaseChangeArbitration>;
+/// classes in `Metavariables::factory_creation`
+template <typename Metavariables>
+using get_phase_change_tags = tmpl::push_back<
+    tmpl::flatten<tmpl::transform<
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 PhaseChange>,
+        detail::get_phase_change_tags_and_combines<tmpl::_1>>>,
+    TagsAndCombines::UsePhaseChangeArbitration>;
 }  // namespace PhaseControl

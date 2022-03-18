@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Options/Options.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -19,18 +20,11 @@
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Registration.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
-template <typename PhaseChangeRegistrars>
-struct TestPhaseChange;
-
-namespace Registrars {
-using TestPhaseChange = Registration::Registrar<TestPhaseChange>;
-}  // namespace Registrars
-
 namespace Tags {
 struct Request {
   using type = bool;
@@ -70,13 +64,15 @@ namespace TestGlobalStateRecord {
 bool contributed = false;
 }  // namespace TestGlobalStateRecord
 
-template <typename PhaseChangeRegistrars =
-              tmpl::list<Registrars::TestPhaseChange>>
-struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
+struct TestPhaseChange : public PhaseChange {
   TestPhaseChange() = default;
   explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(TestPhaseChange);  // NOLINT
+#pragma GCC diagnostic pop
 
   struct Factor {
     using type = int;
@@ -137,11 +133,16 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   int stored_multiplier_ = 0;
 };
 
-template <typename PhaseChangeRegistrars>
-PUP::able::PUP_ID TestPhaseChange<PhaseChangeRegistrars>::my_PUP_ID = 0;
+PUP::able::PUP_ID TestPhaseChange::my_PUP_ID = 0;
 
 struct Metavariables {
   using component_list = tmpl::list<TestComponentAlpha, TestComponentBeta>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<PhaseChange, tmpl::list<TestPhaseChange>>>;
+  };
 
   enum class Phase { PhaseA, PhaseB };
 };
@@ -155,13 +156,13 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseChange",
           std::numeric_limits<double>::signaling_NaN(), -5);
   tuples::TaggedTuple<Tags::Request> phase_change_decision_data{true};
 
-  auto phase_change = TestHelpers::test_creation<
-      std::unique_ptr<PhaseChange<tmpl::list<Registrars::TestPhaseChange>>>>(
-      "TestPhaseChange:\n"
-      "  Factor: 3");
+  auto phase_change =
+      TestHelpers::test_creation<std::unique_ptr<PhaseChange>, Metavariables>(
+          "TestPhaseChange:\n"
+          "  Factor: 3");
 
   CHECK(tuples::get<Tags::Request>(phase_change_decision_data));
-  phase_change->initialize_phase_data(
+  phase_change->initialize_phase_data<Metavariables>(
       make_not_null(&phase_change_decision_data));
   CHECK_FALSE(tuples::get<Tags::Request>(phase_change_decision_data));
 

@@ -317,6 +317,9 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::GhValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                       GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -338,12 +341,10 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::at<typename factory_creation::factory_classes, Event>,
           typename InterpolationTargetTags::post_interpolation_callback...>>;
 
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>;
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+      PhaseControl::InitializePhaseChangeDecisionData;
   using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
+      PhaseControl::get_phase_change_tags<GhValenciaDivCleanTemplateBase>;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
@@ -356,7 +357,7 @@ struct GhValenciaDivCleanTemplateBase<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
           volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>>;
+      PhaseControl::Tags::PhaseChangeAndTriggers>>;
 
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
@@ -368,7 +369,7 @@ struct GhValenciaDivCleanTemplateBase<
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<derived_metavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -472,12 +473,12 @@ struct GhValenciaDivCleanTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  VariableFixing::Actions::FixVariables<
-                      VariableFixing::FixToAtmosphere<volume_dim>>,
-                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
+              tmpl::list<VariableFixing::Actions::FixVariables<
+                             VariableFixing::FixToAtmosphere<volume_dim>>,
+                         Actions::UpdateConservatives,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {

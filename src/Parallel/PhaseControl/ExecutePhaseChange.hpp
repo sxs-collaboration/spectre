@@ -37,7 +37,6 @@ namespace Actions {
  *   - `PhaseChange` objects are permitted to perform mutations on the
  *     \ref DataBoxGroup "DataBox" to store persistent state information.
  */
-template <typename PhaseChangeRegistrars>
 struct ExecutePhaseChange {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -49,8 +48,7 @@ struct ExecutePhaseChange {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
     const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-            cache);
+        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool should_halt = false;
     for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
       if (trigger->is_triggered(box)) {
@@ -111,16 +109,14 @@ struct ExecutePhaseChange {
  * important for the logic of the executable, the input file ordering and
  * `ArbitrationStrategy` must be chosen carefully.
  */
-template <typename PhaseChangeRegistrars, typename... DecisionTags,
-          typename Metavariables>
+template <typename... DecisionTags, typename Metavariables>
 typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data,
     typename Metavariables::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
   const auto& phase_change_and_triggers =
-      Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-          cache);
+      Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
   bool phase_chosen = false;
   for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
     // avoid unused variable warning
@@ -162,10 +158,9 @@ typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
  * `Metavariables`:
  * ```
  * using initialize_phase_data =
- *   PhaseControl::InitializePhaseChangeDecisionData<phase_change_registrars>;
+ *   PhaseControl::InitializePhaseChangeDecisionData;
  * ```
  */
-template <typename PhaseChangeRegistrars>
 struct InitializePhaseChangeDecisionData {
   template <typename... DecisionTags, typename Metavariables>
   static void apply(const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
@@ -174,13 +169,13 @@ struct InitializePhaseChangeDecisionData {
     tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
         *phase_change_decision_data) = false;
     const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-            cache);
+        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
       // avoid unused variable warning
       (void)trigger;
       for (const auto& phase_change : phase_changes) {
-        phase_change->initialize_phase_data(phase_change_decision_data);
+        phase_change->template initialize_phase_data<Metavariables>(
+            phase_change_decision_data);
       }
     }
   }

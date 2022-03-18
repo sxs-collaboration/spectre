@@ -145,6 +145,25 @@ struct EvolutionMetavars {
   using limiter = Tags::Limiter<
       Limiters::Minmod<Dim, typename system::variables_tag::tags_list>>;
 
+  enum class Phase {
+    Initialization,
+    LoadBalancing,
+    RegisterWithObserver,
+    InitializeTimeStepperHistory,
+    Evolve,
+    Exit
+  };
+
+  static std::string phase_name(Phase phase) {
+    if (phase == Phase::LoadBalancing) {
+      return "LoadBalancing";
+    }
+    ERROR(
+        "Passed phase that should not be used in input file. Integer "
+        "corresponding to phase is: "
+        << static_cast<int>(phase));
+  }
+
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
@@ -188,6 +207,9 @@ struct EvolutionMetavars {
                                   volume_dim, Tags::Time, observe_fields,
                                   non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                                  EvolutionMetavars, Phase::LoadBalancing>>>,
         tmpl::pair<ScalarAdvection::BoundaryConditions::BoundaryCondition<Dim>,
                    ScalarAdvection::BoundaryConditions::
                        standard_boundary_conditions<Dim>>,
@@ -273,33 +295,11 @@ struct EvolutionMetavars {
       tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
                           dg_step_actions>;
 
-  enum class Phase {
-    Initialization,
-    LoadBalancing,
-    RegisterWithObserver,
-    InitializeTimeStepperHistory,
-    Evolve,
-    Exit
-  };
-
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      EvolutionMetavars, Phase::LoadBalancing>>;
-
   using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
+      PhaseControl::InitializePhaseChangeDecisionData;
 
   using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
+      PhaseControl::get_phase_change_tags<EvolutionMetavars>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
@@ -307,7 +307,7 @@ struct EvolutionMetavars {
                      use_dg_subcell,
                      tmpl::list<ScalarAdvection::fd::Tags::Reconstructor<Dim>>,
                      tmpl::list<>>,
-                 PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+                 PhaseControl::Tags::PhaseChangeAndTriggers>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -356,10 +356,9 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                  step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>;
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -382,7 +381,7 @@ struct EvolutionMetavars {
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -422,8 +421,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &ScalarAdvection::BoundaryCorrections::register_derived_with_charm,
     &ScalarAdvection::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

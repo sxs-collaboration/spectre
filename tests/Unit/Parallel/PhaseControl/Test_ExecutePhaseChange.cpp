@@ -3,12 +3,14 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace {
@@ -23,22 +25,8 @@ struct Request {
 };
 }  // namespace TestTags
 
-template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,
-          typename PhaseChangeRegistrars>
-struct TestPhaseChange;
-
-namespace Registrars {
 template <PhaseControl::ArbitrationStrategy Strategy, size_t Index>
-struct TestPhaseChange {
-  template <typename PhaseChangeRegistrars>
-  using f = ::TestPhaseChange<Strategy, Index, PhaseChangeRegistrars>;
-};
-}  // namespace Registrars
-
-template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,
-          typename PhaseChangeRegistrars =
-              tmpl::list<Registrars::TestPhaseChange<Strategy, Index>>>
-struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
+struct TestPhaseChange : public PhaseChange {
   TestPhaseChange() = default;
   explicit TestPhaseChange(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
@@ -115,26 +103,30 @@ struct TestPhaseChange : public PhaseChange<PhaseChangeRegistrars> {
   void pup(PUP::er& /*p*/) override {}  // NOLINT
 };
 
-template <PhaseControl::ArbitrationStrategy Strategy, size_t Index,
-          typename PhaseChangeRegistrars>
-PUP::able::PUP_ID
-    TestPhaseChange<Strategy, Index, PhaseChangeRegistrars>::my_PUP_ID = 0;
+template <PhaseControl::ArbitrationStrategy Strategy, size_t Index>
+PUP::able::PUP_ID TestPhaseChange<Strategy, Index>::my_PUP_ID = 0;
 
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using phase_changes = tmpl::list<
-      Registrars::TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 0_st>,
-      Registrars::TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 1_st>,
-      Registrars::TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 0_st>,
-      Registrars::TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 1_st>,
-      Registrars::TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 2_st>>;
-  using const_global_cache_tags = tmpl::list<
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<tmpl::pair<
+        PhaseChange,
+        tmpl::list<
+            TestPhaseChange<
+                PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 0_st>,
+            TestPhaseChange<
+                PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 1_st>,
+            TestPhaseChange<
+                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 0_st>,
+            TestPhaseChange<
+                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 1_st>,
+            TestPhaseChange<
+                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps,
+                2_st>>>>;
+  };
+  using const_global_cache_tags =
+      tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
 
   enum class Phase { PhaseA, PhaseB, PhaseC, PhaseD, PhaseE, PhaseF, PhaseG };
 };
@@ -162,34 +154,26 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
   phase_change_decision_data_type phase_change_data{true, true, true,
                                                     true, true, true};
 
-  std::vector<
-      std::unique_ptr<PhaseChange<typename Metavariables::phase_changes>>>
-      phase_change_vector;
+  std::vector<std::unique_ptr<PhaseChange>> phase_change_vector;
   phase_change_vector.reserve(5);
   phase_change_vector.emplace_back(
       std::make_unique<TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 0_st,
-          typename Metavariables::phase_changes>>());
+          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 0_st>>());
   phase_change_vector.emplace_back(
       std::make_unique<TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 0_st,
-          typename Metavariables::phase_changes>>());
+          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 0_st>>());
   phase_change_vector.emplace_back(
       std::make_unique<TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 1_st,
-          typename Metavariables::phase_changes>>());
+          PhaseControl::ArbitrationStrategy::RunPhaseImmediately, 1_st>>());
   phase_change_vector.emplace_back(
       std::make_unique<TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 1_st,
-          typename Metavariables::phase_changes>>());
+          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 1_st>>());
   phase_change_vector.emplace_back(
       std::make_unique<TestPhaseChange<
-          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 2_st,
-          typename Metavariables::phase_changes>>());
+          PhaseControl::ArbitrationStrategy::PermitAdditionalJumps, 2_st>>());
 
-  using phase_change_and_triggers = PhaseControl::Tags::PhaseChangeAndTriggers<
-      typename Metavariables::phase_changes>;
-  typename phase_change_and_triggers::type vector_of_triggers_and_phase_changes;
+  using phase_change_and_triggers = PhaseControl::Tags::PhaseChangeAndTriggers;
+  phase_change_and_triggers::type vector_of_triggers_and_phase_changes;
   vector_of_triggers_and_phase_changes.emplace_back(
       static_cast<std::unique_ptr<Trigger>>(
           std::make_unique<Triggers::Always>()),
@@ -203,9 +187,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
 
   {
     INFO("Initialize phase change decision data");
-    PhaseControl::InitializePhaseChangeDecisionData<
-        typename Metavariables::phase_changes>::
-        apply(make_not_null(&phase_change_data), global_cache);
+    PhaseControl::InitializePhaseChangeDecisionData::apply(
+        make_not_null(&phase_change_data), global_cache);
     // checking against the formula:
     // (Index % 2 == 0) xor
     // (Strategy == PhaseControl::ArbitrationStrategy::RunPhaseImmediately)
@@ -218,8 +201,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     // B, C, D, E, and G (in that order)
     phase_change_data = phase_change_decision_data_type{false, false, false,
                                                         false, false, false};
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == std::nullopt);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
@@ -227,8 +209,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
 
     phase_change_data = phase_change_decision_data_type{false, false, false,
                                                         false, false, true};
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseA);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
@@ -238,28 +219,24 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
         phase_change_decision_data_type{true, false, true, true, false, true};
     // test the versions that use `RunPhaseImmediately`, so the phase jumps to
     // those phaases without evaluating the other phase change objects
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseB);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
     phase_change_data =
         phase_change_decision_data_type{true, false, true, true, false, true};
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseB);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseD);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, true, false, false}));
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseE);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
@@ -270,8 +247,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     // `RunPhaseImmediately` that is encountered.
     phase_change_data =
         phase_change_decision_data_type{false, true, false, true, false, true};
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseE);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
@@ -279,8 +255,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
 
     phase_change_data =
         phase_change_decision_data_type{false, true, false, true, true, true};
-    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                     typename Metavariables::phase_changes>(
+    CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
               global_cache)) == Metavariables::Phase::PhaseG);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
@@ -290,8 +265,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     for (size_t i = 0; i < 7; ++i) {
       phase_change_data = phase_change_decision_data_type{false, true,  true,
                                                           false, false, true};
-      CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change<
-                       typename Metavariables::phase_changes>(
+      CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
                 make_not_null(&phase_change_data),
                 static_cast<typename Metavariables::Phase>(i), global_cache)) ==
             Metavariables::Phase::PhaseD);
