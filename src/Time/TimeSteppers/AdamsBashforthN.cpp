@@ -4,6 +4,7 @@
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 
 #include <algorithm>
+#include <boost/container/static_vector.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <iterator>
 #include <limits>
@@ -67,7 +68,12 @@ struct ApproximateTime {
   }
 };
 
-std::vector<double> constant_coefficients(const size_t order) {
+// A vector holding one entry per order of integration.
+template <typename T>
+using OrderVector =
+    boost::container::static_vector<T, AdamsBashforthN::maximum_order>;
+
+OrderVector<double> constant_coefficients(const size_t order) {
   switch (order) {
     case 1: return {1.};
     case 2: return {1.5, -0.5};
@@ -88,10 +94,9 @@ std::vector<double> constant_coefficients(const size_t order) {
   }
 }
 
-std::vector<double> variable_coefficients(const std::vector<double>& steps) {
+OrderVector<double> variable_coefficients(const OrderVector<double>& steps) {
   const size_t order = steps.size();  // "k" in below equations
-  std::vector<double> result;
-  result.reserve(order);
+  OrderVector<double> result;
 
   // The `steps` vector contains the step sizes:
   //   steps = {dt_{n-k+1}, ..., dt_n}
@@ -100,12 +105,11 @@ std::vector<double> variable_coefficients(const std::vector<double>& steps) {
   //                             dt_n + ... + dt_{n-k+1})
   // (Where the ell_j are the Lagrange interpolating polynomials.)
 
-  std::vector<double> poly(order);
   double step_sum_j = 0.0;
   for (size_t j = 0; j < order; ++j) {
     // Calculate coefficients of the Lagrange interpolating polynomials,
     // in the standard a_0 + a_1 t + a_2 t^2 + ... form.
-    std::fill(poly.begin(), poly.end(), 0.0);
+    OrderVector<double> poly(order, 0.0);
 
     step_sum_j += steps[order - j - 1];
     poly[0] = 1.0;
@@ -135,17 +139,13 @@ std::vector<double> variable_coefficients(const std::vector<double>& steps) {
 // Get coefficients for a time step.  Arguments are an iterator
 // pair to past times, oldest to newest, and the time step to take.
 template <typename Iterator, typename Delta>
-std::vector<double> get_coefficients(const Iterator& times_begin,
+OrderVector<double> get_coefficients(const Iterator& times_begin,
                                      const Iterator& times_end,
                                      const Delta& step) {
   if (times_begin == times_end) {
     return {};
   }
-  std::vector<double> steps;
-  // This may be slightly more space than we need, but we can't get
-  // the exact amount without iterating through the iterators, which
-  // is not necessarily cheap depending on the iterator type.
-  steps.reserve(AdamsBashforthN::maximum_order);
+  OrderVector<double> steps;
   for (auto t = times_begin; std::next(t) != times_end; ++t) {
     steps.push_back((*std::next(t) - *t).value());
   }
