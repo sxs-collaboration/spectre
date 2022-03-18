@@ -308,14 +308,34 @@ void test_connectivity() {
           }
           CHECK(binary_compact_object.block_names() == expected_block_names);
           CHECK(binary_compact_object.block_groups() == expected_block_groups);
+          std::unordered_map<std::string, ExcisionSphere<3>>
+              expected_excision_spheres{};
+          if (excise_interiorA) {
+            expected_excision_spheres.emplace(
+                "ObjectAExcisionSphere",
+                ExcisionSphere<3>{inner_radius_objectA,
+                                  {{xcoord_objectA, 0.0, 0.0}},
+                                  {{0, Direction<3>::lower_zeta()},
+                                   {1, Direction<3>::lower_zeta()},
+                                   {2, Direction<3>::lower_zeta()},
+                                   {3, Direction<3>::lower_zeta()},
+                                   {4, Direction<3>::lower_zeta()},
+                                   {5, Direction<3>::lower_zeta()}}});
+          }
+          if (excise_interiorB) {
+            expected_excision_spheres.emplace(
+                "ObjectBExcisionSphere",
+                ExcisionSphere<3>{inner_radius_objectB,
+                                  {{xcoord_objectB, 0.0, 0.0}},
+                                  {{12, Direction<3>::lower_zeta()},
+                                   {13, Direction<3>::lower_zeta()},
+                                   {14, Direction<3>::lower_zeta()},
+                                   {15, Direction<3>::lower_zeta()},
+                                   {16, Direction<3>::lower_zeta()},
+                                   {17, Direction<3>::lower_zeta()}}});
+          }
           CHECK(binary_compact_object.create_domain().excision_spheres() ==
-                std::unordered_map<std::string, ExcisionSphere<3>>{
-                    {"ObjectAExcisionSphere",
-                     ExcisionSphere<3>{inner_radius_objectA,
-                                       {{xcoord_objectA, 0.0, 0.0}}}},
-                    {"ObjectBExcisionSphere",
-                     ExcisionSphere<3>{inner_radius_objectB,
-                                       {{xcoord_objectB, 0.0, 0.0}}}}});
+                expected_excision_spheres);
 
           test_binary_compact_object_construction(
               binary_compact_object,

@@ -383,7 +383,14 @@ void test_shell_construction(
   CHECK(domain.excision_spheres() ==
         std::unordered_map<std::string, ExcisionSphere<3>>{
             {"CentralExcisionSphere",
-             ExcisionSphere<3>{inner_radius, {{0.0, 0.0, 0.0}}}}});
+             ExcisionSphere<3>{inner_radius,
+                               {{0.0, 0.0, 0.0}},
+                               {{0, Direction<3>::lower_zeta()},
+                                {1, Direction<3>::lower_zeta()},
+                                {2, Direction<3>::lower_zeta()},
+                                {3, Direction<3>::lower_zeta()},
+                                {4, Direction<3>::lower_zeta()},
+                                {5, Direction<3>::lower_zeta()}}}}});
 
   test_initial_domain(domain, shell.initial_refinement_levels());
   TestHelpers::domain::creators::test_functions_of_time(

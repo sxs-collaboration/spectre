@@ -10,7 +10,9 @@
 #include <cstddef>
 #include <iosfwd>
 #include <limits>
+#include <unordered_map>
 
+#include "Domain/Structure/Direction.hpp"
 #include "Utilities/MakeArray.hpp"
 
 /// \cond
@@ -34,7 +36,11 @@ class ExcisionSphere {
   /// computational domain.
   /// \param center the coordinate center of the excision sphere
   /// in the computational domain.
-  ExcisionSphere(double radius, std::array<double, VolumeDim> center);
+  /// \param abutting_directions the set of blocks that touch the excision
+  /// sphere, along with the direction in which they touch it.
+  ExcisionSphere(
+      double radius, std::array<double, VolumeDim> center,
+      std::unordered_map<size_t, Direction<VolumeDim>> abutting_directions);
 
   /// Default constructor needed for Charm++ serialization.
   ExcisionSphere() = default;
@@ -52,6 +58,13 @@ class ExcisionSphere {
   /// The coodinate center of the ExcisionSphere.
   const std::array<double, VolumeDim>& center() const { return center_; }
 
+  /// The set of blocks that touch the excision sphere, along with the direction
+  /// in which they touch it
+  const std::unordered_map<size_t, Direction<VolumeDim>>& abutting_directions()
+      const {
+    return abutting_directions_;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -59,6 +72,7 @@ class ExcisionSphere {
   double radius_{std::numeric_limits<double>::signaling_NaN()};
   std::array<double, VolumeDim> center_{
       make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN())};
+  std::unordered_map<size_t, Direction<VolumeDim>> abutting_directions_{};
 };
 
 template <size_t VolumeDim>
