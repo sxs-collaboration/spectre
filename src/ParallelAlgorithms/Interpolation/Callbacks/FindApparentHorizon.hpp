@@ -92,8 +92,9 @@ namespace callbacks {
 /// iteration (if verbosity > Verbosity::Quiet) or on convergence
 /// (if verbosity > Verbosity::Silent).  The output consists of the
 /// following labels, and values associated with each label:
-///  - its     = current iteration number.
-///  - R       = min and max of residual over all prolonged grid points.
+///  - t        = time given by value of `temporal_id` argument to `apply`
+///  - its      = current iteration number.
+///  - R        = min and max of residual over all prolonged grid points.
 ///  - |R|      = L2 norm of residual, counting only L modes solved for.
 ///  - |R_mesh| = L2 norm of residual over prolonged grid points.
 ///  - r        = min and max radius of trial horizon surface.
@@ -106,7 +107,7 @@ namespace callbacks {
 ///
 ///  However, at each iteration we also interpolate the horizon surface
 ///  to a higher resolution ("prolongation").  The prolonged surface
-///  includes \f$Y_{lm}\f$ coefficents up to \f$l=l_{\mathrm{mesh}}\f$,
+///  includes \f$Y_{lm}\f$ coefficients up to \f$l=l_{\mathrm{mesh}}\f$,
 ///  where \f$l_{\mathrm{mesh}} > l_{\mathrm{surface}}\f$.
 ///  The residual computed on this higher-resolution surface is |R_mesh|.
 ///
