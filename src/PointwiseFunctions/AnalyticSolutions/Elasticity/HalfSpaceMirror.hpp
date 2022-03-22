@@ -170,6 +170,10 @@ class HalfSpaceMirror : public elliptic::analytic_data::AnalyticSolution {
   HalfSpaceMirror(HalfSpaceMirror&&) = default;
   HalfSpaceMirror& operator=(HalfSpaceMirror&&) = default;
   ~HalfSpaceMirror() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<HalfSpaceMirror>(*this);
+  }
 
   /// \cond
   explicit HalfSpaceMirror(CkMigrateMessage* m)

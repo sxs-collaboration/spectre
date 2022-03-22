@@ -16,12 +16,15 @@
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/Systems/Xcts/Geometry.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Parallel/PupStlCpp17.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Xcts/Factory.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts::BoundaryConditions {
@@ -29,42 +32,18 @@ namespace Xcts::BoundaryConditions {
 template <Xcts::Geometry ConformalGeometry>
 ApparentHorizon<ConformalGeometry>::ApparentHorizon(
     std::array<double, 3> center, std::array<double, 3> rotation,
-    std::optional<gr::Solutions::KerrSchild> kerr_solution_for_lapse,
-    std::optional<gr::Solutions::KerrSchild>
-        kerr_solution_for_negative_expansion,
-    const Options::Context& context)
+    std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+        solution_for_lapse,
+    std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+        solution_for_negative_expansion,
+    const Options::Context& /*context*/)
     : center_(center),
       rotation_(rotation),
       // NOLINTNEXTLINE(performance-move-const-arg)
-      kerr_solution_for_lapse_(std::move(kerr_solution_for_lapse)),
-      kerr_solution_for_negative_expansion_(
+      solution_for_lapse_(std::move(solution_for_lapse)),
+      solution_for_negative_expansion_(
           // NOLINTNEXTLINE(performance-move-const-arg)
-          std::move(kerr_solution_for_negative_expansion)) {
-  if (kerr_solution_for_lapse_.has_value() and
-      kerr_solution_for_lapse_->center() !=
-          std::array<double, 3>{{0., 0., 0.}}) {
-    PARSE_ERROR(
-        context,
-        "The Kerr solution supplied to the 'Lapse' option has a "
-        "non-zero 'Center'. While technically possible, this is probably not "
-        "what you want since the solution is already centered at the apparent "
-        "horizon. If you indeed want to offset the solution from the center, "
-        "edit Xcts::BoundaryConditions::ApparentHorizon. Else, just set "
-        "ApparentHorizon.Lapse.Center: [0, 0, 0].");
-  }
-  if (kerr_solution_for_negative_expansion_.has_value() and
-      kerr_solution_for_negative_expansion_->center() !=
-          std::array<double, 3>{{0., 0., 0.}}) {
-    PARSE_ERROR(
-        context,
-        "The Kerr solution supplied to the 'NegativeExpansion' option has a "
-        "non-zero 'Center'. While technically possible, this is probably not "
-        "what you want since the solution is already centered at the apparent "
-        "horizon. If you indeed want to offset the solution from the center, "
-        "edit Xcts::BoundaryConditions::ApparentHorizon. Else, just set "
-        "ApparentHorizon.Lapse.Center: [0, 0, 0].");
-  }
-}
+          std::move(solution_for_negative_expansion)) {}
 
 // This sets the output buffer to: \bar{m}^{ij} \bar{\nabla}_i n_j
 void normal_gradient_term_flat_cartesian(
@@ -123,24 +102,28 @@ void normal_gradient_term_curved(
 }
 
 // Compute the expansion Theta = m^ij (D_i s_j - K_ij) and the shift-correction
-// epsilon = shift_orthogonal - lapse of a Kerr solution
+// epsilon = shift_orthogonal - lapse of an analytic solution
 void negative_expansion_quantities(
     const gsl::not_null<Scalar<DataVector>*> expansion,
     const gsl::not_null<Scalar<DataVector>*> beta_orthogonal_correction,
-    const gr::Solutions::KerrSchild& kerr_solution,
+    const std::unique_ptr<elliptic::analytic_data::AnalyticSolution>& solution,
     const tnsr::I<DataVector, 3>& x,
     const tnsr::i<DataVector, 3>& conformal_face_normal,
     const Scalar<DataVector>& unnormalized_conformal_face_normal_magnitude,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal) {
-  const auto solution_vars = kerr_solution.variables(
-      x, std::numeric_limits<double>::signaling_NaN(),
-      tmpl::list<
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>{});
+  using analytic_tags = tmpl::list<
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
+      gr::Tags::Lapse<DataVector>,
+      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
+  const auto solution_vars =
+      call_with_dynamic_type<tuples::tagged_tuple_from_typelist<analytic_tags>,
+                             Xcts::Solutions::all_analytic_solutions>(
+          solution.get(), [&x](const auto* const local_solution) {
+            return local_solution->variables(x, analytic_tags{});
+          });
   const auto& inv_spatial_metric =
       get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
           solution_vars);
@@ -219,9 +202,12 @@ void apparent_horizon_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         n_dot_longitudinal_shift_excess,
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
-    const std::optional<gr::Solutions::KerrSchild>& kerr_solution_for_lapse,
-    const std::optional<gr::Solutions::KerrSchild>&
-        kerr_solution_for_negative_expansion,
+    const std::optional<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+        solution_for_lapse,
+    const std::optional<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+        solution_for_negative_expansion,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,
     const Scalar<DataVector>& face_normal_magnitude,
@@ -266,16 +252,16 @@ void apparent_horizon_impl(
   Scalar<DataVector>& expansion_of_solution =
       get<::Tags::TempScalar<3>>(buffer);
   Scalar<DataVector>& beta_orthogonal = get<::Tags::TempScalar<1>>(buffer);
-  if (kerr_solution_for_negative_expansion.has_value()) {
+  if (solution_for_negative_expansion.has_value()) {
     negative_expansion_quantities(
         make_not_null(&expansion_of_solution), make_not_null(&beta_orthogonal),
-        *kerr_solution_for_negative_expansion, x, face_normal,
-        face_normal_magnitude, deriv_unnormalized_face_normal);
+        *solution_for_negative_expansion, x, face_normal, face_normal_magnitude,
+        deriv_unnormalized_face_normal);
   }
 
   // Shift
   {
-    if (kerr_solution_for_negative_expansion.has_value()) {
+    if (solution_for_negative_expansion.has_value()) {
       get(beta_orthogonal) /= square(get(*conformal_factor));
     } else {
       get(beta_orthogonal) = 0.;
@@ -310,7 +296,7 @@ void apparent_horizon_impl(
   // At this point we're done with `face_normal_raised`, so we can re-purpose
   // the memory buffer.
   get(*n_dot_conformal_factor_gradient) *= -0.25 * get(*conformal_factor);
-  if (kerr_solution_for_negative_expansion.has_value()) {
+  if (solution_for_negative_expansion.has_value()) {
     get(*n_dot_conformal_factor_gradient) -=
         0.25 * cube(get(*conformal_factor)) * get(expansion_of_solution);
   }
@@ -334,10 +320,16 @@ void apparent_horizon_impl(
   }
 
   // Lapse
-  if (kerr_solution_for_lapse.has_value()) {
-    *lapse_times_conformal_factor =
-        get<gr::Tags::Lapse<DataVector>>(kerr_solution_for_lapse->variables(
-            x, 0., tmpl::list<gr::Tags::Lapse<DataVector>>{}));
+  if (solution_for_lapse.has_value()) {
+    *lapse_times_conformal_factor = call_with_dynamic_type<
+        Scalar<DataVector>, Xcts::Solutions::all_analytic_solutions>(
+        solution_for_lapse.value().get(),
+        [&x](const auto* const local_solution) {
+          return get<Xcts::Tags::LapseTimesConformalFactor<DataVector>>(
+              local_solution->variables(
+                  x, tmpl::list<
+                         Xcts::Tags::LapseTimesConformalFactor<DataVector>>{}));
+        });
   } else {
     get(*n_dot_lapse_times_conformal_factor_gradient) = 0.;
   }
@@ -356,9 +348,12 @@ void linearized_apparent_horizon_impl(
     const gsl::not_null<tnsr::I<DataVector, 3>*>
         n_dot_longitudinal_shift_correction,
     const std::array<double, 3>& center,
-    const std::optional<gr::Solutions::KerrSchild>& kerr_solution_for_lapse,
-    const std::optional<gr::Solutions::KerrSchild>&
-        kerr_solution_for_negative_expansion,
+    const std::optional<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+        solution_for_lapse,
+    const std::optional<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+        solution_for_negative_expansion,
     const tnsr::i<DataVector, 3>& face_normal,
     const tnsr::ij<DataVector, 3>& deriv_unnormalized_face_normal,
     const Scalar<DataVector>& face_normal_magnitude,
@@ -384,7 +379,7 @@ void linearized_apparent_horizon_impl(
       get<::Tags::TempScalar<2>>(buffer);
   Scalar<DataVector>& beta_orthogonal_correction =
       get<::Tags::TempScalar<1>>(buffer);
-  if (kerr_solution_for_negative_expansion.has_value()) {
+  if (solution_for_negative_expansion.has_value()) {
     // Center the coordinates
     tnsr::I<DataVector, 3>& x = get<::Tags::TempI<0, 3>>(buffer);
     x = x_offcenter;
@@ -393,7 +388,7 @@ void linearized_apparent_horizon_impl(
     get<2>(x) -= center[2];
     negative_expansion_quantities(make_not_null(&expansion_of_solution),
                                   make_not_null(&beta_orthogonal_correction),
-                                  *kerr_solution_for_negative_expansion, x,
+                                  *solution_for_negative_expansion, x,
                                   face_normal, face_normal_magnitude,
                                   deriv_unnormalized_face_normal);
   }
@@ -410,7 +405,7 @@ void linearized_apparent_horizon_impl(
 
   // Shift
   {
-    if (kerr_solution_for_negative_expansion.has_value()) {
+    if (solution_for_negative_expansion.has_value()) {
       get(beta_orthogonal_correction) *=
           -2. * get(*conformal_factor_correction) / cube(get(conformal_factor));
     } else {
@@ -446,7 +441,7 @@ void linearized_apparent_horizon_impl(
   // the memory buffer.
   get(*n_dot_conformal_factor_gradient_correction) *=
       -0.25 * get(*conformal_factor_correction);
-  if (kerr_solution_for_negative_expansion.has_value()) {
+  if (solution_for_negative_expansion.has_value()) {
     get(*n_dot_conformal_factor_gradient_correction) -=
         0.75 * square(get(conformal_factor)) * get(expansion_of_solution) *
         get(*conformal_factor_correction);
@@ -486,7 +481,7 @@ void linearized_apparent_horizon_impl(
   }
 
   // Lapse
-  if (kerr_solution_for_lapse.has_value()) {
+  if (solution_for_lapse.has_value()) {
     get(*lapse_times_conformal_factor_correction) = 0.;
   } else {
     get(*n_dot_lapse_times_conformal_factor_gradient_correction) = 0.;
@@ -514,9 +509,9 @@ void ApparentHorizon<ConformalGeometry>::apply(
       conformal_factor, lapse_times_conformal_factor, shift_excess,
       n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient,
-      n_dot_longitudinal_shift_excess, center_, rotation_,
-      kerr_solution_for_lapse_, kerr_solution_for_negative_expansion_,
-      face_normal, deriv_unnormalized_face_normal, face_normal_magnitude, x,
+      n_dot_longitudinal_shift_excess, center_, rotation_, solution_for_lapse_,
+      solution_for_negative_expansion_, face_normal,
+      deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, shift_background,
       longitudinal_shift_background, std::nullopt, std::nullopt);
 }
@@ -544,9 +539,9 @@ void ApparentHorizon<ConformalGeometry>::apply(
       conformal_factor, lapse_times_conformal_factor, shift_excess,
       n_dot_conformal_factor_gradient,
       n_dot_lapse_times_conformal_factor_gradient,
-      n_dot_longitudinal_shift_excess, center_, rotation_,
-      kerr_solution_for_lapse_, kerr_solution_for_negative_expansion_,
-      face_normal, deriv_unnormalized_face_normal, face_normal_magnitude, x,
+      n_dot_longitudinal_shift_excess, center_, rotation_, solution_for_lapse_,
+      solution_for_negative_expansion_, face_normal,
+      deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, shift_background,
       longitudinal_shift_background, inv_conformal_metric,
       conformal_christoffel_second_kind);
@@ -577,9 +572,9 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
       conformal_factor_correction, lapse_times_conformal_factor_correction,
       shift_excess_correction, n_dot_conformal_factor_gradient_correction,
       n_dot_lapse_times_conformal_factor_gradient_correction,
-      n_dot_longitudinal_shift_excess_correction, center_,
-      kerr_solution_for_lapse_, kerr_solution_for_negative_expansion_,
-      face_normal, deriv_unnormalized_face_normal, face_normal_magnitude, x,
+      n_dot_longitudinal_shift_excess_correction, center_, solution_for_lapse_,
+      solution_for_negative_expansion_, face_normal,
+      deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, longitudinal_shift_background,
       conformal_factor, lapse_times_conformal_factor,
       n_dot_longitudinal_shift_excess, std::nullopt, std::nullopt);
@@ -612,9 +607,9 @@ void ApparentHorizon<ConformalGeometry>::apply_linearized(
       conformal_factor_correction, lapse_times_conformal_factor_correction,
       shift_excess_correction, n_dot_conformal_factor_gradient_correction,
       n_dot_lapse_times_conformal_factor_gradient_correction,
-      n_dot_longitudinal_shift_excess_correction, center_,
-      kerr_solution_for_lapse_, kerr_solution_for_negative_expansion_,
-      face_normal, deriv_unnormalized_face_normal, face_normal_magnitude, x,
+      n_dot_longitudinal_shift_excess_correction, center_, solution_for_lapse_,
+      solution_for_negative_expansion_, face_normal,
+      deriv_unnormalized_face_normal, face_normal_magnitude, x,
       extrinsic_curvature_trace, longitudinal_shift_background,
       conformal_factor, lapse_times_conformal_factor,
       n_dot_longitudinal_shift_excess, inv_conformal_metric,
@@ -625,23 +620,8 @@ template <Xcts::Geometry ConformalGeometry>
 void ApparentHorizon<ConformalGeometry>::pup(PUP::er& p) {
   p | center_;
   p | rotation_;
-  p | kerr_solution_for_lapse_;
-  p | kerr_solution_for_negative_expansion_;
-}
-
-template <Xcts::Geometry ConformalGeometry>
-bool operator==(const ApparentHorizon<ConformalGeometry>& lhs,
-                const ApparentHorizon<ConformalGeometry>& rhs) {
-  return lhs.center() == rhs.center() and lhs.rotation() == rhs.rotation() and
-         lhs.kerr_solution_for_lapse() == rhs.kerr_solution_for_lapse() and
-         lhs.kerr_solution_for_negative_expansion() ==
-             rhs.kerr_solution_for_negative_expansion();
-}
-
-template <Xcts::Geometry ConformalGeometry>
-bool operator!=(const ApparentHorizon<ConformalGeometry>& lhs,
-                const ApparentHorizon<ConformalGeometry>& rhs) {
-  return not(lhs == rhs);
+  p | solution_for_lapse_;
+  p | solution_for_negative_expansion_;
 }
 
 template <Xcts::Geometry ConformalGeometry>
@@ -649,15 +629,5 @@ PUP::able::PUP_ID ApparentHorizon<ConformalGeometry>::my_PUP_ID = 0;  // NOLINT
 
 template class ApparentHorizon<Xcts::Geometry::FlatCartesian>;
 template class ApparentHorizon<Xcts::Geometry::Curved>;
-template bool operator==(
-    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& rhs);
-template bool operator!=(
-    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& lhs,
-    const ApparentHorizon<Xcts::Geometry::FlatCartesian>& rhs);
-template bool operator==(const ApparentHorizon<Xcts::Geometry::Curved>& lhs,
-                         const ApparentHorizon<Xcts::Geometry::Curved>& rhs);
-template bool operator!=(const ApparentHorizon<Xcts::Geometry::Curved>& lhs,
-                         const ApparentHorizon<Xcts::Geometry::Curved>& rhs);
 
 }  // namespace Xcts::BoundaryConditions

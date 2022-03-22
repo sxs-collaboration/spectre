@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
+#include "PointwiseFunctions/Xcts/ExtrinsicCurvature.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -605,6 +606,54 @@ void SchwarzschildVariables<DataType>::operator()(
         }
         shift_strain->get(i, i) += diagonal_prefactor;
       }
+      break;
+    }
+      // LCOV_EXCL_START
+    default:
+      ERROR("Missing case for SchwarzschildCoordinates");
+      // LCOV_EXCL_END
+  }
+}
+
+template <typename DataType>
+void SchwarzschildVariables<DataType>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
+    const gsl::not_null<Cache*> cache,
+    gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/) const {
+  switch (coordinate_system) {
+    case SchwarzschildCoordinates::Isotropic: {
+      std::fill(extrinsic_curvature->begin(), extrinsic_curvature->end(), 0.);
+      break;
+    }
+    case SchwarzschildCoordinates::PainleveGullstrand: {
+      const auto& r =
+          get(cache->get_var(*this, detail::Tags::Radius<DataType>{}));
+      const DataType diagonal_prefactor = sqrt(2. * mass / cube(r));
+      const DataType isotropic_prefactor =
+          -3. / 2. * diagonal_prefactor / square(r);
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j <= i; ++j) {
+          extrinsic_curvature->get(i, j) =
+              isotropic_prefactor * x.get(i) * x.get(j);
+        }
+        extrinsic_curvature->get(i, i) += diagonal_prefactor;
+      }
+      break;
+    }
+    case SchwarzschildCoordinates::KerrSchildIsotropic: {
+      // Background shift and \bar{u} are both zero
+      const auto& longitudinal_shift_minus_dt_conformal_metric = cache->get_var(
+          *this,
+          Xcts::Tags::LongitudinalShiftExcess<DataType, 3, Frame::Inertial>{});
+      Xcts::extrinsic_curvature(
+          extrinsic_curvature,
+          cache->get_var(*this, Xcts::Tags::ConformalFactor<DataType>{}),
+          cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
+          cache->get_var(
+              *this,
+              Xcts::Tags::ConformalMetric<DataType, 3, Frame::Inertial>{}),
+          longitudinal_shift_minus_dt_conformal_metric,
+          cache->get_var(*this, gr::Tags::TraceExtrinsicCurvature<DataType>{}));
       break;
     }
       // LCOV_EXCL_START

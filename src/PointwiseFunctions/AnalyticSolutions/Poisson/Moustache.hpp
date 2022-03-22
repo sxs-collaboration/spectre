@@ -83,6 +83,10 @@ class Moustache : public elliptic::analytic_data::AnalyticSolution {
   Moustache(Moustache&&) = default;
   Moustache& operator=(Moustache&&) = default;
   ~Moustache() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Moustache>(*this);
+  }
 
   /// \cond
   explicit Moustache(CkMigrateMessage* m)

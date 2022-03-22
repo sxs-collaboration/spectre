@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <vector>
@@ -19,8 +21,8 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -72,8 +74,7 @@ namespace Xcts::BoundaryConditions {
  * by the `Lapse` input-file options. Currently implemented choices are:
  * - A zero von-Neumann boundary condition:
  *   \f$\bar{s}^k\bar{D}_k(\alpha\psi) = 0\f$
- * - A Dirichlet boundary condition imposing the lapse of a Kerr-Schild analytic
- *   solution.
+ * - A Dirichlet boundary condition imposing the lapse of an analytic solution.
  *
  * \par Negative-expansion boundary conditions:
  * This class also supports negative-expansion boundary conditions following
@@ -120,20 +121,26 @@ class ApparentHorizon
         "'Omega x (r - Center)', where 'r' are the coordinates on the surface.";
   };
   struct Lapse {
-    using type = Options::Auto<gr::Solutions::KerrSchild>;
+    using type = Options::Auto<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>;
     static constexpr Options::String help =
-        "Specify a Kerr solution to impose a Dirichlet condition on the lapse "
-        "in Kerr-Schild coordinates. Alternatively, set this option to 'None' "
+        "Specify an analytic solution to impose a Dirichlet condition on the "
+        "lapse. The analytic solution will be evaluated at coordinates "
+        "centered at the apparent horizon. "
+        "Alternatively, set this option to 'None' "
         "to impose a zero von-Neumann boundary condition on the lapse. Note "
         "that the latter will not result in the standard Kerr-Schild slicing "
         "for a single black hole.";
   };
   struct NegativeExpansion {
-    using type =
-        Options::Auto<gr::Solutions::KerrSchild, Options::AutoLabel::None>;
+    using type = Options::Auto<
+        std::unique_ptr<elliptic::analytic_data::AnalyticSolution>,
+        Options::AutoLabel::None>;
     static constexpr Options::String help =
-        "Specify a Kerr solution to impose its expansion at the excision "
-        "surface. If the excision surface lies within the Kerr solution's "
+        "Specify an analytic solution to impose its expansion at the excision "
+        "surface. The analytic solution will be evaluated at coordinates "
+        "centered at the apparent horizon. "
+        "If the excision surface lies within the solution's "
         "apparent horizon, the imposed expansion will be negative and thus the "
         "excision surface will lie within an apparent horizon. Alternatively, "
         "set this option to 'None' to impose the expansion is zero at the "
@@ -144,8 +151,8 @@ class ApparentHorizon
   using options = tmpl::list<Center, Rotation, Lapse, NegativeExpansion>;
 
   ApparentHorizon() = default;
-  ApparentHorizon(const ApparentHorizon&) = default;
-  ApparentHorizon& operator=(const ApparentHorizon&) = default;
+  ApparentHorizon(const ApparentHorizon&) = delete;
+  ApparentHorizon& operator=(const ApparentHorizon&) = delete;
   ApparentHorizon(ApparentHorizon&&) = default;
   ApparentHorizon& operator=(ApparentHorizon&&) = default;
   ~ApparentHorizon() = default;
@@ -158,25 +165,36 @@ class ApparentHorizon
 
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition> get_clone()
       const override {
-    return std::make_unique<ApparentHorizon>(*this);
+    return std::make_unique<ApparentHorizon>(
+        center_, rotation_,
+        solution_for_lapse_.has_value()
+            ? std::make_optional(solution_for_lapse_.value()->get_clone())
+            : std::nullopt,
+        solution_for_negative_expansion_.has_value()
+            ? std::make_optional(
+                  solution_for_negative_expansion_.value()->get_clone())
+            : std::nullopt);
   }
 
   ApparentHorizon(
       std::array<double, 3> center, std::array<double, 3> rotation,
-      std::optional<gr::Solutions::KerrSchild> kerr_solution_for_lapse,
-      std::optional<gr::Solutions::KerrSchild>
-          kerr_solution_for_negative_expansion,
+      std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+          solution_for_lapse,
+      std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+          solution_for_negative_expansion,
       const Options::Context& context = {});
 
   const std::array<double, 3>& center() const { return center_; }
   const std::array<double, 3>& rotation() const { return rotation_; }
-  const std::optional<gr::Solutions::KerrSchild>& kerr_solution_for_lapse()
-      const {
-    return kerr_solution_for_lapse_;
+  const std::optional<
+      std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+  solution_for_lapse() const {
+    return solution_for_lapse_;
   }
-  const std::optional<gr::Solutions::KerrSchild>&
-  kerr_solution_for_negative_expansion() const {
-    return kerr_solution_for_negative_expansion_;
+  const std::optional<
+      std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>&
+  solution_for_negative_expansion() const {
+    return solution_for_negative_expansion_;
   }
 
   std::vector<elliptic::BoundaryConditionType> boundary_condition_types()
@@ -184,7 +202,7 @@ class ApparentHorizon
     return {// Conformal factor
             elliptic::BoundaryConditionType::Neumann,
             // Lapse times conformal factor
-            this->kerr_solution_for_lapse_.has_value()
+            this->solution_for_lapse_.has_value()
                 ? elliptic::BoundaryConditionType::Dirichlet
                 : elliptic::BoundaryConditionType::Neumann,
             // Shift
@@ -319,17 +337,10 @@ class ApparentHorizon
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
   std::array<double, 3> rotation_ =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
-  std::optional<gr::Solutions::KerrSchild> kerr_solution_for_lapse_{};
-  std::optional<gr::Solutions::KerrSchild>
-      kerr_solution_for_negative_expansion_{};
+  std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+      solution_for_lapse_{};
+  std::optional<std::unique_ptr<elliptic::analytic_data::AnalyticSolution>>
+      solution_for_negative_expansion_{};
 };
-
-template <Xcts::Geometry ConformalGeometry>
-bool operator==(const ApparentHorizon<ConformalGeometry>& lhs,
-                const ApparentHorizon<ConformalGeometry>& rhs);
-
-template <Xcts::Geometry ConformalGeometry>
-bool operator!=(const ApparentHorizon<ConformalGeometry>& lhs,
-                const ApparentHorizon<ConformalGeometry>& rhs);
 
 }  // namespace Xcts::BoundaryConditions

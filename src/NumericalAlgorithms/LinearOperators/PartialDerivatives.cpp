@@ -266,7 +266,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (tnsr::a, tnsr::A, tnsr::i, tnsr::I, tnsr::ab, tnsr::Ab,
                          tnsr::aB, tnsr::AB, tnsr::ij, tnsr::iJ, tnsr::Ij,
                          tnsr::IJ, tnsr::iA, tnsr::ia, tnsr::aa, tnsr::AA,
-                         tnsr::ii, tnsr::II))
+                         tnsr::ii, tnsr::II, tnsr::Ijj))
 
 #undef INSTANTIATION
 #undef GET_TENSOR

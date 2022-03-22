@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/CachedTempBuffer.hpp"
@@ -88,6 +89,21 @@ struct WrappedGrVariables
       ::Tags::deriv<Xcts::Tags::ConformalMetric<DataType, Dim, Frame::Inertial>,
                     tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
       const override;
+  void operator()(gsl::not_null<tnsr::ii<DataType, Dim>*> spatial_metric,
+                  gsl::not_null<Cache*> cache,
+                  gr::Tags::SpatialMetric<Dim, Frame::Inertial,
+                                          DataType> /*meta*/) const override;
+  void operator()(
+      gsl::not_null<tnsr::II<DataType, Dim>*> inv_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType> /*meta*/)
+      const override;
+  void operator()(
+      gsl::not_null<tnsr::ijj<DataType, Dim>*> deriv_spatial_metric,
+      gsl::not_null<Cache*> cache,
+      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                    tmpl::size_t<Dim>, Frame::Inertial> /*meta*/)
+      const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> trace_extrinsic_curvature,
       gsl::not_null<Cache*> cache,
@@ -138,6 +154,11 @@ struct WrappedGrVariables
       gsl::not_null<tnsr::ii<DataType, Dim>*> shift_strain,
       gsl::not_null<Cache*> cache,
       Xcts::Tags::ShiftStrain<DataType, Dim, Frame::Inertial> /*meta*/)
+      const override;
+  void operator()(
+      gsl::not_null<tnsr::ii<DataType, 3>*> extrinsic_curvature,
+      gsl::not_null<Cache*> cache,
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType> /*meta*/)
       const override;
   void operator()(
       gsl::not_null<Scalar<DataType>*> energy_density,
@@ -202,6 +223,10 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
   using GrSolution::GrSolution;
   using PUP::able::register_constructor;
   WRAPPED_PUPable_decl_template(WrappedGr<GrSolution>);
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<WrappedGr<GrSolution>>(*this);
+  }
 
   template <typename DataType, typename... RequestedTags>
   tuples::TaggedTuple<RequestedTags...> variables(

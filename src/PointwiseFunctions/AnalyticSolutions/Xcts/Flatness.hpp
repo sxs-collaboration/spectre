@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <memory>
 #include <ostream>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -41,6 +42,10 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
   Flatness(Flatness&&) = default;
   Flatness& operator=(Flatness&&) = default;
   ~Flatness() = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Flatness>(*this);
+  }
 
   /// \cond
   explicit Flatness(CkMigrateMessage* m)
@@ -55,6 +60,8 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
       tmpl::list<RequestedTags...> /*meta*/) const {
     using supported_tags_zero = tmpl::list<
         ::Tags::deriv<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+                      tmpl::size_t<3>, Frame::Inertial>,
+        ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
                       tmpl::size_t<3>, Frame::Inertial>,
         Tags::ConformalChristoffelFirstKind<DataType, 3, Frame::Inertial>,
         Tags::ConformalChristoffelSecondKind<DataType, 3, Frame::Inertial>,
@@ -71,6 +78,7 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
         Tags::ShiftBackground<DataType, 3, Frame::Inertial>,
         Tags::ShiftExcess<DataType, 3, Frame::Inertial>,
         Tags::ShiftStrain<DataType, 3, Frame::Inertial>,
+        gr::Tags::Shift<3, Frame::Inertial, DataType>,
         ::Tags::Flux<Tags::ConformalFactor<DataType>, tmpl::size_t<3>,
                      Frame::Inertial>,
         ::Tags::Flux<Tags::LapseTimesConformalFactor<DataType>, tmpl::size_t<3>,
@@ -84,6 +92,7 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
         ::Tags::div<Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
             DataVector, 3, Frame::Inertial>>,
         Tags::ShiftDotDerivExtrinsicCurvatureTrace<DataVector>,
+        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
         gr::Tags::Conformal<gr::Tags::EnergyDensity<DataType>, 0>,
         gr::Tags::Conformal<gr::Tags::StressTrace<DataType>, 0>,
         gr::Tags::Conformal<
@@ -101,10 +110,13 @@ class Flatness : public elliptic::analytic_data::AnalyticSolution {
         ::Tags::FixedSource<Tags::ShiftExcess<DataType, 3, Frame::Inertial>>>;
     using supported_tags_one =
         tmpl::list<Tags::ConformalFactor<DataType>,
-                   Tags::LapseTimesConformalFactor<DataType>>;
-    using supported_tags_metric =
-        tmpl::list<Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
-                   Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>>;
+                   Tags::LapseTimesConformalFactor<DataType>,
+                   gr::Tags::Lapse<DataType>>;
+    using supported_tags_metric = tmpl::list<
+        Tags::ConformalMetric<DataType, 3, Frame::Inertial>,
+        Tags::InverseConformalMetric<DataType, 3, Frame::Inertial>,
+        gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
+        gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>;
     using supported_tags = tmpl::append<supported_tags_zero, supported_tags_one,
                                         supported_tags_metric>;
     static_assert(

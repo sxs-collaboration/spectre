@@ -76,6 +76,10 @@ class Lorentzian : public elliptic::analytic_data::AnalyticSolution {
   Lorentzian(Lorentzian&&) = default;
   Lorentzian& operator=(Lorentzian&&) = default;
   ~Lorentzian() override = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<Lorentzian>(*this);
+  }
 
   /// \cond
   explicit Lorentzian(CkMigrateMessage* m)

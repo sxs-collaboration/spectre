@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -115,6 +116,10 @@ class ConstantDensityStar : public elliptic::analytic_data::AnalyticSolution {
   ConstantDensityStar(ConstantDensityStar&&) = default;
   ConstantDensityStar& operator=(ConstantDensityStar&&) = default;
   ~ConstantDensityStar() = default;
+  std::unique_ptr<elliptic::analytic_data::AnalyticSolution> get_clone()
+      const override {
+    return std::make_unique<ConstantDensityStar>(*this);
+  }
 
   /// \cond
   explicit ConstantDensityStar(CkMigrateMessage* m)

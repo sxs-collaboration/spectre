@@ -28,7 +28,7 @@ target_link_libraries(
   Domain
   Elliptic
   ErrorHandling
-  GeneralRelativitySolutions
+  XctsSolutions
   Options
   Parallel
   Utilities

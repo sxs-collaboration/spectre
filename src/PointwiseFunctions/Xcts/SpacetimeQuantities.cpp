@@ -9,7 +9,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
@@ -19,25 +18,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Xcts {
-
-namespace detail {
-template <typename T>
-struct TempTag : db::SimpleTag {
-  using type = T;
-};
-template <typename U, typename T, size_t Dim, typename DerivativeFrame>
-auto deriv_tensor(const gsl::not_null<U*> deriv, const T& tensor,
-                  const Mesh<Dim>& mesh,
-                  const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                                        DerivativeFrame>& inv_jacobian) {
-  Variables<tmpl::list<TempTag<T>>> vars{tensor.begin()->size()};
-  get<TempTag<T>>(vars) = tensor;
-  const auto deriv_vars =
-      partial_derivatives<tmpl::list<TempTag<T>>>(vars, mesh, inv_jacobian);
-  *deriv = get<::Tags::deriv<TempTag<T>, tmpl::size_t<Dim>, DerivativeFrame>>(
-      deriv_vars);
-}
-}  // namespace detail
 
 void SpacetimeQuantitiesComputer::operator()(
     const gsl::not_null<tnsr::ii<DataVector, 3>*> spatial_metric,
@@ -67,7 +47,7 @@ void SpacetimeQuantitiesComputer::operator()(
                   tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& spatial_metric = cache->get_var(
       *this, gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>{});
-  detail::deriv_tensor(deriv_spatial_metric, spatial_metric, mesh,
+  partial_derivative(deriv_spatial_metric, spatial_metric, mesh,
                        inv_jacobian);
 }
 
@@ -96,7 +76,7 @@ void SpacetimeQuantitiesComputer::operator()(
   const auto& christoffel_second_kind = cache->get_var(
       *this,
       gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>{});
-  detail::deriv_tensor(deriv_christoffel_second_kind, christoffel_second_kind,
+  partial_derivative(deriv_christoffel_second_kind, christoffel_second_kind,
                        mesh, inv_jacobian);
 }
 
@@ -139,7 +119,7 @@ void SpacetimeQuantitiesComputer::operator()(
                   tmpl::size_t<3>, Frame::Inertial> /*meta*/) const {
   const auto& shift =
       cache->get_var(*this, gr::Tags::Shift<3, Frame::Inertial, DataVector>{});
-  detail::deriv_tensor(deriv_shift, shift, mesh, inv_jacobian);
+  partial_derivative(deriv_shift, shift, mesh, inv_jacobian);
 }
 
 void SpacetimeQuantitiesComputer::operator()(
@@ -209,8 +189,8 @@ void SpacetimeQuantitiesComputer::operator()(
   const auto& christoffel = cache->get_var(
       *this,
       gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>{});
-  detail::deriv_tensor(deriv_extrinsic_curvature, extrinsic_curvature, mesh,
-                       inv_jacobian);
+  partial_derivative(deriv_extrinsic_curvature, extrinsic_curvature, mesh,
+                     inv_jacobian);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k <= j; ++k) {

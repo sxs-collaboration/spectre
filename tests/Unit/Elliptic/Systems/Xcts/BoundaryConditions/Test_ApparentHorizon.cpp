@@ -35,14 +35,21 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/WrappedGr.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Xcts::BoundaryConditions {
 
 namespace {
+
+using KerrSchild = Xcts::Solutions::WrappedGr<gr::Solutions::KerrSchild>;
+
 // Make a metric approximately Riemannian
 void make_metric_riemannian(
     const gsl::not_null<tnsr::II<DataVector, 3>*> inv_conformal_metric) {
@@ -253,55 +260,61 @@ void apply_boundary_condition_linearized_flat_cartesian(
       lapse_times_conformal_factor, n_dot_longitudinal_shift_excess);
 }
 
+struct FactoryMetavars {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<elliptic::BoundaryConditions::BoundaryCondition<3>,
+                   tmpl::list<ApparentHorizon<Xcts::Geometry::Curved>>>,
+        tmpl::pair<elliptic::analytic_data::AnalyticSolution,
+                   tmpl::list<KerrSchild>>>;
+  };
+};
+
 void test_creation(
     const std::array<double, 3>& center, const std::array<double, 3>& rotation,
-    const std::optional<gr::Solutions::KerrSchild>& kerr_solution_for_lapse,
-    const std::optional<gr::Solutions::KerrSchild>&
-        kerr_solution_for_negative_expansion,
+    const std::optional<KerrSchild>& solution_for_lapse,
+    const std::optional<KerrSchild>& solution_for_negative_expansion,
     const std::string& option_string) {
   INFO("Test factory-creation");
-  const auto created = TestHelpers::test_factory_creation<
-      elliptic::BoundaryConditions::BoundaryCondition<3>,
-      ApparentHorizon<Xcts::Geometry::Curved>>(option_string);
+  Parallel::register_factory_classes_with_charm<FactoryMetavars>();
+  const auto created = TestHelpers::test_creation<
+      std::unique_ptr<elliptic::BoundaryConditions::BoundaryCondition<3>>,
+      FactoryMetavars>(option_string);
+  const auto serialized = serialize_and_deserialize(created);
   REQUIRE(dynamic_cast<const ApparentHorizon<Xcts::Geometry::Curved>*>(
-              created.get()) != nullptr);
+              serialized.get()) != nullptr);
   const auto& boundary_condition =
-      dynamic_cast<const ApparentHorizon<Xcts::Geometry::Curved>&>(*created);
+      dynamic_cast<const ApparentHorizon<Xcts::Geometry::Curved>&>(*serialized);
   {
     INFO("Properties");
     CHECK(boundary_condition.center() == center);
     CHECK(boundary_condition.rotation() == rotation);
-    // Work around an issue where Catch2 needs a stream operator to check
-    // optionals are equal
-    CHECK(boundary_condition.kerr_solution_for_lapse().has_value() ==
-          kerr_solution_for_lapse.has_value());
-    if (kerr_solution_for_lapse.has_value()) {
-      CHECK(*boundary_condition.kerr_solution_for_lapse() ==
-            *kerr_solution_for_lapse);
+    CHECK(boundary_condition.solution_for_lapse().has_value() ==
+          solution_for_lapse.has_value());
+    if (solution_for_lapse.has_value()) {
+      const auto kerrschild = dynamic_cast<const KerrSchild*>(
+          boundary_condition.solution_for_lapse().value().get());
+      REQUIRE(kerrschild != nullptr);
+      CHECK(*kerrschild == *solution_for_lapse);
     }
-    CHECK(
-        boundary_condition.kerr_solution_for_negative_expansion().has_value() ==
-        kerr_solution_for_negative_expansion.has_value());
-    if (kerr_solution_for_negative_expansion.has_value()) {
-      CHECK(*boundary_condition.kerr_solution_for_negative_expansion() ==
-            *kerr_solution_for_negative_expansion);
+    CHECK(boundary_condition.solution_for_negative_expansion().has_value() ==
+          solution_for_negative_expansion.has_value());
+    if (solution_for_negative_expansion.has_value()) {
+      const auto kerrschild = dynamic_cast<const KerrSchild*>(
+          boundary_condition.solution_for_negative_expansion().value().get());
+      REQUIRE(kerrschild != nullptr);
+      CHECK(*kerrschild == *solution_for_negative_expansion);
     }
     CHECK(boundary_condition.boundary_condition_types() ==
           std::vector<elliptic::BoundaryConditionType>{
               elliptic::BoundaryConditionType::Neumann,
-              kerr_solution_for_lapse.has_value()
+              solution_for_lapse.has_value()
                   ? elliptic::BoundaryConditionType::Dirichlet
                   : elliptic::BoundaryConditionType::Neumann,
               elliptic::BoundaryConditionType::Dirichlet,
               elliptic::BoundaryConditionType::Dirichlet,
               elliptic::BoundaryConditionType::Dirichlet});
-  }
-  {
-    INFO("Semantics");
-    test_serialization(boundary_condition);
-    test_copy_semantics(boundary_condition);
-    auto move_boundary_condition = boundary_condition;
-    test_move_semantics(std::move(move_boundary_condition), boundary_condition);
   }
 }
 
@@ -391,14 +404,15 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   std::array<double, 3> rotation =
       -0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
-  const Solutions::WrappedGr<gr::Solutions::KerrSchild> solution{
-      mass, dimensionless_spin, {{0., 0., 0.}}};
+  const KerrSchild solution{mass, dimensionless_spin, {{0., 0., 0.}}};
   const ApparentHorizon<Xcts::Geometry::Curved> kerr_horizon{
-      center, rotation, solution,
+      center, rotation, std::make_unique<KerrSchild>(solution),
       // Check with and without the negative-expansion condition. Either the
       // expansion is _computed_ to be zero from the Kerr solution at the
       // horizon, or it is just set to zero.
-      compute_expansion ? std::make_optional(solution) : std::nullopt};
+      compute_expansion
+          ? std::make_optional(std::make_unique<KerrSchild>(solution))
+          : std::nullopt};
 
   // Set up a wedge with a Kerr-horizon-conforming inner surface
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
@@ -542,28 +556,6 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   CHECK_VARIABLES_APPROX(n_dot_surface_fluxes, n_dot_surface_fluxes_expected);
 }
 
-void test_parse_errors() {
-  CHECK_THROWS_WITH(
-      ApparentHorizon<Xcts::Geometry::Curved>(
-          {{0., 1., 2.}},
-          {{0.1, 0.2, 0.3}},
-          {{2.3, {{0.4, 0.5, 0.6}}, {{0.5, 0., 0.}}}},
-          std::nullopt,
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains("The Kerr solution supplied to the 'Lapse' "
-                                "option has a non-zero 'Center'."));
-  CHECK_THROWS_WITH(
-      ApparentHorizon<Xcts::Geometry::Curved>(
-          {{0., 1., 2.}},
-          {{0.1, 0.2, 0.3}},
-          std::nullopt,
-          {{2.3, {{0.4, 0.5, 0.6}}, {{0.5, 0., 0.}}}},
-          Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "The Kerr solution supplied to the 'NegativeExpansion' "
-          "option has a non-zero 'Center'."));
-}
-
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
@@ -581,14 +573,15 @@ SPECTRE_TEST_CASE("Unit.Xcts.BoundaryConditions.ApparentHorizon",
                 "  Center: [1., 2., 3.]\n"
                 "  Rotation: [0.1, 0.2, 0.3]\n"
                 "  Lapse:\n"
-                "    Mass: 2.3\n"
-                "    Spin: [0.4, 0.5, 0.6]\n"
-                "    Center: [0., 0., 0.]\n"
+                "    KerrSchild:\n"
+                "      Mass: 2.3\n"
+                "      Spin: [0.4, 0.5, 0.6]\n"
+                "      Center: [0., 0., 0.]\n"
                 "  NegativeExpansion:\n"
-                "    Mass: 3.4\n"
-                "    Spin: [0.3, 0.2, 0.1]\n"
-                "    Center: [0., 0., 0.]\n");
-  test_parse_errors();
+                "    KerrSchild:\n"
+                "      Mass: 3.4\n"
+                "      Spin: [0.3, 0.2, 0.1]\n"
+                "      Center: [0., 0., 0.]\n");
   test_with_random_values();
   test_consistency_with_kerr(false);
   test_consistency_with_kerr(true);
