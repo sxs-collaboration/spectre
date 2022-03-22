@@ -161,8 +161,15 @@ struct Metavariables {
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<nonlinear_solver, linear_solver, multigrid, smoother>>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
-  static constexpr auto determine_next_phase =
-      helpers::determine_next_phase<Metavariables>;
+
+  template <typename Metavariables, typename... Tags>
+  static Phase determine_next_phase(
+      const gsl::not_null<
+          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
+      const helpers::Phase& current_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
+    return helpers::determine_next_phase(current_phase);
+  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
