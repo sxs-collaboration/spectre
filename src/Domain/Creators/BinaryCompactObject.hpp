@@ -106,10 +106,13 @@ namespace creators {
  * - 2: The blocks that surround each object with a cube. Around each compact
  *      object, this layer transitions from a sphere to a cube.
  * - 3: The blocks that surround each cube with a half-cube. At this layer, the
- *      two compact objects are enclosed in a single cube-shaped grid.
+ *      two compact objects are enclosed in a single cube-shaped grid. This
+ *      layer can have a spherical outer shape by setting the "frustum
+ *      sphericity" to one.
  * - 4: The 10 blocks that form the first outer shell. This layer transitions
  *      back to spherical. The gridpoints are distributed linearly with respect
- *      to radius.
+ *      to radius. This layer can be omitted if the "frustum sphericity" is one,
+ *      so layer 3 is already spherical.
  * - 5: The 10 blocks that form a second outer shell. This layer is
  *      spherical, so a logarithmic map can optionally be used in this layer.
  *      This allows the domain to extend to large radial distances from the
@@ -336,7 +339,9 @@ class BinaryCompactObject : public DomainCreator<3> {
     static constexpr Options::String help = {
         "Inner radius of the outer spherical shell. Set to 'Auto' to compute a "
         "reasonable value automatically based on the "
-        "'OuterShell.RadialDistribution'."};
+        "'OuterShell.RadialDistribution', or to omit the layer of blocks "
+        "altogether when EnvelopingCube.Sphericity is 1 and hence the "
+        "cube-to-sphere transition is not needed."};
   };
 
   struct InitialRefinement {
@@ -376,6 +381,9 @@ class BinaryCompactObject : public DomainCreator<3> {
         "to a spherical envelope of frustums."};
     static double lower_bound() { return 0.; }
     static double upper_bound() { return 1.; }
+    // Suggest spherical frustums to encourage upgrading, but keep supporting
+    // cubical frustums until spherical frustums are sufficiently battle-tested
+    static double suggested_value() { return 1.; }
   };
 
   struct RadialDistributionOuterShell {
@@ -663,6 +671,7 @@ class BinaryCompactObject : public DomainCreator<3> {
  private:
   Object object_A_{};
   Object object_B_{};
+  bool need_cube_to_sphere_transition_{};
   double radius_enveloping_cube_{};
   double radius_enveloping_sphere_{};
   double outer_radius_domain_{};

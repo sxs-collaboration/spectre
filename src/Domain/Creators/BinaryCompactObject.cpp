@@ -11,7 +11,6 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <pup.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -88,11 +87,16 @@ BinaryCompactObject::BinaryCompactObject(
   } else {
     projective_scale_factor_ = 1.0;
   }
+  need_cube_to_sphere_transition_ =
+      frustum_sphericity != 1.0 or radius_enveloping_sphere.has_value();
 
   // Calculate number of blocks
   // Layers 1, 2, 3, 4, and 5 have 12, 12, 10, 10, and 10 blocks, respectively,
-  // for 54 total.
-  number_of_blocks_ = 54;
+  // for a total of 44, or 54 when the cube-to-sphere transition is needed.
+  number_of_blocks_ = 44;
+  if (need_cube_to_sphere_transition_) {
+    number_of_blocks_ += 10;
+  }
 
   // For each object whose interior is not excised, add 1 block
   if (not object_A_.is_excised()) {
@@ -211,7 +215,9 @@ BinaryCompactObject::BinaryCompactObject(
   add_object_region("ObjectB", "Shell");  // 6 blocks
   add_object_region("ObjectB", "Cube");   // 6 blocks
   add_outer_region("EnvelopingCube");     // 10 blocks
-  add_outer_region("CubedShell");         // 10 blocks
+  if (need_cube_to_sphere_transition_) {
+    add_outer_region("CubedShell");  // 10 blocks
+  }
   add_outer_region("OuterShell");         // 10 blocks
   if (not object_A_.is_excised()) {
     add_object_interior("ObjectA");  // 1 block
@@ -254,6 +260,8 @@ BinaryCompactObject::BinaryCompactObject(
               << ". Set it to 'Auto' so a reasonable value is chosen "
                  "automatically.");
     }
+  } else if (frustum_sphericity == 1.0) {
+    radius_enveloping_sphere_ = radius_enveloping_cube_;
   } else {
     // Adjust the outer boundary of the cubed sphere to conform to the spacing
     // of the spherical shells after refinement, so the cubed sphere is the same
@@ -342,7 +350,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
   std::vector<BcMap> boundary_conditions_all_blocks{};
   // Add an empty map to the boundary conditions for blocks that have no
-  // external boundaries
+  // external boundaries, because the `boundary_conditions_all_blocks` expects
+  // an entry for every block. This lambda avoid code duplication below.
   const auto add_no_boundary_conditions =
       [this, &boundary_conditions_all_blocks](const Maps& local_maps) {
         if (outer_boundary_condition_ != nullptr) {
@@ -455,18 +464,21 @@ Domain<3> BinaryCompactObject::create_domain() const {
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
-  // --- Transition from frustums to sphere (10 blocks) ---
+  // --- (Optional) transition from frustums to sphere (10 blocks) ---
   //
   // Another layer of wedges transitions from the surrounding frustums to a
-  // surrounding sphere.
-  Maps maps_first_outer_shell = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
-      radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
-      1.0, use_equiangular_map_, true, {},
-      {domain::CoordinateMaps::Distribution::Linear}));
-  add_no_boundary_conditions(maps_first_outer_shell);
-  std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
-            std::back_inserter(maps));
+  // surrounding sphere. Not needed when the surrounding frustums are already
+  // spherical.
+  if (need_cube_to_sphere_transition_) {
+    Maps maps_first_outer_shell = domain::make_vector_coordinate_map_base<
+        Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
+        radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
+        1.0, use_equiangular_map_, true, {},
+        {domain::CoordinateMaps::Distribution::Linear}));
+    add_no_boundary_conditions(maps_first_outer_shell);
+    std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
+              std::back_inserter(maps));
+  }
 
   // --- Outer spherical shell (10 blocks) ---
   Maps maps_second_outer_shell = domain::make_vector_coordinate_map_base<
@@ -573,13 +585,14 @@ Domain<3> BinaryCompactObject::create_domain() const {
                            {17, Direction<3>::lower_zeta()}}});
   }
 
-  Domain<3> domain{
-      std::move(maps),
-      corners_for_biradially_layered_domains(2, 3, not object_A_.is_excised(),
-                                             not object_B_.is_excised()),
-      {},
-      std::move(boundary_conditions_all_blocks),
-      std::move(excision_spheres)};
+  const size_t num_biradial_layers = need_cube_to_sphere_transition_ ? 3 : 2;
+  Domain<3> domain{std::move(maps),
+                   corners_for_biradially_layered_domains(
+                       2, num_biradial_layers, not object_A_.is_excised(),
+                       not object_B_.is_excised()),
+                   {},
+                   std::move(boundary_conditions_all_blocks),
+                   std::move(excision_spheres)};
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {
