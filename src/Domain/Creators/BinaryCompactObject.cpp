@@ -341,6 +341,16 @@ Domain<3> BinaryCompactObject::create_domain() const {
       3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
 
   std::vector<BcMap> boundary_conditions_all_blocks{};
+  // Add an empty map to the boundary conditions for blocks that have no
+  // external boundaries
+  const auto add_no_boundary_conditions =
+      [this, &boundary_conditions_all_blocks](const Maps& local_maps) {
+        if (outer_boundary_condition_ != nullptr) {
+          for (size_t i = 0; i < local_maps.size(); ++i) {
+            boundary_conditions_all_blocks.emplace_back(BcMap{});
+          }
+        }
+      };
 
   const std::vector<domain::CoordinateMaps::Distribution>
       object_A_radial_distribution{
@@ -355,6 +365,11 @@ Domain<3> BinaryCompactObject::create_domain() const {
               : domain::CoordinateMaps::Distribution::Linear};
 
   Maps maps{};
+
+  // --- Blocks enclosing each object (24 blocks) ---
+  //
+  // Each object is surrounded by 6 inner wedges that make a sphere, and another
+  // 6 outer wedges that transition to a cube.
 
   // ObjectA/B is on the left/right, respectively.
   const Translation translation_A{
@@ -394,11 +409,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
                                     sqrt(3.0) * 0.5 * length_inner_cube_, 1.0,
                                     0.0, use_equiangular_map_),
           translation_B);
-  Maps maps_frustums = domain::make_vector_coordinate_map_base<
-      Frame::BlockLogical, Frame::Inertial, 3>(
-      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
-                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
-                              projective_scale_factor_, frustum_sphericity_));
 
   if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_A.size(); ++i) {
@@ -412,11 +422,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
   std::move(maps_center_A.begin(), maps_center_A.end(),
             std::back_inserter(maps));
-  if (outer_boundary_condition_ != nullptr) {
-    for (size_t i = 0; i < maps_cube_A.size(); ++i) {
-      boundary_conditions_all_blocks.emplace_back(BcMap{});
-    }
-  }
+  add_no_boundary_conditions(maps_cube_A);
   std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
   if (outer_boundary_condition_ != nullptr) {
     for (size_t i = 0; i < maps_center_B.size(); ++i) {
@@ -430,20 +436,39 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
-  if (outer_boundary_condition_ != nullptr) {
-    for (size_t i = 0; i < maps_cube_B.size() + maps_frustums.size(); ++i) {
-      boundary_conditions_all_blocks.emplace_back(BcMap{});
-    }
-  }
+  add_no_boundary_conditions(maps_cube_B);
   std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
+
+  // --- Frustums enclosing both objects (10 blocks) ---
+  //
+  // The two abutting cubes are enclosed by a layer of frustums that form a cube
+  // (if frustum_sphericity_ is 0) or a sphere (if frustum_sphericity_ is 1)
+  // surrounding both objects. While the two objects can be offset from the
+  // origin to account for their center of mass, the enclosing frustums are
+  // centered at the origin.
+  Maps maps_frustums = domain::make_vector_coordinate_map_base<
+      Frame::BlockLogical, Frame::Inertial, 3>(
+      frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
+                              use_equiangular_map_, {{-translation_, 0.0, 0.0}},
+                              projective_scale_factor_, frustum_sphericity_));
+  add_no_boundary_conditions(maps_frustums);
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
+  // --- Transition from frustums to sphere (10 blocks) ---
+  //
+  // Another layer of wedges transitions from the surrounding frustums to a
+  // surrounding sphere.
   Maps maps_first_outer_shell = domain::make_vector_coordinate_map_base<
       Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
       radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
       1.0, use_equiangular_map_, true, {},
       {domain::CoordinateMaps::Distribution::Linear}));
+  add_no_boundary_conditions(maps_first_outer_shell);
+  std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
+            std::back_inserter(maps));
+
+  // --- Outer spherical shell (10 blocks) ---
   Maps maps_second_outer_shell = domain::make_vector_coordinate_map_base<
       Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
       radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
@@ -451,23 +476,20 @@ Domain<3> BinaryCompactObject::create_domain() const {
   if (outer_boundary_condition_ != nullptr) {
     // The outer 10 wedges all have to have the outer boundary condition
     // applied
-    for (size_t i = 0; i < maps_first_outer_shell.size() +
-                               maps_second_outer_shell.size() - 10;
-         ++i) {
-      boundary_conditions_all_blocks.emplace_back(BcMap{});
-    }
-    for (size_t i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < maps_second_outer_shell.size(); ++i) {
       BcMap bcs{};
       bcs[Direction<3>::upper_zeta()] = outer_boundary_condition_->get_clone();
       boundary_conditions_all_blocks.push_back(std::move(bcs));
     }
   }
-  std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
-            std::back_inserter(maps));
   std::move(maps_second_outer_shell.begin(), maps_second_outer_shell.end(),
             std::back_inserter(maps));
 
-  // Set up the maps for the central cubes, if any exist.
+  // --- (Optional) object centers (0 to 2 blocks) ---
+  //
+  // Each object can optionally be filled with a cube-shaped block, in which
+  // case the enclosing wedges configured above transition from the cube to a
+  // sphere.
   if (not object_A_.is_excised()) {
     if (outer_boundary_condition_ != nullptr) {
       boundary_conditions_all_blocks.emplace_back(BcMap{});
