@@ -71,7 +71,8 @@ class ObserveVolumeIntegrals<
     tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag> : public Event {
  private:
   using VolumeIntegralDatum =
-      Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>;
+      Parallel::ReductionDatum<std::vector<double>,
+                               funcl::ElementWise<funcl::Plus<>>>;
 
   using ReductionData = tmpl::wrap<
       tmpl::list<Parallel::ReductionDatum<double, funcl::AssertEqual<>>,

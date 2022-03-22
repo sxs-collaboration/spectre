@@ -10,7 +10,7 @@
 #   - Label: Discretization error
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: ElasticBentBeam2DReductions.h5
-#     SkipColumns: [0, 1]
+#     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 1.e-8
 
 Background:

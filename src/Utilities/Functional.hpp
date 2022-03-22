@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep  // for pow<>
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -307,18 +308,21 @@ struct Square : Functional<C::arity> {
   }
 };
 
-/// Function for adding two `std::vector`s of `double` component-wise
-struct VectorPlus {
-  std::vector<double> operator()(const std::vector<double>& lhs,
-                                 const std::vector<double>& rhs) const {
-    ASSERT(lhs.size() == rhs.size(),
-           "Vector sizes in `funcl::VectorPlus` operator do not match. First "
-           "argument size: "
-               << lhs.size() << ". Second argument size: " << rhs.size()
-               << ".");
-    std::vector<double> result(lhs.size());
-    for (size_t i = 0; i < lhs.size(); ++i) {
-      result[i] = lhs[i] + rhs[i];
+/// Function that applies `C` to every element of the operands. This function is
+/// currently only tested for `std::vector` operands. Operands other than the
+/// first may be a single value, which is applied element-wise to the vector. If
+/// needed, this function can be generalized further.
+template <typename C>
+struct ElementWise : Functional<C::arity> {
+  template <typename T0, typename... Ts>
+  auto operator()(const T0& t0, const Ts&... ts) {
+    const size_t size = get_size(t0);
+    ASSERT(((get_size(ts) == size or get_size(ts) == 1) and ...),
+           "Sizes must be the same but got "
+               << (std::vector<size_t>{size, get_size(ts)...}));
+    T0 result(size);
+    for (size_t i = 0; i < size; ++i) {
+      get_element(result, i) = C{}(get_element(t0, i), get_element(ts, i)...);
     }
     return result;
   }

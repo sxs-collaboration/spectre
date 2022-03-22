@@ -17,18 +17,23 @@
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "IO/Observer/GetSectionObservationKey.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -58,6 +63,20 @@ namespace Events {
  * L_2(v^k)=\sqrt{\frac{1}{N}\sum_{i=0}^{N} \left[(v^x_i)^2 + (v^y_i)^2
  *          + (v^z_i)^2\right]}
  * \f}
+ *
+ * The L2 integral norm is:
+ *
+ * \begin{equation}
+ * L_{2,\mathrm{int}}(v^k) = \sqrt{\frac{1}{V}\int_\Omega \left[
+ *   (v^x_i)^2 + (v^y_i)^2 + (v^z_i)^2\right] \mathrm{d}V}
+ * \end{equation}
+ *
+ * where $V=\int_\Omega$ is the volume of the entire domain in inertial
+ * coordinates.
+ *
+ * \note The integral norm does not currently work with a
+ * Spectral::Basis::FiniteDifference mesh because ::definite_integral does not
+ * support it.
  *
  * Here is an example of an input file:
  *
@@ -96,7 +115,8 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
     struct NormType {
       using type = std::string;
       static constexpr Options::String help = {
-          "The type of norm to use. Must be one of Max, Min, or L2Norm."};
+          "The type of norm to use. Must be one of Max, Min, L2Norm, or "
+          "L2IntegralNorm."};
     };
     struct Components {
       using type = std::string;
@@ -117,43 +137,29 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
     std::string components{};
   };
 
-  template <typename Functional>
-  struct ElementWiseBinary {
-    std::vector<double> operator()(const std::vector<double>& t0,
-                                   const std::vector<double>& t1) const {
-      ASSERT(t0.size() == t1.size(),
-             "Size must be the same but got t0: " << t0.size()
-                                                  << " and t1: " << t1.size());
-      std::vector<double> result(t0.size());
-      for (size_t i = 0; i < t0.size(); ++i) {
-        result[i] = Functional{}(t0[i], t1[i]);
-      }
-      return result;
-    }
-
-    std::vector<double> operator()(const std::vector<double>& t0,
-                                   const double t1) const {
-      // This overload is needed for the L2 norm
-      std::vector<double> result(t0.size());
-      for (size_t i = 0; i < t0.size(); ++i) {
-        result[i] = Functional{}(t0[i], t1);
-      }
-      return result;
-    }
-  };
-
-  using ReductionData = tmpl::wrap<
-      tmpl::list<Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-                 Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-                 Parallel::ReductionDatum<std::vector<double>,
-                                          ElementWiseBinary<funcl::Max<>>>,
-                 Parallel::ReductionDatum<std::vector<double>,
-                                          ElementWiseBinary<funcl::Min<>>>,
-                 Parallel::ReductionDatum<
-                     std::vector<double>, ElementWiseBinary<funcl::Plus<>>,
-                     ElementWiseBinary<funcl::Sqrt<funcl::Divides<>>>,
-                     std::index_sequence<1>>>,
-      Parallel::ReductionData>;
+  using ReductionData = Parallel::ReductionData<
+      // Observation value
+      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+      // Number of grid points
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+      // Total volume
+      Parallel::ReductionDatum<double, funcl::Plus<>>,
+      // Max
+      Parallel::ReductionDatum<std::vector<double>,
+                               funcl::ElementWise<funcl::Max<>>>,
+      // Min
+      Parallel::ReductionDatum<std::vector<double>,
+                               funcl::ElementWise<funcl::Min<>>>,
+      // L2Norm
+      Parallel::ReductionDatum<
+          std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+          funcl::ElementWise<funcl::Sqrt<funcl::Divides<>>>,
+          std::index_sequence<1>>,
+      // L2IntegralNorm
+      Parallel::ReductionDatum<
+          std::vector<double>, funcl::ElementWise<funcl::Plus<>>,
+          funcl::ElementWise<funcl::Sqrt<funcl::Divides<>>>,
+          std::index_sequence<2>>>;
 
  public:
   /// The name of the subfile inside the HDF5 file
@@ -179,12 +185,22 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   static constexpr Options::String help =
       "Observe norms of tensors in the DataBox.\n"
       "\n"
+      "You can choose the norm type for each observation. Note that the\n"
+      "'L2Norm' (root mean square) emphasizes regions of the domain with many\n"
+      "grid points, whereas the 'L2IntegralNorm' emphasizes regions of the\n"
+      "domain with large volume. Choose wisely! When in doubt, try the\n"
+      "'L2Norm' first.\n"
+      "The 'L2IntegralNorm' does not currently work with finite difference\n"
+      "(subcell) meshes.\n"
+      "\n"
       "Writes reduction quantities:\n"
       " * ObservationValueTag (e.g. Time or IterationId)\n"
       " * NumberOfPoints = total number of points in the domain\n"
+      " * Volume = total volume of the domain in inertial coordinates\n"
       " * Max values\n"
       " * Min values\n"
-      " * L2-norm values\n";
+      " * L2-norm values\n"
+      " * L2 integral norm values\n";
 
   ObserveNorms() = default;
 
@@ -200,12 +216,12 @@ class ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
   using argument_tags = tmpl::list<ObservationValueTag, ::Tags::ObservationBox>;
 
   template <typename ComputeTagsList, typename DataBoxType,
-            typename Metavariables, typename ArrayIndex,
+            typename Metavariables, size_t VolumeDim,
             typename ParallelComponent>
   void operator()(const typename ObservationValueTag::type& observation_value,
                   const ObservationBox<ComputeTagsList, DataBoxType>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
-                  const ArrayIndex& array_index,
+                  const ElementId<VolumeDim>& array_index,
                   const ParallelComponent* const /*meta*/) const;
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;
@@ -290,9 +306,12 @@ ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
                      << tensor << "' is not known. Known tensors are: "
                      << ((db::tag_name<ObservableTensorTags>() + ",") + ...));
   }
-  if (norm_type != "Max" and norm_type != "Min" and norm_type != "L2Norm") {
-    PARSE_ERROR(context, "NormType must be one of Max, Min, or L2Norm, not "
-                             << norm_type);
+  if (norm_type != "Max" and norm_type != "Min" and norm_type != "L2Norm" and
+      norm_type != "L2IntegralNorm") {
+    PARSE_ERROR(
+        context,
+        "NormType must be one of Max, Min, L2Norm, or L2IntegralNorm, not "
+            << norm_type);
   }
   if (components != "Individual" and components != "Sum") {
     PARSE_ERROR(context,
@@ -303,14 +322,14 @@ ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
 template <typename ObservationValueTag, typename... ObservableTensorTags,
           typename... NonTensorComputeTags, typename ArraySectionIdTag>
 template <typename ComputeTagsList, typename DataBoxType,
-          typename Metavariables, typename ArrayIndex,
+          typename Metavariables, size_t VolumeDim,
           typename ParallelComponent>
 void ObserveNorms<ObservationValueTag, tmpl::list<ObservableTensorTags...>,
                   tmpl::list<NonTensorComputeTags...>, ArraySectionIdTag>::
 operator()(const typename ObservationValueTag::type& observation_value,
            const ObservationBox<ComputeTagsList, DataBoxType>& box,
            Parallel::GlobalCache<Metavariables>& cache,
-           const ArrayIndex& array_index,
+           const ElementId<VolumeDim>& array_index,
            const ParallelComponent* const /*meta*/) const {
   // Skip observation on elements that are not part of a section
   const std::optional<std::string> section_observation_key =
@@ -324,13 +343,25 @@ operator()(const typename ObservationValueTag::type& observation_value,
   std::unordered_map<std::string,
                      std::pair<std::vector<double>, std::vector<std::string>>>
       norm_values_and_names{};
-  size_t number_of_points = 0;
+  const auto& mesh = get<::Events::Tags::ObserverMesh<VolumeDim>>(box);
+  const DataVector det_jacobian =
+      1. / get(get<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                                Frame::Inertial>>(box));
+  const size_t number_of_points = mesh.number_of_grid_points();
+  const double local_volume = [&mesh, &det_jacobian]() {
+    if (mesh.basis(0) == Spectral::Basis::FiniteDifference) {
+      return std::numeric_limits<double>::quiet_NaN();
+    } else {
+      return definite_integral(det_jacobian, mesh);
+    }
+  }();
 
   // Loop over ObservableTensorTags and see if it was requested to be observed.
   // This approach allows us to delay evaluating any compute tags until they're
   // actually needed for observing.
   tmpl::for_each<tensor_tags>([this, &box, &norm_values_and_names,
-                               &number_of_points](auto tag_v) {
+                               &number_of_points, &mesh,
+                               &det_jacobian](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const std::string tensor_name = db::tag_name<tag>();
     for (size_t i = 0; i < tensor_names_.size(); ++i) {
@@ -346,17 +377,14 @@ operator()(const typename ObservationValueTag::type& observation_value,
 
         auto& [values, names] = norm_values_and_names[tensor_norm_types_[i]];
         const auto [component_names, components] = tensor.get_vector_of_data();
-        if (number_of_points != 0 and
-            components[0].size() != number_of_points) {
-          ERROR("The number of grid points previously was "
-                << number_of_points << " but changed to "
-                << components[0].size()
-                << ". This means you're computing norms of tensors over "
+        if (components[0].size() != number_of_points) {
+          ERROR("The number of grid points of the mesh is "
+                << number_of_points << " but the tensor '" << tensor_name
+                << "' has " << components[0].size()
+                << " points. This means you're computing norms of tensors over "
                    "different grids, which will give the wrong answer for "
-                   "norms that use the grid points. The tensor is: "
-                << tensor_name);
+                   "norms that use the grid points.");
         }
-        number_of_points = components[0].size();
 
         if (tensor_components_[i] == "Individual") {
           for (size_t storage_index = 0; storage_index < component_names.size();
@@ -368,6 +396,14 @@ operator()(const typename ObservationValueTag::type& observation_value,
             } else if (tensor_norm_types_[i] == "L2Norm") {
               values.push_back(
                   alg::accumulate(square(components[storage_index]), 0.0));
+            } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
+              if (mesh.basis(0) == Spectral::Basis::FiniteDifference) {
+                ERROR(
+                    "The 'L2IntegralNorm' is currently not supported on finite "
+                    "difference (subcell) meshes.");
+              }
+              values.push_back(definite_integral(
+                  square(components[storage_index]) * det_jacobian, mesh));
             }
             names.push_back(
                 tensor_norm_types_[i] + "(" +
@@ -391,6 +427,9 @@ operator()(const typename ObservationValueTag::type& observation_value,
               value = std::min(value, min(components[storage_index]));
             } else if (tensor_norm_types_[i] == "L2Norm") {
               value += alg::accumulate(square(components[storage_index]), 0.0);
+            } else if (tensor_norm_types_[i] == "L2IntegralNorm") {
+              value += definite_integral(
+                  square(components[storage_index]) * det_jacobian, mesh);
             }
           }
 
@@ -403,13 +442,16 @@ operator()(const typename ObservationValueTag::type& observation_value,
 
   // Concatenate the legend info together.
   std::vector<std::string> legend{db::tag_name<ObservationValueTag>(),
-                                  "NumberOfPoints"};
+                                  "NumberOfPoints", "Volume"};
   legend.insert(legend.end(), norm_values_and_names["Max"].second.begin(),
                 norm_values_and_names["Max"].second.end());
   legend.insert(legend.end(), norm_values_and_names["Min"].second.begin(),
                 norm_values_and_names["Min"].second.end());
   legend.insert(legend.end(), norm_values_and_names["L2Norm"].second.begin(),
                 norm_values_and_names["L2Norm"].second.end());
+  legend.insert(legend.end(),
+                norm_values_and_names["L2IntegralNorm"].second.begin(),
+                norm_values_and_names["L2IntegralNorm"].second.end());
 
   // Send data to reduction observer
   auto& local_observer =
@@ -420,15 +462,17 @@ operator()(const typename ObservationValueTag::type& observation_value,
       subfile_path_ + section_observation_key.value();
   Parallel::simple_action<observers::Actions::ContributeReductionData>(
       local_observer,
-      observers::ObservationId(observation_value, subfile_path_ + ".dat"),
+      observers::ObservationId(observation_value,
+                               subfile_path_with_suffix + ".dat"),
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
-          Parallel::ArrayIndex<ArrayIndex>(array_index)},
+          Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)},
       subfile_path_with_suffix, std::move(legend),
       ReductionData{static_cast<double>(observation_value), number_of_points,
-                    std::move(norm_values_and_names["Max"].first),
+                    local_volume, std::move(norm_values_and_names["Max"].first),
                     std::move(norm_values_and_names["Min"].first),
-                    std::move(norm_values_and_names["L2Norm"].first)});
+                    std::move(norm_values_and_names["L2Norm"].first),
+                    std::move(norm_values_and_names["L2IntegralNorm"].first)});
 }
 
 template <typename ObservationValueTag, typename... ObservableTensorTags,

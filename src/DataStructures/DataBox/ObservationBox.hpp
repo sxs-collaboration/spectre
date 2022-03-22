@@ -45,6 +45,9 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
  public:
   /// A list of all the compute item tags
   using compute_item_tags = tmpl::list<ComputeTags...>;
+  /// A list of all tags
+  using tags_list =
+      tmpl::push_back<typename DataBoxType::tags_list, ComputeTags...>;
 
   ObservationBox() = default;
   ObservationBox(const ObservationBox& rhs) = default;
@@ -70,9 +73,6 @@ class ObservationBox<tmpl::list<ComputeTags...>, DataBoxType>
   template <typename ComputeTag, typename... ArgumentTags>
   void evaluate_compute_item(
       tmpl::list<ArgumentTags...> /*meta*/) const;
-
-  using tags_list =
-      tmpl::push_back<typename DataBoxType::tags_list, ComputeTags...>;
 
   const DataBoxType* databox_ = nullptr;
 };

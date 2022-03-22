@@ -102,14 +102,17 @@ using reduction_data_from_doubles = Parallel::ReductionData<
 using reduction_data_from_vector = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
     Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>>;
+    Parallel::ReductionDatum<std::vector<double>,
+                             funcl::ElementWise<funcl::Plus<>>>>;
 
 // Nothing special about the order. We just want doubles and std::vector's.
 using reduction_data_from_ds_and_vs = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
     Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
-    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
-    Parallel::ReductionDatum<std::vector<double>, funcl::VectorPlus>,
+    Parallel::ReductionDatum<std::vector<double>,
+                             funcl::ElementWise<funcl::Plus<>>>,
+    Parallel::ReductionDatum<std::vector<double>,
+                             funcl::ElementWise<funcl::Plus<>>>,
     l2_error_datum>;
 
 template <typename RegistrationActionsList>

@@ -86,9 +86,11 @@ struct MockContributeReductionData {
     std::vector<std::string> reduction_names;
     double time;
     size_t number_of_grid_points;
+    double volume;
     std::vector<double> max_values;
     std::vector<double> min_values;
     std::vector<double> l2_norm_values;
+    std::vector<double> l2_integral_norm_values;
   };
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static Results results;
@@ -109,9 +111,11 @@ struct MockContributeReductionData {
     results.reduction_names = reduction_names;
     results.time = std::get<0>(reduction_data.data());
     results.number_of_grid_points = std::get<1>(reduction_data.data());
-    results.max_values = std::get<2>(reduction_data.data());
-    results.min_values = std::get<3>(reduction_data.data());
-    results.l2_norm_values = std::get<4>(reduction_data.data());
+    results.volume = std::get<2>(reduction_data.data());
+    results.max_values = std::get<3>(reduction_data.data());
+    results.min_values = std::get<4>(reduction_data.data());
+    results.l2_norm_values = std::get<5>(reduction_data.data());
+    results.l2_integral_norm_values = std::get<6>(reduction_data.data());
   }
 };
 
@@ -124,7 +128,7 @@ struct ElementComponent {
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = int;
+  using array_index = ElementId<Metavariables::volume_dim>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -152,8 +156,9 @@ using ObserveNormsEvent = Events::ObserveNorms<
     ::Tags::Time, tmpl::list<Var0, Var1, Var0TimesTwoCompute, Var0TimesThree>,
     tmpl::list<Var0TimesThreeCompute>, ArraySectionIdTag>;
 
-template <typename ArraySectionIdTag>
+template <size_t Dim, typename ArraySectionIdTag>
 struct Metavariables {
+  static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
 
@@ -168,14 +173,19 @@ struct Metavariables {
 
 template <typename ArraySectionIdTag, typename ObserveEvent>
 void test(const std::unique_ptr<ObserveEvent> observe,
+          const Spectral::Basis basis, const Spectral::Quadrature quadrature,
           const std::optional<std::string>& section) {
   CAPTURE(pretty_type::short_name<ArraySectionIdTag>());
   CAPTURE(section);
-  using metavariables = Metavariables<ArraySectionIdTag>;
+  using metavariables = Metavariables<3, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
   const typename element_component::array_index array_index(0);
-  const size_t num_points = 5;
+  const Mesh<3> mesh{3, basis, quadrature};
+  const size_t num_points = mesh.number_of_grid_points();
+  // Jacobian of a cube with side length 1, so expected volume is 1.
+  const Scalar<DataVector> det_inv_jacobian(num_points, cube(2.));
+  const double expected_volume = 1.;
   const double observation_time = 2.0;
   Variables<tmpl::list<Var0, Var1>> vars(num_points);
   // Fill the variables with some data.  It doesn't matter much what,
@@ -186,14 +196,16 @@ void test(const std::unique_ptr<ObserveEvent> observe,
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
-                                                      0);
+                                                      array_index);
   ActionTesting::emplace_group_component<observer_component>(&runner);
 
   const auto box = db::create<db::AddSimpleTags<
-      Parallel::Tags::MetavariablesImpl<metavariables>, ::Tags::Time,
-      Tags::Variables<typename decltype(vars)::tags_list>,
+      Parallel::Tags::MetavariablesImpl<metavariables>,
+      ::Events::Tags::ObserverMesh<3>,
+      domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>,
+      ::Tags::Time, Tags::Variables<typename decltype(vars)::tags_list>,
       observers::Tags::ObservationKey<ArraySectionIdTag>>>(
-      metavariables{}, observation_time, vars, section);
+      metavariables{}, mesh, det_inv_jacobian, observation_time, vars, section);
 
   const auto ids_to_register =
       observers::get_registration_observation_type_and_key(*observe, box);
@@ -228,34 +240,52 @@ void test(const std::unique_ptr<ObserveEvent> observe,
 
   const auto& results = MockContributeReductionData::results;
   CHECK(results.observation_id.value() == observation_time);
+  CHECK(results.observation_id.observation_key() ==
+        expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
   CHECK(results.reduction_names[0] == "Time");
   CHECK(results.time == observation_time);
   CHECK(results.reduction_names[1] == "NumberOfPoints");
   CHECK(results.number_of_grid_points == num_points);
+  CHECK(results.reduction_names[2] == "Volume");
+  if (basis != Spectral::Basis::FiniteDifference) {
+    CHECK(results.volume == approx(expected_volume));
+  }
   // Check max values
-  CHECK(results.reduction_names[2] == "Max(Var0)");
   CHECK(results.reduction_names[3] == "Max(Var0)");
-  CHECK(results.reduction_names[4] == "Max(Var0TimesTwo)");
-  CHECK(results.reduction_names[5] == "Max(Var0TimesThree)");
-  CHECK(results.max_values == std::vector<double>{5.0, 5.0, 10.0, 15.0});
+  CHECK(results.reduction_names[4] == "Max(Var0)");
+  CHECK(results.reduction_names[5] == "Max(Var0TimesTwo)");
+  CHECK(results.reduction_names[6] == "Max(Var0TimesThree)");
+  CHECK(results.max_values == std::vector<double>{27.0, 27.0, 54.0, 81.0});
 
   // Check min values
-  CHECK(results.reduction_names[6] == "Min(Var1_x)");
-  CHECK(results.reduction_names[7] == "Min(Var1_y)");
-  CHECK(results.reduction_names[8] == "Min(Var1_z)");
-  CHECK(results.reduction_names[9] == "Min(Var1)");
-  CHECK(results.min_values == std::vector<double>{6.0, 11.0, 16.0, 6.0});
+  CHECK(results.reduction_names[7] == "Min(Var1_x)");
+  CHECK(results.reduction_names[8] == "Min(Var1_y)");
+  CHECK(results.reduction_names[9] == "Min(Var1_z)");
+  CHECK(results.reduction_names[10] == "Min(Var1)");
+  CHECK(results.min_values == std::vector<double>{28.0, 55.0, 82.0, 28.0});
 
   // Check L2 norms
-  CHECK(results.reduction_names[10] == "L2Norm(Var1)");
-  CHECK(results.reduction_names[11] == "L2Norm(Var1_x)");
-  CHECK(results.reduction_names[12] == "L2Norm(Var1_y)");
-  CHECK(results.reduction_names[13] == "L2Norm(Var1_z)");
-  CHECK(results.l2_norm_values[0] == approx(23.72762103540934575));
-  CHECK(results.l2_norm_values[1] == approx(8.12403840463596083));
-  CHECK(results.l2_norm_values[2] == approx(13.076696830622021));
-  CHECK(results.l2_norm_values[3] == approx(18.055470085267789));
+  CHECK(results.reduction_names[11] == "L2Norm(Var1)");
+  CHECK(results.reduction_names[12] == "L2Norm(Var1_x)");
+  CHECK(results.reduction_names[13] == "L2Norm(Var1_y)");
+  CHECK(results.reduction_names[14] == "L2Norm(Var1_z)");
+  CHECK(results.l2_norm_values[0] == approx(124.5471798155221137));
+  CHECK(results.l2_norm_values[1] == approx(41.73328008516305232));
+  CHECK(results.l2_norm_values[2] == approx(68.44462481938714404));
+  CHECK(results.l2_norm_values[3] == approx(95.3187634554008838));
+
+  // Check L2 integral norms
+  if (basis != Spectral::Basis::FiniteDifference) {
+    CHECK(results.reduction_names[15] == "L2IntegralNorm(Var1)");
+    CHECK(results.reduction_names[16] == "L2IntegralNorm(Var1_x)");
+    CHECK(results.reduction_names[17] == "L2IntegralNorm(Var1_y)");
+    CHECK(results.reduction_names[18] == "L2IntegralNorm(Var1_z)");
+    CHECK(results.l2_integral_norm_values[0] == approx(124.18131904598212145));
+    CHECK(results.l2_integral_norm_values[1] == approx(41.36826480931165406));
+    CHECK(results.l2_integral_norm_values[2] == approx(68.22267462752640199));
+    CHECK(results.l2_integral_norm_values[3] == approx(95.15951520123110186));
+  }
 }
 }  // namespace
 
@@ -269,16 +299,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
                                   {"Var0TimesTwo", "Max", "Individual"},
                                   {"Var0TimesThree", "Max", "Individual"},
                                   {"Var1", "L2Norm", "Sum"},
+                                  {"Var1", "L2IntegralNorm", "Sum"},
                                   {"Var1", "L2Norm", "Individual"},
+                                  {"Var1", "L2IntegralNorm", "Individual"},
                                   {"Var1", "Min", "Sum"}}}),
-                         "Section0");
+                         Spectral::Basis::Legendre,
+                         Spectral::Quadrature::GaussLobatto, "Section0");
 
   INFO("create/serialize");
-  Parallel::register_factory_classes_with_charm<Metavariables<void>>();
-  const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables<void>>(
-          // [input_file_examples]
-          R"(
+  Parallel::register_factory_classes_with_charm<Metavariables<3, void>>();
+  const auto factory_event = TestHelpers::test_creation<std::unique_ptr<Event>,
+                                                        Metavariables<3, void>>(
+      // [input_file_examples]
+      R"(
   ObserveNorms:
     SubfileName: reduction0
     TensorsToObserve:
@@ -301,7 +334,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
       NormType: L2Norm
       Components: Sum
     - Name: Var1
+      NormType: L2IntegralNorm
+      Components: Sum
+    - Name: Var1
       NormType: L2Norm
+      Components: Individual
+    - Name: Var1
+      NormType: L2IntegralNorm
       Components: Individual
     - Name: Var1
       NormType: Min
@@ -309,5 +348,19 @@ SPECTRE_TEST_CASE("Unit.Evolution.ObserveNorms", "[Unit][Evolution]") {
         )");
   // [input_file_examples]
   auto serialized_event = serialize_and_deserialize(factory_event);
-  test<void>(std::move(serialized_event), std::nullopt);
+  test<void>(std::move(serialized_event), Spectral::Basis::Legendre,
+             Spectral::Quadrature::GaussLobatto, std::nullopt);
+
+  test<void>(std::make_unique<ObserveNormsEvent<void>>(ObserveNormsEvent<void>{
+                 "reduction0",
+                 {{"Var0", "Max", "Individual"},
+                  {"Var1", "Min", "Individual"},
+                  {"Var0", "Max", "Sum"},
+                  {"Var0TimesTwo", "Max", "Individual"},
+                  {"Var0TimesThree", "Max", "Individual"},
+                  {"Var1", "L2Norm", "Sum"},
+                  {"Var1", "L2Norm", "Individual"},
+                  {"Var1", "Min", "Sum"}}}),
+             Spectral::Basis::FiniteDifference,
+             Spectral::Quadrature::CellCentered, std::nullopt);
 }

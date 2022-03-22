@@ -11,7 +11,7 @@
 #   - Label: Discretization error
 #     Subfile: /ErrorNorms.dat
 #     FileGlob: PoissonProductOfSinusoids3DReductions.h5
-#     SkipColumns: [0, 1]
+#     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 0.004
 
 Background:
