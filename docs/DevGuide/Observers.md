@@ -58,16 +58,15 @@ the input file using the option
 through the reductions.
 
 The actions used for registering reductions are
-`observers::Actions::RegisterEventsWithObservers`,
-`observers::Actions::RegisterSingletonWithObserverWriter`, and
+`observers::Actions::RegisterEventsWithObservers` and
 `observers::Actions::RegisterWithObservers`. There is a separate `Registration`
 phase at the beginning of all simulations where everything must register with
 the observers. The action `observers::Actions::ContributeReductionData` is used
 to send data to the `observers::Observer` component in the case where there is a
 reduction done across an array or subset of an array. If a singleton parallel
-component needs to write data directly to disk it should use the
-`observers::ThreadedActions::WriteReductionData` action called on the zeroth
-element of the `observers::ObserverWriter` component.
+component or a specific chare needs to write data directly to disk it should use
+the `observers::ThreadedActions::WriteReductionDataRow` action called on the
+zeroth element of the `observers::ObserverWriter` component.
 
 ### Volume Data
 
