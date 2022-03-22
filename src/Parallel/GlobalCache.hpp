@@ -121,7 +121,7 @@ class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
   auto get() const
       -> const GlobalCache_detail::type_for_get<GlobalCacheTag, Metavariables>&;
 
-  // Entry method to mutate the object indentified by `GlobalCacheTag`.
+  // Entry method to mutate the object identified by `GlobalCacheTag`.
   // Internally calls Function::apply(), where
   // Function is a struct, and Function::apply is a user-defined
   // static function that mutates the object.  Function::apply() takes
@@ -371,6 +371,10 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// been set).
   std::optional<main_proxy_type> get_main_proxy();
 
+  /// Returns `true` if the GlobalCache was constructed with a Proxy to the
+  /// MutableGlobalCache (i.e. the GlobalCache is charm-aware).
+  bool mutable_global_cache_proxy_is_set() const;
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -456,7 +460,7 @@ template <typename Metavariables>
 template <typename GlobalCacheTag, typename Function>
 bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     const Function& function) {
-  if (mutable_global_cache_ == nullptr) {
+  if (mutable_global_cache_proxy_is_set()) {
     return mutable_global_cache_proxy_.ckLocalBranch()
         ->template mutable_cache_item_is_ready<GlobalCacheTag>(function);
   } else {
@@ -470,7 +474,7 @@ template <typename GlobalCacheTag, typename Function, typename... Args>
 void GlobalCache<Metavariables>::mutate(const std::tuple<Args...>& args) {
   (void)Parallel::charmxx::RegisterGlobalCacheMutate<
       Metavariables, GlobalCacheTag, Function, Args...>::registrar;
-  if (mutable_global_cache_ == nullptr) {
+  if (mutable_global_cache_proxy_is_set()) {
     // charm-aware version: Mutate the variable on all PEs on this node.
     for (auto pe = CkNodeFirst(CkMyNode());
          pe < CkNodeFirst(CkMyNode()) + CkNodeSize(CkMyNode()); ++pe) {
@@ -492,13 +496,18 @@ GlobalCache<Metavariables>::get_this_proxy() {
 template <typename Metavariables>
 std::optional<typename Parallel::GlobalCache<Metavariables>::main_proxy_type>
 GlobalCache<Metavariables>::get_main_proxy() {
-  if(main_proxy_.has_value()) {
+  if (main_proxy_.has_value()) {
     return main_proxy_;
   } else {
     ERROR(
         "Attempting to retrieve the main proxy in a context in which the main "
         "proxy has not been supplied to the constructor.");
   }
+}
+
+template <typename Metavariables>
+bool GlobalCache<Metavariables>::mutable_global_cache_proxy_is_set() const {
+  return mutable_global_cache_ == nullptr;
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -575,7 +584,7 @@ auto get(const GlobalCache<Metavariables>& cache)
       tmpl::list<>>;
   if constexpr (tag_is_not_in_const_tags::value) {
     // Tag is not in the const tags, so use MutableGlobalCache
-    if (cache.mutable_global_cache_ == nullptr) {
+    if (cache.mutable_global_cache_proxy_is_set()) {
       const auto& local_mutable_cache =
           *cache.mutable_global_cache_proxy_.ckLocalBranch();
       return local_mutable_cache.template get<GlobalCacheTag>();
@@ -629,9 +638,14 @@ bool mutable_cache_item_is_ready(GlobalCache<Metavariables>& cache,
 /// subsequent arguments.
 template <typename GlobalCacheTag, typename Function, typename Metavariables,
           typename... Args>
-void mutate(CProxy_GlobalCache<Metavariables>& cache_proxy, Args&&... args) {
-  cache_proxy.template mutate<GlobalCacheTag, Function>(
-      std::make_tuple<Args...>(std::forward<Args>(args)...));
+void mutate(GlobalCache<Metavariables>& cache, Args&&... args) {
+  if (cache.mutable_global_cache_proxy_is_set()) {
+    cache.thisProxy.template mutate<GlobalCacheTag, Function>(
+        std::make_tuple<Args...>(std::forward<Args>(args)...));
+  } else {
+    cache.template mutate<GlobalCacheTag, Function>(
+        std::make_tuple<Args...>(std::forward<Args>(args)...));
+  }
 }
 
 namespace Tags {

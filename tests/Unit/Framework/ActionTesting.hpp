@@ -339,11 +339,8 @@ struct get_array_index;
  *
  * \snippet Test_ActionTesting.cpp mutable global cache runner
  *
- * To mutate a tag in the mutable global cache, use the `ActionTesting::mutate`
- * function. This acts very similarly to the `Parallel::mutate` function, except
- * that it takes a reference to the global cache instead of a proxy. When
- * `ActionTesting::mutate` is called, it will queue a simple action on the
- * component the reference to the cache was created from.
+ * To mutate a tag in the mutable global cache, use the `Parallel::mutate`
+ * function just like you would in a charm-aware situation.
  *
  * ### Inbox tags introspection
  *

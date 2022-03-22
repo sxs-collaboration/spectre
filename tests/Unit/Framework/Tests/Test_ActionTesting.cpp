@@ -1026,7 +1026,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   CHECK(ActionTesting::is_simple_action_queue_empty<component>(runner, 0));
 
   // After we mutate the item, then SimpleActionToTest should be queued...
-  ActionTesting::mutate<CacheTag, CacheTagUpdater<1>>(cache);
+  Parallel::mutate<CacheTag, CacheTagUpdater<1>>(cache);
   CHECK(ActionTesting::number_of_queued_simple_actions<component>(runner, 0) ==
         1);
   // ... so invoke it
@@ -1054,7 +1054,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
   CHECK(ActionTesting::is_simple_action_queue_empty<component>(runner, 0));
 
   // After we mutate the item, then SimpleActionToTest should be queued...
-  ActionTesting::mutate<CacheTag, CacheTagUpdater<3>>(cache);
+  Parallel::mutate<CacheTag, CacheTagUpdater<3>>(cache);
   CHECK(ActionTesting::number_of_queued_simple_actions<component>(runner, 0) ==
         1);
   // ... so invoke it

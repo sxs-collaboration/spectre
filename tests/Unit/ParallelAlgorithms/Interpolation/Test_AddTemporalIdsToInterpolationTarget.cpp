@@ -499,8 +499,8 @@ void test_add_temporal_ids_time_dependent() {
   // started when the previous interpolation is finished
   // (and that code is not included in this test).
   auto& cache = ActionTesting::cache<target_component>(runner, 0_st);
-  ActionTesting::mutate<domain::Tags::FunctionsOfTime,
-                        control_system::ResetFunctionOfTimeExpirationTime>(
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::ResetFunctionOfTimeExpirationTime>(
       cache, f_of_t_name, new_expiration_time);
 
   if (IsSequential::value) {
@@ -557,8 +557,8 @@ void test_add_temporal_ids_time_dependent() {
   // no more simple_actions in the queue.  Now we mutate the
   // FunctionsOfTime while there is still (for the nonsequential case) a
   // VerifyTemporalIdsAndSendPoints queued.
-  ActionTesting::mutate<domain::Tags::FunctionsOfTime,
-                        control_system::ResetFunctionOfTimeExpirationTime>(
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::ResetFunctionOfTimeExpirationTime>(
       cache, f_of_t_name, new_expiration_time * 2.0);
 
   if (IsSequential::value) {

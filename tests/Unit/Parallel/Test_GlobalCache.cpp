@@ -17,7 +17,6 @@
 #include <string>
 #include <tuple>
 
-#include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -276,7 +275,7 @@ void TestArrayChare<Metavariables>::run_test_one() {
                                     .number_of_sides());
 
   // Mutate the weight to 150.
-  Parallel::mutate<weight, modify_value<double>>(global_cache_proxy_, 150.0);
+  Parallel::mutate<weight, modify_value<double>>(local_cache, 150.0);
   run_test_two();
 }
 
@@ -300,9 +299,9 @@ void TestArrayChare<Metavariables>::run_test_two() {
 
     // Now the weight is 150, so mutate the email.
     Parallel::mutate<email, modify_value<std::string>>(
-        global_cache_proxy_, std::string("albert@einstein.de"));
+        local_cache, std::string("albert@einstein.de"));
     // ... and make the arthropod into a lobster.
-    Parallel::mutate<animal, modify_number_of_legs>(global_cache_proxy_, 10_st);
+    Parallel::mutate<animal, modify_number_of_legs>(local_cache, 10_st);
     run_test_three();
   }
 }
@@ -327,7 +326,7 @@ void TestArrayChare<Metavariables>::run_test_three() {
                              Parallel::get<email>(local_cache));
 
     // Now make the arthropod into a spider.
-    Parallel::mutate<animal, modify_number_of_legs>(global_cache_proxy_, 8_st);
+    Parallel::mutate<animal, modify_number_of_legs>(local_cache, 8_st);
     run_test_four();
   }
 }
@@ -352,8 +351,7 @@ void TestArrayChare<Metavariables>::run_test_four() {
         8 == Parallel::get<animal>(local_cache).number_of_legs());
 
     // Make the arthropod into a Scutigera coleoptrata.
-    Parallel::mutate<animal_base, modify_number_of_legs>(global_cache_proxy_,
-                                                         30_st);
+    Parallel::mutate<animal_base, modify_number_of_legs>(local_cache, 30_st);
 
     run_test_five();
   }
@@ -422,21 +420,21 @@ void Test_GlobalCache<Metavariables>::run_single_core_test() {
                            Parallel::get<animal_base>(cache).number_of_legs());
 
   // Check that we can modify the non-const items.
-  ActionTesting::mutate<weight, modify_value<double>>(cache, 150.0);
-  ActionTesting::mutate<email, modify_value<std::string>>(
+  Parallel::mutate<weight, modify_value<double>>(cache, 150.0);
+  Parallel::mutate<email, modify_value<std::string>>(
       cache, std::string("nobody@nowhere.com"));
   SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(cache));
   SPECTRE_PARALLEL_REQUIRE("nobody@nowhere.com" == Parallel::get<email>(cache));
-  ActionTesting::mutate<email, modify_value<std::string>>(
+  Parallel::mutate<email, modify_value<std::string>>(
       cache, std::string("isaac@newton.com"));
   SPECTRE_PARALLEL_REQUIRE("isaac@newton.com" == Parallel::get<email>(cache));
   // Make the arthropod into a spider.
-  ActionTesting::mutate<animal, modify_number_of_legs>(cache, 8_st);
+  Parallel::mutate<animal, modify_number_of_legs>(cache, 8_st);
   SPECTRE_PARALLEL_REQUIRE(8 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(8 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
   // Make the arthropod into a Scutigera coleoptrata.
-  ActionTesting::mutate<animal_base, modify_number_of_legs>(cache, 30_st);
+  Parallel::mutate<animal_base, modify_number_of_legs>(cache, 30_st);
   SPECTRE_PARALLEL_REQUIRE(30 == Parallel::get<animal>(cache).number_of_legs());
   SPECTRE_PARALLEL_REQUIRE(30 ==
                            Parallel::get<animal_base>(cache).number_of_legs());
