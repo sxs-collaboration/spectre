@@ -5,10 +5,8 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/ElementActions.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/ResidualMonitor.hpp"
-#include "ParallelAlgorithms/NonlinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -100,9 +98,6 @@ struct NewtonRaphson {
       detail::InitializeElement<FieldsTag, OptionsGroup, SourceTag>;
 
   using register_element = tmpl::list<>;
-
-  using observed_reduction_data_tags = observers::make_reduction_data_tags<
-      tmpl::list<NonlinearSolver::observe_detail::reduction_data>>;
 
   template <typename ApplyNonlinearOperator, typename SolveLinearization,
             typename ObserveActions = tmpl::list<>,

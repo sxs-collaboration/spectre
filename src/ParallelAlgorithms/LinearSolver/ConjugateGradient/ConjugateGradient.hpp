@@ -5,11 +5,9 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
-#include "ParallelAlgorithms/LinearSolver/Observe.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// Items related to the conjugate gradient linear solver
@@ -84,9 +82,6 @@ struct ConjugateGradient {
   using initialize_element = detail::InitializeElement<FieldsTag, OptionsGroup>;
 
   using register_element = tmpl::list<>;
-
-  using observed_reduction_data_tags = observers::make_reduction_data_tags<
-      tmpl::list<observe_detail::reduction_data>>;
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<

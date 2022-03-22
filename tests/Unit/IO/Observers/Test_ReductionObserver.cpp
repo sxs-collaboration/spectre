@@ -267,6 +267,16 @@ void test_reduction_observer(const bool observe_per_core) {
             observe_per_core);
     REQUIRE(file_system::check_if_file_exists(output_file_prefix + "1.h5") ==
             observe_per_core);
+
+    // Invoke the WriteReductionDataRow action to write a single row of
+    // data
+    std::vector<double> single_row_of_data(legend.size() - 2);
+    std::iota(single_row_of_data.begin(), single_row_of_data.end(), 2.);
+    runner.threaded_action<obs_writer,
+                           observers::ThreadedActions::WriteReductionDataRow>(
+        0, "/element_data", legend,
+        std::make_tuple(0., 1., single_row_of_data));
+
     // Check that the H5 file was written correctly.
     {
       const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
@@ -331,6 +341,11 @@ void test_reduction_observer(const bool observe_per_core) {
           CHECK(std::get<4>(expected)[i] == approx(written_data(0, i + 5)));
         }
         CHECK(std::get<5>(expected) == approx(written_data(0, 7)));
+      }
+
+      // Check row of data written by WriteReductionDataRow
+      for (size_t i = 0; i < legend.size(); ++i) {
+        CHECK(written_data(1, i) == i);
       }
     }
     // Check the per-core H5 files were written correctly. Only check the

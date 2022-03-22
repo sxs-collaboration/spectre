@@ -679,5 +679,50 @@ struct WriteReductionData {
     }
   }
 };
+
+/*!
+ * \brief Write a single row of data to the reductions file without the need to
+ * register or reduce anything, e.g. from a singleton component or from a
+ * specific chare.
+ *
+ * Use observers::Actions::ContributeReductionData instead if you need to
+ * perform a reduction before writing to the file.
+ *
+ * Invoke this action on the observers::ObserverWriter component on node 0. Pass
+ * the following arguments when invoking this action:
+ *
+ * - `subfile_name`: the name of the `h5::Dat` subfile in the HDF5 file. Include
+ *   a leading slash, e.g., `/element_data`.
+ * - `legend`: a `std::vector<std::string>` of column labels for the quantities
+ *   being observed (e.g. `{"Time", "L1ErrorDensity", "L2ErrorDensity"}`).
+ * - `reduction_data`: a `std::tuple<...>` with the data to write. The tuple can
+ *   hold either `double`s or `std::vector<double>`s and is flattened before it
+ *   is written to the file to form a single row of values. The total number of
+ *   values must match the length of the `legend`.
+ */
+struct WriteReductionDataRow {
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... Ts,
+      typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<Tags::H5FileLock, DataBox>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& subfile_name,
+                    std::vector<std::string>&& legend,
+                    std::tuple<Ts...>&& reduction_data) {
+    auto& reduction_file_lock =
+        db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
+    reduction_file_lock.lock();
+    ThreadedActions::ReductionActions_detail::write_data(
+        subfile_name, std::move(legend), std::move(reduction_data),
+        Parallel::get<Tags::ReductionFileName>(cache),
+        std::make_index_sequence<sizeof...(Ts)>{});
+    reduction_file_lock.unlock();
+  }
+};
+
 }  // namespace ThreadedActions
 }  // namespace observers

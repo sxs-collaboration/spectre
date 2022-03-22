@@ -5,11 +5,9 @@
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "IO/Observer/Helpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
-#include "ParallelAlgorithms/LinearSolver/Observe.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -127,9 +125,6 @@ struct Gmres {
       detail::InitializeElement<FieldsTag, OptionsGroup, Preconditioned>;
 
   using register_element = tmpl::list<>;
-
-  using observed_reduction_data_tags = observers::make_reduction_data_tags<
-      tmpl::list<observe_detail::reduction_data>>;
 
   template <typename ApplyOperatorActions, typename Label = OptionsGroup>
   using solve = tmpl::list<
