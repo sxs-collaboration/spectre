@@ -27,6 +27,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
@@ -499,9 +500,8 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
                             "      InitialExpansionVelocity: -0.1\n"
                             "      AsymptoticVelocityOuterBoundary: -0.1\n"
                             "      DecayTimescaleOuterBoundaryVelocity: 5.0\n"
-                            "    RotationAboutZAxisMap:\n"
-                            "      InitialRotationAngle: 2.0\n"
-                            "      InitialAngularVelocity: -0.2\n"
+                            "    RotationMap:\n"
+                            "      InitialAngularVelocity: [0.0, 0.0, -0.2]\n"
                             "    SizeMap:\n"
                             "      InitialValues: [0.0, 0.0]\n"
                             "      InitialVelocities: [-0.1, -0.2]\n"
@@ -591,7 +591,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                                with_boundary_conditions));
     }
   }();
-  const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
+  const std::array<double, 3> times_to_check{{0.0, 0.7, 1.6}};
 
   constexpr double initial_time = 0.0;
   constexpr double expected_time = 1.0;  // matches InitialTime: 1.0 above
@@ -602,7 +602,12 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
   constexpr double expected_decay_timescale_outer_boundary_velocity =
       5.0;  // matches DecayTimescaleOuterBoundaryVelocity: 5.0 above
   std::array<DataVector, 3> expansion_factor_coefs{{{1.0}, {-0.1}, {0.0}}};
-  std::array<DataVector, 4> rotation_angle_coefs{{{2.0}, {-0.2}, {0.0}, {0.0}}};
+  const DataVector init_angular_vel{{0.0, 0.0, -0.2}};
+  std::array<DataVector, 1> quaternion_coefs{{{1.0, 0.0, 0.0, 0.0}}};
+  // Set initial angle for each axis to 0 because it doesn't matter. We don't
+  // use it or care about it.
+  std::array<DataVector, 4> rotation_angle_coefs{
+      {{3, 0.0}, init_angular_vel, {3, 0.0}, {3, 0.0}}};
   std::array<DataVector, 4> lambda_factor_a0_coefs{
       {{0.0}, {-0.1}, {0.01}, {0.0}}};
   std::array<DataVector, 4> lambda_factor_b0_coefs{
@@ -629,7 +634,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>,
       std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<2>>,
       std::pair<std::string, domain::FunctionsOfTime::FixedSpeedCubic>,
-      std::pair<std::string, domain::FunctionsOfTime::PiecewisePolynomial<3>>>
+      std::pair<std::string,
+                domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>>
       expected_functions_of_time = std::make_tuple(
           std::pair<std::string,
                     domain::FunctionsOfTime::PiecewisePolynomial<3>>{
@@ -652,9 +658,9 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                expected_asymptotic_velocity_outer_boundary,
                expected_decay_timescale_outer_boundary_velocity}},
           std::pair<std::string,
-                    domain::FunctionsOfTime::PiecewisePolynomial<3>>{
+                    domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>{
               rotation_name,
-              {expected_time, rotation_angle_coefs,
+              {expected_time, quaternion_coefs, rotation_angle_coefs,
                initial_expiration_times[rotation_name]}});
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -669,8 +675,8 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
           expected_asymptotic_velocity_outer_boundary,
           expected_decay_timescale_outer_boundary_velocity);
   functions_of_time[rotation_name] =
-      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
-          initial_time, rotation_angle_coefs,
+      std::make_unique<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>(
+          initial_time, quaternion_coefs, rotation_angle_coefs,
           initial_expiration_times[rotation_name]);
   functions_of_time[size_a_name] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
@@ -822,7 +828,7 @@ void test_parse_errors() {
 }
 }  // namespace
 
-// [[Timeout, 15]]
+// [[Timeout, 20]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
                   "[Domain][Unit]") {
   test_connectivity();

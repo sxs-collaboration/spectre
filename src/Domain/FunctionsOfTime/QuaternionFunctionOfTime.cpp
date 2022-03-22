@@ -101,7 +101,7 @@ void QuaternionFunctionOfTime<MaxDeriv>::solve_quaternion_ode(
 
   // Dense stepper
   auto dense_stepper = boost::numeric::odeint::make_dense_output(
-      1.0e-15, 1.0e-14,
+      1.0e-12, 1.0e-14,
       boost::numeric::odeint::runge_kutta_dopri5<
           boost::math::quaternion<double>, double,
           boost::math::quaternion<double>, double,

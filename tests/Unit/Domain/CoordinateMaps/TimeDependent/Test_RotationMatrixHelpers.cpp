@@ -65,94 +65,95 @@ void check_rotation_matrix_helpers_2d(const double init_omega,
   }
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.TimeDependent.RotationMatrixHelpers",
-    "[Unit][Domain]") {
+void test_rotation_matrix_helpers_2d() {
+  INFO("Dim = 2");
+  const double omega = 2.0;
+  const double check_time = 1.0;
+
+  const std::array<DataVector, 3> init_angle{DataVector{0.0}, DataVector{omega},
+                                             DataVector{0.0}};
+
+  const double theta = omega * check_time;
+  const Matrix expected_rot_matrix_z{{cos(theta), -sin(theta)},
+                                     {sin(theta), cos(theta)}};
+  const Matrix expected_rot_matrix_deriv_z{
+      {-2.0 * sin(theta), -2.0 * cos(theta)},
+      {2.0 * cos(theta), -2.0 * sin(theta)}};
+
+  check_rotation_matrix_helpers_2d(omega, expected_rot_matrix_z,
+                                   expected_rot_matrix_deriv_z, check_time);
+}
+
+void test_rotation_matrix_helpers_3d() {
+  INFO("Dim = 3");
   {
-    INFO("Dim = 2");
+    INFO("Rotation about z")
     const double omega = 2.0;
     const double check_time = 1.0;
 
     const std::array<DataVector, 3> init_angle{
-        DataVector{0.0}, DataVector{omega}, DataVector{0.0}};
+        DataVector{3, 0.0}, DataVector{{0.0, 0.0, omega}}, DataVector{3, 0.0}};
 
     const double theta = omega * check_time;
-    const Matrix expected_rot_matrix_z{{cos(theta), -sin(theta)},
-                                       {sin(theta), cos(theta)}};
+    const Matrix expected_rot_matrix_z{{cos(theta), -sin(theta), 0.0},
+                                       {sin(theta), cos(theta), 0.0},
+                                       {0.0, 0.0, 1.0}};
     const Matrix expected_rot_matrix_deriv_z{
-        {-2.0 * sin(theta), -2.0 * cos(theta)},
-        {2.0 * cos(theta), -2.0 * sin(theta)}};
+        {-2.0 * sin(theta), -2.0 * cos(theta), 0.0},
+        {2.0 * cos(theta), -2.0 * sin(theta), 0.0},
+        {0.0, 0.0, 0.0}};
 
-    check_rotation_matrix_helpers_2d(omega, expected_rot_matrix_z,
+    check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_z,
                                      expected_rot_matrix_deriv_z, check_time);
   }
+
   {
-    INFO("Dim = 3");
-    {
-      INFO("Rotation about z")
-      const double omega = 2.0;
-      const double check_time = 1.0;
+    INFO("Rotation about x")
+    const double omega = 2.0;
+    const double check_time = 1.0;
 
-      const std::array<DataVector, 3> init_angle{DataVector{3, 0.0},
-                                                 DataVector{{0.0, 0.0, omega}},
-                                                 DataVector{3, 0.0}};
+    const std::array<DataVector, 3> init_angle{
+        DataVector{3, 0.0}, DataVector{{omega, 0.0, 0.0}}, DataVector{3, 0.0}};
 
-      const double theta = omega * check_time;
-      const Matrix expected_rot_matrix_z{{cos(theta), -sin(theta), 0.0},
-                                         {sin(theta), cos(theta), 0.0},
-                                         {0.0, 0.0, 1.0}};
-      const Matrix expected_rot_matrix_deriv_z{
-          {-2.0 * sin(theta), -2.0 * cos(theta), 0.0},
-          {2.0 * cos(theta), -2.0 * sin(theta), 0.0},
-          {0.0, 0.0, 0.0}};
+    const double theta = omega * check_time;
+    const Matrix expected_rot_matrix_x{{1.0, 0.0, 0.0},
+                                       {0.0, cos(theta), -sin(theta)},
+                                       {0.0, sin(theta), cos(theta)}};
+    const Matrix expected_rot_matrix_deriv_x{
+        {0.0, 0.0, 0.0},
+        {0.0, -2.0 * sin(theta), -2.0 * cos(theta)},
+        {0.0, 2.0 * cos(theta), -2.0 * sin(theta)}};
 
-      check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_z,
-                                       expected_rot_matrix_deriv_z, check_time);
-    }
-
-    {
-      INFO("Rotation about x")
-      const double omega = 2.0;
-      const double check_time = 1.0;
-
-      const std::array<DataVector, 3> init_angle{DataVector{3, 0.0},
-                                                 DataVector{{omega, 0.0, 0.0}},
-                                                 DataVector{3, 0.0}};
-
-      const double theta = omega * check_time;
-      const Matrix expected_rot_matrix_x{{1.0, 0.0, 0.0},
-                                         {0.0, cos(theta), -sin(theta)},
-                                         {0.0, sin(theta), cos(theta)}};
-      const Matrix expected_rot_matrix_deriv_x{
-          {0.0, 0.0, 0.0},
-          {0.0, -2.0 * sin(theta), -2.0 * cos(theta)},
-          {0.0, 2.0 * cos(theta), -2.0 * sin(theta)}};
-
-      check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_x,
-                                       expected_rot_matrix_deriv_x, check_time);
-    }
-
-    {
-      INFO("Rotation about y")
-      const double omega = 2.0;
-      const double check_time = 1.0;
-
-      const std::array<DataVector, 3> init_angle{DataVector{3, 0.0},
-                                                 DataVector{{0.0, omega, 0.0}},
-                                                 DataVector{3, 0.0}};
-
-      const double theta = omega * check_time;
-      const Matrix expected_rot_matrix_y{{cos(theta), 0.0, sin(theta)},
-                                         {0.0, 1.0, 0.0},
-                                         {-sin(theta), 0.0, cos(theta)}};
-      const Matrix expected_rot_matrix_deriv_y{
-          {-2.0 * sin(theta), 0.0, 2.0 * cos(theta)},
-          {0.0, 0.0, 0.0},
-          {-2.0 * cos(theta), 0.0, -2.0 * sin(theta)}};
-
-      check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_y,
-                                       expected_rot_matrix_deriv_y, check_time);
-    }
+    check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_x,
+                                     expected_rot_matrix_deriv_x, check_time);
   }
+
+  {
+    INFO("Rotation about y")
+    const double omega = 2.0;
+    const double check_time = 1.0;
+
+    const std::array<DataVector, 3> init_angle{
+        DataVector{3, 0.0}, DataVector{{0.0, omega, 0.0}}, DataVector{3, 0.0}};
+
+    const double theta = omega * check_time;
+    const Matrix expected_rot_matrix_y{{cos(theta), 0.0, sin(theta)},
+                                       {0.0, 1.0, 0.0},
+                                       {-sin(theta), 0.0, cos(theta)}};
+    const Matrix expected_rot_matrix_deriv_y{
+        {-2.0 * sin(theta), 0.0, 2.0 * cos(theta)},
+        {0.0, 0.0, 0.0},
+        {-2.0 * cos(theta), 0.0, -2.0 * sin(theta)}};
+
+    check_rotation_matrix_helpers_3d(init_angle, expected_rot_matrix_y,
+                                     expected_rot_matrix_deriv_y, check_time);
+  }
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Domain.CoordinateMaps.TimeDependent.RotationMatrixHelpers",
+    "[Unit][Domain]") {
+  test_rotation_matrix_helpers_2d();
+  test_rotation_matrix_helpers_3d();
 }
 }  // namespace
