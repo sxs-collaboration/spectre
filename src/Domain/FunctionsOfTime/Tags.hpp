@@ -13,6 +13,7 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/ReadSpecPiecewisePolynomial.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Options/Options.hpp"
@@ -91,6 +92,9 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
       std::unordered_map<std::string,
                          domain::FunctionsOfTime::PiecewisePolynomial<3>>
           spec_functions_of_time_third_order{};
+      std::unordered_map<std::string,
+                         domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>
+          spec_functions_of_time_quaternion{};
 
       // Import those functions of time of each supported order
       domain::FunctionsOfTime::read_spec_piecewise_polynomial(
@@ -101,6 +105,24 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
           *function_of_time_file, *function_of_time_name_map);
 
       auto functions_of_time{domain_creator->functions_of_time()};
+
+      bool uses_quaternion_rotation = false;
+      for (const auto& name_and_fot : functions_of_time) {
+        auto* maybe_quaternion_fot =
+            dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
+                name_and_fot.second.get());
+        if (maybe_quaternion_fot != nullptr) {
+          uses_quaternion_rotation = true;
+        }
+      }
+
+      // Only parse as quaternion function of time if it exists
+      if (uses_quaternion_rotation) {
+        domain::FunctionsOfTime::read_spec_piecewise_polynomial(
+            make_not_null(&spec_functions_of_time_quaternion),
+            *function_of_time_file, *function_of_time_name_map, true);
+      }
+
       for (const auto& [spec_name, spectre_name] : *function_of_time_name_map) {
         (void)spec_name;
         // The FunctionsOfTime we are mutating must already have
@@ -121,14 +143,22 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
         auto* piecewise_polynomial_third_order =
             dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<3>*>(
                 functions_of_time[spectre_name].get());
+        auto* quaternion_fot_third_order =
+            dynamic_cast<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
+                functions_of_time[spectre_name].get());
         if (piecewise_polynomial_second_order == nullptr) {
           if (piecewise_polynomial_third_order == nullptr) {
-            ERROR(
-                "The function of time with name "
-                << spectre_name
-                << " is not a PiecewisePolynomial<2> or PiecewisePolynomial<3> "
-                   "and so cannot be set using "
-                   "read_spec_piecewise_polynomial\n");
+            if (quaternion_fot_third_order == nullptr) {
+              ERROR("The function of time with name "
+                    << spectre_name
+                    << " is not a PiecewisePolynomial<2>, "
+                       "PiecewisePolynomial<3>, or QuaternionFunctionOfTime<3> "
+                       "and so cannot be set using "
+                       "read_spec_piecewise_polynomial\n");
+            } else {
+              *quaternion_fot_third_order =
+                  spec_functions_of_time_quaternion.at(spectre_name);
+            }
           } else {
             *piecewise_polynomial_third_order =
                 spec_functions_of_time_third_order.at(spectre_name);
