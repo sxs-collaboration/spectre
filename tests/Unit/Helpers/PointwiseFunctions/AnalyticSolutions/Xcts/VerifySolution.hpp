@@ -56,12 +56,24 @@ void verify_adm_constraints(const Solution& solution,
       ::Xcts::Tags::ConformalFactor<DataVector>,
       ::Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
+      ::Tags::deriv<
+          ::Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
+          tmpl::size_t<3>, Frame::Inertial>,
+      ::Xcts::Tags::ConformalChristoffelFirstKind<DataVector, 3,
+                                                  Frame::Inertial>,
+      ::Xcts::Tags::ConformalChristoffelSecondKind<DataVector, 3,
+                                                   Frame::Inertial>,
+      ::Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
+                                                   Frame::Inertial>,
+      ::Xcts::Tags::ConformalRicciScalar<DataVector>,
       ::Xcts::Tags::ShiftExcess<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::ShiftBackground<DataVector, 3, Frame::Inertial>,
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::Lapse<DataVector>,
       ::Xcts::Tags::LapseTimesConformalFactor<DataVector>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      ::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                    tmpl::size_t<3>, Frame::Inertial>,
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
@@ -70,10 +82,14 @@ void verify_adm_constraints(const Solution& solution,
       ::Xcts::Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial>,
       ::Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
           DataVector, 3, Frame::Inertial>,
+      ::Tags::div<
+          ::Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+              DataVector, 3, Frame::Inertial>>,
       gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>,
       gr::Tags::Conformal<
           gr::Tags::MomentumDensity<3, Frame::Inertial, DataVector>, 0>>;
-  const auto analytic_vars = solution.variables(x, analytic_tags{});
+  const auto analytic_vars =
+      solution.variables(x, mesh, inv_jacobian, analytic_tags{});
   const auto& conformal_factor =
       get<::Xcts::Tags::ConformalFactor<DataVector>>(analytic_vars);
   const auto& conformal_metric =
@@ -82,6 +98,23 @@ void verify_adm_constraints(const Solution& solution,
   const auto& inv_conformal_metric =
       get<::Xcts::Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>>(
           analytic_vars);
+  const auto& deriv_conformal_metric = get<::Tags::deriv<
+      ::Xcts::Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
+      tmpl::size_t<3>, Frame::Inertial>>(analytic_vars);
+  const auto& conformal_christoffel_first_kind =
+      get<::Xcts::Tags::ConformalChristoffelFirstKind<DataVector, 3,
+                                                      Frame::Inertial>>(
+          analytic_vars);
+  const auto& conformal_christoffel_second_kind =
+      get<::Xcts::Tags::ConformalChristoffelSecondKind<DataVector, 3,
+                                                       Frame::Inertial>>(
+          analytic_vars);
+  const auto& conformal_christoffel_contracted =
+      get<::Xcts::Tags::ConformalChristoffelContracted<DataVector, 3,
+                                                       Frame::Inertial>>(
+          analytic_vars);
+  const auto& conformal_ricci_scalar =
+      get<::Xcts::Tags::ConformalRicciScalar<DataVector>>(analytic_vars);
   const auto& lapse_times_conformal_factor =
       get<::Xcts::Tags::LapseTimesConformalFactor<DataVector>>(analytic_vars);
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(analytic_vars);
@@ -98,6 +131,9 @@ void verify_adm_constraints(const Solution& solution,
           analytic_vars);
   const auto& trace_extrinsic_curvature =
       get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(analytic_vars);
+  const auto& deriv_trace_extrinsic_curvature =
+      get<::Tags::deriv<gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(analytic_vars);
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
           analytic_vars);
@@ -113,6 +149,10 @@ void verify_adm_constraints(const Solution& solution,
   const auto& longitudinal_shift_background_minus_dt_conformal_metric =
       get<::Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
           DataVector, 3, Frame::Inertial>>(analytic_vars);
+  const auto& div_longitudinal_shift_background_minus_dt_conformal_metric =
+      get<::Tags::div<
+          ::Xcts::Tags::LongitudinalShiftBackgroundMinusDtConformalMetric<
+              DataVector, 3, Frame::Inertial>>>(analytic_vars);
   const auto& energy_density =
       get<gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>, 0>>(
           analytic_vars);
@@ -153,12 +193,15 @@ void verify_adm_constraints(const Solution& solution,
           spatial_metric(ti_i, ti_j) * trace_extrinsic_curvature() / 3.);
   CHECK_ITERABLE_APPROX(composed_extcurv, extrinsic_curvature);
 
-  // Check Hamiltonian constraint R + K^2 + K_ij K^ij = 16 \pi \rho
+  // Check Hamiltonian constraint R + K^2 + K_ij K^ij = 16 \pi \rho, divided by
+  // two for consistency with SpEC (the factor of two doesn't really matter)
+  // here since we are comparing with zero)
   const Scalar<DataVector> hamiltonian_constraint = TensorExpressions::evaluate(
-      ricci_scalar() + square(trace_extrinsic_curvature()) -
-      extrinsic_curvature(ti_i, ti_j) * extrinsic_curvature(ti_k, ti_l) *
-          inv_spatial_metric(ti_I, ti_K) * inv_spatial_metric(ti_J, ti_L) -
-      16. * M_PI * energy_density());
+      0.5 * (ricci_scalar() + square(trace_extrinsic_curvature()) -
+             extrinsic_curvature(ti_i, ti_j) * extrinsic_curvature(ti_k, ti_l) *
+                 inv_spatial_metric(ti_I, ti_K) *
+                 inv_spatial_metric(ti_J, ti_L)) -
+      8. * M_PI * energy_density());
   CHECK_ITERABLE_CUSTOM_APPROX(get(hamiltonian_constraint),
                                DataVector(num_points, 0.), custom_approx);
 
@@ -193,14 +236,25 @@ void verify_adm_constraints(const Solution& solution,
       shift_excess,
       conformal_metric,
       inv_conformal_metric,
+      deriv_conformal_metric,
+      conformal_christoffel_first_kind,
+      conformal_christoffel_second_kind,
+      conformal_christoffel_contracted,
+      conformal_ricci_scalar,
+      trace_extrinsic_curvature,
+      deriv_trace_extrinsic_curvature,
       shift_background,
+      longitudinal_shift_background_minus_dt_conformal_metric,
+      div_longitudinal_shift_background_minus_dt_conformal_metric,
+      energy_density,
+      momentum_density,
       mesh,
       inv_jacobian};
   const auto get_var = [&spacetime_quantities, &computer](const auto tag) {
     return spacetime_quantities.get_var(computer, tag);
   };
-  // Quantities that involve numeric derivatives are compared with the given
-  // `tolerance`
+  // Quantities that involve first numeric derivatives are compared with the
+  // given `tolerance`
   CHECK_ITERABLE_APPROX(get_var(gr::Tags::Lapse<DataVector>{}), lapse);
   CHECK_ITERABLE_APPROX(
       get_var(gr::Tags::Shift<3, Frame::Inertial, DataVector>{}), shift);
@@ -211,34 +265,17 @@ void verify_adm_constraints(const Solution& solution,
       get_var(gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>{}),
       inv_spatial_metric);
   CHECK_ITERABLE_CUSTOM_APPROX(
-      get_var(
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>{}),
-      deriv_spatial_metric, custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
       get_var(gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>{}),
       extrinsic_curvature, custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_var(gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                     DataVector>{}),
-      spatial_christoffel, custom_approx);
   // These second derivatives (and dependent quantities) exceed the standard
   // tolerance
   Approx custom_approx2 = Approx::custom().epsilon(tolerance * 100).scale(1.0);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_var(::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<
-                                3, Frame::Inertial, DataVector>,
-                            tmpl::size_t<3>, Frame::Inertial>{}),
-      deriv_spatial_christoffel, custom_approx2);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      get_var(gr::Tags::SpatialRicci<3, Frame::Inertial, DataVector>{}),
-      spatial_ricci, custom_approx2);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get_var(gr::Tags::HamiltonianConstraint<DataVector>{}),
       Scalar<DataVector>(num_points, 0.), custom_approx2);
   CHECK_ITERABLE_CUSTOM_APPROX(
       get_var(gr::Tags::MomentumConstraint<3, Frame::Inertial, DataVector>{}),
-      (tnsr::i<DataVector, 3>(num_points, 0.)), custom_approx2);
+      (tnsr::I<DataVector, 3>(num_points, 0.)), custom_approx2);
 }
 
 template <::Xcts::Equations EnabledEquations,

@@ -32,4 +32,6 @@ target_link_libraries(
   Utilities
   INTERFACE
   Domain
+  PRIVATE
+  ElasticityPointwiseFunctions
   )

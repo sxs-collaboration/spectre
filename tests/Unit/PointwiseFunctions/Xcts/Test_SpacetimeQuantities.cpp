@@ -63,7 +63,38 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
   const auto inv_conformal_metric =
       make_with_random_values<tnsr::II<DataVector, 3>>(
           make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto deriv_conformal_metric =
+      make_with_random_values<tnsr::ijj<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto conformal_christoffel_first_kind =
+      make_with_random_values<tnsr::ijj<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto conformal_christoffel_second_kind =
+      make_with_random_values<tnsr::Ijj<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto conformal_christoffel_contracted =
+      make_with_random_values<tnsr::i<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto conformal_ricci_scalar =
+      make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto trace_extrinsic_curvature =
+      make_with_random_values<Scalar<DataVector>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto deriv_trace_extrinsic_curvature =
+      make_with_random_values<tnsr::i<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   const auto shift_background = make_with_random_values<tnsr::I<DataVector, 3>>(
+      make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto longitudinal_shift_background_minus_dt_conformal_metric =
+      make_with_random_values<tnsr::II<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto div_longitudinal_shift_background_minus_dt_conformal_metric =
+      make_with_random_values<tnsr::I<DataVector, 3>>(
+          make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
+  const auto energy_density = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&gen), make_not_null(&dist_factor), num_points);
+  const auto momentum_density = make_with_random_values<tnsr::I<DataVector, 3>>(
       make_not_null(&gen), make_not_null(&dist_isotropic), num_points);
   // Check output vars
   const auto box = db::create<
@@ -72,8 +103,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
       db::AddComputeTags<Tags::SpacetimeQuantitiesCompute<
           typename SpacetimeQuantities::tags_list>>>(
       mesh, conformal_factor, lapse_times_conformal_factor, shift_excess,
-      conformal_metric, inv_conformal_metric, shift_background,
-      std::move(inv_jacobian));
+      conformal_metric, inv_conformal_metric, deriv_conformal_metric,
+      conformal_christoffel_first_kind, conformal_christoffel_second_kind,
+      conformal_christoffel_contracted, conformal_ricci_scalar,
+      trace_extrinsic_curvature, deriv_trace_extrinsic_curvature,
+      shift_background, longitudinal_shift_background_minus_dt_conformal_metric,
+      div_longitudinal_shift_background_minus_dt_conformal_metric,
+      energy_density, momentum_density, std::move(inv_jacobian));
   const auto& vars =
       get<::Tags::Variables<typename SpacetimeQuantities::tags_list>>(box);
   check_with_python(get<gr::Tags::SpatialMetric<3>>(vars), "spatial_metric",
@@ -87,23 +123,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Xcts.SpacetimeQuantities",
                     shift_background);
   check_with_python(
       get<gr::Tags::ExtrinsicCurvature<3>>(vars), "extrinsic_curvature",
-      get<gr::Tags::Lapse<DataVector>>(vars), get<gr::Tags::Shift<3>>(vars),
-      get<::Tags::deriv<gr::Tags::Shift<3>, tmpl::size_t<3>, Frame::Inertial>>(
-          vars),
-      get<gr::Tags::SpatialMetric<3>>(vars),
-      get<::Tags::dt<gr::Tags::SpatialMetric<3>>>(vars),
-      get<::Tags::deriv<gr::Tags::SpatialMetric<3>, tmpl::size_t<3>,
-                        Frame::Inertial>>(vars));
-  check_with_python(get<gr::Tags::HamiltonianConstraint<DataVector>>(vars),
-                    "hamiltonian_constraint",
-                    get<gr::Tags::SpatialRicci<3>>(vars),
-                    get<gr::Tags::ExtrinsicCurvature<3>>(vars),
-                    get<gr::Tags::InverseSpatialMetric<3>>(vars));
-  check_with_python(get<gr::Tags::MomentumConstraint<3>>(vars),
-                    "momentum_constraint",
-                    get<::Tags::deriv<gr::Tags::ExtrinsicCurvature<3>,
-                                      tmpl::size_t<3>, Frame::Inertial>>(vars),
-                    get<gr::Tags::InverseSpatialMetric<3>>(vars));
+      conformal_factor, get<gr::Tags::Lapse<DataVector>>(vars),
+      conformal_metric,
+      get<detail::LongitudinalShiftMinusDtConformalMetric<DataVector>>(vars),
+      trace_extrinsic_curvature);
+  // Constraints and other quantities are tested for various analytic solutions
+  // in: Helpers/PointwiseFunctions/AnalyticSolutions/Xcts/VerifySolution.hpp
 }
 
 }  // namespace Xcts

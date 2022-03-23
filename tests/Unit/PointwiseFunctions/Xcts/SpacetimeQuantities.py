@@ -2,8 +2,7 @@
 # See LICENSE.txt for details.
 
 import numpy as np
-from PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities import (
-    extrinsic_curvature)
+from PointwiseFunctions.Xcts.ExtrinsicCurvature import extrinsic_curvature
 
 
 def spatial_metric(conformal_factor, conformal_metric):
