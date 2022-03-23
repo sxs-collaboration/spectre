@@ -251,9 +251,6 @@ struct EvolutionMetavars {
                          ScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData;
-
   using const_global_cache_tags =
       tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
                  PhaseControl::Tags::PhaseChangeAndTriggers>;

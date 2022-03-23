@@ -385,9 +385,6 @@ struct EvolutionMetavars {
           typename AhA::post_horizon_find_callback,
           typename AhB::post_horizon_find_callback>>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData;
-
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<

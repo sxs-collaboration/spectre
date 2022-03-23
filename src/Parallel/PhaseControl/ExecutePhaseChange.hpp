@@ -3,16 +3,25 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
+#include <type_traits>
+#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
+/// \endcond
 
 namespace PhaseControl {
 namespace Actions {
@@ -147,37 +156,4 @@ typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
       *phase_change_decision_data) = false;
   return current_phase;
 }
-
-/*!
- * \brief Initialize the Main chare's `phase_change_decision_data` for the
- * option-selected `PhaseChange`s.
- *
- * \details This struct provides a convenient method of specifying the
- * initialization of the `phase_change_decision_data`. To instruct the Main
- * chare to use this initialization routine, define the type alias in the
- * `Metavariables`:
- * ```
- * using initialize_phase_data =
- *   PhaseControl::InitializePhaseChangeDecisionData;
- * ```
- */
-struct InitializePhaseChangeDecisionData {
-  template <typename... DecisionTags, typename Metavariables>
-  static void apply(const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-                        phase_change_decision_data,
-                    const Parallel::GlobalCache<Metavariables>& cache) {
-    tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-        *phase_change_decision_data) = false;
-    const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
-    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-      // avoid unused variable warning
-      (void)trigger;
-      for (const auto& phase_change : phase_changes) {
-        phase_change->template initialize_phase_data<Metavariables>(
-            phase_change_decision_data);
-      }
-    }
-  }
-};
 }  // namespace PhaseControl

@@ -228,9 +228,6 @@ struct EvolutionMetavars {
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>>>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData;
-
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 

@@ -242,9 +242,6 @@ struct EvolutionMetavars {
       // list of recovery schemes so we use `MutateApply` instead.
       Actions::MutateApply<typename system::primitive_from_conservative>>>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData;
-
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 

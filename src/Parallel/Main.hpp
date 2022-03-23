@@ -21,6 +21,7 @@
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/Printf.hpp"
@@ -39,11 +40,6 @@
 #include "Parallel/Main.decl.h"
 
 namespace Parallel {
-namespace detail {
-CREATE_HAS_TYPE_ALIAS(initialize_phase_change_decision_data)
-CREATE_HAS_TYPE_ALIAS_V(initialize_phase_change_decision_data)
-}  // namespace detail
-
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
 /// See [the Parallelization documentation](group__ParallelGroup.html#details)
@@ -531,12 +527,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   global_cache_proxy_.set_parallel_components(the_parallel_components,
                                                     callback);
 
-  if constexpr (detail::has_initialize_phase_change_decision_data_v<
-                Metavariables>) {
-    Metavariables::initialize_phase_change_decision_data::apply(
-        make_not_null(&phase_change_decision_data_),
-        *global_cache_proxy_.ckLocalBranch());
-  }
+  PhaseControl::initialize_phase_change_decision_data(
+      make_not_null(&phase_change_decision_data_),
+      *global_cache_proxy_.ckLocalBranch());
 }
 
 template <typename Metavariables>

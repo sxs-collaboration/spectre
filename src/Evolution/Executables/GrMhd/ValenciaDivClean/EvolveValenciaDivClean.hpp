@@ -441,9 +441,6 @@ struct EvolutionMetavars {
       tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
                           dg_step_actions>;
 
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData;
-
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
                  observers::Actions::RegisterEventsWithObservers>;

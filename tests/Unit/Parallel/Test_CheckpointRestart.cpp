@@ -250,14 +250,6 @@ struct TestMetavariables {
     Exit
   };
 
-  struct initialize_phase_change_decision_data {
-    template <typename... Tags>
-    static void apply(
-        const gsl::not_null<
-            tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {}
-  };
-
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>

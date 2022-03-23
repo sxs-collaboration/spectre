@@ -5,6 +5,7 @@
 
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
+#include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -187,7 +188,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
 
   {
     INFO("Initialize phase change decision data");
-    PhaseControl::InitializePhaseChangeDecisionData::apply(
+    PhaseControl::initialize_phase_change_decision_data(
         make_not_null(&phase_change_data), global_cache);
     // checking against the formula:
     // (Index % 2 == 0) xor

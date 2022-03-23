@@ -228,18 +228,6 @@ struct TestMetavariables {
         tmpl::pair<PhaseChange, tmpl::list<DummyPhaseChange>>>;
   };
 
-  struct initialize_phase_change_decision_data {
-    template <typename... Tags>
-    static void apply(
-        const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-            phase_change_decision_data,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {
-      tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) = false;
-      tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
-          *phase_change_decision_data) = 0;
-    }
-  };
-
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<tuples::TaggedTuple<Tags...>*>
