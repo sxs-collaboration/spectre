@@ -226,6 +226,36 @@ namespace CoordinateMaps {
  * 0 & 0 & 0 \\
  * \end{bmatrix}.
  * \f]
+ *
+ * ### Using the Frustum Transition between Equiangular Maps
+ * Using the parameter \f$\phi\f$, the user can specify whether to use the
+ * full equiangular map on the upper +z face, or whether to use only the upper
+ * or lower half of the equiangular map on the upper +z face. This capability
+ * is used in the BinaryCompactObject Domain, where two equiangular maps around
+ * each spherical object must be transitioned into a single equiangular map at
+ * the outer boundary. The transition region that interpolates between these
+ * two regions is the layer of Blocks with the Frustum maps.
+ *
+ * The full map is obtained by setting
+ * \f$\Xi = \frac{1 + \mathrm{Z}}{2}\Xi_{\mathrm{upper}}(\xi,\zeta) +
+ *          \frac{1 - \mathrm{Z}}{2}\Xi_{0}(\xi)\f$
+ *
+ * for the volume map \f$\vec{x}(\xi,\eta,\zeta)\f$, and
+ * \f$\Xi = \Xi_{\mathrm{upper}}\f$ for the surface map
+ * \f$\vec{\sigma}(\xi,\eta)\f$, where \f$\Xi_{\mathrm{upper}}\f$ is the
+ * \f$\phi\f$-dependent generalized equiangular map, which corresponds to the
+ * lower half of the equiangular map when \f$\phi = -1\f$,
+ * and to the upper half of the equiangular map when \f$\phi = 1 \f$.
+ * It is given by:
+ *
+ * \f[\Xi_{\mathrm{upper}} = (1 +
+ * \phi^2)\tan(\frac{\pi}{4}\frac{\xi+\phi}{1+\phi^2})-\phi\f]
+ *
+ * For \f$\phi=0\f$ this generalized map simplifies to the original equiangular
+ * map \f$Xi_0 = \tan(\frac{\pi}{4}\xi)\f$.
+ *
+ * This function is compatible with the ability to bulge out the Frustum; the
+ * map and Jacobian remain unchanged, modulo this substitution.
  */
 class Frustum {
  public:
@@ -235,8 +265,8 @@ class Frustum {
           OrientationMap<3> orientation_of_frustum,
           bool with_equiangular_map = false,
           double projective_scale_factor = 1.0,
-          bool auto_projective_scale_factor = false,
-          double sphericity = 0.0);
+          bool auto_projective_scale_factor = false, double sphericity = 0.0,
+          double transition_phi = 0.0);
   Frustum() = default;
   ~Frustum() = default;
   Frustum(Frustum&&) = default;
@@ -293,6 +323,7 @@ class Frustum {
   double w_minus_{std::numeric_limits<double>::signaling_NaN()};
   double sphericity_{std::numeric_limits<double>::signaling_NaN()};
   double radius_{std::numeric_limits<double>::signaling_NaN()};
+  double phi_{std::numeric_limits<double>::signaling_NaN()};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs);

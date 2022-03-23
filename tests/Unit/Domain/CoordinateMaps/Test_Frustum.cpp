@@ -56,9 +56,15 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{upper_x_lower_base, upper_y_lower_base}},
          {{lower_x_upper_base, lower_y_upper_base}},
          {{upper_x_upper_base, upper_y_upper_base}}}};
-    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
+
+    // The parameters of the Frustum are chosen so that the angles between
+    // the faces are not too obtuse or acute. The ratio of the length
+    // of the longer base to the height of the Frustum is at most 7:1. Frustums
+    // with larger ratios cannot be bulged out without the root find beginning
+    // to fail in extreme cases.
+    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 3.0, map_i(),
                                               with_equiangular_map, 1.2, false,
-                                              0.5);
+                                              1.0, 1.0);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
@@ -302,6 +308,186 @@ void test_bulged_frustum_inv_map() {
   test_inverse_map(map, test_point3);
   test_inverse_map(map, test_point4);
 }
+
+void test_bulged_frustum_equiangular_full() {
+  INFO("Bulged frustum jacobian");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(
+      face_vertices, 2.0, 4.0, OrientationMap<3>{}, true, 1.0, false, 1.0, 0.0);
+
+  // Points on the upper +zeta face:
+  const std::array<std::array<double, 3>, 4> cornerpts{{{{-1.0, -1.0, 1.0}},
+                                                        {{-1.0, 1.0, 1.0}},
+                                                        {{1.0, -1.0, 1.0}},
+                                                        {{1.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> zeroxipts{
+      {{{0.0, -1.0, 1.0}}, {{0.0, 0.0, 1.0}}, {{0.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> zeroetapts{
+      {{{-1.0, 0.0, 1.0}}, {{0.0, 0.0, 1.0}}, {{1.0, 0.0, 1.0}}}};
+
+  // If Frustum is successfully bulged, points on upper +zeta face
+  // should have the same radius:
+  const double radius = 4.0 * sqrt(3.0);
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(magnitude(map(gsl::at(cornerpts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(zeroxipts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(zeroetapts, i))) == approx(radius));
+  }
+  CHECK(magnitude(map(gsl::at(cornerpts, 3))) == approx(radius));
+
+  // If Frustum is successfully equiangular, distances equally spaced
+  // in logical space correspond to equal angular distances. For a map
+  // where a logical axis subtends an angle of theta, the jacobian
+  // is radius * theta / 2 at any point along this axis.
+  const double radius_times_theta_over_two = radius * M_PI_4;
+  for (size_t i = 0; i < 3; i++) {
+    const std::array<double, 3> zeroeta_dx_dxi{
+        {map.jacobian(gsl::at(zeroetapts, i)).get(0, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(1, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(2, 0)}};
+    CHECK(magnitude(zeroeta_dx_dxi) == approx(radius_times_theta_over_two));
+
+    const std::array<double, 3> zeroxi_dx_deta{
+        {map.jacobian(gsl::at(zeroxipts, i)).get(0, 1),
+         map.jacobian(gsl::at(zeroxipts, i)).get(1, 1),
+         map.jacobian(gsl::at(zeroxipts, i)).get(2, 1)}};
+    CHECK(magnitude(zeroxi_dx_deta) == approx(radius_times_theta_over_two));
+  }
+}
+
+void test_bulged_frustum_equiangular_upper() {
+  INFO("Bulged frustum jacobian");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{0.0, -2.0}}, {{2.0, 2.0}}, {{0.0, -4.0}}, {{4.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(
+      face_vertices, 2.0, 4.0, OrientationMap<3>{}, true, 1.0, false, 1.0, 1.0);
+
+  const std::array<std::array<double, 3>, 4> cornerpts{{{{-1.0, -1.0, 1.0}},
+                                                        {{-1.0, 1.0, 1.0}},
+                                                        {{1.0, -1.0, 1.0}},
+                                                        {{1.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> lowerxipts{
+      {{{-1.0, -1.0, 1.0}}, {{-1.0, 0.0, 1.0}}, {{-1.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> zeroetapts{
+      {{{-1.0, 0.0, 1.0}}, {{0.0, 0.0, 1.0}}, {{1.0, 0.0, 1.0}}}};
+
+  // If Frustum is successfully bulged, points on upper +zeta face
+  // should have the same radius:
+  const double radius = 4.0 * sqrt(3.0);
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(magnitude(map(gsl::at(cornerpts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(lowerxipts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(zeroetapts, i))) == approx(radius));
+  }
+  CHECK(magnitude(map(gsl::at(cornerpts, 3))) == approx(radius));
+
+  // If Frustum is successfully equiangular, distances equally spaced
+  // in logical space correspond to equal angular distances. For a map
+  // where a logical axis subtends an angle of theta, the jacobian
+  // is radius * theta / 2 at any point along this axis. For a full
+  // wedge map, which this frustum emulates, the angle theta is pi/2,
+  // as four congruent wedges will cover a great circle. The angle is
+  // divided by two to account for the fact that the logical cube has a
+  // length of two.
+  const double radius_times_theta_over_two = radius * M_PI_4;
+  for (size_t i = 0; i < 3; i++) {
+    const std::array<double, 3> zeroeta_dx_dxi{
+        {map.jacobian(gsl::at(zeroetapts, i)).get(0, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(1, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(2, 0)}};
+
+    // The map only subtends half the angle in the xi direction when the
+    // half equiangular map is used.
+    CHECK(magnitude(zeroeta_dx_dxi) ==
+          approx(0.5 * radius_times_theta_over_two));
+
+    const std::array<double, 3> lowerxi_dx_deta{
+        {map.jacobian(gsl::at(lowerxipts, i)).get(0, 1),
+         map.jacobian(gsl::at(lowerxipts, i)).get(1, 1),
+         map.jacobian(gsl::at(lowerxipts, i)).get(2, 1)}};
+
+    // The map must be checked at the xi=-1 points as the lower xi points
+    // on the upper half map correspond to the xi=0 points on the full half.
+    CHECK(magnitude(lowerxi_dx_deta) == approx(radius_times_theta_over_two));
+  }
+}
+
+void test_bulged_frustum_equiangular_lower() {
+  INFO("Bulged frustum jacobian");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{0.0, 2.0}}, {{-4.0, -4.0}}, {{0.0, 4.0}}}};
+  const CoordinateMaps::Frustum map(face_vertices, 2.0, 4.0,
+                                    OrientationMap<3>{}, true, 1.0, false, 1.0,
+                                    -1.0);
+
+  const std::array<std::array<double, 3>, 4> cornerpts{{{{-1.0, -1.0, 1.0}},
+                                                        {{-1.0, 1.0, 1.0}},
+                                                        {{1.0, -1.0, 1.0}},
+                                                        {{1.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> upperxipts{
+      {{{1.0, -1.0, 1.0}}, {{1.0, 0.0, 1.0}}, {{1.0, 1.0, 1.0}}}};
+
+  const std::array<std::array<double, 3>, 3> zeroetapts{
+      {{{-1.0, 0.0, 1.0}}, {{0.0, 0.0, 1.0}}, {{1.0, 0.0, 1.0}}}};
+
+  // If Frustum is successfully bulged, points on upper +zeta face
+  // should have the same radius:
+  const double radius = 4.0 * sqrt(3.0);
+  for (size_t i = 0; i < 3; i++) {
+    CHECK(magnitude(map(gsl::at(cornerpts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(upperxipts, i))) == approx(radius));
+    CHECK(magnitude(map(gsl::at(zeroetapts, i))) == approx(radius));
+  }
+  CHECK(magnitude(map(gsl::at(cornerpts, 3))) == approx(radius));
+
+  // If Frustum is successfully equiangular, distances equally spaced
+  // in logical space correspond to equal angular distances. For a map
+  // where a logical axis subtends an angle of theta, the jacobian
+  // is radius * theta / 2 at any point along this axis. For a full
+  // wedge map, which this frustum emulates, the angle theta is pi/2,
+  // as four congruent wedges will cover a great circle. The angle is
+  // divided by two to account for the fact that the logical cube has a
+  // length of two.
+  const double radius_times_theta_over_two = radius * M_PI_4;
+  for (size_t i = 0; i < 3; i++) {
+    const std::array<double, 3> zeroeta_dx_dxi{
+        {map.jacobian(gsl::at(zeroetapts, i)).get(0, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(1, 0),
+         map.jacobian(gsl::at(zeroetapts, i)).get(2, 0)}};
+
+    // The map only subtends half the angle in the xi direction when the
+    // half equiangular map is used.
+    CHECK(magnitude(zeroeta_dx_dxi) ==
+          approx(0.5 * radius_times_theta_over_two));
+
+    const std::array<double, 3> upperxi_dx_deta{
+        {map.jacobian(gsl::at(upperxipts, i)).get(0, 1),
+         map.jacobian(gsl::at(upperxipts, i)).get(1, 1),
+         map.jacobian(gsl::at(upperxipts, i)).get(2, 1)}};
+
+    // The map must be checked at the xi=+1 points as the upper xi points
+    // on the lower half map correspond to the xi=0 points on the full half.
+    CHECK(magnitude(upperxi_dx_deta) == approx(radius_times_theta_over_two));
+  }
+}
+
+void test_frustum_fail_equiangular() {
+  INFO("Frustum fail");
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const std::array<double, 3> test_mapped_point1{{0.0, 50.0, 9.0}};
+  const std::array<double, 3> test_mapped_point2{{4.0, 4.0, 1.0}};
+  const CoordinateMaps::Frustum equiangular_map(
+      face_vertices, 2.0, 5.0, OrientationMap<3>{}, true, 1.0, false, 1.0, 1.0);
+  CHECK(not equiangular_map.inverse(test_mapped_point1).has_value());
+  CHECK(not equiangular_map.inverse(test_mapped_point2).has_value());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
@@ -314,6 +500,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_bulged_frustum_jacobian();
   test_bulged_frustum_inv_jacobian();
   test_bulged_frustum_inv_map();
+  test_bulged_frustum_equiangular_full();
+  test_bulged_frustum_equiangular_upper();
+  test_bulged_frustum_equiangular_lower();
+  test_frustum_fail_equiangular();
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
