@@ -65,7 +65,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -300,8 +299,7 @@ struct EvolutionMetavars {
       initial_data_tag, Tags::EventsAndTriggers,
       tmpl::conditional_t<use_dg_subcell,
                           tmpl::list<Burgers::fd::Tags::Reconstructor>,
-                          tmpl::list<>>,
-      PhaseControl::Tags::PhaseChangeAndTriggers>;
+                          tmpl::list<>>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

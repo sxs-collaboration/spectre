@@ -47,6 +47,9 @@ namespace Actions {
  *     \ref DataBoxGroup "DataBox" to store persistent state information.
  */
 struct ExecutePhaseChange {
+  using const_global_cache_tags =
+      tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

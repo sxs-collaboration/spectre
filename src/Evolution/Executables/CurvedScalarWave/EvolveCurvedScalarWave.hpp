@@ -52,7 +52,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -290,8 +289,7 @@ struct EvolutionMetavars {
           tmpl::list<>>>>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
-                 PhaseControl::Tags::PhaseChangeAndTriggers>;
+      tmpl::list<initial_data_tag, Tags::EventsAndTriggers>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

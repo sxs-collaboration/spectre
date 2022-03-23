@@ -67,7 +67,6 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -300,8 +299,7 @@ struct EvolutionMetavars {
                  tmpl::conditional_t<
                      use_dg_subcell,
                      tmpl::list<ScalarAdvection::fd::Tags::Reconstructor<Dim>>,
-                     tmpl::list<>>,
-                 PhaseControl::Tags::PhaseChangeAndTriggers>;
+                     tmpl::list<>>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

@@ -74,7 +74,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -416,7 +415,7 @@ struct EvolutionMetavars {
           tmpl::list<>>,
       initial_data_tag,
       tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
-      Tags::EventsAndTriggers, PhaseControl::Tags::PhaseChangeAndTriggers>;
+      Tags::EventsAndTriggers>;
 
   static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};

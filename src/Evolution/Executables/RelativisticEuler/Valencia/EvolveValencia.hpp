@@ -54,7 +54,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -303,8 +302,7 @@ struct EvolutionMetavars {
                  dg_element_array>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers,
-                 PhaseControl::Tags::PhaseChangeAndTriggers>;
+      tmpl::list<initial_data_tag, Tags::EventsAndTriggers>;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of RelativisticEuler system.\n\n"};
