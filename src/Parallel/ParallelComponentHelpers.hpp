@@ -134,6 +134,37 @@ using get_mutable_global_cache_tags =
             typename Metavariables::component_list,
             detail::get_mutable_global_cache_tags_from_pdal<tmpl::_1>>>>>;
 
+/*!
+ * \ingroup ParallelGroup
+ * \brief Check whether a tag is retrievable from the const portion of
+ * the global cache.
+ */
+template <typename Metavariables, typename Tag>
+constexpr bool is_in_const_global_cache =
+    tmpl::size<tmpl::filter<get_const_global_cache_tags<Metavariables>,
+                            std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value >
+    0;
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Check whether a tag is retrievable from the mutable portion of
+ * the global cache.
+ */
+template <typename Metavariables, typename Tag>
+constexpr bool is_in_mutable_global_cache =
+    tmpl::size<tmpl::filter<get_mutable_global_cache_tags<Metavariables>,
+                            std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value >
+    0;
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Check whether a tag is retrievable from the global cache.
+ */
+template <typename Metavariables, typename Tag>
+constexpr bool is_in_global_cache =
+    is_in_const_global_cache<Metavariables, Tag> or
+    is_in_mutable_global_cache<Metavariables, Tag>;
+
 template <typename Tag>
 struct MutableCacheTag {
   using tag  = Tag;

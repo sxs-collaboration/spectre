@@ -578,11 +578,7 @@ auto get(const GlobalCache<Metavariables>& cache)
   // We check if the tag is to be retrieved directly or via a base class
   using tag =
       GlobalCache_detail::get_matching_tag<GlobalCacheTag, Metavariables>;
-  using tag_is_not_in_const_tags = std::is_same<
-      tmpl::filter<get_const_global_cache_tags<Metavariables>,
-                   std::is_base_of<tmpl::pin<GlobalCacheTag>, tmpl::_1>>,
-      tmpl::list<>>;
-  if constexpr (tag_is_not_in_const_tags::value) {
+  if constexpr (is_in_mutable_global_cache<Metavariables, GlobalCacheTag>) {
     // Tag is not in the const tags, so use MutableGlobalCache
     if (cache.mutable_global_cache_proxy_is_set()) {
       const auto& local_mutable_cache =
