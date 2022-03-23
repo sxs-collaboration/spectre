@@ -14,9 +14,11 @@
 
 #include "DataStructures/DataBox/TagName.hpp"
 #include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/OptionTags.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/ReadSpecPiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
@@ -40,6 +42,58 @@ namespace {
 
 struct Metavariables {
   static constexpr size_t volume_dim = 3;
+};
+
+class FakeCreator : public DomainCreator<3> {
+ public:
+  explicit FakeCreator() {}
+  Domain<3> create_domain() const override { ERROR(""); }
+  std::vector<std::array<size_t, 3>> initial_extents() const override {
+    ERROR("");
+  }
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const override {
+    ERROR("");
+  }
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                         /*initial_expiration_times*/
+                         = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override {
+    std::unordered_map<std::string,
+                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+        result{};
+
+    // All initial parameters must match the values below
+    const double initial_time = 0.0;
+    std::array<DataVector, 4> initial_expansion{
+        {{{1.0}}, {{0.2}}, {{0.03}}, {{0.004}}}};
+    std::array<DataVector, 4> initial_unity{
+        {{{1.0}}, {{0.0}}, {{0.0}}, {{0.0}}}};
+    const std::array<DataVector, 4> initial_rotation{{{3, 0.0},
+                                                      {{0.0, 0.0, -0.1}},
+                                                      {{0.0, 0.0, -0.02}},
+                                                      {{0.0, 0.0, -0.003}}}};
+    const std::array<DataVector, 1> initial_quaternion{{{1.0, 0.0, 0.0, 0.0}}};
+
+    result.insert(
+        {"CubicScaleA",
+         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+             initial_time, initial_expansion,
+             std::numeric_limits<double>::infinity())});
+    result.insert(
+        {"CubicScaleB",
+         std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<3>>(
+             initial_time, initial_unity,
+             std::numeric_limits<double>::infinity())});
+    result.insert(
+        {"Rotation",
+         std::make_unique<domain::FunctionsOfTime::QuaternionFunctionOfTime<3>>(
+             initial_time, initial_quaternion, initial_rotation,
+             std::numeric_limits<double>::infinity())});
+    return result;
+  }
 };
 
 void test_options() {
@@ -243,7 +297,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
               functions_of_time,
           const std::unordered_map<
               std::string, std::array<std::array<double, 3>, number_of_times>>&
-              expected_funcs) {
+              expected_funcs,
+          const bool quaternion_rotation = false) {
         REQUIRE(functions_of_time.size() == expected_names.size());
         for (const auto& function_of_time : functions_of_time) {
           const auto& f = function_of_time.second;
@@ -252,43 +307,77 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
           CHECK(std::find(expected_names.begin(), expected_names.end(), name) !=
                 expected_names.end());
 
+          // Only convert to QuatFot for specific name
+          const bool using_quaternion_fot =
+              quaternion_rotation and name == "Rotation";
           // Check if the read FunctionOfTimes have the expected values, derivs
           for (size_t i = 0; i < number_of_times; ++i) {
             const auto time = gsl::at(expected_times, i);
-            const auto f_and_derivs = f->func_and_2_derivs(time);
+            std::array<DataVector, 3> f_and_derivs{};
+            if (using_quaternion_fot) {
+              // Need the angle func, not the quaternion to check
+              auto* quaternion_fot = dynamic_cast<
+                  domain::FunctionsOfTime::QuaternionFunctionOfTime<3>*>(
+                  f.get());
+              f_and_derivs = quaternion_fot->angle_func_and_2_derivs(time);
+            } else {
+              f_and_derivs = f->func_and_2_derivs(time);
+            }
+            // z-rotation if using quaternions
+            const size_t index = using_quaternion_fot ? 2 : 0;
             for (size_t j = 0; j < 3; ++j) {
               CHECK(gsl::at(gsl::at(expected_funcs.at(name), i), j) ==
-                    approx(gsl::at(f_and_derivs, j)[0]));
+                    approx(gsl::at(f_and_derivs, j)[index]));
             }
           }
         }
       };
 
-  const auto& functions_of_time =
-      domain::Tags::FunctionsOfTimeInitialize::create_from_options<
-          Metavariables>(created_domain_creator, created_function_of_time_file,
-                         created_function_of_time_name_map);
-  check_read_functions_of_time(functions_of_time, expected_functions);
+  {
+    INFO("Override all FunctionsOfTime");
+    const auto& functions_of_time =
+        domain::Tags::FunctionsOfTimeInitialize::create_from_options<
+            Metavariables>(created_domain_creator,
+                           created_function_of_time_file,
+                           created_function_of_time_name_map);
+    check_read_functions_of_time(functions_of_time, expected_functions);
+  }
 
-  // Read the file again, but this time, only override one FunctionOfTime
-  const auto created_function_of_time_name_map_expansion =
-      TestHelpers::test_option_tag<
-          domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
-          "{ExpansionFactor: " + expansion_name + "}");
-  const auto& functions_of_time_expansion =
-      domain::Tags::FunctionsOfTimeInitialize::create_from_options<
-          Metavariables>(created_domain_creator, created_function_of_time_file,
-                         created_function_of_time_name_map_expansion);
+  {
+    INFO("Override with QuaternionFunctionOfTime")
+    const std::unique_ptr<DomainCreator<3>> fake_creator =
+        std::make_unique<FakeCreator>();
+    const auto& functions_of_time =
+        domain::Tags::FunctionsOfTimeInitialize::create_from_options<
+            Metavariables>(fake_creator, created_function_of_time_file,
+                           created_function_of_time_name_map);
+    check_read_functions_of_time(functions_of_time, expected_functions, true);
+  }
 
-  // Only override ExpansionFactor this time, so change the expected Rotation
-  // and Unity FunctionsOfTime to their initial values
-  expected_functions[rotation_name] =
-      std::array<std::array<double, 3>, number_of_times>{
-          {{{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}}};
-  expected_functions[unity_name] =
-      std::array<std::array<double, 3>, number_of_times>{
-          {{{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}}};
-  check_read_functions_of_time(functions_of_time_expansion, expected_functions);
+  {
+    INFO("Override only expansion");
+    // Read the file again, but this time, only override one FunctionOfTime
+    const auto created_function_of_time_name_map_expansion =
+        TestHelpers::test_option_tag<
+            domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>(
+            "{ExpansionFactor: " + expansion_name + "}");
+    const auto& functions_of_time_expansion =
+        domain::Tags::FunctionsOfTimeInitialize::create_from_options<
+            Metavariables>(created_domain_creator,
+                           created_function_of_time_file,
+                           created_function_of_time_name_map_expansion);
+
+    // Only override ExpansionFactor this time, so change the expected Rotation
+    // and Unity FunctionsOfTime to their initial values
+    expected_functions[rotation_name] =
+        std::array<std::array<double, 3>, number_of_times>{
+            {{{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}}};
+    expected_functions[unity_name] =
+        std::array<std::array<double, 3>, number_of_times>{
+            {{{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}, {{1.0, 0.0, 0.0}}}};
+    check_read_functions_of_time(functions_of_time_expansion,
+                                 expected_functions);
+  }
 
   // Delete the temporary file created for this test
   file_system::rm(test_filename, true);
