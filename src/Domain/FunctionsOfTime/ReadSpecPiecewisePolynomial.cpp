@@ -13,6 +13,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -21,13 +22,13 @@
 #include "Utilities/Gsl.hpp"
 
 namespace domain::FunctionsOfTime {
-template <size_t MaxDeriv>
+template <template <size_t> class FoTType, size_t MaxDeriv>
 void read_spec_piecewise_polynomial(
-    const gsl::not_null<std::unordered_map<
-        std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
+    const gsl::not_null<std::unordered_map<std::string, FoTType<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
-    const std::map<std::string, std::string>& dataset_name_map) {
+    const std::map<std::string, std::string>& dataset_name_map,
+    const bool quaternion_rotation) {
   h5::H5File<h5::AccessType::ReadOnly> file{file_name};
   for (const auto& [spec_name, spectre_name] : dataset_name_map) {
     const auto& dat_file = file.get<h5::Dat>("/" + spec_name);
@@ -52,10 +53,29 @@ void read_spec_piecewise_polynomial(
     // at each time. This could be generalized if needed
     const size_t number_of_components = dat_data(0, 2);
 
+    if (quaternion_rotation) {
+      ASSERT(number_of_components == 1 or number_of_components == 4,
+             "To read in a function of time representing rotation from SpEC, "
+             "it must have either 1 component representing rotation about the "
+             "z-axis or 4 components representing the 'quaternion' (which is "
+             "actually only the quaternion for the 0th deriv order).");
+    }
+
     std::array<DataVector, MaxDeriv + 1> initial_coefficients;
     for (size_t deriv_order = 0; deriv_order < MaxDeriv + 1; ++deriv_order) {
-      gsl::at(initial_coefficients, deriv_order) =
-          DataVector(number_of_components);
+      if (not quaternion_rotation) {
+        gsl::at(initial_coefficients, deriv_order) =
+            DataVector(number_of_components);
+      } else {
+        // Quaternion rotation will always need 3 components. The
+        // `number_of_components` variable represents the number of components
+        // in the SpEC file and can be either 1 or 4 as explained above. When
+        // creating the `initial_coefficients` for a QuaternionFunctionOfTime,
+        // they will be used as initial values for the internal angle
+        // PiecewisePolynomial inside the QuaternionFunctionOfTime. This is why
+        // we need 3 componenets here, for rotations about x,y,z.
+        gsl::at(initial_coefficients, deriv_order) = DataVector(3, 0.0);
+      }
       for (size_t component = 0; component < number_of_components;
            ++component) {
         // Columns in the file to be read have the following form. Columns
@@ -66,16 +86,63 @@ void read_spec_piecewise_polynomial(
         // the zeroth, first, second, ... MaxDeriv-th time derivatives of the
         // component. The nth-order derivative of the ith component is therefore
         // in column 5 + (MaxDeriv + 1) * i + n.
-        gsl::at(initial_coefficients, deriv_order)[component] =
-            dat_data(0, 5 + (MaxDeriv + 1) * component + deriv_order);
+        if (not quaternion_rotation) {
+          gsl::at(initial_coefficients, deriv_order)[component] =
+              dat_data(0, 5 + (MaxDeriv + 1) * component + deriv_order);
+        } else {
+          if (number_of_components == 1) {
+            // z-component
+            gsl::at(initial_coefficients, deriv_order)[2] =
+                dat_data(0, 5 + (MaxDeriv + 1) * component + deriv_order);
+          } else {
+            // quaternion. Since the 0th derivative represents the quaternion
+            // and not a rotation angle, set the 0th deriv components to 0.0 to
+            // start. Then for the nth derivative, the 0th component is
+            // meaningless and components 1-3 are what we are after
+            if (deriv_order == 0 or component == 0) {
+              // 0th deriv order is already initialized to 0
+              // 0th component is meaningless in SpEC so don't use it
+              continue;
+            } else {
+              // for nth deriv order and not 0th component fill in values as is
+              gsl::at(initial_coefficients, deriv_order)[component - 1] =
+                  dat_data(0, 5 + (MaxDeriv + 1) * component + deriv_order);
+            }
+          }
+        }
       }
     }
-    (*spec_functions_of_time)[spectre_name] =
-        domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>(
-            start_time, initial_coefficients, start_time);
+    if constexpr (std::is_same_v<FoTType<MaxDeriv>,
+                                 domain::FunctionsOfTime::
+                                     QuaternionFunctionOfTime<MaxDeriv>>) {
+      if (quaternion_rotation) {
+        (*spec_functions_of_time)[spectre_name] =
+            domain::FunctionsOfTime::QuaternionFunctionOfTime<MaxDeriv>(
+                start_time, std::array<DataVector, 1>{{{1.0, 0.0, 0.0, 0.0}}},
+                initial_coefficients, start_time);
+      } else {
+        // Shouldn't get here, but just in case
+        ERROR(
+            "Trying to use a QuaternionFunctionOfTime when not using "
+            "quaternion rotation. Trying to set QuaternionFunctionOfTime for "
+            "spectre name '"
+            << spectre_name << "'.");
+      }
+    } else {
+      (*spec_functions_of_time)[spectre_name] =
+          domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>(
+              start_time, initial_coefficients, start_time);
+    }
 
     // Loop over the remaining times, updating the function of time
-    DataVector highest_derivative(number_of_components);
+    DataVector highest_derivative{};
+    if (not quaternion_rotation) {
+      highest_derivative = DataVector{number_of_components, 0.0};
+    } else {
+      // Quaternion rotation always has 3 components
+      highest_derivative =
+          DataVector{3, std::numeric_limits<double>::signaling_NaN()};
+    }
     double time_last_updated = start_time;
     for (size_t row = 1; row < dat_data.rows(); ++row) {
       // If time of last update has changed, then update the FunctionOfTime
@@ -83,8 +150,28 @@ void read_spec_piecewise_polynomial(
       if (dat_data(row, 1) > time_last_updated) {
         time_last_updated = dat_data(row, 1);
         for (size_t a = 0; a < number_of_components; ++a) {
-          highest_derivative[a] =
-              dat_data(row, 5 + (MaxDeriv + 1) * a + MaxDeriv);
+          if (not quaternion_rotation) {
+            highest_derivative[a] =
+                dat_data(row, 5 + (MaxDeriv + 1) * a + MaxDeriv);
+          } else {
+            if (number_of_components == 1) {
+              // z-rotation
+              highest_derivative[0] = 0.0;
+              highest_derivative[1] = 0.0;
+              highest_derivative[2] =
+                  dat_data(row, 5 + (MaxDeriv + 1) * a + MaxDeriv);
+            } else {
+              // quaternion
+              if (a == 0) {
+                // 0th component is meaningless in SpEC so don't use it
+                continue;
+              } else {
+                // fill in a != 0 as is
+                highest_derivative[a - 1] =
+                    dat_data(row, 5 + (MaxDeriv + 1) * a + MaxDeriv);
+              }
+            }
+          }
         }
         (*spec_functions_of_time)[spectre_name].update(
             time_last_updated, highest_derivative, time_last_updated);
@@ -113,18 +200,20 @@ void read_spec_piecewise_polynomial(
 }
 }  // namespace domain::FunctionsOfTime
 
-#define MAX_DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                                \
-  template void                                                             \
-  domain::FunctionsOfTime::read_spec_piecewise_polynomial<MAX_DERIV(data)>( \
-      const gsl::not_null<std::unordered_map<                               \
-          std::string,                                                      \
-          domain::FunctionsOfTime::PiecewisePolynomial<MAX_DERIV(data)>>*>  \
-          spec_functions_of_time,                                           \
-      const std::string& file_name,                                         \
-      const std::map<std::string, std::string>& dataset_name_map);
+#define FOTTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3))
+#define INSTANTIATE(_, data)                                               \
+  template void domain::FunctionsOfTime::read_spec_piecewise_polynomial<>( \
+      const gsl::not_null<std::unordered_map<std::string, FOTTYPE(data)>*> \
+          spec_functions_of_time,                                          \
+      const std::string& file_name,                                        \
+      const std::map<std::string, std::string>& dataset_name_map,          \
+      const bool quaternion_rotation);
 
-#undef MAX_DERIV
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (domain::FunctionsOfTime::PiecewisePolynomial<2>,
+                         domain::FunctionsOfTime::PiecewisePolynomial<3>,
+                         domain::FunctionsOfTime::QuaternionFunctionOfTime<3>))
+
+#undef FOTTYPE
 #undef INSTANTIATE

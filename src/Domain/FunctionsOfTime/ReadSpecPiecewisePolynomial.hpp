@@ -34,16 +34,16 @@ class PiecewisePolynomial;
 /// the first component and its derivatives, columns 9-12 give the second
 /// component and its derivatives, etc.
 ///
-/// Currently, only support order 3 piecewise polynomials.
-/// This could be generalized later, but the SpEC functions of time
-/// that we will read in with this action will always be 3rd-order
-/// piecewise polynomials.
+/// Currently, only support order 2 and 3 piecewise polynomials and order 3
+/// quaternion functions of time. This could be generalized later, but the SpEC
+/// functions of time that we will read in with this action will always be
+/// 3rd-order piecewise polynomials.
 ///
-template <size_t MaxDeriv>
+template <template <size_t> class FoTType, size_t MaxDeriv>
 void read_spec_piecewise_polynomial(
-    gsl::not_null<std::unordered_map<
-        std::string, domain::FunctionsOfTime::PiecewisePolynomial<MaxDeriv>>*>
+    gsl::not_null<std::unordered_map<std::string, FoTType<MaxDeriv>>*>
         spec_functions_of_time,
     const std::string& file_name,
-    const std::map<std::string, std::string>& dataset_name_map);
+    const std::map<std::string, std::string>& dataset_name_map,
+    const bool quaternion_rotation = false);
 }  // namespace domain::FunctionsOfTime
