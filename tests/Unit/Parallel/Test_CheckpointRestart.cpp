@@ -250,11 +250,11 @@ struct TestMetavariables {
     Exit
   };
 
-  using phase_change_tags_and_combines_list = tmpl::list<>;
   struct initialize_phase_change_decision_data {
+    template <typename... Tags>
     static void apply(
         const gsl::not_null<
-            tuples::TaggedTuple<>*> /*phase_change_decision_data*/,
+            tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
         const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {}
   };
 

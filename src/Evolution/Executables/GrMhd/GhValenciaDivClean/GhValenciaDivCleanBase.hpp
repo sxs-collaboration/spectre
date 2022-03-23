@@ -343,8 +343,6 @@ struct GhValenciaDivCleanTemplateBase<
 
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData;
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<GhValenciaDivCleanTemplateBase>;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,

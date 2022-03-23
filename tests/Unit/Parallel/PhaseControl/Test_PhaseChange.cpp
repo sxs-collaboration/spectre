@@ -85,7 +85,6 @@ struct TestPhaseChange : public PhaseChange {
   using argument_tags = tmpl::list<Tags::InputValue>;
   using return_tags = tmpl::list<Tags::MutatedValue>;
 
-  using phase_change_tags_and_combines_list = tmpl::list<Tags::Request>;
   template <typename Metavariables>
   using participating_components = tmpl::list<TestComponentAlpha>;
 

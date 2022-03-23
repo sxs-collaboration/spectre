@@ -366,9 +366,6 @@ struct TestMetavariables {
         tmpl::pair<Trigger, tmpl::list<TempPhaseATrigger, TempPhaseBTrigger>>>;
   };
 
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<TestMetavariables>;
-
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData;
 

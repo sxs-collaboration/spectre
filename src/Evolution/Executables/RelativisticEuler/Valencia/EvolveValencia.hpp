@@ -245,9 +245,6 @@ struct EvolutionMetavars {
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData;
 
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<EvolutionMetavars>;
-
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 

@@ -82,7 +82,7 @@ enum ArbitrationStrategy {
  *   \ref DataBoxGroup "DataBox" to be passed to `contribute_phase_data_impl` as
  *   `gsl::not_null` pointers. This should be used only for tags that may be
  *   altered during the `contribute_phase_data_impl` function.
- * - `phase_change_tags_and_combines_list`: A `tmpl::list` of tags for
+ * - `phase_change_tags_and_combines`: A `tmpl::list` of tags for
  *   populating the `phase_change_decision_data` in the Main chare. Each tag in
  *   this list must also define a `combine_method` and a `main_combine_method`
  *   for performing the aggregation during reduction.
@@ -100,7 +100,7 @@ enum ArbitrationStrategy {
  *     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
  *         phase_change_decision_data) const;
  * ```
- * - Must set all tags in `phase_change_tags_and_combines_list` to useful
+ * - Must set all tags in `phase_change_tags_and_combines` to useful
  *   initial states in the `phase_change_decision_data`.
  *
  * ```

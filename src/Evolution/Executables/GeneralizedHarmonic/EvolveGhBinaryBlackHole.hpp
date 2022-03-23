@@ -388,9 +388,6 @@ struct EvolutionMetavars {
   using initialize_phase_change_decision_data =
       PhaseControl::InitializePhaseChangeDecisionData;
 
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<EvolutionMetavars>;
-
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<

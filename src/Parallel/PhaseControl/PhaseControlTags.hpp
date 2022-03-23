@@ -76,7 +76,7 @@ namespace TagsAndCombines {
 /// This is needed to disambiguate different quiescence conditions in the main
 /// chare. It is automatically included in
 /// `PhaseControl::get_phase_change_tags`, so shouldn't be explicitly included
-/// in the `phase_change_tags_and_combines_list` in derived classes of
+/// in the `phase_change_tags_and_combines` in derived classes of
 /// `PhaseChange`.
 struct UsePhaseChangeArbitration {
   using type = bool;
@@ -86,6 +86,26 @@ struct UsePhaseChangeArbitration {
 }  // namespace TagsAndCombines
 
 namespace detail {
+template <typename Metavariables, typename = std::void_t<>>
+struct phase_change_derived_classes {
+  using type = tmpl::list<>;
+};
+
+template <typename Metavariables>
+struct phase_change_derived_classes<
+    Metavariables,
+  std::void_t<typename Metavariables::factory_creation::factory_classes>> {
+ private:
+  using factory_entry =
+      tmpl::at<typename Metavariables::factory_creation::factory_classes,
+               PhaseChange>;
+
+ public:
+  using type =
+      tmpl::conditional_t<std::is_same_v<factory_entry, tmpl::no_such_type_>,
+                          tmpl::list<>, factory_entry>;
+};
+
 template <typename PhaseChangeDerived>
 struct get_phase_change_tags_and_combines {
   using type = typename PhaseChangeDerived::phase_change_tags_and_combines;
@@ -93,13 +113,12 @@ struct get_phase_change_tags_and_combines {
 }  // namespace detail
 
 /// Metafunction for determining the merged collection of tags in
-/// `phase_change_tags_and_combines_list`s from all `PhaseChange` derived
+/// `phase_change_tags_and_combines`s from all `PhaseChange` derived
 /// classes in `Metavariables::factory_creation`
 template <typename Metavariables>
 using get_phase_change_tags = tmpl::push_back<
     tmpl::flatten<tmpl::transform<
-        tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                 PhaseChange>,
+        typename detail::phase_change_derived_classes<Metavariables>::type,
         detail::get_phase_change_tags_and_combines<tmpl::_1>>>,
     TagsAndCombines::UsePhaseChangeArbitration>;
 }  // namespace PhaseControl
