@@ -54,21 +54,23 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
       )
     if(NOT ${FOUND_SPECTRE_TEST_CASE} EQUAL -1)
       # Get the name of the file without path and without extension
-      get_filename_component(
-        SOURCE_NAME
+      string(REGEX REPLACE
+        [^a-zA-Z0-9]
+        _
+        SOURCE_IDENTIFIER
         ${SOURCE_FILE}
-        NAME_WE
         )
       # We specify the macro SPECTRE_TEST_REGISTER_FUNCTION for each
       # source file in the library which is used by the TestingFramework.hpp
       # file to create a function that can be called from the main test
       # executable to get static variables to be initialized in the source
       # file.
+      set(UNIQUE_IDENTIFIER "LIB_${LIBRARY}_FILE_${SOURCE_IDENTIFIER}")
       set_source_files_properties(
         ${SOURCE_FILE}
         PROPERTIES
         COMPILE_FLAGS
-        "-D SPECTRE_TEST_REGISTER_FUNCTION=${LIBRARY}_${SOURCE_NAME}"
+        "-D SPECTRE_TEST_REGISTER_FUNCTION=${UNIQUE_IDENTIFIER}"
         )
       # We use the global "variable" (CMake doesn't really have global
       # variables but global properties are effectively the same)
@@ -83,7 +85,7 @@ function(add_test_library LIBRARY FOLDER LIBRARY_SOURCES LINK_LIBS)
         PROPERTY
         SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY)
       set(SPECTRE_TESTS_LIB_FUNCTIONS
-        "${SPECTRE_TESTS_LIB_FUNCTIONS};${LIBRARY}_${SOURCE_NAME}")
+        "${SPECTRE_TESTS_LIB_FUNCTIONS};${UNIQUE_IDENTIFIER}")
       set_property(GLOBAL
         PROPERTY
         SPECTRE_TESTS_LIB_FUNCTIONS_PROPERTY
