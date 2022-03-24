@@ -83,8 +83,12 @@ create_outer_boundary_condition() {
       Direction<3>::upper_zeta(), 50);
 }
 
-auto create_boundary_conditions(const bool excise_A, const bool excise_B) {
-  size_t total_blocks = 54;
+auto create_boundary_conditions(const bool excise_A, const bool excise_B,
+                                const bool need_cube_to_sphere_transition) {
+  size_t total_blocks = 44;
+  if (need_cube_to_sphere_transition) {
+    total_blocks += 10;
+  }
   if (not excise_A) {
     total_blocks++;
   }
@@ -106,7 +110,10 @@ auto create_boundary_conditions(const bool excise_A, const bool excise_B) {
           create_inner_boundary_condition();
     }
   }
-  const size_t block_offset = 44;
+  size_t block_offset = 34;
+  if (need_cube_to_sphere_transition) {
+    block_offset += 10;
+  }
   for (size_t block_id = block_offset; block_id < block_offset + 10;
        ++block_id) {
     boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
@@ -341,9 +348,10 @@ void test_connectivity() {
           test_binary_compact_object_construction(
               binary_compact_object,
               std::numeric_limits<double>::signaling_NaN(), {}, {},
-              with_boundary_conditions ? create_boundary_conditions(
-                                             excise_interiorA, excise_interiorB)
-                                       : BoundaryCondVector{});
+              with_boundary_conditions
+                  ? create_boundary_conditions(excise_interiorA,
+                                               excise_interiorB, true)
+                  : BoundaryCondVector{});
 
           // Also check whether the radius of the inner boundary of Layer 5 is
           // chosen correctly.
@@ -568,7 +576,6 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          "    ObjectACube: [1, 1, 1]\n"
          "    ObjectBCube: [1, 1, 1]\n"
          "    EnvelopingCube: [1, 1, 1]\n"
-         "    CubedShell: [1, 1, 1]\n"
          "    OuterShell: [1, 1, " +
          std::to_string(1 + additional_refinement_outer) +
          "]\n"
@@ -692,7 +699,7 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
         dynamic_cast<const domain::creators::BinaryCompactObject&>(
             *binary_compact_object),
         time, functions_of_time, expected_functions_of_time,
-        with_boundary_conditions ? create_boundary_conditions(true, true)
+        with_boundary_conditions ? create_boundary_conditions(true, true, false)
                                  : BoundaryCondVector{},
         with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
   }
