@@ -76,7 +76,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -296,7 +295,7 @@ struct EvolutionMetavars {
                           dg_step_actions>;
 
   using const_global_cache_tags = tmpl::list<
-      initial_data_tag, Tags::EventsAndTriggers,
+      initial_data_tag,
       tmpl::conditional_t<use_dg_subcell,
                           tmpl::list<Burgers::fd::Tags::Reconstructor>,
                           tmpl::list<>>>;

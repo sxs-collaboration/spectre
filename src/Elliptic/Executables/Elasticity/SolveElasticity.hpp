@@ -48,7 +48,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -178,8 +177,7 @@ struct Metavariables {
   // Collect all items to store in the cache.
   using const_global_cache_tags =
       tmpl::list<background_tag, initial_guess_tag,
-                 Elasticity::Tags::ConstitutiveRelation<volume_dim>,
-                 Tags::EventsAndTriggers>;
+                 Elasticity::Tags::ConstitutiveRelation<volume_dim>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

@@ -64,7 +64,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -301,8 +300,7 @@ struct EvolutionMetavars {
                  observers::ObserverWriter<EvolutionMetavars>,
                  dg_element_array>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers>;
+  using const_global_cache_tags = tmpl::list<initial_data_tag>;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of RelativisticEuler system.\n\n"};

@@ -85,7 +85,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -414,8 +413,7 @@ struct EvolutionMetavars {
           tmpl::list<NewtonianEuler::fd::Tags::Reconstructor<volume_dim>>,
           tmpl::list<>>,
       initial_data_tag,
-      tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
-      Tags::EventsAndTriggers>;
+      tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>>;
 
   static constexpr Options::String help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};

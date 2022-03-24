@@ -62,7 +62,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -250,8 +249,7 @@ struct EvolutionMetavars {
                          ScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers>;
+  using const_global_cache_tags = tmpl::list<initial_data_tag>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

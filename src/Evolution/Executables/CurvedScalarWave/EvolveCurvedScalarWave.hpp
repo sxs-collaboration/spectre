@@ -65,7 +65,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
@@ -288,8 +287,7 @@ struct EvolutionMetavars {
                                          CurvedScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag, Tags::EventsAndTriggers>;
+  using const_global_cache_tags = tmpl::list<initial_data_tag>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
