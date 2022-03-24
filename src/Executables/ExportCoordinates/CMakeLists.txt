@@ -8,6 +8,7 @@ set(LIBS_TO_LINK
   Evolution
   Informer
   IO
+  LinearOperators
   Options
   Parallel
   Time

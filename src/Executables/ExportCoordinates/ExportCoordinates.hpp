@@ -29,6 +29,7 @@
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -104,10 +105,15 @@ struct ExportCoordinates {
     const double time = get<Tags::Time>(box);
 
     const auto& mesh = get<domain::Tags::Mesh<Dim>>(box);
+    const auto& inv_jacobian =
+        db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                              Frame::Inertial>>(box);
     const auto& inertial_coordinates =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
+    const auto deriv_inertial_coordinates =
+        partial_derivative(inertial_coordinates, mesh, inv_jacobian);
     // Collect volume data
     // Remove tensor types, only storing individual components
     std::vector<TensorComponent> components;
@@ -118,6 +124,15 @@ struct ExportCoordinates {
                                       inertial_coordinates.get_tensor_index(d)),
                               inertial_coordinates.get(d));
     }
+
+    for (size_t i = 0; i < deriv_inertial_coordinates.size(); ++i) {
+      components.emplace_back(
+          element_name + "DerivInertialCoordinates_" +
+              deriv_inertial_coordinates.component_name(
+                  deriv_inertial_coordinates.get_tensor_index(i)),
+          deriv_inertial_coordinates[i]);
+    }
+
     // Also output the determinant of the inverse jacobian, which measures
     // the expansion and compression of the grid
     const auto& det_inv_jac = db::get<
