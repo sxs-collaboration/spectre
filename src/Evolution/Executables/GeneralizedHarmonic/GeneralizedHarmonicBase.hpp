@@ -58,7 +58,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
@@ -71,7 +70,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -162,6 +160,29 @@ struct GeneralizedHarmonicTemplateBase<
   // `read_spec_piecewise_polynomial()`
   static constexpr bool override_functions_of_time = false;
 
+  enum class Phase {
+    Initialization,
+    RegisterWithElementDataReader,
+    ImportInitialData,
+    InitializeInitialDataDependentQuantities,
+    InitializeTimeStepperHistory,
+    Register,
+    LoadBalancing,
+    WriteCheckpoint,
+    Evolve,
+    Exit
+  };
+
+  static std::string phase_name(Phase phase) {
+    if (phase == Phase::LoadBalancing) {
+      return "LoadBalancing";
+    }
+    ERROR(
+        "Passed phase that should not be used in input file. Integer "
+        "corresponding to phase is: "
+        << static_cast<int>(phase));
+  }
+
   using time_stepper_tag = Tags::TimeStepper<
       std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
   using analytic_solution_fields = typename system::variables_tag::tags_list;
@@ -237,6 +258,12 @@ struct GeneralizedHarmonicTemplateBase<
                        volume_dim>,
                    GeneralizedHarmonic::BoundaryConditions::
                        standard_boundary_conditions<volume_dim>>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                                  GeneralizedHarmonicTemplateBase,
+                                  Phase::LoadBalancing>,
+                              PhaseControl::CheckpointAndExitAfterWallclock<
+                                  GeneralizedHarmonicTemplateBase>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -255,52 +282,16 @@ struct GeneralizedHarmonicTemplateBase<
       observers::collect_reduction_data_tags<tmpl::push_back<
           tmpl::at<typename factory_creation::factory_classes, Event>>>;
 
-  enum class Phase {
-    Initialization,
-    RegisterWithElementDataReader,
-    ImportInitialData,
-    InitializeInitialDataDependentQuantities,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
-
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-                     GeneralizedHarmonicTemplateBase, Phase::LoadBalancing>,
-                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
-                     GeneralizedHarmonicTemplateBase>>;
-
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
-
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
-
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag, Tags::EventsAndTriggers,
+      analytic_solution_tag,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+          volume_dim, Frame::Grid>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -311,7 +302,7 @@ struct GeneralizedHarmonicTemplateBase<
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<derived_metavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -424,10 +415,9 @@ struct GeneralizedHarmonicTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                  step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {

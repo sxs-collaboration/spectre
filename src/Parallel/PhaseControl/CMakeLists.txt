@@ -11,6 +11,7 @@ spectre_target_headers(
   HEADERS
   CheckpointAndExitAfterWallclock.hpp
   ExecutePhaseChange.hpp
+  InitializePhaseChangeDecisionData.hpp
   PhaseChange.hpp
   PhaseControlTags.hpp
   VisitAndReturn.hpp

@@ -19,22 +19,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 namespace PhaseControl {
-template <typename Metavariables, typename Metavariables::Phase TargetPhase,
-          typename PhaseChangeRegistrars>
-class VisitAndReturn;
-
-namespace Registrars {
-template <typename Metavariables, typename Metavariables::Phase TargetPhase>
-struct VisitAndReturn {
-  template <typename PhaseChangeRegistrars>
-  using f = ::PhaseControl::VisitAndReturn<Metavariables, TargetPhase,
-                                                 PhaseChangeRegistrars>;
-};
-}  // namespace Registrars
-/// \endcond
-
 namespace Tags {
 /// Storage in the phase change decision tuple so that the Main chare can record
 /// the phase to return to after a temporary phase.
@@ -105,10 +90,8 @@ struct TemporaryPhaseRequested {
  *   following completion, control will return to the original phase from before
  *   the first `VisitAndReturn`.
  */
-template <typename Metavariables, typename Metavariables::Phase TargetPhase,
-          typename PhaseChangeRegistrars = tmpl::list<
-              Registrars::VisitAndReturn<Metavariables, TargetPhase>>>
-struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
+template <typename Metavariables, typename Metavariables::Phase TargetPhase>
+struct VisitAndReturn : public PhaseChange {
   /// \cond
   VisitAndReturn() = default;
   explicit VisitAndReturn(CkMigrateMessage* /*unused*/) {}
@@ -195,8 +178,7 @@ struct VisitAndReturn : public PhaseChange<PhaseChangeRegistrars> {
 }  // namespace PhaseControl
 
 /// \cond
-template <typename Metavariables, typename Metavariables::Phase TargetPhase,
-          typename PhaseChangeRegistrars>
-PUP::able::PUP_ID PhaseControl::VisitAndReturn<
-    Metavariables, TargetPhase, PhaseChangeRegistrars>::my_PUP_ID = 0;
+template <typename Metavariables, typename Metavariables::Phase TargetPhase>
+PUP::able::PUP_ID
+    PhaseControl::VisitAndReturn<Metavariables, TargetPhase>::my_PUP_ID = 0;
 /// \endcond

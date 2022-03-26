@@ -25,6 +25,8 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct RunEventsAndTriggers {
+  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

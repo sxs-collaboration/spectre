@@ -14,7 +14,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -83,7 +82,7 @@ enum ArbitrationStrategy {
  *   \ref DataBoxGroup "DataBox" to be passed to `contribute_phase_data_impl` as
  *   `gsl::not_null` pointers. This should be used only for tags that may be
  *   altered during the `contribute_phase_data_impl` function.
- * - `phase_change_tags_and_combines_list`: A `tmpl::list` of tags for
+ * - `phase_change_tags_and_combines`: A `tmpl::list` of tags for
  *   populating the `phase_change_decision_data` in the Main chare. Each tag in
  *   this list must also define a `combine_method` and a `main_combine_method`
  *   for performing the aggregation during reduction.
@@ -101,7 +100,7 @@ enum ArbitrationStrategy {
  *     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
  *         phase_change_decision_data) const;
  * ```
- * - Must set all tags in `phase_change_tags_and_combines_list` to useful
+ * - Must set all tags in `phase_change_tags_and_combines` to useful
  *   initial states in the `phase_change_decision_data`.
  *
  * ```
@@ -137,7 +136,6 @@ enum ArbitrationStrategy {
  *   state of that sequential process can be recorded in
  *   `phase_change_decision_data`.
  */
-template <typename PhaseChangeRegistrars>
 struct PhaseChange : public PUP::able {
  protected:
   /// \cond
@@ -155,8 +153,6 @@ struct PhaseChange : public PUP::able {
 
   WRAPPED_PUPable_abstract(PhaseChange);  // NOLINT
 
-  using creatable_classes = Registration::registrants<PhaseChangeRegistrars>;
-
   /// Send data from all `participating_components` to the Main chare for
   /// determining the next phase.
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -164,24 +160,26 @@ struct PhaseChange : public PUP::able {
   void contribute_phase_data(const gsl::not_null<db::DataBox<DbTags>*> box,
                              Parallel::GlobalCache<Metavariables>& cache,
                              const ArrayIndex& array_index) const {
-    call_with_dynamic_type<
-        void, creatable_classes>(this, [&box, &cache, &array_index](
-                                           const auto* const phase_change) {
-      using phase_change_t = typename std::decay_t<decltype(*phase_change)>;
-      if constexpr (tmpl::list_contains_v<
-                        typename phase_change_t::
-                            template participating_components<Metavariables>,
-                        ParallelComponent>) {
-        db::mutate_apply<typename phase_change_t::return_tags,
-                         typename phase_change_t::argument_tags>(
-            [&phase_change, &cache, &array_index](auto&&... args) {
-              phase_change
-                  ->template contribute_phase_data_impl<ParallelComponent>(
-                      args..., cache, array_index);
-            },
-            box);
-      }
-    });
+    using factory_classes =
+        typename Metavariables::factory_creation::factory_classes;
+    call_with_dynamic_type<void, tmpl::at<factory_classes, PhaseChange>>(
+        this, [&box, &cache, &array_index](const auto* const phase_change) {
+          using phase_change_t = typename std::decay_t<decltype(*phase_change)>;
+          if constexpr (tmpl::list_contains_v<
+                            typename phase_change_t::
+                                template participating_components<
+                                    Metavariables>,
+                            ParallelComponent>) {
+            db::mutate_apply<typename phase_change_t::return_tags,
+                             typename phase_change_t::argument_tags>(
+                [&phase_change, &cache, &array_index](auto&&... args) {
+                  phase_change
+                      ->template contribute_phase_data_impl<ParallelComponent>(
+                          args..., cache, array_index);
+                },
+                box);
+          }
+        });
   }
 
   /// Determine a phase request and `PhaseControl::ArbitrationStrategy` based on
@@ -194,22 +192,27 @@ struct PhaseChange : public PUP::able {
           phase_change_decision_data,
       const typename Metavariables::Phase current_phase,
       const Parallel::GlobalCache<Metavariables>& cache) const {
+    using factory_classes =
+        typename Metavariables::factory_creation::factory_classes;
     return call_with_dynamic_type<
         std::optional<std::pair<typename Metavariables::Phase,
                                 PhaseControl::ArbitrationStrategy>>,
-        creatable_classes>(this, [&current_phase, &phase_change_decision_data,
-                                  &cache](const auto* const phase_change) {
-      return phase_change->arbitrate_phase_change_impl(
-          phase_change_decision_data, current_phase, cache);
-    });
+        tmpl::at<factory_classes, PhaseChange>>(
+        this, [&current_phase, &phase_change_decision_data,
+               &cache](const auto* const phase_change) {
+          return phase_change->arbitrate_phase_change_impl(
+              phase_change_decision_data, current_phase, cache);
+        });
   }
 
   /// Initialize the `phase_change_decision_data` on the main chare to starting
   /// values.
-  template <typename... Tags>
+  template <typename Metavariables, typename... Tags>
   void initialize_phase_data(const gsl::not_null<tuples::TaggedTuple<Tags...>*>
                                  phase_change_decision_data) const {
-    return call_with_dynamic_type<void, creatable_classes>(
+    using factory_classes =
+        typename Metavariables::factory_creation::factory_classes;
+    return call_with_dynamic_type<void, tmpl::at<factory_classes, PhaseChange>>(
         this, [&phase_change_decision_data](const auto* const phase_change) {
           return phase_change->initialize_phase_data_impl(
               phase_change_decision_data);

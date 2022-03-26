@@ -94,7 +94,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -107,7 +106,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
@@ -221,6 +219,28 @@ struct EvolutionMetavars {
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
+  enum class Phase {
+    Initialization,
+    InitializeTimeStepperHistory,
+    Register,
+    LoadBalancing,
+    WriteCheckpoint,
+    Evolve,
+    Exit
+  };
+
+  static std::string phase_name(Phase phase) {
+    if (phase == Phase::LoadBalancing) {
+      return "LoadBalancing";
+    } else if (phase == Phase::WriteCheckpoint) {
+      return "WriteCheckpoint";
+    }
+    ERROR(
+        "Passed phase that should not be used in input file. Integer "
+        "corresponding to phase is: "
+        << static_cast<int>(phase));
+  }
+
   using time_stepper_tag = Tags::TimeStepper<
       tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
 
@@ -279,6 +299,13 @@ struct EvolutionMetavars {
             grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                                  EvolutionMetavars, Phase::LoadBalancing>,
+                              PhaseControl::VisitAndReturn<
+                                  EvolutionMetavars, Phase::WriteCheckpoint>,
+                              PhaseControl::CheckpointAndExitAfterWallclock<
+                                  EvolutionMetavars>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -412,42 +439,6 @@ struct EvolutionMetavars {
       tmpl::conditional_t<use_dg_subcell, dg_subcell_step_actions,
                           dg_step_actions>;
 
-  enum class Phase {
-    Initialization,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
-
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    } else if (phase == Phase::WriteCheckpoint) {
-      return "WriteCheckpoint";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<EvolutionMetavars,
-                                                          Phase::LoadBalancing>,
-                 PhaseControl::Registrars::VisitAndReturn<
-                     EvolutionMetavars, Phase::WriteCheckpoint>,
-                 PhaseControl::Registrars::CheckpointAndExitAfterWallclock<
-                     EvolutionMetavars>>;
-
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
-
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
-
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
                  observers::Actions::RegisterEventsWithObservers>;
@@ -508,10 +499,9 @@ struct EvolutionMetavars {
 
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
-                  step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>;
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
@@ -536,9 +526,7 @@ struct EvolutionMetavars {
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
       initial_data_tag,
-      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>;
+      grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
@@ -550,7 +538,7 @@ struct EvolutionMetavars {
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -652,8 +640,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &grmhd::ValenciaDivClean::BoundaryCorrections::register_derived_with_charm,
     &grmhd::ValenciaDivClean::fd::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

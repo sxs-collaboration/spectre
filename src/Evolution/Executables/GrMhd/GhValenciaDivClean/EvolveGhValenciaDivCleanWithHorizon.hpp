@@ -23,9 +23,7 @@
 #include "Options/FactoryHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
@@ -100,9 +98,6 @@ struct EvolutionMetavars
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using phase_changes =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::phase_changes;
-
   using initial_data =
       typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::initial_data;
   using initial_data_tag = typename GhValenciaDivCleanTemplateBase<
@@ -112,14 +107,12 @@ struct EvolutionMetavars
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>>;
+          volume_dim, Frame::Grid>>>;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
@@ -155,8 +148,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>,
-    &Parallel::register_derived_classes_with_charm<
-        PhaseChange<metavariables::phase_changes>>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

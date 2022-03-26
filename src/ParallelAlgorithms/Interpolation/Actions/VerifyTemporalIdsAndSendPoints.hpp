@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
@@ -238,9 +239,8 @@ struct VerifyTemporalIdsAndSendPoints {
     } else {
       if (InterpolationTarget_detail::maps_are_time_dependent<
               InterpolationTargetTag>(box, tmpl::type_<Metavariables>{})) {
-        if constexpr (InterpolationTarget_detail::
-                          cache_contains_functions_of_time<
-                              Metavariables>::value) {
+        if constexpr (Parallel::is_in_mutable_global_cache<
+                          Metavariables, domain::Tags::FunctionsOfTime>) {
           detail::verify_temporal_ids_and_send_points_time_dependent<
               InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
                                                          cache);

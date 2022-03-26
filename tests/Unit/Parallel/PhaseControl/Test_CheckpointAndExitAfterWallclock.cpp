@@ -23,8 +23,11 @@ struct Metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::CheckpointAndExitAfterWallclock<
+                       Metavariables>>>,
+        tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
   enum class Phase { PhaseA, WriteCheckpoint, Exit };
@@ -35,12 +38,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
   // note that the `contribute_phase_data_impl` function is currently untested
   // in this unit test, because we do not have good support for reductions in
   // the action testing framework.
-  using phase_changes = tmpl::list<
-      PhaseControl::Registrars::CheckpointAndExitAfterWallclock<Metavariables>>;
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
-      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes>,
-      Metavariables>(
+      PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
       " - - Always:\n"
       "   - - CheckpointAndExitAfterWallclock:\n"
       "         WallclockHours: 0.0");
@@ -48,7 +48,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
   Parallel::GlobalCache<Metavariables> cache{};
 
   using phase_change_decision_data_type = tuples::tagged_tuple_from_typelist<
-      PhaseControl::get_phase_change_tags<phase_changes>>;
+      PhaseControl::get_phase_change_tags<Metavariables>>;
   phase_change_decision_data_type phase_change_decision_data{
       Metavariables::Phase::PhaseA, true, 1.0, true};
 
@@ -58,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
       phase_change1(1.0);
   {
     INFO("Test initialize phase change decision data");
-    phase_change0.initialize_phase_data(
+    phase_change0.initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
     // extra parens in the check prevent Catch from trying to stream the tuple
     CHECK((phase_change_decision_data ==

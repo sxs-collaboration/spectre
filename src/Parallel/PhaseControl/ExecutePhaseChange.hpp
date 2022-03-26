@@ -3,16 +3,25 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
+#include <type_traits>
+#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
+/// \endcond
 
 namespace PhaseControl {
 namespace Actions {
@@ -37,8 +46,10 @@ namespace Actions {
  *   - `PhaseChange` objects are permitted to perform mutations on the
  *     \ref DataBoxGroup "DataBox" to store persistent state information.
  */
-template <typename PhaseChangeRegistrars>
 struct ExecutePhaseChange {
+  using const_global_cache_tags =
+      tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
+
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -49,8 +60,7 @@ struct ExecutePhaseChange {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*component*/) {
     const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-            cache);
+        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
     bool should_halt = false;
     for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
       if (trigger->is_triggered(box)) {
@@ -111,16 +121,14 @@ struct ExecutePhaseChange {
  * important for the logic of the executable, the input file ordering and
  * `ArbitrationStrategy` must be chosen carefully.
  */
-template <typename PhaseChangeRegistrars, typename... DecisionTags,
-          typename Metavariables>
+template <typename... DecisionTags, typename Metavariables>
 typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data,
     typename Metavariables::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
   const auto& phase_change_and_triggers =
-      Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-          cache);
+      Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
   bool phase_chosen = false;
   for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
     // avoid unused variable warning
@@ -151,38 +159,4 @@ typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
       *phase_change_decision_data) = false;
   return current_phase;
 }
-
-/*!
- * \brief Initialize the Main chare's `phase_change_decision_data` for the
- * option-selected `PhaseChange`s.
- *
- * \details This struct provides a convenient method of specifying the
- * initialization of the `phase_change_decision_data`. To instruct the Main
- * chare to use this initialization routine, define the type alias in the
- * `Metavariables`:
- * ```
- * using initialize_phase_data =
- *   PhaseControl::InitializePhaseChangeDecisionData<phase_change_registrars>;
- * ```
- */
-template <typename PhaseChangeRegistrars>
-struct InitializePhaseChangeDecisionData {
-  template <typename... DecisionTags, typename Metavariables>
-  static void apply(const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
-                        phase_change_decision_data,
-                    const Parallel::GlobalCache<Metavariables>& cache) {
-    tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-        *phase_change_decision_data) = false;
-    const auto& phase_change_and_triggers =
-        Parallel::get<Tags::PhaseChangeAndTriggers<PhaseChangeRegistrars>>(
-            cache);
-    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-      // avoid unused variable warning
-      (void)trigger;
-      for (const auto& phase_change : phase_changes) {
-        phase_change->initialize_phase_data(phase_change_decision_data);
-      }
-    }
-  }
-};
 }  // namespace PhaseControl

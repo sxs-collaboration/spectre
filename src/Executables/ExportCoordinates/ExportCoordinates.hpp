@@ -46,7 +46,6 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -209,7 +208,7 @@ struct Metavariables {
     static constexpr bool enable_time_dependent_maps = EnableTimeDependentMaps;
   };
 
-  using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
+  using const_global_cache_tags = tmpl::list<>;
 
   static constexpr Options::String help{
       "Export the inertial coordinates of the Domain specified in the input "

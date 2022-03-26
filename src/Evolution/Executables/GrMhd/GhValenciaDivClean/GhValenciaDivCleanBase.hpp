@@ -76,20 +76,16 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
-#include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -317,6 +313,9 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::GhValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<PhaseChange,
+                   tmpl::list<PhaseControl::VisitAndReturn<
+                       GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -338,25 +337,16 @@ struct GhValenciaDivCleanTemplateBase<
           tmpl::at<typename factory_creation::factory_classes, Event>,
           typename InterpolationTargetTags::post_interpolation_callback...>>;
 
-  using phase_changes = tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-      GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>;
-  using initialize_phase_change_decision_data =
-      PhaseControl::InitializePhaseChangeDecisionData<phase_changes>;
-  using phase_change_tags_and_combines_list =
-      PhaseControl::get_phase_change_tags<phase_changes>;
-
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
-      Tags::EventsAndTriggers,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>,
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>>;
+          volume_dim, Frame::Grid>>>;
 
   using dg_registration_list =
       tmpl::list<intrp::Actions::RegisterElementWithInterpolator,
@@ -368,7 +358,7 @@ struct GhValenciaDivCleanTemplateBase<
           phase_change_decision_data,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<derived_metavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change<phase_changes>(
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
         phase_change_decision_data, current_phase,
         *(cache_proxy.ckLocalBranch()));
     if (next_phase.has_value()) {
@@ -472,12 +462,12 @@ struct GhValenciaDivCleanTemplateBase<
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Phase, Phase::Evolve,
-              tmpl::list<
-                  VariableFixing::Actions::FixVariables<
-                      VariableFixing::FixToAtmosphere<volume_dim>>,
-                  Actions::UpdateConservatives, Actions::RunEventsAndTriggers,
-                  Actions::ChangeSlabSize, step_actions, Actions::AdvanceTime,
-                  PhaseControl::Actions::ExecutePhaseChange<phase_changes>>>>>>;
+              tmpl::list<VariableFixing::Actions::FixVariables<
+                             VariableFixing::FixToAtmosphere<volume_dim>>,
+                         Actions::UpdateConservatives,
+                         Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {

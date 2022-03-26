@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
@@ -26,6 +27,7 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -214,19 +216,16 @@ struct TestMetavariables {
     Exit
   };
 
-  using phase_change_tags_and_combines_list =
-      tmpl::list<PhaseChangeTest::IsDone,
-                 PhaseChangeTest::PhaseChangeStepNumber>;
-  struct initialize_phase_change_decision_data {
-    static void apply(
-        const gsl::not_null<tuples::tagged_tuple_from_typelist<
-            phase_change_tags_and_combines_list>*>
-            phase_change_decision_data,
-        const Parallel::GlobalCache<TestMetavariables>& /*cache*/) {
-      tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) = false;
-      tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
-          *phase_change_decision_data) = 0;
-    }
+  struct DummyPhaseChange : public PhaseChange {
+    using phase_change_tags_and_combines =
+        tmpl::list<PhaseChangeTest::IsDone,
+                   PhaseChangeTest::PhaseChangeStepNumber>;
+  };
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<PhaseChange, tmpl::list<DummyPhaseChange>>>;
   };
 
   template <typename... Tags>

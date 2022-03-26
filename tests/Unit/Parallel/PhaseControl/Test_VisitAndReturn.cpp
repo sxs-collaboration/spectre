@@ -18,16 +18,23 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace {
 struct Metavariables {
   using component_list = tmpl::list<>;
 
+  enum class Phase { PhaseA, PhaseB, PhaseC };
+
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes =
-        tmpl::map<tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<
+                           Metavariables, Metavariables::Phase::PhaseB>,
+                       PhaseControl::VisitAndReturn<
+                           Metavariables, Metavariables::Phase::PhaseC>>>,
+        tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
-
-  enum class Phase { PhaseA, PhaseB, PhaseC};
 
   static std::string phase_name(Phase phase) {
     if (phase == Phase::PhaseB) {
@@ -39,6 +46,7 @@ struct Metavariables {
     ERROR("Specified phase not supported for phase change");
   }
 };
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
                   "[Unit][Parallel]") {
@@ -46,21 +54,15 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
   // in this unit test, because we do not have good support for reductions in
   // the action testing framework. These are tested in the integration test
   // `Parallel/Test_AlgorithmPhaseControl.cpp`
-  using phase_changes =
-      tmpl::list<PhaseControl::Registrars::VisitAndReturn<
-                     Metavariables, Metavariables::Phase::PhaseB>,
-                 PhaseControl::Registrars::VisitAndReturn<
-                     Metavariables, Metavariables::Phase::PhaseC>>;
   Parallel::GlobalCache<Metavariables> cache{};
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
-      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes>,
-      Metavariables>(
+      PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
       " - - Always:\n"
       "   - - VisitAndReturn(PhaseB):\n"
       "     - VisitAndReturn(PhaseC):");
   using phase_change_decision_data_type = tuples::tagged_tuple_from_typelist<
-      PhaseControl::get_phase_change_tags<phase_changes>>;
+      PhaseControl::get_phase_change_tags<Metavariables>>;
 
   phase_change_decision_data_type phase_change_decision_data{
       Metavariables::Phase::PhaseA, true, Metavariables::Phase::PhaseA, true,
@@ -69,14 +71,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.VisitAndReturn",
   const auto& second_phase_change = created_phase_changes[0].second[1];
   {
     INFO("Test initialize phase change decision data");
-    first_phase_change->initialize_phase_data(
+    first_phase_change->initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
     // extra parens in the check prevent Catch from trying to stream the tuple
     CHECK((phase_change_decision_data ==
            phase_change_decision_data_type{
                std::nullopt, false, Metavariables::Phase::PhaseA, true, true}));
 
-    second_phase_change->initialize_phase_data(
+    second_phase_change->initialize_phase_data<Metavariables>(
         make_not_null(&phase_change_decision_data));
     CHECK((phase_change_decision_data ==
            phase_change_decision_data_type{std::nullopt, false, std::nullopt,

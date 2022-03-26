@@ -480,6 +480,16 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   static_assert(
       std::is_same_v<mutable_tag_list, tmpl::list<weight, animal, email>>,
       "Wrong mutable_tag_list in GlobalCache test");
+  static_assert(
+      Parallel::is_in_mutable_global_cache<TestMetavariables, animal>);
+  static_assert(Parallel::is_in_global_cache<TestMetavariables, animal>);
+  static_assert(
+      not Parallel::is_in_const_global_cache<TestMetavariables, animal>);
+  static_assert(
+      Parallel::is_in_mutable_global_cache<TestMetavariables, animal_base>);
+  static_assert(Parallel::is_in_global_cache<TestMetavariables, animal_base>);
+  static_assert(
+      not Parallel::is_in_const_global_cache<TestMetavariables, animal_base>);
   // Arthropod begins as an insect.
   tuples::tagged_tuple_from_typelist<mutable_tag_list>
       mutable_data_to_be_cached(160, std::make_unique<Arthropod>(6),
@@ -498,6 +508,20 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
   static_assert(std::is_same_v<const_tag_list,
                                tmpl::list<name, age, height, shape_of_nametag>>,
                 "Wrong const_tag_list in GlobalCache test");
+  static_assert(
+      Parallel::is_in_const_global_cache<TestMetavariables, shape_of_nametag>);
+  static_assert(
+      Parallel::is_in_global_cache<TestMetavariables, shape_of_nametag>);
+  static_assert(not Parallel::is_in_mutable_global_cache<TestMetavariables,
+                                                         shape_of_nametag>);
+  static_assert(Parallel::is_in_const_global_cache<TestMetavariables,
+                                                   shape_of_nametag_base>);
+  static_assert(
+      Parallel::is_in_global_cache<TestMetavariables, shape_of_nametag_base>);
+  static_assert(
+      not Parallel::is_in_mutable_global_cache<TestMetavariables,
+                                               shape_of_nametag_base>);
+
   tuples::tagged_tuple_from_typelist<const_tag_list> const_data_to_be_cached(
       "Nobody", 178, 2.2, std::make_unique<Square>());
   global_cache_proxy_ = Parallel::CProxy_GlobalCache<TestMetavariables>::ckNew(

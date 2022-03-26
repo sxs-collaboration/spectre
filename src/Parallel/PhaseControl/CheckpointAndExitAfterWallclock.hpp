@@ -22,21 +22,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-/// \cond
 namespace PhaseControl {
-template <typename Metavariables, typename PhaseChangeRegistrars>
-class CheckpointAndExitAfterWallclock;
-
-namespace Registrars {
-template <typename Metavariables>
-struct CheckpointAndExitAfterWallclock {
-  template <typename PhaseChangeRegistrars>
-  using f =
-      ::PhaseControl::CheckpointAndExitAfterWallclock<Metavariables,
-                                                      PhaseChangeRegistrars>;
-};
-}  // namespace Registrars
-/// \endcond
 
 namespace Tags {
 /// Storage in the phase change decision tuple so that the Main chare can record
@@ -124,11 +110,8 @@ struct CheckpointAndExitRequested {
  * 2-10 minutes might be desirable. Matching the global sync frequency with the
  * time window for checkpoint and exit is the responsibility of the user!
  */
-template <typename Metavariables,
-          typename PhaseChangeRegistrars = tmpl::list<
-              Registrars::CheckpointAndExitAfterWallclock<Metavariables>>>
-struct CheckpointAndExitAfterWallclock
-    : public PhaseChange<PhaseChangeRegistrars> {
+template <typename Metavariables>
+struct CheckpointAndExitAfterWallclock : public PhaseChange {
   // This PhaseChange only makes sense if Metavars has a WriteCheckpoint phase
   static_assert(Parallel::Algorithm_detail::has_WriteCheckpoint_v<
                     typename Metavariables::Phase>,
@@ -144,7 +127,7 @@ struct CheckpointAndExitAfterWallclock
     }
   }
   explicit CheckpointAndExitAfterWallclock(CkMigrateMessage* msg)
-      : PhaseChange<PhaseChangeRegistrars>(msg) {}
+      : PhaseChange(msg) {}
 
   /// \cond
   CheckpointAndExitAfterWallclock() = default;
@@ -264,7 +247,7 @@ struct CheckpointAndExitAfterWallclock
   }
 
   void pup(PUP::er& p) override {
-    PhaseChange<PhaseChangeRegistrars>::pup(p);
+    PhaseChange::pup(p);
     p | wallclock_hours_for_checkpoint_and_exit_;
   }
 
@@ -274,7 +257,7 @@ struct CheckpointAndExitAfterWallclock
 }  // namespace PhaseControl
 
 /// \cond
-template <typename Metavariables, typename PhaseChangeRegistrars>
-PUP::able::PUP_ID PhaseControl::CheckpointAndExitAfterWallclock<
-    Metavariables, PhaseChangeRegistrars>::my_PUP_ID = 0;
+template <typename Metavariables>
+PUP::able::PUP_ID
+    PhaseControl::CheckpointAndExitAfterWallclock<Metavariables>::my_PUP_ID = 0;
 /// \endcond

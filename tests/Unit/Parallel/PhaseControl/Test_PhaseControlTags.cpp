@@ -25,17 +25,6 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <size_t Val, typename PhaseChangeRegistrars>
-struct TestCreatable;
-
-namespace Registrars {
-template <size_t Val>
-struct TestCreatable {
-  template <typename PhaseChangeRegistrars>
-  using f = ::TestCreatable<Val, PhaseChangeRegistrars>;
-};
-}  // namespace Registrars
-
 namespace Tags {
 struct DummyDecisionTag1 {
   using type = int;
@@ -50,8 +39,8 @@ struct DummyDecisionTag2 {
 };
 }  // namespace Tags
 
-template <size_t Val, typename PhaseChangeRegistrars>
-struct TestCreatable : public PhaseChange<PhaseChangeRegistrars> {
+template <size_t Val>
+struct TestCreatable : public PhaseChange {
 
   TestCreatable() = default;
   explicit TestCreatable(CkMigrateMessage* /*unused*/) {}
@@ -90,14 +79,16 @@ struct TestCreatable : public PhaseChange<PhaseChangeRegistrars> {
   int option_value_ = 0;
 };
 
-template <size_t Val, typename PhaseChangeRegistrars>
-PUP::able::PUP_ID TestCreatable<Val, PhaseChangeRegistrars>::my_PUP_ID = 0;
+template <size_t Val>
+PUP::able::PUP_ID TestCreatable<Val>::my_PUP_ID = 0;
 
 struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
-        tmpl::map<tmpl::pair<TimeSequence<std::uint64_t>,
+        tmpl::map<tmpl::pair<PhaseChange, tmpl::list<TestCreatable<1_st>,
+                                                     TestCreatable<2_st>>>,
+                  tmpl::pair<TimeSequence<std::uint64_t>,
                              TimeSequences::all_time_sequences<std::uint64_t>>,
                   tmpl::pair<Trigger, tmpl::list<Triggers::Slabs>>>;
   };
@@ -105,18 +96,13 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
                   "[Unit][Parallel]") {
-  using phase_changes = tmpl::list<Registrars::TestCreatable<1_st>,
-                                   Registrars::TestCreatable<2_st>>;
-  Parallel::register_derived_classes_with_charm<PhaseChange<phase_changes>>();
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
-  TestHelpers::db::test_simple_tag<
-      PhaseControl::Tags::PhaseChangeAndTriggers<phase_changes>>(
+  TestHelpers::db::test_simple_tag<PhaseControl::Tags::PhaseChangeAndTriggers>(
       "PhaseChangeAndTriggers");
 
   const auto created_phase_changes = TestHelpers::test_option_tag<
-      PhaseControl::OptionTags::PhaseChangeAndTriggers<phase_changes>,
-      Metavariables>(
+      PhaseControl::OptionTags::PhaseChangeAndTriggers, Metavariables>(
       " - - Slabs:\n"
       "       EvenlySpaced:\n"
       "         Interval: 2\n"
@@ -128,19 +114,17 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseControlTags",
   CHECK(created_phase_changes.size() == 1_st);
   const auto& first_creatable = created_phase_changes[0].second[0];
   const auto& second_creatable = created_phase_changes[0].second[1];
-  REQUIRE(dynamic_cast<TestCreatable<1_st, phase_changes>*>(
-              first_creatable.get()) != nullptr);
-  CHECK(dynamic_cast<TestCreatable<1_st, phase_changes>*>(first_creatable.get())
+  REQUIRE(dynamic_cast<TestCreatable<1_st>*>(first_creatable.get()) != nullptr);
+  CHECK(dynamic_cast<TestCreatable<1_st>*>(first_creatable.get())
             ->option_value_ == 4);
 
-  REQUIRE(dynamic_cast<TestCreatable<2_st, phase_changes>*>(
-              second_creatable.get()) != nullptr);
-  CHECK(
-      dynamic_cast<TestCreatable<2_st, phase_changes>*>(second_creatable.get())
-          ->option_value_ == 2);
+  REQUIRE(dynamic_cast<TestCreatable<2_st>*>(second_creatable.get()) !=
+          nullptr);
+  CHECK(dynamic_cast<TestCreatable<2_st>*>(second_creatable.get())
+            ->option_value_ == 2);
 
   static_assert(std::is_same_v<
-                PhaseControl::get_phase_change_tags<phase_changes>,
+                PhaseControl::get_phase_change_tags<Metavariables>,
                 tmpl::list<
                     Tags::DummyDecisionTag2, Tags::DummyDecisionTag1,
                     PhaseControl::TagsAndCombines::UsePhaseChangeArbitration>>);

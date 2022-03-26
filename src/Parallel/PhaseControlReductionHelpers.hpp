@@ -5,7 +5,6 @@
 
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Serialize.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
