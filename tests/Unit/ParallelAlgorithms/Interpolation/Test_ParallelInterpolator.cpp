@@ -99,7 +99,6 @@ struct NegateCompute : Negate, db::ComputeTag {
 };
 }  // namespace Tags
 
-
 // Structs for compute_vars_to_interpolate.
 struct ComputeSquare {
   template <typename SrcTag, typename DestTag>
@@ -315,10 +314,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                            metavars::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-     for (size_t core = 0; core < 6; ++core) {
-       ActionTesting::next_action<interp_component>(make_not_null(&runner),
-                                                    core);
-     }
+    for (size_t core = 0; core < 6; ++core) {
+      ActionTesting::next_action<interp_component>(make_not_null(&runner),
+                                                   core);
+    }
   }
   ActionTesting::emplace_singleton_component<target_a_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1});

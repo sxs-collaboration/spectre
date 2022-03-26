@@ -184,8 +184,7 @@ struct TestKerrHorizon {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& cache,
       const typename Metavariables::AhA::temporal_id::type& temporal_id) {
-    const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
     // theta,phi points.
     const auto expected_radius = gr::Solutions::kerr_horizon_radius(
@@ -201,8 +200,7 @@ struct TestKerrHorizon {
     // Test that InverseSpatialMetric can be retrieved from the
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
-    const auto& inv_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
+    const auto& inv_metric = get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
@@ -666,12 +664,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         for (size_t i = 0; i < 3; ++i) {
           Pi.get(i + 1, 0) = 0.0;
           for (size_t j = i; j < 3; ++j) {  // symmetry
-            Pi.get(i + 1, j + 1) =
-                2.0 * extrinsic_curvature_inertial.get(i, j);
+            Pi.get(i + 1, j + 1) = 2.0 * extrinsic_curvature_inertial.get(i, j);
             for (size_t c = 0; c < 4; ++c) {
               Pi.get(i + 1, j + 1) -=
                   spacetime_normal_vector.get(c) *
-                  (Phi.get(i , j + 1, c) + Phi.get(j , i + 1, c));
+                  (Phi.get(i, j + 1, c) + Phi.get(j, i + 1, c));
             }
           }
         }

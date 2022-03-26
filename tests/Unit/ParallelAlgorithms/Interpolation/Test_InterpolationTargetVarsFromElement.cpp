@@ -63,7 +63,7 @@ struct MockComputeTargetPoints {
     // that they need to be inside the domain.
     tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_pts);
     for (size_t n = 0; n < num_pts; ++n) {
-      for (size_t d=0;d<3;++d) {
+      for (size_t d = 0; d < 3; ++d) {
         target_points.get(d)[n] = 1.0 + 0.01 * n + 0.5 * d;
       }
     }

@@ -94,8 +94,8 @@ struct MockMetavariables {
     using interpolating_component = mock_element<Metavariables>;
   };
   static constexpr size_t volume_dim = 3;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA,
-                                               InterpolationTargetB>;
+  using interpolation_target_tags =
+      tmpl::list<InterpolationTargetA, InterpolationTargetB>;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -120,8 +120,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   // Options
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
-  intrp::OptionHolders::LineSegment<3> line_segment_opts_a({{1.0, 1.0, 1.0}},
-                                                         {{2.4, 2.4, 2.4}}, 15);
+  intrp::OptionHolders::LineSegment<3> line_segment_opts_a(
+      {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_b(
       {{1.0, 1.0, 1.0}}, {{2.1, 2.1, 2.1}}, 12);
   tuples::TaggedTuple<intrp::Tags::LineSegment<metavars::InterpolationTargetA,

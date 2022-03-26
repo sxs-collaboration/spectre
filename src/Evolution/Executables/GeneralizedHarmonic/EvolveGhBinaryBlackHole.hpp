@@ -284,7 +284,7 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>>;
   };
 
-  using interpolation_target_tags = tmpl::list<AhA,AhB>;
+  using interpolation_target_tags = tmpl::list<AhA, AhB>;
   using interpolator_source_vars = tmpl::list<
       gr::Tags::SpacetimeMetric<volume_dim, ::Frame::Inertial>,
       GeneralizedHarmonic::Tags::Pi<volume_dim, ::Frame::Inertial>,
@@ -295,7 +295,7 @@ struct EvolutionMetavars {
   using observe_fields = tmpl::append<
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-                                       volume_dim, ::Frame::Inertial>,
+                     volume_dim, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<
                      volume_dim, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
@@ -316,18 +316,17 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           volume_dim == 3,
           tmpl::list<
-              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-                         3, ::Frame::Inertial>,
-              GeneralizedHarmonic::Tags::FConstraintCompute<
-                         3, ::Frame::Inertial>,
+              GeneralizedHarmonic::Tags::
+                  FourIndexConstraintCompute<3, ::Frame::Inertial>,
+              GeneralizedHarmonic::Tags::FConstraintCompute<3,
+                                                            ::Frame::Inertial>,
               ::Tags::PointwiseL2NormCompute<
-                  GeneralizedHarmonic::Tags::FConstraint<
-                         3, ::Frame::Inertial>>,
+                  GeneralizedHarmonic::Tags::FConstraint<3, ::Frame::Inertial>>,
               ::Tags::PointwiseL2NormCompute<
                   GeneralizedHarmonic::Tags::FourIndexConstraint<
-                         3, ::Frame::Inertial>>,
+                      3, ::Frame::Inertial>>,
               GeneralizedHarmonic::Tags::ConstraintEnergyCompute<
-                         3, ::Frame::Inertial>>,
+                  3, ::Frame::Inertial>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;

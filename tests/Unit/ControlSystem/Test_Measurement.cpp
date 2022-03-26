@@ -110,8 +110,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Measurement", "[ControlSystem][Unit]") {
 
   CHECK(ActionTesting::get_databox_tag<
             control_system_component,
-            control_system::TestHelpers::MeasurementResultTime>(
-            runner, 0) == 1.234);
+            control_system::TestHelpers::MeasurementResultTime>(runner, 0) ==
+        1.234);
   CHECK(ActionTesting::get_databox_tag<
             control_system_component,
             control_system::TestHelpers::MeasurementResultTag>(runner, 0) ==

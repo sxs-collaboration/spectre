@@ -166,7 +166,7 @@ struct ApparentHorizon {
     // Put Strahlkorper and its ComputeItems, FastFlow, and verbosity
     // into a new DataBox.  The first element of PreviousStrahlkorpers
     // is initialized to (time=NaN, strahlkorper=options.initial_guess).
-    // The NaN is a sentinal value which indicates that the
+    // The NaN is a sentinel value which indicates that the
     // PreviousStrahlkorper has not been computed but is instead the
     // supplied initial guess.  Note that the NaN must be quiet_NaN,
     // so we can test for it later without generating an FPE.

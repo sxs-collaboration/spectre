@@ -88,8 +88,7 @@ void test_r_theta_lgl() {
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,
       intrp::Tags::WedgeSectionTorus<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, wedge_section_torus_opts,
-      expected_block_coord_holders);
+      domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
 }
 
 void test_r_theta_uniform() {
@@ -130,8 +129,7 @@ void test_r_theta_uniform() {
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,
       intrp::Tags::WedgeSectionTorus<MockMetavariables::InterpolationTargetA>>(
-      domain_creator, wedge_section_torus_opts,
-      expected_block_coord_holders);
+      domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
 }
 }  // namespace
 
