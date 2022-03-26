@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -201,7 +202,8 @@ void callback_impl(const db::DataBox<DbTags>& box,
   CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
 }
 
-struct MockPostInterpolationCallback {
+struct MockPostInterpolationCallback
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
@@ -217,7 +219,8 @@ struct MockPostInterpolationCallback {
 // cleanup.  The only time that one would actually want
 // to prevent cleanup is in the AH finder, and it is tested there,
 //  but this is a more direct test.
-struct MockPostInterpolationCallbackNoCleanup {
+struct MockPostInterpolationCallbackNoCleanup
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -230,9 +233,9 @@ struct MockPostInterpolationCallbackNoCleanup {
 };
 
 template <size_t NumberOfInvalidInterpolationPoints>
-struct MockPostInterpolationCallbackWithInvalidPoints {
+struct MockPostInterpolationCallbackWithInvalidPoints
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   static constexpr double fill_invalid_points_with = 15.0;
-
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,

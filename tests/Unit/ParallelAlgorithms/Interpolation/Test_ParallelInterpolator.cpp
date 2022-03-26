@@ -44,6 +44,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Slab.hpp"
@@ -143,11 +144,12 @@ struct TestFunctionHelper<Tags::Negate> {
 
 size_t num_test_function_calls = 0;
 template <typename InterpolationTargetTag, typename DbTagToRetrieve>
-struct TestFunction {
-  template <typename DbTags, typename Metavariables>
+struct TestFunction
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) {
+                    const TemporalId& /*temporal_id*/) {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
     const auto expected_interpolation_result = [&interpolation_result]() {
       auto result =
@@ -168,11 +170,12 @@ struct TestFunction {
   }
 };
 
-struct TestKerrHorizonIntegral {
-  template <typename DbTags, typename Metavariables>
+struct TestKerrHorizonIntegral
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) {
+                    const TemporalId& /*temporal_id*/) {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);

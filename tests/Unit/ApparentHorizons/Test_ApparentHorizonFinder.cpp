@@ -57,6 +57,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -295,6 +296,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   using interp_component = mock_interpolator<metavars>;
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
+
+  // Assert that the FindApparentHorizon callback conforms to the protocol
+  static_assert(tt::assert_conforms_to<
+                typename metavars::AhA::post_interpolation_callback,
+                intrp::protocols::PostInterpolationCallback>);
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.

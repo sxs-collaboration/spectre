@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -82,13 +83,15 @@ struct MockComputeTargetPoints
   }
 };
 
-struct MockPostInterpolationCallback {
-  template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
+struct MockPostInterpolationCallback
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& temporal_id) {
+    static_assert(std::is_same_v<TemporalId, TimeStepId>,
+                  "MockPostInterpolationCallback expects a TimeStepId as its "
+                  "temporal ID.");
     // This callback simply checks that the points are as expected.
     Slab slab(0.0, 1.0);
     const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));

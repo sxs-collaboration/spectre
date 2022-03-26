@@ -22,10 +22,12 @@
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -52,8 +54,9 @@ class Strahlkorper;
 namespace intrp {
 namespace callbacks {
 
-/// \brief post interpolation callback (see InterpolationTarget)
-/// that does a FastFlow iteration and triggers another one until convergence.
+/// \brief post interpolation callback (see
+/// intrp::protocols::PostInterpolationCallback) that does a FastFlow iteration
+/// and triggers another one until convergence.
 ///
 /// Assumes that InterpolationTargetTag contains an additional
 /// type alias called `post_horizon_find_callbacks`, which is a list of
@@ -87,7 +90,8 @@ namespace callbacks {
 ///   - `StrahlkorperTags::Strahlkorper<Frame>`
 ///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
-/// see InterpolationTarget for a description of InterpolationTargetTag.
+/// see intrp::protocols::InterpolationTargetTag for details on
+/// InterpolationTargetTag.
 ///
 /// ### Output
 ///
@@ -132,7 +136,8 @@ namespace callbacks {
 ///  function of iteration.
 ///
 template <typename InterpolationTargetTag, typename Frame>
-struct FindApparentHorizon {
+struct FindApparentHorizon
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,

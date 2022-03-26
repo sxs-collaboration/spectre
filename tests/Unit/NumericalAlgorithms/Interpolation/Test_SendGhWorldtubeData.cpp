@@ -16,6 +16,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/SendGhWorldtubeData.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Literals.hpp"
@@ -31,10 +32,12 @@ struct dispatch_to_send_gh_worldtube_data {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
-    intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<Metavariables>,
-        ::Tags::TimeStepId>::apply(box, cache,
-                                   db::get<::Tags::TimeStepId>(box));
+    using post_intrp_callback = intrp::callbacks::SendGhWorldtubeData<
+        Cce::CharacteristicEvolution<Metavariables>>;
+    static_assert(
+        tt::assert_conforms_to<post_intrp_callback,
+                               intrp::protocols::PostInterpolationCallback>);
+    post_intrp_callback::apply(box, cache, db::get<::Tags::TimeStepId>(box));
   }
 };
 
