@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Flatness.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/Schwarzschild.hpp"
@@ -13,6 +14,7 @@ namespace Xcts {
 /// Analytic solutions of the XCTS equations
 namespace Solutions {
 using all_analytic_solutions =
-    tmpl::list<Flatness, WrappedGr<gr::Solutions::KerrSchild>, Schwarzschild>;
+    tmpl::list<Flatness, WrappedGr<gr::Solutions::KerrSchild>, Schwarzschild,
+               WrappedGr<gr::Solutions::HarmonicSchwarzschild>>;
 }  // namespace Solutions
 }  // namespace Xcts
