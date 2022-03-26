@@ -1,10 +1,11 @@
 #!/bin/bash -
 #SBATCH -o spectre.out
 #SBATCH -e spectre.out
-#SBATCH --ntasks-per-node 24
+#SBATCH --ntasks-per-node 1
+#SBATCH --cpus-per-task=24
 #SBATCH -A sxs
 #SBATCH --no-requeue
-#SBATCH -J my_job_name
+#SBATCH -J MyJobName
 #SBATCH --nodes 4
 #SBATCH -t 0:15:00
 
@@ -34,6 +35,12 @@ export SPECTRE_INPUT_FILE=./Input3DPeriodic.yaml
 echo "Running on the following nodes:"
 echo ${SLURM_NODELIST}
 
+CHARM_PPN=$(expr ${SLURM_CPUS_PER_TASK} - 1)
+echo "Slurm tasks: ${SLURM_NTASKS}"
+echo "Slurm cpus per task: ${SLURM_CPUS_PER_TASK}"
+echo "Charm ppn: ${CHARM_PPN}"
+/usr/bin/modulecmd bash list
+
 ############################################################################
 # Set desired permissions for files created with this script
 umask 0022
@@ -41,6 +48,6 @@ umask 0022
 export PATH=${SPECTRE_BUILD_DIR}/bin:$PATH
 cd ${RUN_DIR}
 
-# The 23 is there because Charm++ uses one thread per node for communication
-srun -n ${SLURM_JOB_NUM_NODES} -c 24 \
-     ${SPECTRE_EXECUTABLE} ++ppn 23 --input-file ${SPECTRE_INPUT_FILE}
+mpirun -n ${SLURM_NTASKS} \
+       ${SPECTRE_EXECUTABLE} ++ppn ${CHARM_PPN} +setcpuaffinity \
+       --input-file ${SPECTRE_INPUT_FILE}
