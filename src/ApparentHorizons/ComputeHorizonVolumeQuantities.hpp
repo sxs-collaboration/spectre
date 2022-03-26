@@ -7,7 +7,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -28,7 +30,8 @@ namespace ah {
 /// the quantities that will be interpolated onto an apparent horizon.
 ///
 /// This is meant to be the primary `compute_vars_to_interpolate`
-/// for the horizon finder.
+/// for the horizon finder. Conforms to the
+/// intrp::protocols::ComputeVarsToInterpolate protocol
 ///
 /// SrcTagList and DestTagList have limited flexibility, and their
 /// restrictions are static_asserted inside the apply functions.  The
@@ -50,7 +53,8 @@ namespace ah {
 /// `InterpolationTarget` that uses `ComputeHorizonVolumeQuantities`.
 /// The allowed and required tags in DestTagList are given by
 /// the type aliases `allowed_dest_tags` and `required_dest_tags` below.
-struct ComputeHorizonVolumeQuantities {
+struct ComputeHorizonVolumeQuantities
+    : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   /// Single-frame case
   template <typename SrcTagList, typename DestTagList>
   static void apply(const gsl::not_null<Variables<DestTagList>*> target_vars,

@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
@@ -506,6 +507,9 @@ void test_compute_horizon_volume_quantities() {
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeHorizonVolumeQuantities",
                   "[ApparentHorizons][Unit]") {
+  static_assert(
+      tt::assert_conforms_to<ah::ComputeHorizonVolumeQuantities,
+                             intrp::protocols::ComputeVarsToInterpolate>);
   // time-independent.
   // All possible tags.
   test_compute_horizon_volume_quantities<

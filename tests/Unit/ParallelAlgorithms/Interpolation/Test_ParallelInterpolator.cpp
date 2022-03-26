@@ -43,6 +43,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Slab.hpp"
@@ -53,6 +54,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -100,7 +102,8 @@ struct NegateCompute : Negate, db::ComputeTag {
 }  // namespace Tags
 
 // Structs for compute_vars_to_interpolate.
-struct ComputeSquare {
+struct ComputeSquare
+    : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   template <typename SrcTag, typename DestTag>
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
@@ -108,6 +111,13 @@ struct ComputeSquare {
       const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
+
+  using allowed_src_tags = tmpl::list<>;
+  using required_src_tags = tmpl::list<>;
+  template <typename Frame>
+  using allowed_dest_tags = tmpl::list<>;
+  template <typename Frame>
+  using required_dest_tags = tmpl::list<>;
 };
 
 // Functions for testing whether we have
