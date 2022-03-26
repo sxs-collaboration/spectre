@@ -11,8 +11,10 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -182,9 +184,13 @@ struct WedgeSectionTorus : db::SimpleTag {
 namespace TargetPoints {
 /// \brief Computes points in a wedge-sectioned torus.
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// Conforms to the intrp::protocols::ComputeTargetPoints protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename InterpolationTargetTag>
-struct WedgeSectionTorus {
+struct WedgeSectionTorus
+    : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
   using is_sequential = std::false_type;

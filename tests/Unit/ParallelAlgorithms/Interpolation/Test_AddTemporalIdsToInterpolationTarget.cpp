@@ -25,12 +25,14 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -101,9 +103,17 @@ struct mock_interpolation_target {
 };
 
 template <typename IsSequential>
-struct MockComputeTargetPoints {
+struct MockComputeTargetPoints
+    : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = IsSequential;
   using frame = ::Frame::Inertial;
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& /*box*/,
+      const tmpl::type_<Metavariables>& /*meta*/,
+      const TemporalId& /*temporal_id*/) {
+    return tnsr::I<DataVector, 3, Frame::Inertial>{};
+  }
 };
 
 template <typename IsSequential, typename IsTimeDependent>

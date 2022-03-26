@@ -19,8 +19,10 @@
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -137,9 +139,12 @@ namespace TargetPoints {
 /// - It uses a `FastFlow` in the DataBox.
 /// - It has different options (including those for `FastFlow`).
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// Conforms to the intrp::protocols::ComputeTargetPoints protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename InterpolationTargetTag, typename Frame>
-struct ApparentHorizon {
+struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
   using is_sequential = std::true_type;

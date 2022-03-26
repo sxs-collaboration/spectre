@@ -157,6 +157,10 @@ void test_interpolation_target(
   using target_component =
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>;
+  // Assert that all ComputeTargetPoints conform to the protocol
+  static_assert(tt::assert_conforms_to<
+                typename metavars::InterpolationTargetA::compute_target_points,
+                intrp::protocols::ComputeTargetPoints>);
   using interp_component = mock_interpolator<metavars>;
 
   tuples::TaggedTuple<InterpolationTargetOptionTag,

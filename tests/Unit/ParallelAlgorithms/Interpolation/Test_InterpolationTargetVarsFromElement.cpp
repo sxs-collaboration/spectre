@@ -18,10 +18,12 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
 
 namespace Parallel {
@@ -51,8 +53,10 @@ struct SquareCompute : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
-struct MockComputeTargetPoints {
+struct MockComputeTargetPoints
+    : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = std::false_type;
+  using frame = ::Frame::Inertial;
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& /*box*/,
@@ -68,6 +72,13 @@ struct MockComputeTargetPoints {
       }
     }
     return target_points;
+  }
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
+      const TemporalId& /*temporal_id*/) {
+    return points(box, meta);
   }
 };
 
