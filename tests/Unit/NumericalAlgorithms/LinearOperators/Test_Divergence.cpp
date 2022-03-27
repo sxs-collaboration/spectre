@@ -151,8 +151,9 @@ void test_divergence_impl(
   // Test divergence of a single tensor
   const auto div_vector =
       divergence(get<Flux1<Dim, Frame>>(fluxes), mesh, inv_jacobian);
-  CHECK_ITERABLE_APPROX((get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes)),
-                        div_vector);
+  const auto& expected = get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes);
+  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected, div_vector, local_approx);
 }
 
 void test_divergence() {
@@ -256,8 +257,9 @@ void test_divergence_compute_item_impl(
 
   const auto& div_flux1 =
       db::get<Tags::DivVectorCompute<Flux1<Dim, Frame>, inv_jac_tag>>(box);
-  CHECK_ITERABLE_APPROX((get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes)),
-                        div_flux1);
+  const auto& expected = get<Tags::div<Flux1<Dim, Frame>>>(div_fluxes);
+  Approx local_approx = Approx::custom().epsilon(1.e-11).scale(1.);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected, div_flux1, local_approx);
 }
 
 void test_divergence_compute() {

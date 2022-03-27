@@ -65,6 +65,12 @@ void divergence(
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE(_, data)                                              \
+  template void divergence(                                               \
+    const gsl::not_null<Scalar<DataVector>*> div_input,                   \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,           \
+      const Mesh<DIM(data)>& mesh,                                        \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical, \
+                            FRAME(data)>& inverse_jacobian);              \
   template Scalar<DataVector> divergence(                                 \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& input,           \
       const Mesh<DIM(data)>& mesh,                                        \
