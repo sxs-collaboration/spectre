@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -284,7 +285,8 @@ struct mock_interpolator {
 
 template <typename MockCallBackType, typename IsTimeDependent>
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;

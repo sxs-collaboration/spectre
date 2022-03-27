@@ -18,8 +18,11 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -92,7 +95,8 @@ struct initialize_elements_and_queue_simple_actions {
 
 template <bool HaveComputeItemsOnSource>
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<tmpl::conditional_t<
         HaveComputeItemsOnSource,
@@ -102,6 +106,12 @@ struct MockMetavariables {
         HaveComputeItemsOnSource,
         tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
         tmpl::list<>>;
+    using compute_items_on_target = tmpl::list<>;
+    using compute_target_points =
+        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
   };
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

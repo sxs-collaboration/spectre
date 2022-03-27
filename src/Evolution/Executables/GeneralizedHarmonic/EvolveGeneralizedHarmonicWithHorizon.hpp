@@ -35,6 +35,7 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
@@ -44,6 +45,7 @@
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 // First template parameter specifies the source of the initial data, which
 // could be an analytic solution, analytic data, or imported numerical data.
@@ -66,7 +68,7 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
       "formulation,\n"
       "on a domain with a single horizon and corresponding excised region"};
 
-  struct AhA {
+  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using tags_to_observe = tmpl::list<
         StrahlkorperGr::Tags::AreaCompute<frame>,

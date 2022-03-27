@@ -16,6 +16,9 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -24,6 +27,7 @@
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -92,10 +96,17 @@ struct mock_gh_worldtube_boundary {
 
 struct test_metavariables {
   static constexpr size_t volume_dim = 3;
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target = tmpl::list<>;
+    using compute_target_points =
+        intrp::TargetPoints::Sphere<InterpolationTargetA, ::Frame::Grid>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
     using compute_items_on_source = tmpl::list<>;
+    using compute_items_on_target = tmpl::list<>;
   };
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using component_list =

@@ -21,9 +21,12 @@
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace {
 
@@ -52,6 +55,9 @@ struct mock_element {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -75,21 +81,29 @@ struct mock_interpolation_target {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
     template <typename Metavariables>
     using interpolating_component = mock_element<Metavariables>;
   };
-  struct InterpolationTargetB {
+  struct InterpolationTargetB
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetB, 3>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
     template <typename Metavariables>
     using interpolating_component = mock_element<Metavariables>;
   };

@@ -91,6 +91,7 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -250,7 +251,7 @@ struct EvolutionMetavars {
               ::Frame::Inertial>>,
       horizons_tags_to_observe>;
 
-  struct AhA {
+  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         horizons_vars_to_interpolate_to_target;
@@ -267,7 +268,7 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
   };
 
-  struct AhB {
+  struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         horizons_vars_to_interpolate_to_target;

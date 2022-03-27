@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -113,6 +114,9 @@ struct MockPostInterpolationCallback
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -130,7 +134,8 @@ struct mock_interpolation_target {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;

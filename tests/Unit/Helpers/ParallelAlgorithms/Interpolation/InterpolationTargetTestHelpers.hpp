@@ -21,11 +21,13 @@
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -65,6 +67,9 @@ namespace InterpTargetTestHelpers {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;

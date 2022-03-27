@@ -44,6 +44,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
@@ -191,6 +192,9 @@ struct TestKerrHorizonIntegral
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
@@ -235,7 +239,8 @@ struct mock_interpolator {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
@@ -245,7 +250,8 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
   };
-  struct InterpolationTargetB {
+  struct InterpolationTargetB
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
@@ -255,7 +261,8 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
   };
-  struct InterpolationTargetC {
+  struct InterpolationTargetC
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;

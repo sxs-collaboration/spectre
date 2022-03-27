@@ -74,6 +74,7 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
@@ -108,6 +109,7 @@
 #include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -186,7 +188,8 @@ struct EvolutionMetavars {
                  analytic_compute, error_compute>;
 
   static constexpr bool interpolate = volume_dim == 3;
-  struct SphericalSurface {
+  struct SphericalSurface
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::SpatialMetric<Dim, ::Frame::Inertial, DataVector>,
