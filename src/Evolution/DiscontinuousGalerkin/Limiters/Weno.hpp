@@ -333,6 +333,10 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
   packaged_data->volume_data = orient_variables(
       packaged_data->volume_data, mesh.extents(), orientation_map);
 
+  // Warning: the WENO limiter is currently only tested with aligned meshes.
+  // The orientation of the mesh, the `element_size` computed above, and the
+  // variables should be carefully tested when used with domains that involve
+  // orientation maps
   packaged_data->mesh = orientation_map(mesh);
 }
 

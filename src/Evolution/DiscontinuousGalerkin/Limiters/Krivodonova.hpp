@@ -591,6 +591,8 @@ void Krivodonova<VolumeDim, tmpl::list<Tags...>>::package_data(
   packaged_data->modal_volume_data = orient_variables(
       packaged_data->modal_volume_data, mesh.extents(), orientation_map);
 
+  // This doesn't currently do anything because the mesh is assumed to be the
+  // same in all dimensions
   packaged_data->mesh = orientation_map(mesh);
 }
 
