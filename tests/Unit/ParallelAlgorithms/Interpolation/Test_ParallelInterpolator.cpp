@@ -109,15 +109,6 @@ struct ComputeSquare {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
 };
-struct ComputeNegate {
-  template <typename SrcTag, typename DestTag>
-  static void apply(
-      const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
-      const Variables<tmpl::list<SrcTag>>& src_vars,
-      const Mesh<3>& /* mesh */) {
-    get(get<DestTag>(*target_vars)) = -get(get<SrcTag>(src_vars));
-  }
-};
 
 // Functions for testing whether we have
 // interpolated correctly.  These encode the
