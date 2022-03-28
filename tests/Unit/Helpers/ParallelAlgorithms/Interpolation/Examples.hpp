@@ -6,9 +6,12 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,4 +73,43 @@ struct ExampleComputeTargetPoints
   }
 };
 /// [ComputeTargetPoints]
+
+/// [ComputeVarsToInterpolate]
+struct ExampleComputeVarsToInterpolate
+    : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
+  template <typename SrcTagList, typename DestTagList, size_t Dim>
+  static void apply(
+      const gsl::not_null<Variables<DestTagList>*> /*target_vars*/,
+      const Variables<SrcTagList>& /*src_vars*/, const Mesh<Dim>& /*mesh*/) {
+    // Already in the same frame so no need to switch frames
+    // Do some GR calculations to get correct variables
+    // Then modify target_vars
+    return;
+  }
+
+  template <typename SrcTagList, typename DestTagList, size_t Dim,
+            typename TargetFrame>
+  static void apply(
+      const gsl::not_null<Variables<DestTagList>*> /*target_vars*/,
+      const Variables<SrcTagList>& /*src_vars*/, const Mesh<Dim>& /*mesh*/,
+      const Jacobian<DataVector, Dim, TargetFrame,
+                     Frame::Inertial>& /*jacobian*/,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            TargetFrame>&
+      /*inverse_jacobian*/) {
+    // Need to switch frames first
+    // Do some GR calculations to get correct variables
+    // Then modify target_vars
+    return;
+  }
+
+  // These need to exist but don't have to contain anything
+  using allowed_src_tags = tmpl::list<>;
+  using required_src_tags = tmpl::list<>;
+  template <typename Frame>
+  using allowed_dest_tags = tmpl::list<>;
+  template <typename Frame>
+  using required_dest_tags = tmpl::list<>;
+};
+/// [ComputeVarsToInterpolate]
 }  // namespace intrp::TestHelpers
