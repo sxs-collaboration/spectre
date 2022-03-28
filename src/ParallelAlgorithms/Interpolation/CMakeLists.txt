@@ -60,4 +60,5 @@ target_link_libraries(
 add_subdirectory(Actions)
 add_subdirectory(Callbacks)
 add_subdirectory(Events)
+add_subdirectory(Protocols)
 add_subdirectory(Targets)
