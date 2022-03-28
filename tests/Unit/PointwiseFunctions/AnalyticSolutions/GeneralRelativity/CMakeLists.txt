@@ -28,6 +28,7 @@ target_link_libraries(
   GeneralRelativity
   GeneralRelativitySolutions
   GeneralizedHarmonic
+  GrSolutionsTestHelpers
   Hydro
   Options
   Spectral
