@@ -10,8 +10,10 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -112,4 +114,34 @@ struct ExampleComputeVarsToInterpolate
   using required_dest_tags = tmpl::list<>;
 };
 /// [ComputeVarsToInterpolate]
+
+/// [PostInterpolationCallback]
+struct ExamplePostInterpolationCallback
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  // This is not required by the protocol, but can be specified.
+  static constexpr double fill_invalid_points_with = 0.0;
+
+  // Signature 1. This bool is false if another interpolation action is called
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static bool apply(
+      const gsl::not_null<db::DataBox<DbTags>*> /*box*/,
+      const gsl::not_null<Parallel::GlobalCache<Metavariables>*> /*cache*/,
+      const TemporalId& temporal_id) {
+    return intrp::InterpolationTarget_detail::get_temporal_id_value(
+               temporal_id) > 1.0;
+  }
+
+  // Signature 2. This is just as an example
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& /*temporal_id*/) {}
+
+  // Signature 3. This is just as an example
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& /*temporal_id*/) {}
+};
+/// [PostInterpolationCallback]
 }  // namespace intrp::TestHelpers

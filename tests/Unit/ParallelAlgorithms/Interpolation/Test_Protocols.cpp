@@ -4,6 +4,7 @@
 #include "Helpers/ParallelAlgorithms/Interpolation/Examples.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
 static_assert(
@@ -12,3 +13,6 @@ static_assert(
 static_assert(
     tt::assert_conforms_to<intrp::TestHelpers::ExampleComputeVarsToInterpolate,
                            intrp::protocols::ComputeVarsToInterpolate>);
+static_assert(
+    tt::assert_conforms_to<intrp::TestHelpers::ExamplePostInterpolationCallback,
+                           intrp::protocols::PostInterpolationCallback>);

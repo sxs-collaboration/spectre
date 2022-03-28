@@ -7,5 +7,6 @@ spectre_target_headers(
   HEADERS
   ComputeTargetPoints.hpp
   ComputeVarsToInterpolate.hpp
+  PostInterpolationCallback.hpp
   ProtocolsNamespace.hpp
   )
