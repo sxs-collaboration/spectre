@@ -103,15 +103,18 @@ void verify_time_independent_einstein_solution(
   const auto& lapse = get<gr::Tags::Lapse<>>(vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
   const auto& d_lapse =
-      get<typename Solution::template DerivLapse<DataVector>>(vars);
+      get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>>(vars);
   const auto& shift = get<gr::Tags::Shift<3>>(vars);
   const auto& d_shift =
-      get<typename Solution::template DerivShift<DataVector>>(vars);
+      get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(vars);
   const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<3>>>(vars);
   const auto& g = get<gr::Tags::SpatialMetric<3>>(vars);
   const auto& dt_g = get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
   const auto& d_g =
-      get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
+      get<::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(vars);
 
   // Check those quantities that should vanish identically.
   CHECK(get(dt_lapse) == make_with_value<DataVector>(x, 0.));
