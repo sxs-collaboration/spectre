@@ -3,18 +3,24 @@
 
 #pragma once
 
+#include <string>
 #include <type_traits>
 
+#include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -22,6 +28,9 @@
 namespace Frame {
 struct Grid;
 }  // namespace Frame
+namespace Tags {
+struct Time;
+}  // namespace Tags
 /// \endcond
 
 namespace intrp::TestHelpers {
@@ -144,4 +153,30 @@ struct ExamplePostInterpolationCallback
                     const TemporalId& /*temporal_id*/) {}
 };
 /// [PostInterpolationCallback]
+
+/// [InterpolationTargetTag]
+struct ExampleInterpolationTargetTag
+    : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+  using temporal_id = ::Tags::Time;
+
+  using vars_to_interpolate_to_target =
+      tmpl::list<gr::Tags::SpatialMetric<3, ::Frame::Grid, DataVector>,
+                 gr::Tags::InverseSpatialMetric<3, ::Frame::Grid>,
+                 gr::Tags::ExtrinsicCurvature<3, ::Frame::Grid>,
+                 gr::Tags::SpatialChristoffelSecondKind<3, ::Frame::Grid>>;
+
+  // This is not necessary to conform to the protocol, but is often used
+  using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
+
+  // This list will be a lot longer for apparent horizon finding
+  using compute_items_on_target =
+      tmpl::list<StrahlkorperTags::ThetaPhiCompute<::Frame::Grid>,
+                 StrahlkorperTags::RadiusCompute<::Frame::Grid>,
+                 StrahlkorperTags::RhatCompute<::Frame::Grid>>;
+
+  using compute_target_points = ExampleComputeTargetPoints;
+
+  using post_interpolation_callback = ExamplePostInterpolationCallback;
+};
+/// [InterpolationTargetTag]
 }  // namespace intrp::TestHelpers
