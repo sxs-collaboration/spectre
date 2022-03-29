@@ -87,7 +87,13 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis);
  * basis), and thus do not implement differentiation matrices, integration
  * weights, and interpolation matrices.
  */
-enum class Quadrature { Gauss, GaussLobatto, CellCentered, FaceCentered };
+enum class Quadrature {
+  Gauss,
+  GaussLobatto,
+  CellCentered,
+  FaceCentered,
+  Equiangular
+};
 
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
@@ -108,6 +114,8 @@ constexpr size_t minimum_number_of_points(const Basis /*basis*/,
     // NOLINTNEXTLINE(bugprone-branch-clone)
   } else if (quadrature == Quadrature::FaceCentered) {
     return 2;
+  } else if (quadrature == Quadrature::Equiangular) {
+    return 1;
   }
   return std::numeric_limits<size_t>::max();
 }

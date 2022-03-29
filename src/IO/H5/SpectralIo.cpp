@@ -13,15 +13,17 @@
 
 namespace h5_detail {
 
-std::array<Spectral::Basis, 3> allowed_bases() {
+std::array<Spectral::Basis, 4> allowed_bases() {
   return {Spectral::Basis::Chebyshev, Spectral::Basis::Legendre,
-          Spectral::Basis::FiniteDifference};
+          Spectral::Basis::FiniteDifference,
+          Spectral::Basis::SphericalHarmonic};
 }
 
-std::array<Spectral::Quadrature, 4> allowed_quadratures() {
+std::array<Spectral::Quadrature, 5> allowed_quadratures() {
   return {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
           Spectral::Quadrature::CellCentered,
-          Spectral::Quadrature::FaceCentered};
+          Spectral::Quadrature::FaceCentered,
+          Spectral::Quadrature::Equiangular};
 }
 
 void write_dictionary(const std::string& dict_name,
