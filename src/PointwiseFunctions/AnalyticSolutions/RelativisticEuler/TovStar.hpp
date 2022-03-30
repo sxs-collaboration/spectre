@@ -443,6 +443,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
             get<tag>(vars)[component][point_index] = tensor[component];
           }
         } else {
+          (void)point_index;
           get<tag>(vars) = local_cache.get_var(local_computer, tag{});
         }
         return '0';
