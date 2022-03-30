@@ -19,16 +19,51 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/GetOutput.hpp"
+
+namespace grmhd::AnalyticData {
+namespace {
 
 static_assert(
-    not is_analytic_solution_v<grmhd::AnalyticData::MagnetizedTovStar>,
+    not is_analytic_solution_v<MagnetizedTovStar>,
     "MagnetizedTovStar should be analytic_data, and not an analytic_solution");
 static_assert(
-    is_analytic_data_v<grmhd::AnalyticData::MagnetizedTovStar>,
+    is_analytic_data_v<MagnetizedTovStar>,
     "MagnetizedTovStar should be analytic_data, and not an analytic_solution");
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
-                  "[Unit][PointwiseFunctions]") {
+using TovCoordinates = gr::Solutions::TovCoordinates;
+
+void test_equality() {
+  const MagnetizedTovStar mag_tov_original{
+      1.28e-3, 100.0, 2.0, TovCoordinates::Schwarzschild, 2, 0.04, 2500.0};
+  const auto mag_tov = serialize_and_deserialize(mag_tov_original);
+  CHECK(mag_tov == MagnetizedTovStar(1.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(2.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 200.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 3.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Isotropic, 2, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 3, 0.04,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.05,
+                                     2500.0));
+  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
+                                     TovCoordinates::Schwarzschild, 2, 0.04,
+                                     3500.0));
+}
+
+void test_magnetized_tov_star(const TovCoordinates coord_system) {
   Parallel::register_classes_with_charm<
       grmhd::AnalyticData::MagnetizedTovStar>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
@@ -39,31 +74,20 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
           "  CentralDensity: 1.28e-3\n"
           "  PolytropicConstant: 100.0\n"
           "  PolytropicExponent: 2.0\n"
+          "  Coordinates: " +
+          get_output(coord_system) +
+          "\n"
           "  PressureExponent: 2\n"
           "  VectorPotentialAmplitude: 2500\n"
           "  CutoffPressureFraction: 0.04\n");
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
-  const auto& mag_tov_opts =
+  const auto& mag_tov =
       dynamic_cast<const grmhd::AnalyticData::MagnetizedTovStar&>(
           *deserialized_option_solution);
 
-  const RelativisticEuler::Solutions::TovStar tov{1.28e-3, 100.0, 2.0};
-  const auto mag_tov = serialize_and_deserialize(mag_tov_opts);
-  CHECK(mag_tov == grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                                          2, 0.04, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(2.28e-3, 100.0, 2.0,
-                                                          2, 0.04, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 200.0, 2.0,
-                                                          2, 0.04, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 3.0,
-                                                          2, 0.04, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                                          3, 0.04, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                                          2, 0.05, 2500.0));
-  CHECK(mag_tov != grmhd::AnalyticData::MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                                          2, 0.04, 3500.0));
+  const RelativisticEuler::Solutions::TovStar tov{1.28e-3, 100.0, 2.0,
+                                                  coord_system};
 
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0);
@@ -122,3 +146,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
   const auto div_tilde_b = divergence(tilde_b, mesh, inv_jac);
   CHECK(max(abs(get(div_tilde_b))) < 1.0e-14);
 }
+
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
+                  "[Unit][PointwiseFunctions]") {
+  test_equality();
+  test_magnetized_tov_star(TovCoordinates::Schwarzschild);
+  test_magnetized_tov_star(TovCoordinates::Isotropic);
+}
+
+}  // namespace
+}  // namespace grmhd::AnalyticData

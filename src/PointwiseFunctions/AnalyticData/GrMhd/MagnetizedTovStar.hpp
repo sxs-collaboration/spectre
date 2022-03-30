@@ -222,8 +222,7 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
       tmpl::push_back<tov_star::options, PressureExponent,
                       CutoffPressureFraction, VectorPotentialAmplitude>;
 
-  static constexpr Options::String help = {
-      "Magnetized TOV star in areal coordinates."};
+  static constexpr Options::String help = {"Magnetized TOV star."};
 
   static constexpr size_t volume_dim = 3_st;
 
@@ -239,6 +238,7 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
 
   MagnetizedTovStar(double central_rest_mass_density,
                     double polytropic_constant, double polytropic_exponent,
+                    gr::Solutions::TovCoordinates coordinate_system,
                     size_t pressure_exponent, double cutoff_pressure_fraction,
                     double vector_potential_amplitude);
 

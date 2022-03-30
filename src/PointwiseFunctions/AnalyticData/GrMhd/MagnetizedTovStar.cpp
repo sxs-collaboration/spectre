@@ -23,14 +23,14 @@
 #include "Utilities/MakeWithValue.hpp"
 
 namespace grmhd::AnalyticData {
-MagnetizedTovStar::MagnetizedTovStar(const double central_rest_mass_density,
-                                     const double polytropic_constant,
-                                     const double polytropic_exponent,
-                                     const size_t pressure_exponent,
-                                     const double cutoff_pressure_fraction,
-                                     const double vector_potential_amplitude)
+MagnetizedTovStar::MagnetizedTovStar(
+    const double central_rest_mass_density, const double polytropic_constant,
+    const double polytropic_exponent,
+    const gr::Solutions::TovCoordinates coordinate_system,
+    const size_t pressure_exponent, const double cutoff_pressure_fraction,
+    const double vector_potential_amplitude)
     : tov_star(central_rest_mass_density, polytropic_constant,
-               polytropic_exponent),
+               polytropic_exponent, coordinate_system),
       pressure_exponent_(pressure_exponent),
       cutoff_pressure_(cutoff_pressure_fraction *
                        get(equation_of_state().pressure_from_density(

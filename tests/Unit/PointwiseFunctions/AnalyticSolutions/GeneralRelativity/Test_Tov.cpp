@@ -47,7 +47,8 @@ void test_tov(
   const double final_log_enthalpy =
       initial_log_enthalpy + (current_iteration + 1.0) * step;
   const gr::Solutions::TovSolution tov_out_full(
-      equation_of_state, central_mass_density, surface_log_enthalpy);
+      equation_of_state, central_mass_density,
+      gr::Solutions::TovCoordinates::Schwarzschild, surface_log_enthalpy);
 
   if (newtonian_limit) {
     const double final_radius{tov_out_full.outer_radius()};
@@ -76,7 +77,8 @@ void test_tov(
   // Integrate only to some intermediate value, not the surface. Then compare to
   // interpolated values.
   const gr::Solutions::TovSolution tov_out_intermediate(
-      equation_of_state, central_mass_density, final_log_enthalpy);
+      equation_of_state, central_mass_density,
+      gr::Solutions::TovCoordinates::Schwarzschild, final_log_enthalpy);
   const double intermediate_radius{tov_out_intermediate.outer_radius()};
   const double intermediate_mass{tov_out_intermediate.total_mass()};
   CHECK(intermediate_mass ==
@@ -171,6 +173,61 @@ void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
   }
 }
 
+void test_baumgarte_shapiro() {
+  // Reproduces Fig. 1.2 in BaumgarteShapiro, as suggested in footnote 25 on p.
+  // 18, and as listed in Table 14.1
+  const EquationsOfState::PolytropicFluid<true> eos{1., 2.};
+  const double central_energy_density = 0.42;
+  // For polytropic_exponent = 2
+  const double central_rest_mass_density =
+      0.5 * (sqrt(1. + 4. * central_energy_density) - 1.);
+  const gr::Solutions::TovSolution tov{eos, central_rest_mass_density};
+  // The values in BaumgarteShapiro are given to this precision
+  Approx custom_approx = Approx::custom().epsilon(1.e-03).scale(1.0);
+  CHECK(tov.total_mass() == custom_approx(0.164));
+  CHECK(tov.outer_radius() == custom_approx(0.763));
+}
+
+void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,
+                        const double central_mass_density) {
+  const gr::Solutions::TovSolution tov_areal{
+      eos, central_mass_density, gr::Solutions::TovCoordinates::Schwarzschild};
+  const gr::Solutions::TovSolution tov_isotropic{
+      eos, central_mass_density, gr::Solutions::TovCoordinates::Isotropic};
+  const double outer_isotropic_radius = tov_isotropic.outer_radius();
+  CHECK(tov_areal.total_mass() == approx(tov_isotropic.total_mass()));
+  const double outer_areal_radius =
+      outer_isotropic_radius *
+      square(tov_isotropic.conformal_factor(outer_isotropic_radius));
+  CHECK(tov_areal.outer_radius() == approx(outer_areal_radius));
+  CHECK(tov_isotropic.mass_over_radius(0.) == approx(0.));
+  CHECK(tov_isotropic.mass_over_radius(outer_isotropic_radius) ==
+        approx(tov_isotropic.total_mass() / outer_areal_radius));
+  CHECK(tov_isotropic.log_specific_enthalpy(0.) ==
+        approx(log(get(eos.specific_enthalpy_from_density(
+            Scalar<double>{central_mass_density})))));
+  CHECK(tov_isotropic.log_specific_enthalpy(outer_isotropic_radius) ==
+        approx(0.));
+  CHECK(tov_isotropic.conformal_factor(outer_isotropic_radius) ==
+        approx(1 + 0.5 * tov_isotropic.total_mass() / outer_isotropic_radius));
+}
+
+void test_rueter() {
+  // Reproduces the values in Sec. V.C and Fig. 8 in
+  // https://arxiv.org/abs/1708.07358
+  const EquationsOfState::PolytropicFluid<true> eos{123.6489, 2};
+  gr::Solutions::TovSolution solution{
+      eos,
+      0.0008087415253997405,  // Central enthalpy h=1.2
+      gr::Solutions::TovCoordinates::Isotropic};
+  const double outer_radius = solution.outer_radius();
+  // The values in the paper are given to this precision
+  Approx custom_approx = Approx::custom().epsilon(1e-4).scale(1.);
+  CHECK(outer_radius == custom_approx(9.7098));
+  CHECK(solution.conformal_factor(0.) == custom_approx(1.16));
+  CHECK(solution.conformal_factor(outer_radius) == custom_approx(1.0727));
+}
+
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
                   "[Unit][PointwiseFunctions]") {
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
@@ -190,6 +247,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
   }
 
   test_tov_dp_dr(*equation_of_state);
+  test_baumgarte_shapiro();
+  test_tov_isotropic(*equation_of_state, 1.e-3);
+  test_rueter();
 }
 
 }  // namespace
