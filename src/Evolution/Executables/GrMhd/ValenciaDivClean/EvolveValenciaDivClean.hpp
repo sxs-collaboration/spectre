@@ -324,10 +324,8 @@ struct EvolutionMetavars {
                                          Triggers::time_triggers>>>;
   };
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::push_back<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename InterpolationTargetTags::post_interpolation_callback...>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::at<typename factory_creation::factory_classes, Event>>;
 
   struct SubcellOptions {
     using evolved_vars_tags = typename system::variables_tag::tags_list;
@@ -595,7 +593,7 @@ struct CenterOfStar {
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>>;
   using post_interpolation_callback =
       intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
-                                                   CenterOfStar, CenterOfStar>;
+                                                   CenterOfStar>;
   using compute_target_points =
       intrp::TargetPoints::SpecifiedPoints<CenterOfStar, 3>;
   using compute_items_on_target = tags_to_observe;
@@ -626,7 +624,7 @@ struct KerrHorizon {
   using compute_target_points =
       intrp::TargetPoints::KerrHorizon<KerrHorizon, ::Frame::Inertial>;
   using post_interpolation_callback =
-      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, KerrHorizon,
+      intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
                                                    KerrHorizon>;
 
   template <typename Metavariables>

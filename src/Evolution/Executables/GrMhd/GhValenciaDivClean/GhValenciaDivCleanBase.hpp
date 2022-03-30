@@ -336,10 +336,8 @@ struct GhValenciaDivCleanTemplateBase<
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::push_back<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename InterpolationTargetTags::post_interpolation_callback...>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::at<typename factory_creation::factory_classes, Event>>;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,

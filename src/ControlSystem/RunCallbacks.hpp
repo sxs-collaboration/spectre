@@ -43,8 +43,6 @@ struct RunCallbacks {
                           tmpl::bind<assert_conforms_to_t, tmpl::_1>>::value);
 
  public:
-  using observation_types = tmpl::list<>;
-
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
