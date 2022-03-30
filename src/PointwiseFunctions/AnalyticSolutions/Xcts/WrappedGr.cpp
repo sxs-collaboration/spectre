@@ -12,6 +12,7 @@
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
@@ -321,7 +322,8 @@ template class Xcts::AnalyticData::CommonVariables<
 #define INSTANTIATE(_, data) \
   template class Xcts::Solutions::WrappedGr<STYPE(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::KerrSchild))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::KerrSchild,
+                                      gr::Solutions::HarmonicSchwarzschild))
 
 #undef STYPE
 #undef INSTANTIATE

@@ -6,6 +6,7 @@ set(LIBRARY "Test_XctsSolutions")
 set(LIBRARY_SOURCES
   Test_ConstantDensityStar.cpp
   Test_Flatness.cpp
+  Test_HarmonicSchwarzschild.cpp
   Test_Kerr.cpp
   Test_Schwarzschild.cpp
   )
