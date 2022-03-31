@@ -34,6 +34,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -157,7 +158,7 @@ struct PrepareSolve {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s: Prepare solve\n", get_output(array_index),
-                       Options::name<OptionsGroup>());
+                       pretty_type::name<OptionsGroup>());
     }
 
     constexpr size_t this_action_index =
@@ -328,7 +329,7 @@ struct PrepareStep {
                  ::Verbosity::Debug)) {
       Parallel::printf(
           "%s %s(%zu): Prepare step\n", get_output(array_index),
-          Options::name<OptionsGroup>(),
+          pretty_type::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box) + 1);
     }
 
@@ -414,7 +415,7 @@ struct PerformStep {
                  ::Verbosity::Debug)) {
       Parallel::printf(
           "%s %s(%zu): Perform step with length: %g\n", get_output(array_index),
-          Options::name<OptionsGroup>(),
+          pretty_type::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
           db::get<NonlinearSolver::Tags::StepLength<OptionsGroup>>(box));
     }
@@ -561,7 +562,7 @@ struct Globalize {
                    ::Verbosity::Debug)) {
         Parallel::printf(
             "%s %s(%zu): Globalize(%zu)\n", get_output(array_index),
-            Options::name<OptionsGroup>(),
+            pretty_type::name<OptionsGroup>(),
             db::get<Convergence::Tags::IterationId<OptionsGroup>>(box),
             db::get<NonlinearSolver::Tags::Globalization<
                 Convergence::Tags::IterationId<OptionsGroup>>>(box));
@@ -627,7 +628,7 @@ struct CompleteStep {
                  ::Verbosity::Debug)) {
       Parallel::printf(
           "%s %s(%zu): Complete step\n", get_output(array_index),
-          Options::name<OptionsGroup>(),
+          pretty_type::name<OptionsGroup>(),
           db::get<Convergence::Tags::IterationId<OptionsGroup>>(box));
     }
 

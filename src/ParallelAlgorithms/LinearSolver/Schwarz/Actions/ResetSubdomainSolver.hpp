@@ -13,6 +13,7 @@
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -72,7 +73,7 @@ struct ResetSubdomainSolver {
       if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                    ::Verbosity::Debug)) {
         Parallel::printf("%s %s: Reset subdomain solver\n", element_id,
-                         Options::name<OptionsGroup>());
+                         pretty_type::name<OptionsGroup>());
       }
       db::mutate<
           LinearSolver::Schwarz::Tags::SubdomainSolverBase<OptionsGroup>>(

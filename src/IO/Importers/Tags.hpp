@@ -14,6 +14,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// Items related to loading data from files
@@ -87,7 +88,7 @@ namespace Tags {
 template <typename ImporterOptionsGroup>
 struct FileGlob : db::SimpleTag {
   static std::string name() {
-    return "FileGlob(" + Options::name<ImporterOptionsGroup>() + ")";
+    return "FileGlob(" + pretty_type::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::FileGlob<ImporterOptionsGroup>>;
@@ -104,7 +105,7 @@ struct FileGlob : db::SimpleTag {
 template <typename ImporterOptionsGroup>
 struct Subgroup : db::SimpleTag {
   static std::string name() {
-    return "Subgroup(" + Options::name<ImporterOptionsGroup>() + ")";
+    return "Subgroup(" + pretty_type::name<ImporterOptionsGroup>() + ")";
   }
   using type = std::string;
   using option_tags = tmpl::list<OptionTags::Subgroup<ImporterOptionsGroup>>;
@@ -119,7 +120,7 @@ struct Subgroup : db::SimpleTag {
 template <typename ImporterOptionsGroup>
 struct ObservationValue : db::SimpleTag {
   static std::string name() {
-    return "ObservationValue(" + Options::name<ImporterOptionsGroup>() +
+    return "ObservationValue(" + pretty_type::name<ImporterOptionsGroup>() +
            ")";
   }
   using type = std::variant<double, ObservationSelector>;

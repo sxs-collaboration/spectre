@@ -20,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -108,7 +109,9 @@ struct ApparentHorizon {
   using type = OptionHolders::ApparentHorizon<Frame>;
   static constexpr Options::String help{
       "Options for interpolation onto apparent horizon."};
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
   using group = ApparentHorizons;
 };
 }  // namespace OptionTags
@@ -174,9 +177,8 @@ struct ApparentHorizon {
     // here for StrahlkorperTags::Strahlkorper<::Frame::Inertial>.
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
-        std::deque<std::pair<double, ::Strahlkorper<Frame>>>{
-            std::make_pair(std::numeric_limits<double>::quiet_NaN(),
-                           options.initial_guess)});
+        std::deque<std::pair<double, ::Strahlkorper<Frame>>>{std::make_pair(
+            std::numeric_limits<double>::quiet_NaN(), options.initial_guess)});
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>

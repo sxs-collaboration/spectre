@@ -38,7 +38,6 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -90,7 +89,7 @@ struct SubdomainStatsFormatter
                          const size_t min_subdomain_its,
                          const size_t max_subdomain_its,
                          const size_t total_subdomain_its) const {
-    return Options::name<OptionsGroup>() + section_observation_key + "(" +
+    return pretty_type::name<OptionsGroup>() + section_observation_key + "(" +
            get_output(iteration_id) + ") completed all " +
            get_output(num_subdomains) +
            " subdomain solves. Average of number of iterations: " +
@@ -157,7 +156,7 @@ void contribute_to_subdomain_stats_observation(
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
-      std::string{"/" + Options::name<OptionsGroup>() +
+      std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "SubdomainSolves"},
       std::vector<std::string>{"Iteration", "NumSubdomains", "AvgNumIterations",
                                "MinNumIterations", "MaxNumIterations",
@@ -172,7 +171,7 @@ void contribute_to_subdomain_stats_observation(
 template <typename SubdomainDataType, typename OptionsGroup>
 struct SubdomainDataBufferTag : db::SimpleTag {
   static std::string name() {
-    return "SubdomainData(" + Options::name<OptionsGroup>() + ")";
+    return "SubdomainData(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = SubdomainDataType;
 };
@@ -351,7 +350,7 @@ struct SolveSubdomain {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Solve subdomain\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Assemble the subdomain data from the data on the element and the
@@ -397,7 +396,7 @@ struct SolveSubdomain {
         Parallel::printf(
             "%s %s(%zu): WARNING: Subdomain solver did not converge in %zu "
             "iterations: %e -> %e\n",
-            element_id, Options::name<OptionsGroup>(), iteration_id,
+            element_id, pretty_type::name<OptionsGroup>(), iteration_id,
             subdomain_solve_has_converged.num_iterations(),
             subdomain_solve_has_converged.initial_residual_magnitude(),
             subdomain_solve_has_converged.residual_magnitude());
@@ -406,7 +405,7 @@ struct SolveSubdomain {
         Parallel::printf(
             "%s %s(%zu): Subdomain solver converged in %zu iterations (%s): %e "
             "-> %e\n",
-            element_id, Options::name<OptionsGroup>(), iteration_id,
+            element_id, pretty_type::name<OptionsGroup>(), iteration_id,
             subdomain_solve_has_converged.num_iterations(),
             subdomain_solve_has_converged.reason(),
             subdomain_solve_has_converged.initial_residual_magnitude(),
@@ -504,7 +503,7 @@ struct ReceiveOverlapSolution {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Receive overlap solution\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Add solutions on overlaps to this element's solution in a weighted sum

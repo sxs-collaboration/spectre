@@ -21,6 +21,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -68,7 +69,7 @@ struct RandomizeVariables {
   };
 
   struct RandomParametersOptionTag {
-    static std::string name() { return Options::name<Label>(); }
+    static std::string name() { return pretty_type::name<Label>(); }
     using type = Options::Auto<RandomParameters, Options::AutoLabel::None>;
     static constexpr Options::String help =
         "Add uniform random noise to variables.";

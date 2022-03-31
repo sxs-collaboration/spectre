@@ -22,6 +22,7 @@
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -55,7 +56,7 @@ class TestEvent : public Event {
   WRAPPED_PUPable_decl_template(TestEvent);  // NOLINT
 
   static std::string name() {
-    return "TestEvent<" + Options::name<Label>() + ">";
+    return "TestEvent<" + pretty_type::name<Label>() + ">";
   }
 
   using options = tmpl::list<>;

@@ -13,7 +13,6 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
 #include "Parallel/Section.hpp"
@@ -22,6 +21,7 @@
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Hierarchy.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -109,7 +109,7 @@ struct ElementsAllocator
     if (UNLIKELY(num_iterations == 0)) {
       Parallel::printf(
           "%s is disabled (zero iterations). Only creating a single grid.\n",
-          Options::name<OptionsGroup>());
+          pretty_type::name<OptionsGroup>());
       max_levels = 1;
     }
     size_t multigrid_level = 0;
@@ -170,8 +170,8 @@ struct ElementsAllocator
       Parallel::printf(
           "%s level %zu has %zu elements in %zu blocks distributed on %d "
           "procs.\n",
-          Options::name<OptionsGroup>(), multigrid_level, element_ids.size(),
-          domain.blocks().size(), number_of_procs);
+          pretty_type::name<OptionsGroup>(), multigrid_level,
+          element_ids.size(), domain.blocks().size(), number_of_procs);
       ++multigrid_level;
     } while (initial_refinement_levels != parent_refinement_levels);
     element_array.doneInserting();

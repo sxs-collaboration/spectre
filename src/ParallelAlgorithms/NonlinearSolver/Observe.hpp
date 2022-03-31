@@ -15,6 +15,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 
 namespace NonlinearSolver::observe_detail {
@@ -34,7 +35,7 @@ void contribute_to_reduction_observer(
       // Node 0 is always the writer, so directly call the component on that
       // node
       reduction_writer[0],
-      std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
+      std::string{"/" + pretty_type::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "GlobalizationStep", "Residual",
                                "StepLength"},
       std::make_tuple(iteration_id, globalization_iteration_id,

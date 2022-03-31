@@ -31,6 +31,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -104,7 +105,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Send fields to coarser grid\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Restrict the fields to the coarser (parent) grid.
@@ -208,7 +209,8 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Receive fields from finer grid\n",
-                       element_id, Options::name<OptionsGroup>(), iteration_id);
+                       element_id, pretty_type::name<OptionsGroup>(),
+                       iteration_id);
     }
 
     // Assemble restricted data from children

@@ -26,6 +26,7 @@
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -102,7 +103,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Send overlap fields\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Send data on intruding overlaps to the corresponding neighbors
@@ -215,7 +216,7 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Receive overlap fields\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Move received overlap data into DataBox

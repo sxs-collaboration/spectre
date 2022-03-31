@@ -17,6 +17,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 /// Functionality related to discontinuous Galerkin schemes
 namespace dg {}
@@ -67,7 +68,7 @@ struct NumericalFluxGroup {
  */
 template <typename NumericalFluxType>
 struct NumericalFlux {
-  static std::string name() { return Options::name<NumericalFluxType>(); }
+  static std::string name() { return pretty_type::name<NumericalFluxType>(); }
   static constexpr Options::String help = "Options for the numerical flux";
   using type = NumericalFluxType;
   using group = NumericalFluxGroup;

@@ -13,7 +13,6 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
@@ -23,6 +22,7 @@
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 
 /// \cond
@@ -79,13 +79,12 @@ struct InitializeResidual {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                  ::Verbosity::Quiet)) {
       Parallel::printf("%s initialized with residual: %e\n",
-                       Options::name<OptionsGroup>(), residual_magnitude);
+                       pretty_type::name<OptionsGroup>(), residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
-      Parallel::printf(
-          "%s has converged without any iterations: %s\n",
-          Options::name<OptionsGroup>(), has_converged);
+      Parallel::printf("%s has converged without any iterations: %s\n",
+                       pretty_type::name<OptionsGroup>(), has_converged);
     }
 
     Parallel::receive_data<Tags::InitialHasConverged<OptionsGroup>>(
@@ -167,16 +166,15 @@ struct UpdateResidual {
     // Do some logging
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                  ::Verbosity::Quiet)) {
-      Parallel::printf(
-          "%s(%zu) iteration complete. Remaining residual: %e\n",
-          Options::name<OptionsGroup>(), completed_iterations,
-          residual_magnitude);
+      Parallel::printf("%s(%zu) iteration complete. Remaining residual: %e\n",
+                       pretty_type::name<OptionsGroup>(), completed_iterations,
+                       residual_magnitude);
     }
     if (UNLIKELY(has_converged and get<logging::Tags::Verbosity<OptionsGroup>>(
                                        cache) >= ::Verbosity::Quiet)) {
-      Parallel::printf(
-          "%s has converged in %zu iterations: %s\n",
-          Options::name<OptionsGroup>(), completed_iterations, has_converged);
+      Parallel::printf("%s has converged in %zu iterations: %s\n",
+                       pretty_type::name<OptionsGroup>(), completed_iterations,
+                       has_converged);
     }
 
     Parallel::receive_data<Tags::ResidualRatioAndHasConverged<OptionsGroup>>(

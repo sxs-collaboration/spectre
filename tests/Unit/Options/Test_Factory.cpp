@@ -13,6 +13,7 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -74,7 +75,7 @@ class TestWithArg : public OptionTest {
 
 // Same as TestWithArg, except there is an TestWithArg2::name() that
 // returns something other than "TestWithArg2Arg" to test that class
-// is named in the input file using Options::name rather than
+// is named in the input file using pretty_type::name rather than
 // pretty_type::short_name
 class TestWithArg2 : public OptionTest {
  public:

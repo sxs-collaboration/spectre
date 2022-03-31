@@ -32,6 +32,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace LinearSolver::multigrid::detail {
@@ -159,7 +160,7 @@ struct PreparePreSmoothing {
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Prepare pre-smoothing\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // On coarser grids the smoother solves for a correction to the finer-grid
@@ -334,7 +335,7 @@ struct SendCorrectionToFinerGrid {
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Send correction to children\n", element_id,
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     // Send a copy of the correction to all children
@@ -388,7 +389,8 @@ struct ReceiveCorrectionFromCoarserGrid {
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Prolongate correction from parent\n",
-                       element_id, Options::name<OptionsGroup>(), iteration_id);
+                       element_id, pretty_type::name<OptionsGroup>(),
+                       iteration_id);
     }
 
     // Apply prolongation operator

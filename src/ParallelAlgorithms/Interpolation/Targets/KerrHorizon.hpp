@@ -18,6 +18,7 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -114,7 +115,9 @@ struct KerrHorizon {
   using type = OptionHolders::KerrHorizon;
   static constexpr Options::String help{
       "Options for interpolation onto Kerr horizon."};
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags

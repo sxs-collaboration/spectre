@@ -11,6 +11,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -49,7 +50,9 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
   static constexpr Options::String help =
       "Starts interpolation onto the given InterpolationTargetTag.";
 
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
 
   Interpolate() = default;
 

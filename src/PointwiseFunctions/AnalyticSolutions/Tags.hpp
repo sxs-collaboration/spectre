@@ -14,6 +14,7 @@
 #include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace OptionTags {
@@ -30,7 +31,7 @@ struct AnalyticSolutionGroup {
 /// template parameter
 template <typename SolutionType>
 struct AnalyticSolution {
-  static std::string name() { return Options::name<SolutionType>(); }
+  static std::string name() { return pretty_type::name<SolutionType>(); }
   static constexpr Options::String help = "Options for the analytic solution";
   using type = SolutionType;
   using group = AnalyticSolutionGroup;

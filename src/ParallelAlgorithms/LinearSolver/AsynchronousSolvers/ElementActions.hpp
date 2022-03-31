@@ -76,10 +76,10 @@ struct ResidualReductionFormatter
   std::string operator()(const size_t iteration_id,
                          const double residual) const {
     if (iteration_id == 0) {
-      return Options::name<OptionsGroup>() + section_observation_key +
+      return pretty_type::name<OptionsGroup>() + section_observation_key +
              " initialized with residual: " + get_output(residual);
     } else {
-      return Options::name<OptionsGroup>() + section_observation_key + "(" +
+      return pretty_type::name<OptionsGroup>() + section_observation_key + "(" +
              get_output(iteration_id) +
              ") iteration complete. Remaining residual: " +
              get_output(residual);
@@ -114,7 +114,7 @@ void contribute_to_residual_observation(
       observers::ArrayComponentId{
           std::add_pointer_t<ParallelComponent>{nullptr},
           Parallel::ArrayIndex<ArrayIndex>(array_index)},
-      std::string{"/" + Options::name<OptionsGroup>() +
+      std::string{"/" + pretty_type::name<OptionsGroup>() +
                   section_observation_key + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       reduction_data{iteration_id, residual_magnitude_square},
@@ -122,16 +122,17 @@ void contribute_to_residual_observation(
   if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                ::Verbosity::Debug)) {
     if (iteration_id == 0) {
-      Parallel::printf("%s %s initialized with local residual: %e\n",
-                       get_output(array_index),
-                       Options::name<OptionsGroup>() + section_observation_key,
-                       sqrt(residual_magnitude_square));
+      Parallel::printf(
+          "%s %s initialized with local residual: %e\n",
+          get_output(array_index),
+          pretty_type::name<OptionsGroup>() + section_observation_key,
+          sqrt(residual_magnitude_square));
     } else {
       Parallel::printf(
           "%s %s(%zu) iteration complete. Remaining local residual: %e\n",
           get_output(array_index),
-          Options::name<OptionsGroup>() + section_observation_key, iteration_id,
-          sqrt(residual_magnitude_square));
+          pretty_type::name<OptionsGroup>() + section_observation_key,
+          iteration_id, sqrt(residual_magnitude_square));
     }
   }
 }
@@ -261,7 +262,7 @@ struct PrepareSolve {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s: Prepare solve\n", get_output(array_index),
-                       Options::name<OptionsGroup>());
+                       pretty_type::name<OptionsGroup>());
     }
 
     db::mutate<Convergence::Tags::IterationId<OptionsGroup>,

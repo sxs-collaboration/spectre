@@ -21,6 +21,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags/Conformal.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -218,7 +219,7 @@ class WrappedGr : public elliptic::analytic_data::AnalyticSolution,
 
   using options = typename GrSolution::options;
   static constexpr Options::String help = GrSolution::help;
-  static std::string name() { return Options::name<GrSolution>(); }
+  static std::string name() { return pretty_type::name<GrSolution>(); }
 
   using GrSolution::GrSolution;
   using PUP::able::register_constructor;
