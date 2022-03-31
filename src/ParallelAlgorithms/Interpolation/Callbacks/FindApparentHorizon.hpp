@@ -26,6 +26,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace StrahlkorperTags {
@@ -55,11 +56,13 @@ namespace callbacks {
 /// that does a FastFlow iteration and triggers another one until convergence.
 ///
 /// Assumes that InterpolationTargetTag contains an additional
-/// struct called `post_horizon_find_callback`, which has a function
+/// type alias called `post_horizon_find_callbacks`, which is a list of
+/// structs, each of which has a function
 ///
 /// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp post_horizon_find_callback_example
 ///
-/// that is called if the FastFlow iteration has converged, and an additional
+/// that is called if the FastFlow iteration has converged.
+/// InterpolationTargetTag also is assumed to contain an additional
 /// struct called `horizon_find_failure_callback`, which has a function
 ///
 /// \snippet ApparentHorizons/Test_ApparentHorizonFinder.cpp horizon_find_failure_callback_example
@@ -130,8 +133,9 @@ namespace callbacks {
 ///
 template <typename InterpolationTargetTag, typename Frame>
 struct FindApparentHorizon {
-  using observation_types = typename InterpolationTargetTag::
-      post_horizon_find_callback::observation_types;
+  using observation_types =
+      typename InterpolationTarget_detail::observation_types_t<
+          typename InterpolationTargetTag::post_horizon_find_callbacks>;
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -332,8 +336,12 @@ struct FindApparentHorizon {
             },
             box);
       }
-      InterpolationTargetTag::post_horizon_find_callback::apply(*box, *cache,
-                                                                temporal_id);
+      tmpl::for_each<
+          typename InterpolationTargetTag::post_horizon_find_callbacks>(
+          [&box, &cache, &temporal_id](auto callback_v) {
+            using callback = tmpl::type_from<decltype(callback_v)>;
+            callback::apply(*box, *cache, temporal_id);
+          });
     }
 
     // Prepare for finding horizon at a new time.

@@ -252,7 +252,7 @@ struct mock_interpolator {
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
-template <typename PostHorizonFindCallback, typename IsTimeDependent,
+template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
           typename TargetFrame>
 struct MockMetavariables {
   static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
@@ -268,7 +268,7 @@ struct MockMetavariables {
         intrp::TargetPoints::ApparentHorizon<AhA, TargetFrame>;
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA, TargetFrame>;
-    using post_horizon_find_callback = PostHorizonFindCallback;
+    using post_horizon_find_callbacks = PostHorizonFindCallbacks;
     using horizon_find_failure_callback = TestHorizonFindFailureCallback;
   };
   using interpolator_source_vars =
@@ -285,7 +285,7 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
-template <typename PostHorizonFindCallback, typename IsTimeDependent,
+template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
           typename Frame = ::Frame::Inertial,
           bool MakeHorizonFinderFailOnPurpose = false>
 void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
@@ -295,7 +295,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const std::array<double, 3>& dimensionless_spin,
                            const size_t max_its = 100_st) {
   using metavars =
-      MockMetavariables<PostHorizonFindCallback, IsTimeDependent, Frame>;
+      MockMetavariables<PostHorizonFindCallbacks, IsTimeDependent, Frame>;
   using interp_component = mock_interpolator<metavars>;
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
@@ -706,8 +706,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
             typename metavars::component_list>(make_not_null(&runner));
   }
 
-  // Make sure function was called three times.
-  CHECK(*test_horizon_called == 3);
+  // Make sure function was called three times per
+  // post_horizon_find_callback.
+  CHECK(*test_horizon_called == 3 * tmpl::size<PostHorizonFindCallbacks>{});
 }
 
 // This tests the entire AH finder including numerical interpolation.
@@ -726,30 +727,36 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ApparentHorizonFinder",
   // Time-independent tests.
   test_schwarzschild_horizon_called = 0;
   test_kerr_horizon_called = 0;
-  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
+  // Note we have 2 post_horizon_find_callbacks as the first template
+  // argument in the line below, just to test that everything works
+  // with 2 post_horizon_find_callbacks.
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>,
+                                   TestSchwarzschildHorizon<Frame::Inertial>>,
                         std::false_type>(&test_schwarzschild_horizon_called, 3,
                                          3, 1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<TestKerrHorizon<Frame::Inertial>, std::false_type>(
-      &test_kerr_horizon_called, 3, 5, 1.1, {{0.12, 0.23, 0.45}});
+  test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Inertial>>,
+                        std::false_type>(&test_kerr_horizon_called, 3, 5, 1.1,
+                                         {{0.12, 0.23, 0.45}});
 
   // Time-dependent tests.
   test_schwarzschild_horizon_called = 0;
   test_kerr_horizon_called = 0;
-  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
                         std::true_type>(&test_schwarzschild_horizon_called, 3,
                                         4, 1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<TestKerrHorizon<Frame::Inertial>, std::true_type>(
-      &test_kerr_horizon_called, 3, 5, 1.1, {{0.12, 0.23, 0.45}});
+  test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Inertial>>,
+                        std::true_type>(&test_kerr_horizon_called, 3, 5, 1.1,
+                                        {{0.12, 0.23, 0.45}});
 
   // Time-dependent tests in grid frame.
   test_schwarzschild_horizon_called = 0;
   test_kerr_horizon_called = 0;
-  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Grid>, std::true_type,
-                        Frame::Grid>(&test_schwarzschild_horizon_called, 3, 6,
-                                     1.0, {{0.0, 0.0, 0.0}});
-  test_apparent_horizon<TestKerrHorizon<Frame::Grid>, std::true_type,
-                        Frame::Grid>(&test_kerr_horizon_called, 3, 7, 1.1,
-                                     {{0.12, 0.23, 0.45}});
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Grid>>,
+                        std::true_type, Frame::Grid>(
+      &test_schwarzschild_horizon_called, 3, 6, 1.0, {{0.0, 0.0, 0.0}});
+  test_apparent_horizon<tmpl::list<TestKerrHorizon<Frame::Grid>>,
+                        std::true_type, Frame::Grid>(
+      &test_kerr_horizon_called, 3, 7, 1.1, {{0.12, 0.23, 0.45}});
 }
 
 // [[OutputRegex, Cannot interpolate onto surface]]
@@ -763,7 +770,7 @@ SPECTRE_TEST_CASE(
   domain::FunctionsOfTime::register_derived_with_charm();
 
   test_schwarzschild_horizon_called = 0;
-  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
                         std::true_type, Frame::Inertial, true>(
       &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}});
 }
@@ -778,7 +785,7 @@ SPECTRE_TEST_CASE("Unit.Interpolator.ApparentHorizonFinder.NotConvergedError",
   domain::FunctionsOfTime::register_derived_with_charm();
 
   test_schwarzschild_horizon_called = 0;
-  test_apparent_horizon<TestSchwarzschildHorizon<Frame::Inertial>,
+  test_apparent_horizon<tmpl::list<TestSchwarzschildHorizon<Frame::Inertial>>,
                         std::true_type, Frame::Inertial, true>(
       &test_schwarzschild_horizon_called, 3, 4, 1.0, {{0.0, 0.0, 0.0}}, 1);
 }

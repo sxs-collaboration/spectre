@@ -266,8 +266,9 @@ struct EvolutionMetavars {
         intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Grid>;
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
-    using post_horizon_find_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA, AhA>;
+    using post_horizon_find_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                                AhA, AhA>>;
   };
 
   struct AhB {
@@ -283,8 +284,9 @@ struct EvolutionMetavars {
         intrp::callbacks::FindApparentHorizon<AhB, ::Frame::Grid>;
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
-    using post_horizon_find_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB, AhB>;
+    using post_horizon_find_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                                AhB, AhB>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA,AhB>;
@@ -381,11 +383,10 @@ struct EvolutionMetavars {
                                          Triggers::time_triggers>>>;
   };
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::push_back<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename AhA::post_horizon_find_callback,
-          typename AhB::post_horizon_find_callback>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::append<tmpl::at<typename factory_creation::factory_classes, Event>,
+                   typename AhA::post_horizon_find_callbacks,
+                   typename AhB::post_horizon_find_callbacks>>;
 
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables

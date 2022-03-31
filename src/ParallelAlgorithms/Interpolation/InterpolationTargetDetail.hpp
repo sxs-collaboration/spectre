@@ -600,6 +600,25 @@ void set_up_interpolation(
       });
 }
 
+namespace detail {
+template <typename Callback>
+struct get_observation_types {
+  using type = typename Callback::observation_types;
+};
+}  // namespace detail
+
+/// Given a list of post_interpolation_callbacks, obtain a list of distinct
+/// observation_types used by them.
+/// @{
+template <typename Callbacks>
+struct observation_types {
+  using type = tmpl::remove_duplicates<tmpl::flatten<
+      tmpl::transform<Callbacks, detail::get_observation_types<tmpl::_1>>>>;
+};
+template <typename Callbacks>
+using observation_types_t = typename observation_types<Callbacks>::type;
+/// @}
+
 CREATE_HAS_TYPE_ALIAS(compute_vars_to_interpolate)
 CREATE_HAS_TYPE_ALIAS_V(compute_vars_to_interpolate)
 

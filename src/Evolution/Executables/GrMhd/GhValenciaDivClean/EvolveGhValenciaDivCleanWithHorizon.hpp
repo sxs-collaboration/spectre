@@ -76,8 +76,9 @@ struct EvolutionMetavars
         intrp::callbacks::FindApparentHorizon<AhA, ::Frame::Inertial>;
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
-    using post_horizon_find_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA, AhA>;
+    using post_horizon_find_callbacks =
+        tmpl::list<intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe,
+                                                                AhA, AhA>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA>;
@@ -116,8 +117,9 @@ struct EvolutionMetavars
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::push_back<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename AhA::post_horizon_find_callback,
+          tmpl::append<
+              tmpl::at<typename factory_creation::factory_classes, Event>,
+              typename AhA::post_horizon_find_callbacks>,
           typename InterpolationTargetTags::post_interpolation_callback...>>;
 
   using dg_registration_list = typename GhValenciaDivCleanTemplateBase<
