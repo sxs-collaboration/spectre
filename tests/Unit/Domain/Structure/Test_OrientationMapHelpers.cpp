@@ -136,9 +136,8 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
       extents.product());
   const std::array<DataVector, 2> oriented_logical_coords = discrete_rotation(
       orientation_map,
-      std::array{
-          get<0>(logical_coordinates(orientation_map.inverse_map()(mesh))),
-          get<1>(logical_coordinates(orientation_map.inverse_map()(mesh)))});
+      std::array{get<0>(logical_coordinates(orientation_map(mesh))),
+                 get<1>(logical_coordinates(orientation_map(mesh)))});
   const auto oriented_mapped_coords = map(
       tnsr::I<DataVector, 2, Frame::ElementLogical>{oriented_logical_coords});
   get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
@@ -232,10 +231,9 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
       extents.product());
   const std::array<DataVector, 3> oriented_logical_coords = discrete_rotation(
       orientation_map,
-      std::array{
-          get<0>(logical_coordinates(orientation_map.inverse_map()(mesh))),
-          get<1>(logical_coordinates(orientation_map.inverse_map()(mesh))),
-          get<2>(logical_coordinates(orientation_map.inverse_map()(mesh)))});
+      std::array{get<0>(logical_coordinates(orientation_map(mesh))),
+                 get<1>(logical_coordinates(orientation_map(mesh))),
+                 get<2>(logical_coordinates(orientation_map(mesh)))});
   const auto oriented_mapped_coords = map(
       tnsr::I<DataVector, 3, Frame::ElementLogical>{oriented_logical_coords});
   get(get<ScalarTensor>(expected_vars)) = oriented_mapped_coords[0];
@@ -336,10 +334,10 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
 
     Variables<tmpl::list<ScalarTensor, Coords<1>>> expected_vars(
         slice_extents.product());
-    get(get<ScalarTensor>(expected_vars)) = get<0>(map_oriented(
-        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh))));
-    get<Coords<1>>(expected_vars) = map_oriented(
-        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh)));
+    get(get<ScalarTensor>(expected_vars)) = get<0>(
+        map_oriented(logical_coordinates(slice_orientation_map(slice_mesh))));
+    get<Coords<1>>(expected_vars) =
+        map_oriented(logical_coordinates(slice_orientation_map(slice_mesh)));
     CHECK(oriented_vars == expected_vars);
 
     check_vector(vars, oriented_vars, slice_extents, sliced_dim,
@@ -411,10 +409,9 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
     const auto logical_coords = logical_coordinates(slice_mesh);
     const std::array<DataVector, 2> oriented_logical_coords = discrete_rotation(
         slice_orientation_map,
-        std::array{get<0>(logical_coordinates(
-                       slice_orientation_map.inverse_map()(slice_mesh))),
-                   get<1>(logical_coordinates(
-                       slice_orientation_map.inverse_map()(slice_mesh)))});
+        std::array{
+            get<0>(logical_coordinates(slice_orientation_map(slice_mesh))),
+            get<1>(logical_coordinates(slice_orientation_map(slice_mesh)))});
     const auto oriented_mapped_coords = map(
         tnsr::I<DataVector, 2, Frame::ElementLogical>{oriented_logical_coords});
 

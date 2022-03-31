@@ -296,20 +296,25 @@ void test_3d() {
       {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
        Direction<3>::lower_eta()}}};
   CHECK(custom3.inverse_map() == custom4);
-  CHECK(Mesh<3>({{4, 5, 3}}, Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto) ==
-        custom3(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto)));
-  CHECK(Mesh<3>({{5, 3, 4}}, Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto) ==
-        custom4(Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::GaussLobatto)));
+  CHECK(custom1.inverse_map().inverse_map() == custom1);
+  CHECK(custom2.inverse_map().inverse_map() == custom2);
+
+  // Test permutations and mesh
+  const Mesh<3> mesh{{{3, 4, 5}},
+                     Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
+  CHECK(custom3(mesh) == Mesh<3>({{5, 3, 4}}, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto));
+  CHECK(custom4(mesh) == Mesh<3>({{4, 5, 3}}, Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto));
+  CHECK(custom3.permute_to_neighbor(std::array<int, 3>{{4, -8, 12}}) ==
+        std::array<int, 3>{{12, 4, -8}});
+  CHECK(custom4.permute_to_neighbor(std::array<int, 3>{{4, -8, 12}}) ==
+        std::array<int, 3>{{-8, 12, 4}});
   CHECK(std::array<int, 3>{{-8, 12, 4}} ==
         custom3.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
   CHECK(std::array<int, 3>{{12, 4, -8}} ==
         custom4.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
-  CHECK(custom1.inverse_map().inverse_map() == custom1);
-  CHECK(custom2.inverse_map().inverse_map() == custom2);
 }
 
 }  // namespace

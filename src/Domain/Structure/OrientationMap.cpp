@@ -83,9 +83,9 @@ std::array<SegmentId, VolumeDim> OrientationMap<VolumeDim>::operator()(
 template <size_t VolumeDim>
 Mesh<VolumeDim> OrientationMap<VolumeDim>::operator()(
     const Mesh<VolumeDim>& mesh) const {
-  return Mesh<VolumeDim>(this->permute_from_neighbor(mesh.extents().indices()),
-                         this->permute_from_neighbor(mesh.basis()),
-                         this->permute_from_neighbor(mesh.quadrature()));
+  return Mesh<VolumeDim>(this->permute_to_neighbor(mesh.extents().indices()),
+                         this->permute_to_neighbor(mesh.basis()),
+                         this->permute_to_neighbor(mesh.quadrature()));
 }
 
 template <size_t VolumeDim>

@@ -23,8 +23,10 @@ class er;
  * \ingroup ComputationalDomainGroup
  * \brief A mapping of the logical coordinate axes of a host to the logical
  * coordinate axes of a neighbor of the host.
- * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
+ *
+ * Given a `size_t dimension`, a `Direction`, a `SegmentId`, or a `Mesh` of the
  * host, an `OrientationMap` will give the corresponding value in the neighbor.
+ *
  * \tparam VolumeDim the dimension of the blocks.
  *
  * See the [tutorial](@ref tutorial_orientations) for information on how
@@ -71,6 +73,15 @@ class OrientationMap {
   Mesh<VolumeDim> operator()(const Mesh<VolumeDim>& mesh) const;
 
   /// An array whose elements are permuted such that
+  /// `result[this->operator()(d)] = array_to_permute[d]`.
+  ///
+  /// \note the permutation depends only on how the dimension is mapped
+  /// and ignores the side of the mapped direction.
+  template <typename T>
+  std::array<T, VolumeDim> permute_to_neighbor(
+      const std::array<T, VolumeDim>& array_to_permute) const;
+
+  /// An array whose elements are permuted such that
   /// `result[d] = array_in_neighbor[this->operator()(d)]`
   ///
   /// \note the permutation depends only on how the dimension is mapped
@@ -105,6 +116,21 @@ template <size_t VolumeDim>
 bool operator!=(const OrientationMap<VolumeDim>& lhs,
                 const OrientationMap<VolumeDim>& rhs) {
   return not(lhs == rhs);
+}
+
+template <size_t VolumeDim>
+template <typename T>
+std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_to_neighbor(
+    const std::array<T, VolumeDim>& array_to_permute) const {
+  std::array<T, VolumeDim> array_in_neighbor = array_to_permute;
+  if (is_aligned_ or VolumeDim <= 1) {
+    return array_in_neighbor;
+  }
+  for (size_t i = 0; i < VolumeDim; i++) {
+    gsl::at(array_in_neighbor, this->operator()(i)) =
+        gsl::at(array_to_permute, i);
+  }
+  return array_in_neighbor;
 }
 
 template <size_t VolumeDim>
