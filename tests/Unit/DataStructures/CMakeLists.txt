@@ -26,6 +26,7 @@ set(LIBRARY_SOURCES
   Test_IndexIterator.cpp
   Test_LeviCivitaIterator.cpp
   Test_LinkedMessageQueue.cpp
+  Test_MathWrapper.cpp
   Test_ModalVector.cpp
   Test_ModalVectorInhomogeneousOperations.cpp
   Test_MoreComplexDiagonalModalOperatorMath.cpp
@@ -57,6 +58,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
+  DataStructuresHelpers
   Domain
   Options
   Utilities

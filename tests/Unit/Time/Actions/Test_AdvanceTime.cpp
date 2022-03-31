@@ -140,7 +140,8 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.AdvanceTime", "[Unit][Time][Actions]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
+                                        TimeSteppers::RungeKutta3>();
   const Slab slab(0., 1.);
   check_rk3(slab.start(), slab.duration() / 2);
   check_rk3(slab.end(), -slab.duration() / 2);

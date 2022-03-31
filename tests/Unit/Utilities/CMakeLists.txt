@@ -9,12 +9,12 @@ set(LIBRARY_SOURCES
   Test_Blas.cpp
   Test_BoostHelpers.cpp
   Test_CachedFunction.cpp
+  Test_CallWithDynamicType.cpp
   Test_CloneUniquePtrs.cpp
   Test_ConstantExpressions.cpp
   Test_ContainerHelpers.cpp
   Test_DereferenceWrapper.cpp
   Test_EqualWithinRoundoff.cpp
-  Test_FakeVirtual.cpp
   Test_FileSystem.cpp
   Test_Formaline.cpp
   Test_FractionUtilities.cpp

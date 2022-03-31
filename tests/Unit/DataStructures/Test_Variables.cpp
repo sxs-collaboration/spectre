@@ -23,6 +23,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/DataStructures/MathWrapper.hpp"
 #include "Helpers/DataStructures/TestTags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/GetOutput.hpp"
@@ -926,6 +927,26 @@ void test_variables_equal_within_roundoff() {
   CHECK(equal_within_roundoff(vars, 0., 1.e-12));
 }
 
+template <typename VectorType>
+void test_math_wrapper() {
+  INFO(pretty_type::short_name<VectorType>());
+  MAKE_GENERATOR(gen);
+  using value_type = typename VectorType::value_type;
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> value_dist{
+      -10.0, 10.0};
+  UniformCustomDistribution<size_t> sdist{5, 20};
+  const size_t num_points = sdist(gen);
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                    TestHelpers::Tags::Scalar<VectorType>>>;
+  const auto vars1 = make_with_random_values<Vars>(
+      make_not_null(&gen), make_not_null(&value_dist), num_points);
+  const auto vars2 = make_with_random_values<Vars>(
+      make_not_null(&gen), make_not_null(&value_dist), num_points);
+  const auto scalar = make_with_random_values<typename Vars::value_type>(
+      make_not_null(&gen), make_not_null(&value_dist), num_points);
+  TestHelpers::MathWrapper::test_type(vars1, vars2, scalar);
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   {
     INFO("Test Variables construction, access, and assignment");
@@ -1005,6 +1026,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_equal_within_roundoff<ComplexModalVector>();
     test_variables_equal_within_roundoff<DataVector>();
     test_variables_equal_within_roundoff<ModalVector>();
+  }
+
+  {
+    INFO("Test MathWrapper");
+    test_math_wrapper<ComplexDataVector>();
+    test_math_wrapper<ComplexModalVector>();
+    test_math_wrapper<DataVector>();
+    test_math_wrapper<ModalVector>();
   }
 
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");

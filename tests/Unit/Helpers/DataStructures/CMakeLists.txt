@@ -4,6 +4,7 @@
 set(LIBRARY "DataStructuresHelpers")
 
 set(LIBRARY_SOURCES
+  MathWrapper.cpp
   RandomUnitNormal.cpp
   )
 
@@ -13,6 +14,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   DataStructures
+  Framework
   Utilities
   )
 

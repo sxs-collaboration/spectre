@@ -6,7 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \ingroup EventsAndTriggersGroup

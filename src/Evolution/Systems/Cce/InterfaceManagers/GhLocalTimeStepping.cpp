@@ -183,7 +183,8 @@ auto GhLocalTimeStepping::retrieve_and_remove_first_ready_gh_data()
   if (boundary_history_.size() > 0 and
       (boundary_history_.end() - 1)->value() <= first_request and
       latest_next_.substep_time().value() >= first_request) {
-    gh_variables latest_values{};
+    gh_variables latest_values(
+        boundary_history_.most_recent_value().number_of_grid_points());
     time_stepper_.dense_update_u(make_not_null(&latest_values),
                                  boundary_history_, first_request);
     // NOLINTNEXTLINE(performance-move-const-arg)

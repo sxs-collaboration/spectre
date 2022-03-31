@@ -11,6 +11,7 @@
 #include <deque>
 #include <initializer_list>
 
+#include "DataStructures/MathWrapper.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
@@ -20,6 +21,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -78,10 +80,12 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   CHECK_FALSE(can_change(end, start, mid));
   CHECK_FALSE(can_change(end, mid, start));
 
-  TestHelpers::test_creation<std::unique_ptr<TimeStepper>>(
+  TestHelpers::test_factory_creation<TimeStepper,
+                                     TimeSteppers::AdamsBashforthN>(
       "AdamsBashforthN:\n"
       "  Order: 3");
-  TestHelpers::test_creation<std::unique_ptr<LtsTimeStepper>>(
+  TestHelpers::test_factory_creation<LtsTimeStepper,
+                                     TimeSteppers::AdamsBashforthN>(
       "AdamsBashforthN:\n"
       "  Order: 3");
 
@@ -166,14 +170,18 @@ class NCd {
   NCd& operator=(NCd&&) = default;
   ~NCd() = default;
 
-  double operator()() const { return x_; }
+  const double& operator()() const { return x_; }
+  double& operator()() { return x_; }
 
  private:
   double x_;
 };
 
-NCd operator*(double a, const NCd& b) { return NCd(a * b()); }
-NCd& operator+=(NCd& a, NCd&& b) { return a = NCd(a() + b()); }
+auto make_math_wrapper(const gsl::not_null<NCd*> x) {
+  return ::make_math_wrapper(&(*x)());
+}
+
+auto make_math_wrapper(const NCd& x) { return ::make_math_wrapper(x()); }
 
 // Random numbers
 constexpr double c10 = 0.949716728952811;

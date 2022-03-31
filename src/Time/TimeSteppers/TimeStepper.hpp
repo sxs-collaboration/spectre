@@ -8,67 +8,87 @@
 #include <pup.h>
 #include <type_traits>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/MathWrapper.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Time/History.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"
 
 /// \cond
 class TimeDelta;
-namespace TimeSteppers {
-class AdamsBashforthN;  // IWYU pragma: keep
-template <typename LocalVars, typename RemoteVars, typename CouplingResult>
-class BoundaryHistory;
-template <typename Vars>
-class History;
-}  // namespace TimeSteppers
+class TimeStepId;
 /// \endcond
 
 /// \ingroup TimeSteppersGroup
 ///
 /// Holds classes that take time steps.
-namespace TimeSteppers {
-class AdamsBashforthN;  // IWYU pragma: keep
-class Cerk2;
-class Cerk3;
-class Cerk4;
-class Cerk5;
-class DormandPrince5;
-class RungeKutta3;  // IWYU pragma: keep
-class RungeKutta4;
-}  // namespace TimeSteppers
+namespace TimeSteppers {}
 
-namespace TimeStepper_detail {
-DEFINE_FAKE_VIRTUAL(can_change_step_size)
-DEFINE_FAKE_VIRTUAL(dense_update_u)
-DEFINE_FAKE_VIRTUAL(update_u)
-}  // namespace TimeStepper_detail
+/// \cond
+#define TIME_STEPPER_WRAPPED_TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define TIME_STEPPER_DERIVED_CLASS(data) BOOST_PP_TUPLE_ELEM(1, data)
+/// \endcond
 
 /// \ingroup TimeSteppersGroup
 ///
 /// Abstract base class for TimeSteppers.
+///
+/// Several of the member functions of this class are templated and
+/// perform type erasure before forwarding their arguments to the
+/// derived classes.  This is implemented using the macros \ref
+/// TIME_STEPPER_DECLARE_OVERLOADS, which must be placed in a private
+/// section of the class body, and
+/// TIME_STEPPER_DEFINE_OVERLOADS(derived_class), which must be placed
+/// in the cpp file.
 class TimeStepper : public PUP::able {
  public:
-  using Inherit = TimeStepper_detail::FakeVirtualInherit_can_change_step_size<
-      TimeStepper_detail::FakeVirtualInherit_dense_update_u<
-          TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>>;
-  using creatable_classes =
-      tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::Cerk2,
-                 TimeSteppers::Cerk3, TimeSteppers::Cerk4, TimeSteppers::Cerk5,
-                 TimeSteppers::DormandPrince5, TimeSteppers::RungeKutta3,
-                 TimeSteppers::RungeKutta4>;
-
   WRAPPED_PUPable_abstract(TimeStepper);  // NOLINT
 
+  /// \cond
+#define TIME_STEPPER_DECLARE_VIRTUALS_IMPL(_, data)                        \
+  virtual void update_u_forward(                                           \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const gsl::not_null<                                                 \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const = 0;                               \
+  virtual bool update_u_forward(                                           \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,       \
+      const gsl::not_null<                                                 \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const = 0;                               \
+  virtual bool dense_update_u_forward(                                     \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history,                                                         \
+      const double time) const = 0;                                        \
+  virtual bool can_change_step_size_forward(                               \
+      const TimeStepId& time_id,                                           \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history) const = 0;
+
+  GENERATE_INSTANTIATIONS(TIME_STEPPER_DECLARE_VIRTUALS_IMPL,
+                          (MATH_WRAPPER_TYPES))
+#undef TIME_STEPPER_DECLARE_VIRTUALS_IMPL
+  /// \endcond
+
   /// Add the change for the current substep to u.
+  ///
+  /// Derived classes must implement this as a function with signature
+  ///
+  /// ```
+  /// template <typename T>
+  /// void update_u_impl(gsl::not_null<T*> u,
+  ///                    gsl::not_null<UntypedHistory<T>*> history,
+  ///                    const TimeDelta& time_step) const;
+  /// ```
   template <typename Vars>
   void update_u(const gsl::not_null<Vars*> u,
                 const gsl::not_null<TimeSteppers::History<Vars>*> history,
                 const TimeDelta& time_step) const {
-    return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
-        this, u, history, time_step);
+    return update_u_forward(&*make_math_wrapper(u), &*history, time_step);
   }
 
   /// Add the change for the current substep to u; report the error measure when
@@ -79,13 +99,24 @@ class TimeStepper : public PUP::able {
   /// when a sufficient number of steps are available in the `history` to
   /// compare two orders of step. Whenever the error measure is unavailable,
   /// `u_error` is unchanged and the function return is `false`.
+  ///
+  /// Derived classes must implement this as a function with signature
+  ///
+  /// ```
+  /// template <typename T>
+  /// bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
+  ///                    gsl::not_null<UntypedHistory<T>*> history,
+  ///                    const TimeDelta& time_step) const;
+  /// ```
   template <typename Vars, typename ErrVars>
   bool update_u(const gsl::not_null<Vars*> u,
                 const gsl::not_null<ErrVars*> u_error,
                 const gsl::not_null<TimeSteppers::History<Vars>*> history,
                 const TimeDelta& time_step) const {
-    return TimeStepper_detail::fake_virtual_update_u<creatable_classes>(
-        this, u, u_error, history, time_step);
+    static_assert(
+        std::is_same_v<math_wrapper_type<Vars>, math_wrapper_type<ErrVars>>);
+    return update_u_forward(&*make_math_wrapper(u),
+                            &*make_math_wrapper(u_error), &*history, time_step);
   }
 
   /// Compute the solution value at a time between steps.  To evaluate
@@ -93,12 +124,20 @@ class TimeStepper : public PUP::able {
   /// the step containing the time.  The function returns true on
   /// success, otherwise the call should be retried after the next
   /// substep.
+  ///
+  /// Derived classes must implement this as a function with signature
+  ///
+  /// ```
+  /// template <typename T>
+  /// bool dense_update_u_impl(
+  ///     gsl::not_null<T*> u,
+  ///     const UntypedHistory<T>& history, double time) const;
+  /// ```
   template <typename Vars>
   bool dense_update_u(const gsl::not_null<Vars*> u,
                       const TimeSteppers::History<Vars>& history,
                       const double time) const {
-    return TimeStepper_detail::fake_virtual_dense_update_u<creatable_classes>(
-        this, u, history, time);
+    return dense_update_u_forward(&*make_math_wrapper(u), history, time);
   }
 
   /// The convergence order of the stepper
@@ -138,130 +177,91 @@ class TimeStepper : public PUP::able {
 
   /// Whether a change in the step size is allowed before taking
   /// a step.
+  ///
+  /// Derived classes must implement this as a function with signature
+  ///
+  /// ```
+  /// template <typename T>
+  /// bool can_change_step_size_impl(const TimeStepId& time_id,
+  ///                                const UntypedHistory<T>& history) const;
+  /// ```
   template <typename Vars>
   bool can_change_step_size(const TimeStepId& time_id,
                             const TimeSteppers::History<Vars>& history) const {
-    return TimeStepper_detail::fake_virtual_can_change_step_size<
-        creatable_classes>(this, time_id, history);
+    return can_change_step_size_forward(time_id, history);
   }
 };
 
-// LtsTimeStepper cannot be split out into its own file because the
-// LtsTimeStepper -> TimeStepper -> AdamsBashforthN -> LtsTimeStepper
-// include loop causes AdamsBashforthN to be defined before its base
-// class if LtsTimeStepper is included first.
-namespace LtsTimeStepper_detail {
-DEFINE_FAKE_VIRTUAL(boundary_dense_output)
-DEFINE_FAKE_VIRTUAL(add_boundary_delta)
-}  // namespace LtsTimeStepper_detail
+/// \cond
+#define TIME_STEPPER_DECLARE_OVERLOADS_IMPL(_, data)                       \
+  void update_u_forward(                                                   \
+      gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
+      gsl::not_null<                                                       \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const override;                          \
+  bool update_u_forward(                                                   \
+      gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
+      gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,             \
+      gsl::not_null<                                                       \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const override;                          \
+  bool dense_update_u_forward(                                             \
+      gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history,                                                         \
+      double time) const override;                                         \
+  bool can_change_step_size_forward(                                       \
+      const TimeStepId& time_id,                                           \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history) const override;
+
+#define TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                        \
+  void TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const gsl::not_null<                                                 \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const {                                  \
+    return update_u_impl(u, history, time_step);                           \
+  }                                                                        \
+  bool TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,       \
+      const gsl::not_null<                                                 \
+          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
+          history,                                                         \
+      const TimeDelta& time_step) const {                                  \
+    return update_u_impl(u, u_error, history, time_step);                  \
+  }                                                                        \
+  bool TIME_STEPPER_DERIVED_CLASS(data)::dense_update_u_forward(           \
+      const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history,                                                         \
+      const double time) const {                                           \
+    return dense_update_u_impl(u, history, time);                          \
+  }                                                                        \
+  bool TIME_STEPPER_DERIVED_CLASS(data)::can_change_step_size_forward(     \
+      const TimeStepId& time_id,                                           \
+      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
+          history) const {                                                 \
+    return can_change_step_size_impl(time_id, history);                    \
+  }
+/// \endcond
 
 /// \ingroup TimeSteppersGroup
-///
-/// Base class for TimeSteppers with local time-stepping support,
-/// derived from TimeStepper.
-class LtsTimeStepper : public TimeStepper::Inherit {
- public:
-  using Inherit =
-      LtsTimeStepper_detail::FakeVirtualInherit_boundary_dense_output<
-          LtsTimeStepper_detail::FakeVirtualInherit_add_boundary_delta<
-              LtsTimeStepper>>;
-  // When you add a class here, remember to add it to TimeStepper as well.
-  using creatable_classes = tmpl::list<TimeSteppers::AdamsBashforthN>;
+/// Macro declaring overloaded detail methods in classes derived from
+/// TimeStepper.  Must be placed in a private section of the class
+/// body.
+#define TIME_STEPPER_DECLARE_OVERLOADS                         \
+  GENERATE_INSTANTIATIONS(TIME_STEPPER_DECLARE_OVERLOADS_IMPL, \
+                          (MATH_WRAPPER_TYPES))
 
-  WRAPPED_PUPable_abstract(LtsTimeStepper);  // NOLINT
-
-  // These two are defined as separate type aliases to keep the
-  // doxygen page width somewhat under control.
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  using BoundaryHistoryType = TimeSteppers::BoundaryHistory<
-      LocalVars, RemoteVars,
-      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
-
-  /// Return type of boundary-related functions.  The coupling returns
-  /// the derivative of the variables, but this is multiplied by the
-  /// time step so the return type should not have `dt` prefixes.
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  using BoundaryReturn = db::unprefix_variables<
-      std::result_of_t<const Coupling&(LocalVars, RemoteVars)>>;
-
-  /// \brief Compute the change in a boundary quantity due to the
-  /// coupling on the interface.
-  ///
-  /// The coupling function `coupling` should take the local and
-  /// remote flux data and compute the derivative of the boundary
-  /// quantity.  These values may be used to form a linear combination
-  /// internally, so the result should have appropriate mathematical
-  /// operators defined to allow that.
-  ///
-  /// \note
-  /// Unlike the `update_u` methods, which overwrite the `result`
-  /// argument, this function adds the result to the existing value.
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  void add_boundary_delta(
-      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
-          result,
-      const gsl::not_null<BoundaryHistoryType<LocalVars, RemoteVars, Coupling>*>
-          history,
-      const TimeDelta& time_step, const Coupling& coupling) const {
-    return LtsTimeStepper_detail::fake_virtual_add_boundary_delta<
-        creatable_classes>(this, result, history, time_step, coupling);
-  }
-
-  template <typename LocalVars, typename RemoteVars, typename Coupling>
-  void boundary_dense_output(
-      const gsl::not_null<BoundaryReturn<LocalVars, RemoteVars, Coupling>*>
-          result,
-      const BoundaryHistoryType<LocalVars, RemoteVars, Coupling>& history,
-      const double time, const Coupling& coupling) const {
-    return LtsTimeStepper_detail::fake_virtual_boundary_dense_output<
-        creatable_classes>(this, result, history, time, coupling);
-  }
-
-  /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps() const final { return 1; }
-
-  /// Substep LTS integrators are not supported, so this is always 1.
-  uint64_t number_of_substeps_for_error() const final { return 1; }
-
-  TimeStepId next_time_id_for_error(const TimeStepId& current_id,
-                                    const TimeDelta& time_step) const final {
-    return next_time_id(current_id, time_step);
-  }
-
-  /// \cond
-  // FakeVirtual forces derived classes to override the fake virtual
-  // methods.  Here the base class method is actually what we want
-  // because we are not a most-derived class, so we forward to the
-  // TimeStepper version.
-  template <typename Vars>
-  void update_u(const gsl::not_null<Vars*> u,
-                const gsl::not_null<TimeSteppers::History<Vars>*> history,
-                const TimeDelta& time_step) const {
-    return TimeStepper::update_u(u, history, time_step);
-  }
-
-  template <typename Vars, typename ErrVars>
-  bool update_u(const gsl::not_null<Vars*> u,
-                const gsl::not_null<ErrVars*> u_error,
-                const gsl::not_null<TimeSteppers::History<Vars>*> history,
-                const TimeDelta& time_step) const {
-    return TimeStepper::update_u(u, u_error, history, time_step);
-  }
-
-  template <typename Vars>
-  bool can_change_step_size(const TimeStepId& time_id,
-                            const TimeSteppers::History<Vars>& history) const {
-    return TimeStepper::can_change_step_size(time_id, history);
-  }
-  /// \endcond
-};
-
-
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"  // IWYU pragma: keep
-#include "Time/TimeSteppers/Cerk2.hpp"
-#include "Time/TimeSteppers/Cerk3.hpp"
-#include "Time/TimeSteppers/Cerk4.hpp"
-#include "Time/TimeSteppers/Cerk5.hpp"
-#include "Time/TimeSteppers/DormandPrince5.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"  // IWYU pragma: keep
-#include "Time/TimeSteppers/RungeKutta4.hpp"  // IWYU pragma: keep
+/// \ingroup TimeSteppersGroup
+/// Macro defining overloaded detail methods in classes derived from
+/// TimeStepper.  Must be placed in the cpp file for the derived
+/// class.
+#define TIME_STEPPER_DEFINE_OVERLOADS(derived_class)          \
+  GENERATE_INSTANTIATIONS(TIME_STEPPER_DEFINE_OVERLOADS_IMPL, \
+                          (MATH_WRAPPER_TYPES), (derived_class))

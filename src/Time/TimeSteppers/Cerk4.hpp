@@ -22,8 +22,8 @@
 /// \cond
 struct TimeStepId;
 namespace TimeSteppers {
-template <typename Vars>
-class History;
+template <typename T>
+class UntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -53,7 +53,7 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.4367588951002057.
  */
-class Cerk4 : public TimeStepper::Inherit {
+class Cerk4 : public TimeStepper {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -65,19 +65,6 @@ class Cerk4 : public TimeStepper::Inherit {
   Cerk4(Cerk4&&) = default;
   Cerk4& operator=(Cerk4&&) = default;
   ~Cerk4() override = default;
-
-  template <typename Vars>
-  void update_u(gsl::not_null<Vars*> u, gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars, typename ErrVars>
-  bool update_u(gsl::not_null<Vars*> u, gsl::not_null<ErrVars*> u_error,
-                gsl::not_null<History<Vars>*> history,
-                const TimeDelta& time_step) const;
-
-  template <typename Vars>
-  bool dense_update_u(gsl::not_null<Vars*> u, const History<Vars>& history,
-                      double time) const;
 
   size_t order() const override;
 
@@ -97,21 +84,31 @@ class Cerk4 : public TimeStepper::Inherit {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
-  template <typename Vars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<Vars>& /*history*/) const {
-    return time_id.substep() == 0;
-  }
-
   WRAPPED_PUPable_decl_template(Cerk4);  // NOLINT
 
   explicit Cerk4(CkMigrateMessage* /*msg*/);
 
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) override { TimeStepper::Inherit::pup(p); }
-
  private:
+  template <typename T>
+  void update_u_impl(gsl::not_null<T*> u,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
+                     gsl::not_null<UntypedHistory<T>*> history,
+                     const TimeDelta& time_step) const;
+
+  template <typename T>
+  bool dense_update_u_impl(gsl::not_null<T*> u,
+                           const UntypedHistory<T>& history, double time) const;
+
+  template <typename T>
+  bool can_change_step_size_impl(const TimeStepId& time_id,
+                                 const UntypedHistory<T>& history) const;
+
+  TIME_STEPPER_DECLARE_OVERLOADS
+
   static constexpr double a2_ = 1.0 / 6.0;
   static constexpr std::array<double, 2> a3_{{44.0 / 1369.0, 363.0 / 1369.0}};
   static constexpr std::array<double, 3> a4_{
@@ -154,127 +151,5 @@ inline bool constexpr operator==(const Cerk4& /*lhs*/, const Cerk4& /*rhs*/) {
 
 inline bool constexpr operator!=(const Cerk4& /*lhs*/, const Cerk4& /*rhs*/) {
   return false;
-}
-
-template <typename Vars>
-void Cerk4::update_u(const gsl::not_null<Vars*> u,
-                     const gsl::not_null<History<Vars>*> history,
-                     const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-             << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
-
-  const auto& u0 = history->most_recent_value();
-  const double dt = time_step.value();
-
-  switch (substep) {
-    case 0: {
-      *u = u0 + (a2_ * dt) * history->begin().derivative();
-      break;
-    }
-    case 1: {
-      *u = u0 + ((a3_[0] - a2_) * dt) * history->begin().derivative() +
-           (a3_[1] * dt) * (history->begin() + 1).derivative();
-      break;
-    }
-    case 2: {
-      *u = u0 + ((a4_[0] - a3_[0]) * dt) * history->begin().derivative() +
-           ((a4_[1] - a3_[1]) * dt) * (history->begin() + 1).derivative() +
-           (a4_[2] * dt) * (history->begin() + 2).derivative();
-      break;
-    }
-    case 3: {
-      *u = u0 + ((a5_[0] - a4_[0]) * dt) * history->begin().derivative() +
-           ((a5_[1] - a4_[1]) * dt) * (history->begin() + 1).derivative() +
-           ((a5_[2] - a4_[2]) * dt) * (history->begin() + 2).derivative() +
-           (a5_[3] * dt) * (history->begin() + 3).derivative();
-      break;
-    }
-    case 4: {
-      *u = u0 + ((a6_[0] - a5_[0]) * dt) * history->begin().derivative() +
-           ((a6_[1] - a5_[1]) * dt) * (history->begin() + 1).derivative() +
-           ((a6_[2] - a5_[2]) * dt) * (history->begin() + 2).derivative() +
-           ((a6_[3] - a5_[3]) * dt) * (history->begin() + 3).derivative() +
-           (a6_[4] * dt) * (history->begin() + 4).derivative();
-      break;
-    }
-    default:
-      ERROR("Bad substep value in CERK4: " << substep);
-  }
-}
-
-template <typename Vars, typename ErrVars>
-bool Cerk4::update_u(const gsl::not_null<Vars*> u,
-                     const gsl::not_null<ErrVars*> u_error,
-                     const gsl::not_null<History<Vars>*> history,
-                     const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-             << history->integration_order());
-  update_u(u, history, time_step);
-  const size_t current_substep = (history->end() - 1).time_step_id().substep();
-  if (current_substep == 4) {
-    const double dt = time_step.value();
-    *u_error = ((e_[0] - a6_[0]) * dt) * history->begin().derivative() +
-               ((e_[1] - a6_[1]) * dt) * (history->begin() + 1).derivative() +
-               ((e_[2] - a6_[2]) * dt) * (history->begin() + 2).derivative() +
-               ((e_[3] - a6_[3]) * dt) * (history->begin() + 3).derivative() -
-               (a6_[4] * dt) * (history->begin() + 4).derivative();
-    return true;
-  }
-  return false;
-}
-
-template <typename Vars>
-bool Cerk4::dense_update_u(const gsl::not_null<Vars*> u,
-                           const History<Vars>& history,
-                           const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
-    return false;
-  }
-  const double t0 = history[0].value();
-  const double t_end = history[history.size() - 1].value();
-  if (time == t_end) {
-    // Special case necessary for dense output at the initial time,
-    // before taking a step.
-    *u = history.most_recent_value();
-    return true;
-  }
-  const evolution_less<double> before{t_end > t0};
-  if (history.size() == 1 or before(t_end, time)) {
-    return false;
-  }
-  const double dt = t_end - t0;
-  const double output_fraction = (time - t0) / dt;
-  ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
-                                     << time << ", but already progressed past "
-                                     << t0);
-  ASSERT(output_fraction <= 1.0, "Requested time ("
-                                     << time << ") not within step [" << t0
-                                     << ", " << t0 + dt << "]");
-
-  const auto& u_n_plus_1 = history.most_recent_value();
-
-  // We need the following: k1, k2, k3, k4, k5, k6
-  const auto& k1 = history.begin().derivative();
-  const auto& k2 = (history.begin() + 1).derivative();
-  const auto& k3 = (history.begin() + 2).derivative();
-  const auto& k4 = (history.begin() + 3).derivative();
-  const auto& k5 = (history.begin() + 4).derivative();
-  const auto& k6 = (history.begin() + 5).derivative();
-
-  *u = u_n_plus_1 + (dt * evaluate_polynomial(b1_, output_fraction)) * k1 +
-       (dt * b2_) * k2 +  //
-       (dt * evaluate_polynomial(b3_, output_fraction)) * k3 +
-       (dt * evaluate_polynomial(b4_, output_fraction)) * k4 +
-       (dt * evaluate_polynomial(b5_, output_fraction)) * k5 +
-       (dt * evaluate_polynomial(b6_, output_fraction)) * k6;
-  return true;
 }
 }  // namespace TimeSteppers

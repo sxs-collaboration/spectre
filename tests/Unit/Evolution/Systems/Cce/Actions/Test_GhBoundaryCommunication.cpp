@@ -44,7 +44,7 @@
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -183,7 +183,7 @@ struct test_metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
                   "[Unit][Cce]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::DormandPrince5>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component = mock_gh_worldtube_boundary<test_metavariables>;
   const size_t number_of_radial_points = 10;

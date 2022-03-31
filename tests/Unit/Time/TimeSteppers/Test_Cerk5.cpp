@@ -25,7 +25,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Cerk5", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 5_st);
 
-  TestHelpers::test_creation<std::unique_ptr<TimeStepper>>("Cerk5");
+  TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Cerk5>("Cerk5");
   test_serialization(stepper);
   test_serialization_via_base<TimeStepper, TimeSteppers::Cerk5>();
   // test operator !=

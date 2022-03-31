@@ -24,6 +24,8 @@ spectre_target_headers(
   Cerk4.hpp
   Cerk5.hpp
   DormandPrince5.hpp
+  Factory.hpp
+  LtsTimeStepper.hpp
   RungeKutta3.hpp
   RungeKutta4.hpp
   TimeStepper.hpp

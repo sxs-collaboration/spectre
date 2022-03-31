@@ -66,6 +66,9 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -888,7 +891,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
                                  UseMovingMesh, HasPrims>;
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   Parallel::register_factory_classes_with_charm<metavars>();
 

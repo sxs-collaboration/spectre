@@ -8,6 +8,7 @@ add_spectre_library(${LIBRARY})
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  History.cpp
   SelfStart.cpp
   Slab.cpp
   Time.cpp
@@ -37,6 +38,7 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   Boost::boost
+  DataStructures
   ErrorHandling
   EventsAndTriggers
   Options

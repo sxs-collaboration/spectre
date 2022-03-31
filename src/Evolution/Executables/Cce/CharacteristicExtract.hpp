@@ -39,7 +39,8 @@
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/TimeSteppers/Factory.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -148,6 +149,7 @@ struct EvolutionMetavars {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
+        tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
                               StepChoosers::Increase<StepChooserUse::LtsStep>,
@@ -207,7 +209,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &Parallel::register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_bondi_input_tags>>,
     &Parallel::register_derived_classes_with_charm<Cce::WorldtubeDataManager>,
-    &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_derived_classes_with_charm<intrp::SpanInterpolator>,
     &Parallel::register_derived_classes_with_charm<
         Cce::Solutions::WorldtubeData>,

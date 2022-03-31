@@ -11,7 +11,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

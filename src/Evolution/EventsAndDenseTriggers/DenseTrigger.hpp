@@ -12,7 +12,7 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Tags.hpp"
-#include "Utilities/FakeVirtual.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 
 /// \cond
 namespace Parallel {

@@ -8,8 +8,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/FakeVirtual.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 

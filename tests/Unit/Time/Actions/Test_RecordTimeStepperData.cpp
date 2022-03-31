@@ -143,10 +143,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   const auto& new_history = db::get<history_tag>(box);
   CHECK(new_history.size() == 2);
   CHECK(*new_history.begin() == slab.end());
-  CHECK(new_history.begin().derivative() == 3.);
+  CHECK(*new_history.begin().derivative() == 3.);
   CHECK(*(new_history.begin() + 1) == slab.start());
   CHECK(new_history.most_recent_value() == 4.);
-  CHECK((new_history.begin() + 1).derivative() == 5.);
+  CHECK(*(new_history.begin() + 1).derivative() == 5.);
 
   const auto& new_history_from_template_specified_variables_box =
       db::get<alternative_history_tag>(template_specified_variables_box);
@@ -154,12 +154,12 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   CHECK(*new_history_from_template_specified_variables_box.begin() ==
         slab.end());
   CHECK(
-      new_history_from_template_specified_variables_box.begin().derivative() ==
+      *new_history_from_template_specified_variables_box.begin().derivative() ==
       3.);
   CHECK(*(new_history_from_template_specified_variables_box.begin() + 1) ==
         slab.start());
   CHECK(new_history_from_template_specified_variables_box.most_recent_value() ==
         4.);
-  CHECK((new_history_from_template_specified_variables_box.begin() + 1)
-            .derivative() == 5.);
+  CHECK(*(new_history_from_template_specified_variables_box.begin() + 1)
+             .derivative() == 5.);
 }

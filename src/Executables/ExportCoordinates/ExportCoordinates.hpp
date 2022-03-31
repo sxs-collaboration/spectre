@@ -50,6 +50,7 @@
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/TimeSteppers/Factory.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Time/Triggers/SlabCompares.hpp"
 #include "Time/Triggers/TimeCompares.hpp"
@@ -224,6 +225,7 @@ struct Metavariables {
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>,
         tmpl::pair<StepChooser<StepChooserUse::Slab>, tmpl::list<>>,
         tmpl::pair<Event, tmpl::list<Events::Completion>>,
+        tmpl::pair<TimeStepper, TimeSteppers::time_steppers>,
         tmpl::pair<Trigger,
                    tmpl::list<Triggers::SlabCompares, Triggers::TimeCompares>>>;
   };
@@ -298,7 +300,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<TimeStepper>,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

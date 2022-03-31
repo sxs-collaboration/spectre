@@ -43,6 +43,7 @@ spectre_target_headers(
   IndexIterator.hpp
   LeviCivitaIterator.hpp
   LinkedMessageQueue.hpp
+  MathWrapper.hpp
   Matrix.hpp
   ModalVector.hpp
   SliceIterator.hpp

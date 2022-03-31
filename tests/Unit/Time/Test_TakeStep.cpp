@@ -27,6 +27,8 @@
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
@@ -151,7 +153,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
          const gsl::not_null<TimeStepId*> next_time_id,
          const gsl::not_null<TimeDelta*> local_time_step,
          const gsl::not_null<TimeDelta*> next_time_step,
-         const TimeStepper& time_stepper) {
+         const LtsTimeStepper& time_stepper) {
         *time_id = *next_time_id;
         *local_time_step =
             next_time_step->with_slab(time_id->step_time().slab());

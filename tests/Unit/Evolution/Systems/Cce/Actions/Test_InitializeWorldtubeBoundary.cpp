@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -208,7 +209,7 @@ void test_gh_initialization() {
 void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
       {l_max, 100.0, 0.0}};
 
@@ -250,7 +251,7 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
                   "[Utilities][Unit]") {
   ERROR_TEST();
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{

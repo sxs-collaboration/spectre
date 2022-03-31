@@ -69,7 +69,7 @@ struct Component {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {std::make_unique<TimeSteppers::RungeKutta3>()}};

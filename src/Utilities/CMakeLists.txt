@@ -27,12 +27,12 @@ spectre_target_headers(
   Blas.hpp
   BoostHelpers.hpp
   CachedFunction.hpp
+  CallWithDynamicType.hpp
   CloneUniquePtrs.hpp
   ConstantExpressions.hpp
   ContainerHelpers.hpp
   DereferenceWrapper.hpp
   EqualWithinRoundoff.hpp
-  FakeVirtual.hpp
   FileSystem.hpp
   ForceInline.hpp
   Formaline.hpp

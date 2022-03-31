@@ -313,24 +313,26 @@ void test_impl(
               time_stepper_history.most_recent_value(), dg_mesh,
               subcell_mesh.extents(), recons_method) ==
           time_stepper_history_from_box.most_recent_value());
-    for (auto expected_it = time_stepper_history.cbegin(),
-              box_it = time_stepper_history_from_box.cbegin();
-         expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
+    for (auto expected_it = time_stepper_history.derivatives_begin(),
+              box_it = time_stepper_history_from_box.derivatives_begin();
+         expected_it != time_stepper_history.derivatives_end();
+         ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(evolution::dg::subcell::fd::reconstruct(
-                expected_it.derivative(), dg_mesh, subcell_mesh.extents(),
-                recons_method) == box_it.derivative());
+      CHECK(evolution::dg::subcell::fd::reconstruct(*expected_it, dg_mesh,
+                                                    subcell_mesh.extents(),
+                                                    recons_method) == *box_it);
     }
     CHECK(tci_grid_history_from_box.empty());
   } else {
     // TCI failed
     CHECK(time_stepper_history.most_recent_value() ==
           time_stepper_history_from_box.most_recent_value());
-    for (auto expected_it = time_stepper_history.cbegin(),
-              box_it = time_stepper_history_from_box.cbegin();
-         expected_it != time_stepper_history.end(); ++expected_it, ++box_it) {
+    for (auto expected_it = time_stepper_history.derivatives_begin(),
+              box_it = time_stepper_history_from_box.derivatives_begin();
+         expected_it != time_stepper_history.derivatives_end();
+         ++expected_it, ++box_it) {
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(expected_it.derivative() == box_it.derivative());
+      CHECK(*expected_it == *box_it);
     }
     if (avoid_tci) {
       CHECK(tci_grid_history_from_box.front() ==
@@ -387,7 +389,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
   //    stay on subcell
   // 5. Check if RDMP is not triggered, but tci_mutator is, we stay on subcell
   // 6. check if RDMP & TCI not triggered, switch to DG.
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
+                                        TimeSteppers::RungeKutta3>();
   test<1>();
   test<2>();
   test<3>();

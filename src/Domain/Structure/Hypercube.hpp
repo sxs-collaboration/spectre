@@ -145,7 +145,6 @@ struct HypercubeElementsIterator {
 
   HypercubeElementsIterator& operator++();
 
-  // NOLINTNEXTLINE(cert-dcl21-cpp) returned object doesn't need to be const
   HypercubeElementsIterator operator++(int);
 
   HypercubeElement<ElementDim, HypercubeDim> operator*() const;

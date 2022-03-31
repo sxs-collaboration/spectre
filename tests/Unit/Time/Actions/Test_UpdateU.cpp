@@ -105,7 +105,7 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  Parallel::register_derived_classes_with_charm<TimeStepper>();
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
 
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
