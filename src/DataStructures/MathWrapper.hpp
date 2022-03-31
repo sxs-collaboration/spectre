@@ -17,7 +17,7 @@
 /// A comma-separated list of valid template arguments to MathWrapper.
 /// Useful for explicit instantiations.
 ///
-/// \snippet Helpers/DataStructures/MathWrapper.cpp MATH_WRAPPER_TYPES_instantiate
+/// \snippet Helpers/DataStructures/MathWrapperDetail.cpp MATH_WRAPPER_TYPES_instantiate
 #define MATH_WRAPPER_TYPES \
   double, std::complex<double>, DataVector, ComplexDataVector
 

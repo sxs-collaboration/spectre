@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Helpers/DataStructures/MathWrapper.hpp"
+#include "Helpers/DataStructures/MathWrapperDetail.hpp"
 
 #include <type_traits>
 

@@ -9,20 +9,9 @@
 #include <utility>
 
 #include "DataStructures/MathWrapper.hpp"
+#include "Helpers/DataStructures/MathWrapperDetail.hpp"
 
 namespace TestHelpers::MathWrapper {
-// Defined and instantiated in a separate compilation unit to test the
-// explicit instantiation code.
-namespace detail {
-template <typename T>
-void do_assignment(const ::MathWrapper<T>& dest,
-                   const ::MathWrapper<const T>& source);
-
-template <typename T>
-void do_multiply(const ::MathWrapper<T>& dest,
-                 const typename ::MathWrapper<T>::scalar_type& scalar,
-                 const ::MathWrapper<const T>& source);
-}  // namespace detail
 
 template <typename T, typename Scalar>
 void test_type(const T& first_value, const T& second_value,
