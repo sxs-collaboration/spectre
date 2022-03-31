@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_CartesianFluxDivergence.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
+  Test_GhostZoneLogicalCoordinates.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborReconstructedFaceSolution.cpp

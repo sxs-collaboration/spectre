@@ -14,6 +14,7 @@ spectre_target_headers(
   ComputeBoundaryTerms.hpp
   CorrectPackagedData.hpp
   DgSubcell.hpp
+  GhostZoneLogicalCoordinates.hpp
   Matrices.hpp
   Mesh.hpp
   NeighborReconstructedFaceSolution.hpp
@@ -37,6 +38,7 @@ spectre_target_sources(
   PRIVATE
   ActiveGrid.cpp
   CartesianFluxDivergence.cpp
+  GhostZoneLogicalCoordinates.cpp
   Matrices.cpp
   Mesh.cpp
   PerssonTci.cpp
