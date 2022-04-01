@@ -75,6 +75,7 @@ using OrderVector =
 
 OrderVector<double> constant_coefficients(const size_t order) {
   switch (order) {
+    case 0: return {};
     case 1: return {1.};
     case 2: return {1.5, -0.5};
     case 3: return {23.0 / 12.0, -4.0 / 3.0, 5.0 / 12.0};
@@ -94,44 +95,48 @@ OrderVector<double> constant_coefficients(const size_t order) {
   }
 }
 
-OrderVector<double> variable_coefficients(const OrderVector<double>& steps) {
-  const size_t order = steps.size();  // "k" in below equations
+OrderVector<double> variable_coefficients(
+    const OrderVector<double>& control_times) {
+  // The argument vector contains the control times for a step from
+  // the last time in the list to t=0.
+
+  // The coefficients are, for each j,
+  // 1/step \int_0^{step} dt ell_j(t; -control_times),
+  // where the step size is step=-control_times.back().
+
+  const size_t order = control_times.size();
   OrderVector<double> result;
-
-  // The `steps` vector contains the step sizes:
-  //   steps = {dt_{n-k+1}, ..., dt_n}
-  // Our goal is to calculate, for each j, the coefficient given by
-  //   \int_0^1 dt ell_j(t dt_n; dt_n, dt_n + dt_{n-1}, ...,
-  //                             dt_n + ... + dt_{n-k+1})
-  // (Where the ell_j are the Lagrange interpolating polynomials.)
-
-  double step_sum_j = 0.0;
   for (size_t j = 0; j < order; ++j) {
     // Calculate coefficients of the Lagrange interpolating polynomials,
     // in the standard a_0 + a_1 t + a_2 t^2 + ... form.
     OrderVector<double> poly(order, 0.0);
 
-    step_sum_j += steps[order - j - 1];
     poly[0] = 1.0;
 
-    double step_sum_m = 0.0;
     for (size_t m = 0; m < order; ++m) {
-      step_sum_m += steps[order - m - 1];
       if (m == j) {
         continue;
       }
-      const double denom = 1.0 / (step_sum_j - step_sum_m);
+      const double denom =
+          1.0 / (control_times[order - m - 1] - control_times[order - j - 1]);
       for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
-        poly[i] = (poly[i - 1] - poly[i] * step_sum_m) * denom;
+        poly[i] =
+            (poly[i - 1] + poly[i] * control_times[order - m - 1]) * denom;
       }
-      poly[0] *= -step_sum_m * denom;
+      poly[0] *= control_times[order - m - 1] * denom;
     }
 
-    // Integrate p(t dt_n), term by term.
+    // Integrate p(t), term by term.  We choose the constant of
+    // integration so the indefinite integral is zero at t=0.  We do
+    // not adjust the indexing, so the t^n term in the integral is in
+    // the (n-1)th entry of the vector (as opposed to the nth entry
+    // before integrating).  This is convenient because we want to
+    // divide by the step size in the end, which is equivalent to this
+    // shift.
     for (size_t m = 0; m < order; ++m) {
       poly[m] /= m + 1.0;
     }
-    result.push_back(evaluate_polynomial(poly, steps.back()));
+    result.push_back(evaluate_polynomial(poly, -control_times.back()));
   }
   return result;
 }
@@ -142,26 +147,30 @@ template <typename Iterator, typename Delta>
 OrderVector<double> get_coefficients(const Iterator& times_begin,
                                      const Iterator& times_end,
                                      const Delta& step) {
-  if (times_begin == times_end) {
-    return {};
+  bool constant_step_size = true;
+  OrderVector<double> control_times;
+  for (auto t = times_begin; t != times_end; ++t) {
+    // Ideally we would also include the slab size in the scale of the
+    // roundoff comparison, but there's no good way to get it here,
+    // and it should only matter for slabs near time zero.
+    if (constant_step_size and not control_times.empty() and
+        not equal_within_roundoff(
+            t->value() - control_times.back(), step.value(),
+            100.0 * std::numeric_limits<double>::epsilon(), abs(t->value()))) {
+      constant_step_size = false;
+    }
+    control_times.push_back(t->value());
   }
-  OrderVector<double> steps;
-  for (auto t = times_begin; std::next(t) != times_end; ++t) {
-    steps.push_back((*std::next(t) - *t).value());
+  if (constant_step_size) {
+    return constant_coefficients(control_times.size());
   }
-  steps.push_back(step.value());
 
-  const size_t order = steps.size();
-  ASSERT(order >= 1 and order <= AdamsBashforthN::maximum_order,
-         "Bad order" << order);
-  if (std::all_of(steps.begin(), steps.end(), [&steps](const double s) {
-        return equal_within_roundoff(
-            s, steps[0], 10.0 * std::numeric_limits<double>::epsilon(), 0.0);
-      })) {
-    return constant_coefficients(order);
+  const double goal_time = control_times.back() + step.value();
+  for (auto& t : control_times) {
+    t -= goal_time;
   }
 
-  return variable_coefficients(steps);
+  return variable_coefficients(control_times);
 }
 }  // namespace
 
