@@ -95,8 +95,10 @@ OrderVector<double> constant_coefficients(const size_t order) {
   }
 }
 
-OrderVector<double> variable_coefficients(
-    const OrderVector<double>& control_times) {
+// Only T=double is used, but this can be used with T=Rational to
+// generate coefficient tables.
+template <typename T>
+OrderVector<T> variable_coefficients(const OrderVector<T>& control_times) {
   // The argument vector contains the control times for a step from
   // the last time in the list to t=0.
 
@@ -105,20 +107,20 @@ OrderVector<double> variable_coefficients(
   // where the step size is step=-control_times.back().
 
   const size_t order = control_times.size();
-  OrderVector<double> result;
+  OrderVector<T> result;
   for (size_t j = 0; j < order; ++j) {
     // Calculate coefficients of the Lagrange interpolating polynomials,
     // in the standard a_0 + a_1 t + a_2 t^2 + ... form.
-    OrderVector<double> poly(order, 0.0);
+    OrderVector<T> poly(order, 0);
 
-    poly[0] = 1.0;
+    poly[0] = 1;
 
     for (size_t m = 0; m < order; ++m) {
       if (m == j) {
         continue;
       }
-      const double denom =
-          1.0 / (control_times[order - m - 1] - control_times[order - j - 1]);
+      const T denom =
+          1 / (control_times[order - m - 1] - control_times[order - j - 1]);
       for (size_t i = m < j ? m + 1 : m; i > 0; --i) {
         poly[i] =
             (poly[i - 1] + poly[i] * control_times[order - m - 1]) * denom;
@@ -134,7 +136,7 @@ OrderVector<double> variable_coefficients(
     // divide by the step size in the end, which is equivalent to this
     // shift.
     for (size_t m = 0; m < order; ++m) {
-      poly[m] /= m + 1.0;
+      poly[m] /= m + 1;
     }
     result.push_back(evaluate_polynomial(poly, -control_times.back()));
   }
