@@ -261,8 +261,7 @@ bool AdamsBashforthN::dense_update_u_impl(const gsl::not_null<T*> u,
                                           const UntypedHistory<T>& history,
                                           const double time) const {
   const ApproximateTimeDelta time_step{time - history.back().value()};
-  update_u_common(make_not_null(&*make_math_wrapper(u)), history, time_step,
-                  history.integration_order());
+  update_u_common(u, history, time_step, history.integration_order());
   return true;
 }
 
