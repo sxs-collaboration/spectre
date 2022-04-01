@@ -8,6 +8,8 @@
 #include <functional>
 #include <iosfwd>
 
+#include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/IsInteger.hpp"
 
@@ -80,3 +82,14 @@ struct hash<Rational> {
   size_t operator()(const Rational& r) const;
 };
 }  // namespace std
+
+namespace MakeWithValueImpls {
+template <typename T>
+struct MakeWithValueImpl<Rational, T> {
+  static Rational apply(const T& /*input*/, double value) {
+    ASSERT(static_cast<std::int32_t>(value) == value,
+           "Only integer-valued Rationals can be created with MakeWithValue.");
+    return Rational(static_cast<std::int32_t>(value));
+  }
+};
+}  // namespace MakeWithValueImpls

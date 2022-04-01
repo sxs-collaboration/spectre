@@ -9,6 +9,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Rational.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
@@ -57,6 +58,12 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
   CHECK(get_output(Rational(-3, 4)) == "-3/4");
 
   test_serialization(Rational(3, 4));
+
+  struct ArbitraryType {};
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 0.0) == Rational(0));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 1.0) == Rational(1));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, -1.0) == Rational(-1));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 1234.0) == Rational(1234));
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.Rational.internal_overflow",
@@ -132,6 +139,17 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational.internal_overflow",
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Rational(1, 1000000) * Rational(1, 1000000);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Only integer-valued Rationals can be created with
+// MakeWithValue]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.BadMakeWithValue",
+                               "[Unit][Utilities]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  make_with_value<Rational>(1, 1.5);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
