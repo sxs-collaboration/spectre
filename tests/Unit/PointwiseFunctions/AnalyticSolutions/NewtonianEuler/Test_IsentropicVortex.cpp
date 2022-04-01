@@ -111,11 +111,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
   test_solution<3>(DataVector(5), center_3d, "[-0.53, -0.1, 1.4]",
                    mean_velocity_3d, "[-0.04, 0.14, 0.3]",
                    perturbation_amplitude, "0.5");
-}
 
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex.Pert",
-    "[Unit][PointwiseFunctions]") {
   static_assert(
       std::is_same_v<
           NewtonianEuler::Solutions::IsentropicVortex<3>::source_term_type,
@@ -136,72 +132,43 @@ SPECTRE_TEST_CASE(
   CHECK(vortex.perturbation_profile(random_z_dv) == sin(random_z_dv));
   CHECK(vortex.deriv_of_perturbation_profile(random_z) == cos(random_z));
   CHECK(vortex.deriv_of_perturbation_profile(random_z_dv) == cos(random_z_dv));
-}
 
-// [[OutputRegex, A nonzero perturbation amplitude only makes sense in 3
-// dimensions.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexPertAmpIn2d",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
-      1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 1.7, 1.e-12);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      []() {
+        NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
+            1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 1.7, 1.e-12);
+      }(),
+      Catch::Contains("A nonzero perturbation amplitude only "
+                      "makes sense in 3 dimensions."));
+  CHECK_THROWS_WITH(
+      []() {
+        NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
+            1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, -1.7);
+      }(),
+      Catch::Contains("The strength must be non-negative."));
+  CHECK_THROWS_WITH(
+      []() {
+        NewtonianEuler::Solutions::IsentropicVortex<3> test_vortex(
+            1.65, {{-0.12, 1.542, 3.12}}, {{-0.04, -0.32, 0.003}}, -0.5, 4.2);
+      }(),
+      Catch::Contains("The strength must be non-negative."));
 #endif
-}
-
-    // clang-format off
-// [[OutputRegex, The strength must be non-negative.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrength2d",
-    "[Unit][PointwiseFunctions]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::IsentropicVortex<2> test_vortex(
-      1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, -1.7);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-    // clang-format off
-// [[OutputRegex, The strength must be non-negative.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrength3d",
-    "[Unit][PointwiseFunctions]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::IsentropicVortex<3> test_vortex(
-      1.65, {{-0.12, 1.542, 3.12}}, {{-0.04, -0.32, 0.003}}, -0.5, 4.2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, In string:.*At line 5 column 13:.Value -0.2 is below the lower
-// bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrengthOpt2d",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<NewtonianEuler::Solutions::IsentropicVortex<2>>(
-      "AdiabaticIndex: 1.4\n"
-      "Center: [-3.9, 1.1]\n"
-      "MeanVelocity: [0.1, -0.032]\n"
-      "Strength: -0.2");
-}
-
-// [[OutputRegex, In string:.*At line 5 column 13:.Value -0.3 is below the lower
-// bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrengthOpt3d",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<NewtonianEuler::Solutions::IsentropicVortex<3>>(
-      "AdiabaticIndex: 1.12\n"
-      "Center: [0.3, -0.12, 4.2]\n"
-      "MeanVelocity: [-0.03, -0.1, 0.09]\n"
-      "Strength: -0.3\n"
-      "PerturbAmplitude: 0.42");
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          NewtonianEuler::Solutions::IsentropicVortex<2>>(
+          "AdiabaticIndex: 1.4\n"
+          "Center: [-3.9, 1.1]\n"
+          "MeanVelocity: [0.1, -0.032]\n"
+          "Strength: -0.2"),
+      Catch::Contains("Value -0.2 is below the lower bound of 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          NewtonianEuler::Solutions::IsentropicVortex<3>>(
+          "AdiabaticIndex: 1.12\n"
+          "Center: [0.3, -0.12, 4.2]\n"
+          "MeanVelocity: [-0.03, -0.1, 0.09]\n"
+          "Strength: -0.3\n"
+          "PerturbAmplitude: 0.42"),
+      Catch::Contains("Value -0.3 is below the lower bound of 0"));
 }

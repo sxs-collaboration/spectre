@@ -4,6 +4,8 @@
 #include "IO/H5/File.hpp"
 
 #include <algorithm>
+#include <charm++.h>
+#include <exception>
 #include <hdf5.h>
 #include <string>
 
@@ -15,6 +17,7 @@
 #include "IO/H5/Wrappers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/System/Abort.hpp"
 
 namespace h5 {
 template <AccessType Access_t>
@@ -88,8 +91,26 @@ H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) {
 template <AccessType Access_t>
 H5File<Access_t>::~H5File() {
   if (file_id_ != -1) {
-    CHECK_H5(H5Fclose(file_id_),
-             "Failed to close file: '" << file_name_ << "'");
+    const auto h5_status = H5Fclose(file_id_);
+    if (h5_status < 0) {
+      // Could not close the H5 file.  Since we cannot throw an exception
+      // from the destructor (without modifying the destructor of the Charm++
+      // class PUP::able), we just abort.  But before aborting we attempt to
+      // see if another exception is propagating, and if so print its error
+      // message.
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+      CkError("Failed to close H5 File '%s'\n", file_name_.c_str());
+      std::exception_ptr exception = std::current_exception();
+      if (exception) {
+        try {
+          std::rethrow_exception(exception);
+        } catch (std::exception& ex) {
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+          CkError("while handling the following exception:\n\n%s\n", ex.what());
+        }
+      }
+      sys::abort("");
+    }
   }
 }
 

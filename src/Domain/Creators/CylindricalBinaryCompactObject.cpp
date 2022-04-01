@@ -175,7 +175,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   auto add_filled_cylinder_name = [this](const std::string& prefix,
                                          const std::string& group_name) {
     for (const std::string& where :
-         {"Center", "East", "North", "West", "South"}) {
+         {"Center"s, "East"s, "North"s, "West"s, "South"s}) {
       const std::string name =
           std::string(prefix).append("FilledCylinder").append(where);
       block_names_.push_back(name);
@@ -184,7 +184,7 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
   };
   auto add_cylinder_name = [this](const std::string& prefix,
                                   const std::string& group_name) {
-    for (const std::string& where : {"East", "North", "West", "South"}) {
+    for (const std::string& where : {"East"s, "North"s, "West"s, "South"s}) {
       const std::string name =
           std::string(prefix).append("Cylinder").append(where);
       block_names_.push_back(name);

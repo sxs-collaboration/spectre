@@ -305,9 +305,6 @@ struct check_matrix_approx {
  * we must install a signal handler after Catch does, which means inside the
  * SPECTRE_TEST_CASE itself. The ERROR_TEST() macro should be the first line in
  * the SPECTRE_TEST_CASE.
- *
- * \example
- * \snippet Test_AssertAndError.cpp error_test_example
  */
 #define ERROR_TEST()                                      \
   do {                                                    \

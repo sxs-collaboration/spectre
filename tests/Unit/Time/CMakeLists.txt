@@ -27,7 +27,17 @@ add_test_library(
   ${LIBRARY}
   "Time"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;EventsAndTriggers;Time;TimeStepperHelpers"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  Domain
+  DomainStructure
+  Time
+  TimeStepperHelpers
   )
 
 add_dependencies(

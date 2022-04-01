@@ -322,166 +322,161 @@ void test_equality_and_serialization() {
   CHECK(tst1 != tst2);
   CHECK(serialize_and_deserialize(tst1) == tst1);
 }
-}  // namespace
 
-// [[OutputRegex, Initial timescale must be > 0]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadInitTimescale",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+void test_errors() {
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double increase_factor = 1.01;
+                      const double decrease_factor = 0.99;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 1.0e-3;
 
-  const std::vector<double> init_timescale{0.0};
-  TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+                      const std::vector<double> init_timescale{0.0};
+                      TimescaleTuner tst(init_timescale, max_timescale,
+                                         min_timescale,
+                                         decrease_timescale_threshold,
+                                         increase_timescale_threshold,
+                                         increase_factor, decrease_factor);
+                    }()),
+                    Catch::Contains("Initial timescale must be > 0"));
 
-// [[OutputRegex, must satisfy 0 < decrease_factor <= 1]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadDecFactor0",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 1.0e-3;
 
-  const double increase_factor = 1.1;
-  const double decrease_factor = -0.99;
+                      const double increase_factor = 1.1;
+                      const double decrease_factor = -0.99;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+                                         decrease_timescale_threshold,
+                                         increase_timescale_threshold,
+                                         increase_factor, decrease_factor);
+                    }()),
+                    Catch::Contains("must satisfy 0 < decrease_factor <= 1"));
 
-// [[OutputRegex, must satisfy 0 < decrease_factor <= 1]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadDecFactor1",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 1.0e-3;
 
-  const double increase_factor = 1.1;
-  const double decrease_factor = 1.01;
+                      const double increase_factor = 1.1;
+                      const double decrease_factor = 1.01;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+                                         decrease_timescale_threshold,
+                                         increase_timescale_threshold,
+                                         increase_factor, decrease_factor);
+                    }()),
+                    Catch::Contains("must satisfy 0 < decrease_factor <= 1"));
 
-// [[OutputRegex, must be >= 1]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadIncFactor",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 1.0e-3;
 
-  const double increase_factor = 0.99;
-  const double decrease_factor = 0.8;
+                      const double increase_factor = 0.99;
+                      const double decrease_factor = 0.8;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+                                         decrease_timescale_threshold,
+                                         increase_timescale_threshold,
+                                         increase_factor, decrease_factor);
+                    }()),
+                    Catch::Contains("must be >= 1"));
 
-// [[OutputRegex, must be > 0]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadMinTimescale",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  CHECK_THROWS_WITH(([]() {
+                      const double decrease_timescale_threshold = 1.0e-2;
+                      const double increase_timescale_threshold = 1.0e-4;
+                      const double increase_factor = 1.01;
+                      const double decrease_factor = 0.99;
 
-  const double max_timescale = 10.0;
-  const double min_timescale = 0.0;
+                      const double max_timescale = 10.0;
+                      const double min_timescale = 0.0;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+                      TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+                                         decrease_timescale_threshold,
+                                         increase_timescale_threshold,
+                                         increase_factor, decrease_factor);
+                    }()),
+                    Catch::Contains("must be > 0"));
 
-// [[OutputRegex, must be > than the specified minimum timescale]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadMaxTimescale",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
 
-  const double max_timescale = 1.0e-4;
-  const double min_timescale = 1.0e-3;
+        const double max_timescale = 1.0e-4;
+        const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+        TimescaleTuner tst(
+            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
+            increase_timescale_threshold, increase_factor, decrease_factor);
+      }()),
+      Catch::Contains("must be > than the specified minimum timescale"));
 
-// [[OutputRegex, The specified increase-timescale threshold]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadIncreaseThreshold",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
 
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 0.0;
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 0.0;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+        TimescaleTuner tst(
+            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
+            increase_timescale_threshold, increase_factor, decrease_factor);
+      }()),
+      Catch::Contains("The specified increase-timescale threshold"));
 
-// [[OutputRegex, must be > than the specified increase-timescale threshold]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.BadDecreaseThreshold",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
 
-  const double decrease_timescale_threshold = 1.0e-4;
-  const double increase_timescale_threshold = 1.0e-3;
+        const double decrease_timescale_threshold = 1.0e-4;
+        const double increase_timescale_threshold = 1.0e-3;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
-}
+        TimescaleTuner tst(
+            {1.0}, max_timescale, min_timescale, decrease_timescale_threshold,
+            increase_timescale_threshold, increase_factor, decrease_factor);
+      }()),
+      Catch::Contains(
+          "must be > than the specified increase-timescale threshold"));
 
-// [[OutputRegex, One or both of the number of components in q_and_dtq]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner.SizeMismatch",
-                               "[ControlSystem][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
 
-  const std::vector<double> init_timescale{{1.0, 2.0}};
-  TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
-                     decrease_timescale_threshold, increase_timescale_threshold,
-                     increase_factor, decrease_factor);
+        const std::vector<double> init_timescale{{1.0, 2.0}};
+        TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
+                           decrease_timescale_threshold,
+                           increase_timescale_threshold, increase_factor,
+                           decrease_factor);
 
-  const std::array<DataVector, 2> qs{{{2.0}, {3.0}}};
-  tst.update_timescale(qs);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+        const std::array<DataVector, 2> qs{{{2.0}, {3.0}}};
+        tst.update_timescale(qs);
+      }()),
+      Catch::Contains("One or both of the number of components in q_and_dtq"));
 #endif
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner",
                   "[ControlSystem][Unit]") {
@@ -489,4 +484,5 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.TimescaleTuner",
   test_no_change_to_timescale();
   test_create_from_options();
   test_equality_and_serialization();
+  test_errors();
 }

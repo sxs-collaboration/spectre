@@ -270,40 +270,21 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWave",
   test_copy_and_move();
   test_serialize();
   test_construct_from_options();
-}
 
-// [[OutputRegex, Amplitude must be less than one]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveAmplitude",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  const gr::Solutions::GaugeWave<3> solution(-1.25, 1.0);
-}
-
-// [[OutputRegex, Wavelength must be non-negative]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveWavelength",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  const gr::Solutions::GaugeWave<3> solution(0.0, -0.25);
-}
-
-// [[OutputRegex, In string:.*At line 2 column 14:.Value -1.25 is below the
-// lower bound of -1]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptA",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
-      "Amplitude: -1.25\n"
-      "Wavelength: 1.0");
-}
-
-// [[OutputRegex, In string:.*At line 3 column 15:.Value -0.25 is below the
-// lower bound of 0]]
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.GaugeWaveOptW",
-                  "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
-      "Amplitude: 1.0\n"
-      "Wavelength: -0.25\n");
+  CHECK_THROWS_WITH(
+      []() { const gr::Solutions::GaugeWave<3> solution(-1.25, 1.0); }(),
+      Catch::Contains("Amplitude must be less than one"));
+  CHECK_THROWS_WITH(
+      []() { const gr::Solutions::GaugeWave<3> solution(0.0, -0.25); }(),
+      Catch::Contains("Wavelength must be non-negative"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+          "Amplitude: -1.25\n"
+          "Wavelength: 1.0"),
+      Catch::Contains("Value -1.25 is below the lower bound of -1"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::GaugeWave<3>>(
+          "Amplitude: 1.0\n"
+          "Wavelength: -0.25\n"),
+      Catch::Contains("Value -0.25 is below the lower bound of 0"));
 }

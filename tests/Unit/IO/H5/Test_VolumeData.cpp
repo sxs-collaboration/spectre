@@ -290,106 +290,92 @@ void test() {
 SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   test<DataVector>();
   test<std::vector<float>>();
-}
 
-// [[OutputRegex, The expected format of the tensor component names is
-// 'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat0",
-                               "[Unit][IO][H5]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const std::string h5_file_name("Unit.IO.H5.VolumeData.ComponentFormat.h5");
-  const uint32_t version_number = 4;
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-  auto& volume_file =
-      my_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(100, 10.0,
-                                {{{2},
-                                  {TensorComponent{"S", DataVector{1.0, 2.0}}},
-                                  {Spectral::Basis::Legendre},
-                                  {Spectral::Quadrature::Gauss}}});
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string h5_file_name(
+            "Unit.IO.H5.VolumeData.ComponentFormat.h5");
+        const uint32_t version_number = 4;
+        if (file_system::check_if_file_exists(h5_file_name)) {
+          file_system::rm(h5_file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+        auto& volume_file =
+            my_file.insert<h5::VolumeData>("/element_data", version_number);
+        volume_file.write_volume_data(
+            100, 10.0,
+            {{{2},
+              {TensorComponent{"S", DataVector{1.0, 2.0}}},
+              {Spectral::Basis::Legendre},
+              {Spectral::Quadrature::Gauss}}});
+      }(),
+      Catch::Contains(
+          "The expected format of the tensor component names is "
+          "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in"));
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string h5_file_name(
+            "Unit.IO.H5.VolumeData.ComponentFormat1.h5");
+        const uint32_t version_number = 4;
+        if (file_system::check_if_file_exists(h5_file_name)) {
+          file_system::rm(h5_file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+        auto& volume_file =
+            my_file.insert<h5::VolumeData>("/element_data", version_number);
+        volume_file.write_volume_data(
+            100, 10.0,
+            {{{2},
+              {TensorComponent{"A/S", DataVector{1.0, 2.0}},
+               TensorComponent{"S", DataVector{1.0, 2.0}}},
+              {Spectral::Basis::Legendre},
+              {Spectral::Quadrature::Gauss}}});
+      }(),
+      Catch::Contains(
+          "The expected format of the tensor component names is "
+          "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in"));
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string h5_file_name("Unit.IO.H5.VolumeData.WriteTwice.h5");
+        const uint32_t version_number = 4;
+        if (file_system::check_if_file_exists(h5_file_name)) {
+          file_system::rm(h5_file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+        auto& volume_file =
+            my_file.insert<h5::VolumeData>("/element_data", version_number);
+        volume_file.write_volume_data(
+            100, 10.0,
+            {{{2},
+              {TensorComponent{"A/S", DataVector{1.0, 2.0}},
+               TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+              {Spectral::Basis::Legendre},
+              {Spectral::Quadrature::Gauss}}});
+      }(),
+      Catch::Contains(
+          "Trying to write tensor component 'S' which already exists in HDF5 "
+          "file in group 'element_data.vol/ObservationId100'"));
 #endif
-  // clang-format off
-}
 
-// [[OutputRegex, The expected format of the tensor component names is
-// 'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in]]
-[[noreturn]]
-SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
-                               "[Unit][IO][H5]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::string h5_file_name("Unit.IO.H5.VolumeData.ComponentFormat1.h5");
-  const uint32_t version_number = 4;
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-  auto& volume_file =
-      my_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(100, 10.0,
-                                {{{2},
-                                  {TensorComponent{"A/S", DataVector{1.0, 2.0}},
-                                   TensorComponent{"S", DataVector{1.0, 2.0}}},
-                                  {Spectral::Basis::Legendre},
-                                  {Spectral::Quadrature::Gauss}}});
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-  // clang-format off
-}
-
-
-// [[OutputRegex, Trying to write tensor component 'S' which already exists
-// in HDF5 file in group 'element_data.vol/ObservationId100']]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.WriteTwice",
-                               "[Unit][IO][H5]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::string h5_file_name("Unit.IO.H5.VolumeData.WriteTwice.h5");
-  const uint32_t version_number = 4;
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-  auto& volume_file =
-      my_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(
-      100, 10.0,
-      {{{2},
-        {TensorComponent{"A/S", DataVector{1.0, 2.0}},
-         TensorComponent{"A/S", DataVector{1.0, 2.0}}},
-        {Spectral::Basis::Legendre},
-        {Spectral::Quadrature::Gauss}}});
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-  // clang-format off
-}
-
-// [[OutputRegex, No observation with value]]
-SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.FindNoObservationId",
-                  "[Unit][IO][H5]") {
-  // clang-format on
-  ERROR_TEST();
-  const std::string h5_file_name(
-      "Unit.IO.H5.VolumeData.FindNoObservationId.h5");
-  const uint32_t version_number = 4;
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> h5_file(h5_file_name);
-  auto& volume_file =
-      h5_file.insert<h5::VolumeData>("/element_data", version_number);
-  volume_file.write_volume_data(
-      100, 10.0,
-      {{{2},
-        {TensorComponent{"A/S", DataVector{1.0, 2.0}}},
-        {Spectral::Basis::Legendre},
-        {Spectral::Quadrature::Gauss}}});
-  volume_file.find_observation_id(11.0);
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string h5_file_name(
+            "Unit.IO.H5.VolumeData.FindNoObservationId.h5");
+        const uint32_t version_number = 4;
+        if (file_system::check_if_file_exists(h5_file_name)) {
+          file_system::rm(h5_file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadWrite> h5_file(h5_file_name);
+        auto& volume_file =
+            h5_file.insert<h5::VolumeData>("/element_data", version_number);
+        volume_file.write_volume_data(
+            100, 10.0,
+            {{{2},
+              {TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+              {Spectral::Basis::Legendre},
+              {Spectral::Quadrature::Gauss}}});
+        volume_file.find_observation_id(11.0);
+      }(),
+      Catch::Contains("No observation with value"));
 }

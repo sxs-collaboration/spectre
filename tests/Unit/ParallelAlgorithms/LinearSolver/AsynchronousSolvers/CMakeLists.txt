@@ -11,5 +11,14 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/AsynchronousSolvers"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures;IO;ParallelLinearSolver"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Convergence
+  DataStructures
+  IO
+  ParallelLinearSolver
   )

@@ -235,52 +235,50 @@ void test_wedge_map_generation_against_domain_helpers(
   CHECK(maps == expected_coord_maps);
 }
 
-// [[OutputRegex, If we are using half wedges we must also be using
-// ShellWedges::All.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert1", "[Domain][Unit]") {
-  ASSERTION_TEST();
+void test_wedge_errors() {
 #ifdef SPECTRE_DEBUG
-  const double inner_radius = 0.5;
-  const double outer_radius = 2.0;
-  const double inner_sphericity = 1.0;
-  const double outer_sphericity = 1.0;
-  const bool use_equiangular_map = true;
-  const bool use_half_wedges = true;
-  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
-      domain::CoordinateMaps::Distribution::Logarithmic};
-  const ShellWedges which_wedges = ShellWedges::FourOnEquator;
-  static_cast<void>(sph_wedge_coordinate_maps(
-      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges, {}, radial_distribution,
-      which_wedges));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double inner_radius = 0.5;
+        const double outer_radius = 2.0;
+        const double inner_sphericity = 1.0;
+        const double outer_sphericity = 1.0;
+        const bool use_equiangular_map = true;
+        const bool use_half_wedges = true;
+        const std::vector<domain::CoordinateMaps::Distribution>
+            radial_distribution{
+                domain::CoordinateMaps::Distribution::Logarithmic};
+        const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+        static_cast<void>(sph_wedge_coordinate_maps(
+            inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+            use_equiangular_map, use_half_wedges, {}, radial_distribution,
+            which_wedges));
+      }()),
+      Catch::Contains("If we are using half wedges we must also be using "
+                      "ShellWedges::All."));
 
-// [[OutputRegex, If we are using more than one layer the inner and outer
-// sphericities must match.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert2", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const double inner_radius = 0.5;
-  const double outer_radius = 2.0;
-  const double inner_sphericity = 0.9;
-  const double outer_sphericity = 1.0;
-  const bool use_equiangular_map = true;
-  const bool use_half_wedges = true;
-  std::vector<double> radial_partitioning{1., 1.5};
-  const std::vector<domain::CoordinateMaps::Distribution> radial_distribution{
-      domain::CoordinateMaps::Distribution::Logarithmic,
-      domain::CoordinateMaps::Distribution::Logarithmic,
-      domain::CoordinateMaps::Distribution::Logarithmic};
-  const ShellWedges which_wedges = ShellWedges::All;
-  static_cast<void>(sph_wedge_coordinate_maps(
-      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
-      use_equiangular_map, use_half_wedges, radial_partitioning,
-      radial_distribution, which_wedges));
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double inner_radius = 0.5;
+        const double outer_radius = 2.0;
+        const double inner_sphericity = 0.9;
+        const double outer_sphericity = 1.0;
+        const bool use_equiangular_map = true;
+        const bool use_half_wedges = true;
+        std::vector<double> radial_partitioning{1., 1.5};
+        const std::vector<domain::CoordinateMaps::Distribution>
+            radial_distribution{
+                domain::CoordinateMaps::Distribution::Logarithmic,
+                domain::CoordinateMaps::Distribution::Logarithmic,
+                domain::CoordinateMaps::Distribution::Logarithmic};
+        const ShellWedges which_wedges = ShellWedges::All;
+        static_cast<void>(sph_wedge_coordinate_maps(
+            inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+            use_equiangular_map, use_half_wedges, radial_partitioning,
+            radial_distribution, which_wedges));
+      }()),
+      Catch::Contains("If we are using more than one layer the inner and outer "
+                      "sphericities must match."));
 #endif
 }
 
@@ -535,39 +533,33 @@ void test_all_frustum_directions() {
   }
 }
 
-// [[OutputRegex, The outer cube is too small! The inner cubes will pierce the
-// surface of the outer cube.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.FrustumCoordinateMaps.Assert1",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
+void test_frustrum_errors() {
 #ifdef SPECTRE_DEBUG
-  const double length_inner_cube = 0.9;
-  const double length_outer_cube = 1.5;
-  const bool use_equiangular_map = true;
-  const std::array<double, 3> origin_preimage = {{0.0, 0.0, 0.0}};
-  static_cast<void>(
-      frustum_coordinate_maps(length_inner_cube, length_outer_cube,
-                              use_equiangular_map, origin_preimage));
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double length_inner_cube = 0.9;
+        const double length_outer_cube = 1.5;
+        const bool use_equiangular_map = true;
+        const std::array<double, 3> origin_preimage = {{0.0, 0.0, 0.0}};
+        static_cast<void>(
+            frustum_coordinate_maps(length_inner_cube, length_outer_cube,
+                                    use_equiangular_map, origin_preimage));
+      }()),
+      Catch::Contains("The outer cube is too small! The inner cubes will "
+                      "pierce the surface of the outer cube."));
 
-// [[OutputRegex, The current choice for `origin_preimage` results in the inner
-// cubes piercing the surface of the outer cube.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.FrustumCoordinateMaps.Assert2",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const double length_inner_cube = 1;
-  const double length_outer_cube = 3;
-  const bool use_equiangular_map = true;
-  const std::array<double, 3> origin_preimage = {{0.6, 0.0, 0.0}};
-  static_cast<void>(
-      frustum_coordinate_maps(length_inner_cube, length_outer_cube,
-                              use_equiangular_map, origin_preimage));
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double length_inner_cube = 1.0;
+        const double length_outer_cube = 3.0;
+        const bool use_equiangular_map = true;
+        const std::array<double, 3> origin_preimage = {{0.6, 0.0, 0.0}};
+        static_cast<void>(
+            frustum_coordinate_maps(length_inner_cube, length_outer_cube,
+                                    use_equiangular_map, origin_preimage));
+      }()),
+      Catch::Contains("The current choice for `origin_preimage` results in the "
+                      "inner cubes piercing the surface of the outer cube."));
 #endif
 }
 
@@ -1552,7 +1544,9 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
   test_periodic_same_block();
   test_periodic_different_blocks();
   test_wedge_map_generation();
+  test_wedge_errors();
   test_all_frustum_directions();
+  test_frustrum_errors();
   test_shell_graph();
   test_sphere_graph();
   test_bbh_corners();

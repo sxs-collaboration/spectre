@@ -132,109 +132,109 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
   }
 }
 
-// [[OutputRegex, Cannot open the object '/Dummy.hdr' because it does not
-// exist.]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExist", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string file_name = "./Unit.IO.H5.FileErrorObjectNotExist.h5";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-  my_file.get<h5::Header>("/Dummy").get_header();
+namespace {
+void test_some_errors() {
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorObjectNotExist.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        };
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        my_file.get<h5::Header>("/Dummy").get_header();
+      }(),
+      Catch::Contains(
+          "Cannot open the object '/Dummy.hdr' because it does not exist."));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorNotH5.h5ab";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+      }(),
+      Catch::Contains(
+          "All HDF5 file names must end in '.h5'. The path and file name "
+          "'./Unit.IO.H5.FileErrorNotH5.h5ab' does not satisfy this"));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorFileNotExist.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        }
+        h5::H5File<h5::AccessType::ReadOnly> my_file(file_name);
+      }(),
+      Catch::Contains(
+          "Trying to open the file './Unit.IO.H5.FileErrorFileNotExist.h5'"));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorCannotAppendReadOnly.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        }
+        { h5::H5File<h5::AccessType::ReadWrite> my_file(file_name); }
+        h5::H5File<h5::AccessType::ReadOnly> my_file(file_name, true);
+      }(),
+      Catch::Contains(
+          "Cannot append to a file opened in read-only mode. File name is: "
+          "./Unit.IO.H5.FileErrorCannotAppendReadOnly.h5"));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorExists.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        }
+        // Need to close file opened by my_file otherwise we get the error
+        // pure virtual method called
+        // terminate called recursively
+        {
+          // [h5file_readwrite_file]
+          h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+          // [h5file_readwrite_file]
+        }
+        h5::H5File<h5::AccessType::ReadWrite> my_file_2(file_name);
+      }(),
+      Catch::Contains(
+          "File './Unit.IO.H5.FileErrorExists.h5' already exists and we are "
+          "not allowed to append. To reduce the risk of accidental deletion "
+          "you must explicitly delete the file first using the file_system "
+          "library in SpECTRE or through your shell."));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorObjectNotExistConst.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        }
+        const h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        my_file.get<h5::Header>("/Dummy").get_header();
+      }(),
+      Catch::Contains(
+          "Cannot open the object '/Dummy.hdr' because it does not exist."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        std::string h5_file_name =
+            "./Unit.IO.H5.FileErrorObjectAlreadyExists.h5";
+        const uint32_t version_number = 4;
+        if (file_system::check_if_file_exists(h5_file_name)) {
+          file_system::rm(h5_file_name, true);
+        }
+        std::vector<std::string> legend{"Time", "Error L2", "Error L1",
+                                        "Error"};
+        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+        {
+          auto& error_file =
+              my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
+          error_file.append(std::vector<double>{0, 0.1, 0.2, 0.3});
+        }
+        { my_file.insert<h5::Dat>("/L2_errors//", legend, version_number); }
+      }()),
+      Catch::Contains("Cannot insert an Object that already exists. Failed to "
+                      "add Object named: /L2_errors"));
 }
-
-// [[OutputRegex, All HDF5 file names must end in '.h5'. The path and file name
-// './Unit.IO.H5.FileErrorNotH5.h5ab' does not satisfy this]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorNotH5", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string file_name = "./Unit.IO.H5.FileErrorNotH5.h5ab";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-}
-
-// [[OutputRegex, Trying to open the file
-// './Unit.IO.H5.FileErrorFileNotExist.h5']]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorFileNotExist", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string file_name = "./Unit.IO.H5.FileErrorFileNotExist.h5";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  h5::H5File<h5::AccessType::ReadOnly> my_file(file_name);
-}
-
-// [[OutputRegex, Cannot append to a file opened in read-only mode. File name
-// is:
-// ./Unit.IO.H5.FileErrorCannotAppendReadOnly.h5]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorCannotAppendReadOnly",
-                  "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string file_name = "./Unit.IO.H5.FileErrorCannotAppendReadOnly.h5";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  { h5::H5File<h5::AccessType::ReadWrite> my_file(file_name); }
-  h5::H5File<h5::AccessType::ReadOnly> my_file(file_name, true);
-}
-
-// [willfail_example_for_dev_doc]
-// [[OutputRegex, File './Unit.IO.H5.FileErrorExists.h5' already exists and we
-// are not allowed to append. To reduce the risk of accidental deletion you must
-// explicitly delete the file first using the file_system library in
-// SpECTRE or through your shell.]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorExists", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  // [willfail_example_for_dev_doc]
-  std::string file_name = "./Unit.IO.H5.FileErrorExists.h5";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  // Need to close file opened by my_file otherwise we get the error
-  // pure virtual method called
-  // terminate called recursively
-  {
-    // [h5file_readwrite_file]
-    h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-    // [h5file_readwrite_file]
-  }
-  h5::H5File<h5::AccessType::ReadWrite> my_file_2(file_name);
-}
-
-// [[OutputRegex, Cannot open the object '/Dummy.hdr' because it does not
-// exist.]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExistConst", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string file_name = "./Unit.IO.H5.FileErrorObjectNotExistConst.h5";
-  if (file_system::check_if_file_exists(file_name)) {
-    file_system::rm(file_name, true);
-  }
-  const h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
-  my_file.get<h5::Header>("/Dummy").get_header();
-}
-
-// [[OutputRegex, Cannot insert an Object that already exists. Failed to add
-// Object named: /L2_errors]]
-SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectAlreadyExists", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  std::string h5_file_name = "./Unit.IO.H5.FileErrorObjectAlreadyExists.h5";
-  const uint32_t version_number = 4;
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
-  std::vector<std::string> legend{"Time", "Error L2", "Error L1", "Error"};
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-  {
-    auto& error_file =
-        my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
-    error_file.append(std::vector<double>{0, 0.1, 0.2, 0.3});
-  }
-  { my_file.insert<h5::Dat>("/L2_errors//", legend, version_number); }
-}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
+  test_some_errors();
   const std::string h5_file_name("Unit.IO.H5.Version.h5");
   const uint32_t version_number = 2;
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -646,39 +646,49 @@ SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << h5_file_name << "'");
 }
 
-// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
-SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  const std::string file_name("Unit.IO.H5.read_data_error.h5");
-  const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
-                                  h5::h5p_default(), h5::h5p_default());
-  CHECK_H5(file_id, "Failed to open file: " << file_name);
-  static_cast<void>(h5::read_data<1, DataVector>(file_id, "no_dataset"));
-  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
-}
+namespace {
+void test_some_more_errors() {
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string file_name("Unit.IO.H5.read_data_error.h5");
+        const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                        h5::h5p_default(), h5::h5p_default());
+        CHECK_H5(file_id, "Failed to open file: " << file_name);
+        static_cast<void>(h5::read_data<1, DataVector>(file_id, "no_dataset"));
+        CHECK_H5(H5Fclose(file_id),
+                 "Failed to close file: '" << file_name << "'");
+      }(),
+      Catch::Contains(
+          "Failed HDF5 operation: Failed to open dataset 'no_dataset'"));
+  CHECK_THROWS_WITH(
+      []() {
+        const std::string file_name("Unit.IO.H5.OpenGroup_read_access.h5");
 
-// [[OutputRegex, Cannot create group 'group' in path: /group because the access
-// is ReadOnly]]
-SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroup_read_access", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  const std::string file_name("Unit.IO.H5.OpenGroup_read_access.h5");
-
-  const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
-                                  h5::h5p_default(), h5::h5p_default());
-  CHECK_H5(file_id, "Failed to open file: " << file_name);
-  { h5::detail::OpenGroup group(file_id, "/group", h5::AccessType::ReadOnly); }
-  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+        const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                        h5::h5p_default(), h5::h5p_default());
+        CHECK_H5(file_id, "Failed to open file: " << file_name);
+        {
+          h5::detail::OpenGroup group(file_id, "/group",
+                                      h5::AccessType::ReadOnly);
+        }
+        CHECK_H5(H5Fclose(file_id),
+                 "Failed to close file: '" << file_name << "'");
+      }(),
+      Catch::Contains("Cannot create group 'group' in path: /group because the "
+                      "access is ReadOnly"));
+  CHECK_THROWS_WITH(
+      []() {
+        h5::detail::OpenGroup group(-1, "/group", h5::AccessType::ReadWrite);
+      }(),
+      Catch::Contains(
+          "Failed to open the group 'group' because the file_id passed in is "
+          "invalid, or because the group_id inside the OpenGroup constructor "
+          "got corrupted. It is most likely that the file_id is invalid."));
 }
-
-// [[OutputRegex, Failed to open the group 'group' because the file_id passed in
-// is invalid, or because the group_id inside the OpenGroup constructor got
-// corrupted. It is most likely that the file_id is invalid.]]
-SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroup_bad_group_id", "[Unit][IO][H5]") {
-  ERROR_TEST();
-  h5::detail::OpenGroup group(-1, "/group", h5::AccessType::ReadWrite);
-}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
+  test_some_more_errors();
   const std::string file_name("Unit.IO.H5.OpenGroupMove.h5");
   const std::string file_name2("Unit.IO.H5.OpenGroupMove2.h5");
 

@@ -27,8 +27,10 @@ target_link_libraries(
   ApparentHorizons
   ApparentHorizonsHelpers
   GeneralRelativitySolutions
+  LinearOperators
   Logging
   Options
+  ParallelInterpolation
   RootFinding
   SphericalHarmonics
   SphericalHarmonicsHelpers

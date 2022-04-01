@@ -314,146 +314,115 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_bulged_frustum_jacobian();
   test_bulged_frustum_inv_jacobian();
   test_bulged_frustum_inv_map();
-}
 
-// [[OutputRegex, A projective scale factor of zero maps all coordinates to
-// zero! Set projective_scale_factor to unity to turn off projective scaling.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert0",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
-  const double projective_scale_factor = 0.0;
-  const bool with_equiangular_map = false;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
+        const double projective_scale_factor = 0.0;
+        const bool with_equiangular_map = false;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
-      with_equiangular_map, projective_scale_factor);
-  static_cast<void>(failed_frustum);
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
+            with_equiangular_map, projective_scale_factor);
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains(
+          "A projective scale factor of zero maps all coordinates to zero! Set "
+          "projective_scale_factor to unity to turn off projective scaling."));
 
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{-3.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
 
-// [[OutputRegex, The lower bound for a coordinate must be numerically less
-// than the upper bound for that coordinate.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert1",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{-3.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains("The lower bound for a coordinate must be numerically "
+                      "less than the upper bound for that coordinate."));
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
-  static_cast<void>(failed_frustum);
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, -3.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
 
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains("The lower bound for a coordinate must be numerically "
+                      "less than the upper bound for that coordinate."));
 
-// [[OutputRegex, The lower bound for a coordinate must be numerically less
-// than the upper bound for that coordinate.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert2",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, -3.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{-5.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
-  static_cast<void>(failed_frustum);
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains("The lower bound for a coordinate must be numerically "
+                      "less than the upper bound for that coordinate."));
 
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, -5.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
 
-// [[OutputRegex, The lower bound for a coordinate must be numerically less
-// than the upper bound for that coordinate.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert3",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{-5.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains("The lower bound for a coordinate must be numerically "
+                      "less than the upper bound for that coordinate."));
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
-  static_cast<void>(failed_frustum);
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = -2.0;
 
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains("The lower bound for a coordinate must be numerically "
+                      "less than the upper bound for that coordinate."));
 
-// [[OutputRegex, The lower bound for a coordinate must be numerically less
-// than the upper bound for that coordinate.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert4",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, -5.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::array<std::array<double, 2>, 4> face_vertices{
+            {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+        const double lower_bound = 2.0;
+        const double upper_bound = 5.0;
+        const double projective_scale_factor = 1.0;
+        const bool with_equiangular_map = false;
+        const double sphericity = 1.3;
 
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
-  static_cast<void>(failed_frustum);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The lower bound for a coordinate must be numerically less
-// than the upper bound for that coordinate.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert5",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = -2.0;
-
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{});
-  static_cast<void>(failed_frustum);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The sphericity must be set between 0.0, corresponding to a
-// flat surface, and 1.0, corresponding to a spherical surface, inclusive. It is
-// currently set to 1.3.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert6",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const std::array<std::array<double, 2>, 4> face_vertices{
-      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
-  const double lower_bound = 2.0;
-  const double upper_bound = 5.0;
-  const double projective_scale_factor = 1.0;
-  const bool with_equiangular_map = false;
-  const double sphericity = 1.3;
-
-  auto failed_frustum = CoordinateMaps::Frustum(
-      face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
-      with_equiangular_map, projective_scale_factor, false, sphericity);
-  static_cast<void>(failed_frustum);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
+        auto failed_frustum = CoordinateMaps::Frustum(
+            face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
+            with_equiangular_map, projective_scale_factor, false, sphericity);
+        static_cast<void>(failed_frustum);
+      }()),
+      Catch::Contains(
+          "The sphericity must be set between 0.0, corresponding to a flat "
+          "surface, and 1.0, corresponding to a spherical surface, inclusive. "
+          "It is currently set to 1.3."));
 #endif
 }
 }  // namespace domain

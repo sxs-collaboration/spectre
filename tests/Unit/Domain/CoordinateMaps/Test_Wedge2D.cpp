@@ -209,62 +209,29 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
   test_wedge2d_all_orientations(true);   // Equiangular
   test_equality();
   CHECK(not Wedge2D{}.is_identity());
-}
 
-// [[OutputRegex, The radius of the inner surface must be greater than zero.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.RadiusInner",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge2d = Wedge2D(-0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
-  static_cast<void>(failed_wedge2d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Sphericity of the inner surface must be between 0 and 1]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.Wedge2D.CircularityInner", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge2d = Wedge2D(0.2, 4.0, -0.2, 1.0, OrientationMap<2>{}, true);
-  static_cast<void>(failed_wedge2d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Sphericity of the outer surface must be between 0 and 1]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.Wedge2D.CircularityOuter", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge2d = Wedge2D(0.2, 4.0, 0.0, -0.2, OrientationMap<2>{}, true);
-  static_cast<void>(failed_wedge2d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The radius of the outer surface must be greater than the
-// radius of the inner surface.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.RadiusOuter",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge2d = Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
-  static_cast<void>(failed_wedge2d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The arguments passed into the constructor for Wedge result
-// in an object where the outer surface is pierced by the inner surface.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.Wedge2D.PiercedSurface", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge2d = Wedge2D(3.0, 4.0, 1.0, 0.0, OrientationMap<2>{}, true);
-  static_cast<void>(failed_wedge2d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      Wedge2D(-0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true),
+      Catch::Contains(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      Wedge2D(0.2, 4.0, -0.2, 1.0, OrientationMap<2>{}, true),
+      Catch::Contains(
+          "Sphericity of the inner surface must be between 0 and 1"));
+  CHECK_THROWS_WITH(
+      Wedge2D(0.2, 4.0, 0.0, -0.2, OrientationMap<2>{}, true),
+      Catch::Contains(
+          "Sphericity of the outer surface must be between 0 and 1"));
+  CHECK_THROWS_WITH(
+      Wedge2D(4.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true),
+      Catch::Contains("The radius of the outer surface must be greater than "
+                      "the radius of the inner surface."));
+  CHECK_THROWS_WITH(
+      Wedge2D(3.0, 4.0, 1.0, 0.0, OrientationMap<2>{}, true),
+      Catch::Contains(
+          "The arguments passed into the constructor for Wedge result in an "
+          "object where the outer surface is pierced by the inner surface."));
 #endif
 }
 }  // namespace domain

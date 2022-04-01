@@ -338,76 +338,35 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
   test_wedge3d_alignment();
   test_wedge3d_random_radii();
   CHECK(not Wedge3D{}.is_identity());
-}
 
-// [[OutputRegex, The radius of the inner surface must be greater than zero.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RadiusInner",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Sphericity of the inner surface must be between 0 and 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericityInner",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(0.2, 4.0, -0.2, 1.0, OrientationMap<3>{}, true);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Sphericity of the outer surface must be between 0 and 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericityOuter",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(0.2, 4.0, 0.0, -0.2, OrientationMap<3>{}, true);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The radius of the outer surface must be greater than the
-// radius of the inner surface.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.RadiusOuter",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(4.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The arguments passed into the constructor for Wedge result
-// in an object where the outer surface is pierced by the inner surface.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.PiercedSurface",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(3.0, 4.0, 1.0, 0.0, OrientationMap<3>{}, true);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Only the 'Linear' radial distribution is supported for
-// non-spherical wedges.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.LogarithmicMap",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_wedge3d = Wedge3D(
-      0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true, Wedge3D::WedgeHalves::Both,
-      domain::CoordinateMaps::Distribution::Logarithmic);
-  static_cast<void>(failed_wedge3d);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      Wedge3D(-0.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
+      Catch::Contains(
+          "The radius of the inner surface must be greater than zero."));
+  CHECK_THROWS_WITH(
+      Wedge3D(0.2, 4.0, -0.2, 1.0, OrientationMap<3>{}, true),
+      Catch::Contains(
+          "Sphericity of the inner surface must be between 0 and 1"));
+  CHECK_THROWS_WITH(
+      Wedge3D(0.2, 4.0, 0.0, -0.2, OrientationMap<3>{}, true),
+      Catch::Contains(
+          "Sphericity of the outer surface must be between 0 and 1"));
+  CHECK_THROWS_WITH(
+      Wedge3D(4.2, 4.0, 0.0, 1.0, OrientationMap<3>{}, true),
+      Catch::Contains(
+          "The radius of the outer surface must be greater than the "
+          "radius of the inner surface."));
+  CHECK_THROWS_WITH(
+      Wedge3D(3.0, 4.0, 1.0, 0.0, OrientationMap<3>{}, true),
+      Catch::Contains(
+          "The arguments passed into the constructor for Wedge result in an "
+          "object where the outer surface is pierced by the inner surface."));
+  CHECK_THROWS_WITH(Wedge3D(0.2, 4.0, 0.8, 0.9, OrientationMap<3>{}, true,
+                            Wedge3D::WedgeHalves::Both,
+                            domain::CoordinateMaps::Distribution::Logarithmic),
+                    Catch::Contains("Only the 'Linear' radial distribution is "
+                                    "supported for non-spherical wedges."));
 #endif
 }
 }  // namespace domain

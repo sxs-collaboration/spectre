@@ -423,12 +423,15 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
                      pretty_type::short_name<parallel_component>(),
                      pretty_type::short_name<chare_type>(),
                      tmpl::size<databox_types>::value);
-    tmpl::for_each<databox_types>([](auto databox_type_v) {
+    tmpl::for_each<databox_types>([&parallel_component_v](auto databox_type_v) {
+      // gcc11 and clang12 don't agree on where parallel_component_v is used...
+      (void)(parallel_component_v);
       using databox_type = tmpl::type_from<decltype(databox_type_v)>;
       Parallel::printf("%u",
                        tmpl::size<typename databox_type::tags_list>::value);
-      if constexpr (not std::is_same_v<databox_type,
-                                       tmpl::back<databox_types>>) {
+      // gcc11.1.1 couldn't handle inlining the following type alias
+      using last_databox_type = tmpl::back<databox_types>;
+      if constexpr (not std::is_same_v<databox_type, last_databox_type>) {
         Parallel::printf(", ");
       }
     });

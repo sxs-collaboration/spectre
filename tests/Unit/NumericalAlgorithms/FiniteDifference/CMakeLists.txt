@@ -22,6 +22,7 @@ target_link_libraries(
   PRIVATE
   CoordinateMaps
   DataStructures
+  DgSubcell
   Domain
   FiniteDifference
   ErrorHandling

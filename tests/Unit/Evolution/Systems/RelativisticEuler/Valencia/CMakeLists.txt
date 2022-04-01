@@ -21,5 +21,27 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/RelativisticEuler/Valencia/"
   "${LIBRARY_SOURCES}"
-  "Test_Domain;Test_GeneralRelativity;Test_Hydro;Valencia"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  CoordinateMaps
+  DataStructures
+  DataStructuresHelpers
+  Domain
+  DomainHelpers
+  DomainStructure
+  FunctionsOfTime
+  GeneralRelativity
+  GeneralRelativityHelpers
+  Hydro
+  HydroHelpers
+  MathFunctions
+  LinearOperators
+  Options
+  RelativisticEulerSolutions
+  Spectral
+  Valencia
   )

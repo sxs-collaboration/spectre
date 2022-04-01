@@ -21,7 +21,16 @@ add_test_library(
   "Evolution/Systems/RadiationTransport/M1Grey/"
   "${LIBRARY_SOURCES}"
   "M1Grey"
-  "Boost::boost"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  M1Grey
+  M1GreySolutions
+  Spectral
   )
 
 add_dependencies(

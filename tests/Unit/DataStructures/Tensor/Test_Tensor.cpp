@@ -486,19 +486,25 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim2",
   os << tensor_6.component_name(std::array<size_t, 1>{{4}});
 }
 
-// [[OutputRegex, Dimension mismatch: Tensor has dim = 4, but you specified 8
-// different labels in abcdefgh]]
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamBad",
-                  "[DataStructures][Unit]") {
-  ERROR_TEST();
+namespace {
+void trigger_bad_stream() {
   Tensor<double, Symmetry<1, 2, 2>,
          index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       tensor_5{};
-  CHECK(tensor_5.component_name(
-            tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
-            make_array<3>(std::string("abcdefgh"))) == "aaa");
+  auto bla = tensor_5.component_name(
+      tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
+      make_array<3>(std::string("abcdefgh")));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamBad",
+                  "[DataStructures][Unit]") {
+  CHECK_THROWS_WITH(
+      trigger_bad_stream(),
+      Catch::Contains("Dimension mismatch: Tensor has dim = 4, but you "
+                      "specified 8 different labels in abcdefgh"));
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",

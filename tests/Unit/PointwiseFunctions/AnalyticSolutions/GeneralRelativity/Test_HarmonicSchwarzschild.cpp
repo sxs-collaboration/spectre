@@ -632,23 +632,15 @@ SPECTRE_TEST_CASE(
   test_harmonic_conditions_satisfied<Frame::Inertial>(0.0);
   test_harmonic_conditions_satisfied<Frame::Grid>(DataVector(5));
   test_harmonic_conditions_satisfied<Frame::Grid>(0.0);
-}
 
-// [[OutputRegex, Mass must be non-negative]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.Gr.HarmonicSchwarzschildMass",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  gr::Solutions::HarmonicSchwarzschild solution(-1.0, {{0.0, 0.0, 0.0}});
-}
-
-// [[OutputRegex, In string:.*At line 2 column 9:.Value -0.5 is below the lower
-// bound of 0]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.Gr.HarmonicSchwarzschildOptM",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<gr::Solutions::HarmonicSchwarzschild>(
-      "Mass: -0.5\n"
-      "Center: [1.0,3.0,2.0]");
+  CHECK_THROWS_WITH(
+      []() {
+        gr::Solutions::HarmonicSchwarzschild solution(-1.0, {{0.0, 0.0, 0.0}});
+      }(),
+      Catch::Contains("Mass must be non-negative"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::HarmonicSchwarzschild>(
+          "Mass: -0.5\n"
+          "Center: [1.0,3.0,2.0]"),
+      Catch::Contains("Value -0.5 is below the lower bound of 0"));
 }

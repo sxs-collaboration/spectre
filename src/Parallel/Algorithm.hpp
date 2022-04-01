@@ -286,9 +286,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   /// @{
   /// Start evaluating the algorithm until it is stopped by an action.
-  constexpr void perform_algorithm();
+  void perform_algorithm();
 
-  constexpr void perform_algorithm(const bool restart_if_terminated);
+  void perform_algorithm(const bool restart_if_terminated);
   /// @}
 
   /// Start execution of the phase-dependent action list in `next_phase`. If
@@ -397,6 +397,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   template <typename ThisAction, typename ActionList, typename DbTags>
   bool invoke_iterable_action(db::DataBox<DbTags>& my_box);
 
+  // After catching an exception, shutdown the simulation
+  [[noreturn]] void initiate_shutdown(const std::exception& exception);
+
   // Member variables
 
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -467,31 +470,35 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         tuples::TaggedTuple<InitializationTags...>
             initialization_items)
     : AlgorithmImpl() {
-  (void)initialization_items;  // avoid potential compiler warnings if unused
-  // When we are using the LoadBalancing phase, we want the Main component to
-  // handle the synchronization, so the components do not participate in the
-  // charm++ `AtSync` barrier.
-  // The array parallel components are migratable so they get balanced
-  // appropriately when load balancing is triggered by the LoadBalancing phase
-  // in Main
-  if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
-                               Parallel::Algorithms::Array> and
-                Algorithm_detail::has_LoadBalancing_v<
-                    typename metavariables::Phase>) {
-    this->usesAtSync = false;
-    this->setMigratable(true);
+  try {
+    (void)initialization_items;  // avoid potential compiler warnings if unused
+    // When we are using the LoadBalancing phase, we want the Main component to
+    // handle the synchronization, so the components do not participate in the
+    // charm++ `AtSync` barrier.
+    // The array parallel components are migratable so they get balanced
+    // appropriately when load balancing is triggered by the LoadBalancing phase
+    // in Main
+    if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
+                                 Parallel::Algorithms::Array> and
+                  Algorithm_detail::has_LoadBalancing_v<
+                      typename metavariables::Phase>) {
+      this->usesAtSync = false;
+      this->setMigratable(true);
+    }
+    global_cache_proxy_ = global_cache_proxy;
+    box_ = db::create<
+        db::AddSimpleTags<tmpl::flatten<
+            tmpl::list<Tags::MetavariablesImpl<metavariables>,
+                       Tags::GlobalCacheProxy<metavariables>,
+                       typename ParallelComponent::initialization_tags>>>,
+        db::AddComputeTags<
+            Tags::GlobalCacheImplCompute<metavariables>,
+            db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
+        metavariables{}, global_cache_proxy_,
+        std::move(get<InitializationTags>(initialization_items))...);
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  global_cache_proxy_ = global_cache_proxy;
-  box_ =
-      db::create<db::AddSimpleTags<tmpl::flatten<tmpl::list<
-                     Tags::MetavariablesImpl<metavariables>,
-                     Tags::GlobalCacheProxy<metavariables>,
-                     typename ParallelComponent::initialization_tags>>>,
-                 db::AddComputeTags<
-                     Tags::GlobalCacheImplCompute<metavariables>,
-                     db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
-          metavariables{}, global_cache_proxy_,
-          std::move(get<InitializationTags>(initialization_items))...);
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -634,80 +641,92 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename Arg>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     reduction_action(Arg arg) {
-  (void)Parallel::charmxx::RegisterReductionAction<
-      ParallelComponent, Action, std::decay_t<Arg>>::registrar;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.lock();
+  try {
+    (void)Parallel::charmxx::RegisterReductionAction<
+        ParallelComponent, Action, std::decay_t<Arg>>::registrar;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.lock();
+    }
+    if (performing_action_) {
+      ERROR(
+          "Already performing an Action and cannot execute additional Actions "
+          "from inside of an Action. This is only possible if the "
+          "reduction_action function is not invoked via a proxy, which makes "
+          "no sense for a reduction.");
+    }
+    performing_action_ = true;
+    arg.finalize();
+    forward_tuple_to_action<Action>(
+        std::move(arg.data()), std::make_index_sequence<Arg::pack_size()>{});
+    performing_action_ = false;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.unlock();
+    }
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  if (performing_action_) {
-    ERROR(
-        "Already performing an Action and cannot execute additional Actions "
-        "from inside of an Action. This is only possible if the "
-        "reduction_action function is not invoked via a proxy, which makes "
-        "no sense for a reduction.");
-  }
-  performing_action_ = true;
-  arg.finalize();
-  forward_tuple_to_action<Action>(std::move(arg.data()),
-                                  std::make_index_sequence<Arg::pack_size()>{});
-  performing_action_ = false;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.unlock();
-  }
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     simple_action(std::tuple<Args...> args) {
-  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
-                                                Args...>::registrar;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.lock();
+  try {
+    (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
+                                                  Args...>::registrar;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.lock();
+    }
+    if (performing_action_) {
+      ERROR(
+          "Already performing an Action and cannot execute additional Actions "
+          "from inside of an Action. This is only possible if the "
+          "simple_action function is not invoked via a proxy, which "
+          "we do not allow.");
+    }
+    performing_action_ = true;
+    forward_tuple_to_action<Action>(
+        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+    performing_action_ = false;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.unlock();
+    }
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  if (performing_action_) {
-    ERROR(
-        "Already performing an Action and cannot execute additional Actions "
-        "from inside of an Action. This is only possible if the "
-        "simple_action function is not invoked via a proxy, which "
-        "we do not allow.");
-  }
-  performing_action_ = true;
-  forward_tuple_to_action<Action>(std::move(args),
-                                  std::make_index_sequence<sizeof...(Args)>{});
-  performing_action_ = false;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.unlock();
-  }
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
 void AlgorithmImpl<ParallelComponent,
                    tmpl::list<PhaseDepActionListsPack...>>::simple_action() {
-  (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
-                                                Action>::registrar;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.lock();
+  try {
+    (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
+                                                  Action>::registrar;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.lock();
+    }
+    if (performing_action_) {
+      ERROR(
+          "Already performing an Action and cannot execute additional Actions "
+          "from inside of an Action. This is only possible if the "
+          "simple_action function is not invoked via a proxy, which "
+          "we do not allow.");
+    }
+    performing_action_ = true;
+    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+        box_, *(global_cache_proxy_.ckLocalBranch()),
+        static_cast<const array_index&>(array_index_));
+    performing_action_ = false;
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.unlock();
+    }
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  if (performing_action_) {
-    ERROR(
-        "Already performing an Action and cannot execute additional Actions "
-        "from inside of an Action. This is only possible if the "
-        "simple_action function is not invoked via a proxy, which "
-        "we do not allow.");
-  }
-  performing_action_ = true;
-  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
-      box_, *(global_cache_proxy_.ckLocalBranch()),
-      static_cast<const array_index&>(array_index_));
-  performing_action_ = false;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.unlock();
-  }
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -727,13 +746,17 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     threaded_action() {
-  // NOLINTNEXTLINE(modernize-redundant-void-arg)
-  (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
-                                                  Action>::registrar;
-  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
-      box_, *(global_cache_proxy_.ckLocalBranch()),
-      static_cast<const array_index&>(array_index_),
-      make_not_null(&node_lock_));
+  try {
+    // NOLINTNEXTLINE(modernize-redundant-void-arg)
+    (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
+                                                    Action>::registrar;
+    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+        box_, *(global_cache_proxy_.ckLocalBranch()),
+        static_cast<const array_index&>(array_index_),
+        make_not_null(&node_lock_));
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
+  }
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -741,9 +764,9 @@ template <typename ReceiveTag, typename ReceiveDataType>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) {
-  (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
-                                               ReceiveTag>::registrar;
   try {
+    (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
+                                                 ReceiveTag>::registrar;
     if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
       node_lock_.lock();
     }
@@ -756,96 +779,106 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
       node_lock_.unlock();
     }
-  } catch (std::exception& e) {
-    ERROR("Fatal error: Unexpected exception caught in receive_data: "
-          << e.what());
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-constexpr void
-AlgorithmImpl<ParallelComponent,
-              tmpl::list<PhaseDepActionListsPack...>>::perform_algorithm() {
-  if (performing_action_ or get_terminate() or
-      halt_algorithm_until_next_phase_) {
-    return;
-  }
-#ifdef SPECTRE_CHARM_PROJECTIONS
-  non_action_time_start_ = sys::wall_time();
-#endif
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.lock();
-  }
-  const auto invoke_for_phase = [this](auto phase_dep_v) {
-    using PhaseDep = decltype(phase_dep_v);
-    constexpr PhaseType phase = PhaseDep::phase;
-    using actions_list = typename PhaseDep::action_list;
-    if (phase_ == phase) {
-      while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
-             not halt_algorithm_until_next_phase_ and
-             iterate_over_actions<PhaseDep>(
-                 std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
-      }
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    perform_algorithm() {
+  try {
+    if (performing_action_ or get_terminate() or
+        halt_algorithm_until_next_phase_) {
+      return;
     }
-  };
-  // Loop over all phases, once the current phase is found we perform the
-  // algorithm in that phase until we are no longer able to because we are
-  // waiting on data to be sent or because the algorithm has been marked as
-  // terminated.
-  EXPAND_PACK_LEFT_TO_RIGHT(invoke_for_phase(PhaseDepActionListsPack{}));
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.unlock();
-  }
 #ifdef SPECTRE_CHARM_PROJECTIONS
-  traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
-                        non_action_time_start_, sys::wall_time());
+    non_action_time_start_ = sys::wall_time();
 #endif
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.lock();
+    }
+    const auto invoke_for_phase = [this](auto phase_dep_v) {
+      using PhaseDep = decltype(phase_dep_v);
+      constexpr PhaseType phase = PhaseDep::phase;
+      using actions_list = typename PhaseDep::action_list;
+      if (phase_ == phase) {
+        while (
+            tmpl::size<actions_list>::value > 0 and not get_terminate() and
+            not halt_algorithm_until_next_phase_ and
+            iterate_over_actions<PhaseDep>(
+                std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
+        }
+      }
+    };
+    // Loop over all phases, once the current phase is found we perform the
+    // algorithm in that phase until we are no longer able to because we are
+    // waiting on data to be sent or because the algorithm has been marked as
+    // terminated.
+    EXPAND_PACK_LEFT_TO_RIGHT(invoke_for_phase(PhaseDepActionListsPack{}));
+    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+      node_lock_.unlock();
+    }
+#ifdef SPECTRE_CHARM_PROJECTIONS
+    traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
+                          non_action_time_start_, sys::wall_time());
+#endif
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
+  }
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-constexpr void
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     perform_algorithm(const bool restart_if_terminated) {
-  if (restart_if_terminated) {
-    set_terminate(false);
+  try {
+    if (restart_if_terminated) {
+      set_terminate(false);
+    }
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     start_phase(const PhaseType next_phase) {
-  // terminate should be true since we exited a phase previously.
-  if (not get_terminate() and not halt_algorithm_until_next_phase_) {
-    ERROR(
-        "An algorithm must always be set to terminate at the beginning of a "
-        "phase. Since this is not the case the previous phase did not end "
-        "correctly. The integer corresponding to the previous phase is: "
-        << static_cast<int>(phase_)
-        << " and the next phase is: " << static_cast<int>(next_phase)
-        << ", The termination flag is: " << get_terminate()
-        << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
-  }
-  // set terminate to true if there are no actions in this PDAL
-  set_terminate(number_of_actions_in_phase(next_phase) == 0);
+  try {
+    // terminate should be true since we exited a phase previously.
+    if (not get_terminate() and not halt_algorithm_until_next_phase_) {
+      ERROR(
+          "An algorithm must always be set to terminate at the beginning of a "
+          "phase. Since this is not the case the previous phase did not end "
+          "correctly. The integer corresponding to the previous phase is: "
+          << static_cast<int>(phase_)
+          << " and the next phase is: " << static_cast<int>(next_phase)
+          << ", The termination flag is: " << get_terminate()
+          << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
+    }
+    // set terminate to true if there are no actions in this PDAL
+    set_terminate(number_of_actions_in_phase(next_phase) == 0);
 
-  // Ideally, we'd set the bookmarks as we are leaving a phase, but there is
-  // no 'clean-up' code that we run when departing a phase, so instead we set
-  // the bookmark for the previous phase (still stored in `phase_` at this
-  // point), before we update the member variable `phase_`.
-  // Then, after updating `phase_`, we check if we've ever stored a bookmark
-  // for the new phase previously. If so, we start from where we left off,
-  // otherwise, start from the beginning of the action list.
-  phase_bookmarks_[phase_] = algorithm_step_;
-  phase_ = next_phase;
-  if (phase_bookmarks_.count(phase_) != 0) {
-    algorithm_step_ = phase_bookmarks_.at(phase_);
-  } else {
-    algorithm_step_ = 0;
+    // Ideally, we'd set the bookmarks as we are leaving a phase, but there is
+    // no 'clean-up' code that we run when departing a phase, so instead we set
+    // the bookmark for the previous phase (still stored in `phase_` at this
+    // point), before we update the member variable `phase_`.
+    // Then, after updating `phase_`, we check if we've ever stored a bookmark
+    // for the new phase previously. If so, we start from where we left off,
+    // otherwise, start from the beginning of the action list.
+    phase_bookmarks_[phase_] = algorithm_step_;
+    phase_ = next_phase;
+    if (phase_bookmarks_.count(phase_) != 0) {
+      algorithm_step_ = phase_bookmarks_.at(phase_);
+    } else {
+      algorithm_step_ = 0;
+    }
+    halt_algorithm_until_next_phase_ = false;
+    perform_algorithm();
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
   }
-  halt_algorithm_until_next_phase_ = false;
-  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -1120,6 +1153,15 @@ bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     algorithm_step_ = get<2>(action_return);
   }
   return true;
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    initiate_shutdown(const std::exception& exception) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+  CkError("\nException caught in Algorithm:\n%s\n\nShutting down...\n",
+          exception.what());
+  sys::abort("");
 }
 /// \endcond
 

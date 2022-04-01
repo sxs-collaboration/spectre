@@ -217,61 +217,66 @@ void test_functions_of_time_tag() {
 SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
                   "[ControlSystem][Unit]") {
   test_functions_of_time_tag();
-}
 
-// [[OutputRegex, is not controlling a function of time. Check that the
-// DomainCreator you have chosen uses all of the control systems in the
-// executable. The existing functions of time are]]
-SPECTRE_TEST_CASE(
-    "Unit.ControlSystem.Tags.FunctionsOfTimeInitialize.ExtraControlSystem",
-    "[ControlSystem][Unit]") {
-  ERROR_TEST();
   using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
   using Creator = tmpl::front<fot_tag::option_tags<Metavariables>>::type;
 
-  const Creator creator = std::make_unique<TestCreator>(true);
+  CHECK_THROWS_WITH(
+      []() {
+        const Creator creator = std::make_unique<TestCreator>(true);
 
-  const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const Averager<2> averager(0.25, true);
-  const double update_fraction = 0.3;
-  const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError control_error{};
+        const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                                   0.99);
+        const Averager<2> averager(0.25, true);
+        const double update_fraction = 0.3;
+        const Controller<2> controller(update_fraction);
+        const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner, control_error);
-  OptionHolder<2> option_holder2(averager, controller, tuner, control_error);
-  OptionHolder<3> option_holder3(averager, controller, tuner, control_error);
-  OptionHolder<4> option_holder4(averager, controller, tuner, control_error);
+        OptionHolder<1> option_holder1(averager, controller, tuner,
+                                       control_error);
+        OptionHolder<2> option_holder2(averager, controller, tuner,
+                                       control_error);
+        OptionHolder<3> option_holder3(averager, controller, tuner,
+                                       control_error);
+        OptionHolder<4> option_holder4(averager, controller, tuner,
+                                       control_error);
 
-  const double initial_time_step = 1.0;
-  fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      creator, initial_time, initial_time_step, option_holder1, option_holder2,
-      option_holder3, option_holder4);
-}
+        const double initial_time_step = 1.0;
+        fot_tag::type functions_of_time =
+            fot_tag::create_from_options<Metavariables>(
+                creator, initial_time, initial_time_step, option_holder1,
+                option_holder2, option_holder3, option_holder4);
+      }(),
+      Catch::Contains(
+          "is not controlling a function of time. Check that the DomainCreator "
+          "you have chosen uses all of the control systems in the executable. "
+          "The existing functions of time are"));
 
-// [[OutputRegex, It is possible that the DomainCreator you are using isn't
-// compatible with the control systems]]
-SPECTRE_TEST_CASE(
-    "Unit.ControlSystem.Tags.FunctionsOfTimeInitialize.ImproperExprTime",
-    "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  using Creator = tmpl::front<fot_tag::option_tags<Metavariables>>::type;
+  CHECK_THROWS_WITH(
+      []() {
+        const Creator creator = std::make_unique<BadCreator>();
 
-  const Creator creator = std::make_unique<BadCreator>();
+        const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                                   0.99);
+        const Averager<2> averager(0.25, true);
+        const double update_fraction = 0.3;
+        const Controller<2> controller(update_fraction);
+        const control_system::TestHelpers::ControlError control_error{};
 
-  const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const Averager<2> averager(0.25, true);
-  const double update_fraction = 0.3;
-  const Controller<2> controller(update_fraction);
-  const control_system::TestHelpers::ControlError control_error{};
+        OptionHolder<1> option_holder1(averager, controller, tuner,
+                                       control_error);
+        OptionHolder<2> option_holder2(averager, controller, tuner,
+                                       control_error);
+        OptionHolder<3> option_holder3(averager, controller, tuner,
+                                       control_error);
 
-  OptionHolder<1> option_holder1(averager, controller, tuner, control_error);
-  OptionHolder<2> option_holder2(averager, controller, tuner, control_error);
-  OptionHolder<3> option_holder3(averager, controller, tuner, control_error);
-
-  const double initial_time_step = 1.0;
-  fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      creator, initial_time, initial_time_step, option_holder1, option_holder2,
-      option_holder3);
+        const double initial_time_step = 1.0;
+        fot_tag::type functions_of_time =
+            fot_tag::create_from_options<Metavariables>(
+                creator, initial_time, initial_time_step, option_holder1,
+                option_holder2, option_holder3);
+      }(),
+      Catch::Contains("It is possible that the DomainCreator you are using "
+                      "isn't compatible with the control systems"));
 }
 }  // namespace

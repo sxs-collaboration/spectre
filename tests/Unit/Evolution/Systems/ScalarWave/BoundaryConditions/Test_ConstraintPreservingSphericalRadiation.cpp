@@ -26,7 +26,8 @@ void test() {
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
   for (const std::string& bc_string :
-       {"Sommerfeld", "FirstOrderBaylissTurkel", "SecondOrderBaylissTurkel"}) {
+       {"Sommerfeld"s, "FirstOrderBaylissTurkel"s,
+        "SecondOrderBaylissTurkel"s}) {
     CAPTURE(bc_string);
     helpers::test_boundary_condition_with_python<
         ScalarWave::BoundaryConditions::ConstraintPreservingSphericalRadiation<

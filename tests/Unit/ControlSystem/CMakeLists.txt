@@ -26,5 +26,14 @@ add_test_library(
   ${LIBRARY}
   "ControlSystem"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;ControlSystem;Domain;FunctionsOfTime"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  ControlSystem
+  EventsAndDenseTriggers
+  FunctionsOfTime
+  Utilities
+)

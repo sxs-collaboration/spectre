@@ -92,52 +92,47 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers",
     CHECK(upper_bound_stored_info4 ==
           gsl::at(all_stored_info, all_stored_info.size() - 1));
   }
-}
 
-// [[OutputRegex, Attempted to change expiration time to
-// 3\.5, which precedes the previous expiration time of 4.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers.BadResetExpr",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  double expr_time = 4.0;
-  double next_expr_time = 3.5;
-  FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expr_time),
-                                               next_expr_time);
-}
+  CHECK_THROWS_WITH(
+      []() {
+        double expr_time = 4.0;
+        double next_expr_time = 3.5;
+        FunctionOfTimeHelpers::reset_expiration_time(make_not_null(&expr_time),
+                                                     next_expr_time);
+      }(),
+      Catch::Contains(
+          "Attempted to change expiration time to 3.5, which precedes "
+          "the previous expiration time of 4."));
 
-// [[OutputRegex, requested time -1 precedes earliest time 0 of times.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers.BadSIFromUpperBound",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  constexpr size_t mdp1 = 1;
-  std::vector<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
-      FunctionOfTimeHelpers::StoredInfo<mdp1>{
-          0.0, std::array<DataVector, mdp1>{DataVector{1, 0.0}}}};
-  for (int t = 1; t < 10; t++) {
-    all_stored_info.emplace_back(
-        static_cast<double>(t),
-        std::array<DataVector, mdp1>{DataVector{1, 0.0}});
-  }
+  CHECK_THROWS_WITH(
+      ([]() {
+        constexpr size_t mdp1 = 1;
+        std::vector<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info{
+            FunctionOfTimeHelpers::StoredInfo<mdp1>{
+                0.0, std::array<DataVector, mdp1>{DataVector{1, 0.0}}}};
+        for (int t = 1; t < 10; t++) {
+          all_stored_info.emplace_back(
+              static_cast<double>(t),
+              std::array<DataVector, mdp1>{DataVector{1, 0.0}});
+        }
 
-  (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(-1.0,
-                                                            all_stored_info);
-}
+        (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(
+            -1.0, all_stored_info);
+      }()),
+      Catch::Contains("requested time -1 precedes earliest time 0 of times."));
 
-// [[OutputRegex, Vector of StoredInfos you are trying to access is empty. Was
-// it constructed properly?]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.FunctionOfTimeHelpers.BadEmptyVectorOfSI",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  constexpr size_t mdp1 = 3;
-  std::vector<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info;
+  CHECK_THROWS_WITH(
+      []() {
+        constexpr size_t mdp1 = 3;
+        std::vector<FunctionOfTimeHelpers::StoredInfo<mdp1>> all_stored_info;
 
-  (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(1.0,
-                                                            all_stored_info);
-  ERROR("Failed to trigger ASSERT in assertion test.");
+        (void)FunctionOfTimeHelpers::stored_info_from_upper_bound(
+            1.0, all_stored_info);
+      }(),
+      Catch::Contains(
+          "Vector of StoredInfos you are trying to access is empty. Was "
+          "it constructed properly?"));
 #endif
 }
 }  // namespace domain::FunctionsOfTime

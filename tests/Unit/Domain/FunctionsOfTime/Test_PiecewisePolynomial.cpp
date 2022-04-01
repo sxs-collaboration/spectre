@@ -240,120 +240,120 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     f_of_t.update(2.0, {3.0, 4.0}, 2.1);
     CHECK(f_of_t.func(2.0)[0] == DataVector{1.0, 2.0});
   }
-}
 
-// [[OutputRegex, t must be increasing from call to call. Attempted to update at
-// time 1, which precedes the previous update time of 2.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateTime",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
-  f_of_t.update(2.0, {6.0, 0.0}, 2.1);
-  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 0.1);
+        f_of_t.update(2.0, {6.0, 0.0}, 2.1);
+        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+      }()),
+      Catch::Contains(
+          "t must be increasing from call to call. Attempted to update "
+          "at time 1, which precedes the previous update time of 2."));
 
-// [[OutputRegex, expiration_time must be nondecreasing from call to call.
-// Attempted to change expiration time to 1\.1, which precedes the
-// previous expiration time of 2\.1.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadExpiryTime",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
-  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
-  f_of_t.update(2.0, {6.0, 0.0}, 1.1);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 0.1);
+        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+        f_of_t.update(2.0, {6.0, 0.0}, 1.1);
+      }()),
+      Catch::Contains(
+          "expiration_time must be nondecreasing from call to call. "
+          "Attempted to change expiration time to 1.1, which precedes "
+          "the previous expiration time of 2.1."));
 
-// [[OutputRegex, Attempt to update PiecewisePolynomial at a time 1
-// that is earlier than the previous expiration time of 2.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateGtExpiry",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
-  f_of_t.update(1.0, {6.0, 0.0}, 2.1);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 2.0);
+        f_of_t.update(1.0, {6.0, 0.0}, 2.1);
+      }()),
+      Catch::Contains(
+          "Attempt to update PiecewisePolynomial at a time 1 that is "
+          "earlier than the previous expiration time of 2."));
 
-// [[OutputRegex, Attempt to set the expiration time of PiecewisePolynomial
-// to a value 2\.2 that is earlier than the current time 2\.5.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateLtExpiry",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
-  f_of_t.update(2.5, {6.0, 0.0}, 2.2);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 2.0);
+        f_of_t.update(2.5, {6.0, 0.0}, 2.2);
+      }()),
+      Catch::Contains(
+          "Attempt to set the expiration time of PiecewisePolynomial to "
+          "a value 2.2 that is earlier than the current time 2.5."));
 
-// [[OutputRegex, Attempted to change expiration time to
-// 1\.5, which precedes the previous expiration time of 2.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadResetExpiry",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 2.0);
-  f_of_t.reset_expiration_time(1.5);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 2.0);
+        f_of_t.reset_expiration_time(1.5);
+        f_of_t.update(2.5, {6.0, 0.0}, 2.2);
+      }()),
+      Catch::Contains(
+          "Attempted to change expiration time to 1.5, which precedes "
+          "the previous expiration time of 2."));
 
-// [[OutputRegex, the number of components trying to be updated \(3\) does not
-// match the number of components \(2\) in the PiecewisePolynomial.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateSize",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func, 0.1);
-  f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{0.0, 0.0}, {0.0, 0.0}, {0.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(0.0, init_func,
+                                                                 0.1);
+        f_of_t.update(1.0, {6.0, 0.0, 0.0}, 1.1);
+      }()),
+      Catch::Contains(
+          "the number of components trying to be updated (3) does not match "
+          "the number of components (2) in the PiecewisePolynomial."));
 
-// [[OutputRegex, requested time 0.5 precedes earliest time 1 of times.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.TimeOutOfRange",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func, 2.0);
-  f_of_t.update(2.0, {6.0, 0.0}, 2.1);
-  f_of_t.func(0.5);
-}
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func,
+                                                                 2.0);
+        f_of_t.update(2.0, {6.0, 0.0}, 2.1);
+        f_of_t.func(0.5);
+      }()),
+      Catch::Contains("requested time 0.5 precedes earliest time 1 of times."));
 
-// [[OutputRegex, Attempt to evaluate PiecewisePolynomial at a time 2\.2
-// that is after the expiration time 2\.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.TimeAfterExpiry",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // two component system (x**3 and x**2)
-  constexpr size_t deriv_order = 3;
-  const std::array<DataVector, deriv_order + 1> init_func{
-      {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func, 2.0);
-  f_of_t.func(2.2);
+  CHECK_THROWS_WITH(
+      ([]() {
+        // two component system (x**3 and x**2)
+        constexpr size_t deriv_order = 3;
+        const std::array<DataVector, deriv_order + 1> init_func{
+            {{1.0, 1.0}, {3.0, 2.0}, {6.0, 2.0}, {6.0, 0.0}}};
+        FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func,
+                                                                 2.0);
+        f_of_t.func(2.2);
+      }()),
+      Catch::Contains(
+          "Attempt to evaluate PiecewisePolynomial at a time 2.2 that "
+          "is after the expiration time 2."));
 }
 }  // namespace domain
