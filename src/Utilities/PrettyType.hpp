@@ -260,8 +260,9 @@ struct construct_name<
 
 template <typename T, typename M, typename KT>
 struct construct_name<
-    T, M, KT, Requires<tt::is_std_array_v<std::decay_t<
-                  std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
+    T, M, KT,
+    Requires<tt::is_std_array_v<
+        std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>>>> {
   using type = std::decay_t<std::remove_reference_t<std::remove_pointer_t<T>>>;
   static std::string get() {
     std::stringstream ss;
@@ -704,5 +705,31 @@ std::string extract_short_name(const std::string& name);
 template <typename T>
 std::string short_name() {
   return detail::extract_short_name(typeid(T).name());
+}
+
+namespace detail {
+template <typename T, typename = std::void_t<>>
+struct name_helper {
+  static std::string name() { return pretty_type::short_name<T>(); }
+};
+
+template <typename T>
+struct name_helper<T, std::void_t<decltype(T::name())>> {
+  static std::string name() { return T::name(); }
+};
+}  // namespace detail
+
+/*!
+ * \ingroup PrettyTypeGroup
+ * \brief Return the result of the `name()` member of a class. If a class
+ * doesn't have a `name()` member, call `pretty_type::short_name<T>()` instead.
+ *
+ * \warning Do not use this inside the `name()` member of struct. This
+ * can lead to recursion as `pretty_type::name<Tag>()` will call the `name()`
+ * member of the struct.
+ */
+template <typename T>
+std::string name() {
+  return detail::name_helper<T>::name();
 }
 }  // namespace pretty_type

@@ -186,61 +186,84 @@ struct GlobalEnumTemplate {};
 
 template <LocalEnum>
 struct LocalEnumTemplate {};
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.short_name", "[Utilities][Unit]") {
+template <typename>
+struct TemplateWithName {
+  static std::string name() { return "UniqueTemplateWithName"; }
+};
+
+struct NonTemplateWithName {
+  static std::string name() { return "UniqueNonTemplateWithName"; }
+};
+
+struct ShortName {
+  template <typename TestType>
+  static std::string name() {
+    return pretty_type::short_name<TestType>();
+  }
+};
+
+struct Name {
+  template <typename TestType>
+  static std::string name() {
+    return pretty_type::name<TestType>();
+  }
+};
+
+template <typename NameFunc>
+void test_name_func() {
   // Fundamentals
-  CHECK(pretty_type::short_name<bool>() == "bool");
-  CHECK(pretty_type::short_name<char>() == "char");
-  CHECK(pretty_type::short_name<signed char>() == "signed char");
-  CHECK(pretty_type::short_name<unsigned char>() == "unsigned char");
-  CHECK(pretty_type::short_name<short>() == "short");
-  CHECK(pretty_type::short_name<unsigned short>() == "unsigned short");
-  CHECK(pretty_type::short_name<int>() == "int");
-  CHECK(pretty_type::short_name<unsigned int>() == "unsigned int");
-  CHECK(pretty_type::short_name<long>() == "long");
-  CHECK(pretty_type::short_name<unsigned long>() == "unsigned long");
-  CHECK(pretty_type::short_name<long long>() == "long long");
-  CHECK(pretty_type::short_name<unsigned long long>() == "unsigned long long");
-  CHECK(pretty_type::short_name<void>() == "void");
-  CHECK(pretty_type::short_name<float>() == "float");
-  CHECK(pretty_type::short_name<double>() == "double");
-  CHECK(pretty_type::short_name<long double>() == "long double");
+  CHECK(NameFunc::template name<bool>() == "bool");
+  CHECK(NameFunc::template name<char>() == "char");
+  CHECK(NameFunc::template name<signed char>() == "signed char");
+  CHECK(NameFunc::template name<unsigned char>() == "unsigned char");
+  CHECK(NameFunc::template name<short>() == "short");
+  CHECK(NameFunc::template name<unsigned short>() == "unsigned short");
+  CHECK(NameFunc::template name<int>() == "int");
+  CHECK(NameFunc::template name<unsigned int>() == "unsigned int");
+  CHECK(NameFunc::template name<long>() == "long");
+  CHECK(NameFunc::template name<unsigned long>() == "unsigned long");
+  CHECK(NameFunc::template name<long long>() == "long long");
+  CHECK(NameFunc::template name<unsigned long long>() == "unsigned long long");
+  CHECK(NameFunc::template name<void>() == "void");
+  CHECK(NameFunc::template name<float>() == "float");
+  CHECK(NameFunc::template name<double>() == "double");
+  CHECK(NameFunc::template name<long double>() == "long double");
 
   // Standard library
   // Untemplated
-  CHECK(pretty_type::short_name<std::type_info>() == "type_info");
+  CHECK(NameFunc::template name<std::type_info>() == "type_info");
   // Templated
-  CHECK(pretty_type::short_name<std::vector<int>>() == "vector");
+  CHECK(NameFunc::template name<std::vector<int>>() == "vector");
   // (Probably) special cased in mangling
-  CHECK(pretty_type::short_name<std::ostream>() == "ostream");
+  CHECK(NameFunc::template name<std::ostream>() == "ostream");
   // Possibly special cased in mangling and a case we particularly care about
-  CHECK(pretty_type::short_name<std::string>() == "string");
+  CHECK(NameFunc::template name<std::string>() == "string");
 
   // Types and templates with no namespaces
-  CHECK(pretty_type::short_name<Test_PrettyType_struct>() ==
+  CHECK(NameFunc::template name<Test_PrettyType_struct>() ==
         "Test_PrettyType_struct");
-  CHECK(pretty_type::short_name<Test_PrettyType_templated_struct<int>>() ==
+  CHECK(NameFunc::template name<Test_PrettyType_templated_struct<int>>() ==
         "Test_PrettyType_templated_struct");
-  CHECK(pretty_type::short_name<
+  CHECK(NameFunc::template name<
             Test_PrettyType_templated_struct<Test_PrettyType_struct>>() ==
         "Test_PrettyType_templated_struct");
-  CHECK(pretty_type::short_name<Test_PrettyType_templated_struct<
+  CHECK(NameFunc::template name<Test_PrettyType_templated_struct<
             Test_PrettyType_templated_struct<int>>>() ==
         "Test_PrettyType_templated_struct");
-  CHECK(pretty_type::short_name<Test_PrettyType_templated_struct<
+  CHECK(NameFunc::template name<Test_PrettyType_templated_struct<
             Test_PrettyType_templated_struct<Test_PrettyType_struct>>>() ==
         "Test_PrettyType_templated_struct");
 
   // Named namespaces
-  CHECK(pretty_type::short_name<Test_PrettyType_namespace::NamedNamespace>() ==
+  CHECK(NameFunc::template name<Test_PrettyType_namespace::NamedNamespace>() ==
         "NamedNamespace");
 
   // Anonymous namespaces
-  CHECK(pretty_type::short_name<TestType>() == "TestType");
+  CHECK(NameFunc::template name<TestType>() == "TestType");
 
   // Digits (special meaning in mangled names)
-  CHECK(pretty_type::short_name<Type1Containing2Digits3>() ==
+  CHECK(NameFunc::template name<Type1Containing2Digits3>() ==
         "Type1Containing2Digits3");
 
   using Global = Test_PrettyType_struct;
@@ -249,190 +272,202 @@ SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.short_name", "[Utilities][Unit]") {
   using Templated = Test_PrettyType_templated_struct<Test_PrettyType_struct>;
 
   // const
-  CHECK(pretty_type::short_name<const int>() == "int");
-  CHECK(pretty_type::short_name<const Global>() == "Test_PrettyType_struct");
-  CHECK(pretty_type::short_name<const TestType>() == "TestType");
-  CHECK(pretty_type::short_name<const Std>() == "type_info");
-  CHECK(pretty_type::short_name<const Special>() == "ostream");
-  CHECK(pretty_type::short_name<const Templated>() ==
+  CHECK(NameFunc::template name<const int>() == "int");
+  CHECK(NameFunc::template name<const Global>() == "Test_PrettyType_struct");
+  CHECK(NameFunc::template name<const TestType>() == "TestType");
+  CHECK(NameFunc::template name<const Std>() == "type_info");
+  CHECK(NameFunc::template name<const Special>() == "ostream");
+  CHECK(NameFunc::template name<const Templated>() ==
         "Test_PrettyType_templated_struct");
 
   // Template stuff
-  CHECK(pretty_type::short_name<Template<int>>() == "Template");
-  CHECK(pretty_type::short_name<Template<Global>>() == "Template");
-  CHECK(pretty_type::short_name<Template<TestType>>() == "Template");
-  CHECK(pretty_type::short_name<Template<Std>>() == "Template");
-  CHECK(pretty_type::short_name<Template<Special>>() == "Template");
-  CHECK(pretty_type::short_name<Template<Templated>>() == "Template");
-  CHECK(pretty_type::short_name<Template<const Global>>() == "Template");
-  CHECK(pretty_type::short_name<Template<const TestType>>() == "Template");
+  CHECK(NameFunc::template name<Template<int>>() == "Template");
+  CHECK(NameFunc::template name<Template<Global>>() == "Template");
+  CHECK(NameFunc::template name<Template<TestType>>() == "Template");
+  CHECK(NameFunc::template name<Template<Std>>() == "Template");
+  CHECK(NameFunc::template name<Template<Special>>() == "Template");
+  CHECK(NameFunc::template name<Template<Templated>>() == "Template");
+  CHECK(NameFunc::template name<Template<const Global>>() == "Template");
+  CHECK(NameFunc::template name<Template<const TestType>>() == "Template");
 
-  CHECK(pretty_type::short_name<Template2<int, int>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<int, Global>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<int, TestType>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<int, Std>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<int, Special>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, int>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, Global>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, TestType>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, Std>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, Special>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, int>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, Global>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, TestType>>() ==
+  CHECK(NameFunc::template name<Template2<int, int>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<int, Global>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<int, TestType>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<int, Std>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<int, Special>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Global, int>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Global, Global>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Global, TestType>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Global, Std>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Global, Special>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<TestType, int>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<TestType, Global>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<TestType, TestType>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, Std>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, Special>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Std, int>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Std, Global>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Std, TestType>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Std, Std>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Std, Special>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, int>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, Global>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, TestType>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, Std>>() == "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, Special>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<TestType, Std>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<TestType, Special>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Std, int>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Std, Global>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Std, TestType>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Std, Std>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Std, Special>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Special, int>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Special, Global>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Special, TestType>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Special, Std>>() == "Template2");
+  CHECK(NameFunc::template name<Template2<Special, Special>>() == "Template2");
 
-  CHECK(pretty_type::short_name<Template2<Global, const Global>>() ==
+  CHECK(NameFunc::template name<Template2<Global, const Global>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, const TestType>>() ==
+  CHECK(NameFunc::template name<Template2<Global, const TestType>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<const Global, Global>>() ==
+  CHECK(NameFunc::template name<Template2<const Global, Global>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<const TestType, Global>>() ==
-        "Template2");
-
-  CHECK(pretty_type::short_name<Template<Template<int>>>() == "Template");
-  CHECK(pretty_type::short_name<Template2<Template<int>, Template<double>>>() ==
+  CHECK(NameFunc::template name<Template2<const TestType, Global>>() ==
         "Template2");
 
-  CHECK(pretty_type::short_name<Pack<>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<int>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<Global>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<TestType>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<Std>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<Special>>() == "Pack");
-  CHECK(pretty_type::short_name<Pack<Templated>>() == "Pack");
+  CHECK(NameFunc::template name<Template<Template<int>>>() == "Template");
+  CHECK(NameFunc::template name<Template2<Template<int>, Template<double>>>() ==
+        "Template2");
 
-  CHECK(pretty_type::short_name<Pack2<int>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<Global>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<TestType>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<Std>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<Special>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<Templated>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<TestType, TestType>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<Special, TestType>>() == "Pack2");
-  CHECK(pretty_type::short_name<Pack2<TestType, Special>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack<>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<int>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<Global>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<TestType>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<Std>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<Special>>() == "Pack");
+  CHECK(NameFunc::template name<Pack<Templated>>() == "Pack");
+
+  CHECK(NameFunc::template name<Pack2<int>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<Global>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<TestType>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<Std>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<Special>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<Templated>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<TestType, TestType>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<Special, TestType>>() == "Pack2");
+  CHECK(NameFunc::template name<Pack2<TestType, Special>>() == "Pack2");
 
   // Nested types
-  CHECK(pretty_type::short_name<Outer::Inner>() == "Inner");
-  CHECK(pretty_type::short_name<Outer::InnerTemplate<int>>() ==
+  CHECK(NameFunc::template name<Outer::Inner>() == "Inner");
+  CHECK(NameFunc::template name<Outer::InnerTemplate<int>>() ==
         "InnerTemplate");
-  CHECK(pretty_type::short_name<Outer::InnerTemplate<Global>>() ==
+  CHECK(NameFunc::template name<Outer::InnerTemplate<Global>>() ==
         "InnerTemplate");
-  CHECK(pretty_type::short_name<Outer::InnerTemplate<TestType>>() ==
+  CHECK(NameFunc::template name<Outer::InnerTemplate<TestType>>() ==
         "InnerTemplate");
-  CHECK(pretty_type::short_name<Outer::InnerTemplate<Special>>() ==
+  CHECK(NameFunc::template name<Outer::InnerTemplate<Special>>() ==
         "InnerTemplate");
-  CHECK(pretty_type::short_name<OuterTemplate<int>::Inner>() == "Inner");
-  CHECK(pretty_type::short_name<OuterTemplate<Global>::Inner>() == "Inner");
-  CHECK(pretty_type::short_name<OuterTemplate<TestType>::Inner>() == "Inner");
-  CHECK(pretty_type::short_name<OuterTemplate<Special>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<OuterTemplate<int>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<OuterTemplate<Global>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<OuterTemplate<TestType>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<OuterTemplate<Special>::Inner>() == "Inner");
 
-  CHECK(pretty_type::short_name<Pack<>::Inner>() == "Inner");
-  CHECK(pretty_type::short_name<Pack<TestType>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<Pack<>::Inner>() == "Inner");
+  CHECK(NameFunc::template name<Pack<TestType>::Inner>() == "Inner");
 
   // Non-type template parameters
-  CHECK(pretty_type::short_name<NonType<3>>() == "NonType");
-  CHECK(pretty_type::short_name<NonType<0>>() == "NonType");
-  CHECK(pretty_type::short_name<NonType<-3>>() == "NonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<3, 3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<3, 0>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<3, -3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<0, 3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<0, 0>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<0, -3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<-3, 3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<-3, 0>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<NonTypeNonType<-3, -3>>() == "NonTypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<int, 3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Global, 3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<TestType, 3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Special, 3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<int, 0>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Global, 0>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<TestType, 0>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Special, 0>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<int, -3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Global, -3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<TestType, -3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<TypeNonType<Special, -3>>() == "TypeNonType");
-  CHECK(pretty_type::short_name<NonTypeType<3, int>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<3, Global>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<3, TestType>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<3, Special>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<0, int>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<0, Global>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<0, TestType>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<0, Special>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<-3, int>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<-3, Global>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<-3, TestType>>() == "NonTypeType");
-  CHECK(pretty_type::short_name<NonTypeType<-3, Special>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonType<3>>() == "NonType");
+  CHECK(NameFunc::template name<NonType<0>>() == "NonType");
+  CHECK(NameFunc::template name<NonType<-3>>() == "NonType");
+  CHECK(NameFunc::template name<NonTypeNonType<3, 3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<3, 0>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<3, -3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<0, 3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<0, 0>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<0, -3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<-3, 3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<-3, 0>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<NonTypeNonType<-3, -3>>() == "NonTypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<int, 3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Global, 3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<TestType, 3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Special, 3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<int, 0>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Global, 0>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<TestType, 0>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Special, 0>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<int, -3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Global, -3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<TestType, -3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<TypeNonType<Special, -3>>() == "TypeNonType");
+  CHECK(NameFunc::template name<NonTypeType<3, int>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<3, Global>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<3, TestType>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<3, Special>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<0, int>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<0, Global>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<0, TestType>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<0, Special>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<-3, int>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<-3, Global>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<-3, TestType>>() == "NonTypeType");
+  CHECK(NameFunc::template name<NonTypeType<-3, Special>>() == "NonTypeType");
 
   // nullptr-related things
-  CHECK(pretty_type::short_name<Template<std::nullptr_t>>() == "Template");
-  CHECK(pretty_type::short_name<Template2<std::nullptr_t, std::nullptr_t>>() ==
+  CHECK(NameFunc::template name<Template<std::nullptr_t>>() == "Template");
+  CHECK(NameFunc::template name<Template2<std::nullptr_t, std::nullptr_t>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<int, std::nullptr_t>>() ==
+  CHECK(NameFunc::template name<Template2<int, std::nullptr_t>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<Global, std::nullptr_t>>() ==
+  CHECK(NameFunc::template name<Template2<Global, std::nullptr_t>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<TestType, std::nullptr_t>>() ==
+  CHECK(NameFunc::template name<Template2<TestType, std::nullptr_t>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<Special, std::nullptr_t>>() ==
+  CHECK(NameFunc::template name<Template2<Special, std::nullptr_t>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<std::nullptr_t, int>>() ==
+  CHECK(NameFunc::template name<Template2<std::nullptr_t, int>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<std::nullptr_t, Global>>() ==
+  CHECK(NameFunc::template name<Template2<std::nullptr_t, Global>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<std::nullptr_t, TestType>>() ==
+  CHECK(NameFunc::template name<Template2<std::nullptr_t, TestType>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<Template2<std::nullptr_t, Special>>() ==
+  CHECK(NameFunc::template name<Template2<std::nullptr_t, Special>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<NullptrTemplate<nullptr>>() ==
+  CHECK(NameFunc::template name<NullptrTemplate<nullptr>>() ==
         "NullptrTemplate");
 
   // Enum non-type template parameters
-  CHECK(pretty_type::short_name<
+  CHECK(NameFunc::template name<
             GlobalEnumTemplate<Test_PrettyType_Enum::Zero>>() ==
         "GlobalEnumTemplate");
-  CHECK(pretty_type::short_name<
+  CHECK(NameFunc::template name<
             GlobalEnumTemplate<Test_PrettyType_Enum::One>>() ==
         "GlobalEnumTemplate");
-  CHECK(pretty_type::short_name<
+  CHECK(NameFunc::template name<
             Template2<GlobalEnumTemplate<Test_PrettyType_Enum::One>,
                       GlobalEnumTemplate<Test_PrettyType_Enum::Two>>>() ==
         "Template2");
-  CHECK(pretty_type::short_name<LocalEnumTemplate<LocalEnum::Zero>>() ==
+  CHECK(NameFunc::template name<LocalEnumTemplate<LocalEnum::Zero>>() ==
         "LocalEnumTemplate");
-  CHECK(pretty_type::short_name<LocalEnumTemplate<LocalEnum::One>>() ==
+  CHECK(NameFunc::template name<LocalEnumTemplate<LocalEnum::One>>() ==
         "LocalEnumTemplate");
   CHECK(
-      pretty_type::short_name<Template2<LocalEnumTemplate<LocalEnum::One>,
+      NameFunc::template name<Template2<LocalEnumTemplate<LocalEnum::One>,
                                         LocalEnumTemplate<LocalEnum::Two>>>() ==
       "Template2");
-  CHECK(pretty_type::short_name<LocalEnumTemplate<LocalEnum::Negative>>() ==
+  CHECK(NameFunc::template name<LocalEnumTemplate<LocalEnum::Negative>>() ==
         "LocalEnumTemplate");
 
   // Complicated Test
-  CHECK(pretty_type::short_name<OuterTemplate<
+  CHECK(NameFunc::template name<OuterTemplate<
             Template2<OuterTemplate<Global>::InnerTemplate<TestType>,
                       OuterTemplate<Global>::InnerTemplate<TestType>>>::
                                     InnerTemplate<NonTypeType<1, Global>>>() ==
         "InnerTemplate");
 
   // Long test
-  CHECK(pretty_type::short_name<tmpl::range<int, 0, 1000>>() == "list");
+  CHECK(NameFunc::template name<tmpl::range<int, 0, 1000>>() == "list");
 }
+
+SPECTRE_TEST_CASE("Unit.Utilities.PrettyType.name_and_short_name",
+                  "[Utilities][Unit]") {
+  test_name_func<ShortName>();
+  // For all these types without a name() member, the results should be
+  // identical to that of pretty_type::short_name()
+  test_name_func<Name>();
+
+  CHECK(NonTemplateWithName::name() == "UniqueNonTemplateWithName");
+  CHECK(TemplateWithName<int>::name() == "UniqueTemplateWithName");
+}
+}  // namespace
