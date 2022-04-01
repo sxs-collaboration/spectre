@@ -19,8 +19,8 @@ template <typename T>
 void bounds_check(const T& t, const size_t i) {
   if (i >= t.size()) {
     throw std::runtime_error{"Out of bounds access (" + std::to_string(i) +
-                             ") into " + pretty_type::short_name<T>() +
-                             " of size " + std::to_string(t.size())};
+                             ") into " + pretty_type::name<T>() + " of size " +
+                             std::to_string(t.size())};
   }
 }
 /*!

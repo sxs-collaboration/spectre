@@ -175,7 +175,7 @@ template <typename ArraySectionIdTag, typename ObserveEvent>
 void test(const std::unique_ptr<ObserveEvent> observe,
           const Spectral::Basis basis, const Spectral::Quadrature quadrature,
           const std::optional<std::string>& section) {
-  CAPTURE(pretty_type::short_name<ArraySectionIdTag>());
+  CAPTURE(pretty_type::name<ArraySectionIdTag>());
   CAPTURE(section);
   using metavariables = Metavariables<3, ArraySectionIdTag>;
   using element_component = ElementComponent<metavariables>;

@@ -1120,7 +1120,7 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
       Options::Options_detail::CreateWrapper<T, Metavariables>& rhs) {
     Options::Context context;
     context.top_level = false;
-    context.append("While creating a " + pretty_type::short_name<T>());
+    context.append("While creating a " + pretty_type::name<T>());
     Options::Option options(node, std::move(context));
     rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{
         Options::create_from_yaml<T>::template create<Metavariables>(options)};

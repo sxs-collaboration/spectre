@@ -32,7 +32,7 @@ struct IgnoreFailedApparentHorizon {
         db::get<logging::Tags::Verbosity<InterpolationTargetTag>>(box);
     if (verbosity > ::Verbosity::Quiet) {
       Parallel::printf("Remark: Horizon finder %s failed, reason = %s\n",
-                       pretty_type::short_name<InterpolationTargetTag>(),
+                       pretty_type::name<InterpolationTargetTag>(),
                        failure_reason);
     }
   }

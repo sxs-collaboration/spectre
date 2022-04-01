@@ -187,7 +187,7 @@ void test_boundary_condition_with_python_impl(
   CAPTURE(face_points);
   CAPTURE(use_moving_mesh);
   CAPTURE(epsilon);
-  CAPTURE(pretty_type::short_name<BoundaryCorrection>());
+  CAPTURE(pretty_type::name<BoundaryCorrection>());
   const size_t number_of_points_on_face = face_points.product();
 
   using variables_tag = typename System::variables_tag;

@@ -92,7 +92,7 @@ using options_in_group =
 // information.
 template <typename T>
 struct yaml_type {
-  static std::string value() { return pretty_type::short_name<T>(); }
+  static std::string value() { return pretty_type::name<T>(); }
 };
 
 template <typename T>
