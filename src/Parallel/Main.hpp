@@ -132,6 +132,20 @@ class Main : public CBase_Main<Metavariables> {
       tmpl::bind<
           tmpl::type_,
           tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+  // Lists of all parallel component types
+  using group_component_list =
+      tmpl::filter<component_list, tmpl::or_<Parallel::is_group<tmpl::_1>,
+                                             Parallel::is_nodegroup<tmpl::_1>>>;
+  using all_array_component_list =
+      tmpl::filter<component_list, Parallel::is_array<tmpl::_1>>;
+  using non_bound_array_component_list =
+      tmpl::filter<component_list,
+                   tmpl::and_<Parallel::is_array<tmpl::_1>,
+                              tmpl::not_<Parallel::is_bound_array<tmpl::_1>>>>;
+  using bound_array_component_list =
+      tmpl::filter<component_list,
+                   tmpl::and_<Parallel::is_array<tmpl::_1>,
+                              Parallel::is_bound_array<tmpl::_1>>>;
 
   typename Metavariables::Phase current_phase_{
       Metavariables::Phase::Initialization};
@@ -442,12 +456,6 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
 #endif  // SPECTRE_DEBUG
 
   // Construct the group proxies with a dependency on the GlobalCache proxy
-  using group_component_list = tmpl::filter<
-      component_list,
-      tmpl::or_<Parallel::is_group_proxy<tmpl::bind<
-                    Parallel::proxy_from_parallel_component, tmpl::_1>>,
-                Parallel::is_node_group_proxy<tmpl::bind<
-                    Parallel::proxy_from_parallel_component, tmpl::_1>>>>;
   CkEntryOptions global_cache_dependency;
   global_cache_dependency.setGroupDepID(global_cache_proxy_.ckGetGroupID());
 
@@ -468,13 +476,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   // Create proxies for empty array chares (whose elements will be created by
   // the allocate functions of the array components during
   // execute_initialization_phase)
-  using array_component_list = tmpl::filter<
-      component_list,
-      tmpl::and_<Parallel::is_array_proxy<tmpl::bind<
-                     Parallel::proxy_from_parallel_component, tmpl::_1>>,
-                 tmpl::not_<Parallel::is_bound_array<tmpl::_1>>>>;
-  tmpl::for_each<array_component_list>([&the_parallel_components](
-                                           auto parallel_component) {
+  tmpl::for_each<non_bound_array_component_list>([&the_parallel_components](
+                                                     auto parallel_component) {
     using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
         tmpl::type_from<decltype(parallel_component)>>;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
@@ -482,11 +485,6 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   });
 
   // Create proxies for empty bound array chares
-  using bound_array_component_list = tmpl::filter<
-      component_list,
-      tmpl::and_<Parallel::is_array_proxy<tmpl::bind<
-                     Parallel::proxy_from_parallel_component, tmpl::_1>>,
-                 Parallel::is_bound_array<tmpl::_1>>>;
   tmpl::for_each<bound_array_component_list>([&the_parallel_components](
                                                  auto parallel_component) {
     using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
@@ -573,18 +571,14 @@ void Main<Metavariables>::
     allocate_array_components_and_execute_initialization_phase() {
   ASSERT(current_phase_ == Metavariables::Phase::Initialization,
          "Must be in the Initialization phase.");
-  using array_component_list =
-      tmpl::filter<component_list,
-                   Parallel::is_array_proxy<tmpl::bind<
-                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   // Put each singleton on a different proc. In the future, this should be
   // changed so that no DG elements get placed on these procs so singletons have
   // their own procs.
   int singleton_which_proc = 0;
   const int number_of_procs = sys::number_of_procs();
-  tmpl::for_each<array_component_list>([this, &singleton_which_proc,
-                                        &number_of_procs](
-                                           auto parallel_component_v) {
+  tmpl::for_each<all_array_component_list>([this, &singleton_which_proc,
+                                            &number_of_procs](
+                                               auto parallel_component_v) {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     if constexpr (std::is_same<typename parallel_component::chare_type,
                                Parallel::Algorithms::Singleton>::value) {
