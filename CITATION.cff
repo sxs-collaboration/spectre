@@ -206,8 +206,8 @@ authors:
   given-names: Tom
   orcid: https://orcid.org/0000-0003-0005-348X
 cff-version: 1.1.0
-date-released: 2022-03-07
-doi: 10.5281/zenodo.6335350
+date-released: 2022-04-04
+doi: 10.5281/zenodo.6412468
 keywords:
 - Software
 - Astrophysics
@@ -225,4 +225,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.03.07
+version: 2022.04.04
