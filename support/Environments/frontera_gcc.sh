@@ -5,7 +5,9 @@
 
 # Load system modules
 spectre_load_sys_modules() {
-    # Assumes impi is loaded, which it should be by default
+    # impi is loaded, which it should be by default
+    # but explicitly load it in just in case
+    module load impi/19.0.9
     module load gcc/9.1.0
     module load mkl/19.0.5
     module load gsl
@@ -20,6 +22,7 @@ spectre_unload_sys_modules() {
     module unload gsl
     module unload mkl/19.0.5
     module unload gcc/9.1.0
+    # Don't unload impi as this is one of the default system modules
 }
 
 
@@ -40,7 +43,7 @@ spectre_setup_modules() {
 
 spectre_unload_modules() {
     module unload spectre_python
-    module unload charm
+    module unload charm_mpi
     module unload yaml-cpp
     module unload spectre_boost
     module unload libxsmm
@@ -62,7 +65,7 @@ spectre_load_modules() {
     module load libxsmm
     module load spectre_boost
     module load yaml-cpp
-    module load charm
+    module load charm_mpi
     module load spectre_python
 }
 
