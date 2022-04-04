@@ -145,7 +145,6 @@ void test_inertial_strahlkorper(
 size_t test_schwarzschild_horizon_called = 0;
 template <typename Frame>
 struct TestSchwarzschildHorizon {
-  using observation_types = tmpl::list<>;
   // [post_horizon_find_callback_example]
   template <typename DbTags, typename Metavariables>
   static void apply(
@@ -180,7 +179,6 @@ struct TestSchwarzschildHorizon {
 size_t test_kerr_horizon_called = 0;
 template <typename Frame>
 struct TestKerrHorizon {
-  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,

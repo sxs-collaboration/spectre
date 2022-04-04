@@ -27,7 +27,6 @@ namespace callbacks {
 /// see InterpolationTarget for a description of InterpolationTargetTag.
 template <typename CceEvolutionComponent, typename TemporalId>
 struct SendGhWorldtubeData {
-  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,

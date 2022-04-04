@@ -206,7 +206,7 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegralCompute<
                 CurvedScalarWave::Tags::PsiSquared, ::Frame::Inertial>>,
-            SphericalSurface, SphericalSurface>;
+            SphericalSurface>;
     template <typename metavariables>
     using interpolating_component = typename metavariables::dg_element_array;
   };
@@ -264,10 +264,8 @@ struct EvolutionMetavars {
                                          Triggers::time_triggers>>>;
   };
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
-          tmpl::at<typename factory_creation::factory_classes, Event>,
-          typename SphericalSurface::post_interpolation_callback>>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::at<typename factory_creation::factory_classes, Event>>;
 
   static constexpr bool use_filtering = true;
 

@@ -6,9 +6,6 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "IO/Observer/Actions/RegisterSingleton.hpp"
-#include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -24,8 +21,6 @@ namespace intrp {
 namespace Actions {
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget;
-template <typename InterpolationTargetTag>
-struct RegisterTargetWithObserver;
 }  // namespace Actions
 }  // namespace intrp
 /// \endcond
@@ -90,10 +85,7 @@ namespace intrp {
 ///   added by `initialize`.
 /// - post_interpolation_callback:
 ///   A struct with a type alias `const_global_cache_tags` (listing tags that
-///   should be read from option parsing), with a type alias
-///   `observation_types` (listing any ObservationTypes that the callback
-///   will use in constructing ObserverIds to call
-///   observers::ThreadedActions::WriteReductionData), and with a function
+///   should be read from option parsing), and with a function
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::GlobalCache<Metavariables>&,
@@ -341,19 +333,6 @@ namespace intrp {
 ///
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
-  struct RegistrationHelper {
-    template <typename ParallelComponent, typename DbTagsList,
-              typename ArrayIndex>
-    static std::pair<observers::TypeOfObservation, observers::ObservationKey>
-    register_info(const db::DataBox<DbTagsList>& /*box*/,
-                  const ArrayIndex& /*array_index*/) {
-      return {observers::TypeOfObservation::Reduction,
-              observers::ObservationKey(
-                  pretty_type::get_name<tmpl::front<
-                      typename InterpolationTargetTag::
-                          post_interpolation_callback::observation_types>>())};
-    }
-  };
   using interpolation_target_tag = InterpolationTargetTag;
   using chare_type = ::Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
@@ -378,16 +357,7 @@ struct InterpolationTarget {
                   tmpl::list<
                       Actions::InterpolationTargetSendTimeIndepPointsToElements<
                           InterpolationTargetTag>>>,
-              tmpl::conditional_t<
-                  std::is_same_v<
-                      typename InterpolationTargetTag::
-                          post_interpolation_callback::observation_types,
-                      tmpl::list<>>,
-                  tmpl::list<Parallel::Actions::TerminatePhase>,
-                  tmpl::list<
-                      ::observers::Actions::RegisterSingletonWithObserverWriter<
-                          RegistrationHelper>,
-                      Parallel::Actions::TerminatePhase>>>>>;
+              Parallel::Actions::TerminatePhase>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
