@@ -25,6 +25,21 @@ template <size_t Dim>
 using block_logical_coord_holder =
     std::optional<IdPair<domain::BlockId,
                          tnsr::I<double, Dim, typename ::Frame::BlockLogical>>>;
+
+// The segments bounds are binary fractions (i.e. the numerator is an
+// integer and the denominator is a power of 2) so these floating point
+// comparisons should be safe from roundoff problems
+// Need to return true if on upper face of block
+// Otherwise return true if point is within the segment or on the lower bound
+bool segment_contains(const double x_block_logical,
+                      const double lower_bound_block_logical,
+                      const double upper_bound_block_logical) {
+  if (UNLIKELY(x_block_logical == upper_bound_block_logical)) {
+    return (upper_bound_block_logical == 1.0);
+  }
+  return (x_block_logical >= lower_bound_block_logical and
+          x_block_logical < upper_bound_block_logical);
+}
 }  // namespace
 
 template <size_t Dim>
@@ -61,7 +76,7 @@ element_logical_coordinates(
           const double up = element_id.segment_id(d).endpoint(Side::Upper);
           const double lo = element_id.segment_id(d).endpoint(Side::Lower);
           const double x_block_log = x_block_logical.get(d);
-          if (x_block_log < lo or x_block_log > up) {
+          if (not segment_contains(x_block_log, lo, up)) {
             is_contained = false;
             break;
           }
