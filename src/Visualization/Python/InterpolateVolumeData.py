@@ -116,11 +116,11 @@ def interpolate_h5_file(source_file_path,
     observations = [
         obs for obs in source_vol.list_observation_ids()
         if obs_start <= source_vol.get_observation_value(obs) <= obs_end
-    ][::obs_stride]
-
+    ]
+    observations.sort(key=source_vol.get_observation_value)
     target_file.insert_vol(target_volume_data, source_vol.get_version())
 
-    for obs in observations:
+    for obs in observations[::obs_stride]:
         # the vols memory address may shift as we write to file,
         # so we need to get them every iteration
         source_vol = source_file.get_vol(source_volume_data)
