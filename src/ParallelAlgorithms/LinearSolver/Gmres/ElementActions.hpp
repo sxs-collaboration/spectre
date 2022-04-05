@@ -29,6 +29,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -91,7 +92,7 @@ struct PrepareSolve {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s: Prepare solve\n", get_output(array_index),
-                       Options::name<OptionsGroup>());
+                       pretty_type::name<OptionsGroup>());
     }
 
     db::mutate<operand_tag, initial_fields_tag, basis_history_tag>(
@@ -209,8 +210,8 @@ struct NormalizeInitialOperand {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Normalize initial operand\n",
-                       get_output(array_index), Options::name<OptionsGroup>(),
-                       iteration_id);
+                       get_output(array_index),
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     db::mutate<operand_tag, basis_history_tag>(
@@ -247,7 +248,7 @@ struct PrepareStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Prepare step\n", get_output(array_index),
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     if constexpr (Preconditioned) {
@@ -331,7 +332,7 @@ struct PerformStep {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Perform step\n", get_output(array_index),
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     using operator_tag = db::add_tag_prefix<
@@ -551,7 +552,7 @@ struct NormalizeOperandAndUpdateField {
     if (UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
                  ::Verbosity::Debug)) {
       Parallel::printf("%s %s(%zu): Complete step\n", get_output(array_index),
-                       Options::name<OptionsGroup>(), iteration_id);
+                       pretty_type::name<OptionsGroup>(), iteration_id);
     }
 
     db::mutate<operand_tag, basis_history_tag, fields_tag>(

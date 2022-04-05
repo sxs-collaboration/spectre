@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Richardson {
@@ -31,7 +32,7 @@ namespace Tags {
 template <typename OptionsGroup>
 struct RelaxationParameter : db::SimpleTag {
   static std::string name() {
-    return "RelaxationParameter(" + Options::name<OptionsGroup>() + ")";
+    return "RelaxationParameter(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = double;
 

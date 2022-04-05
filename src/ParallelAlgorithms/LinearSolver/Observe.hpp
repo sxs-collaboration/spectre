@@ -15,6 +15,7 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace LinearSolver {
 namespace observe_detail {
@@ -36,7 +37,7 @@ void contribute_to_reduction_observer(
       // When multiple linear solves are performed, e.g. for the nonlinear
       // solver, we'll need to write into separate subgroups, e.g.:
       // `/linear_residuals/<nonlinear_iteration_id>`
-      std::string{"/" + Options::name<OptionsGroup>() + "Residuals"},
+      std::string{"/" + pretty_type::name<OptionsGroup>() + "Residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
       std::make_tuple(iteration_id, residual_magnitude));
 }

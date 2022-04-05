@@ -20,6 +20,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetStaticMemberVariableOrDefault.hpp"
 
@@ -73,7 +74,9 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       "Does interpolation using the given InterpolationTargetTag, "
       "without an Interpolator ParallelComponent.";
 
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
 
   InterpolateWithoutInterpComponent() = default;
 

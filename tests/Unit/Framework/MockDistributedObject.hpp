@@ -918,7 +918,7 @@ bool MockDistributedObject<Component>::next_action_if_ready() {
   tmpl::for_each<phase_dependent_action_lists>(invoke_for_phase);
   if (not found_matching_phase) {
     ERROR("Could not find any actions in the current phase for the component '"
-          << pretty_type::short_name<Component>() << "'.");
+          << pretty_type::name<Component>() << "'.");
   }
   return was_ready;
 }

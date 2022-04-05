@@ -10,6 +10,7 @@
 
 #include "Options/Options.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace Options {
 /// The label representing the absence of a value for `Options::Auto`
@@ -66,7 +67,7 @@ std::ostream& operator<<(std::ostream& os, const Auto<T, Label>& x) {
   if (value) {
     return os << get_output(*value);
   } else {
-    return os << Options::name<Label>();
+    return os << pretty_type::name<Label>();
   }
 }
 
@@ -75,7 +76,7 @@ struct create_from_yaml<Auto<T, Label>> {
   template <typename Metavariables>
   static Auto<T, Label> create(const Option& options) {
     try {
-      if (options.parse_as<std::string>() == Options::name<Label>()) {
+      if (options.parse_as<std::string>() == pretty_type::name<Label>()) {
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 10
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"

@@ -20,6 +20,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Printf.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace Cce {
 namespace OptionTags {
@@ -47,7 +48,7 @@ struct Evolution {
 template <typename OptionTag>
 struct CceEvolutionPrefix {
   using type = typename OptionTag::type;
-  static std::string name() { return Options::template name<OptionTag>(); }
+  static std::string name() { return pretty_type::name<OptionTag>(); }
   static constexpr Options::String help = OptionTag::help;
   using group = Evolution;
 };
@@ -250,7 +251,7 @@ struct CceEvolutionPrefix : Tag {
   using type = typename Tag::type;
   using option_tags = db::wrap_tags_in<OptionTags::CceEvolutionPrefix,
                                        typename Tag::option_tags>;
-  static std::string name() { return Options::template name<Tag>(); }
+  static std::string name() { return pretty_type::name<Tag>(); }
 
   static constexpr bool pass_metavariables = Tag::pass_metavariables;
   template <typename Metavariables, typename... Args>

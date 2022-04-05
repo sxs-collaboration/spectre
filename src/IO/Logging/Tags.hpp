@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 /// \cond
 enum class Verbosity;
@@ -33,7 +34,7 @@ template <typename OptionsGroup>
 struct Verbosity : db::SimpleTag {
   using type = ::Verbosity;
   static std::string name() {
-    return "Verbosity(" + Options::name<OptionsGroup>() + ")";
+    return "Verbosity(" + pretty_type::name<OptionsGroup>() + ")";
   }
 
   using option_tags = tmpl::list<OptionTags::Verbosity<OptionsGroup>>;

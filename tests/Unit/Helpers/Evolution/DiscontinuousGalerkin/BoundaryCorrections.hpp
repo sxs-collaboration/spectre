@@ -656,7 +656,7 @@ void test_with_python(
           CAPTURE(python_module);
           CAPTURE(
               gsl::at(python_dg_package_data_functions, function_name_index));
-          CAPTURE(pretty_type::short_name<ResultType>());
+          CAPTURE(pretty_type::name<ResultType>());
           if constexpr (curved_background) {
             const auto python_result =
                 pypp::call<ResultType, ConversionClassList>(

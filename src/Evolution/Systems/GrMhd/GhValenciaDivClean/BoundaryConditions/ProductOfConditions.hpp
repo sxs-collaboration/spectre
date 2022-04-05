@@ -646,14 +646,14 @@ class ProductOfConditions final : public BoundaryCondition {
       typename DerivedValenciaCondition::dg_gridless_tags, dg_gridless_tags>;
 
   static std::string name() {
-    return "Product" + Options::name<DerivedGhCondition>() + "And" +
-           Options::name<DerivedValenciaCondition>();
+    return "Product" + pretty_type::name<DerivedGhCondition>() + "And" +
+           pretty_type::name<DerivedValenciaCondition>();
   }
 
   struct GhCondition {
     using type = DerivedGhCondition;
     static std::string name() {
-      return "GeneralizedHarmonic" + Options::name<DerivedGhCondition>();
+      return "GeneralizedHarmonic" + pretty_type::name<DerivedGhCondition>();
     }
     static constexpr Options::String help{
         "The Generalized Harmonic part of the product boundary condition"};
@@ -661,7 +661,7 @@ class ProductOfConditions final : public BoundaryCondition {
   struct ValenciaCondition {
     using type = DerivedValenciaCondition;
     static std::string name() {
-      return "Valencia" + Options::name<DerivedValenciaCondition>();
+      return "Valencia" + pretty_type::name<DerivedValenciaCondition>();
     }
     static constexpr Options::String help{
         "The Valencia part of the product boundary condition"};

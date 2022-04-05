@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {
 /*!
@@ -25,7 +26,7 @@ struct FilteringGroup {
  */
 template <typename FilterType>
 struct Filter {
-  static std::string name() { return Options::name<FilterType>(); }
+  static std::string name() { return pretty_type::name<FilterType>(); }
   static constexpr Options::String help = "Options for the filter";
   using type = FilterType;
   using group = FilteringGroup;

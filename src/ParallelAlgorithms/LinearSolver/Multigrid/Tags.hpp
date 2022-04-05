@@ -18,6 +18,7 @@
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::multigrid {
@@ -112,7 +113,7 @@ struct MaxLevels : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::MaxLevels<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
-    return "MaxLevels(" + Options::name<OptionsGroup>() + ")";
+    return "MaxLevels(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 
@@ -124,7 +125,7 @@ struct OutputVolumeData : db::SimpleTag {
   using option_tags = tmpl::list<OptionTags::OutputVolumeData<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
-    return "OutputVolumeData(" + Options::name<OptionsGroup>() + ")";
+    return "OutputVolumeData(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 
@@ -138,7 +139,7 @@ struct EnablePreSmoothing : db::SimpleTag {
       tmpl::list<OptionTags::EnablePreSmoothing<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
-    return "EnablePreSmoothing(" + Options::name<OptionsGroup>() + ")";
+    return "EnablePreSmoothing(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 
@@ -153,7 +154,8 @@ struct EnablePostSmoothingAtBottom : db::SimpleTag {
       tmpl::list<OptionTags::EnablePostSmoothingAtBottom<OptionsGroup>>;
   static type create_from_options(const type value) { return value; };
   static std::string name() {
-    return "EnablePostSmoothingAtBottom(" + Options::name<OptionsGroup>() + ")";
+    return "EnablePostSmoothingAtBottom(" + pretty_type::name<OptionsGroup>() +
+           ")";
   }
 };
 
@@ -194,7 +196,7 @@ template <typename OptionsGroup>
 struct ObservationId : db::SimpleTag {
   using type = size_t;
   static std::string name() {
-    return "ObservationId(" + Options::name<OptionsGroup>() + ")";
+    return "ObservationId(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 /// @{
@@ -255,7 +257,7 @@ struct VolumeDataForOutput : db::SimpleTag {
                    db::wrap_tags_in<PostSmoothingResult, fields_tags>,
                    db::wrap_tags_in<PostSmoothingResidual, fields_tags>>>;
   static std::string name() {
-    return "VolumeDataForOutput(" + Options::name<OptionsGroup>() + ")";
+    return "VolumeDataForOutput(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 

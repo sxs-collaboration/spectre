@@ -21,6 +21,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup
@@ -156,7 +157,7 @@ template <typename Tag>
 struct ObservationKey : db::SimpleTag {
   using type = std::optional<std::string>;
   static std::string name() {
-    return "ObservationKey(" + Options::name<Tag>() + ")";
+    return "ObservationKey(" + pretty_type::name<Tag>() + ")";
   }
 };
 

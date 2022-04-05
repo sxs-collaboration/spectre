@@ -14,6 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 
 /// \cond
 class DataVector;
@@ -81,7 +82,9 @@ struct Sphere {
   using type = OptionHolders::Sphere;
   static constexpr Options::String help{
       "Options for interpolation onto a sphere."};
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags

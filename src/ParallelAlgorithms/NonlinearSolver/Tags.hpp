@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 
 /// Functionality for solving nonlinear systems of equations
 namespace NonlinearSolver {
@@ -181,7 +182,7 @@ struct ResidualCompute : db::add_tag_prefix<Residual, FieldsTag>,
 template <typename OptionsGroup>
 struct StepLength : db::SimpleTag {
   static std::string name() {
-    return "StepLength(" + Options::name<OptionsGroup>() + ")";
+    return "StepLength(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = double;
 };
@@ -194,7 +195,7 @@ struct StepLength : db::SimpleTag {
 template <typename OptionsGroup>
 struct SufficientDecrease : db::SimpleTag {
   static std::string name() {
-    return "SufficientDecrease(" + Options::name<OptionsGroup>() + ")";
+    return "SufficientDecrease(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = double;
   static constexpr bool pass_metavariables = false;
@@ -210,7 +211,7 @@ struct SufficientDecrease : db::SimpleTag {
 template <typename OptionsGroup>
 struct DampingFactor : db::SimpleTag {
   static std::string name() {
-    return "DampingFactor(" + Options::name<OptionsGroup>() + ")";
+    return "DampingFactor(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = double;
   static constexpr bool pass_metavariables = false;
@@ -226,7 +227,7 @@ struct DampingFactor : db::SimpleTag {
 template <typename OptionsGroup>
 struct MaxGlobalizationSteps : db::SimpleTag {
   static std::string name() {
-    return "MaxGlobalizationSteps(" + Options::name<OptionsGroup>() + ")";
+    return "MaxGlobalizationSteps(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = size_t;
   static constexpr bool pass_metavariables = false;

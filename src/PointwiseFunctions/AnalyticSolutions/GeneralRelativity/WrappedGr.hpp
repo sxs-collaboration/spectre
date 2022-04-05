@@ -44,7 +44,7 @@ class WrappedGr : public SolutionType {
   static constexpr size_t volume_dim = SolutionType::volume_dim;
   using options = typename SolutionType::options;
   static constexpr Options::String help = SolutionType::help;
-  static std::string name() { return Options::name<SolutionType>(); }
+  static std::string name() { return pretty_type::name<SolutionType>(); }
 
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;

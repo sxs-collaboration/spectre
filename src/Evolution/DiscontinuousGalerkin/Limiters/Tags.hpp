@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {
 /*!
@@ -25,7 +26,7 @@ struct LimiterGroup {
  */
 template <typename LimiterType>
 struct Limiter {
-  static std::string name() { return Options::name<LimiterType>(); }
+  static std::string name() { return pretty_type::name<LimiterType>(); }
   static constexpr Options::String help = "Options for the limiter";
   using type = LimiterType;
   using group = LimiterGroup;

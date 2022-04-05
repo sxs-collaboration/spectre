@@ -79,7 +79,7 @@ struct ObserveTimeSeriesOnSurface {
     Parallel::threaded_action<
         observers::ThreadedActions::WriteReductionDataRow>(
         proxy[0],
-        std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
+        std::string{"/" + pretty_type::name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(
             box, InterpolationTarget_detail::get_temporal_id_value(temporal_id),

@@ -54,7 +54,7 @@ struct InitializeLog {
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const std::string component_name =
-        pretty_type::short_name<ParallelComponent>() + " " +
+        pretty_type::name<ParallelComponent>() + " " +
         std::to_string(static_cast<int>(array_index));
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),

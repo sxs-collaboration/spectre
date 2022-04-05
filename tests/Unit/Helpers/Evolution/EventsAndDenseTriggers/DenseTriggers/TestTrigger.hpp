@@ -12,6 +12,7 @@
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -94,7 +95,7 @@ class BoxTrigger : public DenseTrigger {
   /// \endcond
 
   static std::string name() {
-    return "BoxTrigger<" + Options::name<Label>() + ">";
+    return "BoxTrigger<" + pretty_type::name<Label>() + ">";
   }
 
   using options = tmpl::list<>;

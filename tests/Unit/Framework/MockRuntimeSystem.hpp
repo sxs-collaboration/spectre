@@ -630,7 +630,7 @@ class MockRuntimeSystem {
     if (not found_matching_phase) {
       ERROR(
           "Could not find any actions in the current phase for the component '"
-          << pretty_type::short_name<Component>()
+          << pretty_type::name<Component>()
           << "'. Maybe you are not in the phase you expected to be in? The "
              "integer value corresponding to the current phase is "
           << static_cast<int>(this->mock_distributed_objects<Component>()

@@ -12,6 +12,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -37,7 +38,7 @@ struct AddGroups {
     construction_string.insert(0, 2, ' ');
     construction_string =
         boost::algorithm::replace_all_copy(construction_string, "\n", "\n  ");
-    construction_string.insert(0, Options::name<OptionTag>() + ":\n");
+    construction_string.insert(0, pretty_type::name<OptionTag>() + ":\n");
     return construction_string;
   }
 };

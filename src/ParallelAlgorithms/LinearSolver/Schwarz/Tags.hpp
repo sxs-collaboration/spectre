@@ -17,6 +17,7 @@
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver::Schwarz {
@@ -71,7 +72,7 @@ namespace Tags {
 template <typename OptionsGroup>
 struct MaxOverlap : db::SimpleTag {
   static std::string name() {
-    return "MaxOverlap(" + Options::name<OptionsGroup>() + ")";
+    return "MaxOverlap(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = size_t;
   static constexpr bool pass_metavariables = false;
@@ -83,7 +84,7 @@ struct MaxOverlap : db::SimpleTag {
 template <typename OptionsGroup>
 struct SubdomainSolverBase : db::BaseTag {
   static std::string name() {
-    return "SubdomainSolver(" + Options::name<OptionsGroup>() + ")";
+    return "SubdomainSolver(" + pretty_type::name<OptionsGroup>() + ")";
   }
 };
 
@@ -134,7 +135,7 @@ template <typename Tag, size_t Dim, typename OptionsGroup>
 struct Overlaps : db::SimpleTag {
   static std::string name() {
     return "Overlaps(" + db::tag_name<Tag>() + ", " +
-           Options::name<OptionsGroup>() + ")";
+           pretty_type::name<OptionsGroup>() + ")";
   }
   using tag = Tag;
   using type = OverlapMap<Dim, typename Tag::type>;
@@ -144,7 +145,7 @@ struct Overlaps : db::SimpleTag {
 template <size_t Dim, typename OptionsGroup>
 struct IntrudingExtents : db::SimpleTag {
   static std::string name() {
-    return "IntrudingExtents(" + Options::name<OptionsGroup>() + ")";
+    return "IntrudingExtents(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = std::array<size_t, Dim>;
 };
@@ -154,7 +155,7 @@ struct IntrudingExtents : db::SimpleTag {
 template <size_t Dim, typename OptionsGroup>
 struct IntrudingOverlapWidths : db::SimpleTag {
   static std::string name() {
-    return "IntrudingOverlapWidths(" + Options::name<OptionsGroup>() + ")";
+    return "IntrudingOverlapWidths(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = std::array<double, Dim>;
 };
@@ -163,7 +164,7 @@ struct IntrudingOverlapWidths : db::SimpleTag {
 template <typename OptionsGroup>
 struct Weight : db::SimpleTag {
   static std::string name() {
-    return "Weight(" + Options::name<OptionsGroup>() + ")";
+    return "Weight(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = Scalar<DataVector>;
 };
@@ -178,8 +179,8 @@ struct Weight : db::SimpleTag {
 template <typename OptionsGroup>
 struct SummedIntrudingOverlapWeights : db::SimpleTag {
   static std::string name() {
-    return "SummedIntrudingOverlapWeights(" + Options::name<OptionsGroup>() +
-           ")";
+    return "SummedIntrudingOverlapWeights(" +
+           pretty_type::name<OptionsGroup>() + ")";
   }
   using type = Scalar<DataVector>;
 };

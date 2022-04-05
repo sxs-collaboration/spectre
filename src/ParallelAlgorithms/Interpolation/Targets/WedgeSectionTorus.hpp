@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -159,7 +160,9 @@ struct WedgeSectionTorus {
   using type = OptionHolders::WedgeSectionTorus;
   static constexpr Options::String help{
       "Options for interpolation onto Kerr horizon."};
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags

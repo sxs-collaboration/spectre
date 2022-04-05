@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace Convergence {
 /// Option tags related to the convergence of iterative algorithms
@@ -41,7 +42,7 @@ namespace Tags {
 template <typename OptionsGroup>
 struct Criteria : db::SimpleTag {
   static std::string name() {
-    return "ConvergenceCriteria(" + Options::name<OptionsGroup>() + ")";
+    return "ConvergenceCriteria(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = Convergence::Criteria;
 
@@ -57,7 +58,7 @@ struct Criteria : db::SimpleTag {
 template <typename OptionsGroup>
 struct Iterations : db::SimpleTag {
   static std::string name() {
-    return "Iterations(" + Options::name<OptionsGroup>() + ")";
+    return "Iterations(" + pretty_type::name<OptionsGroup>() + ")";
   }
   using type = size_t;
 
@@ -72,7 +73,7 @@ struct Iterations : db::SimpleTag {
 template <typename Label>
 struct IterationId : db::SimpleTag {
   static std::string name() {
-    return "IterationId(" + Options::name<Label>() + ")";
+    return "IterationId(" + pretty_type::name<Label>() + ")";
   }
   using type = size_t;
 };
@@ -84,7 +85,7 @@ struct IterationId : db::SimpleTag {
 template <typename Label>
 struct HasConverged : db::SimpleTag {
   static std::string name() {
-    return "HasConverged(" + Options::name<Label>() + ")";
+    return "HasConverged(" + pretty_type::name<Label>() + ")";
   }
   using type = Convergence::HasConverged;
 };

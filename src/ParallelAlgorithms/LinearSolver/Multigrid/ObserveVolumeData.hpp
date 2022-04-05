@@ -21,13 +21,13 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -43,7 +43,7 @@ struct RegisterWithVolumeObserver {
     const std::string& level_observation_key =
         *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
     const std::string subfile_path =
-        "/" + Options::name<OptionsGroup>() + level_observation_key;
+        "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     return {observers::TypeOfObservation::Volume,
             observers::ObservationKey(subfile_path)};
   }
@@ -107,7 +107,7 @@ struct ObserveVolumeData {
     const auto& level_observation_key =
         *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
     const std::string subfile_path =
-        "/" + Options::name<OptionsGroup>() + level_observation_key;
+        "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(observation_id, subfile_path),
         subfile_path,

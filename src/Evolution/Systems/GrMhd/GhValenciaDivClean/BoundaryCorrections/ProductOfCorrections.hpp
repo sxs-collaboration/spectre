@@ -17,6 +17,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::BoundaryCorrections {
@@ -172,20 +173,22 @@ class ProductOfCorrections final : public BoundaryCorrection {
       typename DerivedValenciaCorrection::dg_package_data_volume_tags>;
 
   static std::string name() {
-    return "Product" + Options::name<DerivedGhCorrection>() + "And" +
-           Options::name<DerivedValenciaCorrection>();
+    return "Product" + pretty_type::name<DerivedGhCorrection>() + "And" +
+           pretty_type::name<DerivedValenciaCorrection>();
   }
 
   struct GhCorrection {
     using type = DerivedGhCorrection;
-    static std::string name() { return Options::name<DerivedGhCorrection>(); }
+    static std::string name() {
+      return pretty_type::name<DerivedGhCorrection>();
+    }
     static constexpr Options::String help{
         "The Generalized Harmonic part of the product boundary condition"};
   };
   struct ValenciaCorrection {
     using type = DerivedValenciaCorrection;
     static std::string name() {
-      return Options::name<DerivedValenciaCorrection>();
+      return pretty_type::name<DerivedValenciaCorrection>();
     }
     static constexpr Options::String help{
         "The Valencia part of the product boundary condition"};

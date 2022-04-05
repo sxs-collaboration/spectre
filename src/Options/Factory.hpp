@@ -17,6 +17,7 @@
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,9 +36,8 @@ struct print_derived {
     const size_t end_col = 80;
 
     std::ostringstream ss;
-    ss << std::left
-       << std::setw(name_col) << ""
-       << std::setw(help_col - name_col - 1) << name<T>();
+    ss << std::left << std::setw(name_col) << ""
+       << std::setw(help_col - name_col - 1) << pretty_type::name<T>();
     if (ss.str().size() >= help_col) {
       ss << "\n" << std::setw(help_col - 1) << "";
     }
@@ -99,7 +99,7 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   const auto& node = options.node();
   Option derived_opts(options.context());
   derived_opts.append_context("While operating factory for " +
-                              name<BaseClass>());
+                              pretty_type::name<BaseClass>());
   std::string id;
   if (node.IsScalar()) {
     id = node.as<std::string>();
@@ -125,7 +125,7 @@ std::unique_ptr<BaseClass> create(const Option& options) {
   tmpl::for_each<creatable_classes>(
       [&id, &derived_opts, &result](auto derived_v) {
         using Derived = tmpl::type_from<decltype(derived_v)>;
-        if (name<Derived>() == id) {
+        if (pretty_type::name<Derived>() == id) {
           ASSERT(result == nullptr, "Duplicate factory id: " << id);
           result = std::make_unique<Derived>(
               derived_opts.parse_as<Derived, Metavariables>());

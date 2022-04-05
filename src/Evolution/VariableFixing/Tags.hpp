@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {
 /*!
@@ -27,7 +28,7 @@ template <typename VariableFixerType>
 struct VariableFixer {
   static constexpr Options::String help = "Options for the variable fixer";
   using type = VariableFixerType;
-  static std::string name() { return Options::name<VariableFixerType>(); }
+  static std::string name() { return pretty_type::name<VariableFixerType>(); }
   using group = VariableFixingGroup;
 };
 }  // namespace OptionTags

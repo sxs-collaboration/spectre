@@ -369,7 +369,7 @@ Parser<OptionList, Group>::Parser(std::string help_text)
     : help_text_(std::move(help_text)) {
   tmpl::for_each<all_possible_options>([](auto t) {
     using T = typename decltype(t)::type;
-    const std::string label = name<T>();
+    const std::string label = pretty_type::name<T>();
     ASSERT(label.size() <= max_label_size_,
            "The option name " << label
                               << " is too long for nice formatting, "
@@ -473,7 +473,7 @@ std::pair<int, std::vector<size_t>> choose_alternatives(
                               &given_options](auto opt) {
     using Opt = tmpl::type_from<decltype(opt)>;
     if constexpr (not tt::is_a_v<Options::Alternatives, Opt>) {
-      if (given_options.count(name<Opt>()) == 1) {
+      if (given_options.count(pretty_type::name<Opt>()) == 1) {
         ++num_matched;
       }
     } else {
@@ -532,7 +532,7 @@ struct get_impl<Tag, Metavariables, Tag> {
             typename Parser<OptionList, Group>::all_possible_options, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
-    const std::string label = name<Tag>();
+    const std::string label = pretty_type::name<Tag>();
 
     const auto supplied_option = opts.parsed_options_.find(label);
     ASSERT(supplied_option != opts.parsed_options_.end(),
@@ -558,7 +558,8 @@ struct get_impl<Tag, Metavariables, Tag> {
       const auto suggested_value = Tag::suggested_value();
       {
         Context context;
-        context.append("Checking SUGGESTED value for " + name<Tag>());
+        context.append("Checking SUGGESTED value for " +
+                       pretty_type::name<Tag>());
         opts.template check_lower_bound_on_size<Tag>(suggested_value, context);
         opts.template check_upper_bound_on_size<Tag>(suggested_value, context);
         opts.template check_lower_bound<Tag>(suggested_value, context);
@@ -705,7 +706,7 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     result.reserve(tmpl::size<top_level_options_and_groups>{});
     tmpl::for_each<top_level_options_and_groups>([&result](auto opt) {
       using Opt = tmpl::type_from<decltype(opt)>;
-      const std::string label = name<Opt>();
+      const std::string label = pretty_type::name<Opt>();
       ASSERT(alg::find(result, label) == result.end(),
              "Duplicate option name: " << label);
       result.push_back(label);
@@ -732,7 +733,7 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
       tmpl::for_each<all_possible_options>([this, &context, &name,
                                             &node](auto tag) {
         using Tag = tmpl::type_from<decltype(tag)>;
-        if (name == Options::name<Tag>()) {
+        if (name == pretty_type::name<Tag>()) {
           PARSE_ERROR(context,
                       "Option '"
                           << name
@@ -759,8 +760,10 @@ void Parser<OptionList, Group>::parse(const YAML::Node& node) {
     auto& subgroup_parser =
         tuples::get<SubgroupParser<subgroup>>(subgroup_parsers_);
     subgroup_parser.context_ = context_;
-    subgroup_parser.context_.append("In group " + name<subgroup>());
-    subgroup_parser.parse(parsed_options_.find(name<subgroup>())->second);
+    subgroup_parser.context_.append("In group " +
+                                    pretty_type::name<subgroup>());
+    subgroup_parser.parse(
+        parsed_options_.find(pretty_type::name<subgroup>())->second);
   });
 
   // Any actual warnings will be printed by later calls to get or
@@ -811,8 +814,9 @@ void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
     context.column = name_and_value.first.Mark().column;
 
     if (tmpl::as_pack<tags_and_subgroups_list>([&name](auto... opts) {
-          return ((name != Options::name<tmpl::type_from<decltype(opts)>>()) and
-                  ...);
+          return (
+              (name != pretty_type::name<tmpl::type_from<decltype(opts)>>()) and
+              ...);
         })) {
       PARSE_ERROR(context,
                   "Option '" << name << "' is not a valid option.\n"
@@ -821,9 +825,9 @@ void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
 
     if (tmpl::as_pack<overlayable_tags_and_subgroups_list>(
             [&name](auto... opts) {
-              return (
-                  (name != Options::name<tmpl::type_from<decltype(opts)>>()) and
-                  ...);
+              return ((name !=
+                       pretty_type::name<tmpl::type_from<decltype(opts)>>()) and
+                      ...);
             })) {
       PARSE_ERROR(context,
                   "Option '" << name << "' is not overlayable.\n"
@@ -843,12 +847,12 @@ void Parser<OptionList, Group>::overlay(const YAML::Node& node) {
 
   tmpl::for_each<subgroups>([this, &overlaid_options](auto subgroup_v) {
     using subgroup = tmpl::type_from<decltype(subgroup_v)>;
-    if (overlaid_options.count(Options::name<subgroup>()) == 1) {
+    if (overlaid_options.count(pretty_type::name<subgroup>()) == 1) {
       auto& subgroup_parser =
           tuples::get<SubgroupParser<subgroup>>(subgroup_parsers_);
       subgroup_parser.template overlay<
           Options_detail::options_in_group<OverlayOptions, subgroup>>(
-          parsed_options_.find(name<subgroup>())->second);
+          parsed_options_.find(pretty_type::name<subgroup>())->second);
     }
   });
 }
@@ -1120,7 +1124,7 @@ struct YAML::convert<Options::Options_detail::CreateWrapper<T, Metavariables>> {
       Options::Options_detail::CreateWrapper<T, Metavariables>& rhs) {
     Options::Context context;
     context.top_level = false;
-    context.append("While creating a " + pretty_type::short_name<T>());
+    context.append("While creating a " + pretty_type::name<T>());
     Options::Option options(node, std::move(context));
     rhs = Options::Options_detail::CreateWrapper<T, Metavariables>{
         Options::create_from_yaml<T>::template create<Metavariables>(options)};

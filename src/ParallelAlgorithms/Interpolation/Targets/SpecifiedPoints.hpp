@@ -12,6 +12,7 @@
 #include "Options/Options.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -77,7 +78,9 @@ struct SpecifiedPoints {
   using type = OptionHolders::SpecifiedPoints<VolumeDim>;
   static constexpr Options::String help{
       "Options for interpolation onto a specified list of points."};
-  static std::string name() { return Options::name<InterpolationTargetTag>(); }
+  static std::string name() {
+    return pretty_type::name<InterpolationTargetTag>();
+  }
   using group = InterpolationTargets;
 };
 }  // namespace OptionTags

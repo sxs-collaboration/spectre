@@ -92,7 +92,7 @@ using options_in_group =
 // information.
 template <typename T>
 struct yaml_type {
-  static std::string value() { return pretty_type::short_name<T>(); }
+  static std::string value() { return pretty_type::name<T>(); }
 };
 
 template <typename T>
@@ -205,7 +205,7 @@ struct print_impl {
     if constexpr (tmpl::list_contains_v<OptionList, Tag>) {
       const std::string new_line = "\n" + indent + "  ";
       std::ostringstream ss;
-      ss << indent << name<Tag>() << ":" << new_line
+      ss << indent << pretty_type::name<Tag>() << ":" << new_line
          << "type=" << yaml_type<typename Tag::type>::value();
       if constexpr (has_suggested<Tag>::value) {
         if constexpr (tt::is_a_v<std::unique_ptr, typename Tag::type>) {
@@ -238,7 +238,7 @@ struct print_impl {
     } else {
       // A group
       std::ostringstream ss;
-      ss << indent << name<Tag>() << ":\n"
+      ss << indent << pretty_type::name<Tag>() << ":\n"
          << wrap_text(Tag::help, 77, indent + "  ") << "\n\n";
       return ss.str();
     }

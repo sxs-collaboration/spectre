@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionGroupsGroup
@@ -21,7 +22,7 @@ struct AnalyticDataGroup {
 /// parameter
 template <typename DataType>
 struct AnalyticData {
-  static std::string name() { return Options::name<DataType>(); }
+  static std::string name() { return pretty_type::name<DataType>(); }
   static constexpr Options::String help = "Options for the analytic data";
   using type = DataType;
   using group = AnalyticDataGroup;

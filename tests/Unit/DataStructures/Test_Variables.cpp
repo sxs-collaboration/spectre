@@ -904,7 +904,7 @@ void test_variables_from_tagged_tuple() {
 
 template <typename VectorType>
 void test_variables_equal_within_roundoff() {
-  INFO(pretty_type::short_name<VectorType>());
+  INFO(pretty_type::name<VectorType>());
   MAKE_GENERATOR(gen);
   using value_type = typename VectorType::value_type;
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>>

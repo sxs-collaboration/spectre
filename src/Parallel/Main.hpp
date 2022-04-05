@@ -420,8 +420,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     using algorithm = typename charm_type::algorithm;
     using databox_types = typename algorithm::databox_types;
     Parallel::printf("  %s (%s) has %u DataBox variants with [",
-                     pretty_type::short_name<parallel_component>(),
-                     pretty_type::short_name<chare_type>(),
+                     pretty_type::name<parallel_component>(),
+                     pretty_type::name<chare_type>(),
                      tmpl::size<databox_types>::value);
     tmpl::for_each<databox_types>([&parallel_component_v](auto databox_type_v) {
       // gcc11 and clang12 don't agree on where parallel_component_v is used...

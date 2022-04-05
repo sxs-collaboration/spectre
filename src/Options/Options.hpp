@@ -150,24 +150,6 @@ struct create_from_yaml {
   static T create(const Option& options);
 };
 
-namespace Options_detail {
-template <typename T, typename = std::void_t<>>
-struct name_helper {
-  static std::string name() { return pretty_type::short_name<T>(); }
-};
-
-template <typename T>
-struct name_helper<T, std::void_t<decltype(T::name())>> {
-  static std::string name() { return T::name(); }
-};
-}  // namespace Options_detail
-
-// The name in the YAML file for a struct.
-template <typename T>
-std::string name() {
-  return Options_detail::name_helper<T>::name();
-}
-
 /// Provide multiple ways to construct a class.
 ///
 /// This type may be included in an option list along with option
