@@ -53,7 +53,7 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
  * and inverse metricss.
  *
  * \details Computes Ricci scalar using the inverse metric (spatial or
- * spacetime) and Ricci tensor \f$R = \gamma^{ab}R_{ab}\f
+ * spacetime) and Ricci tensor \f$R = \gamma^{ab}R_{ab}\f$
  *
  *
  */
