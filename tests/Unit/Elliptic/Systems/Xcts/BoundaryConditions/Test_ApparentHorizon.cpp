@@ -402,7 +402,7 @@ void test_consistency_with_kerr(const bool compute_expansion) {
   CAPTURE(horizon_kerrschild_radius);
   // Eq. (8) in https://arxiv.org/abs/1506.01689
   std::array<double, 3> rotation =
-      -0.5 * dimensionless_spin / horizon_kerrschild_radius;
+      0.5 * dimensionless_spin / horizon_kerrschild_radius;
   CAPTURE(rotation);
   const KerrSchild solution{mass, dimensionless_spin, {{0., 0., 0.}}};
   const ApparentHorizon<Xcts::Geometry::Curved> kerr_horizon{

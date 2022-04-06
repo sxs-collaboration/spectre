@@ -276,7 +276,7 @@ void apparent_horizon_impl(
   // At this point we're done with `beta_orthogonal`, so we can re-purpose the
   // memory buffer.
   for (LeviCivitaIterator<3> it; it; ++it) {
-    shift_excess->get(it[0]) +=
+    shift_excess->get(it[0]) -=
         it.sign() * gsl::at(rotation, it[1]) * x.get(it[2]);
   }
 
