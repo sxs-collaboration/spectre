@@ -94,6 +94,10 @@ struct SpatialRicciCompute : SpatialRicci<SpatialDim, Frame, DataType>,
   using base = SpatialRicci<SpatialDim, Frame, DataType>;
 };
 
+/// Computes the patial ricci scalar using the spatial ricci tensor and the
+/// inverse spatial metric.
+///
+/// Can be retrieved using 'gr::Tags::SpatialRicciScalar'
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct SpatialRicciScalarCompute : SpatialRicciScalar<DataType>,
                                    db::ComputeTag {
