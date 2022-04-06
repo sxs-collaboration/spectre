@@ -4,6 +4,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "IndexManipulation.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -50,6 +51,25 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
                d_christoffel_2nd_kind);
   return result;
 }
+
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+void ricci_scalar(
+    const gsl::not_null<Scalar<DataType>*> ricci_scalar_result,
+    const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) {
+  trace(ricci_scalar_result, ricci_tensor, inverse_metric);
+}
+
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+Scalar<DataType> ricci_scalar(
+    const tnsr::aa<DataType, SpatialDim, Frame, Index>& ricci_tensor,
+    const tnsr::AA<DataType, SpatialDim, Frame, Index>& inverse_metric) {
+  auto ricci_scalar_result =
+      make_with_value<Scalar<DataType>>(get<0, 0>(inverse_metric), 0.0);
+  ricci_scalar(make_not_null(&ricci_scalar_result), ricci_tensor,
+               inverse_metric);
+  return ricci_scalar_result;
+}
 } // namespace gr
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -71,7 +91,18 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
       const tnsr::Abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&  \
           christoffel_2nd_kind,                                               \
       const tnsr::aBcc<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
-          d_christoffel_2nd_kind);
+          d_christoffel_2nd_kind);                                            \
+  template Scalar<DTYPE(data)> gr::ricci_scalar(                              \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          ricci_tensor,                                                       \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          inverse_metric);                                                    \
+  template void gr::ricci_scalar(                                             \
+      const gsl::not_null<Scalar<DTYPE(data)>*> ricci_scalar_result,          \
+      const tnsr::aa<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          ricci_tensor,                                                       \
+      const tnsr::AA<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>&   \
+          inverse_metric);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial),

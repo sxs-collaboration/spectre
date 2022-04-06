@@ -8,11 +8,13 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Framework/CheckWithRandomValues.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
@@ -24,8 +26,11 @@ namespace {
 template <size_t Dim, IndexType TypeOfIndex, typename DataType>
 void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
-      gr::Tags::SpatialRicciCompute<3, Frame::Inertial, DataType>>(
+      gr::Tags::SpatialRicciCompute<Dim, Frame::Inertial, DataType>>(
       "SpatialRicci");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpatialRicciScalarCompute<Dim, Frame::Inertial, DataType>>(
+      "SpatialRicciScalar");
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-3.0, 3.0);
@@ -38,22 +43,34 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
   const auto d_christoffel_2nd_kind = make_with_random_values<
       tnsr::aBcc<DataType, Dim, Frame::Inertial, TypeOfIndex>>(
       nn_generator, nn_distribution, used_for_size);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<Dim, DataType, Frame::Inertial>(
+          nn_generator, used_for_size);
+  const auto inv_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
 
   const auto box = db::create<
-      db::AddSimpleTags<gr::Tags::SpatialChristoffelSecondKind<
+      db::AddSimpleTags<
+          gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial,
+                                                 DataType>,
+          ::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<
                             Dim, Frame::Inertial, DataType>,
-                        ::Tags::deriv<gr::Tags::SpatialChristoffelSecondKind<
-                                          Dim, Frame::Inertial, DataType>,
-                                      tmpl::size_t<Dim>, Frame::Inertial>>,
+                        tmpl::size_t<Dim>, Frame::Inertial>,
+          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>,
       db::AddComputeTags<
-          gr::Tags::SpatialRicciCompute<Dim, Frame::Inertial, DataType>>>(
-      christoffel_2nd_kind, d_christoffel_2nd_kind);
+          gr::Tags::SpatialRicciCompute<Dim, Frame::Inertial, DataType>,
+          gr::Tags::SpatialRicciScalarCompute<Dim, Frame::Inertial, DataType>>>(
+      christoffel_2nd_kind, d_christoffel_2nd_kind, inv_spatial_metric);
 
   const auto expected =
       gr::ricci_tensor(christoffel_2nd_kind, d_christoffel_2nd_kind);
+  const auto expected_spatial_scalar =
+      gr::ricci_scalar(expected, inv_spatial_metric);
   CHECK_ITERABLE_APPROX(
       (db::get<gr::Tags::SpatialRicci<Dim, Frame::Inertial, DataType>>(box)),
       expected);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::SpatialRicciScalar<DataType>>(box)),
+                        expected_spatial_scalar);
 }
 
 template <size_t Dim, IndexType TypeOfIndex, typename DataType>
@@ -65,6 +82,16 @@ void test_ricci(const DataType& used_for_size) {
           &gr::ricci_tensor<Dim, Frame::Inertial, TypeOfIndex, DataType>),
       "Ricci", "ricci_tensor", {{{-1., 1.}}}, used_for_size);
 }
+
+template <size_t Dim, IndexType TypeOfIndex, typename DataType>
+void test_ricci_scalar(const DataType& used_for_size) {
+  Scalar<DataType> (*f)(
+      const tnsr::aa<DataType, Dim, Frame::Inertial, TypeOfIndex>&,
+      const tnsr::AA<DataType, Dim, Frame::Inertial, TypeOfIndex>&) =
+      &gr::ricci_scalar<Dim, Frame::Inertial, TypeOfIndex, DataType>;
+  pypp::check_with_random_values<1>(f, "RicciScalar", "ricci_scalar",
+                                    {{{-1., 1.}}}, used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci.",
@@ -75,6 +102,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci.",
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_ricci, (1, 2, 3),
+                                    (IndexType::Spatial, IndexType::Spacetime));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_ricci_scalar, (1, 2, 3),
                                     (IndexType::Spatial, IndexType::Spacetime));
   test_compute_item_in_databox<3, IndexType::Spatial>(d);
   test_compute_item_in_databox<3, IndexType::Spatial>(dv);

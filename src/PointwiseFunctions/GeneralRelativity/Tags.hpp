@@ -145,6 +145,14 @@ struct SpatialRicci : db::SimpleTag {
 };
 
 /*!
+ * \brief Simple tag for the spatial Ricci scalar
+ */
+template <typename DataType>
+struct SpatialRicciScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The energy density \f$E=n_a n_b T^{ab}\f$, where \f$n_a\f$ denotes the
  * normal to the spatial hypersurface
  */
