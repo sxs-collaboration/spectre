@@ -175,6 +175,7 @@ set(LIBRARY_SOURCES
   Test_ParallelComponentHelpers.cpp
   Test_PupStlCpp11.cpp
   Test_PupStlCpp17.cpp
+  Test_Serialize.cpp
   Test_TypeTraits.cpp
   )
 
