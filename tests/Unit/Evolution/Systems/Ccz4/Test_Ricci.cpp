@@ -124,6 +124,9 @@ void test_compute_spatial_ricci_tensor(
     }
   }
 
+  const auto contracted_field_d_up =
+      ::TensorExpressions::evaluate<ti_L>(field_d_up(ti_m, ti_M, ti_L));
+
   using field_d_tag =
       Ccz4::Tags::FieldD<SpatialDim, Frame::Inertial, DataVector>;
   Variables<tmpl::list<field_d_tag>> field_d_var(num_points_3d);
@@ -162,6 +165,10 @@ void test_compute_spatial_ricci_tensor(
       conformal_spatial_metric, inverse_conformal_spatial_metric, field_p,
       conformal_christoffel_second_kind);
 
+  const auto contracted_christoffel_second_kind =
+      TensorExpressions::evaluate<ti_l>(
+          christoffel_second_kind(ti_M, ti_l, ti_m));
+
   using christoffel_second_kind_tag =
       gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame::Inertial,
                                              DataVector>;
@@ -176,6 +183,11 @@ void test_compute_spatial_ricci_tensor(
       get<Tags::deriv<christoffel_second_kind_tag, tmpl::size_t<SpatialDim>,
                       Frame::Inertial>>(d_christoffel_second_kind_var);
 
+  const auto contracted_d_conformal_christoffel_difference =
+      ::TensorExpressions::evaluate<ti_i, ti_j>(
+          d_conformal_christoffel_second_kind(ti_m, ti_M, ti_i, ti_j) -
+          d_conformal_christoffel_second_kind(ti_j, ti_M, ti_i, ti_m));
+
   // Compute expected and actual ricci tensors using above computed arguments
   const auto expected_py_ricci_tensor{
       pypp::call<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
@@ -188,9 +200,10 @@ void test_compute_spatial_ricci_tensor(
       gr::ricci_tensor(christoffel_second_kind, d_christoffel_second_kind);
 
   const auto actual_cpp_ricci_tensor = Ccz4::spatial_ricci_tensor(
-      christoffel_second_kind, d_conformal_christoffel_second_kind,
-      conformal_spatial_metric, inverse_conformal_spatial_metric, field_d,
-      field_d_up, field_p, d_field_p);
+      christoffel_second_kind, contracted_christoffel_second_kind,
+      contracted_d_conformal_christoffel_difference, conformal_spatial_metric,
+      inverse_conformal_spatial_metric, field_d, field_d_up,
+      contracted_field_d_up, field_p, d_field_p);
 
   CHECK_ITERABLE_APPROX(expected_py_ricci_tensor, actual_cpp_ricci_tensor);
   // A custom epsilon is used here because the Legendre polynomials don't fit
