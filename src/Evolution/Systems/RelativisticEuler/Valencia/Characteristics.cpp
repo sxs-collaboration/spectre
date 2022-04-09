@@ -346,6 +346,15 @@ Matrix left_eigenvectors(const Scalar<double>& rest_mass_density,
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
+  template void                                                                \
+  RelativisticEuler::Valencia::characteristic_speeds(                          \
+      const gsl::not_null<std::array<DataVector, DIM(data) + 2>*> result,      \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data)>& shift,                             \
+      const tnsr::I<DataVector, DIM(data)>& spatial_velocity,                  \
+      const Scalar<DataVector>& spatial_velocity_squared,                      \
+      const Scalar<DataVector>& sound_speed_squared,                           \
+      const tnsr::i<DataVector, DIM(data)>& normal);                           \
   template std::array<DataVector, DIM(data) + 2>                               \
   RelativisticEuler::Valencia::characteristic_speeds(                          \
       const Scalar<DataVector>& lapse,                                         \

@@ -13,6 +13,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace LinearSolver::multigrid {
 

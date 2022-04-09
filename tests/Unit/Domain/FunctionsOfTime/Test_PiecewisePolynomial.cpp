@@ -104,12 +104,83 @@ void test_within_roundoff(const FunctionsOfTime::FunctionOfTime& f_of_t) {
   CHECK(approx(lambdas2[0][0]) == 1.0);
   CHECK(approx(lambdas2[0][1]) == 1.0);
 }
+
+class quartic {
+ public:
+  quartic(const std::array<DataVector, 5> coeffs) : coeffs_(coeffs) {}
+  template <size_t MaxDerivReturned>
+  std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const {
+    if constexpr (0 == MaxDerivReturned) {
+      return {{coeffs_[0] +
+               t * (coeffs_[1] +
+                    t * (coeffs_[2] + t * (coeffs_[3] + t * coeffs_[4])))}};
+    } else if constexpr (1 == MaxDerivReturned) {
+      return {
+          {coeffs_[0] +
+               t * (coeffs_[1] +
+                    t * (coeffs_[2] + t * (coeffs_[3] + t * coeffs_[4]))),
+           coeffs_[1] + t * (2.0 * coeffs_[2] +
+                             t * (3.0 * coeffs_[3] + t * 4.0 * coeffs_[4]))}};
+    } else {
+      static_assert(2 == MaxDerivReturned, "Unimplemented");
+      return {
+          {coeffs_[0] +
+               t * (coeffs_[1] +
+                    t * (coeffs_[2] + t * (coeffs_[3] + t * coeffs_[4]))),
+           coeffs_[1] + t * (2.0 * coeffs_[2] +
+                             t * (3.0 * coeffs_[3] + t * 4.0 * coeffs_[4])),
+           2.0 * coeffs_[2] + t * (6.0 * coeffs_[3] + t * 12.0 * coeffs_[4])}};
+    }
+  }
+
+ private:
+  std::array<DataVector, 5> coeffs_;
+};
+
+template <size_t MaxDeriv>
+void check_func_and_derivs(
+    const FunctionsOfTime::PiecewisePolynomial<MaxDeriv>& f_of_t,
+    const quartic& q) {
+  const double t = 0.5;
+  CHECK(f_of_t.func(t) == q.func_and_derivs<0>(t));
+  CHECK(f_of_t.func_and_deriv(t) == q.func_and_derivs<1>(t));
+  CHECK(f_of_t.func_and_2_derivs(t) == q.func_and_derivs<2>(t));
+}
+
+void test_func_and_derivs() {
+  const double t0 = 0.0;
+  const double tx = 1.0;
+  DataVector c0{0.125, 0.25};
+  DataVector c1{0.375, 0.5};
+  DataVector c2{0.625, 0.75};
+  DataVector c3{0.875, 1.125};
+  DataVector c4{1.25, 1.375};
+  DataVector zero{0.0, 0.0};
+  check_func_and_derivs(
+      FunctionsOfTime::PiecewisePolynomial<0>(t0, {{c0}}, tx),
+      quartic(std::array<DataVector, 5>{{c0, zero, zero, zero, zero}}));
+  check_func_and_derivs(
+      FunctionsOfTime::PiecewisePolynomial<1>(t0, {{c0, c1}}, tx),
+      quartic(std::array<DataVector, 5>{{c0, c1, zero, zero, zero}}));
+  check_func_and_derivs(
+      FunctionsOfTime::PiecewisePolynomial<2>(t0, {{c0, c1, 2.0 * c2}}, tx),
+      quartic(std::array<DataVector, 5>{{c0, c1, c2, zero, zero}}));
+  check_func_and_derivs(
+      FunctionsOfTime::PiecewisePolynomial<3>(
+          t0, {{c0, c1, 2.0 * c2, 6.0 * c3}}, tx),
+      quartic(std::array<DataVector, 5>{{c0, c1, c2, c3, zero}}));
+  check_func_and_derivs(
+      FunctionsOfTime::PiecewisePolynomial<4>(
+          t0, {{c0, c1, 2.0 * c2, 6.0 * c3, 24.0 * c4}}, tx),
+      quartic(std::array<DataVector, 5>{{c0, c1, c2, c3, c4}}));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
                   "[Domain][Unit]") {
   FunctionsOfTime::register_derived_with_charm();
-
+  test_func_and_derivs();
   {
     INFO("Core test");
     double t = 0.0;

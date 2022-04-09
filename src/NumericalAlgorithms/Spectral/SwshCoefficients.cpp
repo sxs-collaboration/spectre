@@ -253,6 +253,11 @@ SpinWeighted<ComplexModalVector, Spin> goldberg_to_libsharp_modes(
   template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                   \
   goldberg_to_libsharp_modes(                                                 \
       const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& goldberg_modes, \
+      const size_t l_max);                                                    \
+  template void goldberg_to_libsharp_modes(                                   \
+      const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*>  \
+          libsharp_modes,                                                     \
+      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>& goldberg_modes, \
       const size_t l_max);
 
 GENERATE_INSTANTIATIONS(LIBSHARP_TO_GOLDBERG_INSTANTIATION, (-2, -1, 0, 1, 2))

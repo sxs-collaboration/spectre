@@ -44,13 +44,21 @@ tnsr::ii<DataType, 3> extrinsic_curvature(
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                             \
-  template tnsr::ii<DTYPE(data), 3> extrinsic_curvature( \
-      const Scalar<DTYPE(data)>& conformal_factor,       \
-      const Scalar<DTYPE(data)>& lapse,                  \
-      const tnsr::ii<DTYPE(data), 3>& conformal_metric,  \
-      const tnsr::II<DTYPE(data), 3>&                    \
-          longitudinal_shift_minus_dt_conformal_metric,  \
+#define INSTANTIATE(_, data)                                 \
+  template void extrinsic_curvature(                         \
+      const gsl::not_null<tnsr::ii<DTYPE(data), 3>*> result, \
+      const Scalar<DTYPE(data)>& conformal_factor,           \
+      const Scalar<DTYPE(data)>& lapse,                      \
+      const tnsr::ii<DTYPE(data), 3>& conformal_metric,      \
+      const tnsr::II<DTYPE(data), 3>&                        \
+          longitudinal_shift_minus_dt_conformal_metric,      \
+      const Scalar<DTYPE(data)>& trace_extrinsic_curvature); \
+  template tnsr::ii<DTYPE(data), 3> extrinsic_curvature(     \
+      const Scalar<DTYPE(data)>& conformal_factor,           \
+      const Scalar<DTYPE(data)>& lapse,                      \
+      const tnsr::ii<DTYPE(data), 3>& conformal_metric,      \
+      const tnsr::II<DTYPE(data), 3>&                        \
+          longitudinal_shift_minus_dt_conformal_metric,      \
       const Scalar<DTYPE(data)>& trace_extrinsic_curvature);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
