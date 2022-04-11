@@ -82,9 +82,32 @@ struct ElementLogicalCoordHolder {
 /// `ElementLogicalCoordHolder`s.
 /// It is expected that only a subset of the points will be found
 /// in the given `Element`s.
-/// If a point is on a shared boundary of two or more `Element`s, it
-/// will be returned only once, and will be considered to belong to
-/// the first `Element` in the list of `ElementId`s.
+/// Boundary points: If a point is on the boundary of an Element, it is
+/// considered contained in that Element only if it is on the lower bound
+/// of the Element, or if it is on the upper bound of the element and that
+/// upper bound coincides with the upper bound of the containing Block.
+/// This means that each boundary point is contained in one and only one
+/// Element.  We assume that the input block_coord_holders associates
+/// a point on a Block boundary with only a single Block, the one with
+/// the smaller BlockId, which is always the lower-bounding Block.
+///
+/// \code
+///  <---    Block 0   ---> <---   Block 1   --->
+///  |          |          |          |          |
+/// P_0   E0   P_1   E1   P_2   E2   P_3   E3   P_4
+///  |          |          |          |          |
+///
+/// For example, the above 1D diagram shows four Elements labeled E0
+/// through E3, and five boundary points labeled P_0 through P_4 (where
+/// P_0 and P_4 are external boundaries).  There are two Blocks.  This
+/// algorithm assigns each boundary point to one and only one Element as
+/// follows:
+/// P_0 -> E0
+/// P_1 -> E1
+/// P_2 -> E1 (Note: block_coord_holders includes P_2 only in Block 0)
+/// P_3 -> E3
+/// P_4 -> E3
+/// \endcode
 template <size_t Dim>
 auto element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,

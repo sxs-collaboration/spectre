@@ -360,7 +360,7 @@ void test_block_and_element_logical_coordinates(
     const std::vector<size_t>& expected_block_ids,
     const std::vector<std::array<double, Dim>>& expected_block_logical,
     const std::vector<ElementId<Dim>>& element_ids,
-    const std::vector<size_t>& expected_element_id_indices,
+    const std::vector<ElementId<Dim>>& expected_ids,
     const std::vector<std::vector<size_t>>& expected_offset,
     const std::vector<std::vector<std::array<double, Dim>>>&
         expected_element_logical) {
@@ -400,14 +400,9 @@ void test_block_and_element_logical_coordinates(
     expected_elem_logical.emplace_back(std::move(dum));
   }
 
-  std::vector<ElementId<Dim>> expected_ids;
-  expected_ids.reserve(expected_element_id_indices.size());
-  for (const auto& index : expected_element_id_indices) {
-    expected_ids.push_back(element_ids[index]);
-  }
-
   for (size_t s = 0; s < expected_ids.size(); ++s) {
     const auto pos = element_logical_result.find(expected_ids[s]);
+    INFO(expected_ids[s]);
     CHECK(pos != element_logical_result.end());
     if (pos != element_logical_result.end()) {
       const auto& holder = pos->second;
@@ -418,6 +413,7 @@ void test_block_and_element_logical_coordinates(
   }
   // Make sure we got all the elements
   for (const auto& holder_pair : element_logical_result) {
+    INFO(holder_pair.first);
     const auto pos =
         std::find(expected_ids.begin(), expected_ids.end(), holder_pair.first);
     CHECK(pos != expected_ids.end());
@@ -451,6 +447,12 @@ void test_block_and_element_logical_coordinates1() {
   // I (Mark) computed these expected quantities by hand, given the
   // points above and the choices of elements.
   std::vector<size_t> expected_id_indices{{0, 8, 4, 3}};
+  std::vector<ElementId<1>> expected_ids;
+  expected_ids.reserve(expected_id_indices.size());
+  for (const auto& index : expected_id_indices) {
+    expected_ids.push_back(element_ids[index]);
+  }
+
   std::vector<std::vector<size_t>> expected_offset{
       std::vector<size_t>{0}, std::vector<size_t>{1}, std::vector<size_t>{2},
       std::vector<size_t>{3}};
@@ -463,7 +465,7 @@ void test_block_and_element_logical_coordinates1() {
 
   test_block_and_element_logical_coordinates(
       domain, x_inertial, expected_block_ids, expected_x_logical, element_ids,
-      expected_id_indices, expected_offset, expected_elem_log);
+      expected_ids, expected_offset, expected_elem_log);
 }
 
 void test_block_logical_coordinates1fail() {
@@ -542,7 +544,13 @@ void test_block_and_element_logical_coordinates3() {
   // I (Mark) computed these expected quantities by hand, given the
   // points above and the choices of elements.
   std::vector<size_t> expected_id_indices{
-      {1, 8, 29, 84, 92, 153, 169, 225, 239, 215}};
+      {1, 8, 29, 84, 92, 153, 169, 225, 239, 219}};
+  std::vector<ElementId<3>> expected_ids;
+  expected_ids.reserve(expected_id_indices.size());
+  for (const auto& index : expected_id_indices) {
+    expected_ids.push_back(element_ids[index]);
+  }
+
   // The last point above is on an element boundary;
   // element_logical_coordinates should choose the first element in
   // the list of elements it is passed.
@@ -562,11 +570,78 @@ void test_block_and_element_logical_coordinates3() {
       std::vector<std::array<double, 3>>{{{0.6, -0.2, 0.2}}},
       std::vector<std::array<double, 3>>{{{0.6, 0.2, -0.2}}},
       std::vector<std::array<double, 3>>{{{-0.6, 0.6, 0.2}}},
-      std::vector<std::array<double, 3>>{{{1.0, 1.0, 1.0}}}};
+      std::vector<std::array<double, 3>>{{{1.0, -1.0, 1.0}}}};
 
   test_block_and_element_logical_coordinates(
       domain, x_inertial, expected_block_ids, expected_x_logical, element_ids,
-      expected_id_indices, expected_offset, expected_elem_log);
+      expected_ids, expected_offset, expected_elem_log);
+
+  {
+    INFO("Shuffled test");
+    MAKE_GENERATOR(gen);
+    std::shuffle(element_ids.begin(), element_ids.end(), gen);
+
+    test_block_and_element_logical_coordinates(
+        domain, x_inertial, expected_block_ids, expected_x_logical, element_ids,
+        expected_ids, expected_offset, expected_elem_log);
+  }
+}
+
+void test_element_ids_are_uniquely_determined() {
+  const size_t xi_level = 2;
+  const size_t eta_level = 3;
+  const size_t zeta_level = 4;
+  auto element_ids =
+      initial_element_ids<3>(0, {{xi_level, eta_level, zeta_level}});
+
+  // Points are located at the end- and mid-points of each segment
+  // thus giving a set of points at the centers of each element as
+  // well as on their corners, edges, and faces
+  const size_t n_xi_segments = two_to_the(xi_level);
+  const size_t n_eta_segments = two_to_the(eta_level);
+  const size_t n_zeta_segments = two_to_the(zeta_level);
+  const size_t n_pts = (2 * n_xi_segments + 1) * (2 * n_eta_segments + 1) *
+                       (2 * n_zeta_segments + 1);
+  std::vector<std::optional<IdPair<
+      domain::BlockId, tnsr::I<double, 3, typename Frame::BlockLogical>>>>
+      block_logical_points{n_pts, std::nullopt};
+  const double xi_stride = 1.0 / n_xi_segments;
+  const double eta_stride = 1.0 / n_eta_segments;
+  const double zeta_stride = 1.0 / n_zeta_segments;
+  for (size_t i = 0; i <= 2 * n_xi_segments; ++i) {
+    for (size_t j = 0; j <= 2 * n_eta_segments; ++j) {
+      for (size_t k = 0; k <= 2 * n_zeta_segments; ++k) {
+        block_logical_points[k + (2 * n_zeta_segments + 1) *
+                                     (j + (2 * n_eta_segments + 1) * i)] =
+            IdPair<domain::BlockId,
+                   tnsr::I<double, 3, typename Frame::BlockLogical>>{
+                domain::BlockId{0},
+                tnsr::I<double, 3, typename Frame::BlockLogical>{
+                    {{-1.0 + i * xi_stride, -1.0 + j * eta_stride,
+                      -1.0 + k * zeta_stride}}}};
+      }
+    }
+  }
+
+  const auto result_unshuffled =
+      element_logical_coordinates(element_ids, block_logical_points);
+
+  MAKE_GENERATOR(gen);
+  std::shuffle(element_ids.begin(), element_ids.end(), gen);
+
+  const auto result_shuffled =
+      element_logical_coordinates(element_ids, block_logical_points);
+
+  size_t points_found = 0;
+  for (const auto& [id, coord_holder] : result_unshuffled) {
+    INFO(id);
+    points_found += coord_holder.offsets.size();
+    const auto& shuffled_coord_holder = result_shuffled.at(id);
+    CHECK(coord_holder.element_logical_coords ==
+          shuffled_coord_holder.element_logical_coords);
+    CHECK(coord_holder.offsets == shuffled_coord_holder.offsets);
+  }
+  CHECK(points_found == n_pts);
 }
 }  // namespace
 
@@ -581,4 +656,5 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates_shell(20);
   fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(20);
   test_block_logical_coordinates1fail();
+  test_element_ids_are_uniquely_determined();
 }
