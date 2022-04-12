@@ -7,71 +7,19 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "ControlSystem/Component.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
-#include "IO/Observer/Helpers.hpp"
-#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ReductionActions.hpp"
-#include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
-#include "Parallel/Reduction.hpp"
-#include "Utilities/Functional.hpp"
-#include "Utilities/MakeString.hpp"
 
 namespace control_system {
-/*!
- * Helper struct that contains common things all control systems will need if
- * they want to write their data to disk.
- *
- * To have a control system write data, this `WriterHelper` struct must be
- * put in the `tmpl::list` of `observed_reduction_data_tags` in the
- * metavariables.
- */
-struct WriterHelper {
-  // Use funcl::AssertEqual for all because we aren't actually "reducing"
-  // anything. These are just one time measurements.
-  using ReductionData = Parallel::ReductionData<
-      // Time
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      // Lambda, dtLambda, d2tLambda
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      // ControlError, dtControlError, ControlSignal
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
-
-  using observed_reduction_data_tags =
-      observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
-
-  /// All controlled components of functions of time have the same legend
-  const static inline std::vector<std::string> legend{
-      "Time",         "Lambda",         "dtLambda",     "d2tLambda",
-      "ControlError", "dtControlError", "ControlSignal"};
-};
-
-/// Used in
-/// `observers::Actions::RegisterSingletonWithObserverWriter<RegisterHelper>`
-/// as the `RegisterHelper`
-template <typename ControlSystem>
-struct Registration {
-  template <typename ParallelComponent, typename DbTagsList,
-            typename ArrayIndex>
-  static std::pair<observers::TypeOfObservation, observers::ObservationKey>
-  register_info(const db::DataBox<DbTagsList>& /*box*/,
-                const ArrayIndex& /*array_index*/) {
-    return {observers::TypeOfObservation::Reduction,
-            observers::ObservationKey{ControlSystem::name()}};
-  }
-};
-
 /*!
  * \ingroup ControlSystemGroup
  * \brief Writes all components of a function of time to disk at a specific time
@@ -108,14 +56,6 @@ struct Registration {
  * - /ControlSystems/SystemA/X.dat
  * - /ControlSystems/SystemA/Y.dat
  * - /ControlSystems/SystemA/Z.dat
- *
- * \note In order to use this function, you must
- * 1. Put the
- * `observers::Actions::RegisterSingletonWithObserverWriter<RegisterHelper>`
- * action in the registration phase of the `ControlComponent` where
- * `RegisterHelper` is the `control_system::Registration<ControlSystem>` struct
- * 2. Add `control_system::WriterHelper` to the `tmpl::list` of
- * `observed_reduction_data_tags` in the metavariables.
  */
 template <typename ControlSystem, typename Metavariables>
 void write_components_to_disk(
@@ -126,8 +66,6 @@ void write_components_to_disk(
     const DataVector& control_signal) {
   auto& observer_writer_proxy = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
-  auto& control_component_proxy = Parallel::get_parallel_component<
-      ControlComponent<Metavariables, ControlSystem>>(cache);
 
   constexpr size_t deriv_order = ControlSystem::deriv_order;
   std::array<DataVector, 3> function_at_current_time{};
@@ -163,17 +101,15 @@ void write_components_to_disk(
     // everything with ControlSystems/
     const std::string subfile_name{"/ControlSystems/" + ControlSystem::name() +
                                    "/" + component_name};
-    const auto observation_id =
-        observers::ObservationId(time, ControlSystem::name());
-    const auto& legend = WriterHelper::legend;
+    std::vector<std::string> legend{
+        "Time",         "Lambda",         "dtLambda",     "d2tLambda",
+        "ControlError", "dtControlError", "ControlSignal"};
 
-    Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
+    Parallel::threaded_action<
+        observers::ThreadedActions::WriteReductionDataRow>(
         // Node 0 is always the writer
-        observer_writer_proxy[0], observation_id,
-        static_cast<size_t>(
-            Parallel::my_node(*control_component_proxy.ckLocal())),
-        subfile_name, legend,
-        WriterHelper::ReductionData{
+        observer_writer_proxy[0], subfile_name, std::move(legend),
+        std::make_tuple(
             // clang-format off
             time,
             function_at_current_time[0][i],
@@ -181,7 +117,7 @@ void write_components_to_disk(
             function_at_current_time[2][i],
             q_and_derivs[0][i],
             q_and_derivs[1][i],
-            control_signal[i]}
+            control_signal[i])
         // clang-format on
     );
   }
