@@ -9,6 +9,7 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"
+#include "ApparentHorizons/ObserveCenters.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -269,7 +270,8 @@ struct EvolutionMetavars {
         intrp::callbacks::ErrorOnFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>>;
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>,
+        ah::callbacks::ObserveCenters<AhA>>;
   };
 
   struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -288,7 +290,8 @@ struct EvolutionMetavars {
         intrp::callbacks::ErrorOnFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB>>;
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB>,
+        ah::callbacks::ObserveCenters<AhB>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA, AhB>;
