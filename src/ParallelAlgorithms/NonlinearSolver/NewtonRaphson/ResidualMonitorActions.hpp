@@ -159,7 +159,7 @@ struct CheckResidualMagnitude {
               "%s(%zu): WARNING: Failed to sufficiently decrease the residual "
               "in %zu globalization steps. This is usually indicative of an "
               "ill-posed problem, for example when the linearization of the "
-              "nonlinear operator is not computed correctly.",
+              "nonlinear operator is not computed correctly.\n",
               pretty_type::name<OptionsGroup>(), iteration_id,
               globalization_iteration_id);
         }  // min_step_length
