@@ -27,8 +27,6 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/Observer/Actions/RegisterSingleton.hpp"
-#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -115,18 +113,14 @@ struct MockControlComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
 
-  using register_action =
-      tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
-          control_system::Registration<ControlSystem>>>;
-
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Register, register_action>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
 };
 
 struct TestMetavars {
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<tmpl::list<WriterHelper>>;
+  using observed_reduction_data_tags = tmpl::list<>;
 
   enum class Phase { Initialization, Register, WriteData, Exit };
 
@@ -146,6 +140,10 @@ void check_written_data(
         q_and_derivs,
     const std::vector<DataVector>& control_signal) {
   std::array<DataVector, 3> func_and_2_derivs{};
+  // This has to be the same as in control_system::write_components_to_disk
+  const std::vector<std::string> compare_legend{
+      "Time",         "Lambda",         "dtLambda",     "d2tLambda",
+      "ControlError", "dtControlError", "ControlSignal"};
   for (size_t component_num = 0; component_num < total_components;
        component_num++) {
     // per file checks
@@ -156,7 +154,7 @@ void check_written_data(
     const std::vector<std::string>& legend = dataset.get_legend();
     // Check legend is correct
     for (size_t i = 0; i < legend.size(); i++) {
-      CHECK(legend[i] == WriterHelper::legend[i]);
+      CHECK(legend[i] == compare_legend[i]);
     }
     CHECK(data.rows() == times.size());
 
@@ -230,18 +228,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<observer>(make_not_null(&runner), 0);
   }
-  // Register singletons with observer writer
-  runner.set_phase(TestMetavars::Phase::Register);
-  ActionTesting::next_action<control_comp>(make_not_null(&runner), 0);
-  CHECK(ActionTesting::number_of_queued_simple_actions<observer>(runner, 0) ==
-        1);
-  ActionTesting::invoke_queued_simple_action<observer>(make_not_null(&runner),
-                                                       0);
-  ActionTesting::next_action<quat_control_comp>(make_not_null(&runner), 0);
-  CHECK(ActionTesting::number_of_queued_simple_actions<observer>(runner, 0) ==
-        1);
-  ActionTesting::invoke_queued_simple_action<observer>(make_not_null(&runner),
-                                                       0);
 
   runner.set_phase(TestMetavars::Phase::WriteData);
 
