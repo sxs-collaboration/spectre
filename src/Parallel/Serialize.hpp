@@ -67,3 +67,14 @@ void deserialize(const gsl::not_null<T*> result,
   PUP::fromMem reader(data);
   reader | *result;
 }
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Returns the size of an object in bytes
+ */
+template <typename T>
+size_t size_of_object_in_bytes(const T& obj) {
+  PUP::sizer sizer;
+  sizer | const_cast<T&>(obj);  // NOLINT
+  return sizer.size();
+}
