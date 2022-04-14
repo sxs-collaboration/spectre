@@ -243,9 +243,6 @@ struct EvolutionMetavars {
         << static_cast<int>(phase));
   }
 
-  using time_stepper_tag = Tags::TimeStepper<
-      tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,

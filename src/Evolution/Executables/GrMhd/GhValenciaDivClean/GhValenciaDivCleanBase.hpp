@@ -202,9 +202,6 @@ struct GhValenciaDivCleanDefaults {
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
-  using time_stepper_tag = Tags::TimeStepper<
-      std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-
   enum class Phase {
     Initialization,
     RegisterWithElementDataReader,

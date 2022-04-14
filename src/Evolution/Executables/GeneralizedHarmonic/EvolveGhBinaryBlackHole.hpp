@@ -185,9 +185,6 @@ struct EvolutionMetavars {
         << static_cast<int>(phase));
   }
 
-  using time_stepper_tag = Tags::TimeStepper<
-      std::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-
   using initialize_initial_data_dependent_quantities_actions =
       tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
                      volume_dim, use_damped_harmonic_rollon>,
