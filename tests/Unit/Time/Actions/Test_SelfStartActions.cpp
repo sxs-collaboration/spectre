@@ -149,7 +149,7 @@ struct Component {
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
       Tags::Next<Tags::TimeStep>, Tags::Time,
       Tags::IsUsingTimeSteppingErrorControl<>>>;
-  using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
+  using compute_tags = db::AddComputeTags<>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 

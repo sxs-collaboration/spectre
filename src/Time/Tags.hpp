@@ -45,30 +45,6 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for ::Time of the current substep
-///
-/// \see SubstepTimeCompute
-struct SubstepTime : db::SimpleTag {
-  using type = ::Time;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
-/// \brief Tag for computing the substep time from (from `Tags::TimeStepId`)
-///
-/// \see SubstepTime
-struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
-  using base = SubstepTime;
-  using return_type = typename base::type;
-  static void function(const gsl::not_null<return_type*> substep_time,
-                       const ::TimeStepId& id) {
-    *substep_time = id.substep_time();
-  }
-  using argument_tags = tmpl::list<TimeStepId>;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
 /// \brief Tag for the current time as a double
 struct Time : db::SimpleTag {
   using type = double;

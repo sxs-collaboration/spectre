@@ -109,7 +109,7 @@ struct TimeAndTimeStep {
                       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
                       ::Tags::Time, ::Tags::TimeStep,
                       ::Tags::Next<::Tags::TimeStep>>;
-  using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
+  using compute_tags = tmpl::list<>;
 
   template <
       typename DbTagsList, typename... InboxTags, typename ArrayIndex,
