@@ -712,7 +712,7 @@ standard_checks+=(check_throws)
 # Check for typos similar to Doxygen groups
 check_dox_groups() {
     is_c++ "$1" && staged_grep -E "^\s*//+\s*[\{\}\(\)]*@[\{\}\(\)]*" "$1" \
-            | grep -v -E "(^\s*/// @\{|^\s*/// @\})"
+            | grep -v -E -q "(^\s*/// @\{|^\s*/// @\})"
 }
 check_dox_groups_report() {
     echo "Found a likely typo similar to a valid doxygen grouping"
