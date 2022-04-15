@@ -114,3 +114,7 @@ Code Quality Items:
 * All necessary header files must be included. In header files, prefer
   forward declarations if class definitions aren't necessary.
 * Explicitly make numbers floating point, e.g. `2.` or `2.0` over `2`.
+* Avoid `mutable` member variables. If you think you really need these, discuss
+  with at least 2 core developers. In a parallel environment `mutable` variables
+  lead to race conditions since multiple threads can mutate a single object by
+  calling a `const` member function.
