@@ -147,12 +147,14 @@ test_check() {
         if [ "${expected}" != fail ] ; then
             echo "${check} unexpectedly failed on ${file}:"
             cat "${file}"
+            echo
             failed=yes
         fi
     else
         if [ "${expected}" != pass ] ; then
             echo "${check} unexpectedly passed on ${file}:"
             cat "${file}"
+            echo
             failed=yes
         fi
     fi
