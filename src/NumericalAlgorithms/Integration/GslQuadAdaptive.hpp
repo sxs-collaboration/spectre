@@ -46,10 +46,11 @@ class GslQuadAdaptiveImpl {
 
  protected:
   template <typename IntegrandType>
-  gsl_function* gsl_integrand(IntegrandType&& integrand) const {
-    gsl_integrand_.function = &detail::integrand<IntegrandType>;
-    gsl_integrand_.params = &integrand;
-    return &gsl_integrand_;
+  gsl_function make_gsl_integrand(IntegrandType& integrand) const {
+    gsl_function gsl_integrand;
+    gsl_integrand.function = &detail::integrand<IntegrandType>;
+    gsl_integrand.params = &integrand;
+    return gsl_integrand;
   }
 
   struct GslIntegrationWorkspaceDeleter {
@@ -62,8 +63,6 @@ class GslQuadAdaptiveImpl {
 
  private:
   void initialize();
-
-  mutable gsl_function gsl_integrand_{};
 };
 
 void check_status_code(int status_code);
@@ -132,11 +131,12 @@ class GslQuadAdaptive<GslIntegralType::StandardGaussKronrod>
                     const int key, const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
-    const int status_code = gsl_integration_qag(
-        gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
-        upper_boundary, tolerance_abs, tolerance_rel, this->max_intervals_, key,
-        this->workspace_.get(), &result, &error);
+    const int status_code =
+        gsl_integration_qag(&gsl_integrand, lower_boundary, upper_boundary,
+                            tolerance_abs, tolerance_rel, this->max_intervals_,
+                            key, this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
     return result;
   }
@@ -162,11 +162,12 @@ class GslQuadAdaptive<GslIntegralType::IntegrableSingularitiesPresent>
                     const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
-    const int status_code = gsl_integration_qags(
-        gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
-        upper_boundary, tolerance_abs, tolerance_rel, this->max_intervals_,
-        this->workspace_.get(), &result, &error);
+    const int status_code =
+        gsl_integration_qags(&gsl_integrand, lower_boundary, upper_boundary,
+                             tolerance_abs, tolerance_rel, this->max_intervals_,
+                             this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
     return result;
   }
@@ -191,6 +192,7 @@ class GslQuadAdaptive<GslIntegralType::IntegrableSingularitiesKnown>
                     const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
     // The const_cast is necessary because GSL has a weird interface where
     // the number of singularities does not change, but it doesn't take
@@ -202,8 +204,7 @@ class GslQuadAdaptive<GslIntegralType::IntegrableSingularitiesKnown>
     // `malloc` (or some other C allocator). Mixing (de)allocators in such a way
     // is undefined behavior.
     const int status_code = gsl_integration_qagp(
-        gsl_integrand(std::forward<IntegrandType>(integrand)),
-        const_cast<double*>(points.data()),  // NOLINT
+        &gsl_integrand, const_cast<double*>(points.data()),  // NOLINT
         points.size(), tolerance_abs, tolerance_rel, this->max_intervals_,
         this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
@@ -229,11 +230,11 @@ class GslQuadAdaptive<GslIntegralType::InfiniteInterval>
                     const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagi(
-        gsl_integrand(std::forward<IntegrandType>(integrand)), tolerance_abs,
-        tolerance_rel, this->max_intervals_, this->workspace_.get(), &result,
-        &error);
+        &gsl_integrand, tolerance_abs, tolerance_rel, this->max_intervals_,
+        this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
     return result;
   }
@@ -257,11 +258,11 @@ class GslQuadAdaptive<GslIntegralType::UpperBoundaryInfinite>
                     const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagiu(
-        gsl_integrand(std::forward<IntegrandType>(integrand)), lower_boundary,
-        tolerance_abs, tolerance_rel, this->max_intervals_,
-        this->workspace_.get(), &result, &error);
+        &gsl_integrand, lower_boundary, tolerance_abs, tolerance_rel,
+        this->max_intervals_, this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
     return result;
   }
@@ -285,11 +286,11 @@ class GslQuadAdaptive<GslIntegralType::LowerBoundaryInfinite>
                     const double tolerance_rel = 0.) const {
     double result = std::numeric_limits<double>::signaling_NaN();
     double error = std::numeric_limits<double>::signaling_NaN();
+    auto gsl_integrand = make_gsl_integrand(integrand);
     detail::disable_gsl_error_handling();
     const int status_code = gsl_integration_qagil(
-        gsl_integrand(std::forward<IntegrandType>(integrand)), upper_boundary,
-        tolerance_abs, tolerance_rel, this->max_intervals_,
-        this->workspace_.get(), &result, &error);
+        &gsl_integrand, upper_boundary, tolerance_abs, tolerance_rel,
+        this->max_intervals_, this->workspace_.get(), &result, &error);
     detail::check_status_code(status_code);
     return result;
   }

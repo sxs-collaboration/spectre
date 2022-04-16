@@ -15,7 +15,7 @@
 namespace integration::detail {
 
 GslQuadAdaptiveImpl::GslQuadAdaptiveImpl(const size_t max_intervals)
-    : max_intervals_(max_intervals), gsl_integrand_(gsl_function{}) {
+    : max_intervals_(max_intervals) {
   initialize();
 }
 
