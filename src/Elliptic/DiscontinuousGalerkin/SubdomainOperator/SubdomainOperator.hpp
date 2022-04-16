@@ -702,30 +702,40 @@ struct SubdomainOperator
 
  private:
   // Memory buffers for repeated operator applications
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<typename System::auxiliary_fields>
       central_auxiliary_vars_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<typename System::primal_fluxes> central_primal_fluxes_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<typename System::auxiliary_fluxes>
       central_auxiliary_fluxes_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::auxiliary_fields>>
       neighbors_auxiliary_vars_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::primal_fluxes>>
       neighbors_primal_fluxes_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::auxiliary_fluxes>>
       neighbors_auxiliary_fluxes_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::primal_fields>>
       extended_operand_vars_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, Variables<typename System::primal_fields>>
       extended_results_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable ::dg::MortarMap<
       Dim, elliptic::dg::MortarData<size_t, typename System::primal_fields,
                                     typename System::primal_fluxes>>
       central_mortar_data_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable LinearSolver::Schwarz::OverlapMap<
       Dim, ::dg::MortarMap<Dim, elliptic::dg::MortarData<
                                     size_t, typename System::primal_fields,

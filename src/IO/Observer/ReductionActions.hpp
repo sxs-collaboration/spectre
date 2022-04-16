@@ -146,7 +146,7 @@ struct ContributeReductionData {
                   reduction_observers_contributed,
               const std::unordered_map<ObservationKey,
                                        std::unordered_set<ArrayComponentId>>&
-                  observations_registered) mutable {
+                  observations_registered) mutable {  // NOLINT(spectre-mutable)
             ASSERT(observations_registered.find(
                        observation_id.observation_key()) !=
                        observations_registered.end(),

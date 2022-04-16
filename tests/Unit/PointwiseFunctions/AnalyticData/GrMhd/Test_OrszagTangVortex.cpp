@@ -45,7 +45,8 @@ void test_variables(const DataType& used_for_size) {
       "divergence_cleaning_field"s);
 
   tmpl::for_each<tags>([&used_for_size,
-                        name = names.begin()](auto tag) mutable {
+                        name = names.begin()](
+                           auto tag) mutable {  // NOLINT(spectre-mutable)
     using Tag = tmpl::type_from<decltype(tag)>;
     pypp::check_with_random_values<1>(
         +[](const tnsr::I<DataType, 3>& x) {

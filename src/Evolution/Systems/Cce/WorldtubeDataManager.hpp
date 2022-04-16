@@ -136,16 +136,20 @@ class MetricWorldtubeDataManager : public WorldtubeDataManager {
  private:
   std::unique_ptr<WorldtubeBufferUpdater<cce_metric_input_tags>>
       buffer_updater_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t time_span_start_ = 0;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
   bool fix_spec_normalization_ = false;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<cce_metric_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in a 'time-varies-fastest' manner
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<cce_metric_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
@@ -222,15 +226,19 @@ class BondiWorldtubeDataManager : public WorldtubeDataManager {
 
  private:
   std::unique_ptr<WorldtubeBufferUpdater<cce_bondi_input_tags>> buffer_updater_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t time_span_start_ = 0;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<cce_bondi_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in an 'time-varies-fastest' manner
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Variables<cce_bondi_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;

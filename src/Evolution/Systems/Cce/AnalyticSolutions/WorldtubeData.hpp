@@ -281,6 +281,7 @@ struct WorldtubeData : public PUP::able {
               Tags::Dr<gr::Tags::Lapse<DataVector>>, Tags::News>,
           tmpl::bind<IntermediateCacheTag, tmpl::_1>>>;
 
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable IntermediateCacheTuple intermediate_cache_;
   double extraction_radius_ = std::numeric_limits<double>::quiet_NaN();
 };

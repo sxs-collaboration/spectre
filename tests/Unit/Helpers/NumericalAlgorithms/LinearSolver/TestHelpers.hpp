@@ -19,6 +19,7 @@ namespace TestHelpers::LinearSolver {
 
 struct ApplyMatrix {
   blaze::DynamicMatrix<double> matrix;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable size_t invocations = 0;
   template <typename ResultVectorType, typename OperandVectorType>
   void operator()(const gsl::not_null<ResultVectorType*> result,
@@ -50,6 +51,7 @@ struct ExactInversePreconditioner {
   static constexpr Options::String help{"halp"};
 
  private:
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::optional<blaze::DynamicMatrix<double>> inv_matrix_{};
 };
 
@@ -76,6 +78,7 @@ struct JacobiPreconditioner {
   void pup(PUP::er& p) { p | inv_diagonal_; }  // NOLINT
 
  private:
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::optional<blaze::DynamicVector<double>> inv_diagonal_{};
 };
 
@@ -113,6 +116,7 @@ struct RichardsonPreconditioner {
  private:
   double relaxation_parameter_{};
   size_t num_iterations_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicVector<double> correction_buffer_{};
 };
 

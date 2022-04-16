@@ -176,6 +176,7 @@ class H5File {
 
   std::string file_name_;
   hid_t file_id_{-1};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::unique_ptr<h5::Object> current_object_{nullptr};
   std::vector<std::string> h5_groups_;
   /// \endcond HIDDEN_SYMBOLS

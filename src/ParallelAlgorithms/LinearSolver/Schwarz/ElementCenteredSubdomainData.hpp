@@ -175,6 +175,7 @@ struct ElementCenteredSubdomainData {
   private:
    // Cache for iterators, so they don't have to allocate, fill and sort this
    // vector every time
+   // NOLINTNEXTLINE(spectre-mutable)
    mutable std::vector<OverlapId<Dim>> ordered_overlap_ids_{};
 
    friend ElementCenteredSubdomainDataIterator<false, Dim, TagsList>;
