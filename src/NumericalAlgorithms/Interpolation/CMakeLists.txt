@@ -16,6 +16,7 @@ spectre_target_sources(
   LinearLeastSquares.cpp
   LinearSpanInterpolator.cpp
   PolynomialInterpolation.cpp
+  PredictedZeroCrossing.cpp
   RegularGridInterpolant.cpp
   SpanInterpolator.cpp
   )
@@ -33,6 +34,7 @@ spectre_target_headers(
   LinearLeastSquares.hpp
   LinearSpanInterpolator.hpp
   PolynomialInterpolation.hpp
+  PredictedZeroCrossing.hpp
   RegularGridInterpolant.hpp
   SpanInterpolator.hpp
   )
