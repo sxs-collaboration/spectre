@@ -57,7 +57,6 @@ struct Metavariables {
       }
     };
   };
-  using time_stepper_tag = Tags::TimeStepper<LtsTimeStepper>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

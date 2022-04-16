@@ -164,9 +164,6 @@ struct EvolutionMetavars {
         << static_cast<int>(phase));
   }
 
-  using time_stepper_tag = Tags::TimeStepper<
-      tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>>;
-
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<volume_dim,
                                                 analytic_variables_tags>;

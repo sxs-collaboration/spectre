@@ -14,6 +14,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -67,8 +68,7 @@ class Cfl : public StepChooser<StepChooserUse> {
   template <typename Metavariables>
   std::pair<double, bool> operator()(
       const double minimum_grid_spacing,
-      const typename Metavariables::time_stepper_tag::type::element_type&
-          time_stepper,
+      const TimeStepper& time_stepper,
       const double speed, const double last_step_magnitude,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     const double time_stepper_stability_factor = time_stepper.stable_step();

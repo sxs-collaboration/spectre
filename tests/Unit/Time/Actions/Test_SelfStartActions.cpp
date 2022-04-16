@@ -129,7 +129,6 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
-  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -150,7 +149,7 @@ struct Component {
       Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
       Tags::Next<Tags::TimeStep>, Tags::Time,
       Tags::IsUsingTimeSteppingErrorControl<>>>;
-  using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
+  using compute_tags = db::AddComputeTags<>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 

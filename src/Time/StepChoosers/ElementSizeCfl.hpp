@@ -14,6 +14,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Domain/SizeOfElement.hpp"
 #include "Time/Tags.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -72,8 +73,7 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
 
   template <typename Metavariables>
   std::pair<double, bool> operator()(
-      const typename Metavariables::time_stepper_tag::type::element_type&
-          time_stepper,
+      const TimeStepper& time_stepper,
       const std::array<double, Dim>& element_size, const double speed,
       const double last_step_magnitude,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {

@@ -42,7 +42,6 @@ struct CharacteristicSpeed : db::SimpleTag {
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   struct system {
     struct largest_characteristic_speed : db::SimpleTag {
       using type = double;

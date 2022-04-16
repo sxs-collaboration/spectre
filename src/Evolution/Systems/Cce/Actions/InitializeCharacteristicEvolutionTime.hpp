@@ -91,7 +91,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
       ::Tags::StepperErrorUpdated>;
-  using compute_tags = tmpl::list<::Tags::SubstepTimeCompute>;
+  using compute_tags = tmpl::list<>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

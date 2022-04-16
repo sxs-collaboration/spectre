@@ -45,7 +45,6 @@ struct CharacteristicSpeed : db::SimpleTag {
 struct Metavariables {
   using component_list = tmpl::list<>;
   using const_global_cache_tags = tmpl::list<>;
-  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   struct system {
     static constexpr size_t volume_dim = dim;
     struct largest_characteristic_speed : db::SimpleTag {

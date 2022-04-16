@@ -96,7 +96,6 @@ struct ComponentWithTemplateSpecifiedVariables {
 
 struct Metavariables {
   using system = System;
-  using time_stepper_tag = Tags::TimeStepper<TimeStepper>;
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;

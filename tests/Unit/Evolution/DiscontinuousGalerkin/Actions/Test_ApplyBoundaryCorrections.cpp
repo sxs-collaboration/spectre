@@ -387,7 +387,7 @@ struct component {
 
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      typename Metavariables::time_stepper_tag,
+      Tags::TimeStepper<TimeSteppers::AdamsBashforthN>,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       typename Metavariables::system::variables_tag,
@@ -424,7 +424,6 @@ struct Metavariables {
   static constexpr TestHelpers::SystemType system_type = SystemType;
   static constexpr size_t volume_dim = Dim;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using time_stepper_tag = Tags::TimeStepper<TimeSteppers::AdamsBashforthN>;
   using system = System<Dim, SystemType>;
   using const_global_cache_tags = tmpl::list<domain::Tags::InitialExtents<Dim>>;
 
