@@ -56,7 +56,7 @@ all of these dependencies.
 * [GCC](https://gcc.gnu.org/) 7.0 or later,
 [Clang](https://clang.llvm.org/) 8.0 or later, or AppleClang 11.0.0 or later
 * [CMake](https://cmake.org/) 3.12.0 or later
-* [Charm++](http://charm.cs.illinois.edu/) 6.10.2, or 7.0.0 or later (experimental)
+* [Charm++](http://charm.cs.illinois.edu/) 6.10.2, 7.0.0, or later (experimental)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8. It can be
@@ -171,7 +171,7 @@ To build with the Docker image:
    You will end up in a bash shell in the docker container,
    as root (you need to be root).
    Within the container, the files in SPECTRE_ROOT are available and Charm++ is
-   installed in `/work/charm_6_10_2`. For the following steps, stay inside the
+   installed in `/work/charm_7_0_0`. For the following steps, stay inside the
    docker container as root.
 3. Proceed with [building SpECTRE](#building-spectre).
 
@@ -302,8 +302,6 @@ with a plain `spack install` if you prefer.
   modules](https://spack.readthedocs.io/en/latest/module_file_support.html) for
   details.
 - On macOS:
-  - Spack's Charm++ 6.10.2 installation is broken, so install `charmpp@7.0.0` or
-    [build Charm++ manually](#building-charm).
   - Brigand has an issue with AppleClang 13 when compiling tests (see
     https://github.com/edouarda/brigand/issues/274). Since it is header-only,
     you can simply clone the [Brigand repository](https://github.com/edouarda/brigand)
@@ -318,8 +316,11 @@ and in their [documentation](https://charm.readthedocs.io/en/latest/quickstart.h
 Here are a few notes:
 
 - Once you cloned the [Charm++ repository](https://github.com/UIUC-PPL/charm),
-  run `git checkout v6.10.2` to switch to a supported, stable release of
+  run `git checkout v7.0.0` to switch to a supported, stable release of
   Charm++.
+- Apply the appropriate patch (if there is one) for the version from
+  `${SPECTRE_ROOT}/support/Charm`. For example, if you have Charm++ v7.0.0
+  then the patch will be `v7.0.0.patch`.
 - Choose the `LIBS` target to compile. This is needed so that we can support the
   more sophisticated load balancers in SpECTRE executables.
 - On a personal machine the correct target architecture is likely
@@ -347,8 +348,8 @@ Follow these steps:
    you may create more later, e.g., `build-clang-Debug`. Then, `cd` into the
    build directory.
 2. Determine the location of your Charm++ installation. In the Docker container
-   it is `/work/charm_6_10_2/multicore-linux-x86_64-gcc` for GCC builds and
-   `/work/charm_6_10_2/multicore-linux-x86_64-clang` for clang builds. For Spack
+   it is `/work/charm_7_0_0/multicore-linux-x86_64-gcc` for GCC builds and
+   `/work/charm_7_0_0/multicore-linux-x86_64-clang` for clang builds. For Spack
    installations you can determine it with
    `spack location --install-dir charmpp`. We refer to the install directory as
    `CHARM_ROOT` below.

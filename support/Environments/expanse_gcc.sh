@@ -245,15 +245,19 @@ EOF
         echo "Charm++ is already installed"
     else
         echo "Installing Charm++..."
-        wget https://github.com/UIUC-PPL/charm/archive/v6.10.2.tar.gz
-        tar xzf v6.10.2.tar.gz
-        mv charm-6.10.2 charm
+        CHARM_VERSION=7.0.0
+        wget https://github.com/UIUC-PPL/charm/archive/v${CHARM_VERSION}.tar.gz
+        tar xzf v${CHARM_VERSION}.tar.gz
+        mv charm-${CHARM_VERSION} charm
         cd $dep_dir/charm
-        ./build charm++ verbs-linux-x86_64-smp --with-production -j4
-        ./build EveryLB verbs-linux-x86_64-smp --with-production -j4
-        ./build ScotchLB verbs-linux-x86_64-smp --with-production -j4
+        if [ -f ${SPECTRE_HOME}/support/Charm/v${CHARM_VERSION}.patch ]; then
+            git apply ${SPECTRE_HOME}/support/Charm/v${CHARM_VERSION}.patch
+        fi
+        ./build LIBS verbs-linux-x86_64-smp --with-production -j4
+        cd verbs-linux-x86_64-smp
+        make ScotchLB
         cd $dep_dir
-        rm v6.10.2.tar.gz
+        rm v${CHARM_VERSION}.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
         cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
@@ -262,7 +266,7 @@ prepend-path LD_LIBRARY_PATH "$dep_dir/charm/verbs-linux-x86_64-smp/lib"
 prepend-path CPATH "$dep_dir/charm/verbs-linux-x86_64-smp/include"
 prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/verbs-linux-x86_64-smp/"
 prepend-path PATH "$dep_dir/charm/verbs-linux-x86_64-smp/bin"
-setenv CHARM_VERSION 6.10.2
+setenv CHARM_VERSION ${CHARM_VERSION}
 setenv CHARM_HOME $dep_dir/charm/verbs-linux-x86_64-smp
 setenv CHARM_ROOT $dep_dir/charm/verbs-linux-x86_64-smp
 EOF

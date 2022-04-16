@@ -6,6 +6,7 @@
 # Load system modules
 spectre_load_sys_modules() {
     module load gcc/9.2.0
+    module load oneapi/mpi/2021.5.1
     module load mkl/18.1
     module load gsl/2.4
     module load hdf5/1.10.1
@@ -21,6 +22,7 @@ spectre_unload_sys_modules() {
     module unload hdf5/1.10.1
     module unload gsl/2.4
     module unload mkl/18.1
+    module unload oneapi/mpi/2021.5.1
     module unload gcc/9.2.0
     module unload cmake/3.18.0
     module unload python3/3.8.5
@@ -204,30 +206,34 @@ EOF
     module use $dep_dir/modules
     module load scotch
     # Set up Charm++ because that can be difficult
-    if [ -f $dep_dir/charm/verbs-linux-x86_64-smp/lib/libck.a ]; then
+    if [ -f $dep_dir/charm/mpi-linux-x86_64-smp-gcc/lib/libck.a ]; then
         echo "Charm++ is already installed"
     else
         echo "Installing Charm++..."
-        wget https://github.com/UIUC-PPL/charm/archive/v6.10.2.tar.gz
-        tar xzf v6.10.2.tar.gz
-        mv charm-6.10.2 charm
+        CHARM_VERSION=7.0.0
+        wget https://github.com/UIUC-PPL/charm/archive/v${CHARM_VERSION}.tar.gz
+        tar xzf v${CHARM_VERSION}.tar.gz
+        mv charm-${CHARM_VERSION} charm
         cd $dep_dir/charm
-        ./build charm++ verbs-linux-x86_64-smp --with-production -j4
-        ./build LIBS verbs-linux-x86_64-smp --with-production -j4
-        ./build ScotchLB verbs-linux-x86_64-smp --with-production -j4
+        if [ -f ${SPECTRE_HOME}/support/Charm/v${CHARM_VERSION}.patch ]; then
+            git apply ${SPECTRE_HOME}/support/Charm/v${CHARM_VERSION}.patch
+        fi
+        ./build LIBS mpi-linux-x86_64-smp gcc --with-production -j4
+        cd ./mpi-linux-x86_64-smp-gcc
+        make ScotchLB
         cd $dep_dir
-        rm v6.10.2.tar.gz
+        rm v${CHARM_VERSION}.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
         cat >$dep_dir/modules/charm <<EOF
 #%Module1.0
-prepend-path LIBRARY_PATH "$dep_dir/charm/verbs-linux-x86_64-smp/lib"
-prepend-path LD_LIBRARY_PATH "$dep_dir/charm/verbs-linux-x86_64-smp/lib"
-prepend-path CPATH "$dep_dir/charm/verbs-linux-x86_64-smp/include"
-prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/verbs-linux-x86_64-smp/"
-prepend-path PATH "$dep_dir/charm/verbs-linux-x86_64-smp/bin"
-setenv CHARM_VERSION 6.10.2
-setenv CHARM_HOME $dep_dir/charm/verbs-linux-x86_64-smp
-setenv CHARM_ROOT $dep_dir/charm/verbs-linux-x86_64-smp
+prepend-path LIBRARY_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-gcc/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-gcc/lib"
+prepend-path CPATH "$dep_dir/charm/mpi-linux-x86_64-smp-gcc/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/mpi-linux-x86_64-smp-gcc/"
+prepend-path PATH "$dep_dir/charm/mpi-linux-x86_64-smp-gcc/bin"
+setenv CHARM_VERSION ${CHARM_VERSION}
+setenv CHARM_HOME $dep_dir/charm/mpi-linux-x86_64-smp-gcc
+setenv CHARM_ROOT $dep_dir/charm/mpi-linux-x86_64-smp-gcc
 EOF
     fi
     cd $dep_dir
@@ -339,6 +345,7 @@ spectre_run_cmake() {
           -D BUILD_PYTHON_BINDINGS=off \
           -D Python_EXECUTABLE=`which python3` \
           -D USE_SCOTCH_LB=ON \
+          -D OVERRIDE_ARCH=skylake-avx512 \
           "$@" \
           $SPECTRE_HOME
 }
