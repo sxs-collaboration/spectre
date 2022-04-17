@@ -75,28 +75,39 @@ namespace Ccz4 {
  *       & + \Gamma^l_{ij} \Gamma^m_{lm} - \Gamma^l_{im} \Gamma^m_{lj}
  * \f}
  *
+ * The argument `contracted_christoffel_second_kind` corresponds to the
+ * \f$\Gamma^m_{lm}\f$ term, the argument
+ * `contracted_d_conformal_christoffel_difference` corresponds to the
+ * \f$\partial_m \tilde{\Gamma}^m_{ij} - \partial_j \tilde{\Gamma}^m_{im}\f$
+ * term, and the argument `contracted_field_d_up` corresponds to the
+ * \f$D_m{}^{ml}\f$ term.
  */
 template <size_t Dim, typename Frame, typename DataType>
 void spatial_ricci_tensor(
     const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
-    const gsl::not_null<tnsr::ij<DataType, Dim, Frame>*> buffer,
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
-    const tnsr::iJkk<DataType, Dim, Frame>& d_conformal_christoffel_second_kind,
+    const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,
+    const tnsr::ij<DataType, Dim, Frame>&
+        contracted_d_conformal_christoffel_difference,
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
+    const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::ij<DataType, Dim, Frame>& d_field_p);
 
 template <size_t Dim, typename Frame, typename DataType>
 tnsr::ii<DataType, Dim, Frame> spatial_ricci_tensor(
     const tnsr::Ijj<DataType, Dim, Frame>& christoffel_second_kind,
-    const tnsr::iJkk<DataType, Dim, Frame>& d_conformal_christoffel_second_kind,
+    const tnsr::i<DataType, Dim, Frame>& contracted_christoffel_second_kind,
+    const tnsr::ij<DataType, Dim, Frame>&
+        contracted_d_conformal_christoffel_difference,
     const tnsr::ii<DataType, Dim, Frame>& conformal_spatial_metric,
     const tnsr::II<DataType, Dim, Frame>& inverse_conformal_spatial_metric,
     const tnsr::ijj<DataType, Dim, Frame>& field_d,
     const tnsr::iJJ<DataType, Dim, Frame>& field_d_up,
+    const tnsr::I<DataType, Dim, Frame>& contracted_field_d_up,
     const tnsr::i<DataType, Dim, Frame>& field_p,
     const tnsr::ij<DataType, Dim, Frame>& d_field_p);
 /// @}
