@@ -10,6 +10,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Factory.hpp
+  MonitorMemory.hpp
   ObserveFields.hpp
   ObserveNorms.hpp
   ObserveTimeStep.hpp
@@ -28,6 +29,7 @@ target_link_libraries(
   Interpolation
   LinearOperators
   Options
+  Parallel
   Spectral
   Time
   Utilities
