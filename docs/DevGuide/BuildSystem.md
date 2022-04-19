@@ -160,6 +160,23 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - ASAN
   - Whether or not to turn on the address sanitizer compile flags
     (`-fsanitize=address`) (default is `OFF`)
+- BLAZE_USE_ALWAYS_INLINE
+  - Force Blaze inlining (default is `ON`)
+  - If disabled or if the platform is unable to 100% guarantee inlining,
+  replaces `BLAZE_ALWAYS_INLINE` in Blaze with `BLAZE_STRONG_INLINE` (see
+  `BLAZE_USE_STRONG_INLINE`)
+  - For SpECTRE build targets that use Blaze data structures and arithmetic,
+  it may affect runtime. If debug symbols are enabled (`-g`), disabling
+  `BLAZE_USE_ALWAYS_INLINE` may reduce compile time and compile time RAM. It
+  should also make it easier to step through Blaze with a debugger.
+- BLAZE_USE_STRONG_INLINE
+  - Increase the likelihood of Blaze inlining (default is `ON`)
+  - Disabling replaces `BLAZE_STRONG_INLINE` in Blaze with the `inline`
+  keyword
+  - For SpECTRE build targets that use Blaze data structures and arithmetic,
+  it may affect runtime. If debug symbols are enabled (`-g`), disabling
+  `BLAZE_USE_STRONG_INLINE` may reduce compile time and compile time RAM. It
+  should also make it easier to step through Blaze with a debugger.
 - BUILD_PYTHON_BINDINGS
   - Build python libraries to call SpECTRE C++ code from python
     (default is `OFF`)
