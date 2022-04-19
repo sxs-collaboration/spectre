@@ -84,7 +84,7 @@ class YlmSpherepack {
   template <typename T>
   struct InterpolationInfo {
     InterpolationInfo(size_t l_max, size_t m_max,
-                      const std::vector<double>& pmm,
+                      const gsl::span<double> pmm,
                       const std::array<T, 2>& target_points);
     T cos_theta;
     // cos(m*phi)
@@ -149,8 +149,12 @@ class YlmSpherepack {
   ///
   /// The theta points are Gauss-Legendre in \f$\cos(\theta)\f$,
   /// so there are no points at the poles.
-  const std::vector<double>& theta_points() const;
-  const std::vector<double>& phi_points() const;
+  SPECTRE_ALWAYS_INLINE const std::vector<double>& theta_points() const {
+    return storage_.theta;
+  }
+  SPECTRE_ALWAYS_INLINE const std::vector<double>& phi_points() const {
+    return storage_.phi;
+  }
   std::array<DataVector, 2> theta_phi_points() const;
   /// @}
 
@@ -437,15 +441,15 @@ class YlmSpherepack {
                                 size_t physical_stride = 1,
                                 size_t physical_offset = 0,
                                 bool loop_over_offset = false) const;
-  void calculate_interpolation_data() const;
-  void fill_scalar_work_arrays() const;
-  void fill_vector_work_arrays() const;
+  void calculate_collocation_points();
+  void calculate_interpolation_data();
+  void fill_scalar_work_arrays();
+  void fill_vector_work_arrays();
   size_t l_max_, m_max_, n_theta_, n_phi_;
   size_t spectral_size_;
   // NOLINTNEXTLINE(spectre-mutable)
   mutable YlmSpherepack_detail::MemoryPool memory_pool_;
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable YlmSpherepack_detail::Storage storage_;
+  YlmSpherepack_detail::ConstStorage storage_;
 };  // class YlmSpherepack
 
 bool operator==(const YlmSpherepack& lhs, const YlmSpherepack& rhs);

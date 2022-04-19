@@ -52,14 +52,22 @@ YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max)
       m_max_{m_max},
       n_theta_{l_max_ + 1},
       n_phi_{2 * m_max_ + 1},
-      spectral_size_{2 * (l_max_ + 1) * (m_max_ + 1)} {
+      spectral_size_{2 * (l_max_ + 1) * (m_max_ + 1)},
+      storage_(l_max_, m_max_) {
   if (l_max_ < 2) {
     ERROR("Must use l_max>=2, not l_max=" << l_max_);
   }
   if (m_max_ < 2) {
     ERROR("Must use m_max>=2, not m_max=" << m_max_);
   }
+  if (m_max_ > l_max_) {
+    ERROR("Must use m_max<=l_max, not l_max=" << l_max_
+                                              << ", m_max=" << m_max_);
+  }
+  calculate_collocation_points();
   fill_scalar_work_arrays();
+  fill_vector_work_arrays();
+  calculate_interpolation_data();
 }
 
 void YlmSpherepack::phys_to_spec_impl(
@@ -83,7 +91,7 @@ void YlmSpherepack::phys_to_spec_impl(
       loop_over_offset ? -1 : int(physical_offset);
   const int effective_spectral_offset =
       loop_over_offset ? -1 : int(spectral_offset);
-  auto& work_phys_to_spec = storage_.work_phys_to_spec;
+  const auto& work_phys_to_spec = storage_.work_phys_to_spec;
   shags_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
          effective_physical_offset, effective_spectral_offset,
          static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
@@ -122,7 +130,7 @@ void YlmSpherepack::spec_to_phys_impl(
   const int effective_spectral_offset =
       loop_over_offset ? -1 : int(spectral_offset);
 
-  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
+  const auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   shsgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
          effective_physical_offset, effective_spectral_offset,
          static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
@@ -218,9 +226,6 @@ void YlmSpherepack::gradient_from_coefs_impl(
          "physical and spectral strides must be equal "
          "for loop_over_offset=true");
 
-  if (storage_.work_vector_spec_to_phys.empty()) {
-    fill_vector_work_arrays();
-  }
   const size_t l1 = m_max_ + 1;
   const double* const f_k = spectral_coefs;
   const double* const a = f_k;
@@ -237,7 +242,7 @@ void YlmSpherepack::gradient_from_coefs_impl(
       loop_over_offset ? -1 : int(physical_offset);
   const int effective_spectral_offset =
       loop_over_offset ? -1 : int(spectral_offset);
-  auto& work_vector_spec_to_phys = storage_.work_vector_spec_to_phys;
+  const auto& work_vector_spec_to_phys = storage_.work_vector_spec_to_phys;
   gradgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
           effective_physical_offset, effective_spectral_offset,
           static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1, df[0],
@@ -328,7 +333,7 @@ void YlmSpherepack::scalar_laplacian_from_coefs(
   const size_t work_size = n_theta_ * (3 * n_phi_ + 2 * l1 + 1);
   auto& work = memory_pool_.get(work_size);
   int err = 0;
-  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
+  const auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
   slapgs_(static_cast<int>(physical_stride), static_cast<int>(spectral_stride),
           static_cast<int>(physical_offset), static_cast<int>(spectral_offset),
           static_cast<int>(n_theta_), static_cast<int>(n_phi_), 0, 1,
@@ -381,70 +386,17 @@ std::array<DataVector, 2> YlmSpherepack::theta_phi_points() const {
   return result;
 }
 
-const std::vector<double>& YlmSpherepack::theta_points() const {
-  auto& theta = storage_.theta;
-  if (theta.empty()) {
-    theta.resize(n_theta_);
-    auto& work = memory_pool_.get(n_theta_ + 1);
-    auto& unused_weights = memory_pool_.get(n_theta_);
-    int err = 0;
-    gaqd_(static_cast<int>(n_theta_), theta.data(), unused_weights.data(),
-          work.data(), static_cast<int>(n_theta_ + 1), &err);
-    memory_pool_.free(unused_weights);
-    memory_pool_.free(work);
-    if (UNLIKELY(err != 0)) {
-      ERROR("gaqd error " << err << " in YlmSpherepack");
-    }
-  }
-  return theta;
-}
-
-const std::vector<double>& YlmSpherepack::phi_points() const {
-  // The following is not static or constexpr because n_phi_ depends
-  // on *this.
-  const double two_pi_over_n_phi = 2.0 * M_PI / n_phi_;
-  auto& phi = storage_.phi;
-  if (phi.empty()) {
-    phi.resize(n_phi_);
-    for (size_t i = 0; i < n_phi_; ++i) {
-      phi[i] = two_pi_over_n_phi * i;
-    }
-  }
-  return phi;
-}
-
 void YlmSpherepack::second_derivative(
     const std::array<double*, 2>& df, const gsl::not_null<SecondDeriv*> ddf,
     const gsl::not_null<const double*> collocation_values,
     const size_t physical_stride, const size_t physical_offset) const {
-  // Initialize trig functions at collocation points
-  auto& cos_theta = storage_.cos_theta;
-  auto& sin_theta = storage_.sin_theta;
-  auto& sin_phi = storage_.sin_phi;
-  auto& cos_phi = storage_.cos_phi;
-  auto& cot_theta = storage_.cot_theta;
-  auto& cosec_theta = storage_.cosec_theta;
-  if (cos_theta.empty()) {
-    cos_theta.resize(n_theta_);
-    sin_theta.resize(n_theta_);
-    cosec_theta.resize(n_theta_);
-    cot_theta.resize(n_theta_);
-    cos_phi.resize(n_phi_);
-    sin_phi.resize(n_phi_);
+  const auto& cos_theta = storage_.cos_theta;
+  const auto& sin_theta = storage_.sin_theta;
+  const auto& sin_phi = storage_.sin_phi;
+  const auto& cos_phi = storage_.cos_phi;
+  const auto& cot_theta = storage_.cot_theta;
+  const auto& cosec_theta = storage_.cosec_theta;
 
-    const std::vector<double>& theta = theta_points();
-    for (size_t i = 0; i < n_theta_; ++i) {
-      cos_theta[i] = cos(theta[i]);
-      sin_theta[i] = sin(theta[i]);
-      cosec_theta[i] = 1.0 / sin_theta[i];
-      cot_theta[i] = cos_theta[i] * cosec_theta[i];
-    }
-    const std::vector<double>& phi = phi_points();
-    for (size_t i = 0; i < n_phi_; ++i) {
-      cos_phi[i] = cos(phi[i]);
-      sin_phi[i] = sin(phi[i]);
-    }
-  }
   // Get first derivatives
   gradient(df, collocation_values, physical_stride, physical_offset);
 
@@ -520,7 +472,7 @@ YlmSpherepack::first_and_second_derivative(
 
 template <typename T>
 YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
-    const size_t l_max, const size_t m_max, const std::vector<double>& pmm,
+    const size_t l_max, const size_t m_max, const gsl::span<double> pmm,
     const std::array<T, 2>& target_points)
     : cos_theta(cos(target_points[0])),
       cos_m_phi(DynamicBuffer<T>(m_max + 1, get_size(target_points[0]))),
@@ -583,9 +535,6 @@ YlmSpherepack::InterpolationInfo<T>::InterpolationInfo(
 template <typename T>
 YlmSpherepack::InterpolationInfo<T> YlmSpherepack::set_up_interpolation_info(
     const std::array<T, 2>& target_points) const {
-  if (storage_.work_interp_alpha.empty()) {
-    calculate_interpolation_data();
-  }
   return InterpolationInfo(l_max_, m_max_, storage_.work_interp_pmm,
                            target_points);
 }
@@ -611,19 +560,16 @@ void YlmSpherepack::interpolate_from_coefs(
     const gsl::not_null<T*> result, const R& spectral_coefs,
     const InterpolationInfo<T>& interpolation_info,
     const size_t spectral_stride, const size_t spectral_offset) const {
-  if (storage_.work_interp_alpha.empty()) {
-    if (m_max_ != interpolation_info.m_max()) {
-      ERROR("Different m_max for InterpolationInfo ("
-            << interpolation_info.m_max() << ") and YlmSpherepack instance ("
-            << m_max_ << ")");
-    };
-    if (l_max_ != interpolation_info.l_max()) {
-      ERROR("Different l_max for InterpolationInfo ("
-            << interpolation_info.l_max() << ") and YlmSpherepack instance ("
-            << l_max_ << ")");
-    };
-    calculate_interpolation_data();
-  }
+  if (UNLIKELY(m_max_ != interpolation_info.m_max())) {
+    ERROR("Different m_max for InterpolationInfo ("
+          << interpolation_info.m_max() << ") and YlmSpherepack instance ("
+          << m_max_ << ")");
+  };
+  if (UNLIKELY(l_max_ != interpolation_info.l_max())) {
+    ERROR("Different l_max for InterpolationInfo ("
+          << interpolation_info.l_max() << ") and YlmSpherepack instance ("
+          << l_max_ << ")");
+  };
   const auto& alpha = storage_.work_interp_alpha;
   const auto& beta = storage_.work_interp_beta;
   const auto& index = storage_.work_interp_index;
@@ -732,7 +678,48 @@ T YlmSpherepack::interpolate_from_coefs(
   return result;
 }
 
-void YlmSpherepack::calculate_interpolation_data() const {
+void YlmSpherepack::calculate_collocation_points() {
+  // Theta
+  auto& theta = storage_.theta;
+  DataVector temp(2 * n_theta_ + 1);
+  auto work = gsl::make_span(temp.data(), n_theta_);
+  auto unused_weights = gsl::make_span(temp.data() + n_theta_, n_theta_ + 1);
+
+  int err = 0;
+  gaqd_(static_cast<int>(n_theta_), theta.data(), unused_weights.data(),
+        work.data(), static_cast<int>(unused_weights.size()), &err);
+  if (UNLIKELY(err != 0)) {
+    ERROR("gaqd error " << err << " in YlmSpherepack");
+  }
+
+  // Phi
+  auto& phi = storage_.phi;
+  const double two_pi_over_n_phi = 2.0 * M_PI / n_phi_;
+  for (size_t i = 0; i < n_phi_; ++i) {
+    phi[i] = two_pi_over_n_phi * i;
+  }
+
+  // Other trig functions at collocation points
+  auto& cos_theta = storage_.cos_theta;
+  auto& sin_theta = storage_.sin_theta;
+  auto& cot_theta = storage_.cot_theta;
+  auto& cosec_theta = storage_.cosec_theta;
+  for (size_t i = 0; i < n_theta_; ++i) {
+    cos_theta[i] = cos(theta[i]);
+    sin_theta[i] = sin(theta[i]);
+    cosec_theta[i] = 1.0 / sin_theta[i];
+    cot_theta[i] = cos_theta[i] * cosec_theta[i];
+  }
+
+  auto& sin_phi = storage_.sin_phi;
+  auto& cos_phi = storage_.cos_phi;
+  for (size_t i = 0; i < n_phi_; ++i) {
+    cos_phi[i] = cos(phi[i]);
+    sin_phi[i] = sin(phi[i]);
+  }
+}
+
+void YlmSpherepack::calculate_interpolation_data() {
   // SPHEREPACK expands f(theta,phi) as
   //
   // f(theta,phi) =
@@ -770,19 +757,12 @@ void YlmSpherepack::calculate_interpolation_data() const {
   // and  Pbar(m+1)(m) is (2m+1)!! x(1-x^2)^(n/2)sqrt((2m+3)/(2(2m+1)!))
   //  Ratio Pbar(m+1)(m)/Pbar(m)(m)   = x sqrt(2m+3)
   //  Ratio Pbar(m+1)(m+1)/Pbar(m)(m) = sqrt(1-x^2) sqrt((2m+3)/(2m+2))
-
-  const size_t l1 = m_max_ + 1;
-
   auto& alpha = storage_.work_interp_alpha;
   auto& beta = storage_.work_interp_beta;
   auto& pmm = storage_.work_interp_pmm;
   auto& index = storage_.work_interp_index;
-  // We need to compute alpha, beta, index, and pmm only once.
-  const size_t array_size = n_theta_ * l1 - l1 * (l1 - 1) / 2;
-  index.resize(array_size);
-  alpha.resize(array_size);
-  beta.resize(array_size);
-  pmm.resize(l1);
+
+  const size_t l1 = m_max_ + 1;
 
   // Fill alpha,beta,index arrays in the same order as the Clenshaw
   // recurrence, so that we can index them easier during the recurrence.
@@ -832,99 +812,68 @@ void YlmSpherepack::calculate_interpolation_data() const {
   }
 }
 
-void YlmSpherepack::fill_vector_work_arrays() const {
-  const size_t l2 = (n_theta_ + 1) / 2;
+void YlmSpherepack::fill_vector_work_arrays() {
+  DataVector work((3 * n_theta_ * (n_theta_ + 3) + 2) / 2);
+
   auto& work_vector_spec_to_phys = storage_.work_vector_spec_to_phys;
-
-  // Allocate memory for vector work arrays
-  // Throughout this file, the l1, mdb, mdc values
-  // are set to min(n_theta_, (n_phi_+2)/2)), which is consistent
-  // with l1 and mdab for scalars.  This is generally
-  // larger than what is required by Spherepack
-  // for vectors: min(n_theta_, (n_phi_+1)/2)).
-  const size_t l_vhsgs =
-      n_theta_ * l2 * (n_theta_ + 1) + n_phi_ + 15 + 2 * n_theta_;
-  work_vector_spec_to_phys.assign(l_vhsgs, 0.0);
-
-  // Initialize vector work arrays
-  const size_t ldwg = (3 * n_theta_ * (n_theta_ + 3) + 2) / 2;
-  auto& dworkg = memory_pool_.get(ldwg);
   int err = 0;
   vhsgsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
-          work_vector_spec_to_phys.data(), static_cast<int>(l_vhsgs),
-          dworkg.data(), static_cast<int>(ldwg), &err);
+          work_vector_spec_to_phys.data(),
+          static_cast<int>(work_vector_spec_to_phys.size()), work.data(),
+          static_cast<int>(work.size()), &err);
   if (UNLIKELY(err != 0)) {
     ERROR("vhsgsi error " << err << " in YlmSpherepack");
   }
-  memory_pool_.free(dworkg);
 }
 
-void YlmSpherepack::fill_scalar_work_arrays() const {
-  auto& work_phys_to_spec = storage_.work_phys_to_spec;
-  auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
-  auto& quadrature_weights = storage_.quadrature_weights;
-
+void YlmSpherepack::fill_scalar_work_arrays() {
+  // Quadrature weights
   {
-    auto& weights = memory_pool_.get(n_theta_);
-    auto& work0 = memory_pool_.get(n_theta_);
-    auto& work1 = memory_pool_.get(n_theta_ + 1);
+    DataVector temp(3 * n_theta_ + 1);
+    auto weights = gsl::make_span(temp.data(), n_theta_);
+    auto work0 = gsl::make_span(temp.data() + n_theta_, n_theta_);
+    auto work1 = gsl::make_span(temp.data() + 2 * n_theta_, n_theta_ + 1);
     int err = 0;
     gaqd_(static_cast<int>(n_theta_), work0.data(), weights.data(),
-          work1.data(), static_cast<int>(n_theta_ + 1), &err);
-    memory_pool_.free(work0);
-    memory_pool_.free(work1);
+          work1.data(), static_cast<int>(work1.size()), &err);
     if (UNLIKELY(err != 0)) {
       ERROR("gaqd error " << err << " in YlmSpherepack");
     }
-
-    quadrature_weights.assign(n_theta_ * n_phi_, 2 * M_PI / n_phi_);
+    auto& quadrature_weights = storage_.quadrature_weights;
     for (size_t i = 0; i < n_theta_; ++i) {
       for (size_t j = 0; j < n_phi_; ++j) {
-        quadrature_weights[i + j * n_theta_] *= weights[i];
+        quadrature_weights[i + j * n_theta_] = (2 * M_PI / n_phi_) * weights[i];
       }
     }
-    memory_pool_.free(weights);
   }
 
-  // Allocate memory for scalar work arrays.
-
-  // Below note that l1, l2, and ylm_work_size are ints, not size_ts, and
-  // note the use of n_phi and n_theta.  The reason for this: The last
-  // term in the expression for ylm_work_size can sometimes be negative.  If
-  // evaluated using unsigned ints instead of ints, then this will
-  // underflow and give a huge number.
-  const auto l1 = static_cast<int>(m_max_ + 1);
-  const auto l2 = static_cast<int>(n_theta_ + 1) / 2;
-  const auto n_phi = static_cast<int>(n_phi_);
-  const auto n_theta = static_cast<int>(n_theta_);
-  const int ylm_work_size = n_phi + 15 + n_theta * (3 * (l1 + l2) - 2) +
-                            (l1 - 1) * (l2 * (2 * n_theta - l1) - 3 * l1) / 2;
-  ASSERT(ylm_work_size >= 0, "Bad size " << ylm_work_size);
-  const auto l_ylm = static_cast<size_t>(ylm_work_size);
-
-  work_phys_to_spec.assign(l_ylm, 0.0);
-  work_scalar_spec_to_phys.assign(l_ylm, 0.0);
-
-  // Initialize scalar work arrays
-  const size_t work_size = 4 * n_theta_ * (n_theta_ + 2) + 2;
-  auto& work = memory_pool_.get(work_size);
-  const size_t deriv_work_size = n_theta_ * (n_theta_ + 4);
-  auto& deriv_work = memory_pool_.get(deriv_work_size);
-  int err = 0;
-  shagsi_(n_theta, n_phi, work_phys_to_spec.data(), ylm_work_size, work.data(),
-          static_cast<int>(work_size), deriv_work.data(),
-          static_cast<int>(deriv_work_size), &err);
-  if (UNLIKELY(err != 0)) {
-    ERROR("shagsi error " << err << " in YlmSpherepack");
+  // Scalar arrays
+  {
+    const size_t work0_size = 4 * n_theta_ * (n_theta_ + 2) + 2;
+    const size_t work1_size = n_theta_ * (n_theta_ + 4);
+    DataVector temp(work0_size + work1_size);
+    auto work0 = gsl::make_span(temp.data(), work0_size);
+    auto work1 = gsl::make_span(temp.data() + work0_size, work1_size);
+    auto& work_phys_to_spec = storage_.work_phys_to_spec;
+    int err = 0;
+    shagsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
+            work_phys_to_spec.data(),
+            static_cast<int>(work_phys_to_spec.size()), work0.data(),
+            static_cast<int>(work0.size()), work1.data(),
+            static_cast<int>(work1.size()), &err);
+    if (UNLIKELY(err != 0)) {
+      ERROR("shagsi error " << err << " in YlmSpherepack");
+    }
+    auto& work_scalar_spec_to_phys = storage_.work_scalar_spec_to_phys;
+    shsgsi_(static_cast<int>(n_theta_), static_cast<int>(n_phi_),
+            work_scalar_spec_to_phys.data(),
+            static_cast<int>(work_scalar_spec_to_phys.size()), work0.data(),
+            static_cast<int>(work0.size()), work1.data(),
+            static_cast<int>(work1.size()), &err);
+    if (UNLIKELY(err != 0)) {
+      ERROR("shsgsi error " << err << " in YlmSpherepack");
+    }
   }
-  shsgsi_(n_theta, n_phi, work_scalar_spec_to_phys.data(), ylm_work_size,
-          work.data(), static_cast<int>(work_size), deriv_work.data(),
-          static_cast<int>(deriv_work_size), &err);
-  if (UNLIKELY(err != 0)) {
-    ERROR("shsgsi error " << err << " in YlmSpherepack");
-  }
-  memory_pool_.free(deriv_work);
-  memory_pool_.free(work);
 }
 
 DataVector YlmSpherepack::prolong_or_restrict(
@@ -956,7 +905,7 @@ bool operator!=(const YlmSpherepack& lhs, const YlmSpherepack& rhs) {
 
 #define INSTANTIATE(_, data)                                                 \
   template YlmSpherepack::InterpolationInfo<DTYPE(data)>::InterpolationInfo( \
-      size_t, size_t, const std::vector<double>&,                            \
+      size_t, size_t, const gsl::span<double>,                               \
       const std::array<DTYPE(data), 2>&);                                    \
   template YlmSpherepack::InterpolationInfo<DTYPE(data)>                     \
   YlmSpherepack::set_up_interpolation_info(                                  \
