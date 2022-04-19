@@ -1169,12 +1169,12 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RadialDistance",
   // Check cases where one has more resolution than the other
   StrahlkorperGr::radial_distance(
       make_not_null(&radial_dist), strahlkorper_a,
-      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max(),
+      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
                    strahlkorper_b));
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_a_minus_b);
   StrahlkorperGr::radial_distance(
       make_not_null(&radial_dist),
-      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max(),
+      Strahlkorper(strahlkorper_b.l_max() - 1, strahlkorper_b.m_max() - 1,
                    strahlkorper_b),
       strahlkorper_a);
   CHECK_ITERABLE_APPROX(radial_dist, expected_radial_dist_b_minus_a);
