@@ -11,6 +11,15 @@
 
 #include "Utilities/TypeTraits.hpp"
 
+/// \cond
+namespace Parallel::Algorithms {
+struct Array;
+struct Singleton;
+struct Group;
+struct Nodegroup;
+}  // namespace Parallel::Algorithms
+/// \endcond
+
 namespace Parallel {
 
 /// \ingroup ParallelGroup
@@ -47,6 +56,34 @@ struct is_bound_array<T, std::void_t<typename T::bind_to>> : std::true_type {
   static_assert(Parallel::is_array_proxy<typename T::bind_to::type>::value,
                 "Can only bind to an array chare");
 };
+
+/// \ingroup ParallelGroup
+/// Check if `T` is a SpECTRE Array
+template <typename T>
+constexpr bool is_array_v =
+    std::is_same_v<Parallel::Algorithms::Array,
+                   typename T::chare_type::component_type>;
+
+/// \ingroup ParallelGroup
+/// Check if `T` is a SpECTRE Singleton
+template <typename T>
+constexpr bool is_singleton_v =
+    std::is_same_v<Parallel::Algorithms::Singleton,
+                   typename T::chare_type::component_type>;
+
+/// \ingroup ParallelGroup
+/// Check if `T` is a SpECTRE Group
+template <typename T>
+constexpr bool is_group_v =
+    std::is_same_v<Parallel::Algorithms::Group,
+                   typename T::chare_type::component_type>;
+
+/// \ingroup ParallelGroup
+/// Check if `T` is a SpECTRE Nodegroup
+template <typename T>
+constexpr bool is_nodegroup_v =
+    std::is_same_v<Parallel::Algorithms::Nodegroup,
+                   typename T::chare_type::component_type>;
 
 /// @{
 /// \ingroup ParallelGroup

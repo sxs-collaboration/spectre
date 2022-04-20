@@ -23,23 +23,28 @@ class NonpupableClass {};
 
 struct Metavariables {
   enum class Phase { Initialization, Exit };
+  using component_list = tmpl::list<>;
 };
 
 struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
+  using chare_type = Parallel::Algorithms::Singleton;
 };
 struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
+  using chare_type = Parallel::Algorithms::Array;
 };
 struct GroupParallelComponent {
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
+  using chare_type = Parallel::Algorithms::Group;
 };
 struct NodegroupParallelComponent {
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
+  using chare_type = Parallel::Algorithms::Nodegroup;
 };
 
 // If passing proxy to a full array, we expect it to be from a
@@ -124,3 +129,13 @@ static_assert(
     std::is_same_v<
         NodegroupParallelComponent,
         Parallel::get_parallel_component_from_proxy<nodegroup_proxy>::type>);
+
+static_assert(Parallel::is_singleton_v<SingletonParallelComponent>);
+static_assert(Parallel::is_array_v<ArrayParallelComponent>);
+static_assert(Parallel::is_group_v<GroupParallelComponent>);
+static_assert(Parallel::is_nodegroup_v<NodegroupParallelComponent>);
+// These are special because they are (node)groups, but they don't run the
+// Algorithm but they still have a `chare_type` type alias.
+static_assert(
+    Parallel::is_group_v<Parallel::MutableGlobalCache<Metavariables>>);
+static_assert(Parallel::is_nodegroup_v<Parallel::GlobalCache<Metavariables>>);

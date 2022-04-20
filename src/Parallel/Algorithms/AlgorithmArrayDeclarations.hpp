@@ -27,6 +27,8 @@ namespace Algorithms {
  *   https://charm.readthedocs.io/en/latest/charm++/manual.html#creating-a-ckcallback-object
  * - `cproxy_section`: The charm++ section proxy class. See
  *   https://charm.readthedocs.io/en/latest/charm++/manual.html?#sections-subsets-of-a-chare-array-group
+ * - component_type: this object. Serves to allow checking the component type in
+ *   both source code and the testing framework.
  */
 struct Array {
   template <typename ParallelComponent,
@@ -52,6 +54,8 @@ struct Array {
   template <typename ParallelComponent, typename SpectreArrayIndex>
   using cproxy_section =
       CProxySection_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
+
+  using component_type = Array;
 };
 }  // namespace Algorithms
 }  // namespace Parallel
