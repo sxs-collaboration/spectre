@@ -30,6 +30,7 @@ spectre_target_headers(
   CreateFromOptions.hpp
   GetSection.hpp
   GlobalCache.hpp
+  GlobalCacheDeclare.hpp
   InboxInserters.hpp
   Info.hpp
   InitializationFunctions.hpp

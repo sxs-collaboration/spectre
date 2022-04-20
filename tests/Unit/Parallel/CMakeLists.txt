@@ -8,10 +8,12 @@ add_subdirectory(PhaseControl)
 set(ALGORITHM_TEST_LINK_LIBRARIES
   # Link against Boost::program_options for now until we have proper
   # dependency handling for header-only libs
+  Actions
   Boost::program_options
   Charmxx::main
   ErrorHandling
   Informer
+  IO
   Options
   Parallel
   ParallelHelpers

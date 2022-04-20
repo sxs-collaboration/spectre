@@ -4,6 +4,7 @@
 module GlobalCache {
 
   include "optional";
+  include "Parallel/GlobalCacheDeclare.hpp";
   include "Parallel/ParallelComponentHelpers.hpp";
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/Main.decl.h";
@@ -16,6 +17,8 @@ module GlobalCache {
             get_mutable_global_cache_tags<Metavariables>>&);
     template <typename GlobalCacheTag, typename Function, typename... Args>
     entry void mutate(std::tuple<Args...> & args);
+    entry void compute_size_for_memory_monitor(
+      CProxy_GlobalCache<Metavariables> global_cache_proxy, double time);
   }
 
   template <typename Metavariables>
@@ -33,6 +36,7 @@ module GlobalCache {
         const CkCallback&);
     template <typename GlobalCacheTag, typename Function, typename... Args>
     entry void mutate(std::tuple<Args...> & args);
+    entry void compute_size_for_memory_monitor(double time);
   }
   }  // namespace Parallel
 }

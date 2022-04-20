@@ -57,10 +57,40 @@ void test_mutable_cache_proxy_error() {
           "isn't set."));
 }
 
+void test_mem_monitor_entry_method_error() {
+  CHECK_THROWS_WITH(
+      ([]() {
+        MutableGlobalCache<EmptyMetavars> mutable_cache{
+            tuples::TaggedTuple<>{}};
+        CProxy_GlobalCache<EmptyMetavars> empty_cache_proxy{};
+
+        mutable_cache.compute_size_for_memory_monitor(empty_cache_proxy, 0.0);
+      })(),
+      Catch::Contains(
+          "MutableGlobalCache::compute_size_for_memory_monitor can only be "
+          "called if the MemoryMonitor is in the component list in the "
+          "metavariables.\n"));
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        MutableGlobalCache<EmptyMetavars> mutable_cache{
+            tuples::TaggedTuple<>{}};
+        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{},
+                                               &mutable_cache};
+
+        empty_cache.compute_size_for_memory_monitor(0.0);
+      })(),
+      Catch::Contains(
+          "GlobalCache::compute_size_for_memory_monitor can only be called if "
+          "the MemoryMonitor is in the component list in the "
+          "metavariables.\n"));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   test_mutable_cache_proxy_error();
+  test_mem_monitor_entry_method_error();
 
   tuples::TaggedTuple<Tags::IntegerList, Tags::UniquePtrIntegerList> tuple{};
   tuples::get<Tags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
