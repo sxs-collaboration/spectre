@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0
       - name: Check commits
@@ -89,7 +89,7 @@ jobs:
       image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0
       # The action above checks out the `github.ref` by default, which points to
@@ -102,12 +102,16 @@ jobs:
       - name: Checkout pull-request HEAD
         if: github.event_name == 'pull_request'
         run: |
+          # Workaround git https://github.com/actions/checkout/issues/760
+          git config --global --add safe.directory $GITHUB_WORKSPACE
           git checkout ${{ github.event.pull_request.head.sha }}
       # Some tests involve release tags, which may not have been pushed to
       # forks. Fetching them here.
       - name: Fetch upstream tags on forks
         if: github.repository != 'sxs-collaboration/spectre'
         run: |
+          # Workaround git https://github.com/actions/checkout/issues/760
+          git config --global --add safe.directory $GITHUB_WORKSPACE
           git fetch --tags https://github.com/sxs-collaboration/spectre
       - name: Install Python dependencies
         run: |
@@ -178,12 +182,16 @@ jobs:
         build_type: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0
       - name: Fetch sxs-collaboration/spectre/develop
         run: >
           cd $GITHUB_WORKSPACE
+
+          # Workaround git https://github.com/actions/checkout/issues/760
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           git remote add upstream
           https://github.com/sxs-collaboration/spectre.git
@@ -198,6 +206,10 @@ jobs:
         #   turned off.
         run: >
           mkdir build && cd build
+
+          # Workaround git https://github.com/actions/checkout/issues/760
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           cmake
           -D CMAKE_C_COMPILER=clang
@@ -230,11 +242,15 @@ jobs:
       image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
       - name: Configure with cmake
         working-directory: /work
         run: >
           mkdir build && cd build
+
+          # Workaround git https://github.com/actions/checkout/issues/760
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           cmake
           -D CMAKE_C_COMPILER=clang
@@ -371,7 +387,7 @@ jobs:
         CCACHE_COMPILERCHECK: content
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
       # Assign a unique cache key for every run. Restoring the cache for this
       # exact key will always fail, ensuring that the cache gets updated when
       # the run succeeds. The partially-matched 'restore-keys' ensure that the
@@ -405,6 +421,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         #   memory usage.
         run: >
           mkdir build && cd build
+
+          # Workaround git https://github.com/actions/checkout/issues/760
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
             CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
@@ -640,7 +660,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       SPACK_COLOR: always
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
       - name: Install Homebrew dependencies
         run: |
           brew install $SPECTRE_BREW_DEPS
@@ -802,7 +822,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       - doc_check
       - unit_tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3.0.1
         with:
           fetch-depth: 0
           # Using a personal access token with admin privileges here so this
@@ -868,6 +888,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # documentation so we don't need to do that here.
       - name: Commit and push
         run: |
+          # Workaround git https://github.com/actions/checkout/issues/760
+          git config --global --add safe.directory $GITHUB_WORKSPACE
           git config user.name sxs-bot
           git config user.email sxs-bot@black-holes.org
           git commit -a -m "Prepare release $RELEASE_VERSION"
@@ -926,7 +948,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         CXXFLAGS: "-Werror"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.1
       - name: Configure, build, and run tests
         working-directory: /work
         # Notes on the build configuration:
@@ -934,6 +956,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         #   memory usage.
         run: >
           ARCH_PARAM_LIST=${{ matrix.sde_arch }}
+
+          # Workaround git https://github.com/actions/checkout/issues/760
+
+          git config --global --add safe.directory $GITHUB_WORKSPACE
 
           for ARCH_PARAM in ${ARCH_PARAM_LIST[@]}; do
             OVERRIDE_ARCH=`echo ${ARCH_PARAM} | cut -d";" -f2`
