@@ -71,6 +71,11 @@
  * returning an expansion in nodal form as defined above. To evaluate the
  * function at arbitrary angles \f$\theta\f$, \f$\phi\f$, these values have to
  * be "interpolated" (i.e. the new expansion evaluated) using `interpolate`.
+ *
+ * YlmSpherepack stores two types of quantities:
+ *   1. storage_, which is filled in the constructor and is always const.
+ *   2. memory_pool_, which is dynamic and thread_local, and is overwritten
+ *      by various member functions that need temporary storage.
  */
 class YlmSpherepack {
  public:
@@ -447,8 +452,15 @@ class YlmSpherepack {
   void fill_vector_work_arrays();
   size_t l_max_, m_max_, n_theta_, n_phi_;
   size_t spectral_size_;
-  // NOLINTNEXTLINE(spectre-mutable)
-  mutable YlmSpherepack_detail::MemoryPool memory_pool_;
+  // memory_pool_ will be shared by multiple instances of
+  // YlmSpherepack on the same thread.  Because these instances are on
+  // the same thread, member functions of two or more of these
+  // instances cannot be called simultaneously.  Note that member
+  // functions do not make any assumptions about the contents of
+  // memory_pool_ on entry, so between calls to member functions it is
+  // safe to resize objects in memory_pool_ or to overwrite them with
+  // arbitrary data.
+  static thread_local YlmSpherepack_detail::MemoryPool memory_pool_;
   YlmSpherepack_detail::ConstStorage storage_;
 };  // class YlmSpherepack
 
