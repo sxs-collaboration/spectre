@@ -15,6 +15,7 @@
 #include <deque>
 #include <exception>
 #include <memory>
+#include <pup.h>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -681,6 +682,10 @@ class MockDistributedObject {
   int local_rank_of(int proc_index) const;
   /// @}
 
+ public:
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p);
+
  private:
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_simple_action(std::tuple<Args...>&& args,
@@ -890,6 +895,16 @@ class MockDistributedObject {
   std::deque<std::unique_ptr<InvokeActionBase>> threaded_action_queue_;
   Parallel::NodeLock node_lock_;
 };
+
+template <typename Component>
+void MockDistributedObject<Component>::pup(PUP::er& p) {
+  if (not p.isSizing()) {
+    ERROR(
+        "MockDistributedObject is not serializable. This pup member can only "
+        "be used for sizing.\n");
+  }
+  p | box_;
+}
 
 template <typename Component>
 void MockDistributedObject<Component>::next_action() {
