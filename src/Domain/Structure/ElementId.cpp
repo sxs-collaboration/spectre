@@ -13,6 +13,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
 // The `static_assert`s verify that `ElementId` satisfies the constraints
@@ -142,6 +143,20 @@ bool operator<(const ElementId<VolumeDim>& lhs,
   return false;
 }
 
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>& id,
+                       const std::optional<size_t>& grid_index) {
+  const bool base_checks =
+      id.block_id() == 0 and
+      alg::accumulate(id.segment_ids(), 0_st,
+                      [](const size_t current, const auto& segment_id) {
+                        return current + segment_id.index();
+                      }) == 0;
+  return grid_index.has_value()
+             ? base_checks and id.grid_index() == grid_index.value()
+             : base_checks;
+}
+
 // LCOV_EXCL_START
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& id) {
@@ -165,15 +180,17 @@ size_t hash<ElementId<VolumeDim>>::operator()(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                        \
-  template class ElementId<GET_DIM(data)>;                            \
-  template std::ostream& operator<<(std::ostream&,                    \
-                                    const ElementId<GET_DIM(data)>&); \
-  template bool operator<(const ElementId<GET_DIM(data)>& lhs,        \
-                          const ElementId<GET_DIM(data)>& rhs);       \
-  template size_t hash_value(const ElementId<GET_DIM(data)>&);        \
-  namespace std { /* NOLINT */                                        \
-  template struct hash<ElementId<GET_DIM(data)>>;                     \
+#define INSTANTIATION(r, data)                                              \
+  template class ElementId<GET_DIM(data)>;                                  \
+  template std::ostream& operator<<(std::ostream&,                          \
+                                    const ElementId<GET_DIM(data)>&);       \
+  template bool operator<(const ElementId<GET_DIM(data)>& lhs,              \
+                          const ElementId<GET_DIM(data)>& rhs);             \
+  template bool is_zeroth_element(const ElementId<GET_DIM(data)>& id,       \
+                                  const std::optional<size_t>& grid_index); \
+  template size_t hash_value(const ElementId<GET_DIM(data)>&);              \
+  namespace std { /* NOLINT */                                              \
+  template struct hash<ElementId<GET_DIM(data)>>;                           \
   }
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
