@@ -57,6 +57,28 @@ if(SLEEF_FOUND)
   set(_BLAZE_USE_SLEEF 1)
 endif()
 
+# If BLAZE_USE_STRONG_INLINE=ON, Blaze will use this keyword to increase the
+# likelihood of inlining. If BLAZE_USE_STRONG_INLINE=OFF, uses inline keyword
+# as a fallback.
+option(BLAZE_USE_STRONG_INLINE "Increase likelihood of Blaze inlining." ON)
+
+set(_BLAZE_USE_STRONG_INLINE 0)
+
+if(BLAZE_USE_STRONG_INLINE)
+  set(_BLAZE_USE_STRONG_INLINE 1)
+endif()
+
+# If BLAZE_USE_ALWAYS_INLINE=ON, Blaze will use this keyword to force inlining.
+# If BLAZE_USE_ALWAYS_INLINE=OFF or if the platform being used cannot 100%
+# guarantee inlining, uses BLAZE_STRONG_INLINE as a fallback.
+option(BLAZE_USE_ALWAYS_INLINE "Force Blaze inlining." ON)
+
+set(_BLAZE_USE_ALWAYS_INLINE 0)
+
+if(BLAZE_USE_ALWAYS_INLINE)
+  set(_BLAZE_USE_ALWAYS_INLINE 1)
+endif()
+
 # Configure Blaze. Some of the Blaze configuration options could be optimized
 # for the machine we are running on. See documentation:
 # https://bitbucket.org/blaze-lib/blaze/wiki/Configuration%20and%20Installation#!step-2-configuration
@@ -92,6 +114,9 @@ target_compile_definitions(Blaze
   BLAZE_USE_DEFAULT_INITIALIZATON=0
   # Use Sleef for vectorization of more math functions
   BLAZE_USE_SLEEF=${_BLAZE_USE_SLEEF}
+  # Set inlining settings
+  BLAZE_USE_STRONG_INLINE=${_BLAZE_USE_STRONG_INLINE}
+  BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
 add_interface_lib_headers(
