@@ -201,13 +201,17 @@ struct FirstOrderSystem
       gr::Tags::Conformal<gr::Tags::EnergyDensity<DataVector>,
                           ConformalMatterScale>,
       gr::Tags::TraceExtrinsicCurvature<DataVector>,
-      tmpl::conditional_t<ConformalGeometry == Geometry::Curved,
-                          tmpl::list<Tags::InverseConformalMetric<
-                                         DataVector, 3, Frame::Inertial>,
-                                     Tags::ConformalRicciScalar<DataVector>,
-                                     Tags::ConformalChristoffelContracted<
-                                         DataVector, 3, Frame::Inertial>>,
-                          tmpl::list<>>,
+      tmpl::conditional_t<
+          ConformalGeometry == Geometry::Curved,
+          tmpl::list<
+              Tags::InverseConformalMetric<DataVector, 3, Frame::Inertial>,
+              Tags::ConformalRicciScalar<DataVector>,
+              Tags::ConformalChristoffelContracted<DataVector, 3,
+                                                   Frame::Inertial>,
+              ::Tags::deriv<
+                  Tags::ConformalMetric<DataVector, 3, Frame::Inertial>,
+                  tmpl::size_t<3>, Frame::Inertial>>,
+          tmpl::list<>>,
       tmpl::conditional_t<
           EnabledEquations == Equations::Hamiltonian,
           Tags::LongitudinalShiftMinusDtConformalMetricOverLapseSquare<
