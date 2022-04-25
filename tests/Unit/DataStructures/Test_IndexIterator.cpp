@@ -20,16 +20,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.IndexIterator",
   // [index_iterator_example]
 
   IndexIterator<3> index_iterator(elements);
-  auto check_next = [&index_iterator,
-                     call_num = 0](const Index<3>& expected) mutable {
-    CHECK(index_iterator);
-    CHECK(index_iterator() == expected);
-    CHECK(*index_iterator == expected);
-    CHECK(index_iterator->indices() == expected.indices());
-    CHECK(index_iterator.collapsed_index() == static_cast<size_t>(call_num));
-    ++index_iterator;
-    ++call_num;
-  };
+  auto check_next =
+      [&index_iterator,
+       call_num =
+           0](const Index<3>& expected) mutable {  // NOLINT(spectre-mutable)
+        CHECK(index_iterator);
+        CHECK(index_iterator() == expected);
+        CHECK(*index_iterator == expected);
+        CHECK(index_iterator->indices() == expected.indices());
+        CHECK(index_iterator.collapsed_index() ==
+              static_cast<size_t>(call_num));
+        ++index_iterator;
+        ++call_num;
+      };
   check_next(Index<3>(0, 0, 0));
   check_next(Index<3>(0, 1, 0));
   check_next(Index<3>(0, 0, 1));

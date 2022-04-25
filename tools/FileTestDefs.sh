@@ -96,6 +96,58 @@ whitelist() {
     return 0
 }
 
+# check_nolint [-q] lint file...
+#
+# Check for NOLINT comments in the supplied files matching the
+# supplied `lint` string escaping the lines from standard input.
+# Echos any non-escaped lines unless '-q' is passed as the first
+# argument.  Returns 1 if everything was NOLINTED, 0 otherwise.
+#
+# The lines to match must not contain color sequences, because they
+# are too hard to parse.  Pass ${color_option:+--color=no} to pretty_grep.
+check_nolint() {
+    local quiet=no
+    if [ "$1" = "-q" ] ; then
+        quiet=yes
+        shift
+    fi
+    [ $# -ge 2 ] || die "Wrong number of arguments"
+    perl -e '
+use strict;
+my ($quiet, $lint, @files) = @ARGV;
+my $result = 1;
+while (my $match = <STDIN>) {
+  my $found = 0;
+  my ($match_file, $match_lineno, $match_text) =
+    $match =~ m#^([\w/.]+):(\d+):(.*)#;
+  $match_text //= $match;
+  chomp $match_text;
+  foreach my $file (@files) {
+    next if defined $match_file and $match_file ne $file;
+    open F, $file or die;
+    my $escaped = 0;
+    while(<F>) {
+      chomp;
+      m# NOLINT(NEXTLINE)?\((?:|.*,)\Q$lint\E(?:|,.*)\)# and
+        $escaped = $1 eq "NEXTLINE" ? 2 : 1;
+      if ((not defined $match_lineno or $match_lineno == $.) and
+           $_ eq $match_text) {
+        $found = 1;
+        if ($escaped != 1) {
+          $result = 0;
+          print $match unless $quiet eq "yes";
+        }
+      }
+      --$escaped if $escaped;
+    }
+    die "Did not find line: $match" unless $found;
+    close F;
+  }
+}
+exit $result;
+' "${quiet}" "$@"
+}
+
 # Main driver.  Takes a list of checks as arguments and a list of
 # filenames as null separated strings on its standard input.  Returns
 # true if all the checks passed.
@@ -147,12 +199,14 @@ test_check() {
         if [ "${expected}" != fail ] ; then
             echo "${check} unexpectedly failed on ${file}:"
             cat "${file}"
+            echo
             failed=yes
         fi
     else
         if [ "${expected}" != pass ] ; then
             echo "${check} unexpectedly passed on ${file}:"
             cat "${file}"
+            echo
             failed=yes
         fi
     fi
@@ -537,11 +591,7 @@ standard_checks+=(enable_if)
 # Check for noexcept
 noexcept() {
     is_c++ "$1" && \
-        whitelist "$1" \
-                  'src/Options/Options.hpp$' \
-                  'src/Utilities/TypeTraits/FunctionInfo.hpp$' \
-                  'tests/Unit/Utilities/TypeTraits/Test_FunctionInfo.cpp$' && \
-        staged_grep -q noexcept "$1"
+        staged_grep -q 'noexcept ' "$1"
 }
 noexcept_report() {
     echo "Found occurrences of 'noexcept', please remove."
@@ -551,11 +601,53 @@ noexcept_test() {
     test_check pass foo.cpp ''
     test_check pass foo.hpp ''
     test_check pass foo.tpp ''
-    test_check fail foo.hpp 'noexcept'
-    test_check fail foo.cpp 'noexcept'
-    test_check fail foo.tpp 'noexcept'
+    test_check fail foo.hpp 'noexcept '
+    test_check fail foo.cpp 'noexcept '
+    test_check fail foo.tpp 'noexcept '
+    test_check pass foo.hpp 'noexcept(true)'
+    test_check pass foo.cpp 'noexcept(true)'
+    test_check pass foo.tpp 'noexcept(true)'
 }
 standard_checks+=(noexcept)
+
+# Check for mutable
+mutable() {
+    # We talk about mutable stuff a lot, so try to avoid flagging
+    # occurrences in comments and strings.  Checking for end-of-line
+    # comments and balanced quotes isn't worth it.  "mutable" is also
+    # fine for mutable lambdas, but those are rare and hard to detect
+    # with regex, so they can just be NOLINTed.
+    is_c++ "$1" && \
+        staged_grep ' mutable ' "$1" | \
+            check_nolint spectre-mutable "$1" | \
+            grep -v -E -q '^ *(//|\* )|".* mutable '
+}
+mutable_report() {
+    echo "Found occurrences of 'mutable'.  Please discuss with the core devs."
+    pretty_grep ${color_option:+--color=no} ' mutable ' "$@" | \
+        check_nolint spectre-mutable "$@" | \
+        grep -v -E '^([^:]*:){2} *(//|\* )|".* mutable '
+}
+mutable_test() {
+    test_check pass foo.cpp ''
+    test_check pass foo.hpp ''
+    test_check pass foo.tpp ''
+    test_check fail foo.hpp ' mutable '
+    test_check fail foo.cpp ' mutable '
+    test_check fail foo.tpp ' mutable '
+    test_check pass foo.hpp ' mutable {  // NOLINT(spectre-mutable)'
+    test_check pass foo.cpp ' mutable {  // NOLINT(spectre-mutable)'
+    test_check pass foo.tpp ' mutable {  // NOLINT(spectre-mutable)'
+    test_check fail foo.cpp ' mutable {  // NOLINT(notspectre-mutable)'
+    test_check pass foo.cpp \
+               '// NOLINTNEXTLINE(spectre-mutable)'$'\n'' mutable {'
+    test_check pass foo.cpp '// mutable '
+    test_check pass foo.cpp ' * mutable ' # Probably a multiline comment
+    test_check pass foo.cpp '  // mutable '
+    test_check pass foo.cpp ' "something mutable something" '
+    test_check fail foo.cpp ' mutable // mutable '
+}
+standard_checks+=(mutable)
 
 # Check for struct TD and class TD asking to remove it
 struct_td() {
@@ -712,7 +804,7 @@ standard_checks+=(check_throws)
 # Check for typos similar to Doxygen groups
 check_dox_groups() {
     is_c++ "$1" && staged_grep -E "^\s*//+\s*[\{\}\(\)]*@[\{\}\(\)]*" "$1" \
-            | grep -v -E "(^\s*/// @\{|^\s*/// @\})"
+            | grep -v -E -q "(^\s*/// @\{|^\s*/// @\})"
 }
 check_dox_groups_report() {
     echo "Found a likely typo similar to a valid doxygen grouping"

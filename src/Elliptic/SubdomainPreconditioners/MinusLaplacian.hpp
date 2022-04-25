@@ -377,12 +377,15 @@ class MinusLaplacian
   // - The boundary-condition configuration for each tensor component, or an
   //   empty list if the subdomain has no external boundaries, or `std::nullopt`
   //   to signal a clean cache.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::optional<std::vector<BoundaryConditionsSignature>>
       bc_signatures_{};
   // - A clone of the `solver_` for each unique boundary-condition configuration
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::unordered_map<BoundaryConditionsSignature, StoredSolverType,
                              boost::hash<BoundaryConditionsSignature>>
       solvers_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::unordered_map<
       BoundaryConditionsSignature,
       std::unordered_map<BoundaryId, const BoundaryConditionsBase&,
@@ -397,8 +400,11 @@ class MinusLaplacian
   // subdomain solves because it is cached as a matrix (see
   // LinearSolver::Serial::ExplicitInverse), so we don't need the memory anymore
   // at all.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable SubdomainOperator subdomain_operator_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable SubdomainData source_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable SubdomainData initial_guess_in_solution_out_{};
 
   // These boundary condition instances can be re-used for all tensor components

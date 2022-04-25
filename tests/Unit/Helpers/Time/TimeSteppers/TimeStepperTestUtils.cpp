@@ -555,6 +555,7 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) {
 
   // We don't use any meaningful values.  We only care that the dense
   // output gives the same result as normal output.
+  // NOLINTNEXTLINE(spectre-mutable)
   auto get_value = [value = 1.]() mutable { return value *= 1.1; };
 
   const auto coupling = [](const double a, const double b) { return a * b; };

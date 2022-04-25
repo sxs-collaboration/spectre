@@ -56,6 +56,7 @@ class MathWrapper {
   template <typename U>
   struct Impl<U, true, false> {
     using scalar_type = typename U::value_type;
+    // NOLINTNEXTLINE(spectre-mutable)
     mutable T data;
     Impl(const gsl::not_null<T*> data_in) : data(std::move(*data_in)) {}
   };

@@ -134,7 +134,9 @@ struct TestSolver {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::vector<PoissonSubdomainData<Dim>> sources{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::vector<std::map<std::pair<size_t, Direction<Dim>>,
                                elliptic::BoundaryConditionType>>
       bc_types{};

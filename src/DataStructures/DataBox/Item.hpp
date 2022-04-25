@@ -120,7 +120,9 @@ class Item<Tag, ItemType::Compute> {
   }
 
  private:
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable value_type value_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable bool evaluated_{false};
 };
 

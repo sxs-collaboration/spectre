@@ -287,6 +287,7 @@ class BoundaryHistory {
   // We use pointers instead of iterators because deque invalidates
   // iterators when elements are inserted or removed at the ends, but
   // not pointers.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::map<std::pair<const Time*, const Time*>, CouplingResult>
       coupling_cache_;
 };

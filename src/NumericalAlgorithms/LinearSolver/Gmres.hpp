@@ -282,22 +282,28 @@ class Gmres final : public PreconditionedLinearSolver<Preconditioner,
   // The `orthogonalization_history_` is built iteratively from inner products
   // between existing and potential basis vectors and then Givens-rotated to
   // become upper-triangular.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicMatrix<double> orthogonalization_history_{};
   // The `residual_history_` holds the remaining residual in its last entry, and
   // the other entries `g` "source" the minimum residual vector `y` in
   // `R * y = g` where `R` is the upper-triangular `orthogonalization_history_`.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicVector<double> residual_history_{};
   // These represent the accumulated Givens rotations up to the current
   // iteration.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicVector<double> givens_sine_history_{};
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable blaze::DynamicVector<double> givens_cosine_history_{};
   // These represent the orthogonal Krylov-subspace basis that is constructed
   // iteratively by Arnoldi-orthogonalizing a new vector in each iteration and
   // appending it to the `basis_history_`.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::vector<VarsType> basis_history_{};
   // When a preconditioner is used it is applied to each new basis vector. The
   // preconditioned basis is used to construct the solution when the algorithm
   // has converged.
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::vector<VarsType> preconditioned_basis_history_{};
 };
 

@@ -442,7 +442,9 @@ class YlmSpherepack {
   void fill_vector_work_arrays() const;
   size_t l_max_, m_max_, n_theta_, n_phi_;
   size_t spectral_size_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable YlmSpherepack_detail::MemoryPool memory_pool_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable YlmSpherepack_detail::Storage storage_;
 };  // class YlmSpherepack
 

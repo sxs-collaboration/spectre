@@ -89,7 +89,7 @@ class propagate_context : public std::exception {
   explicit propagate_context(std::string message)
       : message_(std::move(message)) {}
 
-  const char* what() const noexcept override { return message_.c_str(); }
+  const char* what() const noexcept(true) override { return message_.c_str(); }
   const std::string& message() const { return message_; }
 
  private:

@@ -311,16 +311,21 @@ struct RobinsonTrautman : public SphericalMetricData {
 
   using SphericalMetricData::variables_impl;
  private:
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable std::pair<double, double> step_range_;
 
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable boost::numeric::odeint::dense_output_runge_kutta<
       boost::numeric::odeint::controlled_runge_kutta<
           boost::numeric::odeint::runge_kutta_dopri5<ComplexDataVector>>>
       stepper_;
 
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Scalar<SpinWeighted<ComplexDataVector, 0>> dense_output_rt_scalar_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable Scalar<SpinWeighted<ComplexDataVector, 0>> dense_output_du_rt_scalar_;
   size_t l_max_ = 0;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable double prepared_time_ = std::numeric_limits<double>::signaling_NaN();
   double tolerance_ = std::numeric_limits<double>::signaling_NaN();
   double start_time_ = std::numeric_limits<double>::signaling_NaN();

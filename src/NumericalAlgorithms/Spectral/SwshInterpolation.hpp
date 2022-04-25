@@ -366,7 +366,9 @@ class SwshInterpolator {
   DataVector sin_theta_over_two_;
   std::vector<DataVector> sin_m_phi_;
   std::vector<DataVector> cos_m_phi_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable ComplexModalVector raw_libsharp_coefficient_buffer_;
+  // NOLINTNEXTLINE(spectre-mutable)
   mutable ComplexModalVector raw_goldberg_coefficient_buffer_;
 };
 }  // namespace Swsh
