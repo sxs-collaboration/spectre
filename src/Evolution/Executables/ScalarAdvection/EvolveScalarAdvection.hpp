@@ -254,7 +254,8 @@ struct EvolutionMetavars {
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>,
@@ -268,7 +269,8 @@ struct EvolutionMetavars {
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
 
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>,

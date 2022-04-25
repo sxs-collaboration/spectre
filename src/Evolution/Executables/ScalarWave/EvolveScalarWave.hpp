@@ -235,13 +235,14 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
-                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
-          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
-                         EvolutionMetavars>,
-                     Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+                  EvolutionMetavars>,
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<>,
+              Actions::UpdateU<>>>,
       tmpl::conditional_t<
           use_filtering,
           dg::Actions::Filter<

@@ -393,10 +393,14 @@ struct GhValenciaDivCleanTemplateBase<
 
   using step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<derived_metavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<derived_metavars>,
       tmpl::conditional_t<
-          local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
+          local_time_stepping,
+          tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+              derived_metavars>>,
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+                  derived_metavars>,
+              Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
       VariableFixing::Actions::FixVariables<

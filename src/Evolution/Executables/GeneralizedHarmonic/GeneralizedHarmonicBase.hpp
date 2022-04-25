@@ -343,10 +343,10 @@ struct GeneralizedHarmonicTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
-                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          derived_metavars>>,
           tmpl::list<
-              evolution::dg::Actions::ApplyBoundaryCorrections<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   derived_metavars>,
               Actions::RecordTimeStepperData<>,
               evolution::Actions::RunEventsAndDenseTriggers<>,

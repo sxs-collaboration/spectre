@@ -414,8 +414,12 @@ struct component {
               SetLocalMortarData>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<::evolution::dg::Actions::ApplyBoundaryCorrections<
-              Metavariables>>>>;
+          tmpl::list<tmpl::conditional_t<
+              Metavariables::local_time_stepping,
+              ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
+                  Metavariables>,
+              ::evolution::dg::Actions::
+                  ApplyBoundaryCorrectionsToTimeDerivative<Metavariables>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
