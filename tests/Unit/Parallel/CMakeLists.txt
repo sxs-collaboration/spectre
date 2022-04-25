@@ -146,9 +146,10 @@ add_algorithm_test(
   "Element 0 received reduction: Counted 2 odd elements.")
 
 # Charm 7.0.0 has different output in the following test.
-if(CHARM_VERSION VERSION_GREATER 6.10.2)
-  add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
-    "AlgorithmParallel" "num_objs=14")
+if(CHARM_VERSION VERSION_EQUAL 7.0.0)
+  message(STATUS "Periodic load balancing with the RotateLB is not working \
+correctly with Charm++ 7.0.0. Disabling the test for now until this is \
+resolved.")
 else()
   add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
     "AlgorithmParallel" "Objects migrating: 14")
