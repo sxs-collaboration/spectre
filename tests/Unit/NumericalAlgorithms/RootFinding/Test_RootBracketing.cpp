@@ -18,6 +18,12 @@ std::optional<double> f_free(double x) {
   return (x < 1.0 or x > 2.0) ? std::nullopt
                               : std::optional<double>(2.0 - square(x));
 }
+// f_root_near_bounds is a case contrived to generate an error
+// because the root is within 1e-10 of the bounds.
+std::optional<double> f_root_near_bounds(double x) {
+  return (x < 1.0 or x > 2.0) ? std::nullopt
+                              : std::optional<double>(x-1.0-1.e-10);
+}
 struct F {
   std::optional<double> operator()(double x) const {
     return (x < 1.0 or x > 2.0) ? std::nullopt
@@ -148,5 +154,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.Bracketing",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
   test_bracketing_simple();
   test_bracketing_datavector();
+
+  CHECK_THROWS_WITH(
+      (test_bracketing_simple_one_function(f_root_near_bounds, {{0.1, 1.1}},
+                                           std::nullopt)),
+      Catch::Contains("bracket_by_contracting: Cannot bracket root between"));
 }
 }  // namespace

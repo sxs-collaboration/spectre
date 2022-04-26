@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstddef>
 #include <optional>
+#include <stdexcept>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -20,6 +21,7 @@
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -232,11 +234,21 @@ void strahlkorper_in_different_frame(
   const double padding = 0.10;
   get(bracket_r_min) = r_min * (1.0 - padding);
   get(bracket_r_max) = r_max * (1.0 + padding);
-  RootFinder::bracket_possibly_undefined_function_in_interval(
-      make_not_null(&get(bracket_r_min)), make_not_null(&get(bracket_r_max)),
-      make_not_null(&get(f_bracket_r_min)),
-      make_not_null(&get(f_bracket_r_max)), radius_function_for_bracketing);
-
+  try {
+    RootFinder::bracket_possibly_undefined_function_in_interval(
+        make_not_null(&get(bracket_r_min)), make_not_null(&get(bracket_r_max)),
+        make_not_null(&get(f_bracket_r_min)),
+        make_not_null(&get(f_bracket_r_max)), radius_function_for_bracketing);
+  } catch (std::runtime_error& e) {
+    ERROR(
+        "StrahlkorperInDifferentFrame: Trying to find radius of Strahlkorper "
+        "by root finding, but cannot bracket the root between "
+        << r_min * (1.0 - padding) << " and " << r_max * (1.0 + padding)
+        << ". Maybe the padding interval needs to be increased?  Or maybe the "
+           "Strahlkorper is extremely close to the excision boundary? Internal "
+           "error message is "
+        << e.what());
+  }
   // Find the radius at each angular point by root finding.
   const auto radius_at_each_angle = RootFinder::toms748(
       radius_function, get(bracket_r_min), get(bracket_r_max),

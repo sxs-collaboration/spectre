@@ -4,6 +4,9 @@
 #pragma once
 
 #include <optional>
+#include <sstream>
+#include <stdexcept>
+#include <tuple>
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
@@ -11,12 +14,14 @@
 #include "Utilities/Gsl.hpp"
 
 namespace RootFinder {
+
 namespace bracketing_detail {
 // Brackets a root, given a functor f(x) that returns a
 // std::optional<double> and given two arrays x and y (with y=f(x))
 // containing points that have already been tried for bracketing.
 //
-// Returns a std::array<double,4> containing {{x1,x2,y1,y2}} where
+// Returns a std::tuple<double, double, double, double>
+// containing {{x1,x2,y1,y2}} where
 // x1 and x2 bracket the root, and y1=f(x1) and y2=f(x2).
 //
 // Note that y might be undefined (i.e. an invalid std::optional)
@@ -52,13 +57,20 @@ namespace bracketing_detail {
 // points are numbered starting from zero).  For "+ + X X X" we check
 // only between points 1 and 2.
 template <typename Functor>
-std::array<double, 4> bracket_by_contracting(
-    const std::vector<double>& x, const std::vector<std::optional<double>>& y,
-    const Functor& f, const size_t level = 0) {
-  constexpr size_t max_level = 6;
+auto bracket_by_contracting(const std::vector<double>& x,
+                            const std::vector<std::optional<double>>& y,
+                            const Functor& f, const size_t level = 0)
+    -> std::tuple<double, double, double, double> {
+  constexpr size_t max_level = 27;
   if (level > max_level) {
-    ERROR("Too many iterations in bracket_by_contracting. Either refine the "
-          "initial range/guess or increase max_level.");
+    std::stringstream ss;
+    ss << "Too many iterations in bracket_by_contracting.  Either the "
+          "region where the root changes sign is so small that we cannot "
+          "find it, or the given interval does not actually bracket a "
+          "root.  The points we are checking are "
+       << x.size() << " almost-evenly-spaced points from " << x.front()
+       << " to " << x.back() << " with difference " << x.back()-x.front();
+    throw std::runtime_error(ss.str());
   }
 
   // First check if we have any valid points.
@@ -134,9 +146,9 @@ std::array<double, 4> bracket_by_contracting(
     if (y_test.has_value() and
         y[first_valid_index].value() * y_test.value() <= 0.0) {
       // Bracketed!
-      return std::array<double, 4>{{x_test, x[first_valid_index],
-                                    y_test.value(),
-                                    y[first_valid_index].value()}};
+      return {
+          x_test, x[first_valid_index], y_test.value(),
+          y[first_valid_index].value()};
     } else {
       x_near_valid_point.push_back(x[first_valid_index - 1]);
       y_near_valid_point.push_back(y[first_valid_index - 1]);
@@ -154,9 +166,8 @@ std::array<double, 4> bracket_by_contracting(
     if (y_test.has_value() and
         y[last_valid_index].value() * y_test.value() <= 0.0) {
       // Bracketed!
-      return std::array<double, 4>{{x[last_valid_index], x_test,
-                                    y[last_valid_index].value(),
-                                    y_test.value()}};
+      return {x[last_valid_index], x_test, y[last_valid_index].value(),
+              y_test.value()};
     } else {
       if (first_valid_index != last_valid_index or first_valid_index == 0) {
         x_near_valid_point.push_back(x[last_valid_index]);
@@ -277,12 +288,16 @@ void bracket_possibly_undefined_function_in_interval(
             "bracket_possibly_undefined_function_in_interval: found "
             "case that should not happen under our assumptions.");
       }
-      std::array<double, 4> tmp = bracketing_detail::bracket_by_contracting(
-          {{x3, x1, x2}}, {{y3, y1, y2}}, f);
-      x1 = tmp[0];
-      x2 = tmp[1];
-      y1 = tmp[2];
-      y2 = tmp[3];
+      try {
+        std::tie(x1, x2, y1, y2) = bracketing_detail::bracket_by_contracting(
+            {{x3, x1, x2}}, {{y3, y1, y2}}, f);
+      } catch (std::runtime_error& e) {
+        std::stringstream ss;
+        ss << "bracket_by_contracting: Cannot bracket root between "
+           << *lower_bound << " and " << *upper_bound
+           << ". Internal error message is: '" << e.what() << "'";
+        throw std::runtime_error(ss.str());
+      }
     }
   }
   *f_at_lower_bound = y1.value();
