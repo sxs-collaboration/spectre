@@ -85,7 +85,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
     CHECK(header_obj.get_build_info() == formaline::get_build_info());
   };
   check_header(my_file0);
+  my_file0.close_current_object();
   check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
+  my_file0.close_current_object();
 
   const auto check_source_archive = [](const auto& my_file) {
     const std::vector<char> archive =
@@ -93,7 +95,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
     CHECK(archive == formaline::get_archive());
   };
   check_source_archive(my_file0);
+  my_file0.close_current_object();
   check_source_archive(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
+  my_file0.close_current_object();
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
@@ -225,11 +229,82 @@ void test_some_errors() {
           auto& error_file =
               my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
           error_file.append(std::vector<double>{0, 0.1, 0.2, 0.3});
+          my_file.close_current_object();
         }
         { my_file.insert<h5::Dat>("/L2_errors//", legend, version_number); }
       }()),
       Catch::Contains("Cannot insert an Object that already exists. Failed to "
                       "add Object named: /L2_errors"));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpenGet.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        };
+        std::vector<std::string> legend{"DummyLegend"};
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        auto& dat_file = my_file.insert<h5::Dat>("/DummyPath", legend);
+        auto& get_dat_file = my_file.get<h5::Dat>("/DummyPath");
+        (void)dat_file;
+        (void)get_dat_file;
+      }(),
+      Catch::Contains(
+          "Object /DummyPath already open. Cannot open object /DummyPath."));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name =
+            "./Unit.IO.H5.FileErrorObjectAlreadyOpenInsert.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        };
+        std::vector<std::string> legend{"DummyLegend"};
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        auto& dat_file = my_file.insert<h5::Dat>("/DummyPath", legend);
+        auto& dat_file2 = my_file.insert<h5::Dat>("/DummyPath2");
+        (void)dat_file;
+        (void)dat_file2;
+      }(),
+      Catch::Contains(
+          "Object /DummyPath already open. Cannot insert object /DummyPath2."));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name =
+            "./Unit.IO.H5.FileErrorObjectAlreadyOpenTryInsert.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        };
+        std::vector<std::string> legend{"DummyLegend"};
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        auto& dat_file = my_file.insert<h5::Dat>("/DummyPath", legend);
+        auto& dat_file2 = my_file.try_insert<h5::Dat>("/DummyPath2");
+        (void)dat_file;
+        (void)dat_file2;
+      }(),
+      Catch::Contains("Object /DummyPath already open. Cannot try to insert "
+                      "object /DummyPath2."));
+  CHECK_THROWS_WITH(
+      []() {
+        std::string file_name = "./Unit.IO.H5.FileErrorObjectAlreadyOpen.h5";
+        if (file_system::check_if_file_exists(file_name)) {
+          file_system::rm(file_name, true);
+        };
+        std::vector<std::string> legend{"DummyLegend"};
+        h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+        {
+          auto& dat_file = my_file.insert<h5::Dat>("/DummyPath", legend);
+          my_file.close_current_object();
+          (void)dat_file;
+          auto& dat_file2 = my_file.insert<h5::Dat>("/Dummy/Path2", legend);
+          my_file.close_current_object();
+          (void)dat_file2;
+        }
+        auto& dat_file2 = my_file.get<h5::Dat>("/Dummy/Path2");
+        auto& dat_file = my_file.get<h5::Dat>("/DummyPath");
+        (void)dat_file;
+        (void)dat_file2;
+      }(),
+      Catch::Contains(
+          "Object /Dummy/Path2 already open. Cannot open object /DummyPath."));
 }
 }  // namespace
 
@@ -252,9 +327,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
   const auto& const_version = my_file.get<h5::Version>("/the_version");
   // [h5file_read_version]
   CHECK(const_version.subfile_path() == "/the_version");
-  CHECK(version_number == const_version.get_version());
+  const auto const_version_val = const_version.get_version();
+  my_file.close_current_object();
+  CHECK(version_number == const_version_val);
   auto& version = my_file.get<h5::Version>("/the_version");
-  CHECK(version_number == version.get_version());
+  const auto version_val = version.get_version();
+  CHECK(version_number == version_val);
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
@@ -270,6 +348,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
 
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
+  my_file.close_current_object();
 
   // Check that the Dat file is found to be a subgroup of the file
   const auto groups_in_file = my_file.groups();

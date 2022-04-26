@@ -318,6 +318,7 @@ void test() {
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
     }
+    my_file.close_current_object();
   }
   // Open the read volume file and check that the observation id and values are
   // correct.

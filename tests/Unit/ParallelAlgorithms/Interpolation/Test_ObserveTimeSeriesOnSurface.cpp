@@ -499,6 +499,7 @@ SPECTRE_TEST_CASE(
       [&file](const std::vector<double>& expected_integral,
               const std::vector<std::string>& expected_legend,
               const std::string& group_name) {
+        file.close_current_object();
         const auto& dat_file = file.get<h5::Dat>(group_name);
         const Matrix written_data = dat_file.get_data();
         const auto& written_legend = dat_file.get_legend();

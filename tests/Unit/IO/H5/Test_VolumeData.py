@@ -30,12 +30,14 @@ class TestVolumeDataWriting(unittest.TestCase):
     # Testing the VolumeData Insert Function
     def test_insert_vol(self):
         self.h5_file.insert_vol(path="/element_data", version=0)
+        self.h5_file.close()
         vol_file = self.h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_version(), 0)
 
     # Test the header was generated correctly
     def test_vol_get_header(self):
         self.h5_file.insert_vol(path="/element_data", version=0)
+        self.h5_file.close()
         vol_file = self.h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_header()[0:20], "#\n# File created on ")
 
@@ -61,6 +63,7 @@ class TestVolumeData(unittest.TestCase):
 
         # Insert .vol file to h5 file
         self.h5_file.insert_vol("/element_data", version=0)
+        self.h5_file.close()
         self.vol_file = self.h5_file.get_vol(path="/element_data")
 
         # Set TensorComponent and ExtentsAndTensorVolumeData to

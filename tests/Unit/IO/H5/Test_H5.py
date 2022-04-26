@@ -41,6 +41,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_version(), 0)
         file_spec.close()
@@ -51,6 +52,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         datfile = file_spec.get_dat(path="/element_data")
         datfile.append(self.data_1)
         outdata_array = np.asarray(datfile.get_data())
@@ -63,6 +65,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         datfile = file_spec.get_dat(path="/element_data")
         datfile.append(self.data_1)
         datfile.append(self.data_2)
@@ -80,6 +83,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_legend(), ["Time", "Value"])
         self.assertEqual(datfile.get_version(), 0)
@@ -91,6 +95,7 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_header()[0:16], "#\n# File created")
         file_spec.close()
@@ -100,12 +105,15 @@ class TestIOH5File(unittest.TestCase):
         file_spec.insert_dat(path="/element_data",
                              legend=["Time", "Value"],
                              version=0)
+        file_spec.close()
         file_spec.insert_dat(path="/element_position",
                              legend=["x", "y", "z"],
                              version=0)
+        file_spec.close()
         file_spec.insert_dat(path="/element_size",
                              legend=["Time", "Size"],
                              version=0)
+        file_spec.close()
         groups_spec = [
             "element_data.dat", "element_position.dat", "element_size.dat",
             "src.tar.gz"
@@ -141,6 +149,7 @@ class TestIOH5File(unittest.TestCase):
                 "\n.*element_data.dat"):
             file_spec.get_vol("/element_dat")
 
+        file_spec.close()
         file_spec.insert_vol(path="/volume_data", version=0)
 
         #insert existing volume data file
