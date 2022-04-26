@@ -296,12 +296,18 @@ class Wedge {
    * \param radial_distribution Determines how to distribute grid points along
    * the radial direction. For wedges that are not exactly spherical, only
    * `Distribution::Linear` is currently supported.
+   * \param half_opening_angle Determines the angular size of the wedge. The
+   * default value is pi/4, which corresponds to a wedge size of pi/2. For this
+   * setting, four Wedges can be put together to cover 2pi in angle along a
+   * great circle. This option is meant to be used with the equiangular map
+   * option turned on.
    */
   Wedge(double radius_inner, double radius_outer, double sphericity_inner,
         double sphericity_outer, OrientationMap<Dim> orientation_of_wedge,
         bool with_equiangular_map,
         WedgeHalves halves_to_use = WedgeHalves::Both,
-        Distribution radial_distribution = Distribution::Linear);
+        Distribution radial_distribution = Distribution::Linear,
+        double half_opening_angle = M_PI_4);
 
   Wedge() = default;
   ~Wedge() = default;
@@ -373,6 +379,7 @@ class Wedge {
   double sphere_zero_{std::numeric_limits<double>::signaling_NaN()};
   double scaled_frustum_rate_{std::numeric_limits<double>::signaling_NaN()};
   double sphere_rate_{std::numeric_limits<double>::signaling_NaN()};
+  double half_opening_angle_{std::numeric_limits<double>::signaling_NaN()};
 };
 
 template <size_t Dim>

@@ -25,7 +25,8 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
                   OrientationMap<Dim> orientation_of_wedge,
                   const bool with_equiangular_map,
                   const WedgeHalves halves_to_use,
-                  const Distribution radial_distribution)
+                  const Distribution radial_distribution,
+                  const double half_opening_angle)
     : radius_inner_(radius_inner),
       radius_outer_(radius_outer),
       sphericity_inner_(sphericity_inner),
@@ -33,7 +34,8 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       orientation_of_wedge_(std::move(orientation_of_wedge)),
       with_equiangular_map_(with_equiangular_map),
       halves_to_use_(halves_to_use),
-      radial_distribution_(radial_distribution) {
+      radial_distribution_(radial_distribution),
+      half_opening_angle_(half_opening_angle) {
   const double sqrt_dim = sqrt(double{Dim});
   ASSERT(radius_inner > 0.0,
          "The radius of the inner surface must be greater than zero.");
@@ -60,6 +62,9 @@ Wedge<Dim>::Wedge(const double radius_inner, const double radius_outer,
       "Wedge rotations must be done in such a manner that the sign of "
       "the determinant of the discrete rotation is positive. This is to "
       "preserve handedness of the coordinates.");
+  ASSERT(half_opening_angle != M_PI_4 ? with_equiangular_map : true,
+         "If using a half opening angle other than pi/4, then the "
+         "equiangular map option must be turned on.");
   if (radial_distribution_ == Distribution::Linear) {
     scaled_frustum_zero_ = 0.5 / sqrt_dim *
                            ((1.0 - sphericity_outer_) * radius_outer +
@@ -125,7 +130,7 @@ std::array<tt::remove_cvref_wrap_t<T>, Dim> Wedge<Dim>::operator()(
   }
 
   std::array<ReturnType, Dim - 1> cap{};
-  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
@@ -194,7 +199,8 @@ std::optional<std::array<double, Dim>> Wedge<Dim>::inverse(
     }
   }();
   // Polar angle
-  double xi = with_equiangular_map_ ? atan(cap[0]) / M_PI_4 : cap[0];
+  double xi =
+      with_equiangular_map_ ? atan(cap[0]) / half_opening_angle_ : cap[0];
   if (halves_to_use_ == WedgeHalves::UpperOnly) {
     xi *= 2.0;
     xi -= 1.0;
@@ -232,9 +238,10 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, Dim, Frame::NoFrame> Wedge<Dim>::jacobian(
   }
   std::array<ReturnType, Dim - 1> cap{};
   std::array<ReturnType, Dim - 1> cap_deriv{};
-  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  cap_deriv[0] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[0]))
-                                       : make_with_value<ReturnType>(xi, 1.0);
+  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
+  cap_deriv[0] = with_equiangular_map_
+                     ? half_opening_angle_ * (1.0 + square(cap[0]))
+                     : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
@@ -342,9 +349,10 @@ Wedge<Dim>::inv_jacobian(const std::array<T, Dim>& source_coords) const {
   }
   std::array<ReturnType, Dim> cap{};
   std::array<ReturnType, Dim> cap_deriv{};
-  cap[0] = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  cap_deriv[0] = with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap[0]))
-                                       : make_with_value<ReturnType>(xi, 1.0);
+  cap[0] = with_equiangular_map_ ? tan(half_opening_angle_ * xi) : xi;
+  cap_deriv[0] = with_equiangular_map_
+                     ? half_opening_angle_ * (1.0 + square(cap[0]))
+                     : make_with_value<ReturnType>(xi, 1.0);
   ReturnType one_over_rho = 1.0 + square(cap[0]);
   if constexpr (Dim == 3) {
     // Azimuthal angle
@@ -451,6 +459,7 @@ void Wedge<Dim>::pup(PUP::er& p) {
   p | sphere_zero_;
   p | scaled_frustum_rate_;
   p | sphere_rate_;
+  p | half_opening_angle_;
 }
 
 template <size_t Dim>
