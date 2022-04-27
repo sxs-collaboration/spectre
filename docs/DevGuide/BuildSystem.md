@@ -254,6 +254,13 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Multiply the timeout for the respective set of tests by this factor (default
     is `1`).
   - This is useful to run tests on slower machines.
+- SPECTRE_USE_ALWAYS_INLINE
+  - Force SpECTRE inlining (default is `ON`)
+  - Forced inlining reduces function call overhead, and so generally reduces
+    runtime. However, it does increase compile time and compile memory usage. It
+    is also easier to use a debugger when forced inlining is disabled. If you
+    are encountering debugger messages like `function inlined`, then forced
+    inlining should be disabled.
 - STRIP_SYMBOLS
   - Whether or not to strip all symbols (default is `OFF`)
   - If enabled strips all extraneous symbols from libraries and executables,

@@ -91,6 +91,7 @@ include(SetupGoldOrLldLinker)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(SetupLIBCXX)
+include(SetupSpectreInlining)
 include(SetupCxxFlags)
 include(SetupProfiling)
 include(SetupSanitizers)
