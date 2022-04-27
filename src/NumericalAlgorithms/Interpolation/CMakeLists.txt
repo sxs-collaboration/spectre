@@ -13,6 +13,7 @@ spectre_target_sources(
   CubicSpanInterpolator.cpp
   CubicSpline.cpp
   IrregularInterpolant.cpp
+  LinearLeastSquares.cpp
   LinearSpanInterpolator.cpp
   PolynomialInterpolation.cpp
   RegularGridInterpolant.cpp
@@ -29,6 +30,7 @@ spectre_target_headers(
   CubicSpline.hpp
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
+  LinearLeastSquares.hpp
   LinearSpanInterpolator.hpp
   PolynomialInterpolation.hpp
   RegularGridInterpolant.hpp
