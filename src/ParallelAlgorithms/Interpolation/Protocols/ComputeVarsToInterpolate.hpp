@@ -5,6 +5,8 @@
 
 #include <type_traits>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
@@ -60,8 +62,12 @@ namespace intrp::protocols {
 struct ComputeVarsToInterpolate {
   template <typename ConformingType>
   struct test {
-    struct DummyTag;
-    using example_list = tmpl::list<DummyTag>;
+    template <size_t Dim>
+    struct DummyTag : db::SimpleTag {
+      using type = tnsr::a<DataVector, Dim, Frame::Grid>;
+    };
+    template <size_t Dim>
+    using example_list = tmpl::list<DummyTag<Dim>>;
 
     template <typename T, size_t Dim, typename = std::void_t<>>
     struct has_signature_1 : std::false_type {};
@@ -70,8 +76,8 @@ struct ComputeVarsToInterpolate {
     struct has_signature_1<
         T, Dim,
         std::void_t<decltype(T::apply(
-            std::declval<const gsl::not_null<Variables<example_list>*>>(),
-            std::declval<const Variables<example_list>&>(),
+            std::declval<const gsl::not_null<Variables<example_list<Dim>>*>>(),
+            std::declval<const Variables<example_list<Dim>>&>(),
             std::declval<const Mesh<Dim>&>()))>> : std::true_type {};
 
     template <typename T, size_t Dim, typename = std::void_t<>>
@@ -81,8 +87,8 @@ struct ComputeVarsToInterpolate {
     struct has_signature_2<
         T, Dim,
         std::void_t<decltype(T::apply(
-            std::declval<const gsl::not_null<Variables<example_list>*>>(),
-            std::declval<const Variables<example_list>&>(),
+            std::declval<const gsl::not_null<Variables<example_list<Dim>>*>>(),
+            std::declval<const Variables<example_list<Dim>>&>(),
             std::declval<const Mesh<Dim>&>(),
             std::declval<const Jacobian<DataVector, Dim, Frame::Grid,
                                         Frame::Inertial>&>(),
