@@ -32,6 +32,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -302,7 +303,7 @@ struct ElementArray {
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
           initialization_items) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
-        *(global_cache.ckLocalBranch()));
+        *Parallel::local_branch(global_cache));
     local_component[0].insert(global_cache, initialization_items, 0);
     local_component.doneInserting();
   }
@@ -311,7 +312,7 @@ struct ElementArray {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
-        *(global_cache.ckLocalBranch()));
+        *Parallel::local_branch(global_cache));
     local_component.start_phase(next_phase);
   }
 };
@@ -365,7 +366,7 @@ struct OutputCleaner {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<OutputCleaner>(
-        *(global_cache.ckLocalBranch()));
+        *Parallel::local_branch(global_cache));
     local_component.start_phase(next_phase);
   }
 };

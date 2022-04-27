@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
@@ -249,15 +250,14 @@ struct ScriObserveInterpolated {
       (*data_to_write_buffer)[2 * i + 1] = real(goldberg_modes.data()[i]);
       (*data_to_write_buffer)[2 * i + 2] = imag(goldberg_modes.data()[i]);
     }
-     auto& my_proxy =
-          Parallel::get_parallel_component<ParallelComponent>(cache);
-     auto observer_proxy =
-         Parallel::get_parallel_component<ObserverWriterComponent>(
-             cache)[static_cast<size_t>(
-             Parallel::my_node(*my_proxy.ckLocal()))];
-     Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
-         observer_proxy, legend, *data_to_write_buffer,
-         "/" + detail::ScriOutput<Tag>::name());
+    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    auto observer_proxy =
+        Parallel::get_parallel_component<ObserverWriterComponent>(
+            cache)[static_cast<size_t>(
+            Parallel::my_node(*Parallel::local(my_proxy)))];
+    Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
+        observer_proxy, legend, *data_to_write_buffer,
+        "/" + detail::ScriOutput<Tag>::name());
   }
 };
 }  // namespace Actions

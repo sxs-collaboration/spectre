@@ -149,7 +149,12 @@ phase-dependent action lists (PDALs, pronounced "pedals").
 Each %Parallel Component struct must have the following type aliases:
 1. `using chare_type` is set to one of:
    1. `Parallel::Algorithms::Singleton`s have one object in the entire execution
-      of the program.
+      of the program. They are implemented as single element Charm++ chare
+      arrays. Charm++ does offer a distributed object called a singleton,
+      however, we explicitely don't use this for various reasons (see
+      Parallel::Algorithms::Singleton). Henceforth and throughout SpECTRE, a
+      `singleton` will refer to Parallel::Algorithms::Singleton and *not* a
+      Charm++ singleton.
    2. `Parallel::Algorithms::Array`s hold zero or more elements, each of which
       is an object distributed to some core. An array can grow and shrink in
       size dynamically if need be and can also be bound to another array. A
@@ -311,8 +316,9 @@ parallel component.  Specifically,
 
 \snippet Test_AlgorithmNestedApply1.cpp bad_recursive_call
 
-Here `ckLocal()` is a Charm++ provided method that returns a pointer
-to the local (currently executing) parallel component. See the
+Here `Parallel::local()` is a wrapper around `ckLocal()` which is a Charm++
+provided method that returns a pointer to the local (currently executing)
+parallel component. See the
 [Charm++ manual](http://charm.cs.illinois.edu/help) for more
 information.  However, you are able to queue a new action to be
 executed later on the same parallel component by getting your own

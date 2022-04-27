@@ -19,6 +19,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Time/SelfStart.hpp"
 #include "Time/Tags.hpp"
@@ -96,9 +97,9 @@ struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time) {
-    auto hdf5_lock = Parallel::get_parallel_component<
-                         observers::ObserverWriter<Metavariables>>(cache)
-                         .ckLocalBranch()
+    auto hdf5_lock = Parallel::local_branch(
+                         Parallel::get_parallel_component<
+                             observers::ObserverWriter<Metavariables>>(cache))
                          ->template local_synchronous_action<
                              observers::Actions::GetLockPointer<
                                  observers::Tags::H5FileLock>>();

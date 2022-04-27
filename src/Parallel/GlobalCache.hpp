@@ -18,6 +18,7 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -461,7 +462,7 @@ template <typename GlobalCacheTag, typename Function>
 bool GlobalCache<Metavariables>::mutable_cache_item_is_ready(
     const Function& function) {
   if (mutable_global_cache_proxy_is_set()) {
-    return mutable_global_cache_proxy_.ckLocalBranch()
+    return Parallel::local_branch(mutable_global_cache_proxy_)
         ->template mutable_cache_item_is_ready<GlobalCacheTag>(function);
   } else {
     return mutable_global_cache_
@@ -582,7 +583,7 @@ auto get(const GlobalCache<Metavariables>& cache)
     // Tag is not in the const tags, so use MutableGlobalCache
     if (cache.mutable_global_cache_proxy_is_set()) {
       const auto& local_mutable_cache =
-          *cache.mutable_global_cache_proxy_.ckLocalBranch();
+          *Parallel::local_branch(cache.mutable_global_cache_proxy_);
       return local_mutable_cache.template get<GlobalCacheTag>();
     } else {
       return cache.mutable_global_cache_->template get<GlobalCacheTag>();
@@ -670,7 +671,7 @@ struct GlobalCacheImplCompute : GlobalCacheImpl<Metavariables>, db::ComputeTag {
       const gsl::not_null<Parallel::GlobalCache<Metavariables>**>
           local_branch_of_global_cache,
       const CProxy_GlobalCache<Metavariables>& global_cache_proxy) {
-    *local_branch_of_global_cache = global_cache_proxy.ckLocalBranch();
+    *local_branch_of_global_cache = Parallel::local_branch(global_cache_proxy);
   }
 };
 
@@ -702,8 +703,8 @@ namespace PUP {
 // provided _only_ to enable putting a `GlobalCache*` in the DataBox.
 //
 // SpECTRE parallel components with a `GlobalCache*` in their DataBox should
-// use a compute item that sets the pointer by calling `.ckLocalBranch` on a
-// stored proxy. When deserializing the DataBox, these components should call
+// set this pointer using a compute item that calls `Parallel::local_branch` on
+// a stored proxy. When deserializing the DataBox, these components should call
 // `db:mutate<GlobalCacheProxy>(box)` to force the DataBox to update the
 // pointer from the new Charm++ proxy.
 //
@@ -711,13 +712,13 @@ namespace PUP {
 // outside of a DataBox. But if this need arises, it will be necessary to
 // provide a non-kludgey pupper here.
 //
-// Correctly (de)serializing the `GlobalCache` pointer would require obtaining
-// a `CProxy_GlobalCache` item and calling `.ckLocalBranch()` on it --- just as
-// in the workflow described above, but within the pupper vs in the DataBox).
-// But this strategy fails when restarting from a checkpoint file, because
-// calling `.ckLocalBranch()` may not be well-defined in the unpacking pup call
-// when all Charm++ components may not yet be fully restored. This difficulty
-// is why we instead write an invalid pupper here.
+// Correctly (de)serializing the `GlobalCache*` would require obtaining a
+// `CProxy_GlobalCache` item and calling `Parallel::local_branch` on it ---
+// just as in the workflow described above, but within the pupper vs in the
+// DataBox. But this strategy fails when restarting from a checkpoint file,
+// because calling `Parallel::local_branch` may not be well-defined in the
+// unpacking pup call when all Charm++ components may not yet be fully restored.
+// This difficulty is why we instead write an invalid pupper here.
 //
 // In future versions of Charm++, the pup function may know whether it is
 // called in the context of checkpointing, load balancing, etc. This knowledge

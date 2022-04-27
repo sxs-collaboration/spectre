@@ -24,6 +24,7 @@ target_link_libraries(
   Informer
 
   PUBLIC
+  Charmxx::charmxx
   DataStructures
   ErrorHandling
   Python::NumPy

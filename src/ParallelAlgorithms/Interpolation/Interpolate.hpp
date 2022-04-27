@@ -12,6 +12,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "Utilities/TMPL.hpp"
@@ -49,9 +50,8 @@ void interpolate(
       });
 
   // Send volume data to the Interpolator, to trigger interpolation.
-  auto& interpolator =
-      *::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache)
-           .ckLocalBranch();
+  auto& interpolator = *Parallel::local_branch(
+      ::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache));
   Parallel::simple_action<Actions::InterpolatorReceiveVolumeData<
       typename InterpolationTargetTag::temporal_id>>(
       interpolator, temporal_id, array_index, mesh, interp_vars);

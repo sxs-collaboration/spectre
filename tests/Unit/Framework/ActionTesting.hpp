@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <charm++.h>
 #include <cstddef>
 #include <tuple>
 #include <unordered_map>
@@ -441,10 +442,10 @@ bool InitializeDataBox<tmpl::list<SimpleTags...>,
 /// \endcond
 
 namespace ActionTesting_detail {
-// A mock class for the Charm++ generated CProxyElement_AlgorithmArray (we use
-// an array for everything, so no need to mock groups, nodegroups, singletons).
+// A mock class for the Charm++ generated CProxyElement_AlgorithmArray. This
+// is each element obtained by indexing a CProxy_AlgorithmArray.
 template <typename Component, typename InboxTagList>
-class MockDistributedObjectProxy {
+class MockDistributedObjectProxy : public CProxyElement_ArrayElement {
  public:
   using Inbox = tuples::tagged_tuple_from_typelist<InboxTagList>;
 
@@ -524,13 +525,24 @@ class MockDistributedObjectProxy {
   Inbox& inbox_;
 };
 
+template <typename ChareType>
+struct charm_base_proxy;
+template <>
+struct charm_base_proxy<MockArrayChare> : public CProxy_ArrayElement {};
+template <>
+struct charm_base_proxy<MockGroupChare> : public CProxy_IrrGroup {};
+template <>
+struct charm_base_proxy<MockNodeGroupChare> : public CProxy_NodeGroup {};
+template <>
+struct charm_base_proxy<MockSingletonChare> : public CProxy_ArrayElement {};
+
 // A mock class for the Charm++ generated CProxy_AlgorithmArray or
-// CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup. (for singletons, just
-// use an array with a single element).
-// Here ChareType is MockArrayChare or MockGroupChare or MockNodeGroupChare.
+// CProxy_AlgorithmGroup or CProxy_AlgorithmNodeGroup or
+// CProxy_AlgorithmSingleton.
 template <typename Component, typename Index, typename InboxTagList,
           typename ChareType>
-class MockCollectionOfDistributedObjectsProxy {
+class MockCollectionOfDistributedObjectsProxy
+    : public charm_base_proxy<ChareType> {
  public:
   using Inboxes =
       std::unordered_map<Index,
@@ -604,7 +616,7 @@ class MockCollectionOfDistributedObjectsProxy {
       return std::addressof(mock_distributed_objects_->at(mock_node_));
     } else {
       static_assert(std::is_same_v<Component, NoSuchType>,
-                  "Do not call ckLocalBranch for arrays or singletons");
+                    "Do not call ckLocalBranch for arrays or singletons");
     }
   }
 

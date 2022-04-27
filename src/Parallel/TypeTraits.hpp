@@ -14,14 +14,16 @@
 namespace Parallel {
 
 /// \ingroup ParallelGroup
-/// Check if `T` is a Charm++ proxy for an array chare
+/// Check if `T` is a Charm++ proxy for an array chare (the entire array)
 template <typename T>
 struct is_array_proxy : std::is_base_of<CProxy_ArrayElement, T>::type {};
 
 /// \ingroup ParallelGroup
-/// Check if `T` is a Charm++ proxy for a chare
+/// Check if `T` is a Charm++ proxy for an array chare element (from indexing
+/// into the array chare)
 template <typename T>
-struct is_chare_proxy : std::is_base_of<CProxy_Chare, T>::type {};
+struct is_array_element_proxy
+    : std::is_base_of<CProxyElement_ArrayElement, T>::type {};
 
 /// \ingroup ParallelGroup
 /// Check if `T` is a Charm++ proxy for a group chare
@@ -45,6 +47,19 @@ struct is_bound_array<T, std::void_t<typename T::bind_to>> : std::true_type {
   static_assert(Parallel::is_array_proxy<typename T::bind_to::type>::value,
                 "Can only bind to an array chare");
 };
+
+/// @{
+/// \ingroup ParallelGroup
+/// Retrieve a parallel component from its proxy.
+template <typename Proxy>
+struct get_parallel_component_from_proxy;
+
+template <typename ParallelComponent, template <typename...> class Proxy,
+          typename... Ts>
+struct get_parallel_component_from_proxy<Proxy<ParallelComponent, Ts...>> {
+  using type = ParallelComponent;
+};
+/// @}
 
 /// @{
 /// \ingroup ParallelGroup
@@ -142,4 +157,4 @@ template <typename T>
 using is_pupable_t = typename is_pupable<T>::type;
 /// @}
 
-} // namespace Parallel
+}  // namespace Parallel

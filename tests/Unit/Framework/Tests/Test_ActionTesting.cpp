@@ -13,6 +13,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -396,9 +397,10 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
-      tmpl::list<Actions::SendValue>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Testing,
+                                        tmpl::list<Actions::SendValue>>>;
 };
 
 struct Metavariables {
@@ -561,52 +563,53 @@ struct ComponentA {
 struct MyProc {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_proc(*my_proxy[array_index].ckLocal());
+    return Parallel::my_proc(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct MyNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_node(*my_proxy[array_index].ckLocal());
+    return Parallel::my_node(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct LocalRank {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_local_rank(*my_proxy[array_index].ckLocal());
+    return Parallel::my_local_rank(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumProcs {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::number_of_procs(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_procs(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumNodes {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::number_of_nodes(*my_proxy[array_index].ckLocal());
+    return Parallel::number_of_nodes(*Parallel::local(my_proxy[array_index]));
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct ProcsOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::procs_on_node(NodeIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::procs_on_node(NodeIndex,
+                                   *Parallel::local(my_proxy[array_index]));
   }
 };
 
-template<int NodeIndex>
+template <int NodeIndex>
 struct FirstProcOnNode {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::first_proc_on_node(NodeIndex,
-                                        *my_proxy[array_index].ckLocal());
+    return Parallel::first_proc_on_node(
+        NodeIndex, *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -614,7 +617,8 @@ template <int ProcIndex>
 struct NodeOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::node_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::node_of(ProcIndex,
+                             *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -622,7 +626,8 @@ template <int ProcIndex>
 struct LocalRankOf {
   template <typename MyProxy, typename ArrayIndex>
   static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::local_rank_of(ProcIndex, *my_proxy[array_index].ckLocal());
+    return Parallel::local_rank_of(ProcIndex,
+                                   *Parallel::local(my_proxy[array_index]));
   }
 };
 
@@ -683,7 +688,7 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == -5);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == -3);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<MyProc>>(
         make_not_null(&runner), i);
   }
@@ -705,7 +710,7 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 0);
 
-  for(size_t i=0;i<5;++i) {
+  for (size_t i = 0; i < 5; ++i) {
     ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRank>>(
         make_not_null(&runner), i);
   }
@@ -811,7 +816,7 @@ void test_group_emplace() {
   using component = GroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_group_component_and_initialize<component>(&runner,
                                                                    {-3});
@@ -888,7 +893,7 @@ void test_nodegroup_emplace() {
   using component = NodeGroupComponent<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},{},{3,2}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
 
   ActionTesting::emplace_nodegroup_component_and_initialize<component>(&runner,
                                                                        {-3});

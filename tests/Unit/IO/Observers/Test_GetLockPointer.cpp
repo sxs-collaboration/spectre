@@ -12,6 +12,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,12 +28,12 @@ struct mock_lock_retrieval_action {
   static void apply(const db::DataBox<DbTagList>& /*box*/,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
-    auto lock = Parallel::get_parallel_component<
-                    observers::ObserverWriter<Metavariables>>(cache)
-                    .ckLocalBranch()
+    auto lock = Parallel::local_branch(
+                    Parallel::get_parallel_component<
+                        observers::ObserverWriter<Metavariables>>(cache))
                     ->template local_synchronous_action<
                         observers::Actions::GetLockPointer<LockTag>>();
-    if constexpr(std::is_same_v<LockTag, observers::Tags::H5FileLock>) {
+    if constexpr (std::is_same_v<LockTag, observers::Tags::H5FileLock>) {
       h5_lock_to_check = lock;
     } else {
       volume_lock_to_check = lock;
@@ -57,7 +58,7 @@ struct mock_observer_writer {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
-    tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
 template <typename Metavariables>

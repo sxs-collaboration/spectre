@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -96,10 +97,9 @@ void contribute_to_residual_observation(
     const size_t iteration_id, const double residual_magnitude_square,
     Parallel::GlobalCache<Metavariables>& cache, const ArrayIndex& array_index,
     const std::string& section_observation_key) {
-  auto& local_observer =
-      *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
-           cache)
-           .ckLocalBranch();
+  auto& local_observer = *Parallel::local_branch(
+      Parallel::get_parallel_component<observers::Observer<Metavariables>>(
+          cache));
   auto formatter =
       UNLIKELY(get<logging::Tags::Verbosity<OptionsGroup>>(cache) >=
                ::Verbosity::Quiet)
