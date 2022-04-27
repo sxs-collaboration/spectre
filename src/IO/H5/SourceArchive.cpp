@@ -14,7 +14,8 @@
 namespace h5 {
 SourceArchive::SourceArchive(const bool exists, detail::OpenGroup&& group,
                              const hid_t location, const std::string& name)
-    : group_(std::move(group)) {
+    : group_(std::move(group)),
+      path_(group_.group_path_with_trailing_slash() + name) {
   if (exists) {
     source_archive_ =
         read_data<1, std::vector<char>>(location, name + extension());

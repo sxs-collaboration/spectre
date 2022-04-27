@@ -62,9 +62,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   my_file0.close_current_object();
 
   const auto check_header = [&h5_file_name](const auto& my_file) {
+    const auto& header_obj = my_file.template get<h5::Header>("/header");
+    CHECK(header_obj.subfile_path() == "/header");
     // Check that the header was written correctly
-    const std::string my_header =
-        my_file.template get<h5::Header>("/header").get_header();
+    const std::string my_header = header_obj.get_header();
 
     CHECK(my_file.name() == h5_file_name);
 
@@ -79,10 +80,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
                       << "# "
                       << std::regex_replace(info_from_build(), std::regex{"\n"},
                                             "\n# ")});
-    CHECK(my_file.template get<h5::Header>("/header").get_env_variables() ==
+    CHECK(header_obj.get_env_variables() ==
           formaline::get_environment_variables());
-    CHECK(my_file.template get<h5::Header>("/header").get_build_info() ==
-          formaline::get_build_info());
+    CHECK(header_obj.get_build_info() == formaline::get_build_info());
   };
   check_header(my_file0);
   check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
@@ -251,6 +251,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
   // [h5file_read_version]
   const auto& const_version = my_file.get<h5::Version>("/the_version");
   // [h5file_read_version]
+  CHECK(const_version.subfile_path() == "/the_version");
   CHECK(version_number == const_version.get_version());
   auto& version = my_file.get<h5::Version>("/the_version");
   CHECK(version_number == version.get_version());
@@ -419,6 +420,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
   }
   h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
   const auto& error_file = my_file.get<h5::Dat>("/L2_errors");
+  CHECK(error_file.subfile_path() == "/L2_errors");
 
   // Check version info is correctly retrieved from Dat file
   CHECK(error_file.get_version() == version_number);

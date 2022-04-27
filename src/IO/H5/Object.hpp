@@ -21,5 +21,8 @@ class Object {
   Object& operator=(Object&& /*rhs*/) = delete;  // NOLINT
   virtual ~Object() = default;
   /// \endcond
+
+  /// Return the path to the subfile where this object is stored
+  virtual const std::string& subfile_path() const = 0;
 };
 }  // namespace h5

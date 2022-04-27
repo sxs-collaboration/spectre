@@ -323,6 +323,7 @@ void test() {
   // correct.
   const auto& volume_file =
       my_file.get<h5::VolumeData>("/element_data", version_number);
+  CHECK(volume_file.subfile_path() == "/element_data");
   const auto read_observation_ids = volume_file.list_observation_ids();
   // The observation IDs should be sorted by their observation value
   CHECK(read_observation_ids == std::vector<size_t>{size_t(-1), 8435087234});

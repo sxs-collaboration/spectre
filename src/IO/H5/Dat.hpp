@@ -118,12 +118,15 @@ class Dat : public h5::Object {
    */
   uint32_t get_version() const { return version_; }
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   void append_impl(hsize_t number_of_rows, const std::vector<double>& data);
 
   /// \cond HIDDEN_SYMBOLS
   detail::OpenGroup group_;
   std::string name_;
+  std::string path_;
   uint32_t version_;
   std::vector<std::string> legend_;
   std::array<hsize_t, 2> size_;
