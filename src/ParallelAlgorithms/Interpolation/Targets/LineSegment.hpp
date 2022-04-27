@@ -9,9 +9,11 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -116,9 +118,12 @@ struct LineSegment : db::SimpleTag {
 namespace TargetPoints {
 /// \brief Computes points on a line segment.
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// Conforms to the intrp::protocols::ComputeTargetPoints protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename InterpolationTargetTag, size_t VolumeDim>
-struct LineSegment {
+struct LineSegment : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
   using is_sequential = std::false_type;

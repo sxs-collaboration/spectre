@@ -30,11 +30,15 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -157,11 +161,19 @@ struct MockCleanUpInterpolator {
 };
 
 // In the test, MockComputeTargetPoints is used only for the
-// type aliases; normally compute_target_points has a
-// points() function, but that function isn't called or needed in the test.
-struct MockComputeTargetPoints {
+// type aliases; normally the points function of compute_target_points is used
+// but since it isn't in this test, it just returns an empty tensor
+struct MockComputeTargetPoints
+    : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = std::true_type;
   using frame = ::Frame::Inertial;
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& /*box*/,
+      const tmpl::type_<Metavariables>& /*meta*/,
+      const TemporalId& /*temporal_id*/) {
+    return tnsr::I<DataVector, 3, Frame::Inertial>{};
+  }
 };
 
 // Simple DataBoxItems to test.
@@ -191,7 +203,8 @@ void callback_impl(const db::DataBox<DbTags>& box,
   CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
 }
 
-struct MockPostInterpolationCallback {
+struct MockPostInterpolationCallback
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
@@ -207,7 +220,8 @@ struct MockPostInterpolationCallback {
 // cleanup.  The only time that one would actually want
 // to prevent cleanup is in the AH finder, and it is tested there,
 //  but this is a more direct test.
-struct MockPostInterpolationCallbackNoCleanup {
+struct MockPostInterpolationCallbackNoCleanup
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -220,9 +234,9 @@ struct MockPostInterpolationCallbackNoCleanup {
 };
 
 template <size_t NumberOfInvalidInterpolationPoints>
-struct MockPostInterpolationCallbackWithInvalidPoints {
+struct MockPostInterpolationCallbackWithInvalidPoints
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   static constexpr double fill_invalid_points_with = 15.0;
-
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
@@ -271,7 +285,8 @@ struct mock_interpolator {
 
 template <typename MockCallBackType, typename IsTimeDependent>
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;

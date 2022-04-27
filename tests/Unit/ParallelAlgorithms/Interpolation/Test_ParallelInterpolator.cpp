@@ -43,6 +43,9 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "Time/Slab.hpp"
@@ -53,6 +56,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -99,9 +103,9 @@ struct NegateCompute : Negate, db::ComputeTag {
 };
 }  // namespace Tags
 
-
 // Structs for compute_vars_to_interpolate.
-struct ComputeSquare {
+struct ComputeSquare
+    : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   template <typename SrcTag, typename DestTag>
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
@@ -109,15 +113,13 @@ struct ComputeSquare {
       const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
-};
-struct ComputeNegate {
-  template <typename SrcTag, typename DestTag>
-  static void apply(
-      const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
-      const Variables<tmpl::list<SrcTag>>& src_vars,
-      const Mesh<3>& /* mesh */) {
-    get(get<DestTag>(*target_vars)) = -get(get<SrcTag>(src_vars));
-  }
+
+  using allowed_src_tags = tmpl::list<>;
+  using required_src_tags = tmpl::list<>;
+  template <typename Frame>
+  using allowed_dest_tags = tmpl::list<>;
+  template <typename Frame>
+  using required_dest_tags = tmpl::list<>;
 };
 
 // Functions for testing whether we have
@@ -143,11 +145,12 @@ struct TestFunctionHelper<Tags::Negate> {
 
 size_t num_test_function_calls = 0;
 template <typename InterpolationTargetTag, typename DbTagToRetrieve>
-struct TestFunction {
-  template <typename DbTags, typename Metavariables>
+struct TestFunction
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) {
+                    const TemporalId& /*temporal_id*/) {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
     const auto expected_interpolation_result = [&interpolation_result]() {
       auto result =
@@ -168,11 +171,12 @@ struct TestFunction {
   }
 };
 
-struct TestKerrHorizonIntegral {
-  template <typename DbTags, typename Metavariables>
+struct TestKerrHorizonIntegral
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const TimeStepId& /*temporal_id*/) {
+                    const TemporalId& /*temporal_id*/) {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
@@ -188,6 +192,9 @@ struct TestKerrHorizonIntegral {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
@@ -232,7 +239,8 @@ struct mock_interpolator {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
@@ -242,7 +250,8 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
   };
-  struct InterpolationTargetB {
+  struct InterpolationTargetB
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using compute_vars_to_interpolate = ComputeSquare;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
@@ -252,7 +261,8 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
   };
-  struct InterpolationTargetC {
+  struct InterpolationTargetC
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;
@@ -315,10 +325,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                            metavars::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-     for (size_t core = 0; core < 6; ++core) {
-       ActionTesting::next_action<interp_component>(make_not_null(&runner),
-                                                    core);
-     }
+    for (size_t core = 0; core < 6; ++core) {
+      ActionTesting::next_action<interp_component>(make_not_null(&runner),
+                                                   core);
+    }
   }
   ActionTesting::emplace_singleton_component<target_a_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1});

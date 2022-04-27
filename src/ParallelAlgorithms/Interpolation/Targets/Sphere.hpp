@@ -13,8 +13,10 @@
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 /// \cond
 class DataVector;
@@ -106,9 +108,12 @@ struct Sphere : db::SimpleTag {
 namespace TargetPoints {
 /// \brief Computes points on a spherical surface.
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// Conforms to the intrp::protocols::ComputeTargetPoints protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename InterpolationTargetTag, typename Frame>
-struct Sphere {
+struct Sphere : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::Sphere<InterpolationTargetTag>>;
   using is_sequential = std::false_type;

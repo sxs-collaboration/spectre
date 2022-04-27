@@ -91,6 +91,7 @@
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -250,7 +251,7 @@ struct EvolutionMetavars {
               ::Frame::Inertial>>,
       horizons_tags_to_observe>;
 
-  struct AhA {
+  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         horizons_vars_to_interpolate_to_target;
@@ -267,7 +268,7 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
   };
 
-  struct AhB {
+  struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         horizons_vars_to_interpolate_to_target;
@@ -284,7 +285,7 @@ struct EvolutionMetavars {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>>;
   };
 
-  using interpolation_target_tags = tmpl::list<AhA,AhB>;
+  using interpolation_target_tags = tmpl::list<AhA, AhB>;
   using interpolator_source_vars = tmpl::list<
       gr::Tags::SpacetimeMetric<volume_dim, ::Frame::Inertial>,
       GeneralizedHarmonic::Tags::Pi<volume_dim, ::Frame::Inertial>,
@@ -295,7 +296,7 @@ struct EvolutionMetavars {
   using observe_fields = tmpl::append<
       tmpl::list<gr::Tags::Lapse<DataVector>,
                  GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-                                       volume_dim, ::Frame::Inertial>,
+                     volume_dim, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<
                      volume_dim, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
@@ -316,18 +317,17 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           volume_dim == 3,
           tmpl::list<
-              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-                         3, ::Frame::Inertial>,
-              GeneralizedHarmonic::Tags::FConstraintCompute<
-                         3, ::Frame::Inertial>,
+              GeneralizedHarmonic::Tags::
+                  FourIndexConstraintCompute<3, ::Frame::Inertial>,
+              GeneralizedHarmonic::Tags::FConstraintCompute<3,
+                                                            ::Frame::Inertial>,
               ::Tags::PointwiseL2NormCompute<
-                  GeneralizedHarmonic::Tags::FConstraint<
-                         3, ::Frame::Inertial>>,
+                  GeneralizedHarmonic::Tags::FConstraint<3, ::Frame::Inertial>>,
               ::Tags::PointwiseL2NormCompute<
                   GeneralizedHarmonic::Tags::FourIndexConstraint<
-                         3, ::Frame::Inertial>>,
+                      3, ::Frame::Inertial>>,
               GeneralizedHarmonic::Tags::ConstraintEnergyCompute<
-                         3, ::Frame::Inertial>>,
+                  3, ::Frame::Inertial>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;

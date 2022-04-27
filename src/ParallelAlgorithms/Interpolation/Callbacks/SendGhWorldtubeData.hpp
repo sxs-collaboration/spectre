@@ -9,8 +9,14 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+struct TimeStepId;
+/// \endcond
 
 namespace intrp {
 namespace callbacks {
@@ -23,14 +29,23 @@ namespace callbacks {
 ///   - `::GeneralizedHarmonic::Tags::Pi<3,Frame::Inertial>`
 ///   - `::GeneralizedHarmonic::Tags::Phi<3,Frame::Inertial>`
 ///
-/// This is an InterpolationTargetTag::post_interpolation_callback;
-/// see InterpolationTarget for a description of InterpolationTargetTag.
-template <typename CceEvolutionComponent, typename TemporalId>
-struct SendGhWorldtubeData {
-  template <typename DbTags, typename Metavariables>
+/// Conforms to the intrp::protocols::PostInterpolationCallback protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
+///
+/// \note This callback requires the temporal ID in an InterpolationTargetTag be
+/// a TimeStepId.
+template <typename CceEvolutionComponent>
+struct SendGhWorldtubeData
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
-                    const typename TemporalId::type& temporal_id) {
+                    const TemporalId& temporal_id) {
+    static_assert(
+        std::is_same_v<TemporalId, TimeStepId>,
+        "SendGhWorldtubeData expects a TimeStepId as its temporal ID.");
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
     Parallel::simple_action<

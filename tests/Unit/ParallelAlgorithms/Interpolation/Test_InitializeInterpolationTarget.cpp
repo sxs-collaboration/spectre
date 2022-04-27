@@ -20,10 +20,14 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 class DataVector;
@@ -32,6 +36,9 @@ namespace {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -44,15 +51,17 @@ struct mock_interpolation_target {
 };
 
 struct Metavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
-    // InterpolationTargets must have compute_target_points defined.
-    // But for this test, compute_target_points is not actually used
-    // so we can just define it to be any random type. Choose void.
-    using compute_target_points = void;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
+    using compute_target_points =
+        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
   };
 
   using component_list = tmpl::list<

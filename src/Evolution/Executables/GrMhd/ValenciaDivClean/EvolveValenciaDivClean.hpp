@@ -123,6 +123,7 @@
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/SpecifiedPoints.hpp"
@@ -567,7 +568,7 @@ struct EvolutionMetavars {
   void pup(PUP::er& /*p*/) {}
 };
 
-struct CenterOfStar {
+struct CenterOfStar : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   struct MaxOfScalar : db::SimpleTag {
     using type = double;
   };
@@ -601,7 +602,7 @@ struct CenterOfStar {
       typename Metavariables::dg_element_array_component;
 };
 
-struct KerrHorizon {
+struct KerrHorizon : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
   using temporal_id = ::Tags::Time;
   using tags_to_observe =
       tmpl::list<StrahlkorperTags::EuclideanSurfaceIntegralVectorCompute<

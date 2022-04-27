@@ -52,6 +52,8 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -64,6 +66,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -178,7 +181,7 @@ struct MockInterpolator {
 };
 
 struct MockMetavariables {
-  struct SurfaceA {
+  struct SurfaceA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -196,7 +199,7 @@ struct MockMetavariables {
                 Tags::Square, ::Frame::Inertial>>,
             SurfaceA>;
   };
-  struct SurfaceB {
+  struct SurfaceB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -218,7 +221,7 @@ struct MockMetavariables {
                            Tags::Negate, ::Frame::Inertial>>,
             SurfaceB>;
   };
-  struct SurfaceC {
+  struct SurfaceC : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -257,6 +260,18 @@ SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesOnSurface",
     "[Unit]") {
   domain::creators::register_derived_with_charm();
+
+  // Test That ObserveTimeSeriesOnSurface indeed does conform to its protocol
+  using callback_A =
+      typename MockMetavariables::SurfaceA::post_interpolation_callback;
+  using callback_B =
+      typename MockMetavariables::SurfaceB::post_interpolation_callback;
+  using callback_C =
+      typename MockMetavariables::SurfaceC::post_interpolation_callback;
+  using protocol = intrp::protocols::PostInterpolationCallback;
+  static_assert(tt::assert_conforms_to<callback_A, protocol>);
+  static_assert(tt::assert_conforms_to<callback_B, protocol>);
+  static_assert(tt::assert_conforms_to<callback_C, protocol>);
 
   const std::string h5_file_prefix = "Test_ObserveTimeSeriesOnSurface";
   const auto h5_file_name = h5_file_prefix + ".h5";

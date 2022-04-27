@@ -16,9 +16,11 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -59,18 +61,20 @@ auto make_reduction_data(const db::DataBox<DbTags>& box, double time,
 /// - DataBox:
 ///   - `TagsToObserve`
 ///
-/// This is an InterpolationTargetTag::post_interpolation_callback;
-/// see InterpolationTarget for a description of InterpolationTargetTag.
+/// Conforms to the intrp::protocols::PostInterpolationCallback protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename TagsToObserve, typename InterpolationTargetTag>
-struct ObserveTimeSeriesOnSurface {
+struct ObserveTimeSeriesOnSurface
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   static constexpr double fill_invalid_points_with =
       std::numeric_limits<double>::quiet_NaN();
 
-  template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      Parallel::GlobalCache<Metavariables>& cache,
-      const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const TemporalId& temporal_id) {
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
 

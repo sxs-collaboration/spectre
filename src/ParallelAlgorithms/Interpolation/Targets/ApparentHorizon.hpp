@@ -19,8 +19,10 @@
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "Utilities/PrettyType.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -137,9 +139,12 @@ namespace TargetPoints {
 /// - It uses a `FastFlow` in the DataBox.
 /// - It has different options (including those for `FastFlow`).
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// Conforms to the intrp::protocols::ComputeTargetPoints protocol
+///
+/// For requirements on InterpolationTargetTag, see
+/// intrp::protocols::InterpolationTargetTag
 template <typename InterpolationTargetTag, typename Frame>
-struct ApparentHorizon {
+struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using const_global_cache_tags =
       tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
   using is_sequential = std::true_type;
@@ -166,7 +171,7 @@ struct ApparentHorizon {
     // Put Strahlkorper and its ComputeItems, FastFlow, and verbosity
     // into a new DataBox.  The first element of PreviousStrahlkorpers
     // is initialized to (time=NaN, strahlkorper=options.initial_guess).
-    // The NaN is a sentinal value which indicates that the
+    // The NaN is a sentinel value which indicates that the
     // PreviousStrahlkorper has not been computed but is instead the
     // supplied initial guess.  Note that the NaN must be quiet_NaN,
     // so we can test for it later without generating an FPE.

@@ -42,7 +42,11 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -52,6 +56,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -100,7 +105,8 @@ struct SquareCompute : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
-struct ComputeSquare {
+struct ComputeSquare
+    : tt::ConformsTo<intrp::protocols::ComputeVarsToInterpolate> {
   template <typename SrcTag, typename DestTag>
   static void apply(
       const gsl::not_null<Variables<tmpl::list<DestTag>>*> target_vars,
@@ -108,6 +114,13 @@ struct ComputeSquare {
       const Mesh<3>& /* mesh */) {
     get(get<DestTag>(*target_vars)) = square(get(get<SrcTag>(src_vars)));
   }
+
+  using allowed_src_tags = tmpl::list<>;
+  using required_src_tags = tmpl::list<>;
+  template <typename Frame>
+  using allowed_dest_tags = tmpl::list<>;
+  template <typename Frame>
+  using required_dest_tags = tmpl::list<>;
 };
 
 template <typename InterpolationTargetTag>
@@ -165,6 +178,9 @@ struct MockInterpolationTargetReceiveVars {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -212,15 +228,17 @@ struct mock_interpolator {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_vars_to_interpolate = ComputeSquare;
     using compute_items_on_target = tmpl::list<>;
-    // InterpolationTargets must have compute_target_points defined.
-    // But for this test, compute_target_points is not actually used
-    // so we can just define it to be any random type. Choose void.
-    using compute_target_points = void;
+    using compute_target_points =
+        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
+                                                     InterpolationTargetA>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

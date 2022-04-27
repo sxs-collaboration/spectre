@@ -18,10 +18,14 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
 
 namespace Parallel {
@@ -51,8 +55,10 @@ struct SquareCompute : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
-struct MockComputeTargetPoints {
+struct MockComputeTargetPoints
+    : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = std::false_type;
+  using frame = ::Frame::Inertial;
   template <typename Metavariables, typename DbTags>
   static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& /*box*/,
@@ -63,21 +69,30 @@ struct MockComputeTargetPoints {
     // that they need to be inside the domain.
     tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_pts);
     for (size_t n = 0; n < num_pts; ++n) {
-      for (size_t d=0;d<3;++d) {
+      for (size_t d = 0; d < 3; ++d) {
         target_points.get(d)[n] = 1.0 + 0.01 * n + 0.5 * d;
       }
     }
     return target_points;
   }
+
+  template <typename Metavariables, typename DbTags, typename TemporalId>
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
+      const db::DataBox<DbTags>& box, const tmpl::type_<Metavariables>& meta,
+      const TemporalId& /*temporal_id*/) {
+    return points(box, meta);
+  }
 };
 
-struct MockPostInterpolationCallback {
-  template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::InterpolationTargetA::temporal_id::type&
-          temporal_id) {
+struct MockPostInterpolationCallback
+    : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  template <typename DbTags, typename Metavariables, typename TemporalId>
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const TemporalId& temporal_id) {
+    static_assert(std::is_same_v<TemporalId, TimeStepId>,
+                  "MockPostInterpolationCallback expects a TimeStepId as its "
+                  "temporal ID.");
     // This callback simply checks that the points are as expected.
     Slab slab(0.0, 1.0);
     const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
@@ -99,6 +114,9 @@ struct MockPostInterpolationCallback {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -116,7 +134,8 @@ struct mock_interpolation_target {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareCompute>;

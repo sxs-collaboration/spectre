@@ -57,6 +57,8 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -70,6 +72,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -184,8 +187,7 @@ struct TestKerrHorizon {
       const db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& cache,
       const typename Metavariables::AhA::temporal_id::type& temporal_id) {
-    const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame>>(box);
+    const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
     // Test actual horizon radius against analytic value at the same
     // theta,phi points.
     const auto expected_radius = gr::Solutions::kerr_horizon_radius(
@@ -201,8 +203,7 @@ struct TestKerrHorizon {
     // Test that InverseSpatialMetric can be retrieved from the
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
-    const auto& inv_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
+    const auto& inv_metric = get<gr::Tags::InverseSpatialMetric<3, Frame>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
@@ -214,6 +215,9 @@ struct TestKerrHorizon {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
+  static_assert(
+      tt::assert_conforms_to<InterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
@@ -254,7 +258,7 @@ template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
           typename TargetFrame>
 struct MockMetavariables {
   static constexpr bool use_time_dependent_maps = IsTimeDependent::value;
-  struct AhA {
+  struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
@@ -297,6 +301,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   using interp_component = mock_interpolator<metavars>;
   using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
+
+  // Assert that the FindApparentHorizon callback conforms to the protocol
+  static_assert(tt::assert_conforms_to<
+                typename metavars::AhA::post_interpolation_callback,
+                intrp::protocols::PostInterpolationCallback>);
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
@@ -666,12 +675,11 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
         for (size_t i = 0; i < 3; ++i) {
           Pi.get(i + 1, 0) = 0.0;
           for (size_t j = i; j < 3; ++j) {  // symmetry
-            Pi.get(i + 1, j + 1) =
-                2.0 * extrinsic_curvature_inertial.get(i, j);
+            Pi.get(i + 1, j + 1) = 2.0 * extrinsic_curvature_inertial.get(i, j);
             for (size_t c = 0; c < 4; ++c) {
               Pi.get(i + 1, j + 1) -=
                   spacetime_normal_vector.get(c) *
-                  (Phi.get(i , j + 1, c) + Phi.get(j , i + 1, c));
+                  (Phi.get(i, j + 1, c) + Phi.get(j, i + 1, c));
             }
           }
         }

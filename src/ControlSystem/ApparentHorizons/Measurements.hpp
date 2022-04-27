@@ -19,6 +19,7 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -46,7 +47,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
   struct FindHorizon : tt::ConformsTo<protocols::Submeasurement> {
    private:
     template <typename ControlSystems>
-    struct InterpolationTarget {
+    struct InterpolationTarget
+        : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       static std::string name() {
         return "ControlSystem::BothHorizons::Ah" + ::ah::name(Horizon);
       }

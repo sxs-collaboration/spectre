@@ -16,6 +16,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/SendGhWorldtubeData.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Literals.hpp"
@@ -31,10 +32,12 @@ struct dispatch_to_send_gh_worldtube_data {
   static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
-    intrp::callbacks::SendGhWorldtubeData<
-        Cce::CharacteristicEvolution<Metavariables>,
-        ::Tags::TimeStepId>::apply(box, cache,
-                                   db::get<::Tags::TimeStepId>(box));
+    using post_intrp_callback = intrp::callbacks::SendGhWorldtubeData<
+        Cce::CharacteristicEvolution<Metavariables>>;
+    static_assert(
+        tt::assert_conforms_to<post_intrp_callback,
+                               intrp::protocols::PostInterpolationCallback>);
+    post_intrp_callback::apply(box, cache, db::get<::Tags::TimeStepId>(box));
   }
 };
 
@@ -127,13 +130,13 @@ SPECTRE_TEST_CASE(
       ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>;
   Variables<spacetime_tags> spacetime_variables{
       Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
-  tmpl::for_each<spacetime_tags>([&gen, &value_distribution,
-                                  &spacetime_variables](auto tag_v) {
-    using tag = typename decltype(tag_v)::type;
-    fill_with_random_values(make_not_null(&get<tag>(spacetime_variables)),
-                            make_not_null(&gen),
-                            make_not_null(&value_distribution));
-  });
+  tmpl::for_each<spacetime_tags>(
+      [&gen, &value_distribution, &spacetime_variables](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        fill_with_random_values(make_not_null(&get<tag>(spacetime_variables)),
+                                make_not_null(&gen),
+                                make_not_null(&value_distribution));
+      });
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{{}};
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<

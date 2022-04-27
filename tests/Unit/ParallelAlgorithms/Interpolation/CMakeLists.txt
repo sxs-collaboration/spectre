@@ -24,6 +24,7 @@ set(LIBRARY_SOURCES
   Test_InterpolatorRegisterElement.cpp
   Test_ObserveTimeSeriesOnSurface.cpp
   Test_ParallelInterpolator.cpp
+  Test_Protocols.cpp
   Test_Tags.cpp
   )
 
