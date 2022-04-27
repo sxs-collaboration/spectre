@@ -742,6 +742,18 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
       file_system::rm(file_name2, true);
     }
   }
+  {
+    if (file_system::check_if_file_exists(file_name)) {
+      file_system::rm(file_name, true);
+    }
+    const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                    h5::h5p_default(), h5::h5p_default());
+    h5::detail::OpenGroup group(file_id, "/", h5::AccessType::ReadWrite);
+    CHECK(group.group_path_with_trailing_slash() == "/");
+    h5::detail::OpenGroup group2(file_id, "/group/group2/group3",
+                                 h5::AccessType::ReadWrite);
+    CHECK(group2.group_path_with_trailing_slash() == "/group/group2/group3/");
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.TopologyStreams", "[Unit][IO][H5]") {
