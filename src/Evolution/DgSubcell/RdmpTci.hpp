@@ -167,4 +167,51 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
       });
   return {std::move(max_of_vars), std::move(min_of_vars)};
 }
+
+/*!
+ * \brief Check if the current variables satisfy the RDMP. Returns `true` if the
+ * cell is troubled.
+ *
+ * Let the candidate solution be denoted by \f$u^\star_{\alpha}(t^{n+1})\f$.
+ * Then the RDMP requires that
+ *
+ * \f{align*}{
+ *   \min_{\forall\mathcal{N}}\left(u_{\alpha}(t^n)\right)
+ *   - \delta_\alpha
+ *   \le
+ *   u^\star_{\alpha}(t^{n+1})
+ *   \le
+ *   \max_{\forall\mathcal{N}}
+ *   \left(u_{\alpha}(t^n)\right) + \delta_\alpha
+ * \f}
+ *
+ * where \f$\mathcal{N}\f$ are either the Neumann or Voronoi neighbors and the
+ * element itself,  and \f$\delta_\alpha\f$ is a parameter defined below that
+ * relaxes the discrete maximum principle (DMP). When computing
+ * \f$\max(u_\alpha)\f$ and \f$\min(u_\alpha)\f$ over a DG element that is not
+ * using subcells we first project the DG solution to the subcells and then
+ * compute the maximum and minimum over *both* the DG grid and the subcell grid.
+ * However, when a DG element is using subcells we compute the maximum and
+ * minimum of \f$u_\alpha(t^n)\f$ over the subcells only. Note that the maximum
+ * and minimum values of \f$u^\star_\alpha\f$ are always computed over both the
+ * DG and the subcell grids, even when using the RDMP to check if the
+ * reconstructed DG solution would be admissible.
+ *
+ * The parameter \f$\delta_\alpha\f$ is given by:
+ *
+ * \f{align*}{
+ *   \delta_\alpha =
+ *   \max\left(\delta_{0},\epsilon
+ *   \left(\max_{\forall\mathcal{N}}\left(u_{\alpha}(t^n)\right)
+ *   - \min_{\forall\mathcal{N}}\left(u_{\alpha}(t^n)\right)\right)
+ *   \right),
+ * \f}
+ *
+ * where we typically take \f$\delta_{0}=10^{-4}\f$ and \f$\epsilon=10^{-3}\f$.
+ */
+bool rdmp_tci(const std::vector<double>& max_of_current_variables,
+              const std::vector<double>& min_of_current_variables,
+              const std::vector<double>& max_of_past_variables,
+              const std::vector<double>& min_of_past_variables,
+              double rdmp_delta0, double rdmp_epsilon);
 }  // namespace evolution::dg::subcell
