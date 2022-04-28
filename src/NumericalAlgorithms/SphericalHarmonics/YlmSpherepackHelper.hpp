@@ -7,22 +7,40 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace YlmSpherepack_detail {
 
-/// Holds the various 'work' arrays for YlmSpherepack.
-struct Storage {
-  std::vector<double> work_phys_to_spec;
-  std::vector<double> work_scalar_spec_to_phys;
-  std::vector<double> work_vector_spec_to_phys;
-  std::vector<double> theta, phi, sin_theta, cos_theta;
-  std::vector<double> cos_phi, sin_phi, cosec_theta, cot_theta;
-  std::vector<double> quadrature_weights;
-  std::vector<double> work_interp_alpha;
-  std::vector<double> work_interp_beta;
-  std::vector<double> work_interp_pmm;
+/// Holds the various constant 'work' arrays for YlmSpherepack.
+/// These are computed only once during YlmSpherepack construction
+/// and are re-used over and over again.
+class ConstStorage {
+ public:
+  ConstStorage(const size_t l_max, const size_t m_max);
+  ~ConstStorage() = default;
+  ConstStorage(const ConstStorage& rhs);
+  ConstStorage& operator=(const ConstStorage& rhs);
+  ConstStorage(ConstStorage&& rhs);
+  ConstStorage& operator=(ConstStorage&& rhs);
+
   std::vector<size_t> work_interp_index;
+  // The following are vectors because they are returnable by
+  // member functions.
+  std::vector<double> quadrature_weights, theta, phi;
+  // All other storage is allocated in a single DataVector and then
+  // pointed to by gsl::spans.
+  DataVector storage_;
+  gsl::span<double> work_phys_to_spec, work_scalar_spec_to_phys;
+  gsl::span<double> work_vector_spec_to_phys;
+  gsl::span<double> sin_theta, cos_theta, cosec_theta, cot_theta;
+  gsl::span<double> sin_phi, cos_phi;
+  gsl::span<double> work_interp_alpha, work_interp_beta, work_interp_pmm;
+
+ private:
+  size_t l_max_;
+  size_t m_max_;
+  void point_spans_to_data_vector(const bool allocate = false);
 };
 
 /// This is a quick way of providing temporary space that is
