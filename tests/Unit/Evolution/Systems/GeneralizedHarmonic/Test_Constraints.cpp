@@ -1100,14 +1100,8 @@ void test_constraint_compute_items(const Solution& solution,
       db::get<GeneralizedHarmonic::Tags::ConstraintEnergy<3, Frame::Inertial>>(
           box) == constraint_energy);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.ThreeIndexConstraint",
-    "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
-
+void three_index_constraint() {
   test_three_index_constraint<1, Frame::Grid, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<1, Frame::Inertial, DataVector>(
@@ -1136,18 +1130,14 @@ SPECTRE_TEST_CASE(
       std::numeric_limits<double>::signaling_NaN());
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
-                  "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
-
+void gauge_constraint() {
   // Test the gauge constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, spin, center);
 
-  const size_t grid_size = 8;
+  const size_t grid_size = 3;
   const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
 
@@ -1163,8 +1153,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
   test_gauge_constraint_random<1, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<2, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<2, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<2, Frame::Grid, double>(
@@ -1172,8 +1160,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
   test_gauge_constraint_random<2, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<3, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<3, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<3, Frame::Grid, double>(
@@ -1182,19 +1168,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
       std::numeric_limits<double>::signaling_NaN());
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.TwoIndexConstraint",
-    "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
-
+void two_index_constraint() {
   // Test the two-index constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, dimensionless_spin, center);
 
-  const size_t grid_size = 8;
+  const size_t grid_size = 5;
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
 
@@ -1202,7 +1183,7 @@ SPECTRE_TEST_CASE(
   // uses numerical derivatives
   test_two_index_constraint_analytic(
       solution, grid_size, lower_bound, upper_bound,
-      std::numeric_limits<double>::epsilon() * 1.e6);
+      std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the two-index constraint with random numbers
   test_two_index_constraint_random<1, Frame::Grid, DataVector>(
@@ -1214,8 +1195,6 @@ SPECTRE_TEST_CASE(
   test_two_index_constraint_random<1, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<2, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<2, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<2, Frame::Grid, double>(
@@ -1223,8 +1202,6 @@ SPECTRE_TEST_CASE(
   test_two_index_constraint_random<2, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<3, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<3, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<3, Frame::Grid, double>(
@@ -1233,19 +1210,14 @@ SPECTRE_TEST_CASE(
       std::numeric_limits<double>::signaling_NaN());
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.FourIndexConstraint",
-    "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
-
+void four_index_constraint() {
   // Test the four-index constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, dimensionless_spin, center);
 
-  const size_t grid_size = 8;
+  const size_t grid_size = 5;
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
 
@@ -1253,11 +1225,9 @@ SPECTRE_TEST_CASE(
   // uses numerical derivatives
   test_four_index_constraint_analytic(
       solution, grid_size, lower_bound, upper_bound,
-      std::numeric_limits<double>::epsilon() * 1.e6);
+      std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the four-index constraint with random numbers
-  test_four_index_constraint_random<3, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_four_index_constraint_random<3, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_four_index_constraint_random<3, Frame::Grid, double>(
@@ -1266,24 +1236,21 @@ SPECTRE_TEST_CASE(
       std::numeric_limits<double>::signaling_NaN());
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
-                  "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
+void f_constraint() {
   // Test the F constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, dimensionless_spin, center);
 
-  const size_t grid_size = 6;
+  const size_t grid_size = 5;
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
 
   // Note: looser numerical tolerance because this check
   // uses numerical derivatives
   test_f_constraint_analytic(solution, grid_size, lower_bound, upper_bound,
-                             std::numeric_limits<double>::epsilon() * 1.e6);
+                             std::numeric_limits<double>::epsilon() * 1.e8);
 
   // Test the F constraint with random numbers
   test_f_constraint_random<1, Frame::Grid, DataVector>(
@@ -1295,8 +1262,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
   test_f_constraint_random<1, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<2, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<2, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<2, Frame::Grid, double>(
@@ -1304,8 +1269,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
   test_f_constraint_random<2, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<3, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<3, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<3, Frame::Grid, double>(
@@ -1314,26 +1277,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
       std::numeric_limits<double>::signaling_NaN());
 }
 
-// This is the most expensive test as it requires the computation of
-// all constraints. It randomly times out with clang-8.
-// [[TimeOut, 11]
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
-                  "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
+void constraint_energy() {
   // Test the constraint energy against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, spin, center);
 
-  const size_t grid_size = 6;
+  const size_t grid_size = 4;
   const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
 
   test_constraint_energy_analytic(
       solution, grid_size, lower_bound, upper_bound,
-      std::numeric_limits<double>::epsilon() * 1.e6);
+      std::numeric_limits<double>::epsilon() * 1.e7);
 
   // Test the constraint energy with random numbers
   test_constraint_energy_random<1, Frame::Grid, DataVector>(
@@ -1345,8 +1302,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
   test_constraint_energy_random<1, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<2, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<2, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<2, Frame::Grid, double>(
@@ -1354,8 +1309,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
   test_constraint_energy_random<2, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<3, Frame::Grid, DataVector>(
-      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<3, Frame::Inertial, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<3, Frame::Grid, double>(
@@ -1364,9 +1317,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
       std::numeric_limits<double>::signaling_NaN());
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintComputeTags",
-    "[Unit][Evolution]") {
+void test_compute_tags() {
   // Test the F constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
@@ -1378,4 +1329,19 @@ SPECTRE_TEST_CASE(
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
 
   test_constraint_compute_items(solution, grid_size, lower_bound, upper_bound);
+}
+}  // namespace
+
+// [[TimeOut, 10]
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Constraints",
+                  "[Unit][Evolution]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/GeneralizedHarmonic/"};
+  three_index_constraint();
+  gauge_constraint();
+  two_index_constraint();
+  four_index_constraint();
+  f_constraint();
+  constraint_energy();
+  test_compute_tags();
 }
