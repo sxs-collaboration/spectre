@@ -163,20 +163,19 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
 - BLAZE_USE_ALWAYS_INLINE
   - Force Blaze inlining (default is `ON`)
   - If disabled or if the platform is unable to 100% guarantee inlining,
-  replaces `BLAZE_ALWAYS_INLINE` in Blaze with `BLAZE_STRONG_INLINE` (see
-  `BLAZE_USE_STRONG_INLINE`)
-  - For SpECTRE build targets that use Blaze data structures and arithmetic,
-  it may affect runtime. If debug symbols are enabled (`-g`), disabling
-  `BLAZE_USE_ALWAYS_INLINE` may reduce compile time and compile time RAM. It
-  should also make it easier to step through Blaze with a debugger.
+    falls back to `BLAZE_USE_STRONG_INLINE` (see below)
+  - Forced inlining reduces function call overhead, and so generally reduces
+    runtime. However, it does increase compile time and compile memory usage. It
+    is also easier to use a debugger when forced inlining is disabled. If you
+    are encountering debugger messages like `function inlined`, then forced
+    inlining should be disabled.
 - BLAZE_USE_STRONG_INLINE
   - Increase the likelihood of Blaze inlining (default is `ON`)
-  - Disabling replaces `BLAZE_STRONG_INLINE` in Blaze with the `inline`
-  keyword
-  - For SpECTRE build targets that use Blaze data structures and arithmetic,
-  it may affect runtime. If debug symbols are enabled (`-g`), disabling
-  `BLAZE_USE_STRONG_INLINE` may reduce compile time and compile time RAM. It
-  should also make it easier to step through Blaze with a debugger.
+  - Strong inlining reduces function call overhead, and so generally reduces
+    runtime. However, it does increase compile time and compile memory usage. It
+    is also easier to use a debugger when strong inlining is disabled. If you
+    are encountering debugger messages like `function inlined`, then strong
+    inlining should be disabled.
 - BUILD_PYTHON_BINDINGS
   - Build python libraries to call SpECTRE C++ code from python
     (default is `OFF`)
