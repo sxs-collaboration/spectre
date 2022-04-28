@@ -10,6 +10,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -25,6 +26,7 @@
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
+#include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessArray.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessGroups.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
@@ -382,6 +384,48 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
                                     static_cast<int>(num_procs), time, sizes);
 }
 
+template <typename Gen>
+void test_process_array(const gsl::not_null<Gen*> gen) {
+  INFO("Test ProcessArray");
+  std::uniform_real_distribution<double> dist{0, 10.0};
+  const std::string outfile_name{"TestMemoryMonitorArrayAction"};
+  // clean up just in case
+  if (file_system::check_if_file_exists(outfile_name + ".h5")) {
+    file_system::rm(outfile_name + ".h5", true);
+  }
+
+  // 4 mock nodes, 3 mock cores per node
+  const size_t num_nodes = 4;
+  const size_t num_procs_per_node = 3;
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {outfile_name}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+
+  setup_runner(make_not_null(&runner));
+
+  auto& cache = ActionTesting::cache<mem_mon_comp>(runner, 0);
+  auto& mem_monitor_proxy =
+      Parallel::get_parallel_component<mem_mon_comp>(cache);
+
+  const double time = 0.5;
+  std::vector<double> size_per_node(num_nodes);
+  fill_with_random_values(make_not_null(&size_per_node), gen,
+                          make_not_null(&dist));
+
+  Parallel::simple_action<mem_monitor::ProcessArray<array_comp>>(
+      mem_monitor_proxy, time, size_per_node);
+  CHECK(ActionTesting::number_of_queued_simple_actions<mem_mon_comp>(runner,
+                                                                     0) == 1);
+  ActionTesting::invoke_queued_simple_action<mem_mon_comp>(
+      make_not_null(&runner), 0);
+
+  CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer_comp>(
+            runner, 0) == 1);
+  ActionTesting::invoke_queued_threaded_action<obs_writer_comp>(
+      make_not_null(&runner), 0);
+
+  check_output<array_comp>(outfile_name, time, num_nodes, size_per_node);
+}
+
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   MAKE_GENERATOR(gen);
   test_tags();
@@ -390,5 +434,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   test_contribute_memory_data(make_not_null(&gen), false);
   // Then test the Process(Node)Group actions (second arg true)
   test_contribute_memory_data(make_not_null(&gen), true);
+  test_process_array(make_not_null(&gen));
 }
 }  // namespace
