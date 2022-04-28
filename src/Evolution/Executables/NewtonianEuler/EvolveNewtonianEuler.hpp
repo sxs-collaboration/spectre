@@ -302,14 +302,15 @@ struct EvolutionMetavars {
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          typename system::primitive_from_conservative>,
-                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
-          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
-                         EvolutionMetavars>,
-                     Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<
-                         typename system::primitive_from_conservative>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+                  EvolutionMetavars>,
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<
+                  typename system::primitive_from_conservative>,
+              Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       // Conservative `UpdatePrimitives` expects system to possess
@@ -343,7 +344,8 @@ struct EvolutionMetavars {
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,

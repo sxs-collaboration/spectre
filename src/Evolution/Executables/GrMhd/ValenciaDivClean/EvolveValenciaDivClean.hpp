@@ -364,15 +364,16 @@ struct EvolutionMetavars {
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
                          system::primitive_from_conservative<
                              ordered_list_of_primitive_recovery_schemes>>,
-                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
-          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
-                         EvolutionMetavars>,
-                     Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<
-                         system::primitive_from_conservative<
-                             ordered_list_of_primitive_recovery_schemes>>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+                  EvolutionMetavars>,
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<
+                  system::primitive_from_conservative<
+                      ordered_list_of_primitive_recovery_schemes>>,
+              Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<grmhd::ValenciaDivClean::Flattener<
@@ -386,7 +387,8 @@ struct EvolutionMetavars {
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>,

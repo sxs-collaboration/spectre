@@ -151,9 +151,9 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NeedsEvolvedVariables:
           if (not already_at_correct_time) {
             if constexpr (Metavariables::local_time_stepping) {
-              if (not dg::Actions::ApplyBoundaryCorrections<Metavariables>::
-                      template receive_local_time_stepping<true>(
-                          make_not_null(&box), make_not_null(&inboxes))) {
+              if (not dg::receive_boundary_data_local_time_stepping<
+                      Metavariables, true>(make_not_null(&box),
+                                           make_not_null(&inboxes))) {
                 return {std::move(box), Parallel::AlgorithmExecution::Retry};
               }
             }
@@ -177,8 +177,8 @@ struct RunEventsAndDenseTriggers {
             }
 
             if constexpr (Metavariables::local_time_stepping) {
-              dg::Actions::ApplyBoundaryCorrections<Metavariables>::
-                  template complete_time_step<true>(make_not_null(&box));
+              dg::apply_boundary_corrections<system, true, true>(
+                  make_not_null(&box));
             }
 
             static_assert(system::has_primitive_and_conservative_vars !=

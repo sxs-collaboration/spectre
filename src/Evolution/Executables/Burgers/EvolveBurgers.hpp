@@ -255,13 +255,14 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
-                     evolution::dg::Actions::ApplyBoundaryCorrections<
+                     evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
-          tmpl::list<evolution::dg::Actions::ApplyBoundaryCorrections<
-                         EvolutionMetavars>,
-                     Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+                  EvolutionMetavars>,
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<>,
+              Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -269,7 +270,8 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::SelectNumericalMethod,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
-      evolution::dg::Actions::ApplyBoundaryCorrections<EvolutionMetavars>,
+      evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
+          EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>,

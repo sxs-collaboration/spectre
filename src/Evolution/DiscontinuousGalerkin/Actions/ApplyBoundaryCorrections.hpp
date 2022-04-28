@@ -68,84 +68,11 @@ void neighbor_reconstructed_face_solution(
 }  // namespace evolution::dg::subcell
 /// \endcond
 
-namespace evolution::dg::Actions {
-namespace detail {
-template <typename... BoundaryCorrectionTags, typename... Tags,
-          typename BoundaryCorrection>
-void boundary_correction(
-    const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
-        boundary_corrections_on_mortar,
-    const Variables<tmpl::list<Tags...>>& local_boundary_data,
-    const Variables<tmpl::list<Tags...>>& neighbor_boundary_data,
-    const BoundaryCorrection& boundary_correction,
-    const ::dg::Formulation dg_formulation) {
-  boundary_correction.dg_boundary_terms(
-      make_not_null(
-          &get<BoundaryCorrectionTags>(*boundary_corrections_on_mortar))...,
-      get<Tags>(local_boundary_data)..., get<Tags>(neighbor_boundary_data)...,
-      dg_formulation);
-}
-}  // namespace detail
-
-/*!
- * \brief Computes the boundary corrections and lifts them to the volume.
- *
- * Given the data from both sides of each mortar, computes the boundary
- * correction on each mortar and then lifts it into the volume.
- *
- * Future additions include:
- * - boundary conditions, both through ghost cells and by changing the time
- *   derivatives.
- * - support local time stepping (shouldn't be very difficult)
- *
- * When using local time stepping the neighbor sends data at the neighbor's
- * current temporal id. Along with the boundary data, the next temporal id at
- * which the neighbor will send data is also sent. This is equal to the
- * neighbor's `::Tags::Next<::Tags::TimeStepId>`. When inserting into the mortar
- * data history, we insert the received temporal id, that is, the current time
- * of the neighbor, along with the boundary correction data.
- */
-template <typename Metavariables>
-struct ApplyBoundaryCorrections {
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Metavariables::volume_dim>>;
-  using const_global_cache_tags = tmpl::list<
-      evolution::Tags::BoundaryCorrection<typename Metavariables::system>,
-      ::dg::Tags::Formulation>;
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/);
-
-  /// `DenseOutput = true` is used by the dense output code under
-  /// local time-stepping.
-  template <bool DenseOutput = false, typename DbTagsList,
-            typename... InboxTags>
-  static void complete_time_step(gsl::not_null<db::DataBox<DbTagsList>*> box);
-
-  template <typename DbTagsList, typename... InboxTags>
-  static bool receive_global_time_stepping(
-      gsl::not_null<db::DataBox<DbTagsList>*> box,
-      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes);
-
-  /// `DenseOutput = true` is used by the dense output code under
-  /// local time-stepping.
-  template <bool DenseOutput = false, typename DbTagsList,
-            typename... InboxTags>
-  static bool receive_local_time_stepping(
-      gsl::not_null<db::DataBox<DbTagsList>*> box,
-      gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes);
-};
-
-template <typename Metavariables>
-template <typename DbTagsList, typename... InboxTags>
-bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
+namespace evolution::dg {
+/// Receive boundary data for global time-stepping.  Returns true if
+/// all necessary data has been received.
+template <typename Metavariables, typename DbTagsList, typename... InboxTags>
+bool receive_boundary_data_global_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
@@ -222,9 +149,14 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_global_time_stepping(
   return true;
 }
 
-template <typename Metavariables>
-template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
-bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
+/// Receive boundary data for local time-stepping.  Returns true if
+/// all necessary data has been received.
+///
+/// Setting \p DenseOutput to true receives data required for output
+/// at `::Tags::Time` instead of `::Tags::Next<::Tags::TimeStepId>`.
+template <typename Metavariables, bool DenseOutput = false, typename DbTagsList,
+          typename... InboxTags>
+bool receive_boundary_data_local_time_stepping(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
@@ -347,13 +279,41 @@ bool ApplyBoundaryCorrections<Metavariables>::receive_local_time_stepping(
       });
 }
 
-template <typename Metavariables>
-template <bool DenseOutput, typename DbTagsList, typename... InboxTags>
-void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
+namespace apply_boundary_corrections_detail {
+template <typename... BoundaryCorrectionTags, typename... Tags,
+          typename BoundaryCorrection>
+void boundary_correction(
+    const gsl::not_null<Variables<tmpl::list<BoundaryCorrectionTags...>>*>
+        boundary_corrections_on_mortar,
+    const Variables<tmpl::list<Tags...>>& local_boundary_data,
+    const Variables<tmpl::list<Tags...>>& neighbor_boundary_data,
+    const BoundaryCorrection& boundary_correction,
+    const ::dg::Formulation dg_formulation) {
+  boundary_correction.dg_boundary_terms(
+      make_not_null(
+          &get<BoundaryCorrectionTags>(*boundary_corrections_on_mortar))...,
+      get<Tags>(local_boundary_data)..., get<Tags>(neighbor_boundary_data)...,
+      dg_formulation);
+}
+}  // namespace apply_boundary_corrections_detail
 
-  using variables_tag = typename Metavariables::system::variables_tag;
+/// Apply corrections from boundary communication.
+///
+/// If \p LocalTimeStepping is false, updates the derivative of the
+/// variables, which should be done before taking a time step.  If \p
+/// LocalTimeStepping is true, updates the variables themselves, which
+/// should be done after the volume update.
+///
+/// Setting \p DenseOutput to true receives data required for output
+/// at ::Tags::Time instead of performing a full step.  This is only
+/// used for local time-stepping.
+template <typename System, bool LocalTimeStepping, bool DenseOutput = false,
+          typename DbTagsList, typename... InboxTags>
+void apply_boundary_corrections(
+    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+  constexpr size_t volume_dim = System::volume_dim;
+
+  using variables_tag = typename System::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
 
@@ -367,13 +327,13 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
   const bool using_gauss_lobatto_points =
       volume_mesh.quadrature(0) == Spectral::Quadrature::GaussLobatto;
 
-  constexpr bool local_time_stepping = Metavariables::local_time_stepping;
-  static_assert(local_time_stepping or not DenseOutput,
-                "GTS does not use complete_time_step for dense output.");
+  static_assert(LocalTimeStepping or not DenseOutput,
+                "GTS does not use apply_boundary_corrections for dense "
+                "output.");
 
   Scalar<DataVector> volume_det_inv_jacobian{};
   Scalar<DataVector> volume_det_jacobian{};
-  if constexpr (not local_time_stepping) {
+  if constexpr (not LocalTimeStepping) {
     if (not using_gauss_lobatto_points) {
       get(volume_det_inv_jacobian)
           .set_data_ref(make_not_null(&const_cast<DataVector&>(get(
@@ -410,8 +370,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
   const auto compute_and_lift_boundary_corrections =
       [&dense_output_time, &dg_formulation, &face_normal_covector_and_magnitude,
-       local_time_stepping, &mortar_meshes, &mortar_sizes, &time_step,
-       &time_stepper, using_gauss_lobatto_points, &volume_det_jacobian,
+       &mortar_meshes, &mortar_sizes, &time_step, &time_stepper,
+       using_gauss_lobatto_points, &volume_det_jacobian,
        &volume_det_inv_jacobian, &volume_mesh](
           const auto variables_or_dt_variables_ptr, const auto mortar_data_ptr,
           const auto& boundary_correction) {
@@ -453,16 +413,14 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               [&boundary_correction, &direction, dg_formulation,
                &dt_boundary_correction_on_mortar, &face_det_jacobian,
                &face_mesh, &face_normal_covector_and_magnitude,
-               &local_data_on_mortar, local_time_stepping, &mortar_id,
-               &mortar_meshes, &mortar_sizes, &neighbor_data_on_mortar,
-               using_gauss_lobatto_points, &volume_det_jacobian,
-               &volume_det_inv_jacobian, &volume_dt_correction,
+               &local_data_on_mortar, &mortar_id, &mortar_meshes, &mortar_sizes,
+               &neighbor_data_on_mortar, using_gauss_lobatto_points,
+               &volume_det_jacobian, &volume_det_inv_jacobian,
+               &volume_dt_correction,
                &volume_mesh](const MortarData<volume_dim>& local_mortar_data,
                              const MortarData<volume_dim>& neighbor_mortar_data)
               -> DtVariables {
-            // Clang thinks we don't need to capture local_time_stepping.
-            (void)local_time_stepping;
-            if (local_time_stepping and not using_gauss_lobatto_points) {
+            if (LocalTimeStepping and not using_gauss_lobatto_points) {
               // This needs to be updated every call because the Jacobian may be
               // time-dependent. In the case of time-independent maps and local
               // time stepping we could first perform the integral on the
@@ -502,7 +460,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             dt_boundary_correction_on_mortar.initialize(
                 mortar_mesh.number_of_grid_points());
 
-            detail::boundary_correction(
+            apply_boundary_corrections_detail::boundary_correction(
                 make_not_null(&dt_boundary_correction_on_mortar),
                 local_data_on_mortar, neighbor_data_on_mortar,
                 boundary_correction, dg_formulation);
@@ -530,7 +488,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
             // Both paths initialize this to be non-owning.
             Scalar<DataVector> magnitude_of_face_normal{};
-            if constexpr (Metavariables::local_time_stepping) {
+            if constexpr (LocalTimeStepping) {
               (void)face_normal_covector_and_magnitude;
               local_mortar_data.get_local_face_normal_magnitude(
                   &magnitude_of_face_normal);
@@ -569,7 +527,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
               //   with projecting from mortars to the face, then lift off the
               //   faces. With non-owning Variables memory allocations could be
               //   significantly reduced in this code.
-              if constexpr (Metavariables::local_time_stepping) {
+              if constexpr (LocalTimeStepping) {
                 ASSERT(get(volume_det_inv_jacobian).size() > 0,
                        "For local time stepping the volume determinant of the "
                        "inverse Jacobian has not been set.");
@@ -605,7 +563,7 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
             }
           };
 
-          if constexpr (Metavariables::local_time_stepping) {
+          if constexpr (LocalTimeStepping) {
             typename variables_tag::type lgl_lifted_data{};
             auto& lifted_data = using_gauss_lobatto_points
                                     ? lgl_lifted_data
@@ -673,9 +631,8 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
 
   // Now compute the boundary contribution to this element using the helper
   // lambda
-  const auto& boundary_correction = db::get<
-      evolution::Tags::BoundaryCorrection<typename Metavariables::system>>(
-      *box);
+  const auto& boundary_correction =
+      db::get<evolution::Tags::BoundaryCorrection<System>>(*box);
   using derived_boundary_corrections =
       typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
 
@@ -690,10 +647,10 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
         // the element that have neighbors, i.e. they are not an external
         // side.
         using tag_to_update =
-            tmpl::conditional_t<local_time_stepping, variables_tag,
+            tmpl::conditional_t<LocalTimeStepping, variables_tag,
                                 dt_variables_tag>;
         using mortar_data_tag = tmpl::conditional_t<
-            local_time_stepping,
+            LocalTimeStepping,
             evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
             evolution::dg::Tags::MortarData<volume_dim>>;
         db::mutate<tag_to_update, mortar_data_tag>(
@@ -702,37 +659,104 @@ void ApplyBoundaryCorrections<Metavariables>::complete_time_step(
       });
 }
 
+namespace Actions {
+/*!
+ * \brief Computes the boundary corrections for global time-stepping
+ * and adds them to the time derivative.
+ */
 template <typename Metavariables>
-template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-          typename ActionList, typename ParallelComponent>
-std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-ApplyBoundaryCorrections<Metavariables>::apply(
-    db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-    const ParallelComponent* const /*meta*/) {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
-  const Element<volume_dim>& element =
-      db::get<domain::Tags::Element<volume_dim>>(box);
+struct ApplyBoundaryCorrectionsToTimeDerivative {
+  static_assert(not Metavariables::local_time_stepping,
+                "LTS boundary corrections must be applied to the solution "
+                "after each time step using the ApplyLtsBoundaryCorrections "
+                "action.");
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Metavariables::volume_dim>>;
+  using const_global_cache_tags = tmpl::list<
+      evolution::Tags::BoundaryCorrection<typename Metavariables::system>,
+      ::dg::Tags::Formulation>;
 
-  if (UNLIKELY(element.number_of_neighbors() == 0)) {
-    // We have no neighbors, yay!
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) {
+    constexpr size_t volume_dim = Metavariables::system::volume_dim;
+    const Element<volume_dim>& element =
+        db::get<domain::Tags::Element<volume_dim>>(box);
+
+    if (UNLIKELY(element.number_of_neighbors() == 0)) {
+      // We have no neighbors, yay!
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    }
+
+    if (not receive_boundary_data_global_time_stepping<Metavariables>(
+            make_not_null(&box), make_not_null(&inboxes))) {
+      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+    }
+
+    apply_boundary_corrections<typename Metavariables::system,
+                               Metavariables::local_time_stepping>(
+        make_not_null(&box));
     return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
+};
 
-  if constexpr (not Metavariables::local_time_stepping) {
-    if (not receive_global_time_stepping(make_not_null(&box),
-                                         make_not_null(&inboxes))) {
+/*!
+ * \brief Computes the boundary corrections for local time-stepping
+ * and adds them to the variables.
+ *
+ * When using local time stepping the neighbor sends data at the neighbor's
+ * current temporal id. Along with the boundary data, the next temporal id at
+ * which the neighbor will send data is also sent. This is equal to the
+ * neighbor's `::Tags::Next<::Tags::TimeStepId>`. When inserting into the mortar
+ * data history, we insert the received temporal id, that is, the current time
+ * of the neighbor, along with the boundary correction data.
+ */
+template <typename Metavariables>
+struct ApplyLtsBoundaryCorrections {
+  static_assert(Metavariables::local_time_stepping,
+                "GTS boundary corrections must be applied to the time "
+                "derivative before each time step using the "
+                "ApplyBoundaryCorrectionsToTimeDerivative action.");
+  using inbox_tags =
+      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+          Metavariables::volume_dim>>;
+  using const_global_cache_tags = tmpl::list<
+      evolution::Tags::BoundaryCorrection<typename Metavariables::system>,
+      ::dg::Tags::Formulation>;
+
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
+  apply(db::DataBox<DbTagsList>& box,
+        tuples::TaggedTuple<InboxTags...>& inboxes,
+        const Parallel::GlobalCache<Metavariables>& /*cache*/,
+        const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+        const ParallelComponent* const /*meta*/) {
+    constexpr size_t volume_dim = Metavariables::system::volume_dim;
+    const Element<volume_dim>& element =
+        db::get<domain::Tags::Element<volume_dim>>(box);
+
+    if (UNLIKELY(element.number_of_neighbors() == 0)) {
+      // We have no neighbors, yay!
+      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    }
+
+    if (not receive_boundary_data_local_time_stepping<Metavariables>(
+            make_not_null(&box), make_not_null(&inboxes))) {
       return {std::move(box), Parallel::AlgorithmExecution::Retry};
     }
-  } else {
-    if (not receive_local_time_stepping(make_not_null(&box),
-                                        make_not_null(&inboxes))) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
-    }
+
+    apply_boundary_corrections<typename Metavariables::system,
+                               Metavariables::local_time_stepping>(
+        make_not_null(&box));
+    return {std::move(box), Parallel::AlgorithmExecution::Continue};
   }
-
-  complete_time_step(make_not_null(&box));
-  return {std::move(box), Parallel::AlgorithmExecution::Continue};
-}
-}  // namespace evolution::dg::Actions
+};
+}  // namespace Actions
+}  // namespace evolution::dg
