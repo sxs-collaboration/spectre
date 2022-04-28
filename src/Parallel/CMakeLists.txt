@@ -76,6 +76,7 @@ add_dependencies(
 
 add_subdirectory(Actions)
 add_subdirectory(Algorithms)
+add_subdirectory(MemoryMonitor)
 add_subdirectory(PhaseControl)
 add_subdirectory(Protocols)
 add_subdirectory(Tags)
