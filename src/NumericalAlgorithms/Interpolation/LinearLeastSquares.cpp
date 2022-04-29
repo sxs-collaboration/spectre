@@ -71,6 +71,21 @@ std::array<double, Order + 1> LinearLeastSquares<Order>::fit_coefficients(
 }
 
 template <size_t Order>
+template <typename T>
+std::vector<std::array<double, Order + 1>>
+LinearLeastSquares<Order>::fit_coefficients(const T& x_values,
+                                            const std::vector<T>& y_values) {
+  ASSERT(not y_values.empty(), "Must have non-zero series");
+  std::vector<std::array<double, Order + 1>> fit_coeffs{};
+  for (size_t curve_index = 0; curve_index < y_values.size(); ++curve_index) {
+    ASSERT(x_values.size() == y_values[curve_index].size(),
+           "The x_values and y_values must be of the same size");
+    fit_coeffs.push_back(fit_coefficients(x_values, y_values[curve_index]));
+  }
+  return fit_coeffs;
+}
+
+template <size_t Order>
 void LinearLeastSquares<Order>::pup(PUP::er& p) {
   p | num_observations_;
   if (p.isUnpacking()) {
@@ -90,14 +105,22 @@ void LinearLeastSquares<Order>::pup(PUP::er& p) {
 GENERATE_INSTANTIATIONS(INSTANTIATE_ORDER, (1, 2, 3, 4))
 
 #undef INSTANTIATE_ORDER
-#define INSTANTIATE_DTYPE(_, data)                   \
+#define INSTANTIATE_DTYPE1(_, data)                  \
   template std::array<double, ORDER(data) + 1>       \
   LinearLeastSquares<ORDER(data)>::fit_coefficients( \
       const DTYPE(data) & x_values, const DTYPE(data) & y_values);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE, (1, 2, 3, 4),
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE1, (1, 2, 3, 4),
                         (std::vector<double>, DataVector, ModalVector,
                          gsl::span<double>))
+
+#define INSTANTIATE_DTYPE2(_, data)                         \
+  template std::vector<std::array<double, ORDER(data) + 1>> \
+  LinearLeastSquares<ORDER(data)>::fit_coefficients(        \
+      const DTYPE(data) & x_values, const std::vector<DTYPE(data)>& y_values);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE2, (1, 2, 3, 4),
+                        (std::vector<double>, DataVector, ModalVector))
 #undef ORDER
 #undef DTYPE
 
