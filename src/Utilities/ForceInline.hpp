@@ -6,7 +6,7 @@
 
 #pragma once
 
-#if defined(__GNUC__)
+#if SPECTRE_USE_ALWAYS_INLINE && defined(__GNUC__)
 /// \ingroup UtilitiesGroup
 /// Always inline a function. Only use this if you benchmarked the code.
 #define SPECTRE_ALWAYS_INLINE __attribute__((always_inline)) inline
