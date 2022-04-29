@@ -26,14 +26,14 @@ void grad_spatial_z4_constraint(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       result,
-      field_d(ti_i, ti_j, ti_l) *
-              gamma_hat_minus_contracted_conformal_christoffel(ti_L) +
-          0.5 * conformal_spatial_metric(ti_j, ti_l) *
-              d_gamma_hat_minus_contracted_conformal_christoffel(ti_i, ti_L) -
-          christoffel_second_kind(ti_L, ti_i, ti_j) *
-              spatial_z4_constraint(ti_l));
+      field_d(ti::i, ti::j, ti::l) *
+              gamma_hat_minus_contracted_conformal_christoffel(ti::L) +
+          0.5 * conformal_spatial_metric(ti::j, ti::l) *
+              d_gamma_hat_minus_contracted_conformal_christoffel(ti::i, ti::L) -
+          christoffel_second_kind(ti::L, ti::i, ti::j) *
+              spatial_z4_constraint(ti::l));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

@@ -21,9 +21,9 @@ void spatial_z4_constraint(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  ::tenex::evaluate<ti_i>(
-      result, 0.5 * (conformal_spatial_metric(ti_i, ti_j) *
-                     gamma_hat_minus_contracted_conformal_christoffel(ti_J)));
+  ::tenex::evaluate<ti::i>(
+      result, 0.5 * (conformal_spatial_metric(ti::i, ti::j) *
+                     gamma_hat_minus_contracted_conformal_christoffel(ti::J)));
 }
 
 template <size_t Dim, typename Frame, typename DataType>
@@ -50,9 +50,9 @@ void upper_spatial_z4_constraint(
                                 get_size(get(conformal_factor_squared)));
 
   ::tenex::evaluate(buffer, 0.5 * conformal_factor_squared());
-  ::tenex::evaluate<ti_I>(
+  ::tenex::evaluate<ti::I>(
       result,
-      (*buffer)() * gamma_hat_minus_contracted_conformal_christoffel(ti_I));
+      (*buffer)() * gamma_hat_minus_contracted_conformal_christoffel(ti::I));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

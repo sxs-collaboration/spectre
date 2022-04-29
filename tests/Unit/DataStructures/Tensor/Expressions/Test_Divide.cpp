@@ -41,10 +41,10 @@ void test_divide_double_denominator(const gsl::not_null<Generator*> generator,
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const tnsr::ii<DataType, dim> Lij_from_Sij_over_R =
-      tenex::evaluate<ti_i, ti_j>(S(ti_i, ti_j) / 4.3);
+      tenex::evaluate<ti::i, ti::j>(S(ti::i, ti::j) / 4.3);
   // \f$L_{ij} = (R * S_{ij} / T / G)\f$
   const tnsr::ii<DataType, dim> Lij_from_R_Sij_over_T =
-      tenex::evaluate<ti_i, ti_j>((-5.2 * S(ti_i, ti_j) / 1.6) / 2.1);
+      tenex::evaluate<ti::i, ti::j>((-5.2 * S(ti::i, ti::j) / 1.6) / 2.1);
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
@@ -85,7 +85,8 @@ void test_divide_double_numerator(const gsl::not_null<Generator*> generator,
   CHECK(get(result1) == 2.1 / get(S));
 
   // \f$L = R / \sqrt{T^j{}_j}\f$
-  const Scalar<DataType> result2 = tenex::evaluate(-5.7 / sqrt(T(ti_J, ti_j)));
+  const Scalar<DataType> result2 =
+      tenex::evaluate(-5.7 / sqrt(T(ti::J, ti::j)));
 
   DataType trace_T = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t j = 0; j < dim; j++) {
@@ -124,7 +125,7 @@ void test_divide_rank0_denominator(const gsl::not_null<Generator*> generator,
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const tnsr::iJ<DataType, dim> result1 =
-      tenex::evaluate<ti_j, ti_I>(S(ti_I, ti_j) / R());
+      tenex::evaluate<ti::j, ti::I>(S(ti::I, ti::j) / R());
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
@@ -133,8 +134,8 @@ void test_divide_rank0_denominator(const gsl::not_null<Generator*> generator,
   }
 
   // \f$L^{k}{}_{i} = (R T_{i}{}^{k}) / (T_{j}{}^{l} S^{j}{}_{l})\f$
-  const tnsr::Ij<DataType, dim> result2 = tenex::evaluate<ti_K, ti_i>(
-      (R() * T(ti_i, ti_K)) / ((T(ti_j, ti_L) * S(ti_J, ti_l))));
+  const tnsr::Ij<DataType, dim> result2 = tenex::evaluate<ti::K, ti::i>(
+      (R() * T(ti::i, ti::K)) / ((T(ti::j, ti::L) * S(ti::J, ti::l))));
 
   DataType result2_expected_denominator =
       make_with_value<DataType>(used_for_size, 0.0);
@@ -154,7 +155,7 @@ void test_divide_rank0_denominator(const gsl::not_null<Generator*> generator,
 
   // \f$L_{i}{}^{k} = T_{i}{}^{k} / R^2 / R\f$
   const tnsr::iJ<DataType, dim> result3 =
-      tenex::evaluate<ti_i, ti_K>(T(ti_i, ti_K) / square(R()) / R());
+      tenex::evaluate<ti::i, ti::K>(T(ti::i, ti::K) / square(R()) / R());
 
   DataType result3_expected_denominator = get(R) * get(R) * get(R);
   for (size_t i = 0; i < dim; i++) {
@@ -198,7 +199,7 @@ void test_divide_spatial_spacetime_index(
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const aI result1 =
-      tenex::evaluate<ti_a, ti_I>((T(ti_a, ti_I) - S(ti_I, ti_a)) / R());
+      tenex::evaluate<ti::a, ti::I>((T(ti::a, ti::I) - S(ti::I, ti::a)) / R());
 
   for (size_t a = 0; a < dim + 1; a++) {
     for (size_t i = 0; i < dim; i++) {
@@ -209,7 +210,7 @@ void test_divide_spatial_spacetime_index(
 
   // \f$L = (R / (T_{j}{}^{l} S^{j}{}_{l}) / 2\f$
   const Scalar<DataType> result2 =
-      tenex::evaluate(R() / (T(ti_j, ti_L) * S(ti_J, ti_l)) / 2.0);
+      tenex::evaluate(R() / (T(ti::j, ti::L) * S(ti::J, ti::l)) / 2.0);
 
   DataType result2_expected_denominator =
       make_with_value<DataType>(used_for_size, 0.0);
@@ -253,7 +254,7 @@ void test_divide_time_index(const gsl::not_null<Generator*> generator,
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const tnsr::A<DataType, dim> result1 =
-      tenex::evaluate<ti_A>((S(ti_A, ti_t)) / sqrt(R()));
+      tenex::evaluate<ti::A>((S(ti::A, ti::t)) / sqrt(R()));
 
   for (size_t a = 0; a < dim + 1; a++) {
     CHECK_ITERABLE_APPROX(result1.get(a), (S.get(a, 0)) / sqrt(get(R)));
@@ -261,7 +262,7 @@ void test_divide_time_index(const gsl::not_null<Generator*> generator,
 
   // \f$L = R / (T_{tt} / S^{t}{}_{t} \f$
   const Scalar<DataType> result2 =
-      tenex::evaluate(R() / T(ti_t, ti_t) / S(ti_T, ti_t));
+      tenex::evaluate(R() / T(ti::t, ti::t) / S(ti::T, ti::t));
 
   CHECK_ITERABLE_APPROX(get(result2), get(R) / T.get(0, 0) / S.get(0, 0));
 }

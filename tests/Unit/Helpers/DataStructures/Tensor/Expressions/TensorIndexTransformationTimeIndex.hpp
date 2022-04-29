@@ -20,13 +20,13 @@ namespace TestHelpers::tenex {
 /// - `tenex::transform_multi_index`
 void test_tensor_index_transformation_with_time_indices() {
   const std::array<size_t, 0> index_order_empty = {};
-  const std::array<size_t, 1> index_order_t = {ti_t.value};
-  const std::array<size_t, 3> index_order_atb = {ti_a.value, ti_t.value,
-                                                 ti_b.value};
-  const std::array<size_t, 3> index_order_Ttt = {ti_T.value, ti_t.value,
-                                                 ti_t.value};
+  const std::array<size_t, 1> index_order_t = {ti::t.value};
+  const std::array<size_t, 3> index_order_atb = {ti::a.value, ti::t.value,
+                                                 ti::b.value};
+  const std::array<size_t, 3> index_order_Ttt = {ti::T.value, ti::t.value,
+                                                 ti::t.value};
   const std::array<size_t, 5> index_order_tbatT = {
-      ti_t.value, ti_b.value, ti_a.value, ti_t.value, ti_T.value};
+      ti::t.value, ti::b.value, ti::a.value, ti::t.value, ti::T.value};
 
   const size_t time_index_placeholder = ::tenex::
       TensorIndexTransformation_detail::time_index_position_placeholder;

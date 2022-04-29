@@ -18,7 +18,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
                  SpatialIndex<1, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<2, UpLo::Lo, Frame::Inertial>>,
-      ti_b, ti_A, ti_k, ti_l>();
+      ti::b, ti::A, ti::k, ti::l>();
 
   // Rank 4: double; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -27,7 +27,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                  SpatialIndex<1, UpLo::Lo, Frame::Grid>>,
-      ti_G, ti_d, ti_a, ti_j>();
+      ti::G, ti::d, ti::a, ti::j>();
 
   // Rank 4: double; first, second, and fourth indices symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
-      ti_j, ti_i, ti_k, ti_l>();
+      ti::j, ti::i, ti::k, ti::l>();
 
   // Rank 4: double; symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>>,
-      ti_F, ti_A, ti_C, ti_D>();
+      ti::F, ti::A, ti::C, ti::D>();
 
   // Rank 4: DataVector; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -54,7 +54,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
                  SpatialIndex<1, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<2, UpLo::Lo, Frame::Inertial>>,
-      ti_b, ti_A, ti_k, ti_l>();
+      ti::b, ti::A, ti::k, ti::l>();
 
   // Rank 4: DataVector; second and third indices symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -63,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                  SpatialIndex<1, UpLo::Lo, Frame::Grid>>,
-      ti_G, ti_d, ti_a, ti_j>();
+      ti::G, ti::d, ti::a, ti::j>();
 
   // Rank 4: DataVector; first, second, and fourth indices symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -72,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
-      ti_j, ti_i, ti_k, ti_l>();
+      ti::j, ti::i, ti::k, ti::l>();
 
   // Rank 4: DataVector; symmetric
   TestHelpers::tenex::test_evaluate_rank_4<
@@ -81,5 +81,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateRank4",
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                  SpacetimeIndex<3, UpLo::Up, Frame::Grid>>,
-      ti_F, ti_A, ti_C, ti_D>();
+      ti::F, ti::A, ti::C, ti::D>();
 }

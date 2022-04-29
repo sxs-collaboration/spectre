@@ -126,12 +126,12 @@ void test_case1(const DataType& used_for_size,
   result_tensor_type expected_result_tensor =
       compute_expected_result1(R, S, G, H, T, used_for_size);
   // \f$L_{a} = R_{ab} S^{b} + G_{a} - H_{ba}{}^{b} T\f$
-  result_tensor_type actual_result_tensor_returned = tenex::evaluate<ti_a>(
-      R(ti_a, ti_b) * S(ti_B) + G(ti_a) - H(ti_b, ti_a, ti_B) * T());
+  result_tensor_type actual_result_tensor_returned = tenex::evaluate<ti::a>(
+      R(ti::a, ti::b) * S(ti::B) + G(ti::a) - H(ti::b, ti::a, ti::B) * T());
   result_tensor_type actual_result_tensor_filled{};
-  tenex::evaluate<ti_a>(
+  tenex::evaluate<ti::a>(
       make_not_null(&actual_result_tensor_filled),
-      R(ti_a, ti_b) * S(ti_B) + G(ti_a) - H(ti_b, ti_a, ti_B) * T());
+      R(ti::a, ti::b) * S(ti::B) + G(ti::a) - H(ti::b, ti::a, ti::B) * T());
 
   for (size_t a = 0; a < 4; a++) {
     CHECK_ITERABLE_APPROX(actual_result_tensor_returned.get(a),
@@ -147,9 +147,9 @@ void test_case1(const DataType& used_for_size,
     result_tensor_type& actual_result_tensor_temp =
         get<::Tags::TempTensor<1, result_tensor_type>>(
             actual_result_tensor_temp_var);
-    ::tenex::evaluate<ti_a>(
+    ::tenex::evaluate<ti::a>(
         make_not_null(&actual_result_tensor_temp),
-        R(ti_a, ti_b) * S(ti_B) + G(ti_a) - H(ti_b, ti_a, ti_B) * T());
+        R(ti::a, ti::b) * S(ti::B) + G(ti::a) - H(ti::b, ti::a, ti::B) * T());
 
     for (size_t a = 0; a < 4; a++) {
       CHECK_ITERABLE_APPROX(actual_result_tensor_temp.get(a),
@@ -187,15 +187,15 @@ void test_case2(const DataType& used_for_size,
       compute_expected_result2(spatial_metric, spacetime_metric, used_for_size);
   // \f$\alpha = \sqrt{\gamma^{ij} g_{jt} g_{it} - g_{tt}}\f$
   const Scalar<DataType> actual_result_tensor_returned = tenex::evaluate(
-      sqrt(spatial_metric(ti_I, ti_J) * spacetime_metric(ti_j, ti_t) *
-               spacetime_metric(ti_i, ti_t) -
-           spacetime_metric(ti_t, ti_t)));
+      sqrt(spatial_metric(ti::I, ti::J) * spacetime_metric(ti::j, ti::t) *
+               spacetime_metric(ti::i, ti::t) -
+           spacetime_metric(ti::t, ti::t)));
   Scalar<DataType> actual_result_tensor_filled{};
   tenex::evaluate(
       make_not_null(&actual_result_tensor_filled),
-      sqrt(spatial_metric(ti_I, ti_J) * spacetime_metric(ti_j, ti_t) *
-               spacetime_metric(ti_i, ti_t) -
-           spacetime_metric(ti_t, ti_t)));
+      sqrt(spatial_metric(ti::I, ti::J) * spacetime_metric(ti::j, ti::t) *
+               spacetime_metric(ti::i, ti::t) -
+           spacetime_metric(ti::t, ti::t)));
 
   CHECK_ITERABLE_APPROX(actual_result_tensor_returned.get(),
                         expected_result_tensor.get());
@@ -209,9 +209,9 @@ void test_case2(const DataType& used_for_size,
             actual_result_tensor_temp_var);
     ::tenex::evaluate(
         make_not_null(&actual_result_tensor_temp),
-        sqrt(spatial_metric(ti_I, ti_J) * spacetime_metric(ti_j, ti_t) *
-                 spacetime_metric(ti_i, ti_t) -
-             spacetime_metric(ti_t, ti_t)));
+        sqrt(spatial_metric(ti::I, ti::J) * spacetime_metric(ti::j, ti::t) *
+                 spacetime_metric(ti::i, ti::t) -
+             spacetime_metric(ti::t, ti::t)));
 
     CHECK_ITERABLE_APPROX(actual_result_tensor_temp.get(),
                           expected_result_tensor.get());
@@ -249,12 +249,13 @@ void test_case3(const DataType& used_for_size,
       compute_expected_result3(alpha, beta, pi, phi, used_for_size);
   result_tensor_type actual_result_tensor_filled{};
   // \f$\partial_t g_{ab} = -\alpha \Pi_{ab} + \beta^i \Phi_{iab}\f$
-  tenex::evaluate<ti_t, ti_a, ti_b>(
+  tenex::evaluate<ti::t, ti::a, ti::b>(
       make_not_null(&actual_result_tensor_filled),
-      -1.0 * alpha() * pi(ti_a, ti_b) + beta(ti_I) * phi(ti_i, ti_a, ti_b));
+      -1.0 * alpha() * pi(ti::a, ti::b) +
+          beta(ti::I) * phi(ti::i, ti::a, ti::b));
   // \f$\partial_i g_{ab} = \Phi_{iab}\f$
-  tenex::evaluate<ti_i, ti_a, ti_b>(make_not_null(&actual_result_tensor_filled),
-                                    phi(ti_i, ti_a, ti_b));
+  tenex::evaluate<ti::i, ti::a, ti::b>(
+      make_not_null(&actual_result_tensor_filled), phi(ti::i, ti::a, ti::b));
 
   for (size_t c = 0; c < 4; c++) {
     for (size_t a = 0; a < 4; a++) {
@@ -272,11 +273,12 @@ void test_case3(const DataType& used_for_size,
     result_tensor_type& actual_result_tensor_temp =
         get<::Tags::TempTensor<1, result_tensor_type>>(
             actual_result_tensor_temp_var);
-    tenex::evaluate<ti_t, ti_a, ti_b>(
+    tenex::evaluate<ti::t, ti::a, ti::b>(
         make_not_null(&actual_result_tensor_temp),
-        -1.0 * alpha() * pi(ti_a, ti_b) + beta(ti_I) * phi(ti_i, ti_a, ti_b));
-    tenex::evaluate<ti_i, ti_a, ti_b>(make_not_null(&actual_result_tensor_temp),
-                                      phi(ti_i, ti_a, ti_b));
+        -1.0 * alpha() * pi(ti::a, ti::b) +
+            beta(ti::I) * phi(ti::i, ti::a, ti::b));
+    tenex::evaluate<ti::i, ti::a, ti::b>(
+        make_not_null(&actual_result_tensor_temp), phi(ti::i, ti::a, ti::b));
 
     for (size_t c = 0; c < 4; c++) {
       for (size_t a = 0; a < 4; a++) {

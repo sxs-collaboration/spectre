@@ -97,11 +97,11 @@ struct TensorContract
   // "first" and "second" here refer to the position of the indices to contract
   // in the list of indices, with "first" denoting leftmost
   //
-  // e.g. `R(ti_A, ti_b, ti_a)` :
+  // e.g. `R(ti::A, ti::b, ti::a)` :
   // - `first_contracted_index` refers to the
-  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_A`
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti::A`
   // - `second_contracted_index` refers to the
-  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti_a`
+  //   \ref SpacetimeIndex "TensorIndexType" refered to by `ti::a`
   using first_contracted_index = tmpl::at_c<IndexList, FirstContractedIndexPos>;
   using second_contracted_index =
       tmpl::at_c<IndexList, SecondContractedIndexPos>;
@@ -139,7 +139,7 @@ struct TensorContract
   /// `contracted_multi_index` and inserting the maximum `size_t` value at the
   /// two positions of the pair of indices to contract.
   ///
-  /// e.g. `R(ti_A, ti_a, ti_b, ti_c)` represents contracting some
+  /// e.g. `R(ti::A, ti::a, ti::b, ti::c)` represents contracting some
   /// \f$R^{a}{}_{abc}\f$ to \f$R_{bc}\f$. If `contracted_multi_index` is
   /// `[5, 4]` (i.e. `b == 5`, `c == 4`), the returned
   /// `uncontracted_multi_index` is
@@ -191,7 +191,7 @@ struct TensorContract
   /// `SecondContractedIndexValue` is necessary to properly compute the
   /// contraction of special cases where the "starting" index values to insert
   /// at the contracted index positions are not equal. One such case:
-  /// `R(ti_J, ti_j)`, where R is a rank 2 tensor whose first index is spatial
+  /// `R(ti::J, ti::j)`, where R is a rank 2 tensor whose first index is spatial
   /// and whose second index is spacetime. The external call to this function
   /// would require `FirstContractedIndexValue == 0` and
   /// `SecondContractedIndexValue == 1` to ensure the correct "starting" index
@@ -273,13 +273,14 @@ struct TensorContract
  * \details Given a list of values that represent an expression's generic index
  * encodings, this function looks to see if it can find a pair of values that
  * encode one generic index and the generic index with opposite valence, such as
- * `ti_A` and `ti_a`. This denotes a pair of indices that will need to be
+ * `ti::A` and `ti::a`. This denotes a pair of indices that will need to be
  * contracted. If there exists more than one such pair of indices in the
  * expression, the first pair of values found will be returned.
  *
  * For example, if we have tensor \f$R^{ab}{}_{ab}\f$ represented by the tensor
- * expression, `R(ti_A, ti_B, ti_a, ti_b)`, then this will return the positions
- * of the pair of values encoding `ti_A` and `ti_a`, which would be (0, 2)
+ * expression, `R(ti::A, ti::B, ti::a, ti::b)`, then this will return the
+ * positions of the pair of values encoding `ti::A` and `ti::a`, which would be
+ * (0, 2).
  *
  * @param tensorindex_values the TensorIndex values of a tensor expression
  * @return the positions of the first pair of TensorIndex values to contract
@@ -320,8 +321,8 @@ get_first_index_positions_to_contract(
  * recursively created, nesting one contraction expression inside another.
  *
  * For example, if we have tensor \f$R^{ab}{}_{ab}\f$ represented by the tensor
- * expression, `R(ti_A, ti_B, ti_a, ti_b)`, then one contraction expression is
- * created to represent contracting \f$R^{ab}{}_ab\f$ to \f$R^b{}_b\f$, and a
+ * expression, `R(ti::A, ti::B, ti::a, ti::b)`, then one contraction expression
+ * is created to represent contracting \f$R^{ab}{}_ab\f$ to \f$R^b{}_b\f$, and a
  * second to represent contracting \f$R^b{}_b\f$ to the scalar, \f$R\f$.
  *
  * @param t the TensorExpression to potentially contract

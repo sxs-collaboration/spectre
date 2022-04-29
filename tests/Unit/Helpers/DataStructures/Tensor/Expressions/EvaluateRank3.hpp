@@ -26,7 +26,7 @@ namespace TestHelpers::tenex {
 /// side tensor
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, and `TensorIndexC` can be any type
-/// of TensorIndex and are not necessarily `ti_a`, `ti_b`, and `ti_c`. The
+/// of TensorIndex and are not necessarily `ti::a`, `ti::b`, and `ti::c`. The
 /// "A", "B", and "C" suffixes just denote the ordering of the generic indices
 /// of the RHS tensor expression. In the RHS tensor expression, it means
 /// `TensorIndexA` is the first index used, `TensorIndexB` is the second index
@@ -43,11 +43,11 @@ namespace TestHelpers::tenex {
 /// \tparam RhsTensorIndexTypeList the RHS Tensor's typelist of
 /// \ref SpacetimeIndex "TensorIndexType"s
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
+/// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
+/// TensorExpression, e.g. `ti::B`
 /// \tparam TensorIndexC the third TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_c`
+/// TensorExpression, e.g. `ti::c`
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB, auto& TensorIndexC>
@@ -276,7 +276,7 @@ void test_evaluate_rank_3_impl() {
 /// - <1, 1, 1> (`test_evaluate_rank_3_abc_symmetry`)
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, and `TensorIndexC` can be any type
-/// of TensorIndex and are not necessarily `ti_a`, `ti_b`, and `ti_c`. The
+/// of TensorIndex and are not necessarily `ti::a`, `ti::b`, and `ti::c`. The
 /// "A", "B", and "C" suffixes just denote the ordering of the generic indices
 /// of the RHS tensor expression. In the RHS tensor expression, it means
 /// `TensorIndexA` is the first index used, `TensorIndexB` is the second index
@@ -300,11 +300,11 @@ void test_evaluate_rank_3_impl() {
 /// \tparam ValenceC the valence of the third index used on the RHS of the
 /// TensorExpression
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
+/// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
+/// TensorExpression, e.g. `ti::B`
 /// \tparam TensorIndexC the third TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_c`
+/// TensorExpression, e.g. `ti::c`
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeA,
           template <size_t, UpLo, typename> class TensorIndexTypeB,

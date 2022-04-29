@@ -18,72 +18,78 @@ SPECTRE_TEST_CASE(
   TestHelpers::tenex::test_tensor_index_transformation_rank_0();
 
   // Rank 1
-  TestHelpers::tenex::test_tensor_index_transformation_rank_1(ti_k);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_1(ti::k);
 
   // Rank 2
-  TestHelpers::tenex::test_tensor_index_transformation_rank_2(ti_i, ti_j);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_2(ti_j, ti_i);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_2(ti::i, ti::j);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_2(ti::j, ti::i);
 
   // Rank 3
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_a, ti_b, ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_a, ti_c, ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_b, ti_a, ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_b, ti_c, ti_a);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_c, ti_a, ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti_c, ti_b, ti_a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::a, ti::b,
+                                                              ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::a, ti::c,
+                                                              ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::b, ti::a,
+                                                              ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::b, ti::c,
+                                                              ti::a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::c, ti::a,
+                                                              ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_3(ti::c, ti::b,
+                                                              ti::a);
 
   // Rank 4
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_b, ti_c,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_b, ti_d,
-                                                              ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_c, ti_b,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_c, ti_d,
-                                                              ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_d, ti_b,
-                                                              ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_a, ti_d, ti_c,
-                                                              ti_b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::b,
+                                                              ti::c, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::b,
+                                                              ti::d, ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::c,
+                                                              ti::b, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::c,
+                                                              ti::d, ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::d,
+                                                              ti::b, ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::a, ti::d,
+                                                              ti::c, ti::b);
 
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_a, ti_c,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_a, ti_c,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_c, ti_a,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_c, ti_d,
-                                                              ti_a);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_d, ti_a,
-                                                              ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_b, ti_d, ti_c,
-                                                              ti_a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::a,
+                                                              ti::c, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::a,
+                                                              ti::c, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::c,
+                                                              ti::a, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::c,
+                                                              ti::d, ti::a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::d,
+                                                              ti::a, ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::b, ti::d,
+                                                              ti::c, ti::a);
 
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_a, ti_b,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_a, ti_d,
-                                                              ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_b, ti_a,
-                                                              ti_d);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_b, ti_d,
-                                                              ti_a);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_d, ti_a,
-                                                              ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_c, ti_d, ti_b,
-                                                              ti_a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::a,
+                                                              ti::b, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::a,
+                                                              ti::d, ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::b,
+                                                              ti::a, ti::d);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::b,
+                                                              ti::d, ti::a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::d,
+                                                              ti::a, ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::c, ti::d,
+                                                              ti::b, ti::a);
 
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_a, ti_b,
-                                                              ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_a, ti_c,
-                                                              ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_b, ti_a,
-                                                              ti_c);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_b, ti_c,
-                                                              ti_a);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_c, ti_a,
-                                                              ti_b);
-  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti_d, ti_c, ti_b,
-                                                              ti_a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::a,
+                                                              ti::b, ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::a,
+                                                              ti::c, ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::b,
+                                                              ti::a, ti::c);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::b,
+                                                              ti::c, ti::a);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::c,
+                                                              ti::a, ti::b);
+  TestHelpers::tenex::test_tensor_index_transformation_rank_4(ti::d, ti::c,
+                                                              ti::b, ti::a);
 
   // Test transformations involving time indices
   TestHelpers::tenex::test_tensor_index_transformation_with_time_indices();

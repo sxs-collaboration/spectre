@@ -37,7 +37,7 @@ void test_rhs(const gsl::not_null<Generator*> generator,
   // return type of `evaluate`
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
-      La_from_R_at = tenex::evaluate<ti_a>(R(ti_a, ti_t));
+      La_from_R_at = tenex::evaluate<ti::a>(R(ti::a, ti::t));
 
   for (size_t a = 0; a < dim + 1; a++) {
     CHECK(La_from_R_at.get(a) == R.get(a, 0));
@@ -72,7 +72,7 @@ void test_lhs(const gsl::not_null<Generator*> generator,
              index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                         SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>>(
       used_for_size, spatial_component_placeholder);
-  tenex::evaluate<ti_a, ti_t>(make_not_null(&Lat_from_R_a), R(ti_a));
+  tenex::evaluate<ti::a, ti::t>(make_not_null(&Lat_from_R_a), R(ti::a));
 
   for (size_t a = 0; a < dim + 1; a++) {
     CHECK(Lat_from_R_a.get(a, 0) == R.get(a));
@@ -114,8 +114,8 @@ void test_rhs_and_lhs(const gsl::not_null<Generator*> generator,
                         SpacetimeIndex<dim, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<dim, UpLo::Lo, Frame::Grid>>>>(
       used_for_size, spatial_component_placeholder);
-  tenex::evaluate<ti_a, ti_T, ti_t, ti_b>(make_not_null(&LaTtb_from_R_tba),
-                                          R(ti_t, ti_b, ti_a));
+  tenex::evaluate<ti::a, ti::T, ti::t, ti::b>(make_not_null(&LaTtb_from_R_tba),
+                                              R(ti::t, ti::b, ti::a));
 
   for (size_t a = 0; a < dim + 1; a++) {
     for (size_t b = 0; b < dim + 1; b++) {

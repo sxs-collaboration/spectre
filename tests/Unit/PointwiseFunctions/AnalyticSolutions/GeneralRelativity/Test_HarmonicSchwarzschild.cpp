@@ -569,17 +569,17 @@ void test_harmonic_conditions_satisfied(const DataType& used_for_size) {
       make_with_value<tnsr::A<DataType, 3, Frame>>(used_for_size, 0.0);
 
   CHECK_ITERABLE_APPROX(
-      tenex::evaluate<ti_A>(
-          inverse_spacetime_metric(ti_B, ti_C) *
-          spacetime_christoffel_second_kind(ti_A, ti_b, ti_c)),
+      tenex::evaluate<ti::A>(
+          inverse_spacetime_metric(ti::B, ti::C) *
+          spacetime_christoffel_second_kind(ti::A, ti::b, ti::c)),
       expected_contracted_spacetime_christoffel_second_kind);
 
   // Check that eq 4.44 of \cite BaumgarteShapiro is satisfied:
   //   (\partial_t - \beta^j \partial_j)\alpha = -\alpha^2 K
   CHECK_ITERABLE_APPROX(
-      tenex::evaluate(dt_lapse() - shift(ti_J) * d_lapse(ti_j)),
-      tenex::evaluate(-square(lapse()) * extrinsic_curvature(ti_i, ti_j) *
-                      inverse_spatial_metric(ti_I, ti_J)));
+      tenex::evaluate(dt_lapse() - shift(ti::J) * d_lapse(ti::j)),
+      tenex::evaluate(-square(lapse()) * extrinsic_curvature(ti::i, ti::j) *
+                      inverse_spatial_metric(ti::I, ti::J)));
 
   // Check that eq 4.45 of \cite BaumgarteShapiro is satisfied:
   //   (\partial_t - \beta^j \partial_j)\beta^i =
@@ -592,12 +592,13 @@ void test_harmonic_conditions_satisfied(const DataType& used_for_size) {
       gr::christoffel_second_kind(d_spatial_metric, inverse_spatial_metric);
 
   CHECK_ITERABLE_APPROX(
-      tenex::evaluate<ti_I>(dt_shift(ti_I) - shift(ti_J) * d_shift(ti_j, ti_I)),
-      tenex::evaluate<ti_I>(
+      tenex::evaluate<ti::I>(dt_shift(ti::I) -
+                             shift(ti::J) * d_shift(ti::j, ti::I)),
+      tenex::evaluate<ti::I>(
           -square(lapse()) *
-          (inverse_spatial_metric(ti_I, ti_J) * d_lapse(ti_j) / lapse() -
-           inverse_spatial_metric(ti_J, ti_K) *
-               spatial_christoffel_second_kind(ti_I, ti_j, ti_k))));
+          (inverse_spatial_metric(ti::I, ti::J) * d_lapse(ti::j) / lapse() -
+           inverse_spatial_metric(ti::J, ti::K) *
+               spatial_christoffel_second_kind(ti::I, ti::j, ti::k))));
 }
 }  // namespace
 

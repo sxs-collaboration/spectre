@@ -20,13 +20,13 @@ void extrinsic_curvature(
     const tnsr::ii<DataType, 3>& conformal_metric,
     const tnsr::II<DataType, 3>& longitudinal_shift_minus_dt_conformal_metric,
     const Scalar<DataType>& trace_extrinsic_curvature) {
-  tenex::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti::i, ti::j>(
       result,
       pow<4>(conformal_factor()) *
-          (conformal_metric(ti_i, ti_k) * conformal_metric(ti_j, ti_l) *
-               longitudinal_shift_minus_dt_conformal_metric(ti_K, ti_L) /
+          (conformal_metric(ti::i, ti::k) * conformal_metric(ti::j, ti::l) *
+               longitudinal_shift_minus_dt_conformal_metric(ti::K, ti::L) /
                (2. * lapse()) +
-           conformal_metric(ti_i, ti_j) * trace_extrinsic_curvature() / 3.));
+           conformal_metric(ti::i, ti::j) * trace_extrinsic_curvature() / 3.));
 }
 
 template <typename DataType>

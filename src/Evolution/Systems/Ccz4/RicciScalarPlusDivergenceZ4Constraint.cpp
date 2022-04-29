@@ -23,10 +23,10 @@ void ricci_scalar_plus_divergence_z4_constraint(
                                 get_size(get(conformal_factor_squared)));
 
   ::tenex::evaluate(result, conformal_factor_squared() *
-                                inverse_conformal_spatial_metric(ti_I, ti_J) *
-                                (spatial_ricci_tensor(ti_i, ti_j) +
-                                 grad_spatial_z4_constraint(ti_i, ti_j) +
-                                 grad_spatial_z4_constraint(ti_j, ti_i)));
+                                inverse_conformal_spatial_metric(ti::I, ti::J) *
+                                (spatial_ricci_tensor(ti::i, ti::j) +
+                                 grad_spatial_z4_constraint(ti::i, ti::j) +
+                                 grad_spatial_z4_constraint(ti::j, ti::i)));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

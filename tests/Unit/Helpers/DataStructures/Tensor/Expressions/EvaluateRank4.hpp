@@ -24,8 +24,8 @@ namespace TestHelpers::tenex {
 /// side tensor
 ///
 /// \details `TensorIndexA`, `TensorIndexB`, `TensorIndexC`, and  `TensorIndexD`
-/// can be any type of TensorIndex and are not necessarily `ti_a`, `ti_b`,
-/// `ti_c`, and `ti_d`. The "A", "B", "C", and "D" suffixes just denote the
+/// can be any type of TensorIndex and are not necessarily `ti::a`, `ti::b`,
+/// `ti::c`, and `ti::d`. The "A", "B", "C", and "D" suffixes just denote the
 /// ordering of the generic indices of the RHS tensor expression. In the RHS
 /// tensor expression, it means `TensorIndexA` is the first index used,
 /// `TensorIndexB` is the second index used, `TensorIndexC` is the third index
@@ -42,13 +42,13 @@ namespace TestHelpers::tenex {
 /// \tparam RhsTensorIndexTypeList the RHS Tensor's typelist of
 /// \ref SpacetimeIndex "TensorIndexType"s
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
+/// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
+/// TensorExpression, e.g. `ti::B`
 /// \tparam TensorIndexC the third TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_c`
+/// TensorExpression, e.g. `ti::c`
 /// \tparam TensorIndexD the fourth TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_D`
+/// TensorExpression, e.g. `ti::D`
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB, auto& TensorIndexC, auto& TensorIndexD>

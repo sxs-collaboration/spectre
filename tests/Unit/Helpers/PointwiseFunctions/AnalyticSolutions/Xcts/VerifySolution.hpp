@@ -175,7 +175,7 @@ void verify_adm_constraints(const Solution& solution,
   CHECK_ITERABLE_APPROX(get(lapse) * get(conformal_factor),
                         get(lapse_times_conformal_factor));
   CHECK_ITERABLE_APPROX(
-      tenex::evaluate<ti_I>(shift_background(ti_I) + shift_excess(ti_I)),
+      tenex::evaluate<ti::I>(shift_background(ti::I) + shift_excess(ti::I)),
       shift);
 
   // Check extrinsic curvature decomposition
@@ -183,14 +183,14 @@ void verify_adm_constraints(const Solution& solution,
   // with
   //   \bar{A}^ij = \psi^6 / (2 \alpha) * (\bar{L}\beta^ij - \bar{u}^ij)
   tnsr::ii<DataVector, 3> composed_extcurv{};
-  tenex::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti::i, ti::j>(
       make_not_null(&composed_extcurv),
       pow<4>(conformal_factor()) / (2. * lapse()) *
-              (longitudinal_shift_excess(ti_K, ti_L) +
-               longitudinal_shift_background_minus_dt_conformal_metric(ti_K,
-                                                                       ti_L)) *
-              conformal_metric(ti_i, ti_k) * conformal_metric(ti_l, ti_j) +
-          spatial_metric(ti_i, ti_j) * trace_extrinsic_curvature() / 3.);
+              (longitudinal_shift_excess(ti::K, ti::L) +
+               longitudinal_shift_background_minus_dt_conformal_metric(ti::K,
+                                                                       ti::L)) *
+              conformal_metric(ti::i, ti::k) * conformal_metric(ti::l, ti::j) +
+          spatial_metric(ti::i, ti::j) * trace_extrinsic_curvature() / 3.);
   CHECK_ITERABLE_APPROX(composed_extcurv, extrinsic_curvature);
 
   // Check Hamiltonian constraint R + K^2 + K_ij K^ij = 16 \pi \rho, divided by
@@ -198,27 +198,30 @@ void verify_adm_constraints(const Solution& solution,
   // here since we are comparing with zero)
   const Scalar<DataVector> hamiltonian_constraint = tenex::evaluate(
       0.5 * (ricci_scalar() + square(trace_extrinsic_curvature()) -
-             extrinsic_curvature(ti_i, ti_j) * extrinsic_curvature(ti_k, ti_l) *
-                 inv_spatial_metric(ti_I, ti_K) *
-                 inv_spatial_metric(ti_J, ti_L)) -
+             extrinsic_curvature(ti::i, ti::j) *
+                 extrinsic_curvature(ti::k, ti::l) *
+                 inv_spatial_metric(ti::I, ti::K) *
+                 inv_spatial_metric(ti::J, ti::L)) -
       8. * M_PI * energy_density());
   CHECK_ITERABLE_CUSTOM_APPROX(get(hamiltonian_constraint),
                                DataVector(num_points, 0.), custom_approx);
 
   // Check momentum constraint \nabla_j (K^ij - K \gamma^ij) = 8 \pi S^i
   tnsr::II<DataVector, 3> extcurv_min_trace{};
-  tenex::evaluate<ti_I, ti_J>(
+  tenex::evaluate<ti::I, ti::J>(
       make_not_null(&extcurv_min_trace),
-      extrinsic_curvature(ti_k, ti_l) * inv_spatial_metric(ti_I, ti_K) *
-              inv_spatial_metric(ti_J, ti_L) -
-          trace_extrinsic_curvature() * inv_spatial_metric(ti_I, ti_J));
+      extrinsic_curvature(ti::k, ti::l) * inv_spatial_metric(ti::I, ti::K) *
+              inv_spatial_metric(ti::J, ti::L) -
+          trace_extrinsic_curvature() * inv_spatial_metric(ti::I, ti::J));
   const tnsr::iJJ<DataVector, 3> deriv_extcurv_min_trace =
       partial_derivative(extcurv_min_trace, mesh, inv_jacobian);
-  const tnsr::I<DataVector, 3> momentum_constraint = tenex::evaluate<ti_I>(
-      deriv_extcurv_min_trace(ti_j, ti_I, ti_J) +
-      spatial_christoffel(ti_I, ti_k, ti_j) * extcurv_min_trace(ti_K, ti_J) +
-      spatial_christoffel(ti_J, ti_k, ti_j) * extcurv_min_trace(ti_I, ti_K) -
-      8. * M_PI * momentum_density(ti_I));
+  const tnsr::I<DataVector, 3> momentum_constraint =
+      tenex::evaluate<ti::I>(deriv_extcurv_min_trace(ti::j, ti::I, ti::J) +
+                             spatial_christoffel(ti::I, ti::k, ti::j) *
+                                 extcurv_min_trace(ti::K, ti::J) +
+                             spatial_christoffel(ti::J, ti::k, ti::j) *
+                                 extcurv_min_trace(ti::I, ti::K) -
+                             8. * M_PI * momentum_density(ti::I));
   CHECK_ITERABLE_CUSTOM_APPROX(momentum_constraint,
                                (tnsr::I<DataVector, 3>(num_points, 0.)),
                                custom_approx);

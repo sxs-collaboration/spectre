@@ -166,14 +166,14 @@ void TimeDerivative<Dim>::apply(
     get(*conformal_factor_squared)[i] = exp(2.0 * get(ln_conformal_factor)[i]);
   }
 
-  ::tenex::evaluate<ti_I, ti_J>(
+  ::tenex::evaluate<ti::I, ti::J>(
       inv_spatial_metric, (*conformal_factor_squared)() *
-                              (*inv_conformal_spatial_metric)(ti_I, ti_J));
+                              (*inv_conformal_spatial_metric)(ti::I, ti::J));
 
-  ::tenex::evaluate<ti_I, ti_J>(
-      inv_a_tilde, a_tilde(ti_k, ti_l) *
-                       (*inv_conformal_spatial_metric)(ti_I, ti_K) *
-                       (*inv_conformal_spatial_metric)(ti_J, ti_L));
+  ::tenex::evaluate<ti::I, ti::J>(
+      inv_a_tilde, a_tilde(ti::k, ti::l) *
+                       (*inv_conformal_spatial_metric)(ti::I, ti::K) *
+                       (*inv_conformal_spatial_metric)(ti::J, ti::L));
 
   for (size_t i = 0; i < num_points; i++) {
     get(*lapse)[i] = exp(get(ln_lapse)[i]);
@@ -201,14 +201,15 @@ void TimeDerivative<Dim>::apply(
   // expressions and identities needed for evolution equations: eq 13 - 27
 
   // eq 13
-  ::tenex::evaluate(trace_a_tilde, (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-                                       a_tilde(ti_i, ti_j));
+  ::tenex::evaluate(
+      trace_a_tilde,
+      (*inv_conformal_spatial_metric)(ti::I, ti::J) * a_tilde(ti::i, ti::j));
 
   // eq 14
-  ::tenex::evaluate<ti_k, ti_I, ti_J>(
-      field_d_up, (*inv_conformal_spatial_metric)(ti_I, ti_N) *
-                      (*inv_conformal_spatial_metric)(ti_M, ti_J) *
-                      field_d(ti_k, ti_n, ti_m));
+  ::tenex::evaluate<ti::k, ti::I, ti::J>(
+      field_d_up, (*inv_conformal_spatial_metric)(ti::I, ti::N) *
+                      (*inv_conformal_spatial_metric)(ti::M, ti::J) *
+                      field_d(ti::k, ti::n, ti::m));
 
   // eq 15
   ::Ccz4::conformal_christoffel_second_kind(conformal_christoffel_second_kind,
@@ -227,16 +228,16 @@ void TimeDerivative<Dim>::apply(
                                   *conformal_christoffel_second_kind);
 
   // temporary expressions needed for eq 18 - 20
-  ::tenex::evaluate<ti_l>(contracted_christoffel_second_kind,
-                          (*christoffel_second_kind)(ti_M, ti_l, ti_m));
+  ::tenex::evaluate<ti::l>(contracted_christoffel_second_kind,
+                           (*christoffel_second_kind)(ti::M, ti::l, ti::m));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       contracted_d_conformal_christoffel_difference,
-      (*d_conformal_christoffel_second_kind)(ti_m, ti_M, ti_i, ti_j) -
-          (*d_conformal_christoffel_second_kind)(ti_j, ti_M, ti_i, ti_m));
+      (*d_conformal_christoffel_second_kind)(ti::m, ti::M, ti::i, ti::j) -
+          (*d_conformal_christoffel_second_kind)(ti::j, ti::M, ti::i, ti::m));
 
-  ::tenex::evaluate<ti_L>(contracted_field_d_up,
-                          (*field_d_up)(ti_m, ti_M, ti_L));
+  ::tenex::evaluate<ti::L>(contracted_field_d_up,
+                           (*field_d_up)(ti::m, ti::M, ti::L));
 
   // eq 18 - 20
   ::Ccz4::spatial_ricci_tensor(
@@ -266,9 +267,10 @@ void TimeDerivative<Dim>::apply(
       *conformal_christoffel_second_kind, *d_conformal_christoffel_second_kind);
 
   // temp for eq 25
-  ::tenex::evaluate<ti_I>(
+  ::tenex::evaluate<ti::I>(
       gamma_hat_minus_contracted_conformal_christoffel,
-      gamma_hat(ti_I) - (*contracted_conformal_christoffel_second_kind)(ti_I));
+      gamma_hat(ti::I) -
+          (*contracted_conformal_christoffel_second_kind)(ti::I));
 
   // eq 25
   ::Ccz4::spatial_z4_constraint(
@@ -282,10 +284,10 @@ void TimeDerivative<Dim>::apply(
       *gamma_hat_minus_contracted_conformal_christoffel);
 
   // temp for eq 26
-  ::tenex::evaluate<ti_i, ti_L>(
+  ::tenex::evaluate<ti::i, ti::L>(
       d_gamma_hat_minus_contracted_conformal_christoffel,
-      d_gamma_hat(ti_i, ti_L) -
-          (*d_contracted_conformal_christoffel_second_kind)(ti_i, ti_L));
+      d_gamma_hat(ti::i, ti::L) -
+          (*d_contracted_conformal_christoffel_second_kind)(ti::i, ti::L));
 
   // eq 26
   ::Ccz4::grad_spatial_z4_constraint(
@@ -302,11 +304,11 @@ void TimeDerivative<Dim>::apply(
 
   // temporary expressions not already computed above
 
-  ::tenex::evaluate(contracted_field_b, field_b(ti_k, ti_K));
+  ::tenex::evaluate(contracted_field_b, field_b(ti::k, ti::K));
 
-  ::tenex::evaluate<ti_k, ti_j, ti_I>(
+  ::tenex::evaluate<ti::k, ti::j, ti::I>(
       symmetrized_d_field_b,
-      0.5 * (d_field_b(ti_k, ti_j, ti_I) + d_field_b(ti_j, ti_k, ti_I)));
+      0.5 * (d_field_b(ti::k, ti::j, ti::I) + d_field_b(ti::j, ti::k, ti::I)));
 
   for (size_t k = 0; k < Dim; k++) {
     contracted_symmetrized_d_field_b->get(k) = d_field_b.get(k, 0, 0);
@@ -315,84 +317,85 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  ::tenex::evaluate<ti_i, ti_j, ti_k>(
-      field_b_times_field_d, field_b(ti_i, ti_L) * field_d(ti_j, ti_l, ti_k));
+  ::tenex::evaluate<ti::i, ti::j, ti::k>(
+      field_b_times_field_d,
+      field_b(ti::i, ti::L) * field_d(ti::j, ti::l, ti::k));
 
-  ::tenex::evaluate<ti_k>(
+  ::tenex::evaluate<ti::k>(
       field_d_up_times_a_tilde,
-      (*field_d_up)(ti_k, ti_I, ti_J) * a_tilde(ti_i, ti_j));
+      (*field_d_up)(ti::k, ti::I, ti::J) * a_tilde(ti::i, ti::j));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       conformal_metric_times_field_b,
-      conformal_spatial_metric(ti_k, ti_i) * field_b(ti_j, ti_K));
+      conformal_spatial_metric(ti::k, ti::i) * field_b(ti::j, ti::K));
 
-  ::tenex::evaluate<ti_i, ti_k, ti_j>(
+  ::tenex::evaluate<ti::i, ti::k, ti::j>(
       conformal_metric_times_symmetrized_d_field_b,
-      conformal_spatial_metric(ti_m, ti_i) *
-          (*symmetrized_d_field_b)(ti_k, ti_j, ti_M));
+      conformal_spatial_metric(ti::m, ti::i) *
+          (*symmetrized_d_field_b)(ti::k, ti::j, ti::M));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       conformal_metric_times_trace_a_tilde,
-      conformal_spatial_metric(ti_i, ti_j) * (*trace_a_tilde)());
+      conformal_spatial_metric(ti::i, ti::j) * (*trace_a_tilde)());
 
-  ::tenex::evaluate<ti_k>(inv_conformal_metric_times_d_a_tilde,
-                          (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-                              d_a_tilde(ti_k, ti_i, ti_j));
+  ::tenex::evaluate<ti::k>(inv_conformal_metric_times_d_a_tilde,
+                           (*inv_conformal_spatial_metric)(ti::I, ti::J) *
+                               d_a_tilde(ti::k, ti::i, ti::j));
 
-  ::tenex::evaluate<ti_i, ti_j>(a_tilde_times_field_b,
-                                a_tilde(ti_k, ti_i) * field_b(ti_j, ti_K));
+  ::tenex::evaluate<ti::i, ti::j>(
+      a_tilde_times_field_b, a_tilde(ti::k, ti::i) * field_b(ti::j, ti::K));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde,
-      a_tilde(ti_i, ti_j) -
-          one_third * (*conformal_metric_times_trace_a_tilde)(ti_i, ti_j));
+      a_tilde(ti::i, ti::j) -
+          one_third * (*conformal_metric_times_trace_a_tilde)(ti::i, ti::j));
 
   ::tenex::evaluate(k_minus_2_theta_c,
                     trace_extrinsic_curvature() - 2.0 * c * theta());
 
   ::tenex::evaluate(k_minus_k0_minus_2_theta_c, (*k_minus_2_theta_c)() - k_0());
 
-  ::tenex::evaluate<ti_i, ti_j>(lapse_times_a_tilde,
-                                (*lapse)() * a_tilde(ti_i, ti_j));
+  ::tenex::evaluate<ti::i, ti::j>(lapse_times_a_tilde,
+                                  (*lapse)() * a_tilde(ti::i, ti::j));
 
-  tenex::evaluate<ti_k, ti_i, ti_j>(lapse_times_d_a_tilde,
-                                    (*lapse)() * d_a_tilde(ti_k, ti_i, ti_j));
+  tenex::evaluate<ti::k, ti::i, ti::j>(
+      lapse_times_d_a_tilde, (*lapse)() * d_a_tilde(ti::k, ti::i, ti::j));
 
-  ::tenex::evaluate<ti_k>(lapse_times_field_a, (*lapse)() * field_a(ti_k));
+  ::tenex::evaluate<ti::k>(lapse_times_field_a, (*lapse)() * field_a(ti::k));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       lapse_times_conformal_spatial_metric,
-      (*lapse)() * conformal_spatial_metric(ti_i, ti_j));
+      (*lapse)() * conformal_spatial_metric(ti::i, ti::j));
 
   ::tenex::evaluate(
       lapse_times_ricci_scalar_plus_divergence_z4_constraint,
       (*lapse)() * (*ricci_scalar_plus_divergence_z4_constraint)());
 
-  ::tenex::evaluate<ti_I>(shift_times_deriv_gamma_hat,
-                          shift(ti_K) * d_gamma_hat(ti_k, ti_I));
+  ::tenex::evaluate<ti::I>(shift_times_deriv_gamma_hat,
+                           shift(ti::K) * d_gamma_hat(ti::k, ti::I));
 
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       inv_tau_times_conformal_metric,
-      one_over_relaxation_time * conformal_spatial_metric(ti_i, ti_j));
+      one_over_relaxation_time * conformal_spatial_metric(ti::i, ti::j));
 
   // time derivative computation: eq 12a - 12m
 
   // eq 12a : time derivative of the conformal spatial metric
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       dt_conformal_spatial_metric,
-      2.0 * shift(ti_K) * field_d(ti_k, ti_i, ti_j) +
-          (*conformal_metric_times_field_b)(ti_i, ti_j) +
-          (*conformal_metric_times_field_b)(ti_j, ti_i) -
-          2.0 * one_third * conformal_spatial_metric(ti_i, ti_j) *
+      2.0 * shift(ti::K) * field_d(ti::k, ti::i, ti::j) +
+          (*conformal_metric_times_field_b)(ti::i, ti::j) +
+          (*conformal_metric_times_field_b)(ti::j, ti::i) -
+          2.0 * one_third * conformal_spatial_metric(ti::i, ti::j) *
               (*contracted_field_b)() -
           2.0 * (*lapse)() *
               (*a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde)(
-                  ti_i, ti_j) -
-          (*inv_tau_times_conformal_metric)(ti_i, ti_j) *
+                  ti::i, ti::j) -
+          (*inv_tau_times_conformal_metric)(ti::i, ti::j) *
               ((*det_conformal_spatial_metric)() - 1.0));
 
   // eq 12b : time derivative of the natural log of the lapse
-  ::tenex::evaluate(dt_ln_lapse, shift(ti_K) * field_a(ti_k) -
+  ::tenex::evaluate(dt_ln_lapse, shift(ti::K) * field_a(ti::k) -
                                      (*lapse_times_slicing_condition)() *
                                          (*k_minus_k0_minus_2_theta_c)());
 
@@ -403,41 +406,42 @@ void TimeDerivative<Dim>::apply(
       component = 0.0;
     }
   } else {
-    ::tenex::evaluate<ti_I>(dt_shift,
-                            f * b(ti_I) + shift(ti_K) * field_b(ti_k, ti_I));
+    ::tenex::evaluate<ti::I>(
+        dt_shift, f * b(ti::I) + shift(ti::K) * field_b(ti::k, ti::I));
   }
 
   // eq 12d : time derivative of the natural log of the conformal factor
   ::tenex::evaluate(dt_ln_conformal_factor,
-                    shift(ti_K) * field_p(ti_k) +
+                    shift(ti::K) * field_p(ti::k) +
                         one_third * ((*lapse)() * trace_extrinsic_curvature() -
                                      (*contracted_field_b)()));
 
   // eq 12e : time derivative of the trace-free part of the extrinsic curvature
-  ::tenex::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti::i, ti::j>(
       dt_a_tilde,
-      shift(ti_K) * d_a_tilde(ti_k, ti_i, ti_j) +
+      shift(ti::K) * d_a_tilde(ti::k, ti::i, ti::j) +
           (*conformal_factor_squared)() *
-              ((*lapse)() * ((*spatial_ricci_tensor)(ti_i, ti_j) +
-                             (*grad_spatial_z4_constraint)(ti_i, ti_j) +
-                             (*grad_spatial_z4_constraint)(ti_j, ti_i)) -
-               (*grad_grad_lapse)(ti_i, ti_j)) -
-          one_third * conformal_spatial_metric(ti_i, ti_j) *
+              ((*lapse)() * ((*spatial_ricci_tensor)(ti::i, ti::j) +
+                             (*grad_spatial_z4_constraint)(ti::i, ti::j) +
+                             (*grad_spatial_z4_constraint)(ti::j, ti::i)) -
+               (*grad_grad_lapse)(ti::i, ti::j)) -
+          one_third * conformal_spatial_metric(ti::i, ti::j) *
               ((*lapse_times_ricci_scalar_plus_divergence_z4_constraint)() -
                (*divergence_lapse)()) +
-          (*a_tilde_times_field_b)(ti_i, ti_j) +
-          (*a_tilde_times_field_b)(ti_j, ti_i) -
-          2.0 * one_third * a_tilde(ti_i, ti_j) * (*contracted_field_b)() +
-          (*lapse_times_a_tilde)(ti_i, ti_j) * (*k_minus_2_theta_c)() -
-          2.0 * (*lapse_times_a_tilde)(ti_i, ti_l) *
-              (*inv_conformal_spatial_metric)(ti_L, ti_M) *
-              a_tilde(ti_m, ti_j) -
-          (*inv_tau_times_conformal_metric)(ti_i, ti_j) * (*trace_a_tilde)());
+          (*a_tilde_times_field_b)(ti::i, ti::j) +
+          (*a_tilde_times_field_b)(ti::j, ti::i) -
+          2.0 * one_third * a_tilde(ti::i, ti::j) * (*contracted_field_b)() +
+          (*lapse_times_a_tilde)(ti::i, ti::j) * (*k_minus_2_theta_c)() -
+          2.0 * (*lapse_times_a_tilde)(ti::i, ti::l) *
+              (*inv_conformal_spatial_metric)(ti::L, ti::M) *
+              a_tilde(ti::m, ti::j) -
+          (*inv_tau_times_conformal_metric)(ti::i, ti::j) * (*trace_a_tilde)());
 
   // eq. (12f) : time derivative of the trace of the extrinsic curvature
   ::tenex::evaluate(
       dt_trace_extrinsic_curvature,
-      shift(ti_K) * d_trace_extrinsic_curvature(ti_k) - (*divergence_lapse)() +
+      shift(ti::K) * d_trace_extrinsic_curvature(ti::k) -
+          (*divergence_lapse)() +
           (*lapse_times_ricci_scalar_plus_divergence_z4_constraint)() +
           (*lapse)() * (trace_extrinsic_curvature() * (*k_minus_2_theta_c)() -
                         3.0 * kappa_1 * (1.0 + kappa_2) * theta()));
@@ -446,64 +450,66 @@ void TimeDerivative<Dim>::apply(
   // the normal direction
   ::tenex::evaluate(
       dt_theta,
-      shift(ti_K) * d_theta(ti_k) +
+      shift(ti::K) * d_theta(ti::k) +
           (*lapse)() *
               (0.5 * square(cleaning_speed) *
                    ((*ricci_scalar_plus_divergence_z4_constraint)() +
                     2.0 * one_third * square(trace_extrinsic_curvature()) -
-                    a_tilde(ti_i, ti_j) * (*inv_a_tilde)(ti_I, ti_J)) -
+                    a_tilde(ti::i, ti::j) * (*inv_a_tilde)(ti::I, ti::J)) -
                c * theta() * trace_extrinsic_curvature() -
-               (*upper_spatial_z4_constraint)(ti_I)*field_a(ti_i) -
+               (*upper_spatial_z4_constraint)(ti::I)*field_a(ti::i) -
                kappa_1 * (2.0 + kappa_2) * theta()));
 
   // eq. (12h) : time derivative \hat{\Gamma}^i
   // first, compute terms without s
-  ::tenex::evaluate<ti_I>(
+  ::tenex::evaluate<ti::I>(
       dt_gamma_hat,
       // terms without lapse nor s
-      (*shift_times_deriv_gamma_hat)(ti_I) +
+      (*shift_times_deriv_gamma_hat)(ti::I) +
           2.0 * one_third *
-              (*contracted_conformal_christoffel_second_kind)(ti_I) *
+              (*contracted_conformal_christoffel_second_kind)(ti::I) *
               (*contracted_field_b)() -
-          (*contracted_conformal_christoffel_second_kind)(ti_K)*field_b(ti_k,
-                                                                        ti_I) +
-          2.0 * kappa_3 * (*spatial_z4_constraint)(ti_j) *
-              (2.0 * one_third * (*inv_conformal_spatial_metric)(ti_I, ti_J) *
+          (*contracted_conformal_christoffel_second_kind)(ti::K)*field_b(
+              ti::k, ti::I) +
+          2.0 * kappa_3 * (*spatial_z4_constraint)(ti::j) *
+              (2.0 * one_third * (*inv_conformal_spatial_metric)(ti::I, ti::J) *
                    (*contracted_field_b)() -
-               (*inv_conformal_spatial_metric)(ti_J, ti_K) *
-                   field_b(ti_k, ti_I)) +
+               (*inv_conformal_spatial_metric)(ti::J, ti::K) *
+                   field_b(ti::k, ti::I)) +
           // terms with lapse but not s
           2.0 * (*lapse)() *
-              (-2.0 * one_third * (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-                   d_trace_extrinsic_curvature(ti_j) +
-               (*inv_conformal_spatial_metric)(ti_K, ti_I) * d_theta(ti_k) +
-               (*conformal_christoffel_second_kind)(ti_I, ti_j, ti_k) *
-                   (*inv_a_tilde)(ti_J, ti_K) -
-               3.0 * (*inv_a_tilde)(ti_I, ti_J) * field_p(ti_j) -
-               (*inv_conformal_spatial_metric)(ti_K, ti_I) *
-                   (theta() * field_a(ti_k) +
+              (-2.0 * one_third *
+                   (*inv_conformal_spatial_metric)(ti::I, ti::J) *
+                   d_trace_extrinsic_curvature(ti::j) +
+               (*inv_conformal_spatial_metric)(ti::K, ti::I) * d_theta(ti::k) +
+               (*conformal_christoffel_second_kind)(ti::I, ti::j, ti::k) *
+                   (*inv_a_tilde)(ti::J, ti::K) -
+               3.0 * (*inv_a_tilde)(ti::I, ti::J) * field_p(ti::j) -
+               (*inv_conformal_spatial_metric)(ti::K, ti::I) *
+                   (theta() * field_a(ti::k) +
                     2.0 * one_third * trace_extrinsic_curvature() *
-                        (*spatial_z4_constraint)(ti_k)) -
-               (*inv_a_tilde)(ti_I, ti_J) * field_a(ti_j) -
-               kappa_1 * (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-                   (*spatial_z4_constraint)(ti_j)));
+                        (*spatial_z4_constraint)(ti::k)) -
+               (*inv_a_tilde)(ti::I, ti::J) * field_a(ti::j) -
+               kappa_1 * (*inv_conformal_spatial_metric)(ti::I, ti::J) *
+                   (*spatial_z4_constraint)(ti::j)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti_I>(
+    ::tenex::evaluate<ti::I>(
         dt_gamma_hat,
-        (*dt_gamma_hat)(ti_I) +
+        (*dt_gamma_hat)(ti::I) +
             // terms with lapse and s
             2.0 * (*lapse)() *
-                ((*inv_conformal_spatial_metric)(ti_I, ti_K) *
-                     (*inv_conformal_spatial_metric)(ti_N, ti_M) *
-                     d_a_tilde(ti_k, ti_n, ti_m) -
-                 2.0 * (*inv_conformal_spatial_metric)(ti_I, ti_K) *
-                     (*field_d_up)(ti_k, ti_N, ti_M) * a_tilde(ti_n, ti_m)) +
+                ((*inv_conformal_spatial_metric)(ti::I, ti::K) *
+                     (*inv_conformal_spatial_metric)(ti::N, ti::M) *
+                     d_a_tilde(ti::k, ti::n, ti::m) -
+                 2.0 * (*inv_conformal_spatial_metric)(ti::I, ti::K) *
+                     (*field_d_up)(ti::k, ti::N, ti::M) *
+                     a_tilde(ti::n, ti::m)) +
             // terms with s but not not lapse
-            (*inv_conformal_spatial_metric)(ti_K, ti_L) *
-                (*symmetrized_d_field_b)(ti_k, ti_l, ti_I) +
-            one_third * (*inv_conformal_spatial_metric)(ti_I, ti_K) *
-                (*contracted_symmetrized_d_field_b)(ti_k));
+            (*inv_conformal_spatial_metric)(ti::K, ti::L) *
+                (*symmetrized_d_field_b)(ti::k, ti::l, ti::I) +
+            one_third * (*inv_conformal_spatial_metric)(ti::I, ti::K) *
+                (*contracted_symmetrized_d_field_b)(ti::k));
   }
 
   // eq. (12i) : time derivative b^i
@@ -513,29 +519,30 @@ void TimeDerivative<Dim>::apply(
       component = 0.0;
     }
   } else {
-    ::tenex::evaluate<ti_I>(
-        dt_b, (*dt_gamma_hat)(ti_I)-eta() * b(ti_I) +
-                  shift(ti_K) * (d_b(ti_k, ti_I) - d_gamma_hat(ti_k, ti_I)));
+    ::tenex::evaluate<ti::I>(
+        dt_b,
+        (*dt_gamma_hat)(ti::I)-eta() * b(ti::I) +
+            shift(ti::K) * (d_b(ti::k, ti::I) - d_gamma_hat(ti::k, ti::I)));
   }
 
   // eq. (12j) : time derivative of auxiliary variable A_i
   // first, compute terms without s
-  ::tenex::evaluate<ti_k>(
+  ::tenex::evaluate<ti::k>(
       dt_field_a,
-      shift(ti_L) * d_field_a(ti_l, ti_k) -
-          (*lapse_times_field_a)(ti_k) * (*k_minus_k0_minus_2_theta_c)() *
+      shift(ti::L) * d_field_a(ti::l, ti::k) -
+          (*lapse_times_field_a)(ti::k) * (*k_minus_k0_minus_2_theta_c)() *
               ((*slicing_condition)() + (*lapse)() * (*d_slicing_condition)()) +
-          field_b(ti_k, ti_L) * field_a(ti_l) -
+          field_b(ti::k, ti::L) * field_a(ti::l) -
           (*lapse_times_slicing_condition)() *
-              (d_trace_extrinsic_curvature(ti_k) - d_k_0(ti_k) -
-               2.0 * c * d_theta(ti_k)));
+              (d_trace_extrinsic_curvature(ti::k) - d_k_0(ti::k) -
+               2.0 * c * d_theta(ti::k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti_k>(
-        dt_field_a, (*dt_field_a)(ti_k) -
+    ::tenex::evaluate<ti::k>(
+        dt_field_a, (*dt_field_a)(ti::k) -
                         (*lapse_times_slicing_condition)() *
-                            ((*inv_conformal_metric_times_d_a_tilde)(ti_k) -
-                             (2.0 * (*field_d_up_times_a_tilde)(ti_k))));
+                            ((*inv_conformal_metric_times_d_a_tilde)(ti::k) -
+                             (2.0 * (*field_d_up_times_a_tilde)(ti::k))));
   }
 
   // eq. (12k) : time derivative of auxiliary variable B_k{}^i
@@ -546,65 +553,65 @@ void TimeDerivative<Dim>::apply(
     }
   } else {
     // first, compute expression without advective terms
-    ::tenex::evaluate<ti_k, ti_I>(
-        dt_field_b, shift(ti_L) * d_field_b(ti_l, ti_k, ti_I) +
-                        f * d_b(ti_k, ti_I) +
+    ::tenex::evaluate<ti::k, ti::I>(
+        dt_field_b, shift(ti::L) * d_field_b(ti::l, ti::k, ti::I) +
+                        f * d_b(ti::k, ti::I) +
                         mu * square((*lapse)()) *
-                            (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-                            (d_field_p(ti_k, ti_j) - d_field_p(ti_j, ti_k) -
-                             (*inv_conformal_spatial_metric)(ti_N, ti_L) *
-                                 (d_field_d(ti_k, ti_l, ti_j, ti_n) -
-                                  d_field_d(ti_l, ti_k, ti_j, ti_n))) +
-                        field_b(ti_k, ti_L) * field_b(ti_l, ti_I));
+                            (*inv_conformal_spatial_metric)(ti::I, ti::J) *
+                            (d_field_p(ti::k, ti::j) - d_field_p(ti::j, ti::k) -
+                             (*inv_conformal_spatial_metric)(ti::N, ti::L) *
+                                 (d_field_d(ti::k, ti::l, ti::j, ti::n) -
+                                  d_field_d(ti::l, ti::k, ti::j, ti::n))) +
+                        field_b(ti::k, ti::L) * field_b(ti::l, ti::I));
   }
 
   // eq. (12l) : time derivative of auxiliary variable D_{kij}
   // first, compute terms without s
-  ::tenex::evaluate<ti_k, ti_i, ti_j>(
+  ::tenex::evaluate<ti::k, ti::i, ti::j>(
       dt_field_d,
-      shift(ti_L) * d_field_d(ti_l, ti_k, ti_i, ti_j) -
-          (*lapse_times_d_a_tilde)(ti_k, ti_i, ti_j) +
-          field_b(ti_k, ti_L) * field_d(ti_l, ti_i, ti_j) +
-          (*field_b_times_field_d)(ti_j, ti_k, ti_i) +
-          (*field_b_times_field_d)(ti_i, ti_k, ti_j) -
-          (*lapse_times_field_a)(ti_k) *
+      shift(ti::L) * d_field_d(ti::l, ti::k, ti::i, ti::j) -
+          (*lapse_times_d_a_tilde)(ti::k, ti::i, ti::j) +
+          field_b(ti::k, ti::L) * field_d(ti::l, ti::i, ti::j) +
+          (*field_b_times_field_d)(ti::j, ti::k, ti::i) +
+          (*field_b_times_field_d)(ti::i, ti::k, ti::j) -
+          (*lapse_times_field_a)(ti::k) *
               (*a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde)(
-                  ti_i, ti_j) +
+                  ti::i, ti::j) +
           one_third *
-              ((*lapse_times_conformal_spatial_metric)(ti_i, ti_j) *
-                   (*inv_conformal_metric_times_d_a_tilde)(ti_k) -
-               (2.0 * (*contracted_field_b)() * field_d(ti_k, ti_i, ti_j)) -
-               2.0 * (*lapse_times_conformal_spatial_metric)(ti_i, ti_j) *
-                   (*field_d_up_times_a_tilde)(ti_k)));
+              ((*lapse_times_conformal_spatial_metric)(ti::i, ti::j) *
+                   (*inv_conformal_metric_times_d_a_tilde)(ti::k) -
+               (2.0 * (*contracted_field_b)() * field_d(ti::k, ti::i, ti::j)) -
+               2.0 * (*lapse_times_conformal_spatial_metric)(ti::i, ti::j) *
+                   (*field_d_up_times_a_tilde)(ti::k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti_k, ti_i, ti_j>(
-        dt_field_d, (*dt_field_d)(ti_k, ti_i, ti_j) +
+    ::tenex::evaluate<ti::k, ti::i, ti::j>(
+        dt_field_d, (*dt_field_d)(ti::k, ti::i, ti::j) +
                         0.5 * ((*conformal_metric_times_symmetrized_d_field_b)(
-                                   ti_i, ti_k, ti_j) +
+                                   ti::i, ti::k, ti::j) +
                                (*conformal_metric_times_symmetrized_d_field_b)(
-                                   ti_j, ti_k, ti_i)) -
-                        one_third * conformal_spatial_metric(ti_i, ti_j) *
-                            (*contracted_symmetrized_d_field_b)(ti_k));
+                                   ti::j, ti::k, ti::i)) -
+                        one_third * conformal_spatial_metric(ti::i, ti::j) *
+                            (*contracted_symmetrized_d_field_b)(ti::k));
   }
 
   // eq. (12m) : time derivative of auxiliary variable P_i
   // first, compute terms without s
-  ::tenex::evaluate<ti_k>(
-      dt_field_p, shift(ti_L) * d_field_p(ti_l, ti_k) +
-                      field_b(ti_k, ti_L) * field_p(ti_l) +
+  ::tenex::evaluate<ti::k>(
+      dt_field_p, shift(ti::L) * d_field_p(ti::l, ti::k) +
+                      field_b(ti::k, ti::L) * field_p(ti::l) +
                       one_third * (*lapse)() *
-                          (d_trace_extrinsic_curvature(ti_k) +
-                           field_a(ti_k) * trace_extrinsic_curvature()));
+                          (d_trace_extrinsic_curvature(ti::k) +
+                           field_a(ti::k) * trace_extrinsic_curvature()));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti_k>(
+    ::tenex::evaluate<ti::k>(
         dt_field_p,
-        (*dt_field_p)(ti_k) +
+        (*dt_field_p)(ti::k) +
             one_third *
-                ((*lapse)() * ((*inv_conformal_metric_times_d_a_tilde)(ti_k) -
-                               (2.0 * (*field_d_up_times_a_tilde)(ti_k))) -
-                 (*contracted_symmetrized_d_field_b)(ti_k)));
+                ((*lapse)() * ((*inv_conformal_metric_times_d_a_tilde)(ti::k) -
+                               (2.0 * (*field_d_up_times_a_tilde)(ti::k))) -
+                 (*contracted_symmetrized_d_field_b)(ti::k)));
   }
 }
 }  // namespace Ccz4

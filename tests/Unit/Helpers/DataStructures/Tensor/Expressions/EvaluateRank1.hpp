@@ -28,7 +28,7 @@ namespace TestHelpers::tenex {
 /// \tparam TensorIndexTypeList the Tensors' typelist containing their
 /// \ref SpacetimeIndex "TensorIndexType"
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
-/// e.g. `ti_a`
+/// e.g. `ti::a`
 template <typename DataType, typename TensorIndexTypeList, auto& TensorIndex>
 void test_evaluate_rank_1_impl() {
   const size_t used_for_size = 5;
@@ -75,7 +75,7 @@ void test_evaluate_rank_1_impl() {
 /// \tparam TensorIndexType the Tensors' \ref SpacetimeIndex "TensorIndexType"
 /// \tparam Valence the valence of the Tensors' index
 /// \tparam TensorIndex the TensorIndex used in the the TensorExpression,
-/// e.g. `ti_a`
+/// e.g. `ti::a`
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexType, UpLo Valence,
           auto& TensorIndex>

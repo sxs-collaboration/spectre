@@ -19,7 +19,7 @@ namespace TestHelpers::tenex {
 /// - `tenex::compute_tensorindex_transformation`
 /// - `tenex::transform_multi_index`
 ///
-/// \tparam TensorIndex the first generic tensor index, e.g. type of `ti_a`
+/// \tparam TensorIndex the first generic tensor index, e.g. type of `ti::a`
 template <typename TensorIndex>
 void test_tensor_index_transformation_rank_1(
     const TensorIndex& /*tensorindex*/) {

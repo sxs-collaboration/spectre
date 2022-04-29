@@ -74,12 +74,12 @@ void deriv_contracted_conformal_christoffel_second_kind(
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
-  ::tenex::evaluate<ti_k, ti_I>(
+  ::tenex::evaluate<ti::k, ti::I>(
       result,
-      -2.0 * field_d_up(ti_k, ti_J, ti_L) *
-              conformal_christoffel_second_kind(ti_I, ti_j, ti_l) +
-          inverse_conformal_spatial_metric(ti_J, ti_L) *
-              d_conformal_christoffel_second_kind(ti_k, ti_I, ti_j, ti_l));
+      -2.0 * field_d_up(ti::k, ti::J, ti::L) *
+              conformal_christoffel_second_kind(ti::I, ti::j, ti::l) +
+          inverse_conformal_spatial_metric(ti::J, ti::L) *
+              d_conformal_christoffel_second_kind(ti::k, ti::I, ti::j, ti::l));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

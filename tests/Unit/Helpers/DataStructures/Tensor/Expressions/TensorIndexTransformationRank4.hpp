@@ -26,10 +26,10 @@ namespace TestHelpers::tenex {
 /// first generic index ordering, the equivalent multi-index with the second
 /// ordering is correctly computed.
 ///
-/// \tparam TensorIndexA the first generic tensor index, e.g. type of `ti_a`
-/// \tparam TensorIndexB the second generic tensor index, e.g. type of `ti_B`
-/// \tparam TensorIndexC the third generic tensor index, e.g. type of `ti_c`
-/// \tparam TensorIndexD the fourth generic tensor index, e.g. type of `ti_D`
+/// \tparam TensorIndexA the first generic tensor index, e.g. type of `ti::a`
+/// \tparam TensorIndexB the second generic tensor index, e.g. type of `ti::B`
+/// \tparam TensorIndexC the third generic tensor index, e.g. type of `ti::c`
+/// \tparam TensorIndexD the fourth generic tensor index, e.g. type of `ti::D`
 template <typename TensorIndexA, typename TensorIndexB, typename TensorIndexC,
           typename TensorIndexD>
 void test_tensor_index_transformation_rank_4(

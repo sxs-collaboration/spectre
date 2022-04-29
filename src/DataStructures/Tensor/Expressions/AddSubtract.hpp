@@ -505,7 +505,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
   static_assert(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when adding two tensors must be equal. This error "
-      "occurs from expressions like R(ti_a, ti_b) + S(ti_c, ti_a)");
+      "occurs from expressions like R(ti::a, ti::b) + S(ti::c, ti::a)");
   return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
 }
 
@@ -520,9 +520,9 @@ SPECTRE_ALWAYS_INLINE auto operator+(
 /// Tensors, here is a non-exhaustive list of some of the acceptable forms that
 /// the tensor expression operand could take:
 /// - `R()`
-/// - `R(ti_A, ti_a)`
-/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
-/// - `R(ti_t, ti_t)`
+/// - `R(ti::A, ti::a)`
+/// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
+/// - `R(ti::t, ti::t)`
 ///
 /// \tparam T the derived TensorExpression type of the tensor expression operand
 /// of the sum
@@ -583,7 +583,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when subtracting two tensors must be equal. This "
       "error "
-      "occurs from expressions like R(ti_a, ti_b) - S(ti_c, ti_a)");
+      "occurs from expressions like R(ti::a, ti::b) - S(ti::c, ti::a)");
   return tenex::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
 
@@ -598,9 +598,9 @@ SPECTRE_ALWAYS_INLINE auto operator-(
 /// Tensors, here is a non-exhaustive list of some of the acceptable forms that
 /// the tensor expression operand could take:
 /// - `R()`
-/// - `R(ti_A, ti_a)`
-/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
-/// - `R(ti_t, ti_t)`
+/// - `R(ti::A, ti::a)`
+/// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
+/// - `R(ti::t, ti::t)`
 ///
 /// \tparam T the derived TensorExpression type of the tensor expression operand
 /// of the difference

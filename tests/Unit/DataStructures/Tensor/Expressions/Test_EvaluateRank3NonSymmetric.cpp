@@ -18,10 +18,10 @@ SPECTRE_TEST_CASE(
   // Rank 3: double; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_3_no_symmetry<
       double, SpacetimeIndex, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo,
-      UpLo::Up, ti_D, ti_j, ti_B>();
+      UpLo::Up, ti::D, ti::j, ti::B>();
 
   // Rank 3: DataVector; nonsymmetric
   TestHelpers::tenex::test_evaluate_rank_3_no_symmetry<
       DataVector, SpacetimeIndex, SpatialIndex, SpacetimeIndex, UpLo::Up,
-      UpLo::Lo, UpLo::Up, ti_D, ti_j, ti_B>();
+      UpLo::Lo, UpLo::Up, ti::D, ti::j, ti::B>();
 }

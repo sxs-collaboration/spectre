@@ -10,12 +10,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
                   "[DataStructures][Unit]") {
   // Test `make_tensorindex_list`
   // Check at compile time since some other tests use this metafunction
-  static_assert(
-      std::is_same_v<
-          make_tensorindex_list<ti_j, ti_A, ti_b>,
-          tmpl::list<std::decay_t<decltype(ti_j)>, std::decay_t<decltype(ti_A)>,
-                     std::decay_t<decltype(ti_b)>>>,
-      "make_tensorindex_list failed for non-empty list");
+  static_assert(std::is_same_v<make_tensorindex_list<ti::j, ti::A, ti::b>,
+                               tmpl::list<std::decay_t<decltype(ti::j)>,
+                                          std::decay_t<decltype(ti::A)>,
+                                          std::decay_t<decltype(ti::b)>>>,
+                "make_tensorindex_list failed for non-empty list");
   static_assert(std::is_same_v<make_tensorindex_list<>, tmpl::list<>>,
                 "make_tensorindex_list failed for empty list");
 
@@ -69,53 +68,53 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
 
   // Test tensorindex_list_is_valid
   CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<>>::value);
-  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti_J>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti::J>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
+        make_tensorindex_list<ti::t, ti::T, ti::T, ti::T, ti::t>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
+        make_tensorindex_list<ti::d, ti::T, ti::D>>::value);
   CHECK(not tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
+        make_tensorindex_list<ti::I, ti::a, ti::I>>::value);
 
   // Test tensorindex_list_is_valid
   CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<>>::value);
-  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti_J>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti::J>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
+        make_tensorindex_list<ti::t, ti::T, ti::T, ti::T, ti::t>>::value);
   CHECK(tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
+        make_tensorindex_list<ti::d, ti::T, ti::D>>::value);
   CHECK(not tenex::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
+        make_tensorindex_list<ti::I, ti::a, ti::I>>::value);
 
   // Test generic_indices_at_same_positions
   CHECK(
       tenex::generic_indices_at_same_positions<make_tensorindex_list<>,
                                                make_tensorindex_list<>>::value);
   CHECK(tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>,
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>>::value);
   CHECK(not tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
-        make_tensorindex_list<ti_a, ti_c, ti_i, ti_B>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>,
+        make_tensorindex_list<ti::a, ti::c, ti::i, ti::B>>::value);
   CHECK(not tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
-        make_tensorindex_list<ti_a, ti_c, ti_I>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>,
+        make_tensorindex_list<ti::a, ti::c, ti::I>>::value);
   CHECK(not tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_a, ti_c, ti_I>,
-        make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
+        make_tensorindex_list<ti::a, ti::c, ti::I>,
+        make_tensorindex_list<ti::a, ti::c, ti::I, ti::B>>::value);
   CHECK(not tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_j, ti_B>,
-        make_tensorindex_list<ti_B, ti_j>>::value);
+        make_tensorindex_list<ti::j, ti::B>,
+        make_tensorindex_list<ti::B, ti::j>>::value);
   CHECK(tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_T>, make_tensorindex_list<ti_t>>::value);
+        make_tensorindex_list<ti::T>, make_tensorindex_list<ti::t>>::value);
   CHECK(tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_t, ti_T, ti_T>,
-        make_tensorindex_list<ti_T, ti_t, ti_T>>::value);
+        make_tensorindex_list<ti::t, ti::T, ti::T>,
+        make_tensorindex_list<ti::T, ti::t, ti::T>>::value);
   CHECK(tenex::generic_indices_at_same_positions<
-        make_tensorindex_list<ti_i, ti_t, ti_C>,
-        make_tensorindex_list<ti_i, ti_T, ti_C>>::value);
+        make_tensorindex_list<ti::i, ti::t, ti::C>,
+        make_tensorindex_list<ti::i, ti::T, ti::C>>::value);
 }

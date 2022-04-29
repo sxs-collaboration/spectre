@@ -12,27 +12,28 @@
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TimeIndex",
                   "[DataStructures][Unit]") {
   // Test tt::is_time_index
-  CHECK(tt::is_time_index<std::decay_t<decltype(ti_t)>>::value);
-  CHECK(tt::is_time_index<std::decay_t<decltype(ti_T)>>::value);
-  CHECK(not tt::is_time_index<std::decay_t<decltype(ti_b)>>::value);
-  CHECK(not tt::is_time_index<std::decay_t<decltype(ti_I)>>::value);
+  CHECK(tt::is_time_index<std::decay_t<decltype(ti::t)>>::value);
+  CHECK(tt::is_time_index<std::decay_t<decltype(ti::T)>>::value);
+  CHECK(not tt::is_time_index<std::decay_t<decltype(ti::b)>>::value);
+  CHECK(not tt::is_time_index<std::decay_t<decltype(ti::I)>>::value);
 
   // Test is_time_index_value
-  CHECK(tenex::detail::is_time_index_value(ti_t.value));
-  CHECK(tenex::detail::is_time_index_value(ti_T.value));
-  CHECK(not tenex::detail::is_time_index_value(ti_C.value));
-  CHECK(not tenex::detail::is_time_index_value(ti_j.value));
+  CHECK(tenex::detail::is_time_index_value(ti::t.value));
+  CHECK(tenex::detail::is_time_index_value(ti::T.value));
+  CHECK(not tenex::detail::is_time_index_value(ti::C.value));
+  CHECK(not tenex::detail::is_time_index_value(ti::j.value));
 
   // Lists of TensorIndexs used for testing below
   using empty_index_list = make_tensorindex_list<>;
-  using a = make_tensorindex_list<ti_a>;
-  using aiC = make_tensorindex_list<ti_a, ti_i, ti_C>;
-  using t = make_tensorindex_list<ti_t>;
-  using TT = make_tensorindex_list<ti_T, ti_T>;
-  using tc = make_tensorindex_list<ti_t, ti_c>;
-  using c = make_tensorindex_list<ti_c>;
-  using atTBjT = make_tensorindex_list<ti_a, ti_t, ti_T, ti_B, ti_j, ti_T>;
-  using aBj = make_tensorindex_list<ti_a, ti_B, ti_j>;
+  using a = make_tensorindex_list<ti::a>;
+  using aiC = make_tensorindex_list<ti::a, ti::i, ti::C>;
+  using t = make_tensorindex_list<ti::t>;
+  using TT = make_tensorindex_list<ti::T, ti::T>;
+  using tc = make_tensorindex_list<ti::t, ti::c>;
+  using c = make_tensorindex_list<ti::c>;
+  using atTBjT =
+      make_tensorindex_list<ti::a, ti::t, ti::T, ti::B, ti::j, ti::T>;
+  using aBj = make_tensorindex_list<ti::a, ti::B, ti::j>;
 
   // Test remove_time_indices
   CHECK(

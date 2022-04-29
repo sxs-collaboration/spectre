@@ -90,7 +90,7 @@ void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
   const auto& x_minus_center =
       cache->get_var(*this, internal_tags::x_minus_center<DataType, Frame>{});
 
-  tenex::evaluate<ti_I>(x_over_r, x_minus_center(ti_I) * one_over_r());
+  tenex::evaluate<ti::I>(x_over_r, x_minus_center(ti::I) * one_over_r());
 }
 
 template <typename DataType, typename Frame>
@@ -384,9 +384,9 @@ void HarmonicSchwarzschild::IntermediateComputer<DataType, Frame>::operator()(
   const auto& one_over_spatial_metric_rr = cache->get_var(
       *this, internal_tags::one_over_spatial_metric_rr<DataType>{});
 
-  ::tenex::evaluate<ti_I>(shift, two_m_over_m_plus_r_squared() *
-                                     x_over_r(ti_I) *
-                                     one_over_spatial_metric_rr());
+  ::tenex::evaluate<ti::I>(shift, two_m_over_m_plus_r_squared() *
+                                      x_over_r(ti::I) *
+                                      one_over_spatial_metric_rr());
 }
 
 template <typename DataType, typename Frame>

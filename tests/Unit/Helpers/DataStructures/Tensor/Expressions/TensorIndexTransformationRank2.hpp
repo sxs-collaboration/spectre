@@ -25,8 +25,8 @@ namespace TestHelpers::tenex {
 /// first generic index ordering, the equivalent multi-index with the second
 /// ordering is correctly computed.
 ///
-/// \tparam TensorIndexA the first generic tensor index, e.g. type of `ti_a`
-/// \tparam TensorIndexB the second generic tensor index, e.g. type of `ti_B`
+/// \tparam TensorIndexA the first generic tensor index, e.g. type of `ti::a`
+/// \tparam TensorIndexB the second generic tensor index, e.g. type of `ti::B`
 template <typename TensorIndexA, typename TensorIndexB>
 void test_tensor_index_transformation_rank_2(
     const TensorIndexA& /*tensorindex_a*/,

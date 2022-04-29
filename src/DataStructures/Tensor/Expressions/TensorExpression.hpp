@@ -27,7 +27,7 @@ struct Expression {};
 /// \tparam DataType the type of the data being stored in the Tensor's
 /// \tparam Symm the ::Symmetry of the Derived class
 /// \tparam IndexList the list of \ref SpacetimeIndex "TensorIndex"'s
-/// \tparam Args the tensor indices, e.g. `_a` and `_b` in `F(_a, _b)`
+/// \tparam Args the tensor indices, e.g. `a` and `b` in `F(ti::a, ti::b)`
 /// \cond HIDDEN_SYMBOLS
 template <typename Derived, typename DataType, typename Symm,
           typename IndexList, typename Args = tmpl::list<>,

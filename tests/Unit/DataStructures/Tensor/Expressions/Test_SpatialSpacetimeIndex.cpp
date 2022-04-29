@@ -48,14 +48,14 @@ using index_list_iJK = index_list<SpatialIndex<dim, UpLo::Lo, frame>,
                                   SpatialIndex<dim, UpLo::Up, frame>>;
 
 using ti_list_empty = tmpl::list<>;
-using ti_list_a = make_tensorindex_list<ti_a>;
-using ti_list_i = make_tensorindex_list<ti_i>;
-using ti_list_abc = make_tensorindex_list<ti_a, ti_b, ti_c>;
-using ti_list_ijk = make_tensorindex_list<ti_i, ti_j, ti_k>;
-using ti_list_abi = make_tensorindex_list<ti_a, ti_b, ti_i>;
-using ti_list_aij = make_tensorindex_list<ti_a, ti_i, ti_j>;
-using ti_list_iaj = make_tensorindex_list<ti_i, ti_a, ti_j>;
-using ti_list_ija = make_tensorindex_list<ti_i, ti_j, ti_a>;
+using ti_list_a = make_tensorindex_list<ti::a>;
+using ti_list_i = make_tensorindex_list<ti::i>;
+using ti_list_abc = make_tensorindex_list<ti::a, ti::b, ti::c>;
+using ti_list_ijk = make_tensorindex_list<ti::i, ti::j, ti::k>;
+using ti_list_abi = make_tensorindex_list<ti::a, ti::b, ti::i>;
+using ti_list_aij = make_tensorindex_list<ti::a, ti::i, ti::j>;
+using ti_list_iaj = make_tensorindex_list<ti::i, ti::a, ti::j>;
+using ti_list_ija = make_tensorindex_list<ti::i, ti::j, ti::a>;
 
 using positions_list_empty = tmpl::integral_list<size_t>;
 using positions_list_0 = tmpl::integral_list<size_t, 0>;

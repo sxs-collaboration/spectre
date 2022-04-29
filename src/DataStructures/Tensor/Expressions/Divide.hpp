@@ -90,9 +90,9 @@ struct Divide : public TensorExpression<
 /// For example, if `R` and `S` are Tensors, here is a non-exhaustive list of
 /// some of the acceptable forms that `t2` could take:
 /// - `R()`
-/// - `R(ti_A, ti_a)`
-/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
-/// - `R(ti_t, ti_t) + 1.0`
+/// - `R(ti::A, ti::a)`
+/// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
+/// - `R(ti::t, ti::t) + 1.0`
 ///
 /// \param t1 the tensor expression numerator
 /// \param t2 the rank 0 tensor expression denominator

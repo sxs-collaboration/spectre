@@ -27,21 +27,21 @@ namespace tt {
 template <typename T>
 struct is_time_index : std::false_type {};
 template <>
-struct is_time_index<std::decay_t<decltype(ti_t)>> : std::true_type {};
+struct is_time_index<std::decay_t<decltype(ti::t)>> : std::true_type {};
 template <>
-struct is_time_index<std::decay_t<decltype(ti_T)>> : std::true_type {};
+struct is_time_index<std::decay_t<decltype(ti::T)>> : std::true_type {};
 }  // namespace tt
 
 namespace tenex {
 namespace detail {
 /// \brief Returns whether or not the provided value is the TensorIndex value
-/// that encodes the upper or lower concrete time index (`ti_T` or `ti_t`)
+/// that encodes the upper or lower concrete time index (`ti::T` or `ti::t`)
 ///
 /// \param value the value to check
 /// \return whether or not the value encodes the upper or lower concrete time
 /// index
 constexpr bool is_time_index_value(const size_t value) {
-  return value == ti_t.value or value == ti_T.value;
+  return value == ti::t.value or value == ti::T.value;
 }
 
 template <typename State, typename Element>

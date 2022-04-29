@@ -113,8 +113,8 @@ constexpr bool is_evaluated_lhs_multi_index(
  * together and fill the provided resultant LHS Tensor `L` with index order
  * (b, a):
  * \code{.cpp}
- * tenex::evaluate<ti_b, ti_a>(
- *     make_not_null(&L), R(ti_a, ti_b) + S(ti_a, ti_b));
+ * tenex::evaluate<ti::b, ti::a>(
+ *     make_not_null(&L), R(ti::a, ti::b) + S(ti::a, ti::b));
  * \endcode
  *
  * This represents evaluating: \f$L_{ba} = R_{ab} + S_{ab}\f$
@@ -123,7 +123,7 @@ constexpr bool is_evaluated_lhs_multi_index(
  * template parameters cannot be class types until C++20.
  *
  * @tparam LhsTensorIndices the TensorIndexs of the Tensor on the LHS of the
- * tensor expression, e.g. `ti_a`, `ti_b`, `ti_c`
+ * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
  * @param lhs_tensor pointer to the resultant LHS Tensor to fill
  * @param rhs_tensorexpression the RHS TensorExpression to be evaluated
  */
@@ -150,19 +150,20 @@ void evaluate(
       "The generic indices on the LHS of a tensor equation (that is, the "
       "template parameters specified in evaluate<...>) must match the generic "
       "indices of the RHS TensorExpression. This error occurs as a result of a "
-      "call like evaluate<ti_a, ti_b>(R(ti_A, ti_b) * S(ti_a, ti_c)), where "
-      "the generic indices of the evaluated RHS expression are ti_b and ti_c, "
-      "but the generic indices provided for the LHS are ti_a and ti_b.");
+      "call like evaluate<ti::a, ti::b>(R(ti::A, ti::b) * S(ti::a, ti::c)), "
+      "where the generic indices of the evaluated RHS expression are ti::b and "
+      "ti::c, but the generic indices provided for the LHS are ti::a and "
+      "ti::b.");
   static_assert(
       tensorindex_list_is_valid<lhs_tensorindex_list>::value,
       "Cannot evaluate a tensor expression to a LHS tensor with a repeated "
-      "generic index, e.g. evaluate<ti_a, ti_a>. (Note that the concrete "
-      "time indices (ti_T and ti_t) can be repeated.)");
+      "generic index, e.g. evaluate<ti::a, ti::a>. (Note that the concrete "
+      "time indices (ti::T and ti::t) can be repeated.)");
   static_assert(
       not detail::contains_indices_to_contract<num_lhs_indices>(
           {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
       "Cannot evaluate a tensor expression to a LHS tensor with generic "
-      "indices that would be contracted, e.g. evaluate<ti_A, ti_a>.");
+      "indices that would be contracted, e.g. evaluate<ti::A, ti::a>.");
   // `IndexPropertyCheck` does also check that valence (Up/Lo) of indices that
   // correspond in the RHS and LHS tensors are equal, but the assertion message
   // below does not mention this because a mismatch in valence should have been
@@ -178,7 +179,7 @@ void evaluate(
       "cannot be evaluated to its corresponding index in the LHS tensor. This "
       "is due to a difference in number of spatial dimensions or Frame type "
       "between the index on the RHS and LHS. "
-      "e.g. evaluate<ti_a, ti_b>(L, R(ti_b, ti_a));, where R's first "
+      "e.g. evaluate<ti::a, ti::b>(L, R(ti::b, ti::a));, where R's first "
       "index has 2 spatial dimensions but L's second index has 3 spatial "
       "dimensions. Check RHS and LHS indices that use the same generic index.");
 
@@ -250,8 +251,7 @@ void evaluate(
  * Given two rank 2 Tensors `R` and `S` with index order (a, b), add them
  * together and generate the resultant LHS Tensor `L` with index order (b, a):
  * \code{.cpp}
- * auto L = tenex::evaluate<ti_b, ti_a>(
- *     R(ti_a, ti_b) + S(ti_a, ti_b));
+ * auto L = tenex::evaluate<ti::b, ti::a>(R(ti::a, ti::b) + S(ti::a, ti::b));
  * \endcode
  * \metareturns Tensor
  *
@@ -269,7 +269,7 @@ void evaluate(
  * template parameters cannot be class types until C++20.
  *
  * @tparam LhsTensorIndices the TensorIndexs of the Tensor on the LHS of the
- * tensor expression, e.g. `ti_a`, `ti_b`, `ti_c`
+ * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
  * @param rhs_tensorexpression the RHS TensorExpression to be evaluated
  * @return the resultant LHS Tensor with index order specified by
  * LhsTensorIndices

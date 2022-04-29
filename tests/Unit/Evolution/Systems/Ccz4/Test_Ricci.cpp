@@ -125,7 +125,7 @@ void test_compute_spatial_ricci_tensor(
   }
 
   const auto contracted_field_d_up =
-      ::tenex::evaluate<ti_L>(field_d_up(ti_m, ti_M, ti_L));
+      ::tenex::evaluate<ti::L>(field_d_up(ti::m, ti::M, ti::L));
 
   using field_d_tag =
       Ccz4::Tags::FieldD<SpatialDim, Frame::Inertial, DataVector>;
@@ -166,7 +166,7 @@ void test_compute_spatial_ricci_tensor(
       conformal_christoffel_second_kind);
 
   const auto contracted_christoffel_second_kind =
-      tenex::evaluate<ti_l>(christoffel_second_kind(ti_M, ti_l, ti_m));
+      tenex::evaluate<ti::l>(christoffel_second_kind(ti::M, ti::l, ti::m));
 
   using christoffel_second_kind_tag =
       gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame::Inertial,
@@ -183,9 +183,9 @@ void test_compute_spatial_ricci_tensor(
                       Frame::Inertial>>(d_christoffel_second_kind_var);
 
   const auto contracted_d_conformal_christoffel_difference =
-      ::tenex::evaluate<ti_i, ti_j>(
-          d_conformal_christoffel_second_kind(ti_m, ti_M, ti_i, ti_j) -
-          d_conformal_christoffel_second_kind(ti_j, ti_M, ti_i, ti_m));
+      ::tenex::evaluate<ti::i, ti::j>(
+          d_conformal_christoffel_second_kind(ti::m, ti::M, ti::i, ti::j) -
+          d_conformal_christoffel_second_kind(ti::j, ti::M, ti::i, ti::m));
 
   // Compute expected and actual ricci tensors using above computed arguments
   const auto expected_py_ricci_tensor{

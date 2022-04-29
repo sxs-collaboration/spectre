@@ -37,25 +37,25 @@ void test_rhs(const DataType& used_for_size,
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<dim, UpLo::Lo, Frame::Inertial>>>
-      Lai_from_R_ai = tenex::evaluate<ti_a, ti_i>(R(ti_a, ti_i));
+      Lai_from_R_ai = tenex::evaluate<ti::a, ti::i>(R(ti::a, ti::i));
 
   // \f$L_{ia} = R_{ai}\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
-      Lia_from_R_ai = tenex::evaluate<ti_i, ti_a>(R(ti_a, ti_i));
+      Lia_from_R_ai = tenex::evaluate<ti::i, ti::a>(R(ti::a, ti::i));
 
   // \f$L_{ai} = R_{ia}\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<dim, UpLo::Lo, Frame::Inertial>>>
-      Lai_from_R_ia = tenex::evaluate<ti_a, ti_i>(R(ti_i, ti_a));
+      Lai_from_R_ia = tenex::evaluate<ti::a, ti::i>(R(ti::i, ti::a));
 
   // \f$L_{ia} = R_{ia}\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
-      Lia_from_R_ia = tenex::evaluate<ti_i, ti_a>(R(ti_i, ti_a));
+      Lia_from_R_ia = tenex::evaluate<ti::i, ti::a>(R(ti::i, ti::a));
 
   for (size_t a = 0; a < dim + 1; a++) {
     for (size_t i = 0; i < dim; i++) {
@@ -90,14 +90,14 @@ void test_lhs(const DataType& used_for_size,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lai_from_R_ai(used_for_size);
-  tenex::evaluate<ti_a, ti_i>(make_not_null(&Lai_from_R_ai), R(ti_a, ti_i));
+  tenex::evaluate<ti::a, ti::i>(make_not_null(&Lai_from_R_ai), R(ti::a, ti::i));
 
   // \f$L_{ia} = R_{ai}\f$
   Tensor<DataType, Symmetry<2, 1>,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lia_from_R_ai(used_for_size);
-  tenex::evaluate<ti_i, ti_a>(make_not_null(&Lia_from_R_ai), R(ti_a, ti_i));
+  tenex::evaluate<ti::i, ti::a>(make_not_null(&Lia_from_R_ai), R(ti::a, ti::i));
 
   const auto S = make_with_random_values<
       Tensor<DataType, Symmetry<2, 1>,
@@ -110,14 +110,14 @@ void test_lhs(const DataType& used_for_size,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lia_from_S_ia(used_for_size);
-  tenex::evaluate<ti_i, ti_a>(make_not_null(&Lia_from_S_ia), S(ti_i, ti_a));
+  tenex::evaluate<ti::i, ti::a>(make_not_null(&Lia_from_S_ia), S(ti::i, ti::a));
 
   // \f$L_{ai} = S_{ia}\f$
   Tensor<DataType, Symmetry<2, 1>,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lai_from_S_ia(used_for_size);
-  tenex::evaluate<ti_a, ti_i>(make_not_null(&Lai_from_S_ia), S(ti_i, ti_a));
+  tenex::evaluate<ti::a, ti::i>(make_not_null(&Lai_from_S_ia), S(ti::i, ti::a));
 
   for (size_t a = 0; a < dim + 1; a++) {
     for (size_t i = 0; i < dim; i++) {
@@ -152,28 +152,28 @@ void test_rhs_and_lhs_rank2(const DataType& used_for_size,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lai_from_R_ai(used_for_size);
-  tenex::evaluate<ti_a, ti_i>(make_not_null(&Lai_from_R_ai), R(ti_a, ti_i));
+  tenex::evaluate<ti::a, ti::i>(make_not_null(&Lai_from_R_ai), R(ti::a, ti::i));
 
   // \f$L_{ia} = R_{ai}\f$
   Tensor<DataType, Symmetry<2, 1>,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lia_from_R_ai(used_for_size);
-  tenex::evaluate<ti_i, ti_a>(make_not_null(&Lia_from_R_ai), R(ti_a, ti_i));
+  tenex::evaluate<ti::i, ti::a>(make_not_null(&Lia_from_R_ai), R(ti::a, ti::i));
 
   // \f$L_{ai} = R_{ia}\f$
   Tensor<DataType, Symmetry<2, 1>,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lai_from_R_ia(used_for_size);
-  tenex::evaluate<ti_a, ti_i>(make_not_null(&Lai_from_R_ia), R(ti_i, ti_a));
+  tenex::evaluate<ti::a, ti::i>(make_not_null(&Lai_from_R_ia), R(ti::i, ti::a));
 
   // \f$L_{ia} = R_{ia}\f$
   Tensor<DataType, Symmetry<2, 1>,
          index_list<SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Inertial>>>
       Lia_from_R_ia(used_for_size);
-  tenex::evaluate<ti_i, ti_a>(make_not_null(&Lia_from_R_ia), R(ti_i, ti_a));
+  tenex::evaluate<ti::i, ti::a>(make_not_null(&Lia_from_R_ia), R(ti::i, ti::a));
 
   for (size_t a = 0; a < dim + 1; a++) {
     for (size_t i = 0; i < dim; i++) {
@@ -212,8 +212,8 @@ void test_rhs_and_lhs_rank4(const DataType& used_for_size,
                     SpacetimeIndex<dim, UpLo::Lo, Frame::Grid>,
                     SpatialIndex<dim, UpLo::Lo, Frame::Grid>>>
       Likaj_from_R_jaik(used_for_size);
-  tenex::evaluate<ti_i, ti_k, ti_a, ti_j>(make_not_null(&Likaj_from_R_jaik),
-                                          R(ti_j, ti_a, ti_i, ti_k));
+  tenex::evaluate<ti::i, ti::k, ti::a, ti::j>(make_not_null(&Likaj_from_R_jaik),
+                                              R(ti::j, ti::a, ti::i, ti::k));
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t k = 0; k < dim; k++) {

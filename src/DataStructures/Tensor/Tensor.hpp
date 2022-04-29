@@ -260,14 +260,14 @@ class Tensor<X, Symm, IndexList<Indices...>> {
       TensorIndices... /*meta*/) const {
     static_assert((... and tt::is_tensor_index<TensorIndices>::value),
                   "The tensor expression must be created using TensorIndex "
-                  "objects to represent generic indices, e.g. ti_a, ti_b, "
+                  "objects to represent generic indices, e.g. ti::a, ti::b, "
                   "etc.");
     static_assert(
         tenex::tensorindex_list_is_valid<tmpl::list<TensorIndices...>>::value,
-        "Cannot create a tensor expression with a repeated generic "
-        "index. (Note that the concrete time indices, ti_T and ti_t, "
-        "can be repeated.) If you intend to contract, ensure that "
-        "the indices to contract have opposite valences.");
+        "Cannot create a tensor expression with a repeated generic index. "
+        "(Note that the concrete time indices, ti::T and ti::t, can be "
+        "repeated.) If you intend to contract, ensure that the indices to "
+        "contract have opposite valences.");
     static_assert(
         std::is_same_v<tmpl::integral_list<UpLo, TensorIndices::valence...>,
                        tmpl::integral_list<UpLo, Indices::ul...>>,
@@ -276,8 +276,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
     static_assert((... and (not(TensorIndices::is_spacetime and
                                 (Indices::index_type == IndexType::Spatial)))),
                   "Cannot use a spacetime index for a spatial index. e.g. "
-                  "Cannot do R(ti_a), where R's index is spatial, because ti_a "
-                  "denotes a generic spacetime index.");
+                  "Cannot do R(ti::a), where R's index is spatial, because "
+                  "ti::a denotes a generic spacetime index.");
     return tenex::contract(TE<tmpl::list<TensorIndices...>>{*this});
   }
   /// @}

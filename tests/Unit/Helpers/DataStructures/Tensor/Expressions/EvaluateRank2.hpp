@@ -25,7 +25,7 @@ namespace TestHelpers::tenex {
 /// side tensor
 ///
 /// \details `TensorIndexA` and `TensorIndexB` can be any type of TensorIndex
-/// and are not necessarily `ti_a` and `ti_b`. The "A" and "B" suffixes just
+/// and are not necessarily `ti::a` and `ti::b`. The "A" and "B" suffixes just
 /// denote the ordering of the generic indices of the RHS tensor expression. In
 /// the RHS tensor expression, it means `TensorIndexA` is the first index used
 /// and `TensorIndexB` is the second index used.
@@ -41,9 +41,9 @@ namespace TestHelpers::tenex {
 /// \tparam RhsTensorIndexTypeList the RHS Tensor's typelist of
 /// \ref SpacetimeIndex "TensorIndexType"s
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
+/// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
+/// TensorExpression, e.g. `ti::B`
 template <typename DataType, typename RhsSymmetry,
           typename RhsTensorIndexTypeList, auto& TensorIndexA,
           auto& TensorIndexB>
@@ -125,7 +125,7 @@ void test_evaluate_rank_2_impl() {
 /// - <1, 1> (`test_evaluate_rank_2_symmetric`)
 ///
 /// \details `TensorIndexA` and `TensorIndexB` can be any type of TensorIndex
-/// and are not necessarily `ti_a` and `ti_b`. The "A" and "B" suffixes just
+/// and are not necessarily `ti::a` and `ti::b`. The "A" and "B" suffixes just
 /// denote the ordering of the generic indices of the RHS tensor expression. In
 /// the RHS tensor expression, it means `TensorIndexA` is the first index used
 /// and `TensorIndexB` is the second index used.
@@ -144,9 +144,9 @@ void test_evaluate_rank_2_impl() {
 /// \tparam ValenceB the valence of the second index used on the RHS of the
 /// TensorExpression
 /// \tparam TensorIndexA the first TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_a`
+/// TensorExpression, e.g. `ti::a`
 /// \tparam TensorIndexB the second TensorIndex used on the RHS of the
-/// TensorExpression, e.g. `ti_B`
+/// TensorExpression, e.g. `ti::B`
 template <typename DataType,
           template <size_t, UpLo, typename> class TensorIndexTypeA,
           template <size_t, UpLo, typename> class TensorIndexTypeB,
