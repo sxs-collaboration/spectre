@@ -28,6 +28,24 @@
 
 namespace {
 namespace TestSimpleAndThreadedActions {
+struct MockSingleton {
+  using chare_type = ActionTesting::MockSingletonChare;
+};
+struct MockArray {
+  using chare_type = ActionTesting::MockArrayChare;
+};
+struct MockGroup {
+  using chare_type = ActionTesting::MockGroupChare;
+};
+struct MockNodegroup {
+  using chare_type = ActionTesting::MockNodeGroupChare;
+};
+
+static_assert(Parallel::is_singleton_v<MockSingleton>);
+static_assert(Parallel::is_array_v<MockArray>);
+static_assert(Parallel::is_group_v<MockGroup>);
+static_assert(Parallel::is_nodegroup_v<MockNodegroup>);
+
 struct simple_action_a;
 struct simple_action_a_mock;
 struct simple_action_c;

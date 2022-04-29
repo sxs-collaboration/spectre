@@ -99,6 +99,11 @@ using get_component_if_mocked =
 template <typename Metavariables>
 class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
  public:
+  // Even though the MutableGlobalCache doesn't run the Algorithm, this type
+  // alias helps in identifying that the MutableGlobalCache is a Group using
+  // Parallel::is_group_v
+  using chare_type = Parallel::Algorithms::Group;
+
   explicit MutableGlobalCache(tuples::tagged_tuple_from_typelist<
                               get_mutable_global_cache_tags<Metavariables>>
                                   mutable_global_cache);
@@ -296,6 +301,10 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
   using component_list = typename Metavariables::component_list;
+  // Even though the GlobalCache doesn't run the Algorithm, this type alias
+  // helps in identifying that the GlobalCache is a Nodegroup using
+  // Parallel::is_nodegroup_v
+  using chare_type = Parallel::Algorithms::Nodegroup;
 
   /// Constructor used only by the ActionTesting framework and other
   /// non-charm++ tests that don't know about proxies.

@@ -25,6 +25,8 @@ namespace Algorithms {
  * - `ckindex`: A charm++ chare index object. Useful for obtaining entry
  *   method indices that are needed for creating callbacks. See
  *   https://charm.readthedocs.io/en/latest/charm++/manual.html#creating-a-ckcallback-object
+ * - component_type: this object. Serves to allow checking the component type in
+ *   both source code and the testing framework.
  */
 struct Singleton {
   template <typename ParallelComponent, typename SpectreArrayIndex>
@@ -41,6 +43,8 @@ struct Singleton {
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
   using cproxy_section = void;
+
+  using component_type = Singleton;
 };
 }  // namespace Algorithms
 }  // namespace Parallel
