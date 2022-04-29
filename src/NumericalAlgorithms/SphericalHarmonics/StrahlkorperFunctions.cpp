@@ -6,6 +6,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/Interpolation/LinearLeastSquares.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -415,6 +416,29 @@ void normal_one_form(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> one_form,
   }
 }
 
+template <typename Fr>
+std::vector<std::array<double, 4>> fit_ylm_coeffs(
+    const DataVector& times,
+    const std::vector<Strahlkorper<Fr>>& strahlkorpers) {
+  size_t num_observations = strahlkorpers.size();
+  size_t num_coefficients = strahlkorpers[0].coefficients().size();
+  intrp::LinearLeastSquares<3> predictor(num_observations);
+  std::vector<DataVector> coefficients;
+  for (size_t i = 0; i < num_coefficients; ++i) {
+    DataVector same_coeff_of_each_strahlkorper(num_observations);
+    for (size_t j = 0; j < num_observations; ++j) {
+      // Contains the same coefficient of each strahlkorper in the time series.
+      same_coeff_of_each_strahlkorper[j] = strahlkorpers[j].coefficients()[i];
+      if (i == 0 and j > 0) {
+        ASSERT(strahlkorpers[j - 1].l_max() == strahlkorpers[j].l_max() and
+                   strahlkorpers[j - 1].m_max() == strahlkorpers[j].m_max(),
+               "Each Strahlkorper must have the same l_max and m_max.");
+      }
+    }
+    coefficients.push_back(std::move(same_coeff_of_each_strahlkorper));
+  }
+  return predictor.fit_coefficients(times, coefficients);
+}
 }  // namespace StrahlkorperFunctions
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -535,7 +559,11 @@ void normal_one_form(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> one_form,
   template void StrahlkorperFunctions::normal_one_form(                        \
       const gsl::not_null<tnsr::i<DataVector, 3, FRAME(data)>*> one_form,      \
       const tnsr::i<DataVector, 3, FRAME(data)>& dx_radius,                    \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);
+      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat);                       \
+  template std::vector<std::array<double, 4>>                                  \
+  StrahlkorperFunctions::fit_ylm_coeffs(                                       \
+      const DataVector& times,                                                 \
+      const std::vector<Strahlkorper<FRAME(data)>>& strahlkorpers);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE,
                         (Frame::Distorted, Frame::Grid, Frame::Inertial))

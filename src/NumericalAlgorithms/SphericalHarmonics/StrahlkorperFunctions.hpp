@@ -348,4 +348,25 @@ template <typename Fr>
 void normal_one_form(const gsl::not_null<tnsr::i<DataVector, 3, Fr>*> one_form,
                      const tnsr::i<DataVector, 3, Fr>& dx_radius,
                      const tnsr::i<DataVector, 3, Fr>& r_hat);
+
+/// @{
+/*!
+ * The linear least squares fit of the polynomial of order 3
+ * given a `std::vector` of `Strahlkorper`s to their \f$Y_l^m\f$ coefficients.
+ * Assumes the the \f$l_{\max}\f$ and \f$m_{\max}\f$ of each `Strahlkorper`
+ * are the same, and the returned vector consists of \f$2l_{\max}m_{\max}\f$
+ * (the number of \f$Y_l^m\f$ coefficients) `std::array<double, 4>`s, each of
+ * which consists of the four coefficients that define the best fit cubic to
+ * each \f$Y_l^m\f$ coefficient of the `Strahlkorper` as a function of time.
+ *
+ * \param times The time corresponding to each `Strahlkorper` to be fit to.
+ * \param strahlkorpers The `Strahlkorper` surfaces which consists of a set
+ * of \f$Y_l^m\f$ coefficients corresponding to the shape of the `Strahlkorper`
+ * at a particular time.
+ */
+template <typename Fr>
+std::vector<std::array<double, 4>> fit_ylm_coeffs(
+    const DataVector& times,
+    const std::vector<Strahlkorper<Fr>>& strahlkorpers);
+
 }  // namespace StrahlkorperFunctions
