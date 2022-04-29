@@ -17,6 +17,7 @@
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -26,6 +27,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -197,7 +199,7 @@ struct use_stored_double {
 
 }  // namespace mutate_cache
 
-// We have three ParallelComponents:
+// We have four ParallelComponents:
 //
 // 1) MutateCacheComponent mutates the value in the GlobalCache using
 //    simple_actions, and then tests that the value in the GlobalCache
@@ -210,6 +212,8 @@ struct use_stored_double {
 //    the size of the value in the GlobalCache, and then if the size
 //    is correct, it verifies that its value is correct.
 //
+// 4) CheckParallelInfo checks the parallel info functions of the GlobalCache
+//    against the Parallel:: and sys:: functions.
 template <class Metavariables>
 struct MutateCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
@@ -293,11 +297,63 @@ struct CheckAndUseMutatedCacheComponent {
   }
 };
 
+template <class Metavariables>
+struct CheckParallelInfo {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
+    auto& cache = *Parallel::local_branch(global_cache);
+    Parallel::get_parallel_component<CheckParallelInfo>(cache).start_phase(
+        next_phase);
+    if (next_phase == Metavariables::Phase::CheckParallelInfo) {
+      // Check parallel info
+      SPECTRE_PARALLEL_REQUIRE(cache.number_of_procs() ==
+                               sys::number_of_procs());
+      SPECTRE_PARALLEL_REQUIRE(cache.number_of_nodes() ==
+                               sys::number_of_nodes());
+      SPECTRE_PARALLEL_REQUIRE(cache.procs_on_node(0) == sys::procs_on_node(0));
+      SPECTRE_PARALLEL_REQUIRE(cache.first_proc_on_node(0) ==
+                               sys::first_proc_on_node(0));
+      SPECTRE_PARALLEL_REQUIRE(cache.node_of(0) == sys::node_of(0));
+      SPECTRE_PARALLEL_REQUIRE(cache.local_rank_of(0) == sys::local_rank_of(0));
+      SPECTRE_PARALLEL_REQUIRE(cache.my_proc() == sys::my_proc());
+      SPECTRE_PARALLEL_REQUIRE(cache.my_node() == sys::my_node());
+      SPECTRE_PARALLEL_REQUIRE(cache.my_local_rank() == sys::my_local_rank());
+      // const auto& const_cache = *Parallel::local_branch(global_cache_proxy_);
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(cache) ==
+                               sys::number_of_procs());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes(cache) ==
+                               sys::number_of_nodes());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::procs_on_node(0, cache) ==
+                               sys::procs_on_node(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::first_proc_on_node(0, cache) ==
+                               sys::first_proc_on_node(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::node_of(0, cache) == sys::node_of(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::local_rank_of(0, cache) ==
+                               sys::local_rank_of(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_proc(cache) == sys::my_proc());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_node(cache) == sys::my_node());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_local_rank(cache) ==
+                               sys::my_local_rank());
+    }
+  }
+};
+
 struct TestMetavariables {
   using component_list =
       tmpl::list<MutateCacheComponent<TestMetavariables>,
                  UseMutatedCacheComponent<TestMetavariables>,
-                 CheckAndUseMutatedCacheComponent<TestMetavariables>>;
+                 CheckAndUseMutatedCacheComponent<TestMetavariables>,
+                 CheckParallelInfo<TestMetavariables>>;
 
   static constexpr Options::String help =
       "An executable for testing mutable items in the GlobalCache.";
@@ -307,6 +363,7 @@ struct TestMetavariables {
     MutableCacheSimpleActionStart,
     MutableCacheStart,
     MutableCacheFinish,
+    CheckParallelInfo,
     Exit
   };
 
@@ -324,6 +381,8 @@ struct TestMetavariables {
       case Phase::MutableCacheStart:
         return Phase::MutableCacheFinish;
       case Phase::MutableCacheFinish:
+        return Phase::CheckParallelInfo;
+      case Phase::CheckParallelInfo:
         [[fallthrough]];
       case Phase::Exit:
         return Phase::Exit;

@@ -187,16 +187,18 @@ class MockRuntimeSystem {
     for (const auto& [global_core_id, node_and_local_core] :
          mock_nodes_and_local_cores_) {
       const size_t global_core = global_core_id.value;
+      // Note that lambdas cannot capture structured bindings,
+      // so we define node and local_core here.
+      const auto& node = node_and_local_core.first.value;
+      const auto& local_core = node_and_local_core.second.value;
       mutable_caches_.at(global_core) =
           std::make_unique<Parallel::MutableGlobalCache<Metavariables>>(
               serialize_and_deserialize(mutable_cache_contents));
       caches_.at(global_core) = std::make_unique<GlobalCache>(
           serialize_and_deserialize(cache_contents),
-          mutable_caches_.at(global_core).get());
-      // Note that lambdas cannot capture structured bindings,
-      // so we define node and local_core here.
-      const auto& node = node_and_local_core.first.value;
-      const auto& local_core = node_and_local_core.second.value;
+          mutable_caches_.at(global_core).get(),
+          number_of_mock_cores_on_each_mock_node, static_cast<int>(global_core),
+          static_cast<int>(node), static_cast<int>(local_core));
       tmpl::for_each<typename Metavariables::component_list>(
           [this, &global_core, &node, &local_core](auto component) {
             using Component = tmpl::type_from<decltype(component)>;

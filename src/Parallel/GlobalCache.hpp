@@ -8,6 +8,7 @@
 
 #include <charm++.h>
 #include <memory>
+#include <numeric>
 #include <optional>
 #include <pup.h>
 #include <string>
@@ -18,14 +19,17 @@
 #include "DataStructures/DataBox/TagTraits.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
@@ -318,6 +322,8 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
                   get_const_global_cache_tags<Metavariables>>
                   const_global_cache,
               MutableGlobalCache<Metavariables>* mutable_global_cache,
+              std::vector<size_t> procs_per_node = {1}, const int my_proc = 0,
+              const int my_node = 0, const int my_local_rank = 0,
               std::optional<main_proxy_type> main_proxy = std::nullopt);
 
   /// Constructor used by Main and anything else that is charm++ aware.
@@ -396,6 +402,30 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// used in the testing framework.
   mutable_global_cache_proxy_type mutable_global_cache_proxy();
 
+  /// @{
+  /// Wrappers for charm++ informational functions.
+
+  /// Number of processing elements
+  int number_of_procs() const;
+  /// Number of nodes.
+  int number_of_nodes() const;
+  /// Number of processing elements on the given node.
+  int procs_on_node(const int node_index) const;
+  /// %Index of first processing element on the given node.
+  int first_proc_on_node(const int node_index) const;
+  /// %Index of the node for the given processing element.
+  int node_of(const int proc_index) const;
+  /// The local index for the given processing element on its node.
+  int local_rank_of(const int proc_index) const;
+  /// %Index of my processing element.
+  int my_proc() const;
+  /// %Index of my node.
+  int my_node() const;
+  /// The local index of my processing element on my node.
+  /// This is in the interval 0, ..., procs_on_node(my_node()) - 1.
+  int my_local_rank() const;
+  /// @}
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -437,6 +467,11 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   mutable_global_cache_proxy_type mutable_global_cache_proxy_{};
   bool parallel_components_have_been_set_{false};
   std::optional<main_proxy_type> main_proxy_;
+  // Defaults for testing framework
+  int my_proc_{0};
+  int my_node_{0};
+  int my_local_rank_{0};
+  std::vector<size_t> procs_per_node_{1};
 };
 
 template <typename Metavariables>
@@ -445,10 +480,15 @@ GlobalCache<Metavariables>::GlobalCache(
         get_const_global_cache_tags<Metavariables>>
         const_global_cache,
     MutableGlobalCache<Metavariables>* mutable_global_cache,
-    std::optional<main_proxy_type> main_proxy)
+    std::vector<size_t> procs_per_node, const int my_proc, const int my_node,
+    const int my_local_rank, std::optional<main_proxy_type> main_proxy)
     : const_global_cache_(std::move(const_global_cache)),
       mutable_global_cache_(mutable_global_cache),
-      main_proxy_(std::move(main_proxy)) {
+      main_proxy_(std::move(main_proxy)),
+      my_proc_(my_proc),
+      my_node_(my_node),
+      my_local_rank_(my_local_rank),
+      procs_per_node_(std::move(procs_per_node)) {
   ASSERT(mutable_global_cache_ != nullptr,
          "GlobalCache: Do not construct with a nullptr!");
 }
@@ -542,6 +582,78 @@ GlobalCache<Metavariables>::mutable_global_cache_proxy() {
   return mutable_global_cache_proxy_;
 }
 
+// For all these functions, if the main proxy is set (meaning we are
+// charm-aware) then just call the sys:: functions. Otherise, use the values set
+// for the testing framework (or the defaults).
+template <typename Metavariables>
+int GlobalCache<Metavariables>::number_of_procs() const {
+  return main_proxy_.has_value()
+             ? sys::number_of_procs()
+             : static_cast<int>(alg::accumulate(procs_per_node_, 0_st));
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::number_of_nodes() const {
+  return main_proxy_.has_value() ? sys::number_of_nodes()
+                                 : static_cast<int>(procs_per_node_.size());
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::procs_on_node(const int node_index) const {
+  return main_proxy_.has_value()
+             ? sys::procs_on_node(node_index)
+             : static_cast<int>(
+                   procs_per_node_[static_cast<size_t>(node_index)]);
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::first_proc_on_node(const int node_index) const {
+  return main_proxy_.has_value()
+             ? sys::first_proc_on_node(node_index)
+             : static_cast<int>(
+                   std::accumulate(procs_per_node_.begin(),
+                                   procs_per_node_.begin() + node_index, 0_st));
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::node_of(const int proc_index) const {
+  if (main_proxy_.has_value()) {
+    // For some reason gcov doesn't think this line is tested even though it is
+    // in Test_AlgorithmGlobalCache.cpp
+    return sys::node_of(proc_index);  // LCOV_EXCL_LINE
+  } else {
+    size_t procs_so_far = 0;
+    size_t node = 0;
+    while (procs_so_far <= static_cast<size_t>(proc_index)) {
+      procs_so_far += procs_per_node_[node];
+      ++node;
+    }
+    return static_cast<int>(--node);
+  }
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::local_rank_of(const int proc_index) const {
+  return main_proxy_.has_value()
+             ? sys::local_rank_of(proc_index)
+             : proc_index - first_proc_on_node(node_of(proc_index));
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::my_proc() const {
+  return main_proxy_.has_value() ? sys::my_proc() : my_proc_;
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::my_node() const {
+  return main_proxy_.has_value() ? sys::my_node() : my_node_;
+}
+
+template <typename Metavariables>
+int GlobalCache<Metavariables>::my_local_rank() const {
+  return main_proxy_.has_value() ? sys::my_local_rank() : my_local_rank_;
+}
+
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=noreturn"
@@ -553,6 +665,10 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) {
   p | mutable_global_cache_proxy_;
   p | main_proxy_;
   p | parallel_components_have_been_set_;
+  p | my_proc_;
+  p | my_node_;
+  p | my_local_rank_;
+  p | procs_per_node_;
   if (not p.isUnpacking() and mutable_global_cache_ != nullptr) {
     ERROR(
         "Cannot serialize the const global cache when the mutable global cache "
