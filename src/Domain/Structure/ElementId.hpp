@@ -11,6 +11,7 @@
 #include <functional>
 #include <iosfwd>
 #include <limits>
+#include <optional>
 
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Structure/Side.hpp"
@@ -180,6 +181,39 @@ bool operator>=(const ElementId<VolumeDim>& lhs,
                 const ElementId<VolumeDim>& rhs) {
   return !(lhs < rhs);
 }
+
+/// \brief Returns a bool if the element is the zeroth element in the domain.
+///
+/// \details An element is considered to be the zeroth element if its ElementId
+/// `id` has
+/// 1. id.block_id() == 0
+/// 2. All id.segment_ids() have SegmentId.index() == 0
+/// 3. If the argument `grid_index` is specified, id.grid_index() == grid_index.
+///
+/// This means that the only element in a domain that this function will return
+/// `true` for is the element in the lower corner of Block0 of that domain. The
+/// `grid_index` will determine which domain is used for the comparison. During
+/// evolutions, only one domain will be active at a time so it doesn't make
+/// sense to compare the `grid_index`. However, during an elliptic solve
+/// when there are multiple grids, this `grid_index` is useful for specifying
+/// only one element over all domains.
+///
+/// This function is useful if you need a unique element in the domain because
+/// only one element in the whole domain can be the zeroth element.
+///
+/// \parblock
+/// \warning If you have multiple grids and you don't specify the `grid_index`
+/// argument, this function will return `true` for one element in every grid
+/// and thus can't be used to determine a unique element in a simulation; only a
+/// unique element in each grid.
+/// \endparblock
+/// \parblock
+/// \warning If the domain is re-gridded, a different ElementId may represent
+/// the zeroth element.
+/// \endparblock
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>& id,
+                       const std::optional<size_t>& grid_index = std::nullopt);
 
 // ######################################################################
 // INLINE DEFINITIONS

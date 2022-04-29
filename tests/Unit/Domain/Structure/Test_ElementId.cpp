@@ -171,6 +171,39 @@ void test_element_id() {
   CHECK(ElementId<3>::external_boundary_id().segment_ids() ==
         make_array<3>(SegmentId(ElementId<3>::max_refinement_level - 1, 0)));
   CHECK(ElementId<3>::external_boundary_id().grid_index() == 0);
+
+  ElementId<3> element1(0);
+  ElementId<3> element2{0, 1};
+  ElementId<3> element3(1);
+  ElementId<3> element4{1, 1};
+  ElementId<3> element5{0, {{{1, 0}, {2, 0}, {1, 0}}}};
+  ElementId<3> element6{0, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
+  ElementId<3> element7{0, {{{1, 0}, {2, 1}, {1, 0}}}};
+  ElementId<3> element8{0, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
+  ElementId<3> element9{1, {{{1, 0}, {2, 0}, {1, 0}}}};
+  ElementId<3> element10{1, {{{1, 0}, {2, 0}, {1, 0}}}, 1};
+  ElementId<3> element11{1, {{{1, 0}, {2, 1}, {1, 0}}}};
+  ElementId<3> element12{1, {{{1, 0}, {2, 1}, {1, 0}}}, 1};
+
+  CHECK(is_zeroth_element(element1));
+  CHECK_FALSE(is_zeroth_element(element1, {1}));
+  CHECK(is_zeroth_element(element2));
+  CHECK_FALSE(is_zeroth_element(element2, {0}));
+  CHECK(is_zeroth_element(element2, {1}));
+  CHECK(is_zeroth_element(element5));
+  CHECK_FALSE(is_zeroth_element(element5, {1}));
+  CHECK(is_zeroth_element(element6));
+  CHECK_FALSE(is_zeroth_element(element6, {0}));
+  CHECK(is_zeroth_element(element6, {1}));
+  // Do this just so we don't duplicate the same two checks over and over for
+  // all elements that aren't the zeroth element
+  const std::vector<ElementId<3>> not_zeroth_elements{
+      {element3, element4, element7, element8, element9, element10, element11,
+       element12}};
+  for (const auto& element : not_zeroth_elements) {
+    CHECK_FALSE(is_zeroth_element(element));
+    CHECK_FALSE(is_zeroth_element(element, {1}));
+  }
 }
 
 template <size_t VolumeDim>
