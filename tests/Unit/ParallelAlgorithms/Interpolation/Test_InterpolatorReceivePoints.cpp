@@ -157,7 +157,6 @@ struct Metavariables {
     using temporal_id = ::Tags::TimeStepId;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
-    using compute_items_on_source = tmpl::list<>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;

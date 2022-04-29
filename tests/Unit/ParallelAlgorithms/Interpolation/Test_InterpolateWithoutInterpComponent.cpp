@@ -10,7 +10,10 @@
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
@@ -20,6 +23,7 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
+#include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
@@ -69,8 +73,9 @@ struct initialize_elements_and_queue_simple_actions {
     for (const auto& element_id : element_ids) {
       // 1. Get vars and mesh
       const auto& [vars, mesh] =
-          InterpolateOnElementTestHelpers::make_volume_data_and_mesh(
-              domain_creator, domain, element_id);
+          InterpolateOnElementTestHelpers::make_volume_data_and_mesh<
+              ElemComponent, Metavariables::use_time_dependent_maps>(
+              domain_creator, runner, domain, element_id, temporal_id);
 
       // 2. Make a box
       const auto box = db::create<db::AddSimpleTags<
@@ -93,26 +98,48 @@ struct initialize_elements_and_queue_simple_actions {
   }
 };
 
-template <bool HaveComputeItemsOnSource>
+template <bool HaveComputeVarsToInterpolate, bool UseTimeDependentMaps>
 struct MockMetavariables {
-  struct InterpolationTargetA
+  static constexpr bool use_time_dependent_maps = UseTimeDependentMaps;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
+  using mutable_global_cache_tags =
+      tmpl::conditional_t<use_time_dependent_maps,
+                          tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
+                          tmpl::list<>>;
+  struct InterpolationTargetAWithComputeVarsToInterpolate
       : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::TimeStepId;
-    using vars_to_interpolate_to_target = tmpl::list<tmpl::conditional_t<
-        HaveComputeItemsOnSource,
-        InterpolateOnElementTestHelpers::Tags::MultiplyByTwo,
-        InterpolateOnElementTestHelpers::Tags::TestSolution>>;
-    using compute_items_on_source = tmpl::conditional_t<
-        HaveComputeItemsOnSource,
-        tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwoCompute>,
-        tmpl::list<>>;
     using compute_items_on_target = tmpl::list<>;
-    using compute_target_points =
-        ::intrp::TargetPoints::LineSegment<InterpolationTargetA, 3>;
+    using vars_to_interpolate_to_target =
+        tmpl::list<InterpolateOnElementTestHelpers::Tags::MultiplyByTwo>;
+    using compute_vars_to_interpolate =
+        InterpolateOnElementTestHelpers::ComputeMultiplyByTwo;
+    // The following are not used in this test, but must be there to
+    // conform to the protocol.
+    using compute_target_points = ::intrp::TargetPoints::LineSegment<
+        InterpolationTargetAWithComputeVarsToInterpolate, 3>;
     using post_interpolation_callback =
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
-                                                     InterpolationTargetA>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetAWithComputeVarsToInterpolate>;
   };
+  struct InterpolationTargetAWithoutComputeVarsToInterpolate
+      : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    using temporal_id = ::Tags::TimeStepId;
+    using compute_items_on_target = tmpl::list<>;
+    using vars_to_interpolate_to_target =
+        tmpl::list<InterpolateOnElementTestHelpers::Tags::TestSolution>;
+    // The following are not used in this test, but must be there to
+    // conform to the protocol.
+    using compute_target_points = ::intrp::TargetPoints::LineSegment<
+        InterpolationTargetAWithoutComputeVarsToInterpolate, 3>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<>, InterpolationTargetAWithoutComputeVarsToInterpolate>;
+  };
+  using InterpolationTargetA =
+      tmpl::conditional_t<HaveComputeVarsToInterpolate,
+                          InterpolationTargetAWithComputeVarsToInterpolate,
+                          InterpolationTargetAWithoutComputeVarsToInterpolate>;
   static constexpr size_t volume_dim = 3;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
@@ -145,7 +172,12 @@ void run_test() {
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Interpolator.InterpolateEventNoInterpolator",
     "[Unit]") {
-  run_test<MockMetavariables<false>>();
-  run_test<MockMetavariables<true>>();
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
+  run_test<MockMetavariables<false, false>>();
+  run_test<MockMetavariables<true, false>>();
+  run_test<MockMetavariables<false, true>>();
+  run_test<MockMetavariables<true, true>>();
 }
 }  // namespace
