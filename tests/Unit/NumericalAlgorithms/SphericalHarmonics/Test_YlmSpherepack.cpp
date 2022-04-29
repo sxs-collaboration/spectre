@@ -654,10 +654,120 @@ void test_YlmSpherepack(
     test_theta_phi_points(l_max, m_max, func);
   }
 }
+
+void test_memory_pool() {
+  const size_t n_pts = 100;
+  YlmSpherepack_detail::MemoryPool pool;
+
+  // Fill all the temps.
+  std::vector<double>& tmp1 = pool.get(n_pts);
+  std::vector<double>& tmp2 = pool.get(n_pts);
+  std::vector<double>& tmp3 = pool.get(n_pts);
+  std::vector<double>& tmp4 = pool.get(n_pts);
+  std::vector<double>& tmp5 = pool.get(n_pts);
+  std::vector<double>& tmp6 = pool.get(n_pts);
+  std::vector<double>& tmp7 = pool.get(n_pts);
+  std::vector<double>& tmp8 = pool.get(n_pts);
+  std::vector<double>& tmp9 = pool.get(n_pts);
+
+  // Allocate more than the number of available temps
+  CHECK_THROWS_WITH((pool.get(n_pts)),
+                    Catch::Contains("Attempt to allocate more than 9 temps."));
+
+  // Clear too early.
+  CHECK_THROWS_WITH((pool.clear()),
+                    Catch::Contains("Attempt to clear element that is in use"));
+
+  // Free all the temps (not necessarily in the same order as get).
+  pool.free(tmp1);
+  pool.free(tmp3);
+  pool.free(tmp2);
+  pool.free(tmp5);
+  pool.free(tmp4);
+  pool.free(tmp6);
+  pool.free(tmp8);
+  pool.free(tmp9);
+  pool.free(tmp7);
+
+  // Get a vector of a smaller size.  Here the vector returned will
+  // still have size n_pts, since there is only a resize when the
+  // vector is larger than the current size.
+  auto& vec1 = pool.get(n_pts / 2);
+  CHECK(vec1.size() == n_pts);
+  pool.free(vec1);
+
+  // Get a vector of a larger size.  Here the vector returned will
+  auto& vec2 = pool.get(n_pts * 2);
+  CHECK(vec2.size() == n_pts * 2);
+  pool.free(vec2);
+
+  // Clearing the temps resets all the sizes.
+  pool.clear();
+
+  // Now the size should be n_pts/2.
+  auto& vec3 = pool.get(n_pts / 2);
+  CHECK(vec3.size() == n_pts / 2);
+  pool.free(vec3);
+  pool.clear();
+
+  std::vector<double> dum1(1, 0.0);
+  CHECK_THROWS_WITH(
+      (pool.free(dum1)),
+      Catch::Contains("Attempt to free temp that was never allocated."));
+  CHECK_THROWS_WITH(
+      (pool.free(make_not_null(dum1.data()))),
+      Catch::Contains("Attempt to free temp that was never allocated."));
+
+  std::vector<double> dum2;
+  CHECK_THROWS_WITH(
+      (pool.free(dum2)),
+      Catch::Contains("Attempt to free temp that was never allocated."));
+}
+
+void test_ylm_errors() {
+  CHECK_THROWS_WITH((YlmSpherepack(1, 1)),
+                    Catch::Contains("Must use l_max>=2, not l_max=1"));
+  CHECK_THROWS_WITH((YlmSpherepack(2, 1)),
+                    Catch::Contains("Must use m_max>=2, not m_max=1"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        YlmSpherepack ylm(4, 3);
+        const auto interp_info =
+            ylm.set_up_interpolation_info(std::array<DataVector, 2>{
+                DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
+        YlmSpherepack ylm_wrong_l_max(5, 3);
+        DataVector res{2};
+        // no need to initialize as the values should not be accessed
+        const DataVector spectral_values{ylm_wrong_l_max.spectral_size()};
+        ylm_wrong_l_max.interpolate_from_coefs(make_not_null(&res),
+                                               spectral_values, interp_info);
+      }()),
+      Catch::Contains("Different l_max for InterpolationInfo (4) "
+                      "and YlmSpherepack instance (5)"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        YlmSpherepack ylm(4, 3);
+        const auto interp_info =
+            ylm.set_up_interpolation_info(std::array<DataVector, 2>{
+                DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
+        YlmSpherepack ylm_wrong_m_max(4, 4);
+        DataVector res{2};
+        // no need to initialize as the values should not be accessed
+        const DataVector spectral_values{ylm_wrong_m_max.spectral_size()};
+        ylm_wrong_m_max.interpolate_from_coefs(make_not_null(&res),
+                                               spectral_values, interp_info);
+      }()),
+      Catch::Contains("Different m_max for InterpolationInfo (3) "
+                      "and YlmSpherepack instance (4)"));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
                   "[ApparentHorizons][Unit]") {
+  test_memory_pool();
+  test_ylm_errors();
+
   for (size_t l_max = 3; l_max < 5; ++l_max) {
     for (size_t m_max = 2; m_max <= l_max; ++m_max) {
       for (size_t physical_stride = 1; physical_stride <= 4;
@@ -690,97 +800,4 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
   test_copy_semantics(s);
   auto s_copy = s;
   test_move_semantics(std::move(s), s_copy, 6_st, 5_st);
-}
-
-// [[OutputRegex, Attempt to allocate more than 9 temps.]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.alloc_error",
-                  "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack_detail::MemoryPool pool;
-  for (size_t i = 0; i < 10;
-       ++i) {  // Only 9 temps, so the 10th iteration will fail.
-    pool.get(5);
-  }
-}
-
-// [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.free_error",
-                  "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack_detail::MemoryPool pool;
-  std::vector<double> dum(1, 0.0);
-  pool.free(dum);
-}
-
-// [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE(
-    "Unit.SphericalHarmonics.YlmSpherepackHelper.free_empty_error",
-    "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack_detail::MemoryPool pool;
-  std::vector<double> dum;
-  pool.free(dum);
-}
-
-// [[OutputRegex, Attempt to free temp that was never allocated.]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepackHelper.free_ptr_error",
-                  "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack_detail::MemoryPool pool;
-  std::vector<double> dum(1, 1.0);
-  pool.free(dum.data());
-}
-
-// [[OutputRegex, Must use l_max>=2, not l_max=1]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepack.too_few_theta_pts",
-                  "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack ylm(1, 1);
-}
-
-// [[OutputRegex, Must use m_max>=2, not m_max=1]]
-SPECTRE_TEST_CASE("Unit.SphericalHarmonics.YlmSpherepack.too_few_phi_pts",
-                  "[NumericalAlgorithms][Unit]") {
-  ERROR_TEST();
-  YlmSpherepack ylm(2, 1);
-}
-
-// [[OutputRegex, Different l_max for InterpolationInfo \(4\) and YlmSpherepack
-// instance \(5\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.SphericalHarmonics.YlmSpherepack.wrong_l_max_interpolation",
-    "[NumericalAlgorithms][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  YlmSpherepack ylm(4, 3);
-  const auto interp_info = ylm.set_up_interpolation_info(
-      std::array<DataVector, 2>{DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
-  YlmSpherepack ylm_wrong_l_max(5, 3);
-  DataVector res{2};
-  // no need to initialize as the values should not be accessed
-  const DataVector spectral_values{ylm_wrong_l_max.spectral_size()};
-  ylm_wrong_l_max.interpolate_from_coefs(make_not_null(&res), spectral_values,
-                                         interp_info);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Different m_max for InterpolationInfo \(3\) and YlmSpherepack
-// instance \(4\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.SphericalHarmonics.YlmSpherepack.wrong_m_max_interpolation",
-    "[NumericalAlgorithms][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  YlmSpherepack ylm(4, 3);
-  const auto interp_info = ylm.set_up_interpolation_info(
-      std::array<DataVector, 2>{DataVector{0.1, 0.3}, DataVector{0.2, 0.3}});
-  YlmSpherepack ylm_wrong_m_max(4, 4);
-  DataVector res{2};
-  // no need to initialize as the values should not be accessed
-  const DataVector spectral_values{ylm_wrong_m_max.spectral_size()};
-  ylm_wrong_m_max.interpolate_from_coefs(make_not_null(&res), spectral_values,
-                                         interp_info);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
 }
