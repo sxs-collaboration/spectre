@@ -19,6 +19,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare db::DataBox
@@ -955,10 +956,41 @@ void test_nodegroup_emplace() {
   CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 1);
 }
 
+struct MetavariablesWithPup {
+  using component_list =
+      tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
+
+  enum class Phase { Initialization, Testing, Exit };
+
+  void pup(PUP::er& /*p*/) {}
+};
+
+void test_sizing() {
+  using metavars = MetavariablesWithPup;
+  using component = NodeGroupComponent<metavars>;
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_nodegroup_component_and_initialize<component>(&runner,
+                                                                       {-3});
+  auto& cache = ActionTesting::cache<component>(runner, 0_st);
+  auto& proxy = Parallel::get_parallel_component<component>(cache);
+  auto& local_branch = *Parallel::local_branch(proxy);
+
+  // The fact that this doesn't cause an error means it is successful. We aren't
+  // concerned with the actual value
+  const size_t size = size_of_object_in_bytes(local_branch);
+  (void)size;
+
+  CHECK_THROWS_WITH(
+      ([&local_branch]() { serialize(local_branch); }()),
+      Catch::Contains("MockDistributedObject is not serializable. This pup "
+                      "member can only be used for sizing."));
+}
+
 SPECTRE_TEST_CASE("Unit.ActionTesting.NodesAndCores", "[Unit]") {
   test_parallel_info_functions();
   test_group_emplace();
   test_nodegroup_emplace();
+  test_sizing();
 }
 
 }  // namespace TestNodesAndCores
