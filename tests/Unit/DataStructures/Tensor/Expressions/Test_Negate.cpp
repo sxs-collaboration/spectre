@@ -41,12 +41,10 @@ void test_negate(const gsl::not_null<Generator*> generator,
                index_list<SpatialIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<dim, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<dim, UpLo::Up, Frame::Inertial>>>
-      result1 =
-          TensorExpressions::evaluate<ti_j, ti_i, ti_K>(-R(ti_K, ti_j, ti_i));
+      result1 = tenex::evaluate<ti_j, ti_i, ti_K>(-R(ti_K, ti_j, ti_i));
   // \f$L^{i}{}_{kj} = -(R^{i}_{kj} + S^{i}_{kj})\f$
-  const tnsr::Ijj<DataType, dim> result2 =
-      TensorExpressions::evaluate<ti_I, ti_k, ti_j>(
-          -(R(ti_I, ti_k, ti_j) + S(ti_I, ti_k, ti_j)));
+  const tnsr::Ijj<DataType, dim> result2 = tenex::evaluate<ti_I, ti_k, ti_j>(
+      -(R(ti_I, ti_k, ti_j) + S(ti_I, ti_k, ti_j)));
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {

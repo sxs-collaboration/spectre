@@ -53,7 +53,7 @@ void test_contractions_rank2(const DataType& used_for_size) {
   CHECK(RIi_expr.get_uncontracted_multi_index_with_uncontracted_values({{}}) ==
         expected_multi_index);
 
-  const Tensor<DataType> RIi_contracted = TensorExpressions::evaluate(RIi_expr);
+  const Tensor<DataType> RIi_contracted = tenex::evaluate(RIi_expr);
 
   DataType expected_RIi_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t i = 0; i < 3; i++) {
@@ -72,7 +72,7 @@ void test_contractions_rank2(const DataType& used_for_size) {
   CHECK(RgG_expr.get_uncontracted_multi_index_with_uncontracted_values({{}}) ==
         expected_multi_index);
 
-  const Tensor<DataType> RgG_contracted = TensorExpressions::evaluate(RgG_expr);
+  const Tensor<DataType> RgG_contracted = tenex::evaluate(RgG_expr);
 
   DataType expected_RgG_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t g = 0; g < 4; g++) {
@@ -96,7 +96,7 @@ void test_contractions_rank3(const DataType& used_for_size) {
   const auto RiIj_expr = Rlul(ti_i, ti_I, ti_j);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
-      RiIj_contracted = TensorExpressions::evaluate<ti_j>(RiIj_expr);
+      RiIj_contracted = tenex::evaluate<ti_j>(RiIj_expr);
 
   for (size_t j = 0; j < 4; j++) {
     const std::array<size_t, 3> expected_multi_index{
@@ -122,7 +122,7 @@ void test_contractions_rank3(const DataType& used_for_size) {
   const auto RJLj_expr = Ruul(ti_J, ti_L, ti_j);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      RJLj_contracted = TensorExpressions::evaluate<ti_L>(RJLj_expr);
+      RJLj_contracted = tenex::evaluate<ti_L>(RJLj_expr);
 
   for (size_t l = 0; l < 3; l++) {
     const std::array<size_t, 3> expected_multi_index{
@@ -148,7 +148,7 @@ void test_contractions_rank3(const DataType& used_for_size) {
   const auto RBfF_expr = Rulu(ti_B, ti_f, ti_F);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
-      RBfF_contracted = TensorExpressions::evaluate<ti_B>(RBfF_expr);
+      RBfF_contracted = tenex::evaluate<ti_B>(RBfF_expr);
 
   for (size_t b = 0; b < 4; b++) {
     const std::array<size_t, 3> expected_multi_index{
@@ -175,7 +175,7 @@ void test_contractions_rank3(const DataType& used_for_size) {
   const auto RiaI_expr = Rllu(ti_i, ti_a, ti_I);
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      RiaI_contracted = TensorExpressions::evaluate<ti_a>(RiaI_expr);
+      RiaI_contracted = tenex::evaluate<ti_a>(RiaI_expr);
 
   for (size_t a = 0; a < 4; a++) {
     const std::array<size_t, 3> expected_multi_index{
@@ -209,8 +209,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<4, UpLo::Up, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
-      RiIKj_contracted =
-          TensorExpressions::evaluate<ti_K, ti_j>(RiIKj_expr);
+      RiIKj_contracted = tenex::evaluate<ti_K, ti_j>(RiIKj_expr);
 
   for (size_t k = 0; k < 4; k++) {
     for (size_t j = 0; j < 3; j++) {
@@ -241,8 +240,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<4, UpLo::Lo, Frame::Grid>>>
-      RABac_contracted =
-          TensorExpressions::evaluate<ti_B, ti_c>(RABac_expr);
+      RABac_contracted = tenex::evaluate<ti_B, ti_c>(RABac_expr);
 
   for (size_t b = 0; b < 4; b++) {
     for (size_t c = 0; c < 5; c++) {
@@ -273,8 +271,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<4, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      RLJIl_contracted =
-          TensorExpressions::evaluate<ti_J, ti_I>(RLJIl_expr);
+      RLJIl_contracted = tenex::evaluate<ti_J, ti_I>(RLJIl_expr);
 
   for (size_t j = 0; j < 4; j++) {
     for (size_t i = 0; i < 3; i++) {
@@ -305,8 +302,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<1, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      REDdA_contracted =
-          TensorExpressions::evaluate<ti_E, ti_A>(REDdA_expr);
+      REDdA_contracted = tenex::evaluate<ti_E, ti_A>(REDdA_expr);
 
   for (size_t e = 0; e < 4; e++) {
     for (size_t a = 0; a < 4; a++) {
@@ -337,8 +333,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
-      RkJij_contracted =
-          TensorExpressions::evaluate<ti_k, ti_i>(RkJij_expr);
+      RkJij_contracted = tenex::evaluate<ti_k, ti_i>(RkJij_expr);
 
   for (size_t k = 0; k < 3; k++) {
     for (size_t i = 0; i < 4; i++) {
@@ -369,8 +364,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<4, UpLo::Up, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      RFcgG_contracted =
-          TensorExpressions::evaluate<ti_F, ti_c>(RFcgG_expr);
+      RFcgG_contracted = tenex::evaluate<ti_F, ti_c>(RFcgG_expr);
 
   for (size_t f = 0; f < 5; f++) {
     for (size_t c = 0; c < 4; c++) {
@@ -401,8 +395,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<2, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      RKkIJ_contracted_to_JI =
-          TensorExpressions::evaluate<ti_J, ti_I>(RKkIJ_expr);
+      RKkIJ_contracted_to_JI = tenex::evaluate<ti_J, ti_I>(RKkIJ_expr);
 
   for (size_t j = 0; j < 2; j++) {
     for (size_t i = 0; i < 3; i++) {
@@ -433,8 +426,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<1, 1>,
                index_list<SpacetimeIndex<2, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<2, UpLo::Up, Frame::Grid>>>
-      RbCBE_contracted_to_EC =
-          TensorExpressions::evaluate<ti_E, ti_C>(RbCBE_expr);
+      RbCBE_contracted_to_EC = tenex::evaluate<ti_E, ti_C>(RbCBE_expr);
 
   for (size_t e = 0; e < 3; e++) {
     for (size_t c = 0; c < 3; c++) {
@@ -465,8 +457,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<1, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      RAdba_contracted_to_bd =
-          TensorExpressions::evaluate<ti_b, ti_d>(RAdba_expr);
+      RAdba_contracted_to_bd = tenex::evaluate<ti_b, ti_d>(RAdba_expr);
 
   for (size_t b = 0; b < 4; b++) {
     for (size_t d = 0; d < 4; d++) {
@@ -497,8 +488,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      RljJi_contracted_to_il =
-          TensorExpressions::evaluate<ti_i, ti_l>(RljJi_expr);
+      RljJi_contracted_to_il = tenex::evaluate<ti_i, ti_l>(RljJi_expr);
 
   for (size_t i = 0; i < 4; i++) {
     for (size_t l = 0; l < 3; l++) {
@@ -529,8 +519,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      RagDG_contracted_to_Da =
-          TensorExpressions::evaluate<ti_D, ti_a>(RagDG_expr);
+      RagDG_contracted_to_Da = tenex::evaluate<ti_D, ti_a>(RagDG_expr);
 
   for (size_t d = 0; d < 4; d++) {
     for (size_t a = 0; a < 4; a++) {
@@ -561,8 +550,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<3, UpLo::Up, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
-      RlJiI_contracted_to_Jl =
-          TensorExpressions::evaluate<ti_J, ti_l>(RlJiI_expr);
+      RlJiI_contracted_to_Jl = tenex::evaluate<ti_J, ti_l>(RlJiI_expr);
 
   for (size_t j = 0; j < 3; j++) {
     for (size_t l = 0; l < 3; l++) {
@@ -606,8 +594,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   CHECK(RKkLl_expr.get_uncontracted_multi_index_with_uncontracted_values(
             {{}}) == expected_multi_index);
 
-  const Tensor<DataType> RKkLl_contracted =
-      TensorExpressions::evaluate(RKkLl_expr);
+  const Tensor<DataType> RKkLl_contracted = tenex::evaluate(RKkLl_expr);
 
   DataType expected_RKkLl_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t k = 0; k < 3; k++) {
@@ -623,8 +610,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   CHECK(RcaCA_expr.get_uncontracted_multi_index_with_uncontracted_values(
             {{}}) == expected_multi_index);
 
-  const Tensor<DataType> RcaCA_contracted =
-      TensorExpressions::evaluate(RcaCA_expr);
+  const Tensor<DataType> RcaCA_contracted = tenex::evaluate(RcaCA_expr);
 
   DataType expected_RcaCA_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t c = 0; c < 4; c++) {
@@ -640,8 +626,7 @@ void test_contractions_rank4(const DataType& used_for_size) {
   CHECK(RjIiJ_expr.get_uncontracted_multi_index_with_uncontracted_values(
             {{}}) == expected_multi_index);
 
-  const Tensor<DataType> RjIiJ_contracted =
-      TensorExpressions::evaluate(RjIiJ_expr);
+  const Tensor<DataType> RjIiJ_contracted = tenex::evaluate(RjIiJ_expr);
 
   DataType expected_RjIiJ_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t j = 0; j < 3; j++) {
@@ -663,8 +648,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
 
       R(used_for_size);
   create_tensor(make_not_null(&R));
-  const Tensor<DataType> R_contracted =
-      TensorExpressions::evaluate(R(ti_I, ti_i));
+  const Tensor<DataType> R_contracted = tenex::evaluate(R(ti_I, ti_i));
 
   // Contract (spacetime, spatial) tensor
   Tensor<DataType, Symmetry<2, 1>,
@@ -672,8 +656,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
                     SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
       S(used_for_size);
   create_tensor(make_not_null(&S));
-  const Tensor<DataType> S_contracted =
-      TensorExpressions::evaluate(S(ti_K, ti_k));
+  const Tensor<DataType> S_contracted = tenex::evaluate(S(ti_K, ti_k));
 
   // Contract (spacetime, spacetime) tensor using generic spatial indices
   Tensor<DataType, Symmetry<2, 1>,
@@ -681,8 +664,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
                     SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
       T(used_for_size);
   create_tensor(make_not_null(&T));
-  const Tensor<DataType> T_contracted =
-      TensorExpressions::evaluate(T(ti_j, ti_J));
+  const Tensor<DataType> T_contracted = tenex::evaluate(T(ti_j, ti_J));
 
   DataType expected_R_sum = make_with_value<DataType>(used_for_size, 0.0);
   DataType expected_S_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -711,8 +693,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      G_contracted_1 =
-          TensorExpressions::evaluate<ti_i, ti_K>(G(ti_K, ti_j, ti_i, ti_J));
+      G_contracted_1 = tenex::evaluate<ti_i, ti_K>(G(ti_K, ti_j, ti_i, ti_J));
 
   for (size_t i = 0; i < 3; i++) {
     for (size_t k = 0; k < 3; k++) {
@@ -727,7 +708,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   // Contract one (spacetime, spacetime) pair of indices using generic spatial
   // indices and then one (spatial, spatial) pair of indices
   const Tensor<DataType> G_contracted_2 =
-      TensorExpressions::evaluate(G(ti_I, ti_i, ti_j, ti_J));
+      tenex::evaluate(G(ti_I, ti_i, ti_j, ti_J));
 
   DataType expected_G_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t i = 0; i < 3; i++) {
@@ -739,7 +720,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
 
   // Contract two (spatial, spacetime) pairs of indices
   const Tensor<DataType> G_contracted_3 =
-      TensorExpressions::evaluate(G(ti_I, ti_j, ti_i, ti_J));
+      tenex::evaluate(G(ti_I, ti_j, ti_i, ti_J));
 
   DataType expected_G_sum_3 = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t i = 0; i < 3; i++) {
@@ -761,7 +742,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   // indices and then one (spacetime, spacetime) pair of indices using generic
   // spatial indices
   const Tensor<DataType> H_contracted_1 =
-      TensorExpressions::evaluate(H(ti_i, ti_I, ti_a, ti_A));
+      tenex::evaluate(H(ti_i, ti_I, ti_a, ti_A));
 
   DataType expected_H_sum_1 = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t i = 0; i < 3; i++) {
@@ -774,7 +755,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   // Contract two (spacetime, spacetime) pair of indices using generic spatial
   // indices
   const Tensor<DataType> H_contracted_2 =
-      TensorExpressions::evaluate(H(ti_j, ti_I, ti_i, ti_J));
+      tenex::evaluate(H(ti_j, ti_I, ti_i, ti_J));
 
   DataType expected_H_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t j = 0; j < 3; j++) {
@@ -800,8 +781,7 @@ void test_time_index(const DataType& used_for_size) {
   // \f$L_{b} = R^{at}{}_{ab}\f$
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      R_contracted_1 =
-          TensorExpressions::evaluate<ti_b>(R(ti_A, ti_T, ti_a, ti_b));
+      R_contracted_1 = tenex::evaluate<ti_b>(R(ti_A, ti_T, ti_a, ti_b));
 
   for (size_t b = 0; b < 4; b++) {
     DataType expected_R_sum_1 = make_with_value<DataType>(used_for_size, 0.0);
@@ -819,7 +799,7 @@ void test_time_index(const DataType& used_for_size) {
   // an upper and lower time index in the RHS tensor, which is different than
   // the presence of an upper and lower generic index
   const Tensor<DataType> R_contracted_2 =
-      TensorExpressions::evaluate(R(ti_A, ti_T, ti_a, ti_t));
+      tenex::evaluate(R(ti_A, ti_T, ti_a, ti_t));
   DataType expected_R_sum_2 = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t a = 0; a < 4; a++) {
     expected_R_sum_2 += R.get(a, 0, a, 0);
@@ -854,8 +834,8 @@ void test_time_index(const DataType& used_for_size) {
   // the presence of an upper and lower generic index. Also makes sure that
   // a contraction can be evaluated to a LHS tensor of higher rank than the
   // rank that results from contracting the RHS
-  ::TensorExpressions::evaluate<ti_t, ti_t, ti_B, ti_T>(
-      make_not_null(&S_contracted), S(ti_B, ti_A, ti_a));
+  ::tenex::evaluate<ti_t, ti_t, ti_B, ti_T>(make_not_null(&S_contracted),
+                                            S(ti_B, ti_A, ti_a));
 
   for (size_t b = 0; b < 4; b++) {
     DataType expected_S_sum = make_with_value<DataType>(used_for_size, 0.0);
@@ -890,8 +870,8 @@ void test_time_index(const DataType& used_for_size) {
 
   // Contract a RHS tensor with time indices to a LHS tensor with time indices
   // \f$L^{tb}{}_{t} = R_{at}{}^{ab}\f$
-  ::TensorExpressions::evaluate<ti_T, ti_B, ti_t>(make_not_null(&T_contracted),
-                                                  T(ti_a, ti_t, ti_A, ti_B));
+  ::tenex::evaluate<ti_T, ti_B, ti_t>(make_not_null(&T_contracted),
+                                      T(ti_a, ti_t, ti_A, ti_B));
 
   for (size_t b = 0; b < 4; b++) {
     DataType expected_T_sum = make_with_value<DataType>(used_for_size, 0.0);

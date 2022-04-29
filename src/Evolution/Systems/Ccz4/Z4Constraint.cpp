@@ -21,7 +21,7 @@ void spatial_z4_constraint(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_i>(
+  ::tenex::evaluate<ti_i>(
       result, 0.5 * (conformal_spatial_metric(ti_i, ti_j) *
                      gamma_hat_minus_contracted_conformal_christoffel(ti_J)));
 }
@@ -49,8 +49,8 @@ void upper_spatial_z4_constraint(
   destructive_resize_components(buffer,
                                 get_size(get(conformal_factor_squared)));
 
-  ::TensorExpressions::evaluate(buffer, 0.5 * conformal_factor_squared());
-  ::TensorExpressions::evaluate<ti_I>(
+  ::tenex::evaluate(buffer, 0.5 * conformal_factor_squared());
+  ::tenex::evaluate<ti_I>(
       result,
       (*buffer)() * gamma_hat_minus_contracted_conformal_christoffel(ti_I));
 }

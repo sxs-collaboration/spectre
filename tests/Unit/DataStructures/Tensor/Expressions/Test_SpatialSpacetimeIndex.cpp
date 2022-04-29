@@ -67,34 +67,27 @@ using positions_list_02 = tmpl::integral_list<size_t, 0, 2>;
 using positions_list_012 = tmpl::integral_list<size_t, 0, 1, 2>;
 
 void test_spatial_spacetime_index_positions() {
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_empty, ti_list_empty>,
-        positions_list_empty>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_a, ti_list_a>,
-        positions_list_empty>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_a, ti_list_i>,
-        positions_list_0>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_aBC, ti_list_abc>,
-        positions_list_empty>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_aBC, ti_list_iaj>,
-        positions_list_02>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_aBC, ti_list_abc>,
-        positions_list_empty>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::spatial_spacetime_index_positions<
-            index_list_aBC, ti_list_abi>,
-        positions_list_2>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_empty, ti_list_empty>,
+                       positions_list_empty>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_a, ti_list_a>,
+                       positions_list_empty>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_a, ti_list_i>,
+                       positions_list_0>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_aBC, ti_list_abc>,
+                       positions_list_empty>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_aBC, ti_list_iaj>,
+                       positions_list_02>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_aBC, ti_list_abc>,
+                       positions_list_empty>);
+  CHECK(std::is_same_v<tenex::detail::spatial_spacetime_index_positions<
+                           index_list_aBC, ti_list_abi>,
+                       positions_list_2>);
 }
 
 void test_get_spatial_spacetime_index_symmetry() {
@@ -116,172 +109,129 @@ void test_get_spatial_spacetime_index_symmetry() {
   constexpr std::array<size_t, 3> positions_012 = {{0, 1, 2}};
 
   // Rank 0
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_empty, positions_empty)) == detail::symmetry(symm_empty));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_empty, positions_empty)) == detail::symmetry(symm_empty));
 
   // Rank 1
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_1, positions_empty)) == detail::symmetry(symm_1));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_1, positions_0)) == detail::symmetry(symm_1));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_1, positions_empty)) == detail::symmetry(symm_1));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_1, positions_0)) == detail::symmetry(symm_1));
 
   // Rank 3, input symmetry with three symmetric indices
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_0)) == detail::symmetry(symm_211));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_1)) == detail::symmetry(symm_121));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_2)) == detail::symmetry(symm_221));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_01)) == detail::symmetry(symm_221));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_02)) == detail::symmetry(symm_121));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_12)) == detail::symmetry(symm_211));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_111, positions_012)) == detail::symmetry(symm_111));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_0)) == detail::symmetry(symm_211));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_1)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_2)) == detail::symmetry(symm_221));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_01)) == detail::symmetry(symm_221));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_02)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_12)) == detail::symmetry(symm_211));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_111, positions_012)) == detail::symmetry(symm_111));
 
   // Rank 3, input symmetry with two symmetric indices
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_empty)) == detail::symmetry(symm_121));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_0)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_1)) == detail::symmetry(symm_121));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_2)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_01)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_02)) == detail::symmetry(symm_121));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_12)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_121, positions_012)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_empty)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_0)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_1)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_2)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_01)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_02)) == detail::symmetry(symm_121));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_12)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_121, positions_012)) == detail::symmetry(symm_121));
 
   // Rank 3, input symmetry with no symmetric indices
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_empty)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_0)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_1)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_2)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_01)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_02)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_12)) == detail::symmetry(symm_321));
-  CHECK(detail::symmetry(
-            TensorExpressions::detail::get_spatial_spacetime_index_symmetry(
-                symm_321, positions_012)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_empty)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_0)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_1)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_2)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_01)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_02)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_12)) == detail::symmetry(symm_321));
+  CHECK(detail::symmetry(tenex::detail::get_spatial_spacetime_index_symmetry(
+            symm_321, positions_012)) == detail::symmetry(symm_321));
 }
 
 void test_replace_spatial_spacetime_indices() {
   // Rank 0
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_empty, positions_list_empty>,
-        index_list_empty>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_empty, positions_list_empty>,
+                       index_list_empty>);
 
   // Rank 1
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_a, positions_list_empty>,
-        index_list_a>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_a, positions_list_0>,
-        index_list_i>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_a, positions_list_empty>,
+                       index_list_a>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_a, positions_list_0>,
+                       index_list_i>);
 
   // Rank 3, one spacetime index
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iJA, positions_list_empty>,
-        index_list_iJA>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iJA, positions_list_2>,
-        index_list_iJK>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iJA, positions_list_empty>,
+                       index_list_iJA>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iJA, positions_list_2>,
+                       index_list_iJK>);
 
   // Rank 3, two spacetime indices
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iAB, positions_list_empty>,
-        index_list_iAB>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iAB, positions_list_1>,
-        index_list_iJA>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iAB, positions_list_2>,
-        index_list_iAJ>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_iAB, positions_list_12>,
-        index_list_iJK>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iAB, positions_list_empty>,
+                       index_list_iAB>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iAB, positions_list_1>,
+                       index_list_iJA>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iAB, positions_list_2>,
+                       index_list_iAJ>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_iAB, positions_list_12>,
+                       index_list_iJK>);
 
   // Rank 3, three spacetime indices
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_empty>,
-        index_list_aBC>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_0>,
-        index_list_iAB>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_1>,
-        index_list_aIB>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_2>,
-        index_list_aBI>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_01>,
-        index_list_iJA>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_02>,
-        index_list_iAJ>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_12>,
-        index_list_aIJ>);
-  CHECK(std::is_same_v<
-        TensorExpressions::detail::replace_spatial_spacetime_indices<
-            index_list_aBC, positions_list_012>,
-        index_list_iJK>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_empty>,
+                       index_list_aBC>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_0>,
+                       index_list_iAB>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_1>,
+                       index_list_aIB>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_2>,
+                       index_list_aBI>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_01>,
+                       index_list_iJA>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_02>,
+                       index_list_iAJ>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_12>,
+                       index_list_aIJ>);
+  CHECK(std::is_same_v<tenex::detail::replace_spatial_spacetime_indices<
+                           index_list_aBC, positions_list_012>,
+                       index_list_iJK>);
 }
 
 void test_spatial_spacetime_index_transformation_from_positions() {
@@ -300,34 +250,26 @@ void test_spatial_spacetime_index_transformation_from_positions() {
   constexpr std::array<std::int32_t, 3> transformation_00m1 = {{0, 0, -1}};
 
   // Rank 0
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<0>(
-                positions_empty, positions_empty) == transformation_empty);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<0>(
+            positions_empty, positions_empty) == transformation_empty);
 
   // Rank 1
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<1>(
-                positions_empty, positions_empty) == transformation_0);
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<1>(
-                positions_0, positions_0) == transformation_0);
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<1>(
-                positions_0, positions_empty) == transformation_m1);
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<1>(
-                positions_empty, positions_0) == transformation_p1);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<1>(
+            positions_empty, positions_empty) == transformation_0);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<1>(
+            positions_0, positions_0) == transformation_0);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<1>(
+            positions_0, positions_empty) == transformation_m1);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<1>(
+            positions_empty, positions_0) == transformation_p1);
 
   // Rank 3
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<3>(
-                positions_empty, positions_empty) == transformation_000);
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<3>(
-                positions_0, positions_2) == transformation_m10p10);
-  CHECK(TensorExpressions::detail::
-            spatial_spacetime_index_transformation_from_positions<3>(
-                positions_12, positions_1) == transformation_00m1);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<3>(
+            positions_empty, positions_empty) == transformation_000);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<3>(
+            positions_0, positions_2) == transformation_m10p10);
+  CHECK(tenex::detail::spatial_spacetime_index_transformation_from_positions<3>(
+            positions_12, positions_1) == transformation_00m1);
 }
 }  // namespace
 

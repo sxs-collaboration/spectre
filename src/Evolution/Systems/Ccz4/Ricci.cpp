@@ -29,7 +29,7 @@ void spatial_ricci_tensor(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  TensorExpressions::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti_i, ti_j>(
       result,
       contracted_d_conformal_christoffel_difference(ti_i, ti_j) +
           // Add terms of \partial_m \Gamma^m_{ij} and

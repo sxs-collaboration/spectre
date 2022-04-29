@@ -142,8 +142,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// The type of the TensorExpression that would represent this Tensor in a
   /// tensor expression.
   template <typename ArgsList>
-  using TE = TensorExpressions::TensorAsExpression<
-      Tensor<X, Symm, IndexList<Indices...>>, ArgsList>;
+  using TE = tenex::TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
+                                       ArgsList>;
 
   Tensor() = default;
   ~Tensor() = default;
@@ -262,12 +262,12 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "The tensor expression must be created using TensorIndex "
                   "objects to represent generic indices, e.g. ti_a, ti_b, "
                   "etc.");
-    static_assert(TensorExpressions::tensorindex_list_is_valid<
-                      tmpl::list<TensorIndices...>>::value,
-                  "Cannot create a tensor expression with a repeated generic "
-                  "index. (Note that the concrete time indices, ti_T and ti_t, "
-                  "can be repeated.) If you intend to contract, ensure that "
-                  "the indices to contract have opposite valences.");
+    static_assert(
+        tenex::tensorindex_list_is_valid<tmpl::list<TensorIndices...>>::value,
+        "Cannot create a tensor expression with a repeated generic "
+        "index. (Note that the concrete time indices, ti_T and ti_t, "
+        "can be repeated.) If you intend to contract, ensure that "
+        "the indices to contract have opposite valences.");
     static_assert(
         std::is_same_v<tmpl::integral_list<UpLo, TensorIndices::valence...>,
                        tmpl::integral_list<UpLo, Indices::ul...>>,
@@ -278,7 +278,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                   "Cannot use a spacetime index for a spatial index. e.g. "
                   "Cannot do R(ti_a), where R's index is spatial, because ti_a "
                   "denotes a generic spacetime index.");
-    return TensorExpressions::contract(TE<tmpl::list<TensorIndices...>>{*this});
+    return tenex::contract(TE<tmpl::list<TensorIndices...>>{*this});
   }
   /// @}
 

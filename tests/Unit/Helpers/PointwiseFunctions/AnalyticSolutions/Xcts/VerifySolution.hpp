@@ -174,16 +174,16 @@ void verify_adm_constraints(const Solution& solution,
                         trace_extrinsic_curvature);
   CHECK_ITERABLE_APPROX(get(lapse) * get(conformal_factor),
                         get(lapse_times_conformal_factor));
-  CHECK_ITERABLE_APPROX(TensorExpressions::evaluate<ti_I>(
-                            shift_background(ti_I) + shift_excess(ti_I)),
-                        shift);
+  CHECK_ITERABLE_APPROX(
+      tenex::evaluate<ti_I>(shift_background(ti_I) + shift_excess(ti_I)),
+      shift);
 
   // Check extrinsic curvature decomposition
   //   K_ij = \psi^-2 \bar{A}_ij + 1/3 \gamma_ij K
   // with
   //   \bar{A}^ij = \psi^6 / (2 \alpha) * (\bar{L}\beta^ij - \bar{u}^ij)
   tnsr::ii<DataVector, 3> composed_extcurv{};
-  TensorExpressions::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti_i, ti_j>(
       make_not_null(&composed_extcurv),
       pow<4>(conformal_factor()) / (2. * lapse()) *
               (longitudinal_shift_excess(ti_K, ti_L) +
@@ -196,7 +196,7 @@ void verify_adm_constraints(const Solution& solution,
   // Check Hamiltonian constraint R + K^2 + K_ij K^ij = 16 \pi \rho, divided by
   // two for consistency with SpEC (the factor of two doesn't really matter)
   // here since we are comparing with zero)
-  const Scalar<DataVector> hamiltonian_constraint = TensorExpressions::evaluate(
+  const Scalar<DataVector> hamiltonian_constraint = tenex::evaluate(
       0.5 * (ricci_scalar() + square(trace_extrinsic_curvature()) -
              extrinsic_curvature(ti_i, ti_j) * extrinsic_curvature(ti_k, ti_l) *
                  inv_spatial_metric(ti_I, ti_K) *
@@ -207,21 +207,18 @@ void verify_adm_constraints(const Solution& solution,
 
   // Check momentum constraint \nabla_j (K^ij - K \gamma^ij) = 8 \pi S^i
   tnsr::II<DataVector, 3> extcurv_min_trace{};
-  TensorExpressions::evaluate<ti_I, ti_J>(
+  tenex::evaluate<ti_I, ti_J>(
       make_not_null(&extcurv_min_trace),
       extrinsic_curvature(ti_k, ti_l) * inv_spatial_metric(ti_I, ti_K) *
               inv_spatial_metric(ti_J, ti_L) -
           trace_extrinsic_curvature() * inv_spatial_metric(ti_I, ti_J));
   const tnsr::iJJ<DataVector, 3> deriv_extcurv_min_trace =
       partial_derivative(extcurv_min_trace, mesh, inv_jacobian);
-  const tnsr::I<DataVector, 3> momentum_constraint =
-      TensorExpressions::evaluate<ti_I>(
-          deriv_extcurv_min_trace(ti_j, ti_I, ti_J) +
-          spatial_christoffel(ti_I, ti_k, ti_j) *
-              extcurv_min_trace(ti_K, ti_J) +
-          spatial_christoffel(ti_J, ti_k, ti_j) *
-              extcurv_min_trace(ti_I, ti_K) -
-          8. * M_PI * momentum_density(ti_I));
+  const tnsr::I<DataVector, 3> momentum_constraint = tenex::evaluate<ti_I>(
+      deriv_extcurv_min_trace(ti_j, ti_I, ti_J) +
+      spatial_christoffel(ti_I, ti_k, ti_j) * extcurv_min_trace(ti_K, ti_J) +
+      spatial_christoffel(ti_J, ti_k, ti_j) * extcurv_min_trace(ti_I, ti_K) -
+      8. * M_PI * momentum_density(ti_I));
   CHECK_ITERABLE_CUSTOM_APPROX(momentum_constraint,
                                (tnsr::I<DataVector, 3>(num_points, 0.)),
                                custom_approx);

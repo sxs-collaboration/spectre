@@ -15,7 +15,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Determines and stores a LHS tensor's symmetry and index list from a
@@ -106,4 +106,4 @@ struct LhsTensorSymmAndIndices<
       Tensor_detail::Structure<symmetry,
                                tmpl::at_c<tensorindextype_list, LhsInts>...>;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex

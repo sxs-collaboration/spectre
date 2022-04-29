@@ -28,97 +28,94 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.TensorIndex",
   // value in between.
 
   // Lower spacetime
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(0) ==
-        TensorExpressions::TensorIndex_detail::upper_sentinel);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_sentinel - 1) ==
-        TensorExpressions::TensorIndex_detail::spatial_sentinel - 1);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(115) ==
-        TensorExpressions::TensorIndex_detail::upper_sentinel + 115);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(0) ==
+        tenex::TensorIndex_detail::upper_sentinel);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_sentinel - 1) ==
+        tenex::TensorIndex_detail::spatial_sentinel - 1);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(115) ==
+        tenex::TensorIndex_detail::upper_sentinel + 115);
 
   // Upper spacetime
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_sentinel) == 0);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::spatial_sentinel - 1) ==
-        TensorExpressions::TensorIndex_detail::upper_sentinel - 1);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_sentinel + 88) == 88);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_sentinel) == 0);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::spatial_sentinel - 1) ==
+        tenex::TensorIndex_detail::upper_sentinel - 1);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_sentinel + 88) == 88);
 
   // Lower spatial
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::spatial_sentinel) ==
-        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel -
-            1) == TensorExpressions::TensorIndex_detail::max_sentinel - 1);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::spatial_sentinel + 232) ==
-        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 232);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::spatial_sentinel) ==
+        tenex::TensorIndex_detail::upper_spatial_sentinel);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_spatial_sentinel - 1) ==
+        tenex::TensorIndex_detail::max_sentinel - 1);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::spatial_sentinel + 232) ==
+        tenex::TensorIndex_detail::upper_spatial_sentinel + 232);
 
   // Upper spatial
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel) ==
-        TensorExpressions::TensorIndex_detail::spatial_sentinel);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::max_sentinel - 1) ==
-        TensorExpressions::TensorIndex_detail::upper_spatial_sentinel - 1);
-  CHECK(TensorExpressions::get_tensorindex_value_with_opposite_valence(
-            TensorExpressions::TensorIndex_detail::upper_spatial_sentinel +
-            3) == TensorExpressions::TensorIndex_detail::spatial_sentinel + 3);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_spatial_sentinel) ==
+        tenex::TensorIndex_detail::spatial_sentinel);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::max_sentinel - 1) ==
+        tenex::TensorIndex_detail::upper_spatial_sentinel - 1);
+  CHECK(tenex::get_tensorindex_value_with_opposite_valence(
+            tenex::TensorIndex_detail::upper_spatial_sentinel + 3) ==
+        tenex::TensorIndex_detail::spatial_sentinel + 3);
 
   // Test tensorindex_list_is_valid
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
-        make_tensorindex_list<>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_J>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti_J>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
-  CHECK(not TensorExpressions::tensorindex_list_is_valid<
+  CHECK(not tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
 
   // Test tensorindex_list_is_valid
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
-        make_tensorindex_list<>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
-        make_tensorindex_list<ti_J>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<make_tensorindex_list<ti_J>>::value);
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_t, ti_T, ti_T, ti_T, ti_t>>::value);
-  CHECK(TensorExpressions::tensorindex_list_is_valid<
+  CHECK(tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_d, ti_T, ti_D>>::value);
-  CHECK(not TensorExpressions::tensorindex_list_is_valid<
+  CHECK(not tenex::tensorindex_list_is_valid<
         make_tensorindex_list<ti_I, ti_a, ti_I>>::value);
 
   // Test generic_indices_at_same_positions
-  CHECK(TensorExpressions::generic_indices_at_same_positions<
-        make_tensorindex_list<>, make_tensorindex_list<>>::value);
-  CHECK(TensorExpressions::generic_indices_at_same_positions<
+  CHECK(
+      tenex::generic_indices_at_same_positions<make_tensorindex_list<>,
+                                               make_tensorindex_list<>>::value);
+  CHECK(tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
-  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+  CHECK(not tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
         make_tensorindex_list<ti_a, ti_c, ti_i, ti_B>>::value);
-  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+  CHECK(not tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>,
         make_tensorindex_list<ti_a, ti_c, ti_I>>::value);
-  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+  CHECK(not tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_a, ti_c, ti_I>,
         make_tensorindex_list<ti_a, ti_c, ti_I, ti_B>>::value);
-  CHECK(not TensorExpressions::generic_indices_at_same_positions<
+  CHECK(not tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_j, ti_B>,
         make_tensorindex_list<ti_B, ti_j>>::value);
-  CHECK(TensorExpressions::generic_indices_at_same_positions<
+  CHECK(tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_T>, make_tensorindex_list<ti_t>>::value);
-  CHECK(TensorExpressions::generic_indices_at_same_positions<
+  CHECK(tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_t, ti_T, ti_T>,
         make_tensorindex_list<ti_T, ti_t, ti_T>>::value);
-  CHECK(TensorExpressions::generic_indices_at_same_positions<
+  CHECK(tenex::generic_indices_at_same_positions<
         make_tensorindex_list<ti_i, ti_t, ti_C>,
         make_tensorindex_list<ti_i, ti_T, ti_C>>::value);
 }

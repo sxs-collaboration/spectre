@@ -11,7 +11,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TestHelpers::TensorExpressions {
+namespace TestHelpers::tenex {
 
 /// \ingroup TestingFrameworkGroup
 /// \brief Test that evaluating a right hand side tensor expression containing a
@@ -25,9 +25,9 @@ void test_evaluate_rank_0(const DataType& data) {
 
   // Use explicit type (vs auto) so the compiler checks the return type of
   // `evaluate`
-  const Tensor<DataType> L_returned = ::TensorExpressions::evaluate(R());
+  const Tensor<DataType> L_returned = ::tenex::evaluate(R());
   Tensor<DataType> L_filled{};
-  ::TensorExpressions::evaluate(make_not_null(&L_filled), R());
+  ::tenex::evaluate(make_not_null(&L_filled), R());
 
   CHECK(L_returned.get() == data);
   CHECK(L_filled.get() == data);
@@ -38,10 +38,10 @@ void test_evaluate_rank_0(const DataType& data) {
         data.size()};
     Tensor<DataType>& L_temp =
         get<::Tags::TempTensor<1, Tensor<DataType>>>(L_var);
-    ::TensorExpressions::evaluate(make_not_null(&L_temp), R());
+    ::tenex::evaluate(make_not_null(&L_temp), R());
 
     CHECK(L_temp.get() == data);
   }
 }
 
-}  // namespace TestHelpers::TensorExpressions
+}  // namespace TestHelpers::tenex

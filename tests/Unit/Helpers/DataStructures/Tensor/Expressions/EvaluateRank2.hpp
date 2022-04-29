@@ -17,7 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TestHelpers::TensorExpressions {
+namespace TestHelpers::tenex {
 
 /// \ingroup TestingFrameworkGroup
 /// \brief Test that evaluating a right hand side tensor expression containing a
@@ -56,11 +56,10 @@ void test_evaluate_rank_2_impl() {
   // Use explicit type (vs auto) so the compiler checks the return type of
   // `evaluate`
   using L_ab_type = decltype(R_ab);
-  const L_ab_type L_ab_returned =
-      ::TensorExpressions::evaluate<TensorIndexA, TensorIndexB>(
-          R_ab(TensorIndexA, TensorIndexB));
+  const L_ab_type L_ab_returned = ::tenex::evaluate<TensorIndexA, TensorIndexB>(
+      R_ab(TensorIndexA, TensorIndexB));
   L_ab_type L_ab_filled{};
-  ::TensorExpressions::evaluate<TensorIndexA, TensorIndexB>(
+  ::tenex::evaluate<TensorIndexA, TensorIndexB>(
       make_not_null(&L_ab_filled), R_ab(TensorIndexA, TensorIndexB));
 
   // L_{ba} = R_{ab}
@@ -68,11 +67,10 @@ void test_evaluate_rank_2_impl() {
       tmpl::list<tmpl::at_c<RhsTensorIndexTypeList, 1>,
                  tmpl::at_c<RhsTensorIndexTypeList, 0>>;
   using L_ba_type = Tensor<DataType, RhsSymmetry, L_ba_tensorindextype_list>;
-  const L_ba_type L_ba_returned =
-      ::TensorExpressions::evaluate<TensorIndexB, TensorIndexA>(
-          R_ab(TensorIndexA, TensorIndexB));
+  const L_ba_type L_ba_returned = ::tenex::evaluate<TensorIndexB, TensorIndexA>(
+      R_ab(TensorIndexA, TensorIndexB));
   L_ba_type L_ba_filled{};
-  ::TensorExpressions::evaluate<TensorIndexB, TensorIndexA>(
+  ::tenex::evaluate<TensorIndexB, TensorIndexA>(
       make_not_null(&L_ba_filled), R_ab(TensorIndexA, TensorIndexB));
 
   const size_t dim_a = tmpl::at_c<RhsTensorIndexTypeList, 0>::dim;
@@ -95,14 +93,14 @@ void test_evaluate_rank_2_impl() {
     Variables<tmpl::list<::Tags::TempTensor<1, L_ab_type>>> L_ab_var{
         used_for_size};
     L_ab_type& L_ab_temp = get<::Tags::TempTensor<1, L_ab_type>>(L_ab_var);
-    ::TensorExpressions::evaluate<TensorIndexA, TensorIndexB>(
+    ::tenex::evaluate<TensorIndexA, TensorIndexB>(
         make_not_null(&L_ab_temp), R_ab(TensorIndexA, TensorIndexB));
 
     // L_{ba} = R_{ab}
     Variables<tmpl::list<::Tags::TempTensor<1, L_ba_type>>> L_ba_var{
         used_for_size};
     L_ba_type& L_ba_temp = get<::Tags::TempTensor<1, L_ba_type>>(L_ba_var);
-    ::TensorExpressions::evaluate<TensorIndexB, TensorIndexA>(
+    ::tenex::evaluate<TensorIndexB, TensorIndexA>(
         make_not_null(&L_ba_temp), R_ab(TensorIndexA, TensorIndexB));
 
     for (size_t i = 0; i < dim_a; ++i) {
@@ -198,4 +196,4 @@ void test_evaluate_rank_2_symmetric() {
 #undef DIM
 }
 
-}  // namespace TestHelpers::TensorExpressions
+}  // namespace TestHelpers::tenex

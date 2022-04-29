@@ -20,7 +20,7 @@ void extrinsic_curvature(
     const tnsr::ii<DataType, 3>& conformal_metric,
     const tnsr::II<DataType, 3>& longitudinal_shift_minus_dt_conformal_metric,
     const Scalar<DataType>& trace_extrinsic_curvature) {
-  TensorExpressions::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti_i, ti_j>(
       result,
       pow<4>(conformal_factor()) *
           (conformal_metric(ti_i, ti_k) * conformal_metric(ti_j, ti_l) *

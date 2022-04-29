@@ -19,7 +19,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /// \ingroup TensorExpressionsGroup
 /// \brief Defines the tensor expression representing the quotient of one tensor
 /// expression divided by another tensor expression that evaluates to a rank 0
@@ -79,7 +79,7 @@ struct Divide : public TensorExpression<
   T1 t1_;
   T2 t2_;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the quotient of one tensor
@@ -102,7 +102,7 @@ SPECTRE_ALWAYS_INLINE auto operator/(
                            typename T1::index_list, typename T1::args_list>& t1,
     const TensorExpression<T2, typename T2::type, typename T2::symmetry,
                            typename T2::index_list, tmpl::list<Args2...>>& t2) {
-  return TensorExpressions::Divide<T1, T2, Args2...>(~t1, ~t2);
+  return tenex::Divide<T1, T2, Args2...>(~t1, ~t2);
 }
 
 /// \ingroup TensorExpressionsGroup
@@ -120,7 +120,7 @@ SPECTRE_ALWAYS_INLINE auto operator/(
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t,
     const double number) {
-  return t * TensorExpressions::NumberAsExpression(1.0 / number);
+  return t * tenex::NumberAsExpression(1.0 / number);
 }
 
 /// \ingroup TensorExpressionsGroup
@@ -136,5 +136,5 @@ SPECTRE_ALWAYS_INLINE auto operator/(
     const double number,
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t) {
-  return TensorExpressions::NumberAsExpression(number) / t;
+  return tenex::NumberAsExpression(number) / t;
 }

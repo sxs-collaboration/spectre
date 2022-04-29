@@ -32,7 +32,7 @@ template <>
 struct is_time_index<std::decay_t<decltype(ti_T)>> : std::true_type {};
 }  // namespace tt
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 /// \brief Returns whether or not the provided value is the TensorIndex value
 /// that encodes the upper or lower concrete time index (`ti_T` or `ti_t`)
@@ -93,4 +93,4 @@ constexpr auto get_time_index_positions() {
   return make_array_from_list<make_list_type>();
 }
 }  // namespace detail
-}  // namespace TensorExpressions
+}  // namespace tenex

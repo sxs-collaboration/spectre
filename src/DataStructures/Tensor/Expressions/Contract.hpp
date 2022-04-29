@@ -26,7 +26,7 @@
  * \ingroup TensorExpressionsGroup
  * Holds all possible TensorExpressions currently implemented
  */
-namespace TensorExpressions {
+namespace tenex {
 
 namespace detail {
 
@@ -351,4 +351,4 @@ SPECTRE_ALWAYS_INLINE static constexpr auto contract(
                        IndexList, tmpl::list<TensorIndices...>>{t});
   }
 }
-}  // namespace TensorExpressions
+}  // namespace tenex

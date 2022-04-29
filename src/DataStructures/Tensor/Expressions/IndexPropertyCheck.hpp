@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 /// @{
 /// \brief Helper struct for checking that one tensor's index is either a
@@ -150,4 +150,4 @@ using IndexPropertyCheck =
     IndexPropertyCheckHelper<IndexList1, IndexList2, TensorIndexList1,
                              TensorIndexList2>;
 }  // namespace detail
-}  // namespace TensorExpressions
+}  // namespace tenex

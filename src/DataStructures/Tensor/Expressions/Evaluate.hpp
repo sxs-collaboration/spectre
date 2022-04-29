@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines function TensorExpressions::evaluate(TensorExpression)
+/// Defines function tenex::evaluate(TensorExpression)
 
 #pragma once
 
@@ -22,7 +22,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 template <size_t NumIndices>
 constexpr bool contains_indices_to_contract(
@@ -113,7 +113,7 @@ constexpr bool is_evaluated_lhs_multi_index(
  * together and fill the provided resultant LHS Tensor `L` with index order
  * (b, a):
  * \code{.cpp}
- * TensorExpressions::evaluate<ti_b, ti_a>(
+ * tenex::evaluate<ti_b, ti_a>(
  *     make_not_null(&L), R(ti_a, ti_b) + S(ti_a, ti_b));
  * \endcode
  *
@@ -250,7 +250,7 @@ void evaluate(
  * Given two rank 2 Tensors `R` and `S` with index order (a, b), add them
  * together and generate the resultant LHS Tensor `L` with index order (b, a):
  * \code{.cpp}
- * auto L = TensorExpressions::evaluate<ti_b, ti_a>(
+ * auto L = tenex::evaluate<ti_b, ti_a>(
  *     R(ti_a, ti_b) + S(ti_a, ti_b));
  * \endcode
  * \metareturns Tensor
@@ -296,4 +296,4 @@ auto evaluate(const RhsTE& rhs_tensorexpression) {
                                 rhs_tensorexpression);
   return lhs_tensor;
 }
-}  // namespace TensorExpressions
+}  // namespace tenex

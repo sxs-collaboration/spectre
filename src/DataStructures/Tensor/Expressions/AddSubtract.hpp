@@ -28,17 +28,17 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace TensorExpressions {
+namespace tenex {
 template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
           int Sign>
 struct AddSub;
-}  // namespace TensorExpressions
+}  // namespace tenex
 template <typename Derived, typename DataType, typename Symm,
           typename IndexList, typename Args, typename ReducedArgs>
 struct TensorExpression;
 /// \endcond
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 /// \brief Computes the rearranged symmetry of one operand according to the
 /// generic index order of the other operand
@@ -224,8 +224,8 @@ struct AddSubSymmetry<SymmList1<Symm1...>, SymmList2<Symm2...>,
       {TensorIndices2::value...}};
   // positions of tensorindex_values1 in tensorindex_values2
   static constexpr std::array<size_t, NumIndices1> op2_to_op1_map =
-      ::TensorExpressions::compute_tensorindex_transformation(
-          tensorindex_values2, tensorindex_values1);
+      ::tenex::compute_tensorindex_transformation(tensorindex_values2,
+                                                  tensorindex_values1);
 
   static constexpr std::array<std::int32_t, NumIndices1> symm1 = {
       {Symm1::value...}};
@@ -483,7 +483,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   T1 t1_;
   T2 t2_;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /*!
  * \ingroup TensorExpressionsGroup
@@ -495,9 +495,9 @@ SPECTRE_ALWAYS_INLINE auto operator+(
     const TensorExpression<T1, X1, Symm1, IndexList1, Args1>& t1,
     const TensorExpression<T2, X2, Symm2, IndexList2, Args2>& t2) {
   using op1_generic_indices =
-      typename TensorExpressions::detail::remove_time_indices<Args1>::type;
+      typename tenex::detail::remove_time_indices<Args1>::type;
   using op2_generic_indices =
-      typename TensorExpressions::detail::remove_time_indices<Args2>::type;
+      typename tenex::detail::remove_time_indices<Args2>::type;
   static_assert(tmpl::size<op1_generic_indices>::value ==
                     tmpl::size<op2_generic_indices>::value,
                 "Tensor addition is only possible when the same number of "
@@ -506,7 +506,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when adding two tensors must be equal. This error "
       "occurs from expressions like R(ti_a, ti_b) + S(ti_c, ti_a)");
-  return TensorExpressions::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
+  return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
 }
 
 /// @{
@@ -547,7 +547,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       (... and tt::is_time_index<Args>::value),
       "Can only add a number to a tensor expression that evaluates to a rank 0"
       "tensor.");
-  return t + TensorExpressions::NumberAsExpression(number);
+  return t + tenex::NumberAsExpression(number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args>
@@ -558,7 +558,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       (... and tt::is_time_index<Args>::value),
       "Can only add a number to a tensor expression that evaluates to a rank 0"
       "tensor.");
-  return TensorExpressions::NumberAsExpression(number) + t;
+  return tenex::NumberAsExpression(number) + t;
 }
 /// @}
 
@@ -572,9 +572,9 @@ SPECTRE_ALWAYS_INLINE auto operator-(
     const TensorExpression<T1, X1, Symm1, IndexList1, Args1>& t1,
     const TensorExpression<T2, X2, Symm2, IndexList2, Args2>& t2) {
   using op1_generic_indices =
-      typename TensorExpressions::detail::remove_time_indices<Args1>::type;
+      typename tenex::detail::remove_time_indices<Args1>::type;
   using op2_generic_indices =
-      typename TensorExpressions::detail::remove_time_indices<Args2>::type;
+      typename tenex::detail::remove_time_indices<Args2>::type;
   static_assert(tmpl::size<op1_generic_indices>::value ==
                     tmpl::size<op2_generic_indices>::value,
                 "Tensor subtraction is only possible when the same number of "
@@ -584,7 +584,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       "The generic indices when subtracting two tensors must be equal. This "
       "error "
       "occurs from expressions like R(ti_a, ti_b) - S(ti_c, ti_a)");
-  return TensorExpressions::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
+  return tenex::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
 
 /// @{
@@ -625,7 +625,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return t - TensorExpressions::NumberAsExpression(number);
+  return t - tenex::NumberAsExpression(number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args>
@@ -636,6 +636,6 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return TensorExpressions::NumberAsExpression(number) - t;
+  return tenex::NumberAsExpression(number) - t;
 }
 /// @}

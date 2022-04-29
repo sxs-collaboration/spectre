@@ -26,7 +26,7 @@ void grad_spatial_z4_constraint(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       result,
       field_d(ti_i, ti_j, ti_l) *
               gamma_hat_minus_contracted_conformal_christoffel(ti_L) +

@@ -166,11 +166,11 @@ void TimeDerivative<Dim>::apply(
     get(*conformal_factor_squared)[i] = exp(2.0 * get(ln_conformal_factor)[i]);
   }
 
-  ::TensorExpressions::evaluate<ti_I, ti_J>(
+  ::tenex::evaluate<ti_I, ti_J>(
       inv_spatial_metric, (*conformal_factor_squared)() *
                               (*inv_conformal_spatial_metric)(ti_I, ti_J));
 
-  ::TensorExpressions::evaluate<ti_I, ti_J>(
+  ::tenex::evaluate<ti_I, ti_J>(
       inv_a_tilde, a_tilde(ti_k, ti_l) *
                        (*inv_conformal_spatial_metric)(ti_I, ti_K) *
                        (*inv_conformal_spatial_metric)(ti_J, ti_L));
@@ -201,12 +201,11 @@ void TimeDerivative<Dim>::apply(
   // expressions and identities needed for evolution equations: eq 13 - 27
 
   // eq 13
-  ::TensorExpressions::evaluate(
-      trace_a_tilde,
-      (*inv_conformal_spatial_metric)(ti_I, ti_J) * a_tilde(ti_i, ti_j));
+  ::tenex::evaluate(trace_a_tilde, (*inv_conformal_spatial_metric)(ti_I, ti_J) *
+                                       a_tilde(ti_i, ti_j));
 
   // eq 14
-  ::TensorExpressions::evaluate<ti_k, ti_I, ti_J>(
+  ::tenex::evaluate<ti_k, ti_I, ti_J>(
       field_d_up, (*inv_conformal_spatial_metric)(ti_I, ti_N) *
                       (*inv_conformal_spatial_metric)(ti_M, ti_J) *
                       field_d(ti_k, ti_n, ti_m));
@@ -228,17 +227,16 @@ void TimeDerivative<Dim>::apply(
                                   *conformal_christoffel_second_kind);
 
   // temporary expressions needed for eq 18 - 20
-  ::TensorExpressions::evaluate<ti_l>(
-      contracted_christoffel_second_kind,
-      (*christoffel_second_kind)(ti_M, ti_l, ti_m));
+  ::tenex::evaluate<ti_l>(contracted_christoffel_second_kind,
+                          (*christoffel_second_kind)(ti_M, ti_l, ti_m));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       contracted_d_conformal_christoffel_difference,
       (*d_conformal_christoffel_second_kind)(ti_m, ti_M, ti_i, ti_j) -
           (*d_conformal_christoffel_second_kind)(ti_j, ti_M, ti_i, ti_m));
 
-  ::TensorExpressions::evaluate<ti_L>(contracted_field_d_up,
-                                      (*field_d_up)(ti_m, ti_M, ti_L));
+  ::tenex::evaluate<ti_L>(contracted_field_d_up,
+                          (*field_d_up)(ti_m, ti_M, ti_L));
 
   // eq 18 - 20
   ::Ccz4::spatial_ricci_tensor(
@@ -268,7 +266,7 @@ void TimeDerivative<Dim>::apply(
       *conformal_christoffel_second_kind, *d_conformal_christoffel_second_kind);
 
   // temp for eq 25
-  ::TensorExpressions::evaluate<ti_I>(
+  ::tenex::evaluate<ti_I>(
       gamma_hat_minus_contracted_conformal_christoffel,
       gamma_hat(ti_I) - (*contracted_conformal_christoffel_second_kind)(ti_I));
 
@@ -284,7 +282,7 @@ void TimeDerivative<Dim>::apply(
       *gamma_hat_minus_contracted_conformal_christoffel);
 
   // temp for eq 26
-  ::TensorExpressions::evaluate<ti_i, ti_L>(
+  ::tenex::evaluate<ti_i, ti_L>(
       d_gamma_hat_minus_contracted_conformal_christoffel,
       d_gamma_hat(ti_i, ti_L) -
           (*d_contracted_conformal_christoffel_second_kind)(ti_i, ti_L));
@@ -304,9 +302,9 @@ void TimeDerivative<Dim>::apply(
 
   // temporary expressions not already computed above
 
-  ::TensorExpressions::evaluate(contracted_field_b, field_b(ti_k, ti_K));
+  ::tenex::evaluate(contracted_field_b, field_b(ti_k, ti_K));
 
-  ::TensorExpressions::evaluate<ti_k, ti_j, ti_I>(
+  ::tenex::evaluate<ti_k, ti_j, ti_I>(
       symmetrized_d_field_b,
       0.5 * (d_field_b(ti_k, ti_j, ti_I) + d_field_b(ti_j, ti_k, ti_I)));
 
@@ -317,73 +315,70 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  ::TensorExpressions::evaluate<ti_i, ti_j, ti_k>(
+  ::tenex::evaluate<ti_i, ti_j, ti_k>(
       field_b_times_field_d, field_b(ti_i, ti_L) * field_d(ti_j, ti_l, ti_k));
 
-  ::TensorExpressions::evaluate<ti_k>(
+  ::tenex::evaluate<ti_k>(
       field_d_up_times_a_tilde,
       (*field_d_up)(ti_k, ti_I, ti_J) * a_tilde(ti_i, ti_j));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       conformal_metric_times_field_b,
       conformal_spatial_metric(ti_k, ti_i) * field_b(ti_j, ti_K));
 
-  ::TensorExpressions::evaluate<ti_i, ti_k, ti_j>(
+  ::tenex::evaluate<ti_i, ti_k, ti_j>(
       conformal_metric_times_symmetrized_d_field_b,
       conformal_spatial_metric(ti_m, ti_i) *
           (*symmetrized_d_field_b)(ti_k, ti_j, ti_M));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       conformal_metric_times_trace_a_tilde,
       conformal_spatial_metric(ti_i, ti_j) * (*trace_a_tilde)());
 
-  ::TensorExpressions::evaluate<ti_k>(
-      inv_conformal_metric_times_d_a_tilde,
-      (*inv_conformal_spatial_metric)(ti_I, ti_J) *
-          d_a_tilde(ti_k, ti_i, ti_j));
+  ::tenex::evaluate<ti_k>(inv_conformal_metric_times_d_a_tilde,
+                          (*inv_conformal_spatial_metric)(ti_I, ti_J) *
+                              d_a_tilde(ti_k, ti_i, ti_j));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
-      a_tilde_times_field_b, a_tilde(ti_k, ti_i) * field_b(ti_j, ti_K));
+  ::tenex::evaluate<ti_i, ti_j>(a_tilde_times_field_b,
+                                a_tilde(ti_k, ti_i) * field_b(ti_j, ti_K));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       a_tilde_minus_one_third_conformal_metric_times_trace_a_tilde,
       a_tilde(ti_i, ti_j) -
           one_third * (*conformal_metric_times_trace_a_tilde)(ti_i, ti_j));
 
-  ::TensorExpressions::evaluate(
-      k_minus_2_theta_c, trace_extrinsic_curvature() - 2.0 * c * theta());
+  ::tenex::evaluate(k_minus_2_theta_c,
+                    trace_extrinsic_curvature() - 2.0 * c * theta());
 
-  ::TensorExpressions::evaluate(k_minus_k0_minus_2_theta_c,
-                                (*k_minus_2_theta_c)() - k_0());
+  ::tenex::evaluate(k_minus_k0_minus_2_theta_c, (*k_minus_2_theta_c)() - k_0());
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(lapse_times_a_tilde,
-                                            (*lapse)() * a_tilde(ti_i, ti_j));
+  ::tenex::evaluate<ti_i, ti_j>(lapse_times_a_tilde,
+                                (*lapse)() * a_tilde(ti_i, ti_j));
 
-  TensorExpressions::evaluate<ti_k, ti_i, ti_j>(
-      lapse_times_d_a_tilde, (*lapse)() * d_a_tilde(ti_k, ti_i, ti_j));
+  tenex::evaluate<ti_k, ti_i, ti_j>(lapse_times_d_a_tilde,
+                                    (*lapse)() * d_a_tilde(ti_k, ti_i, ti_j));
 
-  ::TensorExpressions::evaluate<ti_k>(lapse_times_field_a,
-                                      (*lapse)() * field_a(ti_k));
+  ::tenex::evaluate<ti_k>(lapse_times_field_a, (*lapse)() * field_a(ti_k));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       lapse_times_conformal_spatial_metric,
       (*lapse)() * conformal_spatial_metric(ti_i, ti_j));
 
-  ::TensorExpressions::evaluate(
+  ::tenex::evaluate(
       lapse_times_ricci_scalar_plus_divergence_z4_constraint,
       (*lapse)() * (*ricci_scalar_plus_divergence_z4_constraint)());
 
-  ::TensorExpressions::evaluate<ti_I>(shift_times_deriv_gamma_hat,
-                                      shift(ti_K) * d_gamma_hat(ti_k, ti_I));
+  ::tenex::evaluate<ti_I>(shift_times_deriv_gamma_hat,
+                          shift(ti_K) * d_gamma_hat(ti_k, ti_I));
 
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       inv_tau_times_conformal_metric,
       one_over_relaxation_time * conformal_spatial_metric(ti_i, ti_j));
 
   // time derivative computation: eq 12a - 12m
 
   // eq 12a : time derivative of the conformal spatial metric
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       dt_conformal_spatial_metric,
       2.0 * shift(ti_K) * field_d(ti_k, ti_i, ti_j) +
           (*conformal_metric_times_field_b)(ti_i, ti_j) +
@@ -397,10 +392,9 @@ void TimeDerivative<Dim>::apply(
               ((*det_conformal_spatial_metric)() - 1.0));
 
   // eq 12b : time derivative of the natural log of the lapse
-  ::TensorExpressions::evaluate(
-      dt_ln_lapse,
-      shift(ti_K) * field_a(ti_k) -
-          (*lapse_times_slicing_condition)() * (*k_minus_k0_minus_2_theta_c)());
+  ::tenex::evaluate(dt_ln_lapse, shift(ti_K) * field_a(ti_k) -
+                                     (*lapse_times_slicing_condition)() *
+                                         (*k_minus_k0_minus_2_theta_c)());
 
   // eq 12c : time derivative of the shift
   // if s == 0
@@ -409,19 +403,18 @@ void TimeDerivative<Dim>::apply(
       component = 0.0;
     }
   } else {
-    ::TensorExpressions::evaluate<ti_I>(
-        dt_shift, f * b(ti_I) + shift(ti_K) * field_b(ti_k, ti_I));
+    ::tenex::evaluate<ti_I>(dt_shift,
+                            f * b(ti_I) + shift(ti_K) * field_b(ti_k, ti_I));
   }
 
   // eq 12d : time derivative of the natural log of the conformal factor
-  ::TensorExpressions::evaluate(
-      dt_ln_conformal_factor,
-      shift(ti_K) * field_p(ti_k) +
-          one_third * ((*lapse)() * trace_extrinsic_curvature() -
-                       (*contracted_field_b)()));
+  ::tenex::evaluate(dt_ln_conformal_factor,
+                    shift(ti_K) * field_p(ti_k) +
+                        one_third * ((*lapse)() * trace_extrinsic_curvature() -
+                                     (*contracted_field_b)()));
 
   // eq 12e : time derivative of the trace-free part of the extrinsic curvature
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
+  ::tenex::evaluate<ti_i, ti_j>(
       dt_a_tilde,
       shift(ti_K) * d_a_tilde(ti_k, ti_i, ti_j) +
           (*conformal_factor_squared)() *
@@ -442,7 +435,7 @@ void TimeDerivative<Dim>::apply(
           (*inv_tau_times_conformal_metric)(ti_i, ti_j) * (*trace_a_tilde)());
 
   // eq. (12f) : time derivative of the trace of the extrinsic curvature
-  ::TensorExpressions::evaluate(
+  ::tenex::evaluate(
       dt_trace_extrinsic_curvature,
       shift(ti_K) * d_trace_extrinsic_curvature(ti_k) - (*divergence_lapse)() +
           (*lapse_times_ricci_scalar_plus_divergence_z4_constraint)() +
@@ -451,7 +444,7 @@ void TimeDerivative<Dim>::apply(
 
   // eq. (12g) : time derivative of the projection of the Z4 four-vector along
   // the normal direction
-  ::TensorExpressions::evaluate(
+  ::tenex::evaluate(
       dt_theta,
       shift(ti_K) * d_theta(ti_k) +
           (*lapse)() *
@@ -465,7 +458,7 @@ void TimeDerivative<Dim>::apply(
 
   // eq. (12h) : time derivative \hat{\Gamma}^i
   // first, compute terms without s
-  ::TensorExpressions::evaluate<ti_I>(
+  ::tenex::evaluate<ti_I>(
       dt_gamma_hat,
       // terms without lapse nor s
       (*shift_times_deriv_gamma_hat)(ti_I) +
@@ -496,7 +489,7 @@ void TimeDerivative<Dim>::apply(
                    (*spatial_z4_constraint)(ti_j)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::TensorExpressions::evaluate<ti_I>(
+    ::tenex::evaluate<ti_I>(
         dt_gamma_hat,
         (*dt_gamma_hat)(ti_I) +
             // terms with lapse and s
@@ -520,14 +513,14 @@ void TimeDerivative<Dim>::apply(
       component = 0.0;
     }
   } else {
-    ::TensorExpressions::evaluate<ti_I>(
+    ::tenex::evaluate<ti_I>(
         dt_b, (*dt_gamma_hat)(ti_I)-eta() * b(ti_I) +
                   shift(ti_K) * (d_b(ti_k, ti_I) - d_gamma_hat(ti_k, ti_I)));
   }
 
   // eq. (12j) : time derivative of auxiliary variable A_i
   // first, compute terms without s
-  ::TensorExpressions::evaluate<ti_k>(
+  ::tenex::evaluate<ti_k>(
       dt_field_a,
       shift(ti_L) * d_field_a(ti_l, ti_k) -
           (*lapse_times_field_a)(ti_k) * (*k_minus_k0_minus_2_theta_c)() *
@@ -538,7 +531,7 @@ void TimeDerivative<Dim>::apply(
                2.0 * c * d_theta(ti_k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::TensorExpressions::evaluate<ti_k>(
+    ::tenex::evaluate<ti_k>(
         dt_field_a, (*dt_field_a)(ti_k) -
                         (*lapse_times_slicing_condition)() *
                             ((*inv_conformal_metric_times_d_a_tilde)(ti_k) -
@@ -553,7 +546,7 @@ void TimeDerivative<Dim>::apply(
     }
   } else {
     // first, compute expression without advective terms
-    ::TensorExpressions::evaluate<ti_k, ti_I>(
+    ::tenex::evaluate<ti_k, ti_I>(
         dt_field_b, shift(ti_L) * d_field_b(ti_l, ti_k, ti_I) +
                         f * d_b(ti_k, ti_I) +
                         mu * square((*lapse)()) *
@@ -567,7 +560,7 @@ void TimeDerivative<Dim>::apply(
 
   // eq. (12l) : time derivative of auxiliary variable D_{kij}
   // first, compute terms without s
-  ::TensorExpressions::evaluate<ti_k, ti_i, ti_j>(
+  ::tenex::evaluate<ti_k, ti_i, ti_j>(
       dt_field_d,
       shift(ti_L) * d_field_d(ti_l, ti_k, ti_i, ti_j) -
           (*lapse_times_d_a_tilde)(ti_k, ti_i, ti_j) +
@@ -585,7 +578,7 @@ void TimeDerivative<Dim>::apply(
                    (*field_d_up_times_a_tilde)(ti_k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::TensorExpressions::evaluate<ti_k, ti_i, ti_j>(
+    ::tenex::evaluate<ti_k, ti_i, ti_j>(
         dt_field_d, (*dt_field_d)(ti_k, ti_i, ti_j) +
                         0.5 * ((*conformal_metric_times_symmetrized_d_field_b)(
                                    ti_i, ti_k, ti_j) +
@@ -597,7 +590,7 @@ void TimeDerivative<Dim>::apply(
 
   // eq. (12m) : time derivative of auxiliary variable P_i
   // first, compute terms without s
-  ::TensorExpressions::evaluate<ti_k>(
+  ::tenex::evaluate<ti_k>(
       dt_field_p, shift(ti_L) * d_field_p(ti_l, ti_k) +
                       field_b(ti_k, ti_L) * field_p(ti_l) +
                       one_third * (*lapse)() *
@@ -605,7 +598,7 @@ void TimeDerivative<Dim>::apply(
                            field_a(ti_k) * trace_extrinsic_curvature()));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::TensorExpressions::evaluate<ti_k>(
+    ::tenex::evaluate<ti_k>(
         dt_field_p,
         (*dt_field_p)(ti_k) +
             one_third *

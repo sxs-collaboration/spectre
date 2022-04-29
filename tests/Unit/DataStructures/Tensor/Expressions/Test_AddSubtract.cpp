@@ -75,21 +75,18 @@ void test_addsub_double(const DataType& used_for_size) {
   }
 
   // \f$L = R + S\f$
-  const Tensor<DataType> R_plus_S = TensorExpressions::evaluate(5.6 + S());
+  const Tensor<DataType> R_plus_S = tenex::evaluate(5.6 + S());
   // \f$L = R - S\f$
-  const Tensor<DataType> R_minus_S = TensorExpressions::evaluate(1.1 - S());
+  const Tensor<DataType> R_minus_S = tenex::evaluate(1.1 - S());
   // \f$L = G^{i}{}_{i} + R\f$
-  const Tensor<DataType> G_plus_R =
-      TensorExpressions::evaluate(G(ti_I, ti_i) + 8.2);
+  const Tensor<DataType> G_plus_R = tenex::evaluate(G(ti_I, ti_i) + 8.2);
   // \f$L = G^{i}{}_{i} - R\f$
-  const Tensor<DataType> G_minus_R =
-      TensorExpressions::evaluate(G(ti_I, ti_i) - 3.5);
+  const Tensor<DataType> G_minus_R = tenex::evaluate(G(ti_I, ti_i) - 3.5);
   // \f$L = R + S + T\f$
-  const Tensor<DataType> R_plus_S_plus_T =
-      TensorExpressions::evaluate(0.7 + S() + 9.8);
+  const Tensor<DataType> R_plus_S_plus_T = tenex::evaluate(0.7 + S() + 9.8);
   // \f$L = R - G^{i}{}_{i} + T\f$
   const Tensor<DataType> R_minus_G_plus_T =
-      TensorExpressions::evaluate(5.9 - G(ti_I, ti_i) + 4.7);
+      tenex::evaluate(5.9 - G(ti_I, ti_i) + 4.7);
 
   CHECK(R_plus_S.get() == 5.6 + S.get());
   CHECK(R_minus_S.get() == 1.1 - S.get());
@@ -109,8 +106,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   // Test adding scalars
   const Tensor<double> scalar_1{{{2.1}}};
   const Tensor<double> scalar_2{{{-0.8}}};
-  Tensor<double> lhs_scalar =
-      TensorExpressions::evaluate(scalar_1() + scalar_2());
+  Tensor<double> lhs_scalar = tenex::evaluate(scalar_1() + scalar_2());
   CHECK(lhs_scalar.get() == 1.3);
 
   Tensor<double, Symmetry<1, 1>,
@@ -127,19 +123,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   const Tensor<double, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
-                                                    Hll(ti_a, ti_b));
+      Gll = tenex::evaluate<ti_a, ti_b>(All(ti_a, ti_b) + Hll(ti_a, ti_b));
   const Tensor<double, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll2 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_a, ti_b) +
-                                                     Hll(ti_b, ti_a));
+      Gll2 = tenex::evaluate<ti_a, ti_b>(All(ti_a, ti_b) + Hll(ti_b, ti_a));
   const Tensor<double, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll3 = TensorExpressions::evaluate<ti_a, ti_b>(
-          All(ti_a, ti_b) + Hll(ti_b, ti_a) + All(ti_b, ti_a) -
-          Hll(ti_b, ti_a));
+      Gll3 = tenex::evaluate<ti_a, ti_b>(All(ti_a, ti_b) + Hll(ti_b, ti_a) +
+                                         All(ti_b, ti_a) - Hll(ti_b, ti_a));
   // [use_tensor_index]
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -178,19 +171,19 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-          Alll(ti_a, ti_b, ti_c) + Hlll(ti_a, ti_b, ti_c));
+      Glll = tenex::evaluate<ti_a, ti_b, ti_c>(Alll(ti_a, ti_b, ti_c) +
+                                               Hlll(ti_a, ti_b, ti_c));
   const Tensor<double, Symmetry<3, 2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll2 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-          Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c));
+      Glll2 = tenex::evaluate<ti_a, ti_b, ti_c>(Alll(ti_a, ti_b, ti_c) +
+                                                Hlll(ti_b, ti_a, ti_c));
   const Tensor<double, Symmetry<3, 2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll3 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
+      Glll3 = tenex::evaluate<ti_a, ti_b, ti_c>(
           Alll(ti_a, ti_b, ti_c) + Hlll(ti_b, ti_a, ti_c) +
           Alll(ti_b, ti_a, ti_c) - Hlll(ti_b, ti_a, ti_c));
   // testing LHS symmetry is nonsymmetric when RHS operands do not have
@@ -199,16 +192,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll4 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-          Alll(ti_b, ti_c, ti_a) + Rlll(ti_c, ti_a, ti_b));
+      Glll4 = tenex::evaluate<ti_a, ti_b, ti_c>(Alll(ti_b, ti_c, ti_a) +
+                                                Rlll(ti_c, ti_a, ti_b));
   // testing LHS symmetry preserves shared RHS symmetry when RHS operands have
   // symmetries in common
   const Tensor<double, Symmetry<2, 1, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll5 = TensorExpressions::evaluate<ti_a, ti_b, ti_c>(
-          Alll(ti_b, ti_c, ti_a) - Rlll(ti_a, ti_c, ti_b));
+      Glll5 = tenex::evaluate<ti_a, ti_b, ti_c>(Alll(ti_b, ti_c, ti_a) -
+                                                Rlll(ti_a, ti_c, ti_b));
 
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -227,14 +220,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      Glll6 = TensorExpressions::evaluate<ti_a, ti_j, ti_k>(
-          Rlll(ti_a, ti_j, ti_k) + Slll(ti_a, ti_j, ti_k));
+      Glll6 = tenex::evaluate<ti_a, ti_j, ti_k>(Rlll(ti_a, ti_j, ti_k) +
+                                                Slll(ti_a, ti_j, ti_k));
   Tensor<double, Symmetry<3, 2, 1>,
          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                     SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
       Glll7{};
-  TensorExpressions::evaluate<ti_j, ti_a, ti_k>(
+  tenex::evaluate<ti_j, ti_a, ti_k>(
       make_not_null(&Glll7), Slll(ti_j, ti_k, ti_a) - Rlll(ti_k, ti_a, ti_j));
 
   for (int a = 0; a < 4; ++a) {
@@ -252,8 +245,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   const Tensor<double, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll7 = TensorExpressions::evaluate<ti_c, ti_b>(Alll(ti_c, ti_t, ti_b) +
-                                                     Hlll(ti_b, ti_c, ti_t));
+      Gll7 = tenex::evaluate<ti_c, ti_b>(Alll(ti_c, ti_t, ti_b) +
+                                         Hlll(ti_b, ti_c, ti_t));
 
   for (int c = 0; c < 4; ++c) {
     for (int b = 0; b < 4; ++b) {
@@ -264,8 +257,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   const Tensor<double, Symmetry<1, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll8 = TensorExpressions::evaluate<ti_d, ti_c>(Alll(ti_c, ti_d, ti_t) -
-                                                     All(ti_d, ti_c));
+      Gll8 =
+          tenex::evaluate<ti_d, ti_c>(Alll(ti_c, ti_d, ti_t) - All(ti_d, ti_c));
 
   for (int d = 0; d < 4; ++d) {
     for (int c = 0; c < 4; ++c) {
@@ -276,8 +269,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   const Tensor<double, Symmetry<1, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Gll9 = TensorExpressions::evaluate<ti_a, ti_b>(All(ti_b, ti_a) +
-                                                     Alll(ti_b, ti_a, ti_t));
+      Gll9 =
+          tenex::evaluate<ti_a, ti_b>(All(ti_b, ti_a) + Alll(ti_b, ti_a, ti_t));
 
   for (int a = 0; a < 4; ++a) {
     for (int b = 0; b < 4; ++b) {
@@ -298,8 +291,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>>(
       0.0, spatial_component_placeholder);
-  TensorExpressions::evaluate<ti_t, ti_d, ti_b, ti_T>(
-      make_not_null(&Gll10), All(ti_b, ti_d) - Hll(ti_b, ti_d));
+  tenex::evaluate<ti_t, ti_d, ti_b, ti_T>(make_not_null(&Gll10),
+                                          All(ti_b, ti_d) - Hll(ti_b, ti_d));
 
   for (int d = 0; d < 4; ++d) {
     for (int b = 0; b < 4; ++b) {
@@ -318,8 +311,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
       0.0, spatial_component_placeholder);
-  TensorExpressions::evaluate<ti_a, ti_c, ti_t>(
-      make_not_null(&Gll11), Rlll(ti_t, ti_c, ti_a) + All(ti_a, ti_c));
+  tenex::evaluate<ti_a, ti_c, ti_t>(make_not_null(&Gll11),
+                                    Rlll(ti_t, ti_c, ti_a) + All(ti_a, ti_c));
 
   for (int a = 0; a < 4; ++a) {
     for (int c = 0; c < 4; ++c) {
@@ -336,8 +329,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
       0.0, spatial_component_placeholder);
-  TensorExpressions::evaluate<ti_g, ti_t, ti_h>(
-      make_not_null(&Gll12), Hll(ti_h, ti_g) - Alll(ti_g, ti_t, ti_h));
+  tenex::evaluate<ti_g, ti_t, ti_h>(make_not_null(&Gll12),
+                                    Hll(ti_h, ti_g) - Alll(ti_g, ti_t, ti_h));
 
   for (int g = 0; g < 4; ++g) {
     for (int h = 0; h < 4; ++h) {
@@ -353,8 +346,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
              index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
       0.0, spatial_component_placeholder);
-  TensorExpressions::evaluate<ti_t, ti_f>(
-      make_not_null(&Gll13), Rlll(ti_t, ti_t, ti_f) - Hll(ti_f, ti_t));
+  tenex::evaluate<ti_t, ti_f>(make_not_null(&Gll13),
+                              Rlll(ti_t, ti_t, ti_f) - Hll(ti_f, ti_t));
 
   for (int f = 0; f < 4; ++f) {
     CHECK(Gll13.get(0, f) == Rlll.get(0, 0, f) - Hll.get(f, 0));
@@ -370,7 +363,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
              index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
       0.0, spatial_component_placeholder);
-  TensorExpressions::evaluate<ti_T, ti_t>(
+  tenex::evaluate<ti_T, ti_t>(
       make_not_null(&Gll14),
       Hll(ti_t, ti_t) - T() - Rlll(ti_t, ti_t, ti_t) + 9.1);
 

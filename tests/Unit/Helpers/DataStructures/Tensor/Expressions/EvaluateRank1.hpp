@@ -17,7 +17,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TestHelpers::TensorExpressions {
+namespace TestHelpers::tenex {
 
 /// \ingroup TestingFrameworkGroup
 /// \brief Test that evaluating a right hand side tensor expression containing a
@@ -40,10 +40,9 @@ void test_evaluate_rank_1_impl() {
   // Use explicit type (vs auto) so the compiler checks return type of
   // `evaluate`
   const tensor_type L_a_returned =
-      ::TensorExpressions::evaluate<TensorIndex>(R_a(TensorIndex));
+      ::tenex::evaluate<TensorIndex>(R_a(TensorIndex));
   tensor_type L_a_filled{};
-  ::TensorExpressions::evaluate<TensorIndex>(make_not_null(&L_a_filled),
-                                             R_a(TensorIndex));
+  ::tenex::evaluate<TensorIndex>(make_not_null(&L_a_filled), R_a(TensorIndex));
 
   const size_t dim = tmpl::at_c<TensorIndexTypeList, 0>::dim;
 
@@ -59,8 +58,7 @@ void test_evaluate_rank_1_impl() {
     Variables<tmpl::list<::Tags::TempTensor<1, tensor_type>>> L_a_var{
         used_for_size};
     tensor_type& L_a_temp = get<::Tags::TempTensor<1, tensor_type>>(L_a_var);
-    ::TensorExpressions::evaluate<TensorIndex>(make_not_null(&L_a_temp),
-                                               R_a(TensorIndex));
+    ::tenex::evaluate<TensorIndex>(make_not_null(&L_a_temp), R_a(TensorIndex));
 
     // For L_a = R_a, check that L_i == R_i
     for (size_t i = 0; i < dim; ++i) {
@@ -98,4 +96,4 @@ void test_evaluate_rank_1() {
 #undef DIM
 }
 
-}  // namespace TestHelpers::TensorExpressions
+}  // namespace TestHelpers::tenex

@@ -19,7 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace TensorIndexTransformation_detail {
 static constexpr size_t time_index_position_placeholder =
     std::numeric_limits<size_t>::max();
@@ -159,4 +159,4 @@ transform_multi_index(
   }
   return output_multi_index;
 }
-}  // namespace TensorExpressions
+}  // namespace tenex

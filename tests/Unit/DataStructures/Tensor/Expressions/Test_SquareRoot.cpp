@@ -61,7 +61,7 @@ void test_sqrt(const DataType& used_for_size) {
   }
 
   // \f$L = \sqrt{R}\f$
-  Tensor<DataType> sqrt_R = TensorExpressions::evaluate(sqrt(R()));
+  Tensor<DataType> sqrt_R = tenex::evaluate(sqrt(R()));
   CHECK(sqrt_R.get() == sqrt(R.get()));
 
   Tensor<DataType, Symmetry<2, 1>,
@@ -76,11 +76,9 @@ void test_sqrt(const DataType& used_for_size) {
   }
 
   // \f$L = \sqrt{S_{k}{}^{k}}\f$
-  const Tensor<DataType> sqrt_S =
-      TensorExpressions::evaluate(sqrt(S(ti_k, ti_K)));
+  const Tensor<DataType> sqrt_S = tenex::evaluate(sqrt(S(ti_k, ti_K)));
   // \f$L = \sqrt{S_{k}{}^{k} * T}\f$
-  const Tensor<DataType> sqrt_S_T =
-      TensorExpressions::evaluate(sqrt(S(ti_k, ti_K) * 3.6));
+  const Tensor<DataType> sqrt_S_T = tenex::evaluate(sqrt(S(ti_k, ti_K) * 3.6));
   CHECK(sqrt_S.get() == sqrt(S_trace));
   CHECK(sqrt_S_T.get() == sqrt(S_trace * 3.6));
 
@@ -102,7 +100,7 @@ void test_sqrt(const DataType& used_for_size) {
   // Test expression that uses generic spatial index for a spacetime index
   // \f$L = \sqrt{G^{j} H_{j}\f$
   const Tensor<DataType> sqrt_GH_product =
-      TensorExpressions::evaluate(sqrt(G(ti_J) * H(ti_j)));
+      tenex::evaluate(sqrt(G(ti_J) * H(ti_j)));
   CHECK(sqrt_GH_product.get() == sqrt(GH_product));
 
   Tensor<DataType, Symmetry<2, 1>,
@@ -113,8 +111,7 @@ void test_sqrt(const DataType& used_for_size) {
 
   // Test expression that uses concrete time index for a spacetime index
   // \f$L = \sqrt{T_{t, t}\f$
-  const Scalar<DataType> sqrt_T_time =
-      TensorExpressions::evaluate(sqrt(T(ti_t, ti_t)));
+  const Scalar<DataType> sqrt_T_time = tenex::evaluate(sqrt(T(ti_t, ti_t)));
   CHECK(sqrt_T_time.get() == sqrt(T.get(0, 0)));
 }
 }  // namespace

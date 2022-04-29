@@ -10,14 +10,14 @@
 
 #include "DataStructures/Tensor/Expressions/TensorIndexTransformation.hpp"
 
-namespace TestHelpers::TensorExpressions {
+namespace TestHelpers::tenex {
 /// \ingroup TestingFrameworkGroup
 /// \brief Test that the transformation between two rank 2 tensors' generic
 /// indices and the subsequent transformed multi-indices are correctly computed
 ///
 /// \details The functions tested are:
-/// - `TensorExpressions::compute_tensorindex_transformation`
-/// - `TensorExpressions::transform_multi_index`
+/// - `tenex::compute_tensorindex_transformation`
+/// - `tenex::transform_multi_index`
 ///
 /// If we consider the first tensor's generic indices to be (a, b), the possible
 /// orderings of the second tensor's generic indices are: (a, b) and (b, a). For
@@ -40,12 +40,12 @@ void test_tensor_index_transformation_rank_2(
                                                 TensorIndexA::value};
 
   const std::array<size_t, 2> actual_ab_to_ab_transformation =
-      ::TensorExpressions::compute_tensorindex_transformation(index_order_ab,
-                                                              index_order_ab);
+      ::tenex::compute_tensorindex_transformation(index_order_ab,
+                                                  index_order_ab);
   const std::array<size_t, 2> expected_ab_to_ab_transformation = {0, 1};
   const std::array<size_t, 2> actual_ba_to_ab_transformation =
-      ::TensorExpressions::compute_tensorindex_transformation(index_order_ba,
-                                                              index_order_ab);
+      ::tenex::compute_tensorindex_transformation(index_order_ba,
+                                                  index_order_ab);
   const std::array<size_t, 2> expected_ba_to_ab_transformation = {1, 0};
 
   CHECK(actual_ab_to_ab_transformation == expected_ab_to_ab_transformation);
@@ -57,12 +57,12 @@ void test_tensor_index_transformation_rank_2(
       const std::array<size_t, 2> ji = {j, i};
 
       // For L_{ab} = R_{ab}, check that L_{ij} == R_{ij}
-      CHECK(::TensorExpressions::transform_multi_index(
+      CHECK(::tenex::transform_multi_index(
                 ij, expected_ab_to_ab_transformation) == ij);
       // For L_{ba} = R_{ab}, check that L_{ij} == R_{ji}
-      CHECK(::TensorExpressions::transform_multi_index(
+      CHECK(::tenex::transform_multi_index(
                 ij, expected_ba_to_ab_transformation) == ji);
     }
   }
 }
-}  // namespace TestHelpers::TensorExpressions
+}  // namespace TestHelpers::tenex

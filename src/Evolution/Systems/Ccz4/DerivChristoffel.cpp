@@ -74,7 +74,7 @@ void deriv_contracted_conformal_christoffel_second_kind(
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_k, ti_I>(
+  ::tenex::evaluate<ti_k, ti_I>(
       result,
       -2.0 * field_d_up(ti_k, ti_J, ti_L) *
               conformal_christoffel_second_kind(ti_I, ti_j, ti_l) +
