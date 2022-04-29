@@ -28,6 +28,7 @@
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessArray.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessGroups.hpp"
+#include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessSingleton.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
@@ -195,7 +196,10 @@ void check_output(const std::string& filename, const double time,
   const std::vector<std::string>& legend = dataset.get_legend();
 
   size_t num_columns;
-  if constexpr (Parallel::is_group_v<Component>) {
+  if constexpr (Parallel::is_singleton_v<Component>) {
+    // time, proc, size
+    num_columns = 3;
+  } else if constexpr (Parallel::is_group_v<Component>) {
     // time, size on node 0, size on node 1, ...,  proc of max size, max size,
     // avg per node
     num_columns = num_nodes + 4;
@@ -215,8 +219,12 @@ void check_output(const std::string& filename, const double time,
       alg::accumulate(sizes, 0.0) / static_cast<double>(num_nodes);
 
   CHECK(data(0, 0) == time);
-  for (size_t i = 0; i < num_nodes; i++) {
-    CHECK(data(0, i + 1) == sizes[i]);
+  // Singletons don't report sizes on each node because there is only one
+  // measurement
+  if constexpr (not Parallel::is_singleton_v<Component>) {
+    for (size_t i = 0; i < num_nodes; i++) {
+      CHECK(data(0, i + 1) == sizes[i]);
+    }
   }
   CHECK(data(0, num_columns - 1) == average);
 }
@@ -426,6 +434,51 @@ void test_process_array(const gsl::not_null<Gen*> gen) {
   check_output<array_comp>(outfile_name, time, num_nodes, size_per_node);
 }
 
+void test_process_singleton() {
+  INFO("Test ProcessSingleton");
+  const std::string outfile_name{"TestMemoryMonitorSingletonAction"};
+  // clean up just in case
+  if (file_system::check_if_file_exists(outfile_name + ".h5")) {
+    file_system::rm(outfile_name + ".h5", true);
+  }
+
+  // 4 mock nodes, 3 mock cores per node
+  const size_t num_nodes = 4;
+  const size_t num_procs_per_node = 3;
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {outfile_name}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+
+  setup_runner(make_not_null(&runner));
+
+  auto& cache = ActionTesting::cache<sing_comp>(runner, 0);
+  auto& singleton_proxy = Parallel::get_parallel_component<sing_comp>(cache);
+
+  const double time = 0.5;
+  std::vector<double> sizes(num_nodes, 0.0);
+
+  Parallel::simple_action<mem_monitor::ProcessSingleton>(singleton_proxy, time);
+  CHECK(ActionTesting::number_of_queued_simple_actions<sing_comp>(runner, 0) ==
+        1);
+
+  // We multiply by the number of nodes here because in the checK_output()
+  // function, it takes an average over number of nodes to accommodate arrays
+  // and (node)groups. But for singletons, we don't need an average because it's
+  // just one measurement. So we "undo" the average here by multiplying by the
+  // number of nodes
+  sizes[0] = static_cast<double>(num_nodes) *
+             size_of_object_in_bytes(*Parallel::local(singleton_proxy)) / 1.0e6;
+
+  ActionTesting::invoke_queued_simple_action<sing_comp>(make_not_null(&runner),
+                                                        0);
+
+  CHECK(ActionTesting::number_of_queued_threaded_actions<obs_writer_comp>(
+            runner, 0) == 1);
+  ActionTesting::invoke_queued_threaded_action<obs_writer_comp>(
+      make_not_null(&runner), 0);
+
+  check_output<sing_comp>(outfile_name, time, num_nodes, sizes);
+}
+
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   MAKE_GENERATOR(gen);
   test_tags();
@@ -435,5 +488,6 @@ SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   // Then test the Process(Node)Group actions (second arg true)
   test_contribute_memory_data(make_not_null(&gen), true);
   test_process_array(make_not_null(&gen));
+  test_process_singleton();
 }
 }  // namespace

@@ -8,4 +8,5 @@ spectre_target_headers(
   ContributeMemoryData.hpp
   ProcessArray.hpp
   ProcessGroups.hpp
+  ProcessSingleton.hpp
   )
