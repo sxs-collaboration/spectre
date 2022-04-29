@@ -87,9 +87,9 @@ void test_high_rank_intermediate(const DataType& used_for_size) {
   // \f$L^{c}{}_{dkl} = R_{jb}{}^{a} * (S_{da}{}^{BC} * T^{j}{}_{kl})\f$
   const Tensor<DataType, Symmetry<4, 3, 2, 1>,
                index_list<C_index, d_index, k_index, l_index>>
-      actual_result = TensorExpressions::evaluate<ti_C, ti_d, ti_k, ti_l>(
-          R(ti_j, ti_b, ti_A) *
-          (S(ti_d, ti_a, ti_B, ti_C) * T(ti_J, ti_k, ti_l)));
+      actual_result = tenex::evaluate<ti::C, ti::d, ti::k, ti::l>(
+          R(ti::j, ti::b, ti::A) *
+          (S(ti::d, ti::a, ti::B, ti::C) * T(ti::J, ti::k, ti::l)));
 
   for (size_t c = 0; c < C_index::dim; c++) {
     for (size_t d = 0; d < d_index::dim; d++) {

@@ -16,7 +16,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace TensorIndex_detail {
 // The below values are used to separate upper indices from lower indices and
 // spatial indices from spacetime indices.
@@ -49,7 +49,7 @@ static constexpr size_t upper_spatial_sentinel =
     spatial_sentinel + upper_sentinel;
 static constexpr size_t max_sentinel = 2000;
 }  // namespace TensorIndex_detail
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /*!
  * \ingroup TensorExpressionsGroup
@@ -59,31 +59,126 @@ static constexpr size_t max_sentinel = 2000;
  * Used to denote a tensor index in a tensor slot. This allows the following
  * type of expressions to work:
  * \code{.cpp}
- * auto T = evaluate<ti_a, ti_b>(F(ti_a, ti_b) + S(ti_b, ti_a));
+ * auto T = evaluate<ti::a, ti::b>(F(ti::a, ti::b) + S(ti::b, ti::a));
  * \endcode
- * where `decltype(ti_a) == TensorIndex<0>` and
- * `decltype(ti_b) == TensorIndex<1>`. That is, `ti_a` and `ti_b` are
+ * where `decltype(ti::a) == TensorIndex<0>` and
+ * `decltype(ti::b) == TensorIndex<1>`. That is, `ti::a` and `ti::b` are
  * placeholders for objects of type `TensorIndex<0>` and `TensorIndex<1>`,
  * respectively.
  */
 template <std::size_t I,
-          Requires<(I < TensorExpressions::TensorIndex_detail::max_sentinel)> =
-              nullptr>
+          Requires<(I < tenex::TensorIndex_detail::max_sentinel)> = nullptr>
 struct TensorIndex {
   using value_type = std::size_t;
   using type = TensorIndex<I>;
   static constexpr value_type value = I;
   static constexpr UpLo valence =
-      ((I < TensorExpressions::TensorIndex_detail::upper_sentinel) or
-       (I >= TensorExpressions::TensorIndex_detail::spatial_sentinel and
-        I < TensorExpressions::TensorIndex_detail::upper_spatial_sentinel))
+      ((I < tenex::TensorIndex_detail::upper_sentinel) or
+       (I >= tenex::TensorIndex_detail::spatial_sentinel and
+        I < tenex::TensorIndex_detail::upper_spatial_sentinel))
           ? UpLo::Lo
           : UpLo::Up;
   static constexpr bool is_spacetime =
-      I < TensorExpressions::TensorIndex_detail::spatial_sentinel;
+      I < tenex::TensorIndex_detail::spatial_sentinel;
 };
 
-namespace TensorExpressions {
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Contains definitions for the available `TensorIndex`s to use in a
+ * `TensorExpression`
+ */
+namespace ti {
+/// @{
+/*!
+ * \brief The available `TensorIndex`s to use in a `TensorExpression`
+ *
+ * \details The suffix following `ti::` indicates index properties:
+ * - Uppercase: contravariant/upper index
+ * - Lowercase: covariant/lower index
+ * - A/a - H/h: generic spacetime index
+ * - I/i - M/m: generic spatial index
+ * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
+ *
+ * \snippet Test_AddSubtract.cpp use_tensor_index
+ *
+ * If you want to support a new generic index, definitions for the upper and
+ * lower versions of the index must be added as unique `TensorIndex` types, e.g.
+ * \code
+ * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER> ti::x{};
+ * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER> ti::X{};
+ * \endcode
+ * where `UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER` and
+ * `UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER` are unique, but related integers that
+ * fall in the integer ranges that properly encode the index's properties
+ * according to the `_sentinel` values defined at the top of
+ * `src/DataStructures/Tensor/Expressions/TensorIndex.hpp`. This enables the new
+ * index to be distinguishable from others and for the upper and lower versions
+ * to be recognized as related by opposite valence. See comments there on these
+ * integer ranges to properly encode the new index (both upper and lower
+ * definitions) that you wish to add. In short, you should simply be able to
+ * continue the pattern used for the existing `TensorIndex` types that are
+ * already defined. For example, if `ti::M`/`ti::m` is the highest-valued
+ * generic spatial index currently defined and you want to add `ti::N`/`ti::n`
+ * as a new generic spatial index, you can simply define `ti::N` and `ti::n`'s
+ * unique integer values to be `INTEGER_VALUE_FOR_M + 1` and
+ * `INTEGER_VALUE_FOR_m + 1`, respectively. For adding a new generic spacetime
+ * index, you should be able to do the same thing with respect to the upper and
+ * lower versions of the highest-valued currently defined generic spacetime
+ * `TensorIndex`.
+ */
+static constexpr TensorIndex<0> a{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel> A{};
+static constexpr TensorIndex<1> b{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 1> B{};
+static constexpr TensorIndex<2> c{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 2> C{};
+static constexpr TensorIndex<3> d{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 3> D{};
+static constexpr TensorIndex<4> e{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 4> E{};
+static constexpr TensorIndex<5> f{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 5> F{};
+static constexpr TensorIndex<6> g{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 6> G{};
+static constexpr TensorIndex<7> h{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel + 7> H{};
+
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_sentinel - 1> t{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel - 1>
+    T{};
+
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel> i{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel>
+    I{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel + 1>
+    j{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel +
+                             1>
+    J{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel + 2>
+    k{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel +
+                             2>
+    K{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel + 3>
+    l{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel +
+                             3>
+    L{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel + 4>
+    m{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel +
+                             4>
+    M{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::spatial_sentinel + 5>
+    n{};
+static constexpr TensorIndex<tenex::TensorIndex_detail::upper_spatial_sentinel +
+                             5>
+    N{};
+/// @}
+}  // namespace ti
+
+namespace tenex {
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Returns the TensorIndex value of with opposite valence.
@@ -93,9 +188,9 @@ namespace TensorExpressions {
  * spatial. This function returns the value that corresponds to the encoding of
  * the TensorIndex with the same index type, but opposite valence.
  *
- * For example, 0 is the TensorIndex value for `ti_a`. If `i == 0`, then 500
- * will be returned, which is the TensorIndex value for `ti_A`. If `i == 500`
- * (representing `ti_A`), then 0 (representing `ti_a`) is returned.
+ * For example, 0 is the TensorIndex value for `ti::a`. If `i == 0`, then 500
+ * will be returned, which is the TensorIndex value for `ti::A`. If `i == 500`
+ * (representing `ti::A`), then 0 (representing `ti::a`) is returned.
  *
  * @param i a TensorIndex value that represents a generic index
  * @return the TensorIndex value that encodes the generic index with the
@@ -114,123 +209,7 @@ get_tensorindex_value_with_opposite_valence(const size_t i) {
     return i + TensorIndex_detail::upper_sentinel;
   }
 }
-}  //  namespace TensorExpressions
-
-/// @{
-/*!
- * \ingroup TensorExpressionsGroup
- * \brief The available TensorIndexs to use in a TensorExpression
- *
- * \details The suffix following `ti_` indicates index properties:
- * - Uppercase: contravariant/upper index
- * - Lowercase: covariant/lower index
- * - A/a - H/h: generic spacetime index
- * - I/i - M/m: generic spatial index
- * - T/t: concrete time index (defined as a spacetime `TensorIndex`)
- *
- * \snippet Test_AddSubtract.cpp use_tensor_index
- *
- * If you want to support a new generic index, definitions for the upper and
- * lower versions of the index must be added as unique `TensorIndex` types, e.g.
- * \code
- * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER> ti_x{};
- * static constexpr TensorIndex<UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER> ti_X{};
- * \endcode
- * where `UNIQUE_INTEGER_IN_PROPER_RANGE_LOWER` and
- * `UNIQUE_INTEGER_IN_PROPER_RANGE_UPPER` are unique, but related integers that
- * fall in the integer ranges that properly encode the index's properties
- * according to the `_sentinel` values defined at the top of
- * `src/DataStructures/Tensor/Expressions/TensorIndex.hpp`. This enables the new
- * index to be distinguishable from others and for the upper and lower versions
- * to be recognized as related by opposite valence. See comments there on these
- * integer ranges to properly encode the new index (both upper and lower
- * definitions) that you wish to add. In short, you should simply be able to
- * continue the pattern used for the existing `TensorIndex` types that are
- * already defined. For example, if `ti_M`/`ti_m` is the highest-valued generic
- * spatial index currently defined and you want to add `ti_N`/`ti_n` as a new
- * generic spatial index, you can simply define `ti_N` and `ti_n`'s unique
- * integer values to be `INTEGER_VALUE_FOR_M + 1` and `INTEGER_VALUE_FOR_m + 1`,
- * respectively. For adding a new generic spacetime index, you should be able to
- * do the same thing with respect to the upper and lower versions of the
- * highest-valued currently defined generic spacetime `TensorIndex`.
- */
-static constexpr TensorIndex<0> ti_a{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel>
-    ti_A{};
-static constexpr TensorIndex<1> ti_b{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 1>
-    ti_B{};
-static constexpr TensorIndex<2> ti_c{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 2>
-    ti_C{};
-static constexpr TensorIndex<3> ti_d{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 3>
-    ti_D{};
-static constexpr TensorIndex<4> ti_e{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 4>
-    ti_E{};
-static constexpr TensorIndex<5> ti_f{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 5>
-    ti_F{};
-static constexpr TensorIndex<6> ti_g{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 6>
-    ti_G{};
-static constexpr TensorIndex<7> ti_h{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel + 7>
-    ti_H{};
-
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_sentinel - 1>
-    ti_t{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel - 1>
-    ti_T{};
-
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel>
-    ti_i{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel>
-    ti_I{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel + 1>
-    ti_j{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 1>
-    ti_J{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel + 2>
-    ti_k{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 2>
-    ti_K{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel + 3>
-    ti_l{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 3>
-    ti_L{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel + 4>
-    ti_m{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 4>
-    ti_M{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::spatial_sentinel + 5>
-    ti_n{};
-static constexpr TensorIndex<
-    TensorExpressions::TensorIndex_detail::upper_spatial_sentinel + 5>
-    ti_N{};
-/// @}
+}  //  namespace tenex
 
 namespace tt {
 /*!
@@ -246,7 +225,7 @@ template <typename T>
 struct is_time_index;
 }  // namespace tt
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 template <auto&... TensorIndices>
 struct make_tensorindex_list_impl {
@@ -312,11 +291,11 @@ struct remove_time_indices;
  *
  * \details A list of TensorIndexs is considered valid if the subset of generic
  * indices are a set. Indices with opposite valences are unique, e.g. one
- * instance each of `ti_a` and `ti_A` is valid. An arbitrary number of concrete
- * time indices, regardless of valence, is also valid.
+ * instance each of `ti::a` and `ti::A` is valid. An arbitrary number of
+ * concrete time indices, regardless of valence, is also valid.
  *
  * @tparam TensorIndexList list of generic index types, e.g. the types of
- * `ti_a, ti_b`
+ * `ti::a, ti::b`
  */
 template <typename TensorIndexList>
 struct tensorindex_list_is_valid;
@@ -342,15 +321,14 @@ using generic_indices_at_same_positions =
         TensorIndexList1, TensorIndexList2,
         tmpl::size<TensorIndexList1>::value ==
             tmpl::size<TensorIndexList2>::value>::type;
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Creates a TensorIndex type list from a list of TensorIndex objects
  *
- * @tparam TensorIndices list of generic index objects, e.g. `ti_a, ti_b`
+ * @tparam TensorIndices list of generic index objects, e.g. `ti::a, ti::b`
  */
 template <auto&... TensorIndices>
 using make_tensorindex_list =
-    typename TensorExpressions::detail::make_tensorindex_list_impl<
-        TensorIndices...>::type;
+    typename tenex::detail::make_tensorindex_list_impl<TensorIndices...>::type;

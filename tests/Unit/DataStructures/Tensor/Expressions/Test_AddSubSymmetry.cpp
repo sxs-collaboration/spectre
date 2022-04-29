@@ -17,9 +17,9 @@ void test_impl_consistency() {
   const std::string error_msg =
       "Symmetry and AddSubSymmetry are no longer using the same canonical "
       "form. You must update the implementation for "
-      "TensorExpressions::detail::get_addsub_symm to use the same canonical "
-      "form as Symmetry and update the expected result symmetries for the unit "
-      "test cases in this file.";
+      "tenex::detail::get_addsub_symm to use the same canonical form as "
+      "Symmetry and update the expected result symmetries for the unit test "
+      "cases in this file.";
 
   if (not std::is_same_v<Symmetry<>, tmpl::integral_list<std::int32_t>>) {
     ERROR(error_msg);
@@ -50,17 +50,17 @@ void test_rank0() {
   using tensorindex_list = make_tensorindex_list<>;
 
   CHECK(
-      std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+      std::is_same_v<typename tenex::detail::AddSubSymmetry<
                          symm, symm, tensorindex_list, tensorindex_list>::type,
                      tmpl::integral_list<std::int32_t>>);
 }
 
 void test_rank1() {
   using symm = Symmetry<1>;
-  using tensorindex_list = make_tensorindex_list<ti_a>;
+  using tensorindex_list = make_tensorindex_list<ti::a>;
 
   CHECK(
-      std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+      std::is_same_v<typename tenex::detail::AddSubSymmetry<
                          symm, symm, tensorindex_list, tensorindex_list>::type,
                      tmpl::integral_list<std::int32_t, 1>>);
 }
@@ -68,35 +68,35 @@ void test_rank1() {
 void test_rank2() {
   using symmetric_symm = Symmetry<1, 1>;
   using asymmetric_symm = Symmetry<2, 1>;
-  using tensorindex_list_ij = make_tensorindex_list<ti_i, ti_j>;
-  using tensorindex_list_ji = make_tensorindex_list<ti_j, ti_i>;
+  using tensorindex_list_ij = make_tensorindex_list<ti::i, ti::j>;
+  using tensorindex_list_ji = make_tensorindex_list<ti::j, ti::i>;
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symmetric_symm, symmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ij>::type,
                        tmpl::integral_list<std::int32_t, 1, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symmetric_symm, symmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ji>::type,
                        tmpl::integral_list<std::int32_t, 1, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            asymmetric_symm, symmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ij>::type,
                        tmpl::integral_list<std::int32_t, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            asymmetric_symm, symmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ji>::type,
                        tmpl::integral_list<std::int32_t, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symmetric_symm, asymmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ij>::type,
                        tmpl::integral_list<std::int32_t, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symmetric_symm, asymmetric_symm, tensorindex_list_ij,
                            tensorindex_list_ji>::type,
                        tmpl::integral_list<std::int32_t, 2, 1>>);
@@ -109,113 +109,114 @@ void test_rank3() {
   using symm_221 = Symmetry<2, 2, 1>;
   using symm_321 = Symmetry<3, 2, 1>;
 
-  using tensorindex_list_abc = make_tensorindex_list<ti_a, ti_b, ti_c>;
-  using tensorindex_list_acb = make_tensorindex_list<ti_a, ti_c, ti_b>;
-  using tensorindex_list_bac = make_tensorindex_list<ti_b, ti_a, ti_c>;
-  using tensorindex_list_bca = make_tensorindex_list<ti_b, ti_c, ti_a>;
-  using tensorindex_list_cab = make_tensorindex_list<ti_c, ti_a, ti_b>;
-  using tensorindex_list_cba = make_tensorindex_list<ti_c, ti_b, ti_a>;
+  using tensorindex_list_abc = make_tensorindex_list<ti::a, ti::b, ti::c>;
+  using tensorindex_list_acb = make_tensorindex_list<ti::a, ti::c, ti::b>;
+  using tensorindex_list_bac = make_tensorindex_list<ti::b, ti::a, ti::c>;
+  using tensorindex_list_bca = make_tensorindex_list<ti::b, ti::c, ti::a>;
+  using tensorindex_list_cab = make_tensorindex_list<ti::c, ti::a, ti::b>;
+  using tensorindex_list_cba = make_tensorindex_list<ti::c, ti::b, ti::a>;
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_111, symm_121, tensorindex_list_abc,
                            tensorindex_list_bca>::type,
                        tmpl::integral_list<std::int32_t, 2, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_121, symm_111, tensorindex_list_abc,
                            tensorindex_list_bca>::type,
                        tmpl::integral_list<std::int32_t, 1, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_111, symm_221, tensorindex_list_abc,
                            tensorindex_list_acb>::type,
                        tmpl::integral_list<std::int32_t, 1, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_221, symm_111, tensorindex_list_abc,
                            tensorindex_list_acb>::type,
                        tmpl::integral_list<std::int32_t, 2, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_121, symm_221, tensorindex_list_abc,
                            tensorindex_list_cab>::type,
                        tmpl::integral_list<std::int32_t, 1, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_221, symm_121, tensorindex_list_abc,
                            tensorindex_list_cab>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_221, symm_121, tensorindex_list_cab,
                            tensorindex_list_abc>::type,
                        tmpl::integral_list<std::int32_t, 2, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_121, symm_221, tensorindex_list_cab,
                            tensorindex_list_abc>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_121, symm_221, tensorindex_list_abc,
                            tensorindex_list_acb>::type,
                        tmpl::integral_list<std::int32_t, 1, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_221, symm_121, tensorindex_list_abc,
                            tensorindex_list_acb>::type,
                        tmpl::integral_list<std::int32_t, 2, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_111, symm_321, tensorindex_list_abc,
                            tensorindex_list_bac>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_321, symm_111, tensorindex_list_abc,
                            tensorindex_list_bac>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_211, symm_321, tensorindex_list_abc,
                            tensorindex_list_cba>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            symm_321, symm_211, tensorindex_list_abc,
                            tensorindex_list_cba>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 1>>);
 }
 
 void test_high_rank() {
-  using tensorindex_list = make_tensorindex_list<ti_a, ti_b, ti_c, ti_d, ti_e>;
+  using tensorindex_list =
+      make_tensorindex_list<ti::a, ti::b, ti::c, ti::d, ti::e>;
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<2, 1, 1, 1, 1>, Symmetry<3, 2, 2, 1, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 2, 1, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<3, 2, 2, 1, 1>, Symmetry<2, 1, 1, 1, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 3, 2, 2, 1, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<1, 1, 2, 1, 1>, Symmetry<4, 3, 1, 2, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 5, 4, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<4, 3, 1, 2, 1>, Symmetry<1, 1, 2, 1, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 5, 4, 3, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<1, 2, 2, 2, 1>, Symmetry<1, 2, 1, 1, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 1, 3, 2, 2, 1>>);
 
-  CHECK(std::is_same_v<typename TensorExpressions::detail::AddSubSymmetry<
+  CHECK(std::is_same_v<typename tenex::detail::AddSubSymmetry<
                            Symmetry<1, 2, 1, 1, 1>, Symmetry<1, 2, 2, 2, 1>,
                            tensorindex_list, tensorindex_list>::type,
                        tmpl::integral_list<std::int32_t, 1, 3, 2, 2, 1>>);

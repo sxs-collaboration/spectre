@@ -20,10 +20,10 @@ void conformal_christoffel_second_kind(
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_K, ti_i, ti_j>(
-      result, inverse_conformal_spatial_metric(ti_K, ti_L) *
-                  (field_d(ti_i, ti_j, ti_l) + field_d(ti_j, ti_i, ti_l) -
-                   field_d(ti_l, ti_i, ti_j)));
+  ::tenex::evaluate<ti::K, ti::i, ti::j>(
+      result, inverse_conformal_spatial_metric(ti::K, ti::L) *
+                  (field_d(ti::i, ti::j, ti::l) + field_d(ti::j, ti::i, ti::l) -
+                   field_d(ti::l, ti::i, ti::j)));
 }
 
 template <size_t Dim, typename Frame, typename DataType>
@@ -46,12 +46,13 @@ void christoffel_second_kind(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_K, ti_i, ti_j>(
-      result, conformal_christoffel_second_kind(ti_K, ti_i, ti_j) -
-                  inverse_conformal_spatial_metric(ti_K, ti_L) *
-                      (conformal_spatial_metric(ti_j, ti_l) * field_p(ti_i) +
-                       conformal_spatial_metric(ti_i, ti_l) * field_p(ti_j) -
-                       conformal_spatial_metric(ti_i, ti_j) * field_p(ti_l)));
+  ::tenex::evaluate<ti::K, ti::i, ti::j>(
+      result,
+      conformal_christoffel_second_kind(ti::K, ti::i, ti::j) -
+          inverse_conformal_spatial_metric(ti::K, ti::L) *
+              (conformal_spatial_metric(ti::j, ti::l) * field_p(ti::i) +
+               conformal_spatial_metric(ti::i, ti::l) * field_p(ti::j) -
+               conformal_spatial_metric(ti::i, ti::j) * field_p(ti::l)));
 }
 
 template <size_t Dim, typename Frame, typename DataType>
@@ -75,9 +76,9 @@ void contracted_conformal_christoffel_second_kind(
   destructive_resize_components(
       result, get_size(get<0, 0>(inverse_conformal_spatial_metric)));
 
-  ::TensorExpressions::evaluate<ti_I>(
-      result, inverse_conformal_spatial_metric(ti_J, ti_L) *
-                  conformal_christoffel_second_kind(ti_I, ti_j, ti_l));
+  ::tenex::evaluate<ti::I>(
+      result, inverse_conformal_spatial_metric(ti::J, ti::L) *
+                  conformal_christoffel_second_kind(ti::I, ti::j, ti::l));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

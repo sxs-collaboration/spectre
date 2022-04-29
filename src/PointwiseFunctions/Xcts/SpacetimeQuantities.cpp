@@ -62,14 +62,14 @@ void SpacetimeQuantitiesComputer::operator()(
   const auto& deriv_conformal_factor =
       cache->get_var(*this, ::Tags::deriv<Tags::ConformalFactor<DataVector>,
                                           tmpl::size_t<3>, Frame::Inertial>{});
-  const auto conformal_factor_flux = TensorExpressions::evaluate<ti_I>(
-      inv_conformal_metric(ti_I, ti_J) * deriv_conformal_factor(ti_j));
+  const auto conformal_factor_flux = tenex::evaluate<ti::I>(
+      inv_conformal_metric(ti::I, ti::J) * deriv_conformal_factor(ti::j));
   const auto deriv_conformal_factor_flux =
       partial_derivative(conformal_factor_flux, mesh, inv_jacobian);
-  TensorExpressions::evaluate(
-      conformal_laplacian_of_conformal_factor,
-      deriv_conformal_factor_flux(ti_i, ti_I) +
-          conformal_christoffel_contracted(ti_i) * conformal_factor_flux(ti_I));
+  tenex::evaluate(conformal_laplacian_of_conformal_factor,
+                  deriv_conformal_factor_flux(ti::i, ti::I) +
+                      conformal_christoffel_contracted(ti::i) *
+                          conformal_factor_flux(ti::I));
 }
 
 void SpacetimeQuantitiesComputer::operator()(
@@ -159,10 +159,11 @@ void SpacetimeQuantitiesComputer::operator()(
     const {
   const auto& longitudinal_shift_excess = cache->get_var(
       *this, Tags::LongitudinalShiftExcess<DataVector, 3, Frame::Inertial>{});
-  TensorExpressions::evaluate<ti_I, ti_J>(
+  tenex::evaluate<ti::I, ti::J>(
       longitudinal_shift_minus_dt_conformal_metric,
-      longitudinal_shift_excess(ti_I, ti_J) +
-          longitudinal_shift_background_minus_dt_conformal_metric(ti_I, ti_J));
+      longitudinal_shift_excess(ti::I, ti::J) +
+          longitudinal_shift_background_minus_dt_conformal_metric(ti::I,
+                                                                  ti::J));
 }
 
 void SpacetimeQuantitiesComputer::operator()(
@@ -189,17 +190,16 @@ void SpacetimeQuantitiesComputer::operator()(
   const auto& extrinsic_curvature = cache->get_var(
       *this, gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>{});
   // Eq. 3.12 in BaumgarteShapiro, divided by 2 for consistency with SpEC
-  TensorExpressions::evaluate(
-      hamiltonian_constraint,
-      4. * conformal_laplacian_of_conformal_factor() -
-          0.5 * (conformal_factor() * conformal_ricci_scalar() +
-                 pow<5>(conformal_factor()) *
-                     (square(trace_extrinsic_curvature()) -
-                      inv_spatial_metric(ti_I, ti_K) *
-                          inv_spatial_metric(ti_J, ti_L) *
-                          extrinsic_curvature(ti_i, ti_j) *
-                          extrinsic_curvature(ti_k, ti_l) -
-                      16. * M_PI * energy_density())));
+  tenex::evaluate(hamiltonian_constraint,
+                  4. * conformal_laplacian_of_conformal_factor() -
+                      0.5 * (conformal_factor() * conformal_ricci_scalar() +
+                             pow<5>(conformal_factor()) *
+                                 (square(trace_extrinsic_curvature()) -
+                                  inv_spatial_metric(ti::I, ti::K) *
+                                      inv_spatial_metric(ti::J, ti::L) *
+                                      extrinsic_curvature(ti::i, ti::j) *
+                                      extrinsic_curvature(ti::k, ti::l) -
+                                  16. * M_PI * energy_density())));
 }
 
 void SpacetimeQuantitiesComputer::operator()(
@@ -220,23 +220,24 @@ void SpacetimeQuantitiesComputer::operator()(
   const auto& longitudinal_shift_minus_dt_conformal_metric = cache->get_var(
       *this, detail::LongitudinalShiftMinusDtConformalMetric<DataVector>{});
   // Eq. 3.109 in BaumgarteShapiro
-  TensorExpressions::evaluate<ti_I>(
+  tenex::evaluate<ti::I>(
       momentum_constraint,
-      0.5 * (div_longitudinal_shift_excess(ti_I) +
-             div_longitudinal_shift_background_minus_dt_conformal_metric(ti_I) +
-             conformal_christoffel_second_kind(ti_I, ti_j, ti_k) *
-                 longitudinal_shift_minus_dt_conformal_metric(ti_J, ti_K) +
-             conformal_christoffel_contracted(ti_j) *
-                 longitudinal_shift_minus_dt_conformal_metric(ti_I, ti_J) -
-             longitudinal_shift_minus_dt_conformal_metric(ti_I, ti_J) *
-                 (deriv_lapse_times_conformal_factor(ti_j) /
+      0.5 * (div_longitudinal_shift_excess(ti::I) +
+             div_longitudinal_shift_background_minus_dt_conformal_metric(
+                 ti::I) +
+             conformal_christoffel_second_kind(ti::I, ti::j, ti::k) *
+                 longitudinal_shift_minus_dt_conformal_metric(ti::J, ti::K) +
+             conformal_christoffel_contracted(ti::j) *
+                 longitudinal_shift_minus_dt_conformal_metric(ti::I, ti::J) -
+             longitudinal_shift_minus_dt_conformal_metric(ti::I, ti::J) *
+                 (deriv_lapse_times_conformal_factor(ti::j) /
                       lapse_times_conformal_factor() -
-                  7. * deriv_conformal_factor(ti_j) / conformal_factor()) -
+                  7. * deriv_conformal_factor(ti::j) / conformal_factor()) -
              4. / 3. * lapse_times_conformal_factor() / conformal_factor() *
-                 inv_conformal_metric(ti_I, ti_J) *
-                 deriv_trace_extrinsic_curvature(ti_j)) -
+                 inv_conformal_metric(ti::I, ti::J) *
+                 deriv_trace_extrinsic_curvature(ti::j)) -
           8. * M_PI * lapse_times_conformal_factor() *
-              cube(conformal_factor()) * momentum_density(ti_I));
+              cube(conformal_factor()) * momentum_density(ti::I));
 }
 
 }  // namespace Xcts

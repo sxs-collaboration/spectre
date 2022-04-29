@@ -15,7 +15,7 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Determines and stores a LHS tensor's symmetry and index list from a
@@ -38,7 +38,7 @@ namespace TensorExpressions {
  * index will not appear in the LHS tensor (i.e. there will NOT be a
  * corresponding LHS index where only the time index of that index has been
  * computed and its spatial indices are empty). Therefore, the
- * `LhsTensorIndexList` may not contain time indices (`ti_t` nor `ti_T`).
+ * `LhsTensorIndexList` may not contain time indices (`ti::t` nor `ti::T`).
  *
  * @tparam RhsTensorIndexList the typelist of TensorIndex of the RHS
  * TensorExpression
@@ -106,4 +106,4 @@ struct LhsTensorSymmAndIndices<
       Tensor_detail::Structure<symmetry,
                                tmpl::at_c<tensorindextype_list, LhsInts>...>;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex

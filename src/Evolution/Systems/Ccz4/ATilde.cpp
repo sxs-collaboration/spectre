@@ -24,11 +24,11 @@ void a_tilde(const gsl::not_null<tnsr::ii<DataType, Dim, Frame>*> result,
   destructive_resize_components(buffer,
                                 get_size(get(conformal_factor_squared)));
 
-  ::TensorExpressions::evaluate(buffer, trace_extrinsic_curvature() / 3.0);
-  ::TensorExpressions::evaluate<ti_i, ti_j>(
-      result,
-      conformal_factor_squared() * (extrinsic_curvature(ti_i, ti_j) -
-                                    (*buffer)() * spatial_metric(ti_i, ti_j)));
+  ::tenex::evaluate(buffer, trace_extrinsic_curvature() / 3.0);
+  ::tenex::evaluate<ti::i, ti::j>(
+      result, conformal_factor_squared() *
+                  (extrinsic_curvature(ti::i, ti::j) -
+                   (*buffer)() * spatial_metric(ti::i, ti::j)));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

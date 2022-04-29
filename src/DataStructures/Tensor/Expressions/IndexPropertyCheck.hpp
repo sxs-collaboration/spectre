@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 /// @{
 /// \brief Helper struct for checking that one tensor's index is either a
@@ -20,7 +20,7 @@ namespace detail {
 ///
 /// \details
 /// Indices in one tensor correspond to those in another that use the same
-/// generic index, such as `ti_a`. For it to be possible to add, subtract, or
+/// generic index, such as `ti::a`. For it to be possible to add, subtract, or
 /// assign one index to another, this checks that the following is true for the
 /// index and its corresponding index in another tensor:
 /// - has the same valence (`UpLo`)
@@ -35,9 +35,9 @@ namespace detail {
 /// \tparam TensorIndexList1 the first tensor's generic index list
 /// \tparam TensorIndexList2 the second tensor's generic index list
 /// \tparam CurrentTensorIndex1 the current generic index of the first tensor
-/// that is being checked, e.g. the type of `ti_a`
+/// that is being checked, e.g. the type of `ti::a`
 /// \tparam Iteration the position of the current index of the first tensor
-/// being checked, e.g. the position of `ti_a` in the first tensor
+/// being checked, e.g. the position of `ti::a` in the first tensor
 template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
           typename TensorIndexList2, typename CurrentTensorIndex1,
           typename Iteration>
@@ -61,7 +61,7 @@ struct IndexPropertyCheckImpl {
 template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
           typename TensorIndexList2, typename Iteration>
 struct IndexPropertyCheckImpl<IndexList1, IndexList2, TensorIndexList1,
-                              TensorIndexList2, std::decay_t<decltype(ti_T)>,
+                              TensorIndexList2, std::decay_t<decltype(ti::T)>,
                               Iteration> {
   using index1 = tmpl::at<IndexList1, Iteration>;
   using type = std::bool_constant<index1::index_type == IndexType::Spacetime>;
@@ -70,7 +70,7 @@ struct IndexPropertyCheckImpl<IndexList1, IndexList2, TensorIndexList1,
 template <typename IndexList1, typename IndexList2, typename TensorIndexList1,
           typename TensorIndexList2, typename Iteration>
 struct IndexPropertyCheckImpl<IndexList1, IndexList2, TensorIndexList1,
-                              TensorIndexList2, std::decay_t<decltype(ti_t)>,
+                              TensorIndexList2, std::decay_t<decltype(ti::t)>,
                               Iteration> {
   using index1 = tmpl::at<IndexList1, Iteration>;
   using type = std::bool_constant<index1::index_type == IndexType::Spacetime>;
@@ -150,4 +150,4 @@ using IndexPropertyCheck =
     IndexPropertyCheckHelper<IndexList1, IndexList2, TensorIndexList1,
                              TensorIndexList2>;
 }  // namespace detail
-}  // namespace TensorExpressions
+}  // namespace tenex

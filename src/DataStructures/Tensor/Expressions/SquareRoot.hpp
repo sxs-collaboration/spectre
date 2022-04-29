@@ -14,7 +14,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /// \ingroup TensorExpressionsGroup
 /// \brief Defines the tensor expression representing the square root of a
 /// tensor expression that evaluates to a rank 0 tensor
@@ -63,7 +63,7 @@ struct SquareRoot
  private:
   T t_;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the square root of a
@@ -74,14 +74,14 @@ struct SquareRoot
 /// For example, if `R` and `S` are Tensors, here is a non-exhaustive list of
 /// some of the acceptable forms that `t` could take:
 /// - `R()`
-/// - `R(ti_A, ti_a)`
-/// - `(R(ti_A, ti_B) * S(ti_a, ti_b))`
-/// - `R(ti_t, ti_t) + 1.0`
+/// - `R(ti::A, ti::a)`
+/// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
+/// - `R(ti::t, ti::t) + 1.0`
 ///
 /// \param t the tensor expression of which to take the square root
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args>
 SPECTRE_ALWAYS_INLINE auto sqrt(
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
-  return TensorExpressions::SquareRoot<T, Args...>(~t);
+  return tenex::SquareRoot<T, Args...>(~t);
 }

@@ -10,7 +10,7 @@
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /// \ingroup TensorExpressionsGroup
 /// \brief Defines an expression representing a `double`
 struct NumberAsExpression
@@ -41,4 +41,4 @@ struct NumberAsExpression
  private:
   double number_;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex

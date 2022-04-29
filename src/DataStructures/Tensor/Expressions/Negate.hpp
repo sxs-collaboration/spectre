@@ -15,7 +15,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 /// \ingroup TensorExpressionsGroup
 /// \brief Defines the tensor expression representing the negation of a tensor
 /// expression
@@ -49,7 +49,7 @@ struct Negate
  private:
   T t_;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex
 
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the negation of a tensor
@@ -61,5 +61,5 @@ template <typename T>
 SPECTRE_ALWAYS_INLINE auto operator-(
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t) {
-  return TensorExpressions::Negate<T>(~t);
+  return tenex::Negate<T>(~t);
 }

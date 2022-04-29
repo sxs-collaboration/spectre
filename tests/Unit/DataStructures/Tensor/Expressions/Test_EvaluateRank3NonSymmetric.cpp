@@ -1,9 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-// Rank 3 test cases for TensorExpressions::evaluate are split into this file
-// and Test_EvaluateRank3Symmetric.cpp in order to reduce compile time memory
-// usage per cpp file.
+// Rank 3 test cases for tenex::evaluate are split into this file and
+// Test_EvaluateRank3Symmetric.cpp in order to reduce compile time memory usage
+// per cpp file.
 
 #include "Framework/TestingFramework.hpp"
 
@@ -16,12 +16,12 @@ SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.Expression.EvaluateRank3NonSymmetric",
     "[DataStructures][Unit]") {
   // Rank 3: double; nonsymmetric
-  TestHelpers::TensorExpressions::test_evaluate_rank_3_no_symmetry<
+  TestHelpers::tenex::test_evaluate_rank_3_no_symmetry<
       double, SpacetimeIndex, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo,
-      UpLo::Up, ti_D, ti_j, ti_B>();
+      UpLo::Up, ti::D, ti::j, ti::B>();
 
   // Rank 3: DataVector; nonsymmetric
-  TestHelpers::TensorExpressions::test_evaluate_rank_3_no_symmetry<
+  TestHelpers::tenex::test_evaluate_rank_3_no_symmetry<
       DataVector, SpacetimeIndex, SpatialIndex, SpacetimeIndex, UpLo::Up,
-      UpLo::Lo, UpLo::Up, ti_D, ti_j, ti_B>();
+      UpLo::Lo, UpLo::Up, ti::D, ti::j, ti::B>();
 }

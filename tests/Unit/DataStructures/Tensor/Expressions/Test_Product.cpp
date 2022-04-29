@@ -66,13 +66,13 @@ void test_outer_product_double(const DataType& used_for_size) {
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const tensor_type Lij_from_R_Sij =
-      TensorExpressions::evaluate<ti_i, ti_j>(5.6 * S(ti_i, ti_j));
+      tenex::evaluate<ti::i, ti::j>(5.6 * S(ti::i, ti::j));
   // \f$L_{ij} = S_{ij} * R\f$
   const tensor_type Lij_from_Sij_R =
-      TensorExpressions::evaluate<ti_i, ti_j>(S(ti_i, ti_j) * -8.1);
+      tenex::evaluate<ti::i, ti::j>(S(ti::i, ti::j) * -8.1);
   // \f$L_{ij} = R * S_{ij} * T\f$
   const tensor_type Lij_from_R_Sij_T =
-      TensorExpressions::evaluate<ti_i, ti_j>(-1.7 * S(ti_i, ti_j) * 0.6);
+      tenex::evaluate<ti::i, ti::j>(-1.7 * S(ti::i, ti::j) * 0.6);
 
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
@@ -108,10 +108,9 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) {
   }
 
   // \f$L = R * R\f$
-  CHECK(TensorExpressions::evaluate(R() * R()).get() == R.get() * R.get());
+  CHECK(tenex::evaluate(R() * R()).get() == R.get() * R.get());
   // \f$L = R * R * R\f$
-  CHECK(TensorExpressions::evaluate(R() * R() * R()).get() ==
-        R.get() * R.get() * R.get());
+  CHECK(tenex::evaluate(R() * R() * R()).get() == R.get() * R.get() * R.get());
 
   Tensor<DataType, Symmetry<1>,
          index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
@@ -121,11 +120,9 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) {
   // \f$L^{a} = R * S^{a}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
-  const decltype(Su) LA_from_R_SA =
-      TensorExpressions::evaluate<ti_A>(R() * Su(ti_A));
+  const decltype(Su) LA_from_R_SA = tenex::evaluate<ti::A>(R() * Su(ti::A));
   // \f$L^{a} = S^{a} * R\f$
-  const decltype(Su) LA_from_SA_R =
-      TensorExpressions::evaluate<ti_A>(Su(ti_A) * R());
+  const decltype(Su) LA_from_SA_R = tenex::evaluate<ti::A>(Su(ti::A) * R());
 
   for (size_t a = 0; a < 4; a++) {
     CHECK(LA_from_R_SA.get(a) == R.get() * Su.get(a));
@@ -142,26 +139,22 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
-      Lai_from_R_Tai =
-          TensorExpressions::evaluate<ti_a, ti_i>(R() * Tll(ti_a, ti_i));
+      Lai_from_R_Tai = tenex::evaluate<ti::a, ti::i>(R() * Tll(ti::a, ti::i));
   // \f$L_{ia} = R * T_{ai}\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      Lia_from_R_Tai =
-          TensorExpressions::evaluate<ti_i, ti_a>(R() * Tll(ti_a, ti_i));
+      Lia_from_R_Tai = tenex::evaluate<ti::i, ti::a>(R() * Tll(ti::a, ti::i));
   // \f$L_{ai} = T_{ai} * R\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
-      Lai_from_Tai_R =
-          TensorExpressions::evaluate<ti_a, ti_i>(Tll(ti_a, ti_i) * R());
+      Lai_from_Tai_R = tenex::evaluate<ti::a, ti::i>(Tll(ti::a, ti::i) * R());
   // \f$L_{ia} = T_{ai} * R\f$
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      Lia_from_Tai_R =
-          TensorExpressions::evaluate<ti_i, ti_a>(Tll(ti_a, ti_i) * R());
+      Lia_from_Tai_R = tenex::evaluate<ti::i, ti::a>(Tll(ti::a, ti::i) * R());
 
   for (size_t a = 0; a < 4; a++) {
     for (size_t i = 0; i < 4; i++) {
@@ -208,8 +201,7 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      LAi_from_Ri_SA =
-          TensorExpressions::evaluate<ti_A, ti_i>(Rl(ti_i) * Su(ti_A));
+      LAi_from_Ri_SA = tenex::evaluate<ti::A, ti::i>(Rl(ti::i) * Su(ti::A));
 
   for (size_t i = 0; i < 3; i++) {
     for (size_t a = 0; a < 4; a++) {
@@ -227,8 +219,8 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
                index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      LJAi_from_Ri_SA_TJ = TensorExpressions::evaluate<ti_J, ti_A, ti_i>(
-          Rl(ti_i) * Su(ti_A) * Tu(ti_J));
+      LJAi_from_Ri_SA_TJ = tenex::evaluate<ti::J, ti::A, ti::i>(
+          Rl(ti::i) * Su(ti::A) * Tu(ti::J));
 
   for (size_t j = 0; j < 3; j++) {
     for (size_t a = 0; a < 4; a++) {
@@ -250,15 +242,15 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
                index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      LkCd_from_SC_Gdk = TensorExpressions::evaluate<ti_k, ti_C, ti_d>(
-          Su(ti_C) * Gll(ti_d, ti_k));
+      LkCd_from_SC_Gdk =
+          tenex::evaluate<ti::k, ti::C, ti::d>(Su(ti::C) * Gll(ti::d, ti::k));
   // \f$L^{c}{}_{dk} = G_{dk} * S^{c}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                           SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
-      LCdk_from_Gdk_SC = TensorExpressions::evaluate<ti_C, ti_d, ti_k>(
-          Gll(ti_d, ti_k) * Su(ti_C));
+      LCdk_from_Gdk_SC =
+          tenex::evaluate<ti::C, ti::d, ti::k>(Gll(ti::d, ti::k) * Su(ti::C));
 
   for (size_t k = 0; k < 4; k++) {
     for (size_t c = 0; c < 4; c++) {
@@ -294,103 +286,103 @@ void test_outer_product_rank_2x2_operands(const DataType& used_for_size) {
   // return type of `evaluate`
   const Tensor<DataType, Symmetry<3, 3, 2, 1>,
                index_list<R_index, R_index, S_first_index, S_second_index>>
-      L_abIc = TensorExpressions::evaluate<ti_a, ti_b, ti_I, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_abIc = tenex::evaluate<ti::a, ti::b, ti::I, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 3, 2, 1>,
                index_list<R_index, R_index, S_second_index, S_first_index>>
-      L_abcI = TensorExpressions::evaluate<ti_a, ti_b, ti_c, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_abcI = tenex::evaluate<ti::a, ti::b, ti::c, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 3, 1>,
                index_list<R_index, S_first_index, R_index, S_second_index>>
-      L_aIbc = TensorExpressions::evaluate<ti_a, ti_I, ti_b, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_aIbc = tenex::evaluate<ti::a, ti::I, ti::b, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 3>,
                index_list<R_index, S_first_index, S_second_index, R_index>>
-      L_aIcb = TensorExpressions::evaluate<ti_a, ti_I, ti_c, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_aIcb = tenex::evaluate<ti::a, ti::I, ti::c, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 3, 1>,
                index_list<R_index, S_second_index, R_index, S_first_index>>
-      L_acbI = TensorExpressions::evaluate<ti_a, ti_c, ti_b, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_acbI = tenex::evaluate<ti::a, ti::c, ti::b, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 3>,
                index_list<R_index, S_second_index, S_first_index, R_index>>
-      L_acIb = TensorExpressions::evaluate<ti_a, ti_c, ti_I, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_acIb = tenex::evaluate<ti::a, ti::c, ti::I, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
 
   const Tensor<DataType, Symmetry<3, 3, 2, 1>,
                index_list<R_index, R_index, S_first_index, S_second_index>>
-      L_baIc = TensorExpressions::evaluate<ti_b, ti_a, ti_I, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_baIc = tenex::evaluate<ti::b, ti::a, ti::I, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 3, 2, 1>,
                index_list<R_index, R_index, S_second_index, S_first_index>>
-      L_bacI = TensorExpressions::evaluate<ti_b, ti_a, ti_c, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_bacI = tenex::evaluate<ti::b, ti::a, ti::c, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 3, 1>,
                index_list<R_index, S_first_index, R_index, S_second_index>>
-      L_bIac = TensorExpressions::evaluate<ti_b, ti_I, ti_a, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_bIac = tenex::evaluate<ti::b, ti::I, ti::a, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 3>,
                index_list<R_index, S_first_index, S_second_index, R_index>>
-      L_bIca = TensorExpressions::evaluate<ti_b, ti_I, ti_c, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_bIca = tenex::evaluate<ti::b, ti::I, ti::c, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 3, 1>,
                index_list<R_index, S_second_index, R_index, S_first_index>>
-      L_bcaI = TensorExpressions::evaluate<ti_b, ti_c, ti_a, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_bcaI = tenex::evaluate<ti::b, ti::c, ti::a, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 3>,
                index_list<R_index, S_second_index, S_first_index, R_index>>
-      L_bcIa = TensorExpressions::evaluate<ti_b, ti_c, ti_I, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_bcIa = tenex::evaluate<ti::b, ti::c, ti::I, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
 
   const Tensor<DataType, Symmetry<3, 2, 2, 1>,
                index_list<S_first_index, R_index, R_index, S_second_index>>
-      L_Iabc = TensorExpressions::evaluate<ti_I, ti_a, ti_b, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Iabc = tenex::evaluate<ti::I, ti::a, ti::b, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 2>,
                index_list<S_first_index, R_index, S_second_index, R_index>>
-      L_Iacb = TensorExpressions::evaluate<ti_I, ti_a, ti_c, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Iacb = tenex::evaluate<ti::I, ti::a, ti::c, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 2, 1>,
                index_list<S_first_index, R_index, R_index, S_second_index>>
-      L_Ibac = TensorExpressions::evaluate<ti_I, ti_b, ti_a, ti_c>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Ibac = tenex::evaluate<ti::I, ti::b, ti::a, ti::c>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 2>,
                index_list<S_first_index, R_index, S_second_index, R_index>>
-      L_Ibca = TensorExpressions::evaluate<ti_I, ti_b, ti_c, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Ibca = tenex::evaluate<ti::I, ti::b, ti::c, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 1>,
                index_list<S_first_index, S_second_index, R_index, R_index>>
-      L_Icab = TensorExpressions::evaluate<ti_I, ti_c, ti_a, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Icab = tenex::evaluate<ti::I, ti::c, ti::a, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 1>,
                index_list<S_first_index, S_second_index, R_index, R_index>>
-      L_Icba = TensorExpressions::evaluate<ti_I, ti_c, ti_b, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_Icba = tenex::evaluate<ti::I, ti::c, ti::b, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
 
   const Tensor<DataType, Symmetry<3, 2, 2, 1>,
                index_list<S_second_index, R_index, R_index, S_first_index>>
-      L_cabI = TensorExpressions::evaluate<ti_c, ti_a, ti_b, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_cabI = tenex::evaluate<ti::c, ti::a, ti::b, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 2>,
                index_list<S_second_index, R_index, S_first_index, R_index>>
-      L_caIb = TensorExpressions::evaluate<ti_c, ti_a, ti_I, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_caIb = tenex::evaluate<ti::c, ti::a, ti::I, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 2, 1>,
                index_list<S_second_index, R_index, R_index, S_first_index>>
-      L_cbaI = TensorExpressions::evaluate<ti_c, ti_b, ti_a, ti_I>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_cbaI = tenex::evaluate<ti::c, ti::b, ti::a, ti::I>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 2>,
                index_list<S_second_index, R_index, S_first_index, R_index>>
-      L_cbIa = TensorExpressions::evaluate<ti_c, ti_b, ti_I, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_cbIa = tenex::evaluate<ti::c, ti::b, ti::I, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 1>,
                index_list<S_second_index, S_first_index, R_index, R_index>>
-      L_cIab = TensorExpressions::evaluate<ti_c, ti_I, ti_a, ti_b>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_cIab = tenex::evaluate<ti::c, ti::I, ti::a, ti::b>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
   const Tensor<DataType, Symmetry<3, 2, 1, 1>,
                index_list<S_second_index, S_first_index, R_index, R_index>>
-      L_cIba = TensorExpressions::evaluate<ti_c, ti_I, ti_b, ti_a>(
-          Rll(ti_a, ti_b) * Sul(ti_I, ti_c));
+      L_cIba = tenex::evaluate<ti::c, ti::I, ti::b, ti::a>(Rll(ti::a, ti::b) *
+                                                           Sul(ti::I, ti::c));
 
   for (size_t a = 0; a < R_index::dim; a++) {
     for (size_t b = 0; b < R_index::dim; b++) {
@@ -461,204 +453,168 @@ void test_outer_product_rank_0x1x2_operands(const DataType& used_for_size) {
   assign_unique_values_to_tensor(make_not_null(&Tll));
 
   // \f$R * S^{a} * T_{bi}\f$
-  const auto R_SA_Tbi_expr = R() * Su(ti_A) * Tll(ti_b, ti_i);
+  const auto R_SA_Tbi_expr = R() * Su(ti::A) * Tll(ti::b, ti::i);
   // \f$L^{a}{}_{bi} = R * S^{a} * T_{bi}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(R_SA_Tbi_expr);
+      LAbi_from_R_SA_Tbi = tenex::evaluate<ti::A, ti::b, ti::i>(R_SA_Tbi_expr);
   // \f$L^{a}{}_{ib} = R * S^{a} * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(R_SA_Tbi_expr);
+      LAib_from_R_SA_Tbi = tenex::evaluate<ti::A, ti::i, ti::b>(R_SA_Tbi_expr);
   // \f$L_{b}{}^{a}{}_{i} = R * S^{a} * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(R_SA_Tbi_expr);
+      LbAi_from_R_SA_Tbi = tenex::evaluate<ti::b, ti::A, ti::i>(R_SA_Tbi_expr);
   // \f$L_{bi}{}^{a} = R * S^{a} * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(R_SA_Tbi_expr);
+      LbiA_from_R_SA_Tbi = tenex::evaluate<ti::b, ti::i, ti::A>(R_SA_Tbi_expr);
   // \f$L_{i}{}^{a}{}_{b} = R * S^{a} * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(R_SA_Tbi_expr);
+      LiAb_from_R_SA_Tbi = tenex::evaluate<ti::i, ti::A, ti::b>(R_SA_Tbi_expr);
   // \f$L_{ib}{}^{a} = R * S^{a} * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_R_SA_Tbi =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(R_SA_Tbi_expr);
+      LibA_from_R_SA_Tbi = tenex::evaluate<ti::i, ti::b, ti::A>(R_SA_Tbi_expr);
 
   // \f$R * T_{bi} * S^{a}\f$
-  const auto R_Tbi_SA_expr = R() * Tll(ti_b, ti_i) * Su(ti_A);
+  const auto R_Tbi_SA_expr = R() * Tll(ti::b, ti::i) * Su(ti::A);
   // \f$L^{a}{}_{bi} = R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(R_Tbi_SA_expr);
+      LAbi_from_R_Tbi_SA = tenex::evaluate<ti::A, ti::b, ti::i>(R_Tbi_SA_expr);
   // \f$L^{a}{}_{ib} = R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(R_Tbi_SA_expr);
+      LAib_from_R_Tbi_SA = tenex::evaluate<ti::A, ti::i, ti::b>(R_Tbi_SA_expr);
   // \f$L_{b}{}^{a}{}_{i} = R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(R_Tbi_SA_expr);
+      LbAi_from_R_Tbi_SA = tenex::evaluate<ti::b, ti::A, ti::i>(R_Tbi_SA_expr);
   // \f$L_{bi}{}^{a} = R * R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(R_Tbi_SA_expr);
+      LbiA_from_R_Tbi_SA = tenex::evaluate<ti::b, ti::i, ti::A>(R_Tbi_SA_expr);
   // \f$L_{i}{}^{a}{}_{b} = R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(R_Tbi_SA_expr);
+      LiAb_from_R_Tbi_SA = tenex::evaluate<ti::i, ti::A, ti::b>(R_Tbi_SA_expr);
   // \f$L_{ib}{}^{a} = R * T_{bi} * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_R_Tbi_SA =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(R_Tbi_SA_expr);
+      LibA_from_R_Tbi_SA = tenex::evaluate<ti::i, ti::b, ti::A>(R_Tbi_SA_expr);
 
   // \f$S^{a} * R * T_{bi}\f$
-  const auto SA_R_Tbi_expr = Su(ti_A) * R() * Tll(ti_b, ti_i);
+  const auto SA_R_Tbi_expr = Su(ti::A) * R() * Tll(ti::b, ti::i);
   // \f$L^{a}{}_{bi} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(SA_R_Tbi_expr);
+      LAbi_from_SA_R_Tbi = tenex::evaluate<ti::A, ti::b, ti::i>(SA_R_Tbi_expr);
   // \f$L^{a}{}_{ib} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(SA_R_Tbi_expr);
+      LAib_from_SA_R_Tbi = tenex::evaluate<ti::A, ti::i, ti::b>(SA_R_Tbi_expr);
   // \f$L_{b}{}^{a}{}_{i} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(SA_R_Tbi_expr);
+      LbAi_from_SA_R_Tbi = tenex::evaluate<ti::b, ti::A, ti::i>(SA_R_Tbi_expr);
   // \f$L_{bi}{}^{a} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(SA_R_Tbi_expr);
+      LbiA_from_SA_R_Tbi = tenex::evaluate<ti::b, ti::i, ti::A>(SA_R_Tbi_expr);
   // \f$L_{i}{}^{a}{}_{b} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(SA_R_Tbi_expr);
+      LiAb_from_SA_R_Tbi = tenex::evaluate<ti::i, ti::A, ti::b>(SA_R_Tbi_expr);
   // \f$L_{ib}{}^{a} = S^{a} * R * T_{bi}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_SA_R_Tbi =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(SA_R_Tbi_expr);
+      LibA_from_SA_R_Tbi = tenex::evaluate<ti::i, ti::b, ti::A>(SA_R_Tbi_expr);
 
   // \f$S^{a} * T_{bi} * R\f$
-  const auto SA_Tbi_R_expr = Su(ti_A) * Tll(ti_b, ti_i) * R();
+  const auto SA_Tbi_R_expr = Su(ti::A) * Tll(ti::b, ti::i) * R();
   // \f$L^{a}{}_{bi} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(SA_Tbi_R_expr);
+      LAbi_from_SA_Tbi_R = tenex::evaluate<ti::A, ti::b, ti::i>(SA_Tbi_R_expr);
   // \f$L^{a}{}_{ib} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(SA_Tbi_R_expr);
+      LAib_from_SA_Tbi_R = tenex::evaluate<ti::A, ti::i, ti::b>(SA_Tbi_R_expr);
   // \f$L_{b}{}^{a}{}_{i} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(SA_Tbi_R_expr);
+      LbAi_from_SA_Tbi_R = tenex::evaluate<ti::b, ti::A, ti::i>(SA_Tbi_R_expr);
   // \f$L_{bi}{}^{a} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(SA_Tbi_R_expr);
+      LbiA_from_SA_Tbi_R = tenex::evaluate<ti::b, ti::i, ti::A>(SA_Tbi_R_expr);
   // \f$L_{i}{}^{a}{}_{b} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(SA_Tbi_R_expr);
+      LiAb_from_SA_Tbi_R = tenex::evaluate<ti::i, ti::A, ti::b>(SA_Tbi_R_expr);
   // \f$L_{ib}{}^{a} = S^{a} * T_{bi} * R\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_SA_Tbi_R =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(SA_Tbi_R_expr);
+      LibA_from_SA_Tbi_R = tenex::evaluate<ti::i, ti::b, ti::A>(SA_Tbi_R_expr);
 
   // \f$T_{bi} * R * S^{a}\f$
-  const auto Tbi_R_SA_expr = Tll(ti_b, ti_i) * R() * Su(ti_A);
+  const auto Tbi_R_SA_expr = Tll(ti::b, ti::i) * R() * Su(ti::A);
   // \f$L^{a}{}_{bi} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(Tbi_R_SA_expr);
+      LAbi_from_Tbi_R_SA = tenex::evaluate<ti::A, ti::b, ti::i>(Tbi_R_SA_expr);
   // \f$L^{a}{}_{ib} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(Tbi_R_SA_expr);
+      LAib_from_Tbi_R_SA = tenex::evaluate<ti::A, ti::i, ti::b>(Tbi_R_SA_expr);
   // \f$L_{b}{}^{a}{}_{i} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(Tbi_R_SA_expr);
+      LbAi_from_Tbi_R_SA = tenex::evaluate<ti::b, ti::A, ti::i>(Tbi_R_SA_expr);
   // \f$L_{bi}{}^{a} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(Tbi_R_SA_expr);
+      LbiA_from_Tbi_R_SA = tenex::evaluate<ti::b, ti::i, ti::A>(Tbi_R_SA_expr);
   // \f$L_{i}{}^{a}{}_{b} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(Tbi_R_SA_expr);
+      LiAb_from_Tbi_R_SA = tenex::evaluate<ti::i, ti::A, ti::b>(Tbi_R_SA_expr);
   // \f$L_{ib}{}^{a} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_Tbi_R_SA =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(Tbi_R_SA_expr);
+      LibA_from_Tbi_R_SA = tenex::evaluate<ti::i, ti::b, ti::A>(Tbi_R_SA_expr);
 
   // \f$T_{bi} * S^{a} * R\f$
-  const auto Tbi_SA_R_expr = Tll(ti_b, ti_i) * Su(ti_A) * R();
+  const auto Tbi_SA_R_expr = Tll(ti::b, ti::i) * Su(ti::A) * R();
   // \f$L^{a}{}_{bi} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_first_index, T_second_index>>
-      LAbi_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_A, ti_b, ti_i>(Tbi_SA_R_expr);
+      LAbi_from_Tbi_SA_R = tenex::evaluate<ti::A, ti::b, ti::i>(Tbi_SA_R_expr);
   // \f$L^{a}{}_{ib} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<S_index, T_second_index, T_first_index>>
-      LAib_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_A, ti_i, ti_b>(Tbi_SA_R_expr);
+      LAib_from_Tbi_SA_R = tenex::evaluate<ti::A, ti::i, ti::b>(Tbi_SA_R_expr);
   // \f$L_{b}{}^{a}{}_{i} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, S_index, T_second_index>>
-      LbAi_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_b, ti_A, ti_i>(Tbi_SA_R_expr);
+      LbAi_from_Tbi_SA_R = tenex::evaluate<ti::b, ti::A, ti::i>(Tbi_SA_R_expr);
   // \f$L_{bi}{}^{a} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_first_index, T_second_index, S_index>>
-      LbiA_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_b, ti_i, ti_A>(Tbi_SA_R_expr);
+      LbiA_from_Tbi_SA_R = tenex::evaluate<ti::b, ti::i, ti::A>(Tbi_SA_R_expr);
   // \f$L_{i}{}^{a}{}_{b} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, S_index, T_first_index>>
-      LiAb_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_i, ti_A, ti_b>(Tbi_SA_R_expr);
+      LiAb_from_Tbi_SA_R = tenex::evaluate<ti::i, ti::A, ti::b>(Tbi_SA_R_expr);
   // \f$L_{ib}{}^{a} = T_{bi} * R * S^{a}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<T_second_index, T_first_index, S_index>>
-      LibA_from_Tbi_SA_R =
-          TensorExpressions::evaluate<ti_i, ti_b, ti_A>(Tbi_SA_R_expr);
+      LibA_from_Tbi_SA_R = tenex::evaluate<ti::i, ti::b, ti::A>(Tbi_SA_R_expr);
 
   for (size_t a = 0; a < S_index::dim; a++) {
     for (size_t b = 0; b < T_first_index::dim; b++) {
@@ -732,11 +688,9 @@ void test_inner_product_rank_1x1_operands(const DataType& used_for_size) {
   assign_unique_values_to_tensor(make_not_null(&Sl));
 
   // \f$L = R^{a} * S_{a}\f$
-  const Tensor<DataType> L_from_RA_Sa =
-      TensorExpressions::evaluate(Ru(ti_A) * Sl(ti_a));
+  const Tensor<DataType> L_from_RA_Sa = tenex::evaluate(Ru(ti::A) * Sl(ti::a));
   // \f$L = S_{a} * R^{a}\f$
-  const Tensor<DataType> L_from_Sa_RA =
-      TensorExpressions::evaluate(Sl(ti_a) * Ru(ti_A));
+  const Tensor<DataType> L_from_Sa_RA = tenex::evaluate(Sl(ti::a) * Ru(ti::A));
 
   DataType expected_sum = make_with_value<DataType>(used_for_size, 0.0);
   for (size_t a = 0; a < 4; a++) {
@@ -802,28 +756,28 @@ void test_inner_product_rank_2x2_operands(const DataType& used_for_size) {
 
   // \f$L = Rll_{ai} * Ruu^{ai}\f$
   const Tensor<DataType> L_aiAI_product =
-      TensorExpressions::evaluate(Rll(ti_a, ti_i) * Ruu(ti_A, ti_I));
+      tenex::evaluate(Rll(ti::a, ti::i) * Ruu(ti::A, ti::I));
   // \f$L = Rll_{ai} * Suu^{ia}\f$
   const Tensor<DataType> L_aiIA_product =
-      TensorExpressions::evaluate(Rll(ti_a, ti_i) * Suu(ti_I, ti_A));
+      tenex::evaluate(Rll(ti::a, ti::i) * Suu(ti::I, ti::A));
   // \f$L = Ruu^{ai} * Rll_{ai}\f$
   const Tensor<DataType> L_AIai_product =
-      TensorExpressions::evaluate(Ruu(ti_A, ti_I) * Rll(ti_a, ti_i));
+      tenex::evaluate(Ruu(ti::A, ti::I) * Rll(ti::a, ti::i));
   // \f$L = Ruu^{ai} * Sll_{ia}\f$
   const Tensor<DataType> L_AIia_product =
-      TensorExpressions::evaluate(Ruu(ti_A, ti_I) * Sll(ti_i, ti_a));
+      tenex::evaluate(Ruu(ti::A, ti::I) * Sll(ti::i, ti::a));
   // \f$L = Rlu_{a}{}^{i} * Rul^{a}{}_{i}\f$
   const Tensor<DataType> L_aIAi_product =
-      TensorExpressions::evaluate(Rlu(ti_a, ti_I) * Rul(ti_A, ti_i));
+      tenex::evaluate(Rlu(ti::a, ti::I) * Rul(ti::A, ti::i));
   // \f$L = Rlu_{a}{}^{i} * Slu_{i}{}^{a}\f$
   const Tensor<DataType> L_aIiA_product =
-      TensorExpressions::evaluate(Rlu(ti_a, ti_I) * Slu(ti_i, ti_A));
+      tenex::evaluate(Rlu(ti::a, ti::I) * Slu(ti::i, ti::A));
   // \f$L = Rul^{a}{}_{i} * Rlu_{a}{}^{i}\f$
   const Tensor<DataType> L_AiaI_product =
-      TensorExpressions::evaluate(Rul(ti_A, ti_i) * Rlu(ti_a, ti_I));
+      tenex::evaluate(Rul(ti::A, ti::i) * Rlu(ti::a, ti::I));
   // \f$L = Rul^{a}{}_{i} * Sul^{i}{}_{a}\f$
   const Tensor<DataType> L_AiIa_product =
-      TensorExpressions::evaluate(Rul(ti_A, ti_i) * Sul(ti_I, ti_a));
+      tenex::evaluate(Rul(ti::A, ti::i) * Sul(ti::I, ti::a));
 
   DataType L_aiAI_expected_product =
       make_with_value<DataType>(used_for_size, 0.0);
@@ -893,16 +847,16 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) {
   // return type of `evaluate`
   using Lb = Tensor<DataType, Symmetry<1>, index_list<R_index>>;
   const Lb Lb_from_Rab_TA =
-      TensorExpressions::evaluate<ti_b>(Rll(ti_a, ti_b) * Tu(ti_A));
+      tenex::evaluate<ti::b>(Rll(ti::a, ti::b) * Tu(ti::A));
   // \f$L_{b} = R_{ba} * T^{a}\f$
   const Lb Lb_from_Rba_TA =
-      TensorExpressions::evaluate<ti_b>(Rll(ti_b, ti_a) * Tu(ti_A));
+      tenex::evaluate<ti::b>(Rll(ti::b, ti::a) * Tu(ti::A));
   // \f$L_{b} = T^{a} * R_{ab}\f$
   const Lb Lb_from_TA_Rab =
-      TensorExpressions::evaluate<ti_b>(Tu(ti_A) * Rll(ti_a, ti_b));
+      tenex::evaluate<ti::b>(Tu(ti::A) * Rll(ti::a, ti::b));
   // \f$L_{b} = T^{a} * R_{ba}\f$
   const Lb Lb_from_TA_Rba =
-      TensorExpressions::evaluate<ti_b>(Tu(ti_A) * Rll(ti_b, ti_a));
+      tenex::evaluate<ti::b>(Tu(ti::A) * Rll(ti::b, ti::a));
 
   for (size_t b = 0; b < R_index::dim; b++) {
     DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
@@ -927,36 +881,36 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) {
 
   // \f$L_{ac} = R_{ab} * S^{b}_{c}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<R_index, S_lower_index>>
-      L_abBc_to_ac = TensorExpressions::evaluate<ti_a, ti_c>(Rll(ti_a, ti_b) *
-                                                             Sul(ti_B, ti_c));
+      L_abBc_to_ac =
+          tenex::evaluate<ti::a, ti::c>(Rll(ti::a, ti::b) * Sul(ti::B, ti::c));
   // \f$L_{ca} = R_{ab} * S^{b}_{c}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<S_lower_index, R_index>>
-      L_abBc_to_ca = TensorExpressions::evaluate<ti_c, ti_a>(Rll(ti_a, ti_b) *
-                                                             Sul(ti_B, ti_c));
+      L_abBc_to_ca =
+          tenex::evaluate<ti::c, ti::a>(Rll(ti::a, ti::b) * Sul(ti::B, ti::c));
   // \f$L_{ac} = R_{ab} * S_{c}^{b}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<R_index, S_lower_index>>
-      L_abcB_to_ac = TensorExpressions::evaluate<ti_a, ti_c>(Rll(ti_a, ti_b) *
-                                                             Slu(ti_c, ti_B));
+      L_abcB_to_ac =
+          tenex::evaluate<ti::a, ti::c>(Rll(ti::a, ti::b) * Slu(ti::c, ti::B));
   // \f$L_{ca} = R_{ab} * S_{c}^{b}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<S_lower_index, R_index>>
-      L_abcB_to_ca = TensorExpressions::evaluate<ti_c, ti_a>(Rll(ti_a, ti_b) *
-                                                             Slu(ti_c, ti_B));
+      L_abcB_to_ca =
+          tenex::evaluate<ti::c, ti::a>(Rll(ti::a, ti::b) * Slu(ti::c, ti::B));
   // \f$L_{ac} = R_{ba} * S^{b}_{c}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<R_index, S_lower_index>>
-      L_baBc_to_ac = TensorExpressions::evaluate<ti_a, ti_c>(Rll(ti_b, ti_a) *
-                                                             Sul(ti_B, ti_c));
+      L_baBc_to_ac =
+          tenex::evaluate<ti::a, ti::c>(Rll(ti::b, ti::a) * Sul(ti::B, ti::c));
   // \f$L_{ca} = R_{ba} * S^{b}_{c}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<S_lower_index, R_index>>
-      L_baBc_to_ca = TensorExpressions::evaluate<ti_c, ti_a>(Rll(ti_b, ti_a) *
-                                                             Sul(ti_B, ti_c));
+      L_baBc_to_ca =
+          tenex::evaluate<ti::c, ti::a>(Rll(ti::b, ti::a) * Sul(ti::B, ti::c));
   // \f$L_{ac} = R_{ba} * S_{c}^{b}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<R_index, S_lower_index>>
-      L_bacB_to_ac = TensorExpressions::evaluate<ti_a, ti_c>(Rll(ti_b, ti_a) *
-                                                             Slu(ti_c, ti_B));
+      L_bacB_to_ac =
+          tenex::evaluate<ti::a, ti::c>(Rll(ti::b, ti::a) * Slu(ti::c, ti::B));
   // \f$L_{ca} = R_{ba} * S_{c}^{b}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<S_lower_index, R_index>>
-      L_bacB_to_ca = TensorExpressions::evaluate<ti_c, ti_a>(Rll(ti_b, ti_a) *
-                                                             Slu(ti_c, ti_B));
+      L_bacB_to_ca =
+          tenex::evaluate<ti::c, ti::a>(Rll(ti::b, ti::a) * Slu(ti::c, ti::B));
 
   for (size_t a = 0; a < R_index::dim; a++) {
     for (size_t c = 0; c < S_lower_index::dim; c++) {
@@ -1015,13 +969,13 @@ void test_three_term_inner_outer_product(const DataType& used_for_size) {
 
   // \f$L_{i} = R^{j} * S_{j} * T_{i}\f$
   const decltype(Tl) Li_from_Jji =
-      TensorExpressions::evaluate<ti_i>(Ru(ti_J) * Sl(ti_j) * Tl(ti_i));
+      tenex::evaluate<ti::i>(Ru(ti::J) * Sl(ti::j) * Tl(ti::i));
   // \f$L_{i} = R^{j} * T_{i} * S_{j}\f$
   const decltype(Tl) Li_from_Jij =
-      TensorExpressions::evaluate<ti_i>(Ru(ti_J) * Tl(ti_i) * Sl(ti_j));
+      tenex::evaluate<ti::i>(Ru(ti::J) * Tl(ti::i) * Sl(ti::j));
   // \f$L_{i} = T_{i} * S_{j} * R^{j}\f$
   const decltype(Tl) Li_from_ijJ =
-      TensorExpressions::evaluate<ti_i>(Tl(ti_i) * Sl(ti_j) * Ru(ti_J));
+      tenex::evaluate<ti::i>(Tl(ti::i) * Sl(ti::j) * Ru(ti::J));
 
   for (size_t i = 0; i < 3; i++) {
     DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
@@ -1042,52 +996,52 @@ void test_three_term_inner_outer_product(const DataType& used_for_size) {
 
   // \f$L_{i}{}^{k} = S_{j} * T_{i} * G^{jk}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_Sj_Ti_GJK = TensorExpressions::evaluate<ti_i, ti_K>(
-          Sl(ti_j) * Tl(ti_i) * Guu(ti_J, ti_K));
+      LiK_from_Sj_Ti_GJK = tenex::evaluate<ti::i, ti::K>(Sl(ti::j) * Tl(ti::i) *
+                                                         Guu(ti::J, ti::K));
   // \f$L^{k}{}_{i} = S_{j} * T_{i} * G^{jk}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_Sj_Ti_GJK = TensorExpressions::evaluate<ti_K, ti_i>(
-          Sl(ti_j) * Tl(ti_i) * Guu(ti_J, ti_K));
+      LKi_from_Sj_Ti_GJK = tenex::evaluate<ti::K, ti::i>(Sl(ti::j) * Tl(ti::i) *
+                                                         Guu(ti::J, ti::K));
   // \f$L_{i}{}^{k} = S_{j} *  G^{jk} * T_{i}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_Sj_GJK_Ti = TensorExpressions::evaluate<ti_i, ti_K>(
-          Sl(ti_j) * Guu(ti_J, ti_K) * Tl(ti_i));
+      LiK_from_Sj_GJK_Ti = tenex::evaluate<ti::i, ti::K>(
+          Sl(ti::j) * Guu(ti::J, ti::K) * Tl(ti::i));
   // \f$L^{k}{}_{i} = S_{j} *  G^{jk} * T_{i}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_Sj_GJK_Ti = TensorExpressions::evaluate<ti_K, ti_i>(
-          Sl(ti_j) * Guu(ti_J, ti_K) * Tl(ti_i));
+      LKi_from_Sj_GJK_Ti = tenex::evaluate<ti::K, ti::i>(
+          Sl(ti::j) * Guu(ti::J, ti::K) * Tl(ti::i));
   // \f$L_{i}{}^{k} = T_{i} * S_{j} * G^{jk}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_Ti_Sj_GJK = TensorExpressions::evaluate<ti_i, ti_K>(
-          Tl(ti_i) * Sl(ti_j) * Guu(ti_J, ti_K));
+      LiK_from_Ti_Sj_GJK = tenex::evaluate<ti::i, ti::K>(Tl(ti::i) * Sl(ti::j) *
+                                                         Guu(ti::J, ti::K));
   // \f$L^{k}{}_{i} = T_{i} * S_{j} * G^{jk}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_Ti_Sj_GJK = TensorExpressions::evaluate<ti_K, ti_i>(
-          Tl(ti_i) * Sl(ti_j) * Guu(ti_J, ti_K));
+      LKi_from_Ti_Sj_GJK = tenex::evaluate<ti::K, ti::i>(Tl(ti::i) * Sl(ti::j) *
+                                                         Guu(ti::J, ti::K));
   // \f$L_{i}{}^{k} = T_{i} * G^{jk} * S_{j}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_Ti_GJK_Sj = TensorExpressions::evaluate<ti_i, ti_K>(
-          Tl(ti_i) * Guu(ti_J, ti_K) * Sl(ti_j));
+      LiK_from_Ti_GJK_Sj = tenex::evaluate<ti::i, ti::K>(
+          Tl(ti::i) * Guu(ti::J, ti::K) * Sl(ti::j));
   // \f$L^{k}{}_{i} = T_{i} * G^{jk} * S_{j}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_Ti_GJK_Sj = TensorExpressions::evaluate<ti_K, ti_i>(
-          Tl(ti_i) * Guu(ti_J, ti_K) * Sl(ti_j));
+      LKi_from_Ti_GJK_Sj = tenex::evaluate<ti::K, ti::i>(
+          Tl(ti::i) * Guu(ti::J, ti::K) * Sl(ti::j));
   // \f$L_{i}{}^{k} = G^{jk} * S_{j} * T_{i}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_GJK_Sj_Ti = TensorExpressions::evaluate<ti_i, ti_K>(
-          Guu(ti_J, ti_K) * Sl(ti_j) * Tl(ti_i));
+      LiK_from_GJK_Sj_Ti = tenex::evaluate<ti::i, ti::K>(Guu(ti::J, ti::K) *
+                                                         Sl(ti::j) * Tl(ti::i));
   // \f$L^{k}{}_{i} = G^{jk} * S_{j} * T_{i}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_GJK_Sj_Ti = TensorExpressions::evaluate<ti_K, ti_i>(
-          Guu(ti_J, ti_K) * Sl(ti_j) * Tl(ti_i));
+      LKi_from_GJK_Sj_Ti = tenex::evaluate<ti::K, ti::i>(Guu(ti::J, ti::K) *
+                                                         Sl(ti::j) * Tl(ti::i));
   // \f$L_{i}{}^{k} = G^{jk} * T_{i} * S_{j}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
-      LiK_from_GJK_Ti_Sj = TensorExpressions::evaluate<ti_i, ti_K>(
-          Guu(ti_J, ti_K) * Tl(ti_i) * Sl(ti_j));
+      LiK_from_GJK_Ti_Sj = tenex::evaluate<ti::i, ti::K>(Guu(ti::J, ti::K) *
+                                                         Tl(ti::i) * Sl(ti::j));
   // \f$L^{k}{}_{i} = G^{jk} * T_{i} * S_{j}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<G_index, T_index>>
-      LKi_from_GJK_Ti_Sj = TensorExpressions::evaluate<ti_K, ti_i>(
-          Guu(ti_J, ti_K) * Tl(ti_i) * Sl(ti_j));
+      LKi_from_GJK_Ti_Sj = tenex::evaluate<ti::K, ti::i>(Guu(ti::J, ti::K) *
+                                                         Tl(ti::i) * Sl(ti::j));
 
   for (size_t k = 0; k < G_index::dim; k++) {
     for (size_t i = 0; i < T_index::dim; i++) {
@@ -1149,10 +1103,10 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   // (spatial) * (spacetime) inner product with generic spatial indices
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
-  const Tensor<DataType> RS = TensorExpressions::evaluate(R(ti_I) * S(ti_i));
+  const Tensor<DataType> RS = tenex::evaluate(R(ti::I) * S(ti::i));
   // \f$L = R^{k} * T_{k}\f$
   // (spacetime) * (spacetime) inner product with generic spatial indices
-  const Tensor<DataType> RT = TensorExpressions::evaluate(R(ti_K) * T(ti_k));
+  const Tensor<DataType> RT = tenex::evaluate(R(ti::K) * T(ti::k));
 
   DataType expected_RS_product = make_with_value<DataType>(used_for_size, 0.0);
   DataType expected_RT_product = make_with_value<DataType>(used_for_size, 0.0);
@@ -1182,8 +1136,8 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
                           SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
-      GH = TensorExpressions::evaluate<ti_j, ti_a, ti_i, ti_B>(G(ti_i, ti_a) *
-                                                               H(ti_j, ti_B));
+      GH = tenex::evaluate<ti::j, ti::a, ti::i, ti::B>(G(ti::i, ti::a) *
+                                                       H(ti::j, ti::B));
   for (size_t j = 0; j < 3; j++) {
     for (size_t a = 0; a < 4; a++) {
       for (size_t i = 0; i < 3; i++) {
@@ -1201,8 +1155,7 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   const Tensor<DataType, Symmetry<2, 1>,
                index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
                           SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
-      HG = TensorExpressions::evaluate<ti_k, ti_i>(H(ti_i, ti_J) *
-                                                   G(ti_k, ti_j));
+      HG = tenex::evaluate<ti::k, ti::i>(H(ti::i, ti::J) * G(ti::k, ti::j));
   for (size_t k = 0; k < 3; k++) {
     for (size_t i = 0; i < 3; i++) {
       DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
@@ -1242,8 +1195,7 @@ void test_time_index(const DataType& used_for_size) {
   }
 
   // \f$L = R_{t} * S * R_{t}\f$
-  const Tensor<DataType> L =
-      TensorExpressions::evaluate(R(ti_t) * S() * R(ti_t));
+  const Tensor<DataType> L = tenex::evaluate(R(ti::t) * S() * R(ti::t));
   CHECK(L.get() == R.get(0) * S.get() * R.get(0));
 
   Tensor<DataType, Symmetry<2, 1>,
@@ -1262,8 +1214,7 @@ void test_time_index(const DataType& used_for_size) {
   // \f$L^{b} = G_{t}{}^{a} * H_{a}{}^{tb}\f$
   const Tensor<DataType, Symmetry<1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      L_B = TensorExpressions::evaluate<ti_B>(G(ti_t, ti_A) *
-                                              H(ti_a, ti_T, ti_B));
+      L_B = tenex::evaluate<ti::B>(G(ti::t, ti::A) * H(ti::a, ti::T, ti::B));
 
   for (size_t b = 0; b < 4; b++) {
     DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);
@@ -1285,8 +1236,8 @@ void test_time_index(const DataType& used_for_size) {
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
       used_for_size, spatial_component_placeholder);
   // \f$L^{T}{}_{ba} = R_{a} * R_{b}\f$
-  TensorExpressions::evaluate<ti_T, ti_b, ti_a>(make_not_null(&L_Tba),
-                                                R(ti_a) * R(ti_b));
+  tenex::evaluate<ti::T, ti::b, ti::a>(make_not_null(&L_Tba),
+                                       R(ti::a) * R(ti::b));
 
   for (size_t b = 0; b < 4; b++) {
     for (size_t a = 0; a < 4; a++) {
@@ -1303,9 +1254,9 @@ void test_time_index(const DataType& used_for_size) {
                         SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>>(
       used_for_size, spatial_component_placeholder);
   // \f$L_^{ct} = G_{t}{}^{b} * R_{b} * H_{t}^{ta}\f$
-  TensorExpressions::evaluate<ti_C, ti_T>(
+  tenex::evaluate<ti::C, ti::T>(
       make_not_null(&L_CT),
-      G(ti_t, ti_B) * H(ti_b, ti_A, ti_C) * G(ti_a, ti_T));
+      G(ti::t, ti::B) * H(ti::b, ti::A, ti::C) * G(ti::a, ti::T));
 
   for (size_t c = 0; c < 4; c++) {
     DataType expected_product = make_with_value<DataType>(used_for_size, 0.0);

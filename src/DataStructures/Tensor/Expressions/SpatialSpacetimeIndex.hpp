@@ -21,7 +21,7 @@
 /// TensorExpression equations where generic spatial indices are used for
 /// spacetime indices
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 template <typename State, typename Element, typename Iteration,
           typename TensorIndexList>
@@ -173,4 +173,4 @@ spatial_spacetime_index_transformation_from_positions(
   return transformation;
 }
 }  // namespace detail
-}  // namespace TensorExpressions
+}  // namespace tenex

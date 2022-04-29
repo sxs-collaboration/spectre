@@ -20,7 +20,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace TensorExpressions {
+namespace tenex {
 namespace detail {
 /// @{
 /// \brief Given a tensor symmetry and the positions of indices where a generic
@@ -209,4 +209,4 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
  private:
   const Tensor<X, Symm, IndexList<Indices...>>* t_ = nullptr;
 };
-}  // namespace TensorExpressions
+}  // namespace tenex

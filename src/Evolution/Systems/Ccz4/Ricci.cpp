@@ -29,46 +29,46 @@ void spatial_ricci_tensor(
   destructive_resize_components(result,
                                 get_size(get<0, 0>(conformal_spatial_metric)));
 
-  TensorExpressions::evaluate<ti_i, ti_j>(
+  tenex::evaluate<ti::i, ti::j>(
       result,
-      contracted_d_conformal_christoffel_difference(ti_i, ti_j) +
+      contracted_d_conformal_christoffel_difference(ti::i, ti::j) +
           // Add terms of \partial_m \Gamma^m_{ij} and
           // -\partial_j \Gamma^m_{im} that have a coefficient of 2
-          2.0 * (contracted_field_d_up(ti_L) *
-                     (conformal_spatial_metric(ti_j, ti_l) * field_p(ti_i) +
-                      conformal_spatial_metric(ti_i, ti_l) * field_p(ti_j) -
-                      conformal_spatial_metric(ti_i, ti_j) * field_p(ti_l)) -
-                 inverse_conformal_spatial_metric(ti_M, ti_L) *
-                     (field_d(ti_m, ti_j, ti_l) * field_p(ti_i) +
-                      field_d(ti_m, ti_i, ti_l) * field_p(ti_j) -
-                      field_d(ti_m, ti_i, ti_j) * field_p(ti_l)) -
-                 field_d_up(ti_j, ti_M, ti_L) *
-                     (conformal_spatial_metric(ti_m, ti_l) * field_p(ti_i) +
-                      conformal_spatial_metric(ti_i, ti_l) * field_p(ti_m) -
-                      conformal_spatial_metric(ti_i, ti_m) * field_p(ti_l)) +
-                 inverse_conformal_spatial_metric(ti_M, ti_L) *
-                     (field_d(ti_j, ti_m, ti_l) * field_p(ti_i) +
-                      field_d(ti_j, ti_i, ti_l) * field_p(ti_m) -
-                      field_d(ti_j, ti_i, ti_m) * field_p(ti_l))) -
+          2.0 * (contracted_field_d_up(ti::L) *
+                     (conformal_spatial_metric(ti::j, ti::l) * field_p(ti::i) +
+                      conformal_spatial_metric(ti::i, ti::l) * field_p(ti::j) -
+                      conformal_spatial_metric(ti::i, ti::j) * field_p(ti::l)) -
+                 inverse_conformal_spatial_metric(ti::M, ti::L) *
+                     (field_d(ti::m, ti::j, ti::l) * field_p(ti::i) +
+                      field_d(ti::m, ti::i, ti::l) * field_p(ti::j) -
+                      field_d(ti::m, ti::i, ti::j) * field_p(ti::l)) -
+                 field_d_up(ti::j, ti::M, ti::L) *
+                     (conformal_spatial_metric(ti::m, ti::l) * field_p(ti::i) +
+                      conformal_spatial_metric(ti::i, ti::l) * field_p(ti::m) -
+                      conformal_spatial_metric(ti::i, ti::m) * field_p(ti::l)) +
+                 inverse_conformal_spatial_metric(ti::M, ti::L) *
+                     (field_d(ti::j, ti::m, ti::l) * field_p(ti::i) +
+                      field_d(ti::j, ti::i, ti::l) * field_p(ti::m) -
+                      field_d(ti::j, ti::i, ti::m) * field_p(ti::l))) -
           // Add \partial_{(i} P_{j)} type terms
-          0.5 * inverse_conformal_spatial_metric(ti_M, ti_L) *
-              (conformal_spatial_metric(ti_j, ti_l) *
-                   (d_field_p(ti_m, ti_i) + d_field_p(ti_i, ti_m)) +
-               conformal_spatial_metric(ti_i, ti_l) *
-                   (d_field_p(ti_m, ti_j) + d_field_p(ti_j, ti_m)) -
-               conformal_spatial_metric(ti_i, ti_j) *
-                   (d_field_p(ti_m, ti_l) + d_field_p(ti_l, ti_m)) -
-               conformal_spatial_metric(ti_m, ti_l) *
-                   (d_field_p(ti_j, ti_i) + d_field_p(ti_i, ti_j)) -
-               conformal_spatial_metric(ti_i, ti_l) *
-                   (d_field_p(ti_j, ti_m) + d_field_p(ti_m, ti_j)) +
-               conformal_spatial_metric(ti_i, ti_m) *
-                   (d_field_p(ti_j, ti_l) + d_field_p(ti_l, ti_j))) +
+          0.5 * inverse_conformal_spatial_metric(ti::M, ti::L) *
+              (conformal_spatial_metric(ti::j, ti::l) *
+                   (d_field_p(ti::m, ti::i) + d_field_p(ti::i, ti::m)) +
+               conformal_spatial_metric(ti::i, ti::l) *
+                   (d_field_p(ti::m, ti::j) + d_field_p(ti::j, ti::m)) -
+               conformal_spatial_metric(ti::i, ti::j) *
+                   (d_field_p(ti::m, ti::l) + d_field_p(ti::l, ti::m)) -
+               conformal_spatial_metric(ti::m, ti::l) *
+                   (d_field_p(ti::j, ti::i) + d_field_p(ti::i, ti::j)) -
+               conformal_spatial_metric(ti::i, ti::l) *
+                   (d_field_p(ti::j, ti::m) + d_field_p(ti::m, ti::j)) +
+               conformal_spatial_metric(ti::i, ti::m) *
+                   (d_field_p(ti::j, ti::l) + d_field_p(ti::l, ti::j))) +
           // Add last two terms for R_{ij}
-          christoffel_second_kind(ti_L, ti_i, ti_j) *
-              contracted_christoffel_second_kind(ti_l) -
-          christoffel_second_kind(ti_L, ti_i, ti_m) *
-              christoffel_second_kind(ti_M, ti_l, ti_j));
+          christoffel_second_kind(ti::L, ti::i, ti::j) *
+              contracted_christoffel_second_kind(ti::l) -
+          christoffel_second_kind(ti::L, ti::i, ti::m) *
+              christoffel_second_kind(ti::M, ti::l, ti::j));
 }
 
 template <size_t Dim, typename Frame, typename DataType>

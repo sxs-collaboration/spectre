@@ -16,21 +16,21 @@
 namespace {
 template <auto&... TensorIndices>
 void test_contains_indices_to_contract_impl(const bool expected) {
-  CHECK(TensorExpressions::detail::contains_indices_to_contract<sizeof...(
-            TensorIndices)>(
+  CHECK(tenex::detail::contains_indices_to_contract<sizeof...(TensorIndices)>(
             {{std::decay_t<decltype(TensorIndices)>::value...}}) == expected);
 }
 
 void test_contains_indices_to_contract() {
-  test_contains_indices_to_contract_impl<ti_a, ti_b, ti_c>(false);
-  test_contains_indices_to_contract_impl<ti_I, ti_j>(false);
-  test_contains_indices_to_contract_impl<ti_j>(false);
+  test_contains_indices_to_contract_impl<ti::a, ti::b, ti::c>(false);
+  test_contains_indices_to_contract_impl<ti::I, ti::j>(false);
+  test_contains_indices_to_contract_impl<ti::j>(false);
   test_contains_indices_to_contract_impl(false);
 
-  test_contains_indices_to_contract_impl<ti_d, ti_D>(true);
-  test_contains_indices_to_contract_impl<ti_I, ti_i>(true);
-  test_contains_indices_to_contract_impl<ti_a, ti_K, ti_B, ti_b>(true);
-  test_contains_indices_to_contract_impl<ti_j, ti_c, ti_J, ti_A, ti_a>(true);
+  test_contains_indices_to_contract_impl<ti::d, ti::D>(true);
+  test_contains_indices_to_contract_impl<ti::I, ti::i>(true);
+  test_contains_indices_to_contract_impl<ti::a, ti::K, ti::B, ti::b>(true);
+  test_contains_indices_to_contract_impl<ti::j, ti::c, ti::J, ti::A, ti::a>(
+      true);
 }
 }  // namespace
 
@@ -39,108 +39,116 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Evaluate",
   test_contains_indices_to_contract();
 
   // Rank 0: double
-  TestHelpers::TensorExpressions::test_evaluate_rank_0<double>(-7.31);
+  TestHelpers::tenex::test_evaluate_rank_0<double>(-7.31);
 
   // Rank 0: DataVector
-  TestHelpers::TensorExpressions::test_evaluate_rank_0<DataVector>(
+  TestHelpers::tenex::test_evaluate_rank_0<DataVector>(
       DataVector{-3.1, 9.4, 0.0, -3.1, 2.4, 9.8});
 
   // Rank 1: double; spacetime
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpacetimeIndex,
-                                                       UpLo::Lo, ti_a>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpacetimeIndex,
-                                                       UpLo::Lo, ti_b>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpacetimeIndex,
-                                                       UpLo::Up, ti_A>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpacetimeIndex,
-                                                       UpLo::Up, ti_B>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, UpLo::Lo,
+                                           ti::a>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, UpLo::Lo,
+                                           ti::b>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, UpLo::Up,
+                                           ti::A>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpacetimeIndex, UpLo::Up,
+                                           ti::B>();
 
   // Rank 1: double; spatial
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpatialIndex,
-                                                       UpLo::Lo, ti_i>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpatialIndex,
-                                                       UpLo::Lo, ti_j>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpatialIndex,
-                                                       UpLo::Up, ti_I>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<double, SpatialIndex,
-                                                       UpLo::Up, ti_J>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, UpLo::Lo,
+                                           ti::i>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, UpLo::Lo,
+                                           ti::j>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, UpLo::Up,
+                                           ti::I>();
+  TestHelpers::tenex::test_evaluate_rank_1<double, SpatialIndex, UpLo::Up,
+                                           ti::J>();
 
   // Rank 1: DataVector
-  TestHelpers::TensorExpressions::test_evaluate_rank_1<DataVector, SpatialIndex,
-                                                       UpLo::Up, ti_L>();
+  TestHelpers::tenex::test_evaluate_rank_1<DataVector, SpatialIndex, UpLo::Up,
+                                           ti::L>();
 
   // Rank 2: double; nonsymmetric; spacetime only
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti_a, ti_b>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti_A, ti_B>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti_d, ti_c>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti_D, ti_C>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti_e, ti_F>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti_F, ti_e>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti_g, ti_B>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti_G, ti_b>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti::a,
+      ti::b>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti::A,
+      ti::B>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti::d,
+      ti::c>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti::D,
+      ti::C>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti::e,
+      ti::F>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti::F,
+      ti::e>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti::g,
+      ti::B>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti::G,
+      ti::b>();
 
   // Rank 2: double; nonsymmetric; spatial only
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti_i, ti_j>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti_I, ti_J>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti_j, ti_i>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti_J, ti_I>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti_i, ti_J>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti_I, ti_j>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti_j, ti_I>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti_J, ti_i>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti::i, ti::j>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti::I, ti::J>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti::j, ti::i>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti::J, ti::I>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti::i, ti::J>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti::I, ti::j>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti::j, ti::I>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti::J, ti::i>();
 
   // Rank 2: double; nonsymmetric; spacetime and spatial mixed
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti_c, ti_I>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti_A, ti_i>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti_J, ti_a>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti_i, ti_B>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti_e, ti_j>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti_i, ti_d>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpacetimeIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti_C, ti_I>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      double, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti_J, ti_A>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpatialIndex, UpLo::Lo, UpLo::Up, ti::c, ti::I>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpatialIndex, UpLo::Up, UpLo::Lo, ti::A, ti::i>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Lo, ti::J, ti::a>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti::i, ti::B>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpatialIndex, UpLo::Lo, UpLo::Lo, ti::e, ti::j>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpacetimeIndex, UpLo::Lo, UpLo::Lo, ti::i, ti::d>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpacetimeIndex, SpatialIndex, UpLo::Up, UpLo::Up, ti::C, ti::I>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      double, SpatialIndex, SpacetimeIndex, UpLo::Up, UpLo::Up, ti::J, ti::A>();
 
   // Rank 2: double; symmetric; spacetime
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_symmetric<
-      double, SpacetimeIndex, UpLo::Lo, ti_a, ti_d>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_symmetric<
-      double, SpacetimeIndex, UpLo::Up, ti_G, ti_B>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpacetimeIndex,
+                                                     UpLo::Lo, ti::a, ti::d>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpacetimeIndex,
+                                                     UpLo::Up, ti::G, ti::B>();
 
   // Rank 2: double; symmetric; spatial
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_symmetric<
-      double, SpatialIndex, UpLo::Lo, ti_j, ti_i>();
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_symmetric<
-      double, SpatialIndex, UpLo::Up, ti_I, ti_J>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpatialIndex,
+                                                     UpLo::Lo, ti::j, ti::i>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<double, SpatialIndex,
+                                                     UpLo::Up, ti::I, ti::J>();
 
   // Rank 2: DataVector; nonsymmetric
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_no_symmetry<
-      DataVector, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti_f,
-      ti_G>();
+  TestHelpers::tenex::test_evaluate_rank_2_no_symmetry<
+      DataVector, SpacetimeIndex, SpacetimeIndex, UpLo::Lo, UpLo::Up, ti::f,
+      ti::G>();
 
   // Rank 2: DataVector; symmetric
-  TestHelpers::TensorExpressions::test_evaluate_rank_2_symmetric<
-      DataVector, SpatialIndex, UpLo::Lo, ti_j, ti_i>();
+  TestHelpers::tenex::test_evaluate_rank_2_symmetric<DataVector, SpatialIndex,
+                                                     UpLo::Lo, ti::j, ti::i>();
 }
