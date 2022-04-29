@@ -37,8 +37,9 @@ namespace {
 void append_element_extents_and_connectivity(
     const gsl::not_null<std::vector<size_t>*> total_extents,
     const gsl::not_null<std::vector<int>*> total_connectivity,
+    const gsl::not_null<std::vector<int>*> pole_connectivity,
     const gsl::not_null<int*> total_points_so_far, const size_t dim,
-    const ExtentsAndTensorVolumeData& element) {
+    const ElementVolumeData& element) {
   // Process the element extents
   const auto& extents = element.extents;
   ASSERT(alg::none_of(extents, [](const size_t extent) { return extent == 1; }),
@@ -68,6 +69,88 @@ void append_element_extents_and_connectivity(
   *total_points_so_far += element_num_points;
   total_connectivity->insert(total_connectivity->end(), connectivity.begin(),
                              connectivity.end());
+
+  // If element is 2D and the bases are both SphericalHarmonic,
+  // then add extra connections to close the surface.
+  if (dim == 2) {
+    if (element.basis[0] == Spectral::Basis::SphericalHarmonic and
+        element.basis[1] == Spectral::Basis::SphericalHarmonic) {
+      // Extents are (l+1, 2l+1)
+      const size_t l = element.extents[0] - 1;
+
+      // Connect max(phi) and min(phi) by adding more quads
+      // to total_connectivity
+      for (size_t j = 0; j < l; ++j) {
+        total_connectivity->push_back(j);
+        total_connectivity->push_back(j + 1);
+        total_connectivity->push_back(2 * l * (l + 1) + j + 1);
+        total_connectivity->push_back((2 * l) * (l + 1) + j);
+      }
+
+      // Add a new connectivity output for filling the poles
+      // First, get the points at min(theta), which define the
+      // boundary of the top pole to fill, and the points at
+      // max(theta), which define the boundary of the bottom
+      // pole to fill. Note: points are stored with theta
+      // varying faster than phi.
+      std::vector<int> top_pole_points{};
+      std::vector<int> bottom_pole_points{};
+      for (size_t k = 0; k < (2 * l + 1); ++k) {
+        top_pole_points.push_back(k * (l + 1));
+        bottom_pole_points.push_back(k * (l + 1) + l);
+      }
+
+      // Fill the poles with triangles. Start by connecting
+      // points 0,1,2, 2,3,4, etc. into small triangles,
+      // then connect points 0,2,4, 4,6,8, etc.,
+      // etc., until fewer than 3 points remain.
+      const size_t number_of_points_near_poles = top_pole_points.size();
+      size_t to_next_triangle_point = 1;
+      while (number_of_points_near_poles / to_next_triangle_point >= 3) {
+        for (size_t point_starting_triangle = 0;
+             point_starting_triangle <
+             number_of_points_near_poles - 2 * to_next_triangle_point;
+             point_starting_triangle += 2 * to_next_triangle_point) {
+          pole_connectivity->push_back(
+              gsl::at(top_pole_points, point_starting_triangle));
+          pole_connectivity->push_back(
+              gsl::at(top_pole_points,
+                      point_starting_triangle + to_next_triangle_point));
+          pole_connectivity->push_back(
+              gsl::at(top_pole_points,
+                      point_starting_triangle + 2 * to_next_triangle_point));
+          pole_connectivity->push_back(
+              gsl::at(bottom_pole_points, point_starting_triangle));
+          pole_connectivity->push_back(
+              gsl::at(bottom_pole_points,
+                      point_starting_triangle + to_next_triangle_point));
+          pole_connectivity->push_back(
+              gsl::at(bottom_pole_points,
+                      point_starting_triangle + 2 * to_next_triangle_point));
+        }
+        // If odd number of points, add triangle closing
+        // point at max(phi) and point at min(phi)
+        if (number_of_points_near_poles % 2 != 0 and
+            2 * to_next_triangle_point < number_of_points_near_poles) {
+          pole_connectivity->push_back(gsl::at(
+              top_pole_points,
+              number_of_points_near_poles - 2 * to_next_triangle_point));
+          pole_connectivity->push_back(
+              gsl::at(top_pole_points,
+                      number_of_points_near_poles - to_next_triangle_point));
+          pole_connectivity->push_back(gsl::at(top_pole_points, 0));
+          pole_connectivity->push_back(gsl::at(
+              bottom_pole_points,
+              number_of_points_near_poles - 2 * to_next_triangle_point));
+          pole_connectivity->push_back(
+              gsl::at(bottom_pole_points,
+                      number_of_points_near_poles - to_next_triangle_point));
+          pole_connectivity->push_back(gsl::at(bottom_pole_points, 0));
+        }
+        to_next_triangle_point += 1;
+      }
+    }
+  }
 }
 
 // Append the name of an element to the string of grid names
@@ -166,12 +249,13 @@ void VolumeData::write_volume_data(
   std::vector<size_t> total_extents;
   std::string grid_names;
   std::vector<int> total_connectivity;
+  std::vector<int> pole_connectivity{};
   std::vector<int> quadratures;
   std::vector<int> bases;
   // Keep a running count of the number of points so far to use as a global
   // index for the connectivity
   int total_points_so_far = 0;
-  // Loop over tensor componenents
+  // Loop over tensor components
   for (size_t i = 0; i < component_names.size(); i++) {
     std::string component_name = component_names[i];
     // Write the data for the tensor component
@@ -185,7 +269,8 @@ void VolumeData::write_volume_data(
 
     const auto fill_and_write_contiguous_tensor_data =
         [&bases, &component_name, &dim, &elements, &grid_names, i,
-         &observation_group, &quadratures, &total_connectivity, &total_extents,
+         &observation_group, &quadratures, &total_connectivity,
+         &pole_connectivity, &total_extents,
          &total_points_so_far](const auto contiguous_tensor_data_ptr) {
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
@@ -203,8 +288,8 @@ void VolumeData::write_volume_data(
                              });
 
               append_element_extents_and_connectivity(
-                  &total_extents, &total_connectivity, &total_points_so_far,
-                  dim, element);
+                  &total_extents, &total_connectivity, &pole_connectivity,
+                  &total_points_so_far, dim, element);
             }
             using type_from_variant = tmpl::conditional_t<
                 std::is_same_v<
@@ -266,6 +351,15 @@ void VolumeData::write_volume_data(
   // Write the Connectivity
   h5::write_data(observation_group.id(), total_connectivity,
                  {total_connectivity.size()}, "connectivity");
+  // Note: pole_connectivity stores extra connections that define triangles to
+  // fill in the poles on a Strahlkorper and is empty if not outputting
+  // Strahlkorper surface data. Because these connections define triangles
+  // and not quadrilaterals, they are stored separately instead of just being
+  // included in total_connectivity.
+  if (not pole_connectivity.empty()) {
+    h5::write_data(observation_group.id(), pole_connectivity,
+                   {pole_connectivity.size()}, "pole_connectivity");
+  }
 }
 
 std::vector<size_t> VolumeData::list_observation_ids() const {
@@ -299,14 +393,22 @@ std::vector<std::string> VolumeData::list_tensor_components(
     // NOLINTNEXTLINE(bugprone-unused-return-value)
     alg::remove(tensor_components, data_name);
   };
+
+  const auto search_result = alg::find(tensor_components, "pole_connectivity");
+  const long number_of_components_to_remove =
+      search_result != tensor_components.end() ? 6 : 5;
+
   remove_data_name("connectivity");
+  remove_data_name("pole_connectivity");
   remove_data_name("total_extents");
   remove_data_name("grid_names");
   remove_data_name("quadratures");
   remove_data_name("bases");
   // std::remove moves the element to the end of the vector, so we still need to
   // actually erase it from the vector
-  tensor_components.erase(tensor_components.end() - 5, tensor_components.end());
+  tensor_components.erase(
+      tensor_components.end() - number_of_components_to_remove,
+      tensor_components.end());
 
   return tensor_components;
 }

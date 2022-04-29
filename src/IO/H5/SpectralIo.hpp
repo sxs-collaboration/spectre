@@ -16,13 +16,13 @@ class OpenGroup;
 namespace h5_detail {
 /// We maintain a list of bases and quadratures which are compatible
 /// with IO, this allows for efficient storage of Spectral::Basis in
-/// volume data files (currently there are 3 bases)
-std::array<Spectral::Basis, 3> allowed_bases();
+/// volume data files
+std::array<Spectral::Basis, 4> allowed_bases();
 
 /// We maintain a list of quadratures which are compatible
 /// with IO, this allows for efficient storage of Spectral::Quadrature in
-/// volume data files (currently there are 4 quadratures)
-std::array<Spectral::Quadrature, 4> allowed_quadratures();
+/// volume data files
+std::array<Spectral::Quadrature, 5> allowed_quadratures();
 
 /// Write a dictionary as an attribute to the volume file, can be used
 /// to decode integer sequence as values[i] represents the string

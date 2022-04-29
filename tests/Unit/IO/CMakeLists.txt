@@ -40,6 +40,7 @@ target_link_libraries(
   EventsAndTriggers
   IO
   Parallel
+  SphericalHarmonics
   Utilities
   )
 
