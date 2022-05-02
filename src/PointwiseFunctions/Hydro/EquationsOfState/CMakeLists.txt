@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   DarkEnergyFluid.cpp
+  Enthalpy.cpp
   IdealFluid.cpp
   PolytropicFluid.cpp
   Spectral.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   IdealFluid.hpp
   PolytropicFluid.hpp
   Spectral.hpp
+  Enthalpy.hpp
   )
 
 add_subdirectory(Python)

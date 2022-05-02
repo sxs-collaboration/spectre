@@ -8,7 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
-#include "Parallel/Printf.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 namespace {

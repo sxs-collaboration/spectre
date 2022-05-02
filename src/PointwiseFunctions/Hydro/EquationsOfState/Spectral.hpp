@@ -10,6 +10,7 @@
 #include <boost/preprocessor/repetition/for.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
 #include <boost/preprocessor/tuple/to_list.hpp>
+#include <cstddef>
 #include <limits>
 #include <pup.h>
 #include <vector>
