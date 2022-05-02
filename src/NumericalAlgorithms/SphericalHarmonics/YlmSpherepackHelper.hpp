@@ -54,7 +54,7 @@ class MemoryPool {
   std::vector<double>& get(size_t n_pts);
   void free(const std::vector<double>& to_be_freed);
   void free(gsl::not_null<double*> to_be_freed);
-
+  void clear();
  private:
   struct StorageAndAvailability {
     std::vector<double> storage;

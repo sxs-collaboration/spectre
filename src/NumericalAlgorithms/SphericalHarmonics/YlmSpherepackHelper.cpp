@@ -167,4 +167,13 @@ void MemoryPool::free(const gsl::not_null<double*> to_be_freed) {
   ERROR("Attempt to free temp that was never allocated.");
 }
 
+void MemoryPool::clear() {
+  for (auto& elem : memory_pool_) {
+    if(elem.currently_in_use) {
+      ERROR("Attempt to clear element that is in use");
+    }
+    elem.storage.clear();
+  }
+}
+
 }  // namespace YlmSpherepack_detail

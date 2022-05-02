@@ -47,6 +47,20 @@
 //   (as opposed to m_max = m_max_represented+1)
 //============================================================================
 
+// Need to initialize memory_pool_ here because it is static.  Note
+// that memory_pool_ is never destroyed or cleared, except at the end
+// of execution when static variables are destroyed.  One alternative
+// would be to reference-count the instances of YlmSpherepack on the
+// local thread, and to clear the memory_pool_ when the reference
+// count drops to zero.  Another alternative would be to clear the
+// memory_pool_ in the destructor (so it is cleared when *any*
+// instance of YlmSpherepack is destroyed), but there is no need to do
+// so, and doing so would increase the number of memory allocations
+// because other instances of YlmSpherepack would then re-allocate
+// memory_pool.
+thread_local YlmSpherepack_detail::MemoryPool YlmSpherepack::memory_pool_ =
+    YlmSpherepack_detail::MemoryPool();
+
 YlmSpherepack::YlmSpherepack(const size_t l_max, const size_t m_max)
     : l_max_{l_max},
       m_max_{m_max},
