@@ -47,6 +47,7 @@ spectre_target_headers(
   Reduction.hpp
   ReductionDeclare.hpp
   RegisterDerivedClassesWithCharm.hpp
+  ResourceInfo.hpp
   Section.hpp
   Serialize.hpp
   SimpleActionVisitation.hpp
