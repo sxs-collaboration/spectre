@@ -5,8 +5,13 @@
 
 # Load system modules
 spectre_load_sys_modules() {
+    # llvm 10 is stored here
+    module use /work2/08330/knelli/frontera/tools/sys_modules
     # Assumes impi is loaded, which it should be by default
+    # Even though we are building with clang, some other sys modules
+    # require gcc/9.1.0 (like mkl and gsl)
     module load gcc/9.1.0
+    module load llvm/10.0.1
     module load mkl/19.0.5
     module load gsl
     module load hdf5
@@ -19,6 +24,7 @@ spectre_unload_sys_modules() {
     module unload hdf5
     module unload gsl
     module unload mkl/19.0.5
+    module unload llvm/10.0.1
     module unload gcc/9.1.0
 }
 
@@ -35,7 +41,7 @@ spectre_setup_modules() {
         return 1
     fi
 
-    "${SPECTRE_HOME}/support/Environments/setup/frontera.sh" "$@" "GCC"
+    "${SPECTRE_HOME}/support/Environments/setup/frontera.sh" "$@" "Clang"
     local ret=$?
     if [ "${ret}" -ne 0 ] ; then
         echo >&2
@@ -81,6 +87,8 @@ spectre_run_cmake() {
     # -D USE_LD=ld - ld.gold seems to hang linking the main executables
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=clang \
+          -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=off \

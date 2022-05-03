@@ -5,13 +5,23 @@
 
 set -e
 
-. "${SPECTRE_HOME}/support/Environments/frontera_gcc.sh"
-
-if [ $# != 1 ]; then
-    echo "You must pass one argument to spectre_setup_modules, which"
-    echo "is the directory where you want the dependencies to be built."
+if [ $# != 2 ]; then
+    echo "You must pass two arguments to setup/frontera.sh, which"
+    echo "are the directory where you want the dependencies to be built"
+    echo "and the compiler to use."
     exit 1
 fi
+
+if [ $2 == "GCC" ]; then
+    c_compiler="gcc"
+elif [ $2 == "Clang" ]; then
+    c_compiler="clang"
+else
+    echo "Unknown compiler: $2"
+    exit 1
+fi
+
+. ${SPECTRE_HOME}/support/Environments/frontera_"$c_compiler".sh
 
 dep_dir=`realpath $1`
 mkdir -p $dep_dir
@@ -109,7 +119,8 @@ else
     mkdir build
     cd build
     cmake -D CMAKE_BUILD_TYPE=Release -D YAML_CPP_BUILD_TESTS=OFF \
-          -D CMAKE_C_COMPILER=gcc -D CMAKE_CXX_COMPILER=g++ \
+          -D CMAKE_C_COMPILER=gcc \
+          -D CMAKE_CXX_COMPILER=g++ \
           -D YAML_CPP_BUILD_CONTRIB=OFF \
           -D YAML_CPP_BUILD_TOOLS=ON \
           -D CMAKE_INSTALL_PREFIX=$dep_dir/yaml-cpp ..
