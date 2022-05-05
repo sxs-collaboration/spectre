@@ -51,6 +51,9 @@ Affiliations:
   - &cornell
     Cornell Center for Astrophysics and Planetary Science, Cornell University,
     Ithaca, New York 14853, USA
+  - &coimbra
+    CFisUC, Department of Physics, University of Coimbra,
+    3004-516 Coimbra, Portugal
   - &fullerton
     Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California
@@ -301,7 +304,7 @@ Authors:
         GitHub: trami18
       - Name: Rüter, Hannes R.
         Orcid: 0000-0002-3442-5360
-        Affiliations: [*aei]
+        Affiliations: [*coimbra]
         GitHub: hrueter
       - Name: Sanchez, Jennifer
         Orcid: 0000-0002-5335-4924
