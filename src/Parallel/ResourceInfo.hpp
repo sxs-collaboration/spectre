@@ -6,10 +6,14 @@
 #include <cstddef>
 #include <optional>
 #include <pup.h>
+#include <string>
 
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Parallel/TypeTraits.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -21,7 +25,11 @@ namespace Parallel {
  * proc should be exclusive, i.e. no array component elements or other
  * singletons placed on that proc. Instead of specifying a proc, the proc can be
  * chosen automatically by using the `Options::Auto` option.
+ *
+ * The template parameter `Component` is only used to identify which singleton
+ * component this SingletonInfoHolder belongs to.
  */
+template <typename Component>
 struct SingletonInfoHolder {
   struct Proc {
     using type = Options::Auto<int>;
@@ -83,5 +91,99 @@ struct SingletonInfoHolder {
   // negative size_t is actually a really large value (it wraps around)
   std::optional<size_t> proc_{std::nullopt};
   bool exclusive_{false};
+};
+
+template <typename ParallelComponents>
+struct SingletonPack;
+
+/// \cond
+// Special case needed when the parameter pack passed to SingletonPack is empty.
+// This is only necessary to get things to compile and shouldn't be used.
+template <>
+struct SingletonPack<tmpl::list<>> {
+  using options = tmpl::list<>;
+  static constexpr Options::String help = {
+      "Resource options for all singletons."};
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) {}
+
+  template <typename Component>
+  const auto& get() const {
+    ERROR(
+        "Cannot call the get() member of a SingletonPack with an empty "
+        "component list.");
+    return fake_holder_;
+  }
+
+ private:
+  // Needed so get() can return a reference to something even though an ERROR
+  // will occur if it's called
+  struct FakeComponent {};
+  SingletonInfoHolder<FakeComponent> fake_holder_{};
+};
+/// \endcond
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Holds options for a group of singleton components.
+ *
+ * \details The info for each singleton in the `ParallelComponents` template
+ *  pack is stored in an individual `Parallel::SingletonInfoHolder`.
+ */
+template <typename... ParallelComponents>
+struct SingletonPack<tmpl::list<ParallelComponents...>> {
+ private:
+  static_assert((Parallel::is_singleton_v<ParallelComponents> and ...),
+                "At least one of the parallel components passed to "
+                "SingletonPack is not a Singleton.");
+  using component_list = tmpl::list<ParallelComponents...>;
+
+  template <typename Component>
+  struct LocalTag {
+    using type = SingletonInfoHolder<Component>;
+  };
+  using local_tags =
+      tmpl::transform<component_list, tmpl::bind<LocalTag, tmpl::_1>>;
+
+ public:
+  template <typename Component>
+  struct SingletonOption {
+    using type = SingletonInfoHolder<Component>;
+    static std::string name() { return pretty_type::name<Component>(); }
+    static constexpr Options::String help = {
+        "Resource options for a specific singleton."};
+  };
+
+  using options =
+      tmpl::transform<component_list, tmpl::bind<SingletonOption, tmpl::_1>>;
+  static constexpr Options::String help = {
+      "Resource options for all singletons."};
+
+  SingletonPack(
+      const SingletonInfoHolder<ParallelComponents>&... singleton_info_holders,
+      const Options::Context& /*context*/ = {})
+      : procs_(tuples::tagged_tuple_from_typelist<local_tags>(
+            singleton_info_holders...)) {}
+
+  SingletonPack() = default;
+  SingletonPack(const SingletonPack& /*rhs*/) = default;
+  SingletonPack& operator=(const SingletonPack& /*rhs*/) = default;
+  SingletonPack(SingletonPack&& /*rhs*/) = default;
+  SingletonPack& operator=(SingletonPack&& /*rhs*/) = default;
+  ~SingletonPack() = default;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) { p | procs_; };
+
+  /// Get a const reference to the SingletonInfoHolder for the `Component`
+  /// singleton
+  template <typename Component>
+  const auto& get() const {
+    return tuples::get<LocalTag<Component>>(procs_);
+  }
+
+ private:
+  tuples::tagged_tuple_from_typelist<local_tags> procs_{};
 };
 }  // namespace Parallel
