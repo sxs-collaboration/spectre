@@ -8,8 +8,8 @@
 #include <optional>
 #include <utility>
 
+#include "DataStructures/ExtractPoint.hpp"
 #include "DataStructures/FixedHashMap.hpp"
-#include "DataStructures/Tensor/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Creators/Tags/Domain.hpp"
 #include "Domain/Domain.hpp"

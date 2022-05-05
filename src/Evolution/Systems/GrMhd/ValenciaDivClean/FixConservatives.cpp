@@ -10,9 +10,9 @@
 #include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ExtractPoint.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
-#include "DataStructures/Tensor/ExtractPoint.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
