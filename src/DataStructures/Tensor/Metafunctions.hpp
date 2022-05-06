@@ -6,6 +6,10 @@
 
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
+
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -111,6 +115,14 @@ template <typename Tensor>
 using remove_first_index =
     ::Tensor<typename Tensor::type, tmpl::pop_front<typename Tensor::symmetry>,
              tmpl::pop_front<typename Tensor::index_list>>;
+
+/// \ingroup TensorGroup
+/// \brief Swap the valences of all indices on a Tensor
+template <typename Tensor>
+using change_all_valences =
+    ::Tensor<typename Tensor::type, typename Tensor::symmetry,
+             tmpl::transform<typename Tensor::index_list,
+                             tmpl::bind<change_index_up_lo, tmpl::_1>>>;
 
 /// \ingroup TensorGroup
 /// \brief Swap the data type of a tensor for a new type

@@ -153,6 +153,14 @@ static_assert(std::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
                                  tnsr::abb<double, 3, Frame::Grid>>>,
               "Failed testing remove_first_index");
 
+// Test change_all_valences
+static_assert(
+    std::is_same_v<Scalar<double>,
+                   TensorMetafunctions::change_all_valences<Scalar<double>>>);
+static_assert(std::is_same_v<tnsr::iAA<DataVector, 3, Frame::Grid>,
+                             TensorMetafunctions::change_all_valences<
+                                 tnsr::Iaa<DataVector, 3, Frame::Grid>>>);
+
 // Test swap_type
 static_assert(
     std::is_same_v<tnsr::ij<double, 3>, TensorMetafunctions::swap_type<
