@@ -37,9 +37,31 @@ struct Metavars {
       tmpl::list<Tags::IntegerList, Tags::UniquePtrIntegerList>;
   using component_list = tmpl::list<>;
 };
+
+struct EmptyMetavars {
+  using component_list = tmpl::list<>;
+};
+
+void test_mutable_cache_proxy_error() {
+  CHECK_THROWS_WITH(
+      ([]() {
+        MutableGlobalCache<EmptyMetavars> mutable_cache{
+            tuples::TaggedTuple<>{}};
+        GlobalCache<EmptyMetavars> cache{tuples::TaggedTuple<>{},
+                                         &mutable_cache};
+
+        auto mutable_cache_proxy = cache.mutable_global_cache_proxy();
+      })(),
+      Catch::Contains(
+          "Cannot get a proxy to the mutable global cache because the proxy "
+          "isn't set."));
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
+  test_mutable_cache_proxy_error();
+
   tuples::TaggedTuple<Tags::IntegerList, Tags::UniquePtrIntegerList> tuple{};
   tuples::get<Tags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
   tuples::get<Tags::UniquePtrIntegerList>(tuple) =

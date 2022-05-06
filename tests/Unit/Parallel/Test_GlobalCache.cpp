@@ -529,6 +529,11 @@ Test_GlobalCache<Metavariables>::Test_GlobalCache(CkArgMsg*
       const_data_to_be_cached, mutable_global_cache_proxy_, std::nullopt,
       &mutable_global_cache_dependency);
 
+  const auto local_cache = Parallel::local_branch(global_cache_proxy_);
+  auto mutable_global_cache_proxy = local_cache->mutable_global_cache_proxy();
+  SPECTRE_PARALLEL_REQUIRE(mutable_global_cache_proxy ==
+                           mutable_global_cache_proxy_);
+
   CkEntryOptions global_cache_dependency;
   global_cache_dependency.setGroupDepID(global_cache_proxy_.ckGetGroupID());
 

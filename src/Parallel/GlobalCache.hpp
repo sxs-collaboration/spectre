@@ -93,9 +93,13 @@ using get_component_if_mocked =
 ///
 /// `MutableGlobalCache` is not intended to be visible to the end user; its
 /// interface is via the `GlobalCache` member functions
-/// `mutable_cache_item_is_ready`, `mutate`, and `get`.
-/// Accordingly, most documentation of `MutableGlobalCache` is provided
+/// `mutable_global_cache_proxy`, `mutable_cache_item_is_ready`, `mutate`, and
+/// `get`. Accordingly, most documentation of `MutableGlobalCache` is provided
 /// in the relevant `GlobalCache` member functions.
+///
+/// \note Very seldomly will a user need a proxy to the MutableGlobalCache. If
+/// you think that you need it, please consult a core developer to see if there
+/// is a better way to achieve what you are trying to do.
 template <typename Metavariables>
 class MutableGlobalCache : public CBase_MutableGlobalCache<Metavariables> {
  public:
@@ -297,6 +301,8 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
  public:
   using proxy_type = CProxy_GlobalCache<Metavariables>;
   using main_proxy_type = CProxy_Main<Metavariables>;
+  using mutable_global_cache_proxy_type =
+      CProxy_MutableGlobalCache<Metavariables>;
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
   /// Typelist of the ParallelComponents stored in the GlobalCache
@@ -385,6 +391,11 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// MutableGlobalCache (i.e. the GlobalCache is charm-aware).
   bool mutable_global_cache_proxy_is_set() const;
 
+  /// Returns a proxy to the MutableGlobalCache if the proxy has been set. If it
+  /// hasn't been set, an ERROR will occur meaning that this method can't be
+  /// used in the testing framework.
+  mutable_global_cache_proxy_type mutable_global_cache_proxy();
+
  private:
   // clang-tidy: false positive, redundant declaration
   template <typename GlobalCacheTag, typename MV>
@@ -423,7 +434,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   // MutableGlobalCache should use the pointer if it is not nullptr,
   // otherwise use the proxy.
   MutableGlobalCache<Metavariables>* mutable_global_cache_{nullptr};
-  CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_{};
+  mutable_global_cache_proxy_type mutable_global_cache_proxy_{};
   bool parallel_components_have_been_set_{false};
   std::optional<main_proxy_type> main_proxy_;
 };
@@ -518,6 +529,17 @@ GlobalCache<Metavariables>::get_main_proxy() {
 template <typename Metavariables>
 bool GlobalCache<Metavariables>::mutable_global_cache_proxy_is_set() const {
   return mutable_global_cache_ == nullptr;
+}
+
+template <typename Metavariables>
+typename Parallel::GlobalCache<Metavariables>::mutable_global_cache_proxy_type
+GlobalCache<Metavariables>::mutable_global_cache_proxy() {
+  if (not mutable_global_cache_proxy_is_set()) {
+    ERROR(
+        "Cannot get a proxy to the mutable global cache because the proxy "
+        "isn't set.");
+  }
+  return mutable_global_cache_proxy_;
 }
 
 #if defined(__GNUC__) && !defined(__clang__)
