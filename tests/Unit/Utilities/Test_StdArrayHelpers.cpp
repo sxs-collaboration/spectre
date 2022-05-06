@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <functional>
+#include <memory>
 
 // We wish to explicitly test implicit type conversion when adding std::arrays
 // of different fundamentals, so we supress -Wsign-conversion.
@@ -187,6 +188,25 @@ void test_prepend() {
   CHECK(p3 == a3);
 }
 
+void test_concatenate() {
+  static_assert(concatenate(std::array{1, 2}, std::array{3, 4, 5})[3] == 4);
+  auto two_empty = concatenate(std::array<std::unique_ptr<int>, 0>{},
+                               std::array<std::unique_ptr<int>, 0>{});
+  CHECK(two_empty.empty());
+  std::array<std::unique_ptr<size_t>, 2> two{};
+  two[0] = std::make_unique<size_t>(1);
+  two[1] = std::make_unique<size_t>(2);
+  std::array<std::unique_ptr<size_t>, 3> three{};
+  three[0] = std::make_unique<size_t>(3);
+  three[1] = std::make_unique<size_t>(4);
+  three[2] = std::make_unique<size_t>(5);
+  auto concatenated = concatenate(std::move(two), std::move(three));
+  REQUIRE(concatenated.size() == 5);
+  for (size_t i = 0; i < concatenated.size(); ++i) {
+    CHECK(*gsl::at(concatenated, i) == i + 1);
+  }
+}
+
 void test_map_array() {
   const auto func = [](const int x) { return 2. * x; };
   CHECK(map_array(std::array<int, 3>{{4, 3, 2}}, func) ==
@@ -232,6 +252,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers", "[DataStructures][Unit]") {
   test_all_but_specified_element_of();
   test_insert_element();
   test_prepend();
+  test_concatenate();
   test_map_array();
   test_define_std_array_binop();
 }
