@@ -16,10 +16,10 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/Serialize.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
-#include "Parallel/Serialize.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare db::DataBox
@@ -678,7 +678,14 @@ void test_parallel_info_functions() {
   using component_a = ComponentA<metavars>;
 
   // Choose 2 nodes with 3 cores on first node and 2 cores on second node.
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}, {}, {3, 2}};
+  const int num_nodes = 2;
+  const int procs_node_0 = 3;
+  const int procs_node_1 = 2;
+  const int num_procs = procs_node_0 + procs_node_1;
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {},
+      {},
+      {static_cast<size_t>(procs_node_0), static_cast<size_t>(procs_node_1)}};
 
   // Choose array indices by hand, not in simple order, and choose
   // arbitrary initial values.
@@ -806,6 +813,44 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 2);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 0);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
+
+  // Check the parallel info functions of the GlobalCache in the testing
+  // framework
+  auto& cache = ActionTesting::cache<component_a>(runner, 0_st);
+  CHECK(cache.number_of_procs() == num_procs);
+  CHECK(cache.number_of_nodes() == num_nodes);
+  CHECK(cache.procs_on_node(0) == procs_node_0);
+  CHECK(cache.procs_on_node(1) == procs_node_1);
+  CHECK(cache.first_proc_on_node(0) == 0);
+  CHECK(cache.first_proc_on_node(1) == procs_node_0);
+  CHECK(Parallel::number_of_procs(cache) == num_procs);
+  CHECK(Parallel::number_of_nodes(cache) == num_nodes);
+  CHECK(Parallel::procs_on_node(0, cache) == procs_node_0);
+  CHECK(Parallel::procs_on_node(1, cache) == procs_node_1);
+  CHECK(Parallel::first_proc_on_node(0, cache) == 0);
+  CHECK(Parallel::first_proc_on_node(1, cache) == procs_node_0);
+  for (int i = 0; i < num_procs; i++) {
+    CHECK(cache.node_of(i) == (i < procs_node_0 ? 0 : 1));
+    CHECK(cache.local_rank_of(i) == (i < procs_node_0 ? i : i - procs_node_0));
+    CHECK(Parallel::node_of(i, cache) == (i < procs_node_0 ? 0 : 1));
+    CHECK(Parallel::local_rank_of(i, cache) ==
+          (i < procs_node_0 ? i : i - procs_node_0));
+  }
+  for (int i = 0; i < num_procs; i++) {
+    auto& local_cache =
+        ActionTesting::cache<component_a>(runner, static_cast<size_t>(i));
+    auto& proxy = Parallel::get_parallel_component<component_a>(local_cache);
+    auto& local_obj = *Parallel::local(proxy[static_cast<size_t>(i)]);
+    const int my_proc = Parallel::my_proc(local_obj);
+    CHECK(local_cache.my_proc() == my_proc);
+    CHECK(local_cache.my_node() == (my_proc < procs_node_0 ? 0 : 1));
+    CHECK(local_cache.my_local_rank() ==
+          (my_proc < procs_node_0 ? my_proc : my_proc - procs_node_0));
+    CHECK(Parallel::my_proc(local_cache) == my_proc);
+    CHECK(Parallel::my_node(local_cache) == (my_proc < procs_node_0 ? 0 : 1));
+    CHECK(Parallel::my_local_rank(local_cache) ==
+          (my_proc < procs_node_0 ? my_proc : my_proc - procs_node_0));
+  }
 }
 
 template <typename Metavariables>
