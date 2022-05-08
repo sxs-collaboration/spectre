@@ -288,7 +288,8 @@ struct EvolutionMetavars {
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           Burgers::subcell::TimeDerivative>,
-      Actions::RecordTimeStepperData<>, Actions::UpdateU<>,
+      Actions::RecordTimeStepperData<>,
+      evolution::Actions::RunEventsAndDenseTriggers<>, Actions::UpdateU<>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           Burgers::subcell::TciOnFdGrid>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

@@ -68,8 +68,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
   using fluxes_tags = typename Fluxes::return_tags;
 
   // Perform test with MC reconstruction & Rusanov riemann solver
-  using reconstruction_used_for_test = fd::MonotisedCentral;
-  using boundary_correction_used_for_test = BoundaryCorrections::Rusanov;
+  using ReconstructorUsedForTest = fd::MonotisedCentral;
+  using BoundaryCorrectionUsedForTest = BoundaryCorrections::Rusanov;
 
   // create an element and its neighbor elements
   DirectionMap<1, Neighbors<1>> element_neighbors{};
@@ -95,7 +95,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
 
   // generate (random) ghost data from neighbor
   auto logical_coords_subcell = logical_coordinates(subcell_mesh);
-  const reconstruction_used_for_test reconstructor{};
+  const ReconstructorUsedForTest reconstructor{};
   const auto compute_random_variable = [&gen, &dist](const auto& coords) {
     Variables<evolved_vars_tags> vars{get<0>(coords).size(), 0.0};
     fill_with_random_values(make_not_null(&vars), make_not_null(&gen),
@@ -156,9 +156,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
       evolution::dg::Tags::NormalCovectorAndMagnitude<1>>>(
       element, dg_mesh, subcell_mesh, volume_vars_dg, neighbor_data,
       std::unique_ptr<fd::Reconstructor>{
-          std::make_unique<reconstruction_used_for_test>()},
+          std::make_unique<ReconstructorUsedForTest>()},
       std::unique_ptr<BoundaryCorrections::BoundaryCorrection>{
-          std::make_unique<boundary_correction_used_for_test>()},
+          std::make_unique<BoundaryCorrectionUsedForTest>()},
       ElementMap<1, Frame::Grid>{
           ElementId<1>{0},
           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -180,11 +180,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
   // Now for each directions, check that the packaged_data agrees with expected
   // values
   using dg_package_field_tags =
-      typename boundary_correction_used_for_test::dg_package_field_tags;
+      typename BoundaryCorrectionUsedForTest::dg_package_field_tags;
   using dg_package_data_argument_tags =
       tmpl::append<evolved_vars_tags, fluxes_tags>;
 
-  boundary_correction_used_for_test boundary_corr_for_test{};
+  BoundaryCorrectionUsedForTest boundary_corr_for_test{};
 
   Variables<dg_package_data_argument_tags> vars_on_mortar_face{0};
   Variables<dg_package_field_tags> expected_fd_packaged_data_on_mortar{0};
@@ -197,7 +197,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
     expected_fd_packaged_data_on_mortar.initialize(1);
 
     // reconstruct U on the mortar
-    dynamic_cast<const reconstruction_used_for_test&>(reconstructor)
+    dynamic_cast<const ReconstructorUsedForTest&>(reconstructor)
         .reconstruct_fd_neighbor(make_not_null(&vars_on_mortar_face),
                                  volume_vars_subcell, element, neighbor_data,
                                  subcell_mesh, direction);
@@ -218,8 +218,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
         make_not_null(&expected_fd_packaged_data_on_mortar),
         boundary_corr_for_test, vars_on_mortar_face, normal_covector,
         {std::nullopt}, box,
-        typename boundary_correction_used_for_test::
-            dg_package_data_volume_tags{},
+        typename BoundaryCorrectionUsedForTest::dg_package_data_volume_tags{},
         dg_package_data_argument_tags{});
 
     std::vector<double> vector_to_check{
