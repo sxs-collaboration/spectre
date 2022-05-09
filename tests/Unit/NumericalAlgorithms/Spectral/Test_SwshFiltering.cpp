@@ -57,6 +57,11 @@ void test_angular_filtering() {
       inverse_swsh_transform(l_max, 1, generated_modes);
   SpinWeighted<ComplexDataVector, Spin> to_filter{create_vector_of_n_copies(
       pre_filter_angular_data.data(), number_of_radial_points)};
+  SpinWeighted<ComplexDataVector, Spin> to_filter_with_min_l{
+      create_vector_of_n_copies(pre_filter_angular_data.data(),
+                                number_of_radial_points)};
+  SpinWeighted<ComplexDataVector, Spin> angular_to_filter_with_min_l =
+      pre_filter_angular_data;
 
   // remove the top few modes, emulating the filter process
   for (const auto mode : cached_coefficients_metadata(l_max)) {
@@ -71,8 +76,24 @@ void test_angular_filtering() {
       create_vector_of_n_copies(expected_post_filter_angular_data.data(),
                                 number_of_radial_points)};
 
+  // remove the bottom few modes, emulating the high-pass filter process
+  for (const auto mode : cached_coefficients_metadata(l_max)) {
+    if (mode.l < 2) {
+      generated_modes.data()[mode.transform_of_real_part_offset] = 0.0;
+      generated_modes.data()[mode.transform_of_imag_part_offset] = 0.0;
+    }
+  }
+  const auto expected_post_high_pass_filter_angular_data =
+      inverse_swsh_transform(l_max, 1, generated_modes);
+  const SpinWeighted<ComplexDataVector, Spin> expected_post_high_pass_filter{
+      create_vector_of_n_copies(
+          expected_post_high_pass_filter_angular_data.data(),
+          number_of_radial_points)};
+
   filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max - 3, 5.0,
                               2);
+  filter_swsh_volume_quantity(make_not_null(&to_filter_with_min_l), l_max, 2,
+                              l_max - 3, 5.0, 2);
   Approx angular_approx =
       Approx::custom()
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
@@ -80,12 +101,20 @@ void test_angular_filtering() {
 
   CHECK_ITERABLE_CUSTOM_APPROX(to_filter.data(), expected_post_filter.data(),
                                angular_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(to_filter_with_min_l.data(),
+                               expected_post_high_pass_filter.data(),
+                               angular_approx);
 
   filter_swsh_boundary_quantity(make_not_null(&pre_filter_angular_data), l_max,
                                 l_max - 3);
+  filter_swsh_boundary_quantity(make_not_null(&angular_to_filter_with_min_l),
+                                l_max, 2, l_max - 3);
   CHECK_ITERABLE_CUSTOM_APPROX(pre_filter_angular_data.data(),
                                expected_post_filter_angular_data.data(),
                                angular_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      angular_to_filter_with_min_l.data(),
+      expected_post_high_pass_filter_angular_data.data(), angular_approx);
 }
 
 template <int Spin>

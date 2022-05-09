@@ -330,21 +330,24 @@ void test_initialize_j(const size_t l_max, const size_t number_of_radial_points,
       expected_angular_coordinates{number_of_angular_points};
   tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>
       test_angular_coordinates{number_of_angular_points};
+  auto node_lock = Parallel::NodeLock{};
   (*(analytic_solution->get_initialize_j(time)))(
       make_not_null(&test_j), make_not_null(&test_cartesian_coordinates),
       make_not_null(&test_angular_coordinates),
       get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
       get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
-      number_of_radial_points);
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
+      number_of_radial_points, make_not_null(&node_lock));
   (*expected_initialize_j)(
       make_not_null(&expected_j),
       make_not_null(&expected_cartesian_coordinates),
       make_not_null(&expected_angular_coordinates),
       get<Tags::BoundaryValue<Tags::BondiJ>>(boundary_variables),
       get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(boundary_variables),
-      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables), l_max,
-      number_of_radial_points);
+      get<Tags::BoundaryValue<Tags::BondiR>>(boundary_variables),
+      get<Tags::BoundaryValue<Tags::BondiBeta>>(boundary_variables), l_max,
+      number_of_radial_points, make_not_null(&node_lock));
   CHECK(test_j == expected_j);
   CHECK(test_cartesian_coordinates == expected_cartesian_coordinates);
   CHECK(test_angular_coordinates == expected_angular_coordinates);

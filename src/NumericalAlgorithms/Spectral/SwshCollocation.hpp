@@ -6,6 +6,8 @@
 #include <memory>
 #include <sharp_cxx.h>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -234,6 +236,15 @@ class CollocationMetadata {
 /// and put in the lookup table before it is returned by reference.
 template <ComplexRepresentation Representation>
 const CollocationMetadata<Representation>& cached_collocation_metadata(
+    size_t l_max);
+
+/// \brief Store the libsharp-compatible collocation grid and corresponding
+/// unit-sphere cartesian grid in the supplied buffers.
+void create_angular_and_cartesian_coordinates(
+    const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_coordinates,
+    const gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_coordinates,
     size_t l_max);
 }  // namespace Swsh
 }  // namespace Spectral

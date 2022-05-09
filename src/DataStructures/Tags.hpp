@@ -8,12 +8,15 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Metafunctions.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
 class DataVector;
 class ModalVector;
+class ComplexDataVector;
+class ComplexModalVector;
 /// \endcond
 
 namespace Tags {
@@ -66,6 +69,18 @@ struct SpinWeighted : db::PrefixTag, db::SimpleTag {
            std::to_string(SpinConstant::value) + ")";
   }
 };
+
+/// Succinct alias for often-used nodal spin-weighted temp tag
+template <size_t index, int spin>
+using TempSpinWeightedScalar =
+    SpinWeighted<TempScalar<index, ComplexDataVector>,
+                 std::integral_constant<int, spin>>;
+
+/// Succinct alias for often-used modal spin-weighted temp tag
+template <size_t index, int spin>
+using ModalTempSpinWeightedScalar =
+    SpinWeighted<TempScalar<index, ComplexModalVector>,
+                 std::integral_constant<int, spin>>;
 
 namespace detail {
 template <typename LhsType, typename RhsType>

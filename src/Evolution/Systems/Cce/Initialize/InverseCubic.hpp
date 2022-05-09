@@ -64,8 +64,10 @@ struct InverseCubic<true> : InitializeJ<true> {
           angular_inertial_coordinates,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const override;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
+      size_t number_of_radial_points,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
 
   void pup(PUP::er& /*p*/) override;
 };
@@ -109,8 +111,10 @@ struct InverseCubic<false> : InitializeJ<false> {
           angular_cauchy_coordinates,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
       const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
-      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r, size_t l_max,
-      size_t number_of_radial_points) const override;
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& beta, size_t l_max,
+      size_t number_of_radial_points,
+      gsl::not_null<Parallel::NodeLock*> hdf5_lock) const override;
 
   void pup(PUP::er& /*p*/) override;
 };

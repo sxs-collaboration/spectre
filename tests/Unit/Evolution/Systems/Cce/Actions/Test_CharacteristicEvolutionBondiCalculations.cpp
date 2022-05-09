@@ -21,6 +21,7 @@
 #include "Evolution/Systems/Cce/Actions/ReceiveWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/Components/CharacteristicEvolution.hpp"
+#include "Evolution/Systems/Cce/Initialize/ConformalFactor.hpp"
 #include "Evolution/Systems/Cce/Initialize/InitializeJ.hpp"
 #include "Evolution/Systems/Cce/Initialize/InverseCubic.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
@@ -49,6 +50,25 @@
 namespace Cce {
 
 namespace {
+template <typename Metavariables>
+struct mock_observer_writer {
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+  using replace_these_simple_actions = tmpl::list<>;
+  using with_these_simple_actions = tmpl::list<>;
+
+  using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
+
+  using const_global_cache_tags = tmpl::list<>;
+
+  using metavariables = Metavariables;
+  using array_index = size_t;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
+};
+
 template <typename Metavariables>
 struct mock_characteristic_evolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
@@ -151,7 +171,8 @@ struct metavariables {
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
 
   using component_list =
-      tmpl::list<mock_characteristic_evolution<metavariables>>;
+      tmpl::list<mock_characteristic_evolution<metavariables>,
+                 mock_observer_writer<metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
 };
 
@@ -212,6 +233,8 @@ SPECTRE_TEST_CASE(
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Initialization);
+  ActionTesting::emplace_component_and_initialize<
+      mock_observer_writer<metavariables>>(&runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<component>(
       &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<TimeStepper>>(
@@ -312,9 +335,11 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   // perform the expected transformations on the `boundary_box`
+  auto node_lock = Parallel::NodeLock{};
   db::mutate_apply<InitializeJ::InitializeJ<false>::mutate_tags,
                    InitializeJ::InitializeJ<false>::argument_tags>(
-      InitializeJ::InverseCubic<false>{}, make_not_null(&boundary_box));
+      InitializeJ::InverseCubic<false>{}, make_not_null(&boundary_box),
+      make_not_null(&node_lock));
 
   db::mutate_apply<InitializeGauge>(make_not_null(&boundary_box));
   db::mutate_apply<GaugeUpdateAngularFromCartesian<

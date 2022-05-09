@@ -761,22 +761,8 @@ void InitializeGauge::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> gauge_d,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> omega,
     const size_t l_max) {
-  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
-      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
-  for (const auto collocation_point : collocation) {
-    get<0>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.theta;
-    get<1>(*angular_cauchy_coordinates)[collocation_point.offset] =
-        collocation_point.phi;
-  }
-  get<0>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      cos(get<1>(*angular_cauchy_coordinates));
-  get<1>(*cartesian_cauchy_coordinates) =
-      sin(get<0>(*angular_cauchy_coordinates)) *
-      sin(get<1>(*angular_cauchy_coordinates));
-  get<2>(*cartesian_cauchy_coordinates) =
-      cos(get<0>(*angular_cauchy_coordinates));
+  Spectral::Swsh::create_angular_and_cartesian_coordinates(
+      cartesian_cauchy_coordinates, angular_cauchy_coordinates, l_max);
   get(*omega).data() = 1.0;
   get(*gauge_c).data() = 0.0;
   get(*gauge_d).data() = 2.0;

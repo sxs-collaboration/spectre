@@ -33,5 +33,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Cce;CceHelpers;GeneralRelativitySolutions"
+  "Boost::boost;Cce;CceHelpers;DataStructures;IO;Options;Spectral;GeneralRelativitySolutions"
   )
