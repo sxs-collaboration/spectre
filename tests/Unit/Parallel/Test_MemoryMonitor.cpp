@@ -20,10 +20,14 @@
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
+#include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
+#include "ParallelAlgorithms/Actions/MemoryMonitor/ProcessGroups.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/RemoveReferenceWrapper.hpp"
 
@@ -283,10 +287,12 @@ void test_wrong_box() {
 
 // Contribute memory data can only be used with groups or nodegroups
 template <typename Gen>
-void test_contribute_memory_data(const gsl::not_null<Gen*> gen) {
-  INFO("Test ContributeMemoryData");
+void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
+                                 const bool use_process_component_actions) {
+  INFO("Test ContributeMemoryData with" +
+       (use_process_component_actions ? ""s : "out"s) + " Process(Node)Group");
   std::uniform_real_distribution<double> dist{0, 10.0};
-  const std::string outfile_name{"TestMemoryMonitorActions"};
+  const std::string outfile_name{"TestMemoryMonitorGroupActions"};
   // clean up just in case
   if (file_system::check_if_file_exists(outfile_name + ".h5")) {
     file_system::rm(outfile_name + ".h5", true);
@@ -308,15 +314,35 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen) {
   const double time = 0.5;
   std::vector<double> sizes(num_nodes);
   size_t index = 0;
-  // Do the group first
-  for (size_t proc = 0; proc < num_procs; proc++) {
-    const double size = dist(*gen);
-    if (proc != 0 and proc % num_procs_per_node == 0) {
-      ++index;
+  // Do the group first. If we are using the ProcessGroup action, invoke all the
+  // simple actions on the group and calculate the size of that component so we
+  // can compare, otherwise call the ContributeMemoryData action directly with a
+  // random size
+  if (use_process_component_actions) {
+    auto& group_proxy = Parallel::get_parallel_component<group_comp>(cache);
+    Parallel::simple_action<mem_monitor::ProcessGroups>(group_proxy, time);
+
+    for (size_t proc = 0; proc < num_procs; proc++) {
+      CHECK(ActionTesting::number_of_queued_simple_actions<group_comp>(
+                runner, proc) == 1);
+      if (proc != 0 and proc % num_procs_per_node == 0) {
+        ++index;
+      }
+      sizes[index] +=
+          size_of_object_in_bytes(*Parallel::local_branch(group_proxy)) / 1.0e6;
+      ActionTesting::invoke_queued_simple_action<group_comp>(
+          make_not_null(&runner), proc);
     }
-    sizes[index] += size;
-    Parallel::simple_action<mem_monitor::ContributeMemoryData<group_comp>>(
-        mem_monitor_proxy, time, static_cast<int>(proc), size);
+  } else {
+    for (size_t proc = 0; proc < num_procs; proc++) {
+      const double size = dist(*gen);
+      if (proc != 0 and proc % num_procs_per_node == 0) {
+        ++index;
+      }
+      sizes[index] += size;
+      Parallel::simple_action<mem_monitor::ContributeMemoryData<group_comp>>(
+          mem_monitor_proxy, time, static_cast<int>(proc), size);
+    }
   }
 
   run_group_actions<group_comp>(make_not_null(&runner), outfile_name,
@@ -327,11 +353,28 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen) {
   sizes.resize(num_nodes);
 
   // Now for the nodegroup
-  for (size_t node = 0; node < num_nodes; node++) {
-    const double size = dist(*gen);
-    sizes[node] = size;
-    Parallel::simple_action<mem_monitor::ContributeMemoryData<nodegroup_comp>>(
-        mem_monitor_proxy, time, static_cast<int>(node), size);
+  if (use_process_component_actions) {
+    auto& nodegroup_proxy =
+        Parallel::get_parallel_component<nodegroup_comp>(cache);
+    Parallel::simple_action<mem_monitor::ProcessGroups>(nodegroup_proxy, time);
+
+    for (size_t node = 0; node < num_nodes; node++) {
+      CHECK(ActionTesting::number_of_queued_simple_actions<nodegroup_comp>(
+                runner, node) == 1);
+      sizes[node] =
+          size_of_object_in_bytes(*Parallel::local_branch(nodegroup_proxy)) /
+          1.0e6;
+      ActionTesting::invoke_queued_simple_action<nodegroup_comp>(
+          make_not_null(&runner), node);
+    }
+  } else {
+    for (size_t node = 0; node < num_nodes; node++) {
+      const double size = dist(*gen);
+      sizes[node] = size;
+      Parallel::simple_action<
+          mem_monitor::ContributeMemoryData<nodegroup_comp>>(
+          mem_monitor_proxy, time, static_cast<int>(node), size);
+    }
   }
 
   run_group_actions<nodegroup_comp>(make_not_null(&runner), outfile_name,
@@ -343,6 +386,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   MAKE_GENERATOR(gen);
   test_tags();
   test_wrong_box();
-  test_contribute_memory_data(make_not_null(&gen));
+  // First only test the ContributeMemoryData action (second arg false)
+  test_contribute_memory_data(make_not_null(&gen), false);
+  // Then test the Process(Node)Group actions (second arg true)
+  test_contribute_memory_data(make_not_null(&gen), true);
 }
 }  // namespace
