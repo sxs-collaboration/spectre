@@ -947,6 +947,50 @@ void test_math_wrapper() {
   TestHelpers::MathWrapper::test_type(vars1, vars2, scalar);
 }
 
+void test_asserts() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>,
+                             TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            vars(1, -3.0);
+        auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
+        tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
+      }()),
+      Catch::Contains("Must copy into same size, not 10 into 1"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
+        get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
+            Scalar<DataVector>{{{{0.}}}};
+      }()),
+      Catch::Contains("Must copy into same size, not 1 into 0"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            source(2, -3.0);
+        // Multiply by one to convert to an expression template.
+        (void)static_cast<
+            Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(
+            1.0 * source);
+      }()),
+      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            source(2, -3.0);
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>
+            destination;
+        // Multiply by one to convert to an expression template.
+        destination = 1.0 * source;
+      }()),
+      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+#endif // defined(SPECTRE_DEBUG)
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   {
     INFO("Test Variables construction, access, and assignment");
@@ -1039,68 +1083,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
 
   SECTION("Test empty variables") { test_empty_variables(); }
+
+  test_asserts();
 }
 }  // namespace
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Variables.BadCopy",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>,
-                       TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      vars(1, -3.0);
-  auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
-  tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// clang-format off
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.assign_to_default",
-    "[DataStructures][Unit]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
-  get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
-      Scalar<DataVector>{{{{0.}}}};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.BadSize.constructor",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      source(2, -3.0);
-  // Multiply by one to convert to an expression template.
-  (void)static_cast<
-      Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(1.0 *
-                                                                    source);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.BadSize.assignment",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      source(2, -3.0);
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> destination;
-  // Multiply by one to convert to an expression template.
-  destination = 1.0 * source;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
