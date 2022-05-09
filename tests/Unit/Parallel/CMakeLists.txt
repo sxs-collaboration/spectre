@@ -189,7 +189,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  "Options;SystemUtilities"
+  "IO;Options;SystemUtilities"
   )
 
 add_dependencies(
