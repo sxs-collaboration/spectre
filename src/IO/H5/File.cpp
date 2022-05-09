@@ -59,9 +59,12 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
                          << ". Writing from directory: " << file_system::cwd()
                          << ". Trying to open in mode: " << Access_t);
   if (not file_exists) {
+    close_current_object();
     insert_header();
+    close_current_object();
     insert_source_archive();
   }
+  close_current_object();
 }
 
 template <AccessType Access_t>

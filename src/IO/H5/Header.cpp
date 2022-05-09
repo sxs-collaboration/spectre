@@ -17,7 +17,8 @@
 namespace h5 {
 Header::Header(const bool exists, detail::OpenGroup&& group,
                const hid_t location, const std::string& name)
-    : group_(std::move(group)) {
+    : group_(std::move(group)),
+      path_(group_.group_path_with_trailing_slash() + name) {
   if (exists) {
     header_info_ =
         h5::read_rank1_attribute<std::string>(location, name + extension())[0];

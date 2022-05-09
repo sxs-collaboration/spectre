@@ -112,17 +112,21 @@ def interpolate_h5_file(source_file_path,
 
     source_vol = source_file.get_vol(source_volume_data)
     dim = source_vol.get_dimension()
+    version = source_vol.get_version()
     # apply observation filter
     observations = [
         obs for obs in source_vol.list_observation_ids()
         if obs_start <= source_vol.get_observation_value(obs) <= obs_end
     ][::obs_stride]
 
-    target_file.insert_vol(target_volume_data, source_vol.get_version())
+    source_file.close()
+    target_file.insert_vol(target_volume_data, version)
+    target_file.close()
 
     for obs in observations:
         # the vols memory address may shift as we write to file,
         # so we need to get them every iteration
+        source_file.close()
         source_vol = source_file.get_vol(source_volume_data)
         extents = source_vol.get_extents(obs)
         bases = source_vol.get_bases(obs)
@@ -142,6 +146,8 @@ def interpolate_h5_file(source_file_path,
             np.array(source_vol.get_tensor_component(obs, name), copy=False)
             for name in tensor_names
         ]
+
+        source_file.close()
 
         volume_data = []
         # iterate over elements
@@ -170,6 +176,7 @@ def interpolate_h5_file(source_file_path,
                 ElementVolumeData(target_mesh.extents(), tensor_comps,
                                   target_mesh.basis(),
                                   target_mesh.quadrature()))
+        target_file.close()
         target_vol = target_file.get_vol(target_volume_data)
         target_vol.write_volume_data(obs, obs_value, volume_data)
 
@@ -318,6 +325,7 @@ if __name__ == "__main__":
     source_file = spectre_h5.H5File(source_files[0], "a")
     source_vol = source_file.get_vol(parsed_args.source_subfile_name)
     dim = source_vol.get_dimension()
+    source_file.close()
     target_mesh = Mesh[dim](target_extents, target_basis, target_quadrature)
 
     interpolate_args = []

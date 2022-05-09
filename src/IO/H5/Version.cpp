@@ -10,7 +10,8 @@
 namespace h5 {
 Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
                  std::string name, const uint32_t version)
-    : version_([&exists, &location, &version, &name]() {
+    : path_(group.group_path_with_trailing_slash() + name),
+      version_([&exists, &location, &version, &name]() {
         if (exists) {
           return read_value_attribute<uint32_t>(location, name + extension());
         }
@@ -21,7 +22,8 @@ Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
 
 Version::Version(bool exists, detail::OpenGroup&& group, hid_t location,
                  std::string name, const std::string version)
-    : version_([&exists, &location, &version, &name]() {
+    : path_(group.group_path_with_trailing_slash() + name),
+      version_([&exists, &location, &version, &name]() {
         if (exists) {
           return read_value_attribute<uint32_t>(location, name + extension());
         }

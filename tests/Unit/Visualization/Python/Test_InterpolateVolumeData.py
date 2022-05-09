@@ -30,6 +30,7 @@ class TestInterpolateH5(unittest.TestCase):
         file1 = spectre_h5.H5File(self.file_name, "a")
         self.volume_name = "/VolumeData"
         file1.insert_vol(self.volume_name, 0)
+        file1.close()
 
         # interpolated solution
         self.sol1 = np.array([

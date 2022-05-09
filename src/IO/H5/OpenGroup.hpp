@@ -49,8 +49,13 @@ class OpenGroup {
 
   const hid_t& id() const { return group_id_; }
 
+  const std::string& group_path_with_trailing_slash() const {
+    return group_path_str_;
+  }
+
  private:
   /// \cond HIDDEN_SYMBOLS
+  std::string group_path_str_;
   std::vector<hid_t> group_path_;
   hid_t group_id_{-1};
   /// \endcond

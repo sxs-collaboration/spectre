@@ -40,9 +40,12 @@ namespace h5 {
  * during a simulation is reduced.
  *
  * When an h5::object inside an H5File is opened or created the H5File object
- * holds a copy of the h5::object. Only one object can be open at a time, which
- * means if a reference to the object is kept around after the H5File's current
- * object is closed there is a dangling reference.
+ * holds a copy of the h5::object.
+ *
+ * \warning Only one object can be open at a time, which means if a reference to
+ * the object is kept around after the H5File's current object is closed there
+ * is a dangling reference. Also, this means that after you insert an object,
+ * you must close that object before you can insert/open another.
  *
  * \example
  * To open a file for read-write access:
@@ -204,7 +207,10 @@ template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
 const ObjectType& H5File<Access_t>::get(const std::string& path,
                                         Args&&... args) const {
-  current_object_ = nullptr;
+  if (current_object_ != nullptr) {
+    ERROR("Object " << current_object_->subfile_path()
+                    << " already open. Cannot open object " << path << ".");
+  }
   // C++17: structured bindings
   auto exists_group_name = check_if_object_exists<ObjectType>(path);
   hid_t group_id = std::get<1>(exists_group_name).id();
@@ -224,7 +230,10 @@ template <typename ObjectType, typename... Args>
 ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
-  current_object_ = nullptr;
+  if (current_object_ != nullptr) {
+    ERROR("Object " << current_object_->subfile_path()
+                    << " already open. Cannot insert object " << path << ".");
+  }
   // C++17: structured bindings
   auto exists_group_name = check_if_object_exists<ObjectType>(path);
   if (std::get<0>(exists_group_name)) {
@@ -249,7 +258,11 @@ ObjectType& H5File<Access_t>::try_insert(const std::string& path,
                                          Args&&... args) {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
-  current_object_ = nullptr;
+  if (current_object_ != nullptr) {
+    ERROR("Object " << current_object_->subfile_path()
+                    << " already open. Cannot try to insert object " << path
+                    << ".");
+  }
   // C++17: structured bindings
   auto exists_group_name = check_if_object_exists<ObjectType>(path);
   hid_t group_id = std::get<1>(exists_group_name).id();

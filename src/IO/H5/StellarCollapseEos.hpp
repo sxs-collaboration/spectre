@@ -43,7 +43,7 @@ class StellarCollapseEos : public h5::Object {
   static std::string extension() { return ""; }
 
   StellarCollapseEos(bool exists, detail::OpenGroup&& group, hid_t location,
-                     const std::string& /*name*/);
+                     const std::string& name);
 
   StellarCollapseEos(const StellarCollapseEos& /*rhs*/) = delete;
   StellarCollapseEos& operator=(const StellarCollapseEos& /*rhs*/) = delete;
@@ -73,8 +73,11 @@ class StellarCollapseEos : public h5::Object {
   boost::multi_array<double, 3> get_rank3_dataset(
       const std::string& dataset_name) const;
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   detail::OpenGroup root_group_;
   detail::OpenGroup group_;
+  std::string path_;
 };
 }  // namespace h5

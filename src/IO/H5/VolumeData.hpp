@@ -152,9 +152,12 @@ class VolumeData : public h5::Object {
   std::vector<std::vector<std::string>> get_quadratures(
       size_t observation_id) const;
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   detail::OpenGroup group_{};
   std::string name_{};
+  std::string path_{};
   uint32_t version_{};
   detail::OpenGroup volume_data_group_{};
   std::string header_{};

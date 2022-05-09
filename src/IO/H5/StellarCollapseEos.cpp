@@ -15,7 +15,9 @@ namespace h5 {
 StellarCollapseEos::StellarCollapseEos(bool exists, detail::OpenGroup&& group,
                                        const hid_t /*location*/,
                                        const std::string& name)
-    : group_(std::move(group)) {
+    : group_(std::move(group)),
+      path_(name == "/" ? name
+                        : group_.group_path_with_trailing_slash() + name) {
   if (not exists) {
     ERROR("The subfile '" << name << "' does not exist");
   }

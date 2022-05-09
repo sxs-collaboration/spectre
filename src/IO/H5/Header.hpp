@@ -52,12 +52,15 @@ class Header : public h5::Object {
   /// of the simulation that produced the file.
   std::string get_build_info() const;
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   /// \cond HIDDEN_SYMBOLS
   detail::OpenGroup group_;
   std::string environment_variables_;
   std::string build_info_;
   std::string header_info_;
+  std::string path_;
 
   static const std::string printenv_delimiter_;
   static const std::string build_info_delimiter_;

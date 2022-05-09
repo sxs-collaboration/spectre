@@ -34,10 +34,13 @@ class SourceArchive : public h5::Object {
 
   const std::vector<char>& get_archive() const { return source_archive_; }
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   /// \cond HIDDEN_SYMBOLS
   detail::OpenGroup group_;
   std::vector<char> source_archive_;
+  std::string path_;
   /// \endcond
 };
 }  // namespace h5

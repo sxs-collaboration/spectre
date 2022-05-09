@@ -54,8 +54,11 @@ class Version : public h5::Object {
 
   uint32_t get_version() const { return version_; }
 
+  const std::string& subfile_path() const override { return path_; }
+
  private:
   /// \cond HIDDEN_SYMBOLS
+  std::string path_;
   uint32_t version_;
   // group_ is necessary since the when the h5::Object is destroyed it closes
   // all groups that were opened to get to it.

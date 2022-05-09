@@ -147,6 +147,7 @@ void check_written_data(
   for (size_t component_num = 0; component_num < total_components;
        component_num++) {
     // per file checks
+    read_file.close_current_object();
     const auto& dataset = read_file.get<h5::Dat>(
         "/ControlSystems/" + ControlSystem::name() + "/" +
         ControlSystem::component_name(component_num));

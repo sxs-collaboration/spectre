@@ -31,8 +31,9 @@ std::vector<std::string> split_strings(const std::string& s,
 
 namespace h5::detail {
 OpenGroup::OpenGroup(hid_t file_id, const std::string& group_name,
-                     const h5::AccessType access_type) {
-  const std::vector<std::string> path(split_strings(group_name));
+                     const h5::AccessType access_type)
+    : group_path_str_(group_name == "/" ? group_name : group_name + "/") {
+  const std::vector<std::string> path(split_strings(group_path_str_));
   hid_t group_id = file_id;
   group_path_.reserve(path.size());
   for (const auto& current_group : path) {
@@ -66,6 +67,7 @@ OpenGroup::OpenGroup(OpenGroup&& rhs) {
   group_path_ = std::move(rhs.group_path_);
   // clang-tidy: moving trivial type has no effect: might change in future
   group_id_ = std::move(rhs.group_id_);  // NOLINT
+  group_path_str_ = rhs.group_path_str_;
 
   rhs.group_id_ = -1;
 }
@@ -80,6 +82,7 @@ OpenGroup& OpenGroup::operator=(OpenGroup&& rhs) {
   group_path_ = std::move(rhs.group_path_);
   // clang-tidy: moving trivial type has no effect: might change in future
   group_id_ = std::move(rhs.group_id_);  // NOLINT
+  group_path_str_ = rhs.group_path_str_;
 
   rhs.group_id_ = -1;
   return *this;

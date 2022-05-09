@@ -33,6 +33,7 @@ void test_tabulated(const std::string& file_path,
   h5::H5File<h5::AccessType::ReadOnly> sample_file(file_path);
   const auto& sample_data =
       sample_file.get<h5::StellarCollapseEos>(subgroup_path);
+  CHECK(sample_data.subfile_path() == subgroup_path);
 
   // The group /sample_data has the additional dataset "test_data" which
   // is read to verify that we are not in "/"

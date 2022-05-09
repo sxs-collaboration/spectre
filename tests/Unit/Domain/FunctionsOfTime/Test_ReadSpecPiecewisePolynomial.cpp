@@ -194,6 +194,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const std::vector<std::string> expansion_legend{
       "Time", "TLastUpdate", "Nc",  "DerivOrder", "Version",
       "a",    "da",          "d2a", "d3a"};
+  test_file.close_current_object();
   auto& expansion_file = test_file.insert<h5::Dat>(
       "/" + source_names[0], expansion_legend, version_number);
   expansion_file.append(test_expansion);
@@ -215,6 +216,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const std::vector<std::string> rotation_legend{
       "Time", "TLastUpdate", "Nc",    "DerivOrder", "Version",
       "Phi",  "dPhi",        "d2Phi", "d3Phi"};
+  test_file.close_current_object();
   auto& rotation_file = test_file.insert<h5::Dat>(
       "/" + source_names[1], rotation_legend, version_number);
   rotation_file.append(test_rotation);
@@ -227,6 +229,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.ReadSpecPiecewisePolynomial",
   const std::vector<std::string> unity_legend{
       "Time",  "TLastUpdate", "Nc",      "DerivOrder", "Version",
       "Unity", "dUnity",      "d2Unity", "d3Unity"};
+  test_file.close_current_object();
   auto& unity_file = test_file.insert<h5::Dat>("/" + source_names[2],
                                                unity_legend, version_number);
   unity_file.append(test_unity);

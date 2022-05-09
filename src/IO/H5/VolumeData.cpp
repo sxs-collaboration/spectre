@@ -179,6 +179,7 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
                        ? name
                        : name + extension())
                 : name + extension()),
+      path_(group_.group_path_with_trailing_slash() + name),
       version_(version),
       volume_data_group_(group_.id(), name_, h5::AccessType::ReadWrite) {
   if (subfile_exists) {

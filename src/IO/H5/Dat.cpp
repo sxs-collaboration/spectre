@@ -47,6 +47,7 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
                                            : 0)
                 ? name
                 : name + extension()),
+      path_(group_.group_path_with_trailing_slash() + name),
       version_(version),
       legend_(std::move(legend)),
       size_{{0, legend_.size()}} {

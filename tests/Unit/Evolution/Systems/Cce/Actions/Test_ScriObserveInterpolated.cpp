@@ -384,6 +384,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
         [&random_scri_values, &linear_coefficient, &quadratic_coefficient,
          &l_max, &interpolation_approx, &read_file](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
+          read_file.close_current_object();
           const auto& dataset = read_file.get<h5::Dat>(
               "/" + Actions::detail::ScriOutput<tag>::name());
           const Matrix data_matrix = dataset.get_data();
@@ -409,6 +410,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
             }
           }
         });
+    read_file.close_current_object();
     const auto& dataset = read_file.get<h5::Dat>("/News_expected");
     const Matrix data_matrix = dataset.get_data();
     for (size_t i = 1; i < data_matrix.rows(); ++i) {
