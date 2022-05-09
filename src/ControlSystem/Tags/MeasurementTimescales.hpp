@@ -36,9 +36,9 @@ namespace control_system {
  * \tau_\mathrm{damp}\f$ where \f$\tau_\mathrm{damp}\f$ is the damping timescale
  * (from the TimescaleTuner) and \f$\alpha_\mathrm{update}\f$ is the update
  * fraction (from the controller). For an Nth order control system, the averager
- * requires at least N measurements in order to perfom its finitite differencing
- * to calculate the derivatives of the control error. This implies that the
- * largest the measurement timescale can be is \f$\tau_\mathrm{m} =
+ * requires at least N measurements in order to perform its finite
+ * differencing to calculate the derivatives of the control error. This implies
+ * that the largest the measurement timescale can be is \f$\tau_\mathrm{m} =
  * \tau_\mathrm{update} / N\f$. To ensure that we have sufficient measurements,
  * we calculate the measurement timescales as \f$\tau_\mathrm{m} =
  * \tau_\mathrm{update} / (N+1)\f$

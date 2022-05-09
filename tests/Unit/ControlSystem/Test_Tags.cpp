@@ -26,31 +26,24 @@
 namespace {
 void test_all_tags() {
   INFO("Test all tags");
-  using name_tag = control_system::Tags::ControlSystemName;
-  TestHelpers::db::test_simple_tag<name_tag>("ControlSystemName");
-  using write_tag = control_system::Tags::WriteDataToDisk;
-  TestHelpers::db::test_simple_tag<write_tag>("WriteDataToDisk");
-  using averager_tag = control_system::Tags::Averager<2>;
-  TestHelpers::db::test_simple_tag<averager_tag>("Averager");
-  using timescaletuner_tag = control_system::Tags::TimescaleTuner;
-  TestHelpers::db::test_simple_tag<timescaletuner_tag>("TimescaleTuner");
-  using controller_tag = control_system::Tags::Controller<2>;
-  TestHelpers::db::test_simple_tag<controller_tag>("Controller");
-  using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  TestHelpers::db::test_simple_tag<fot_tag>("FunctionsOfTime");
-
   using system = control_system::TestHelpers::System<
       2, control_system::TestHelpers::TestStructs_detail::LabelA,
       control_system::TestHelpers::Measurement<
           control_system::TestHelpers::TestStructs_detail::LabelA>>;
 
+  using write_tag = control_system::Tags::WriteDataToDisk;
+  TestHelpers::db::test_simple_tag<write_tag>("WriteDataToDisk");
+  using averager_tag = control_system::Tags::Averager<system>;
+  TestHelpers::db::test_simple_tag<averager_tag>("Averager");
+  using timescaletuner_tag = control_system::Tags::TimescaleTuner<system>;
+  TestHelpers::db::test_simple_tag<timescaletuner_tag>("TimescaleTuner");
+  using controller_tag = control_system::Tags::Controller<system>;
+  TestHelpers::db::test_simple_tag<controller_tag>("Controller");
+  using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
+  TestHelpers::db::test_simple_tag<fot_tag>("FunctionsOfTime");
+
   using control_error_tag = control_system::Tags::ControlError<system>;
   TestHelpers::db::test_simple_tag<control_error_tag>("ControlError");
-
-  using control_system_inputs_tag =
-      control_system::Tags::ControlSystemInputs<system>;
-  TestHelpers::db::test_simple_tag<control_system_inputs_tag>(
-      "ControlSystemInputs");
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
@@ -67,7 +60,7 @@ void test_control_sys_inputs() {
   const TimescaleTuner expected_tuner(
       {1.}, max_timescale, min_timescale, decrease_timescale_threshold,
       increase_timescale_threshold, increase_factor, decrease_factor);
-  const Averager<2> expected_averager(0.25, true);
+  const Averager<1> expected_averager(0.25, true);
   const Controller<2> expected_controller(0.3);
   const std::string expected_name{"LabelA"};
 

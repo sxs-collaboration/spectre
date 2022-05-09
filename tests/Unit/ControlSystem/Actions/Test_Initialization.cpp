@@ -3,14 +3,22 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "ControlSystem/Actions/Initialization.hpp"
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -22,6 +30,8 @@
 namespace {
 struct LabelA {};
 
+constexpr size_t order = 2;
+
 template <typename Label, typename Measurement>
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
@@ -29,7 +39,7 @@ struct MockControlSystem
   static std::string component_name(const size_t i) { return get_output(i); }
   using measurement = Measurement;
   using control_error = control_system::TestHelpers::ControlError;
-  static constexpr size_t deriv_order = 2;
+  static constexpr size_t deriv_order = order;
   using simple_tags = tmpl::list<>;
 };
 
@@ -44,15 +54,15 @@ struct MockControlComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
 
+  using mutable_global_cache_tags =
+      tmpl::list<control_system::Tags::MeasurementTimescales>;
+
   using simple_tags =
-      tmpl::list<control_system::Tags::ControlSystemInputs<MockControlSystem<
-                     LabelA, control_system::TestHelpers::Measurement<LabelA>>>,
-                 control_system::Tags::Averager<2>,
-                 control_system::Tags::TimescaleTuner,
-                 control_system::Tags::ControlSystemName,
+      tmpl::list<control_system::Tags::Averager<mock_control_sys>,
+                 control_system::Tags::TimescaleTuner<mock_control_sys>,
                  control_system::Tags::WriteDataToDisk,
                  control_system::Tags::ControlError<mock_control_sys>,
-                 control_system::Tags::Controller<2>>;
+                 control_system::Tags::Controller<mock_control_sys>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
@@ -69,77 +79,54 @@ struct MockMetavars {
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
                   "[Unit][ControlSystem]") {
+  domain::FunctionsOfTime::register_derived_with_charm();
   using component = MockControlComponent<MockMetavars>;
   using tags = typename component::simple_tags;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<MockMetavars>;
-  Averager<2> averager{0.5, true};
-  Averager<2> averager_empty{};
-  TimescaleTuner tuner{{1.0}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
-  TimescaleTuner tuner_empty{};
-  Controller<2> controller{0.3};
-  Controller<2> controller_empty{};
-  std::string controlsys_name{"LabelA"};
-  std::string controlsys_name_empty{};
+
+  Averager<order - 1> averager{0.5, true};
+  const double damping_time = 1.0;
+  TimescaleTuner tuner{{damping_time}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
+  Controller<order> controller{0.3};
   bool write_data = false;
   const control_system::TestHelpers::ControlError control_error{};
 
-  tuples::tagged_tuple_from_typelist<tags> init_tuple{
-      control_system::OptionHolder<mock_control_sys>{averager, controller,
-                                                     tuner, control_error},
-      averager_empty,
-      tuner_empty,
-      controlsys_name_empty,
-      write_data,
-      control_error,
-      controller_empty};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      measurement_timescales{};
 
-  MockRuntimeSystem runner{{}};
+  const double initial_time = 0.5;
+  const double expr_time = 1.0;
+  const DataVector timescale =
+      control_system::calculate_measurement_timescales(controller, tuner);
+  measurement_timescales[mock_control_sys::name()] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+          initial_time, std::array<DataVector, 1>{{timescale}}, expr_time);
+
+  controller.set_initial_update_time(initial_time);
+  controller.assign_time_between_updates(damping_time);
+
+  tuples::tagged_tuple_from_typelist<tags> init_tuple{
+      averager, tuner, write_data, control_error, controller};
+
+  MockRuntimeSystem runner{{}, {std::move(measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, init_tuple);
 
   // This has to come after we create the component so that it isn't initialized
   // immediately
-  controller.assign_time_between_updates(1.0);
+  averager.assign_time_between_measurements(min(timescale));
 
-  const auto& box_averager =
-      ActionTesting::get_databox_tag<component,
-                                     control_system::Tags::Averager<2>>(runner,
-                                                                        0);
-  const auto& box_tuner =
-      ActionTesting::get_databox_tag<component,
-                                     control_system::Tags::TimescaleTuner>(
-          runner, 0);
-  const auto& box_controller =
-      ActionTesting::get_databox_tag<component,
-                                     control_system::Tags::Controller<2>>(
-          runner, 0);
-  const auto& box_controlsys_name =
-      ActionTesting::get_databox_tag<component,
-                                     control_system::Tags::ControlSystemName>(
-          runner, 0);
-  const auto& box_write_data =
-      ActionTesting::get_databox_tag<component,
-                                     control_system::Tags::WriteDataToDisk>(
-          runner, 0);
-  // We don't check the control error because the example one is empty and
-  // doesn't have a comparison operator. Once a control error is added that
-  // contains member data (and thus, options), then it can be tested
+  const auto& box_averager = ActionTesting::get_databox_tag<
+      component, control_system::Tags::Averager<mock_control_sys>>(runner, 0);
 
   // Check that things haven't been initialized
   CHECK(box_averager != averager);
-  CHECK(box_tuner != tuner);
-  CHECK(box_controlsys_name != controlsys_name);
-  // We don't check the controller now because one of its members is
-  // initialized with signaling_NaN() so comparing now would throw an FPE.
 
   // Now initialize everything
   runner.next_action<component>(0);
 
   // Check that box values are same as expected values
   CHECK(box_averager == averager);
-  CHECK(box_tuner == tuner);
-  CHECK(box_controlsys_name == controlsys_name);
-  CHECK(box_controller == controller);
-  CHECK_FALSE(box_write_data);
 }

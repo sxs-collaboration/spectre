@@ -30,6 +30,7 @@ spectre_target_headers(
   Tags.hpp
   TimescaleTuner.hpp
   Trigger.hpp
+  UpdateControlSystem.hpp
   UpdateFunctionOfTime.hpp
   WriteData.hpp
   )
@@ -47,5 +48,7 @@ target_link_libraries(
 
 add_subdirectory(Actions)
 add_subdirectory(ApparentHorizons)
+add_subdirectory(ControlErrors)
 add_subdirectory(Protocols)
+add_subdirectory(Systems)
 add_subdirectory(Tags)
