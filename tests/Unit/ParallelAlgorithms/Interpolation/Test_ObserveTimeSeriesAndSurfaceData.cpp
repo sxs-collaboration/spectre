@@ -31,10 +31,12 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/IO/VolumeDataHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -51,6 +53,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
@@ -80,6 +83,51 @@ struct SurfaceIntegral;
 }  // namespace StrahlkorperGr::Tags
 
 namespace {
+void check_surface_volume_data(const std::string& surfaces_file_prefix) {
+  // Parameters chosen to match SurfaceD choices below
+  constexpr size_t l_max = 10;
+  constexpr size_t m_max = 10;
+  constexpr double sphere_radius = 2.8;
+  constexpr std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  const Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max, sphere_radius,
+                                                   center};
+  const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
+  const std::vector<size_t> extents{
+      {ylm.physical_extents()[0], ylm.physical_extents()[1]}};
+  const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
+  const DataVector theta = theta_phi[0];
+  const DataVector phi = theta_phi[1];
+  const DataVector sin_theta = sin(theta);
+  const DataVector radius = ylm.spec_to_phys(strahlkorper.coefficients());
+  const std::string grid_name{"SurfaceD"};
+
+  const auto x{radius * sin_theta * cos(phi)};
+  const auto y{radius * sin_theta * sin(phi)};
+  const auto z{radius * cos(theta)};
+  const std::vector<DataVector> tensor_and_coord_data{
+      x, y, z, square(2.0 * x + 3.0 * y + 5.0 * z)};
+  const std::vector<TensorComponent> tensor_components{
+      {grid_name + "/InertialCoordinates_x", tensor_and_coord_data[0]},
+      {grid_name + "/InertialCoordinates_y", tensor_and_coord_data[1]},
+      {grid_name + "/InertialCoordinates_z", tensor_and_coord_data[2]},
+      {grid_name + "/Square", tensor_and_coord_data[3]}};
+
+  const std::vector<Spectral::Basis> bases{2,
+                                           Spectral::Basis::SphericalHarmonic};
+  const std::vector<Spectral::Quadrature> quadratures{
+      {Spectral::Quadrature::Gauss, Spectral::Quadrature::Equiangular}};
+  const observers::ObservationId observation_id{0., "/SurfaceD.vol"};
+  TestHelpers::io::VolumeData::check_volume_data(
+      surfaces_file_prefix + ".h5"s, 0, grid_name, observation_id.hash(),
+      observation_id.value(), tensor_and_coord_data, {grid_name}, {bases},
+      {quadratures}, {extents},
+      {"InertialCoordinates_x"s, "InertialCoordinates_y"s,
+       "InertialCoordinates_z"s, "Square"s},
+      {{0, 1, 2, 3}}, 1.e-2);  // loose tolerance because of low resolution
+                               // in the volume, which limits interpolation
+                               // accuracy
+}
+
 // Simple DataBoxItems for test.
 namespace Tags {
 struct TestSolution : db::SimpleTag {
@@ -116,8 +164,8 @@ struct MockObserverWriter {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
-  using const_global_cache_tags =
-      tmpl::list<observers::Tags::ReductionFileName>;
+  using const_global_cache_tags = tmpl::list<observers::Tags::ReductionFileName,
+                                             observers::Tags::SurfaceFileName>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
   using compute_tags = typename observers::Actions::InitializeWriter<
@@ -240,26 +288,59 @@ struct MockMetavariables {
             SurfaceC>;
   };
 
+  struct SurfaceD : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target =
+        tmpl::list<Tags::TestSolution,
+                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+    using compute_items_on_target =
+        tmpl::list<Tags::SquareCompute,
+                   StrahlkorperGr::Tags::AreaElementCompute<Frame::Inertial>,
+                   StrahlkorperGr::Tags::SurfaceIntegralCompute<
+                       Tags::Square, ::Frame::Inertial>>;
+    using compute_target_points =
+        intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;
+    using post_interpolation_callback =
+        intrp::callbacks::ObserveSurfaceData<tmpl::list<Tags::Square>,
+                                             SurfaceD>;
+  };
+
   using observed_reduction_data_tags = tmpl::list<>;
 
   using interpolator_source_vars =
       tmpl::list<Tags::TestSolution,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-  using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
+  using interpolation_target_tags =
+      tmpl::list<SurfaceA, SurfaceB, SurfaceC, SurfaceD>;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<MockObserverWriter<MockMetavariables>,
                  MockInterpolationTarget<MockMetavariables, SurfaceA>,
                  MockInterpolationTarget<MockMetavariables, SurfaceB>,
                  MockInterpolationTarget<MockMetavariables, SurfaceC>,
+                 MockInterpolationTarget<MockMetavariables, SurfaceD>,
                  MockInterpolator<MockMetavariables>>;
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesOnSurface",
+    "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesAndSurfaceData",
     "[Unit]") {
   domain::creators::register_derived_with_charm();
+
+  // Check if either file generated by this test exists and remove them
+  // if so. Check for both files existing before the test runs, since
+  // both files get written when evaluating the list of post interpolation
+  // callbacks below.
+  const std::string h5_file_prefix = "Test_ObserveTimeSeriesOnSurface";
+  const auto h5_file_name = h5_file_prefix + ".h5";
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const auto surfaces_file_prefix = "Surfaces";
+  if (file_system::check_if_file_exists(surfaces_file_prefix + ".h5"s)) {
+    file_system::rm(surfaces_file_prefix + ".h5"s, true);
+  }
 
   // Test That ObserveTimeSeriesOnSurface indeed does conform to its protocol
   using callback_A =
@@ -268,16 +349,14 @@ SPECTRE_TEST_CASE(
       typename MockMetavariables::SurfaceB::post_interpolation_callback;
   using callback_C =
       typename MockMetavariables::SurfaceC::post_interpolation_callback;
+  using callback_D =
+      typename MockMetavariables::SurfaceD::post_interpolation_callback;
   using protocol = intrp::protocols::PostInterpolationCallback;
   static_assert(tt::assert_conforms_to<callback_A, protocol>);
   static_assert(tt::assert_conforms_to<callback_B, protocol>);
   static_assert(tt::assert_conforms_to<callback_C, protocol>);
+  static_assert(tt::assert_conforms_to<callback_D, protocol>);
 
-  const std::string h5_file_prefix = "Test_ObserveTimeSeriesOnSurface";
-  const auto h5_file_name = h5_file_prefix + ".h5";
-  if (file_system::check_if_file_exists(h5_file_name)) {
-    file_system::rm(h5_file_name, true);
-  }
   using metavars = MockMetavariables;
   using interp_component = MockInterpolator<metavars>;
   using target_a_component =
@@ -286,6 +365,8 @@ SPECTRE_TEST_CASE(
       MockInterpolationTarget<metavars, metavars::SurfaceB>;
   using target_c_component =
       MockInterpolationTarget<metavars, metavars::SurfaceC>;
+  using target_d_component =
+      MockInterpolationTarget<metavars, metavars::SurfaceD>;
   using obs_writer = MockObserverWriter<metavars>;
 
   // Options for all InterpolationTargets.
@@ -295,26 +376,30 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(10, {{0.0, 0.0, 0.0}},
+                                                        1.4, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
-  tuples::TaggedTuple<observers::Tags::ReductionFileName,
-                      ::intrp::Tags::KerrHorizon<metavars::SurfaceA>,
-                      domain::Tags::Domain<3>,
-                      ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
-                      ::intrp::Tags::KerrHorizon<metavars::SurfaceC>>
-      tuple_of_opts{h5_file_prefix, kerr_horizon_opts_A,
-                    domain_creator.create_domain(), kerr_horizon_opts_B,
-                    kerr_horizon_opts_C};
+  tuples::TaggedTuple<
+      observers::Tags::ReductionFileName, observers::Tags::SurfaceFileName,
+      ::intrp::Tags::KerrHorizon<metavars::SurfaceA>, domain::Tags::Domain<3>,
+      ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
+      ::intrp::Tags::KerrHorizon<metavars::SurfaceC>,
+      ::intrp::Tags::KerrHorizon<metavars::SurfaceD>>
+      tuple_of_opts{h5_file_prefix,      surfaces_file_prefix,
+                    kerr_horizon_opts_A, domain_creator.create_domain(),
+                    kerr_horizon_opts_B, kerr_horizon_opts_C,
+                    kerr_horizon_opts_D};
 
-  // Three mock nodes, with 2, 1, and 3 mock cores.
+  // Three mock nodes, with 2, 1, and 4 mock cores.
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      std::move(tuple_of_opts), {}, {2, 1, 3}};
+      std::move(tuple_of_opts), {}, {2, 1, 4}};
 
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
-    for (size_t core = 0; core < 6; ++core) {
+    for (size_t core = 0; core < 7; ++core) {
       ActionTesting::next_action<interp_component>(make_not_null(&runner),
                                                    core);
     }
@@ -333,6 +418,11 @@ SPECTRE_TEST_CASE(
       &runner, ActionTesting::NodeId{2}, ActionTesting::LocalCoreId{1});
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
+  }
+  ActionTesting::emplace_singleton_component<target_d_component>(
+      &runner, ActionTesting::NodeId{2}, ActionTesting::LocalCoreId{3});
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<target_d_component>(make_not_null(&runner), 0);
   }
   ActionTesting::emplace_nodegroup_component<obs_writer>(&runner);
   for (size_t i = 0; i < 2; ++i) {
@@ -391,6 +481,11 @@ SPECTRE_TEST_CASE(
       target_c_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
       make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
+  ActionTesting::simple_action<
+      target_d_component,
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceD>>(
+      make_not_null(&runner), 0,
+      std::vector<double>{temporal_id.substep_time().value()});
 
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));
@@ -459,8 +554,10 @@ SPECTRE_TEST_CASE(
             metavars::component_list>(make_not_null(&runner));
   }
 
-  // There should be three more threaded actions, so invoke them and check
+  // There should be four more threaded actions, so invoke them and check
   // that there are no more.  They should all be on node zero.
+  ActionTesting::invoke_queued_threaded_action<obs_writer>(
+      make_not_null(&runner), 0);
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
       make_not_null(&runner), 0);
   ActionTesting::invoke_queued_threaded_action<obs_writer>(
@@ -514,8 +611,16 @@ SPECTRE_TEST_CASE(
   check_file_contents(expected_integral_a, expected_legend_a, "/SurfaceA");
   check_file_contents(expected_integral_b, expected_legend_b, "/SurfaceB");
   check_file_contents(expected_integral_c, expected_legend_c, "/SurfaceC");
+
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
+  }
+
+  // Check that the Surfaces file contains the correct surface data
+  check_surface_volume_data(surfaces_file_prefix);
+
+  if (file_system::check_if_file_exists(surfaces_file_prefix + ".h5"s)) {
+    file_system::rm(surfaces_file_prefix + ".h5"s, true);
   }
 }
 }  // namespace

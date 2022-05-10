@@ -22,7 +22,7 @@ set(LIBRARY_SOURCES
   Test_InterpolatorReceivePoints.cpp
   Test_InterpolatorReceiveVolumeData.cpp
   Test_InterpolatorRegisterElement.cpp
-  Test_ObserveTimeSeriesOnSurface.cpp
+  Test_ObserveTimeSeriesAndSurfaceData.cpp
   Test_ParallelInterpolator.cpp
   Test_Protocols.cpp
   Test_Tags.cpp

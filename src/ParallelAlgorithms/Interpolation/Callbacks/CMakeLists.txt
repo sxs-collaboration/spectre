@@ -9,6 +9,7 @@ spectre_target_headers(
   ErrorOnFailedApparentHorizon.hpp
   FindApparentHorizon.hpp
   IgnoreFailedApparentHorizon.hpp
+  ObserveSurfaceData.hpp
   ObserveTimeSeriesOnSurface.hpp
   SendGhWorldtubeData.hpp
   )
