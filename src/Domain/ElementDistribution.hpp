@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -18,27 +19,42 @@ namespace domain {
  * block.
  *
  * \details The element distribution assigns a balanced number of elements to
- * each processor. This distribution is computed by first greedily assigning to
- * each processor an allowance of
- * [total number of elements]/[number of processors] elements from one or more
- * blocks, starting with the lowest number block that still has elements to
- * contribute to an allowance.
- * Then, once those allowances are determined, a separate Z-order curve is
- * established for each block and the elements are assigned to processors within
- * each block by greedily filling each processors' allowance by contiguous
- * intervals along the Z-order curve.
- * Some examples:
- * - If there are 8 blocks, 16 elements per block, and 16 cores: each core gets
- * an allowance of 128 / 16 = 8 elements, so each core gets half of a block, and
- * the 8 elements for each core within the block are chosen via Z-order curve
- * for the respective blocks.
- * - If there are 3 blocks, 4 elements per block, and 4 cores: each core gets
- * an allowance of 12 / 4 = 3 elements. The first core gets three elements from
- * the first block, the second gets one element from the first block and two
- * elements from the second block, the third gets two elements from the second
- * block and one from the third, and the fourth core gets the remaining three
- * elements from the third block. Each collection of elements within the blocks
- * are then assigned using intervals along the Z-order curve for each block.
+ * each processor that is allowed to have elements (default all). Specify which
+ * processors aren't allowed to have elements by passing in an unordered set of
+ * `size_t`s corresponding to the processor number. This distribution is
+ * computed by first greedily assigning to each available processor an allowance
+ * of [total number of elements]/[number of processors available] elements from
+ * one or more blocks, starting with the lowest number block that still has
+ * elements to contribute to an allowance. Then, once those allowances are
+ * determined, a separate Z-order curve is established for each block and the
+ * elements are assigned to processors within each block by greedily filling
+ * each available processors' allowance by contiguous intervals along the
+ * Z-order curve. Some examples:
+ * - If there are 8 blocks, 16 elements per block, 16 cores, and all cores are
+ * allowed to have elements: each core gets an allowance of 128 / 16 = 8
+ * elements, so each core gets half of a block, and the 8 elements for each core
+ * within the block are chosen via Z-order curve for the respective blocks.
+ * - If there are 3 blocks, 4 elements per block, 4 cores, and all cores are
+ * allowed to have elements: each core gets an allowance of 12 / 4 = 3 elements.
+ * Core 0 gets three elements from the first block, core 1 gets one element from
+ * the first block and two elements from the second block, core 2 gets two
+ * elements from the second block and one from the third, and core 3 gets the
+ * remaining three elements from the third block. Each collection of elements
+ * within the blocks are then assigned using intervals along the Z-order curve
+ * for each block.
+ * - Same as the previous example, 3 blocks, 4 elements per block, and 4 cores,
+ * except now we require that physical cores 1 and 3 don't have any elements on
+ * them. The new distribution would look like:
+ *   - Elements on old core 0 -> new core 0
+ *   - No elements on new core 1
+ *   - Elements on old core 1 -> new core 2
+ *   - No elements on new core 3
+ *   - Elements on old core 2 -> new core 4
+ *   - Elements on old core 3 -> new core 5
+ *
+ * \note In the third example, even though only 4 cores are used to place
+ * elements, the simulation is required to be run on at least 6 cores (4 cores
+ * for elements + 2 cores without elements)
  *
  * Morton curves are a simple and easily-computed space-filling curve that
  * (unlike Hilbert curves) permit diagonal traversal. See, for instance,
@@ -65,8 +81,8 @@ namespace domain {
  * curve ensures that for a given processor and block, the elements will be
  * assigned in no more than two orthogonally connected clusters. In principle, a
  * Hilbert curve could potentially improve upon the gains obtained by this class
- * by guaranteeing that all elements within each block form a single orthognally
- * connected cluster.
+ * by guaranteeing that all elements within each block form a single
+ * orthogonally connected cluster.
  *
  * The assignment of portions of blocks to processors may use partial blocks,
  * and/or multiple blocks to ensure an even distribution of elements to
@@ -89,9 +105,14 @@ namespace domain {
  */
 template <size_t Dim>
 struct BlockZCurveProcDistribution {
+  /// The `number_of_procs_with_elements` argument represents how many procs
+  /// will have elements. This is not necessarily equal to the total number of
+  /// procs because some global procs may be ignored by the third argument
+  /// `global_procs_to_ignore`
   BlockZCurveProcDistribution(
-      size_t number_of_procs,
-      const std::vector<std::array<size_t, Dim>>& refinements_by_block);
+      size_t number_of_procs_with_elements,
+      const std::vector<std::array<size_t, Dim>>& refinements_by_block,
+      const std::unordered_set<size_t>& global_procs_to_ignore = {});
 
   /// Gets the suggested processor number for a particular element,
   /// determined by the greedy block assignment and Morton curve element

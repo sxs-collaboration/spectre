@@ -241,7 +241,8 @@ signature of the `allocate_array` functions must be:
 static void allocate_array(
     Parallel::CProxy_GlobalCache<metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<initialization_tags>&
-    initialization_items);
+    initialization_items,
+    const std::unordered_set<size_t>& procs_to_ignore);
 \endcode
 The `allocate_array` function is called by the Main parallel component
 when the execution starts and will typically insert elements into
@@ -249,7 +250,10 @@ array parallel components. If the `allocate_array` function depends
 upon input options, the array component must specify a `using
 array_allocation_tags` type alias that is a `tmpl::list` of tags which
 are db::SimpleTag%s that have have a `using option_tags` type alias
-and a static function `create_from_options`. An example is:
+and a static function `create_from_options`. If you want to ignore specific
+processors when placing array elements, you can pass in a
+`std::unordered_set<size_t>` to `allocate_array` that contains all the
+processors that shouldn't have array elements on them. An example is:
 \snippet DistributedLinearSolverAlgorithmTestHelpers.hpp array_allocation_tag
 
 The `allocate_array` functions of different

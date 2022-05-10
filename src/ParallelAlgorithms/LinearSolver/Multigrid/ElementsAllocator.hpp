@@ -7,6 +7,7 @@
 #include <charm++.h>
 #include <cstddef>
 #include <optional>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/ElementDistribution.hpp"
@@ -62,7 +63,9 @@ namespace LinearSolver::multigrid {
  *   elements.
  *
  * The elements are distributed on processors using the
- * `domain::BlockZCurveProcDistribution` for every grid independently.
+ * `domain::BlockZCurveProcDistribution` for every grid independently. An
+ * unordered set of `size_t`s can be passed to the `apply` function which
+ * represents physical processors to avoid placing elements on.
  */
 template <size_t Dim, typename OptionsGroup>
 struct ElementsAllocator
@@ -79,7 +82,8 @@ struct ElementsAllocator
             typename... InitializationTags>
   static void apply(Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
                     const tuples::TaggedTuple<InitializationTags...>&
-                        original_initialization_items) {
+                        original_initialization_items,
+                    const std::unordered_set<size_t>& procs_to_ignore = {}) {
     // Copy the initialization items so we can adjust them on each refinement
     // level
     auto initialization_items =
@@ -159,9 +163,10 @@ struct ElementsAllocator
               : std::nullopt;
       // Create the elements for this refinement level and distribute them among
       // processors
-      const int number_of_procs = sys::number_of_procs();
+      const size_t num_of_procs_to_use =
+          static_cast<size_t>(sys::number_of_procs()) - procs_to_ignore.size();
       const domain::BlockZCurveProcDistribution<Dim> element_distribution{
-          static_cast<size_t>(number_of_procs), initial_refinement_levels};
+          num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);
@@ -172,7 +177,7 @@ struct ElementsAllocator
           "%s level %zu has %zu elements in %zu blocks distributed on %d "
           "procs.\n",
           pretty_type::name<OptionsGroup>(), multigrid_level,
-          element_ids.size(), domain.blocks().size(), number_of_procs);
+          element_ids.size(), domain.blocks().size(), num_of_procs_to_use);
       ++multigrid_level;
     } while (initial_refinement_levels != parent_refinement_levels);
     element_array.doneInserting();

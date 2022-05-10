@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -301,7 +302,8 @@ struct ElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) {
+          initialization_items,
+      const std::unordered_set<size_t>& /*procs_to_ignore*/ = {}) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *Parallel::local_branch(global_cache));
     local_component[0].insert(global_cache, initialization_items, 0);

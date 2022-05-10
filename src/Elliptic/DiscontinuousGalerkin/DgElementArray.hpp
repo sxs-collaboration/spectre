@@ -5,6 +5,7 @@
 
 #include <charm++.h>
 #include <cstddef>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/Block.hpp"
@@ -35,7 +36,9 @@ namespace elliptic {
  * An element is created for every element ID in every block, determined by the
  * `initial_element_ids` function and the option-created `domain::Tags::Domain`
  * and `domain::Tags::InitialRefinementLevels`. The elements are distributed
- * on processors using the `domain::BlockZCurveProcDistribution`.
+ * on processors using the `domain::BlockZCurveProcDistribution`. In both cases,
+ * an unordered set of `size_t`s can be passed to the `allocate_array` function
+ * which represents physical processors to avoid placing elements on.
  */
 template <size_t Dim>
 struct DefaultElementsAllocator
@@ -48,15 +51,18 @@ struct DefaultElementsAllocator
             typename... InitializationTags>
   static void apply(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::TaggedTuple<InitializationTags...>& initialization_items) {
+      const tuples::TaggedTuple<InitializationTags...>& initialization_items,
+      const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(local_cache);
     const auto& domain = Parallel::get<domain::Tags::Domain<Dim>>(local_cache);
     const auto& initial_refinement_levels =
         get<domain::Tags::InitialRefinementLevels<Dim>>(initialization_items);
+    const size_t num_of_procs_to_use =
+        static_cast<size_t>(sys::number_of_procs()) - procs_to_ignore.size();
     const domain::BlockZCurveProcDistribution<Dim> element_distribution{
-        static_cast<size_t>(sys::number_of_procs()), initial_refinement_levels};
+        num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
     for (const auto& block : domain.blocks()) {
       const std::vector<ElementId<Dim>> element_ids = initial_element_ids(
           block.id(), initial_refinement_levels[block.id()]);
@@ -110,9 +116,10 @@ struct DgElementArray {
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
       const tuples::tagged_tuple_from_typelist<initialization_tags>&
-          initialization_items) {
-    ElementsAllocator::template apply<DgElementArray>(global_cache,
-                                                      initialization_items);
+          initialization_items,
+      const std::unordered_set<size_t>& procs_to_ignore = {}) {
+    ElementsAllocator::template apply<DgElementArray>(
+        global_cache, initialization_items, procs_to_ignore);
   }
 
   static void execute_next_phase(
