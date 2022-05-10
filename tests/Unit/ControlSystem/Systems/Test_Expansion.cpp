@@ -161,8 +161,17 @@ void test_expansion_control_system() {
                                custom_approx);
 }
 
+void test_names() {
+  using expansion = control_system::Systems::Expansion<2>;
+
+  CHECK(pretty_type::name<expansion>() == "Expansion");
+  CHECK(expansion::component_name(0) == "Expansion");
+  CHECK(expansion::component_name(1) == "Expansion");
+}
+
 SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Expansion",
                   "[ControlSystem][Unit]") {
+  test_names();
   test_expansion_control_system<2>();
   test_expansion_control_system<3>();
 }
