@@ -156,7 +156,7 @@ fi
 cd $dep_dir
 
 # Set up Charm++ because that can be difficult
-charm_version=6.10.2
+charm_version=7.0.0
 charm_config=ucx-linux-x86_64-smp
 if [ -f $dep_dir/charm/${charm_config}/lib/libck.a ]; then
     echo "Charm++ is already installed"
@@ -166,6 +166,9 @@ else
     tar xzf v${charm_version}.tar.gz
     mv charm-${charm_version} charm
     cd $dep_dir/charm
+    if [ -f ${SPECTRE_HOME}/support/Charm/v${charm_version}.patch ]; then
+        git apply ${SPECTRE_HOME}/support/Charm/v${charm_version}.patch
+    fi
     ./build LIBS ${charm_config} --with-production -j6
     cd $dep_dir
     rm v${charm_version}.tar.gz

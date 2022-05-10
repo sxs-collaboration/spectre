@@ -251,6 +251,19 @@ RUN git clone --single-branch --branch v6.10.2 --depth 1 \
       ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
     && rm -r /work/charm_6_10_2/doc /work/charm_6_10_2/examples
 
+RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v7.0.0.patch
+
+RUN git clone --single-branch --branch v7.0.0 --depth 1 \
+        https://github.com/UIUC-PPL/charm charm_7_0_0 \
+    && cd /work/charm_7_0_0 \
+    && git checkout v7.0.0 \
+    && git apply /work/v7.0.0.patch \
+    && ./build LIBS multicore-linux-x86_64 gcc \
+      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
+    && ./build LIBS multicore-linux-x86_64 clang \
+      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
+    && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
+
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
 # - The singularity containers work better if the locale is set properly

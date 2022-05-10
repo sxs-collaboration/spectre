@@ -211,7 +211,7 @@ jobs:
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
           -D CMAKE_Fortran_COMPILER=gfortran-8
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+          -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-clang
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D OVERRIDE_ARCH=x86-64
           -D USE_CCACHE=OFF
@@ -252,7 +252,7 @@ jobs:
           -D CMAKE_C_COMPILER=clang
           -D CMAKE_CXX_COMPILER=clang++
           -D CMAKE_Fortran_COMPILER=gfortran-8
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-clang
+          -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-clang
           -D CMAKE_BUILD_TYPE=Debug
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
@@ -308,6 +308,7 @@ jobs:
           - clang-11
         build_type: [Debug, Release]
         use_pch: [ON]
+        charm_name: ["Charm 7.0.0"]
         include:
           # Configure ccache sizes. The cache becomes ineffective if it can't
           # hold at least one full build. The sizes for the build configurations
@@ -347,6 +348,8 @@ jobs:
           - compiler: gcc-9
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
+            CHARM_DIR: /work/charm_6_10_2/multicore-linux-x86_64-
+            charm_name: ["Charm 6.10.2"]
           # Test building with static libraries. Do so with clang in release
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
@@ -438,6 +441,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           BUILD_SHARED_LIBS=${{ matrix.BUILD_SHARED_LIBS }}
           PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           CMAKE_EXECUTABLE=${{ matrix.CMAKE_EXECUTABLE }}
+          CHARM_DIR_DEFAULT=/work/charm_7_0_0/multicore-linux-x86_64-
+          CHARM_DIR=${{ matrix.CHARM_DIR }}
           ASAN=${{ matrix.ASAN }}
           MEMORY_ALLOCATOR=${{ matrix.MEMORY_ALLOCATOR }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
@@ -452,7 +457,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D CMAKE_Fortran_COMPILER=${FC}
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D OVERRIDE_ARCH=x86-64
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
+          -D CHARM_ROOT=${CHARM_DIR:-${CHARM_DIR_DEFAULT}}${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
@@ -604,7 +609,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D OVERRIDE_ARCH=x86-64
           -D BUILD_SHARED_LIBS=ON
-          -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}
+          -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D UNIT_TESTS_IN_TEST_EXECUTABLES=OFF
@@ -981,7 +986,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D CMAKE_Fortran_COMPILER=${FC}\
             -D CMAKE_CXX_FLAGS="${CXXFLAGS}"\
             -D OVERRIDE_ARCH=${OVERRIDE_ARCH}\
-            -D CHARM_ROOT=/work/charm_6_10_2/multicore-linux-x86_64-${CHARM_CC}\
+            -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-${CHARM_CC}\
             -D CMAKE_BUILD_TYPE=Debug\
             -D DEBUG_SYMBOLS=OFF\
             -D STRIP_SYMBOLS=ON\

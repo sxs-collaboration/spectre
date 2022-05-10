@@ -356,7 +356,7 @@ standard_checks+=(tabs)
 
 # Check for end-of-line spaces
 trailing_space() {
-    whitelist "$1" '.h5' '.png' &&
+    whitelist "$1" '.h5' '.png' '.patch' &&
     staged_grep -q -E ' +$' "$1"
 }
 trailing_space_report() {
@@ -399,6 +399,7 @@ license() {
               '.png' \
               '.style.yapf' \
               '.svg' \
+              '.patch' \
               'LICENSE' \
               'citation.bib' \
               'cmake/CodeCoverage.cmake$' \
