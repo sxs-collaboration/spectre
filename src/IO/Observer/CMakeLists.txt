@@ -8,6 +8,7 @@ spectre_target_sources(
   ObservationId.cpp
   ReductionActions.cpp
   TypeOfObservation.cpp
+  VolumeActions.cpp
   )
 
 spectre_target_headers(
