@@ -58,6 +58,10 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m);
 template <typename T, typename H>
 std::ostream& operator<<(std::ostream& os, const std::unordered_set<T, H>& v);
 
+template <typename T, typename H>
+std::ostream& operator<<(std::ostream& os,
+                         const std::unordered_multiset<T, H>& v);
+
 template <typename T, typename C>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v);
 
