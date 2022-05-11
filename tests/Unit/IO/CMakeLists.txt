@@ -39,6 +39,7 @@ target_link_libraries(
   DomainStructure
   EventsAndTriggers
   IO
+  ObserverHelpers
   Parallel
   SphericalHarmonics
   Utilities
