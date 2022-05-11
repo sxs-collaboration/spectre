@@ -139,10 +139,14 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
  *     \partial_r^2+\frac{4}{r}\partial_t
  *     +\frac{4}{r}\partial_r + \frac{2}{r^2}\right)\Psi \notag \\
  *     &=n^i(\partial_t\Phi_i-\partial_i\Pi) + n^i n^j\partial_i\Phi_j -
+ *     \frac{4}{r}\Pi+\frac{4}{r}n^i\Phi_i + \frac{2}{r^2}\Psi \notag \\
+ *     &=n^i(\gamma_2(\partial_i\Psi - \Phi_i)-2\partial_i\Pi)
+ *     + n^i n^j\partial_i\Phi_j -
  *     \frac{4}{r}\Pi+\frac{4}{r}n^i\Phi_i + \frac{2}{r^2}\Psi,
  * \f}
  *
- * assuming \f$\partial_t n^i=0\f$ and \f$\partial_t r=0\f$.
+ * where \f$\partial_t\f$ is the derivative with respect to the inertial frame
+ * time, and we are assuming \f$\partial_t n^i=0\f$ and \f$\partial_t r=0\f$.
  *
  * The moving mesh can be accounted for by using
  *
@@ -163,6 +167,12 @@ convert_constraint_preserving_spherical_radiation_type_from_yaml(
  * is spherical. It might be possible to generalize the condition to
  * non-spherical boundaries by using \f$x^i/r\f$ instead of \f$n^i\f$, but this
  * hasn't been tested.
+ *
+ * \warning The received time derivatives are in the logical frame, not the
+ * inertial frame and would need to first be corrected by subtracting the mesh
+ * velocity. Similarly, the time derivative correction is in the logical frame.
+ * We instead substitute the evolution equations directly in since the scalar
+ * wave system is quite simple.
  */
 template <size_t Dim>
 class ConstraintPreservingSphericalRadiation final
@@ -218,10 +228,7 @@ class ConstraintPreservingSphericalRadiation final
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;
-  using dg_interior_dt_vars_tags =
-      tmpl::list<::Tags::dt<ScalarWave::Tags::Psi>,
-                 ::Tags::dt<ScalarWave::Tags::Pi>,
-                 ::Tags::dt<ScalarWave::Tags::Phi<Dim>>>;
+  // using dg_interior_dt_vars_tags = tmpl::list<>;
   using dg_interior_deriv_vars_tags = tmpl::list<
       ::Tags::deriv<ScalarWave::Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::deriv<ScalarWave::Tags::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
@@ -244,9 +251,6 @@ class ConstraintPreservingSphericalRadiation final
 
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& gamma2,
-
-      const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& dt_phi,
 
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
