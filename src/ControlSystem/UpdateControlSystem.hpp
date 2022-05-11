@@ -14,7 +14,7 @@
 #include "ControlSystem/WriteData.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/LinkedMessageQueue.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"

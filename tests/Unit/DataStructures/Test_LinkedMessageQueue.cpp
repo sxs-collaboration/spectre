@@ -9,7 +9,6 @@
 
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -23,19 +22,6 @@ struct MyQueue {
   // Non-copyable
   using type = std::unique_ptr<double>;
 };
-
-void test_id() {
-  const LinkedMessageId<int> id_one_nothing{1, {}};
-  const LinkedMessageId<int> id_one_two{1, 2};
-  const LinkedMessageId<int> id_two_nothing{2, {}};
-  CHECK(id_one_nothing == id_one_nothing);
-  CHECK_FALSE(id_one_nothing != id_one_nothing);
-  CHECK_FALSE(id_one_nothing == id_one_two);
-  CHECK(id_one_nothing != id_one_two);
-  CHECK_FALSE(id_one_nothing == id_two_nothing);
-  CHECK(id_one_nothing != id_two_nothing);
-  CHECK(get_output(id_one_two) == "1 (2)");
-}
 
 void test_queue() {
   LinkedMessageQueue<int, tmpl::list<MyQueue<Label1>, MyQueue<Label2>>> queue{};
@@ -83,7 +69,6 @@ void test_queue() {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.LinkedMessageQueue",
                   "[Unit][DataStructures]") {
-  test_id();
   test_queue();
 }
 

@@ -3,62 +3,17 @@
 
 #pragma once
 
-#include <cstddef>
-#include <functional>
 #include <optional>
 #include <ostream>
 #include <pup.h>
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-/// \ingroup DataStructuresGroup
-/// An identifier for an element in a sequence
-///
-/// The struct contains an ID and the ID for the previous element of
-/// the sequence, if any.  This allows the sequence to be
-/// reconstructed even when elements are received out-of-order.
-///
-/// \see LinkedMessageQueue
-template <typename Id>
-struct LinkedMessageId {
-  Id id;
-  std::optional<Id> previous;
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) {
-    p | id;
-    p | previous;
-  }
-};
-
-template <typename Id>
-bool operator==(const LinkedMessageId<Id>& a, const LinkedMessageId<Id>& b) {
-  return a.id == b.id and a.previous == b.previous;
-}
-
-template <typename Id>
-bool operator!=(const LinkedMessageId<Id>& a, const LinkedMessageId<Id>& b) {
-  return not(a == b);
-}
-
-template <typename Id>
-std::ostream& operator<<(std::ostream& s, const LinkedMessageId<Id>& id) {
-  return s << id.id << " (" << id.previous << ")";
-}
-
-template <typename Id>
-struct std::hash<LinkedMessageId<Id>> {
-  size_t operator()(const LinkedMessageId<Id>& id) const {
-    // For normal use, any particular .id should only appear with one
-    // .previous, and vice versa, so hashing only one is fine.
-    return std::hash<Id>{}(id.id);
-  }
-};
 
 /// \cond
 template <typename Id, typename QueueTags>

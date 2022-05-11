@@ -3,7 +3,7 @@
 
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 
-#include "DataStructures/LinkedMessageQueue.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Time/TimeStepId.hpp"
 
 namespace intrp::InterpolationTarget_detail {

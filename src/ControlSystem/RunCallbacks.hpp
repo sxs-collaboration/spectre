@@ -8,7 +8,7 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/LinkedMessageQueue.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -8,7 +8,7 @@
 #include "ControlSystem/Metafunctions.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/LinkedMessageQueue.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Domain/FunctionsOfTime/FunctionsOfTimeAreReady.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Parallel/CharmPupable.hpp"

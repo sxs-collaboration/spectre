@@ -13,6 +13,7 @@
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
