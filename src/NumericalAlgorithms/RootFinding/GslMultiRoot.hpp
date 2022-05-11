@@ -344,15 +344,27 @@ void print_rootfinding_parameters(Method method, double absolute_tolerance,
  * \brief A multidimensional root finder supporting Newton and Hybrid
  * methods, as well as modified methods based on these.
  *
- * This root finder accepts function objects with and without a callable
- * `jacobian` member function. This member function both accepts and
- * returns a `std::array<double, Dim>`, the dimension of the domain and range
- * of the function the root find is being performed on. Whether the jacobian
- * is provided determines the details of the implementation of the
- * root-finding method that is selected by the user using the Method enum.
- * That is, whether the jacobian is computed analytically via the `jacobian`
- * member function, or whether the jacobian is computed numerically via a
- * finite difference approximation.
+ * This root finder accepts function objects with and without a
+ * callable `jacobian` member function.  The call operator both
+ * accepts and returns a `std::array<double, Dim>`, of the appropriate
+ * dimension for the domain and range the function the root find is
+ * being performed on.
+ *
+ * If a `jacobian` function is provided, it must accept a
+ * `std::array<double, Dim>` and return a
+ * `std::array<std::array<double, Dim>, Dim>` representing the
+ * derivative of the call operator, with
+ * \begin{equation}
+ *   \text{jacobian[i][j]} = \frac{\partial f_i}{x_j}.
+ * \end{equation}
+ *
+ * Whether the jacobian is provided determines the details of the
+ * implementation of the root-finding method that is selected by the
+ * user using the Method enum.  That is, whether the jacobian is
+ * computed analytically via the `jacobian` member function, or
+ * whether the jacobian is computed numerically via a finite
+ * difference approximation.
+ *
  * \note GSL does not provide a finite difference version of its modified
  * Newton method, so the unmodified one is used instead when the user
  * uses the Method::Newton method.
