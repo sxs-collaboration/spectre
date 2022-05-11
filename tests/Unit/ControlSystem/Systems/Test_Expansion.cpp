@@ -44,7 +44,7 @@ void test_expansion_control_system() {
 
   // Global things
   domain::FunctionsOfTime::register_derived_with_charm();
-  double initial_time = 0.0;
+  const double initial_time = 0.0;
   const double initial_separation = 15.0;
   // This final time is chosen so that the damping timescales have adequate time
   // to reach the maximum damping timescale

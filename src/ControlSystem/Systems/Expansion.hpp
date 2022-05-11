@@ -67,12 +67,12 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
   static std::string component_name(const size_t /*i*/) { return name(); }
 
   using measurement = ah::BothHorizons;
-  static_assert(tt::assert_conforms_to<measurement,
-                                       control_system::protocols::Measurement>);
+  static_assert(
+      tt::conforms_to_v<measurement, control_system::protocols::Measurement>);
 
   using control_error = ControlErrors::Expansion;
-  static_assert(tt::assert_conforms_to<
-                control_error, control_system::protocols::ControlError>);
+  static_assert(tt::conforms_to_v<control_error,
+                                  control_system::protocols::ControlError>);
 
   // tag goes in control component
   struct MeasurementQueue : db::SimpleTag {

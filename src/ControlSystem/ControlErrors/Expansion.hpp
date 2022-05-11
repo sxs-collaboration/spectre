@@ -77,9 +77,8 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     const double current_expansion_factor =
         functions_of_time.at(function_of_time_name)->func(time)[0][0];
 
-    using horizon_label = ::ah::ObjectLabel;
-    using center_A = control_system::QueueTags::Center<horizon_label::A>;
-    using center_B = control_system::QueueTags::Center<horizon_label::B>;
+    using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
+    using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
 
     const double grid_position_of_A =
         domain.excision_spheres().at("ObjectAExcisionSphere").center()[0];
