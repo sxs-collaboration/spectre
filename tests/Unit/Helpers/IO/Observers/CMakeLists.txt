@@ -16,6 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit
   HEADERS
   MockH5.hpp
+  MockWriteReductionDataRow.hpp
   ObserverHelpers.hpp
   )
 
