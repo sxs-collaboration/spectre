@@ -23,6 +23,7 @@ target_link_libraries(
   IO
   Importers
   Options
+  ParallelHelpers
   Spectral
   Utilities
   )
