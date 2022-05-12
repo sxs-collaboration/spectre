@@ -144,6 +144,7 @@ class ConstraintPreservingSphericalRadiation final
                  ::Tags::dt<Tags::Phi<Dim>>>;
   using dg_interior_deriv_vars_tags = tmpl::list<
       ::Tags::deriv<Tags::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<Tags::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   using dg_gridless_tags = tmpl::list<>;
 
@@ -159,9 +160,11 @@ class ConstraintPreservingSphericalRadiation final
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-      const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
-      const tnsr::i<DataVector, Dim>& dt_phi,
+      const Scalar<DataVector>& logical_dt_psi,
+      const Scalar<DataVector>& logical_dt_pi,
+      const tnsr::i<DataVector, Dim>& logical_dt_phi,
       const tnsr::i<DataVector, Dim>& d_psi,
+      const tnsr::i<DataVector, Dim>& d_pi,
       const tnsr::ij<DataVector, Dim>& d_phi) const;
 };
 }  // namespace CurvedScalarWave::BoundaryConditions

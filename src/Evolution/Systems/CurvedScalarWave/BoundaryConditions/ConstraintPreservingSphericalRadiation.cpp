@@ -50,13 +50,56 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
-    const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
-    const tnsr::i<DataVector, Dim>& dt_phi,
-    const tnsr::i<DataVector, Dim>& d_psi,
+    const Scalar<DataVector>& logical_dt_psi,
+    const Scalar<DataVector>& logical_dt_pi,
+    const tnsr::i<DataVector, Dim>& logical_dt_phi,
+    const tnsr::i<DataVector, Dim>& d_psi, const tnsr::i<DataVector, Dim>& d_pi,
     const tnsr::ij<DataVector, Dim>& d_phi) const {
-  Variables<tmpl::list<::Tags::Tempa<0, 3>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>>>
+  Variables<tmpl::list<
+      ::Tags::Tempa<0, 3>, ::Tags::TempScalar<1>, ::Tags::TempScalar<2>,
+      // Inertial time derivatives
+      ::Tags::dt<Tags::Psi>, ::Tags::dt<Tags::Pi>, ::Tags::dt<Tags::Phi<Dim>>>>
       buffer{get<0>(coords).size()};
+
+  Scalar<DataVector> dt_psi;
+  Scalar<DataVector> dt_pi;
+  tnsr::i<DataVector, Dim> dt_phi;
+  if (face_mesh_velocity.has_value()) {
+    get(dt_psi).set_data_ref(
+        make_not_null(&get(get<::Tags::dt<Tags::Psi>>(buffer))));
+    get(dt_pi).set_data_ref(
+        make_not_null(&get(get<::Tags::dt<Tags::Pi>>(buffer))));
+    for (size_t i = 0; i < Dim; ++i) {
+      dt_phi.get(i).set_data_ref(
+          make_not_null(&get<::Tags::dt<Tags::Phi<Dim>>>(buffer).get(i)));
+    }
+
+    // Compute inertial time derivative
+    get(dt_psi) = get(logical_dt_psi);
+    get(dt_pi) = get(logical_dt_pi);
+    for (size_t d = 0; d < Dim; ++d) {
+      get(dt_psi) -= face_mesh_velocity->get(d) * d_psi.get(d);
+      get(dt_pi) -= face_mesh_velocity->get(d) * d_pi.get(d);
+    }
+    for (size_t i = 0; i < Dim; ++i) {
+      dt_phi.get(i) = logical_dt_phi.get(i);
+      for (size_t d = 0; d < Dim; ++d) {
+        dt_phi.get(i) -= face_mesh_velocity->get(d) * d_phi.get(d, i);
+      }
+    }
+  } else {
+    get(dt_psi).set_data_ref(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        make_not_null(&const_cast<DataVector&>(get(logical_dt_psi))));
+    get(dt_pi).set_data_ref(
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+        make_not_null(&const_cast<DataVector&>(get(logical_dt_pi))));
+    for (size_t i = 0; i < Dim; ++i) {
+      dt_phi.get(i).set_data_ref(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          make_not_null(&const_cast<DataVector&>(logical_dt_phi.get(i))));
+    }
+  }
 
   auto& char_speeds = get<::Tags::Tempa<0, 3>>(buffer);
   auto& inv_radius = get<::Tags::TempScalar<1>>(buffer);
