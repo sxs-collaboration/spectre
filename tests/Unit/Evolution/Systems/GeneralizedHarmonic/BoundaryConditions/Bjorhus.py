@@ -438,6 +438,15 @@ def dt_corrs_ConstraintPreservingPhysical(
     return dt_v_psi, dt_v_zero, dt_v_plus, dt_v_minus
 
 
+def subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi):
+    if not (face_mesh_velocity is None):
+        dt_spacetime_metric -= np.einsum("i,iab->ab", face_mesh_velocity,
+                                         d_spacetime_metric)
+        dt_pi -= np.einsum("i,iab->ab", face_mesh_velocity, d_pi)
+        dt_phi -= np.einsum("i,ijab->jab", face_mesh_velocity, d_phi)
+
+
 def dt_spacetime_metric(face_mesh_velocity, normal_covector, normal_vector,
                         spacetime_metric, pi, phi, inertial_coords, gamma1,
                         gamma2, lapse, shift, inverse_spacetime_metric,
@@ -446,6 +455,8 @@ def dt_spacetime_metric(face_mesh_velocity, normal_covector, normal_vector,
                         gauge_source, spacetime_deriv_gauge_source,
                         dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric,
                         d_pi, d_phi):
+    subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi)
     (dt_v_psi, dt_v_zero, dt_v_plus,
      dt_v_minus) = dt_corrs_ConstraintPreserving(
          face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -457,6 +468,21 @@ def dt_spacetime_metric(face_mesh_velocity, normal_covector, normal_vector,
     return dt_v_psi
 
 
+def dt_spacetime_metric_static_mesh(
+    normal_covector, normal_vector, spacetime_metric, pi, phi, inertial_coords,
+    gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    in_dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    return dt_spacetime_metric(
+        0.0 * normal_vector, normal_covector, normal_vector, spacetime_metric,
+        pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+        spacetime_deriv_gauge_source, in_dt_spacetime_metric, dt_pi, dt_phi,
+        d_spacetime_metric, d_pi, d_phi)
+
+
 def dt_pi_ConstraintPreserving(
     face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
     phi, inertial_coords, gamma1, gamma2, lapse, shift,
@@ -464,6 +490,8 @@ def dt_pi_ConstraintPreserving(
     spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
     spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
     d_spacetime_metric, d_pi, d_phi):
+    subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi)
     (dt_v_psi, dt_v_zero, dt_v_plus,
      dt_v_minus) = dt_corrs_ConstraintPreserving(
          face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -474,6 +502,21 @@ def dt_pi_ConstraintPreserving(
          d_spacetime_metric, d_pi, d_phi)
     return ght.evol_field_pi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
                              dt_v_minus, normal_covector)
+
+
+def dt_pi_ConstraintPreserving_static_mesh(
+    normal_covector, normal_vector, spacetime_metric, pi, phi, inertial_coords,
+    gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    return dt_pi_ConstraintPreserving(
+        0.0 * normal_vector, normal_covector, normal_vector, spacetime_metric,
+        pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+        spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+        d_spacetime_metric, d_pi, d_phi)
 
 
 def dt_pi_ConstraintPreservingPhysical(
@@ -483,6 +526,8 @@ def dt_pi_ConstraintPreservingPhysical(
     spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
     spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
     d_spacetime_metric, d_pi, d_phi):
+    subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi)
     (dt_v_psi, dt_v_zero, dt_v_plus,
      dt_v_minus) = dt_corrs_ConstraintPreservingPhysical(
          face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -495,6 +540,21 @@ def dt_pi_ConstraintPreservingPhysical(
                              dt_v_minus, normal_covector)
 
 
+def dt_pi_ConstraintPreservingPhysical_static_mesh(
+    normal_covector, normal_vector, spacetime_metric, pi, phi, inertial_coords,
+    gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    return dt_pi_ConstraintPreservingPhysical(
+        0.0 * normal_vector, normal_covector, normal_vector, spacetime_metric,
+        pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+        spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+        d_spacetime_metric, d_pi, d_phi)
+
+
 def dt_phi_ConstraintPreserving(
     face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
     phi, inertial_coords, gamma1, gamma2, lapse, shift,
@@ -502,6 +562,8 @@ def dt_phi_ConstraintPreserving(
     spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
     spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
     d_spacetime_metric, d_pi, d_phi):
+    subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi)
     (dt_v_psi, dt_v_zero, dt_v_plus,
      dt_v_minus) = dt_corrs_ConstraintPreserving(
          face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -514,6 +576,21 @@ def dt_phi_ConstraintPreserving(
                               dt_v_minus, normal_covector)
 
 
+def dt_phi_ConstraintPreserving_static_mesh(
+    normal_covector, normal_vector, spacetime_metric, pi, phi, inertial_coords,
+    gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    return dt_phi_ConstraintPreserving(
+        0.0 * normal_vector, normal_covector, normal_vector, spacetime_metric,
+        pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+        spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+        d_spacetime_metric, d_pi, d_phi)
+
+
 def dt_phi_ConstraintPreservingPhysical(
     face_mesh_velocity, normal_covector, normal_vector, spacetime_metric, pi,
     phi, inertial_coords, gamma1, gamma2, lapse, shift,
@@ -521,6 +598,8 @@ def dt_phi_ConstraintPreservingPhysical(
     spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
     spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
     d_spacetime_metric, d_pi, d_phi):
+    subtract_mesh_velocity(face_mesh_velocity, dt_spacetime_metric, dt_pi,
+                           dt_phi, d_spacetime_metric, d_pi, d_phi)
     (dt_v_psi, dt_v_zero, dt_v_plus,
      dt_v_minus) = dt_corrs_ConstraintPreservingPhysical(
          face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
@@ -531,3 +610,18 @@ def dt_phi_ConstraintPreservingPhysical(
          d_spacetime_metric, d_pi, d_phi)
     return ght.evol_field_phi(gamma2, dt_v_psi, dt_v_zero, dt_v_plus,
                               dt_v_minus, normal_covector)
+
+
+def dt_phi_ConstraintPreservingPhysical_static_mesh(
+    normal_covector, normal_vector, spacetime_metric, pi, phi, inertial_coords,
+    gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+    spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+    three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+    dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi):
+    return dt_phi_ConstraintPreservingPhysical(
+        0.0 * normal_vector, normal_covector, normal_vector, spacetime_metric,
+        pi, phi, inertial_coords, gamma1, gamma2, lapse, shift,
+        inverse_spacetime_metric, spacetime_unit_normal_vector,
+        spacetime_unit_normal_one_form, three_index_constraint, gauge_source,
+        spacetime_deriv_gauge_source, dt_spacetime_metric, dt_pi, dt_phi,
+        d_spacetime_metric, d_pi, d_phi)

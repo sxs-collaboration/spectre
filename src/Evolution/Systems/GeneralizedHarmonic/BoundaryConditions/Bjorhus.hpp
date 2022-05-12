@@ -204,9 +204,10 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       const tnsr::ab<DataVector, Dim, Frame::Inertial>&
           spacetime_deriv_gauge_source,
       // c.f. dg_interior_dt_vars_tags
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& dt_spacetime_metric,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& dt_pi,
-      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& dt_phi,
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>&
+          logical_dt_spacetime_metric,
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& logical_dt_pi,
+      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& logical_dt_phi,
       // c.f. dg_interior_deriv_vars_tags
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
       const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,

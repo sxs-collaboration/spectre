@@ -120,6 +120,51 @@ void wrap_dt_vars_corrections_ConstraintPreserving(
 }
 
 template <size_t Dim>
+void wrap_dt_vars_corrections_ConstraintPreserving_static_mesh(
+    const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
+        dt_spacetime_metric_correction,
+    const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
+    const gsl::not_null<tnsr::iaa<DataVector, Dim, frame>*> dt_phi_correction,
+    const tnsr::i<DataVector, Dim, frame>& normal_covector,
+    const tnsr::I<DataVector, Dim, frame>& normal_vector,
+    // c.f. dg_interior_evolved_variables_tags
+    const tnsr::aa<DataVector, Dim, frame>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim, frame>& pi,
+    const tnsr::iaa<DataVector, Dim, frame>& phi,
+    // c.f. dg_interior_temporary_tags
+    const tnsr::I<DataVector, Dim, frame>& coords,
+    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+    const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
+    const tnsr::A<DataVector, Dim, Frame::Inertial>&
+        spacetime_unit_normal_vector,
+    const tnsr::a<DataVector, Dim, Frame::Inertial>&
+        spacetime_unit_normal_one_form,
+    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
+    const tnsr::a<DataVector, Dim, frame>& gauge_source,
+    const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
+    // c.f. dg_interior_dt_vars_tags
+    const tnsr::aa<DataVector, Dim, frame>& dt_spacetime_metric,
+    const tnsr::aa<DataVector, Dim, frame>& dt_pi,
+    const tnsr::iaa<DataVector, Dim, frame>& dt_phi,
+    // c.f. dg_interior_deriv_vars_tags
+    const tnsr::iaa<DataVector, Dim, frame>& d_spacetime_metric,
+    const tnsr::iaa<DataVector, Dim, frame>& d_pi,
+    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) {
+  GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<Dim>
+      bjorhus_obj{GeneralizedHarmonic::BoundaryConditions::detail::
+                      ConstraintPreservingBjorhusType::ConstraintPreserving};
+  bjorhus_obj.dg_time_derivative(
+      dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
+      std::nullopt, normal_covector, normal_vector, spacetime_metric, pi, phi,
+      coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+}
+
+template <size_t Dim>
 void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
     const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
         dt_spacetime_metric_correction,
@@ -167,7 +212,70 @@ void wrap_dt_vars_corrections_ConstraintPreservingPhysical(
 }
 
 template <size_t Dim>
+void wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh(
+    const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*>
+        dt_spacetime_metric_correction,
+    const gsl::not_null<tnsr::aa<DataVector, Dim, frame>*> dt_pi_correction,
+    const gsl::not_null<tnsr::iaa<DataVector, Dim, frame>*> dt_phi_correction,
+    const tnsr::i<DataVector, Dim, frame>& normal_covector,
+    const tnsr::I<DataVector, Dim, frame>& normal_vector,
+    // c.f. dg_interior_evolved_variables_tags
+    const tnsr::aa<DataVector, Dim, frame>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim, frame>& pi,
+    const tnsr::iaa<DataVector, Dim, frame>& phi,
+    // c.f. dg_interior_temporary_tags
+    const tnsr::I<DataVector, Dim, frame>& coords,
+    const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+    const tnsr::AA<DataVector, Dim, Frame::Inertial>& inverse_spacetime_metric,
+    const tnsr::A<DataVector, Dim, Frame::Inertial>&
+        spacetime_unit_normal_vector,
+    const tnsr::a<DataVector, Dim, Frame::Inertial>&
+        spacetime_unit_normal_one_form,
+    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& three_index_constraint,
+    const tnsr::a<DataVector, Dim, frame>& gauge_source,
+    const tnsr::ab<DataVector, Dim, frame>& spacetime_deriv_gauge_source,
+    // c.f. dg_interior_dt_vars_tags
+    const tnsr::aa<DataVector, Dim, frame>& dt_spacetime_metric,
+    const tnsr::aa<DataVector, Dim, frame>& dt_pi,
+    const tnsr::iaa<DataVector, Dim, frame>& dt_phi,
+    // c.f. dg_interior_deriv_vars_tags
+    const tnsr::iaa<DataVector, Dim, frame>& d_spacetime_metric,
+    const tnsr::iaa<DataVector, Dim, frame>& d_pi,
+    const tnsr::ijaa<DataVector, Dim, frame>& d_phi) {
+  GeneralizedHarmonic::BoundaryConditions::ConstraintPreservingBjorhus<Dim>
+      bjorhus_obj{
+          GeneralizedHarmonic::BoundaryConditions::detail::
+              ConstraintPreservingBjorhusType::ConstraintPreservingPhysical};
+  bjorhus_obj.dg_time_derivative(
+      dt_spacetime_metric_correction, dt_pi_correction, dt_phi_correction,
+      std::nullopt, normal_covector, normal_vector, spacetime_metric, pi, phi,
+      coords, gamma1, gamma2, lapse, shift, inverse_spacetime_metric,
+      spacetime_unit_normal_vector, spacetime_unit_normal_one_form,
+      three_index_constraint, gauge_source, spacetime_deriv_gauge_source,
+      dt_spacetime_metric, dt_pi, dt_phi, d_spacetime_metric, d_pi, d_phi);
+}
+
+template <size_t Dim>
 void test_with_random_values(const DataVector& used_for_size) {
+  // Static mesh
+  pypp::check_with_random_values<1>(
+      wrap_dt_vars_corrections_ConstraintPreserving_static_mesh<Dim>,
+      "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
+      {"dt_spacetime_metric_static_mesh",
+       "dt_pi_ConstraintPreserving_static_mesh",
+       "dt_phi_ConstraintPreserving_static_mesh"},
+      {{{0.1, 1.}}}, used_for_size, 1.e-6);
+  pypp::check_with_random_values<1>(
+      wrap_dt_vars_corrections_ConstraintPreservingPhysical_static_mesh<Dim>,
+      "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
+      {"dt_spacetime_metric_static_mesh",
+       "dt_pi_ConstraintPreservingPhysical_static_mesh",
+       "dt_phi_ConstraintPreservingPhysical_static_mesh"},
+      {{{0.1, 1.}}}, used_for_size, 1.e-6);
+
+  // Moving mesh
   pypp::check_with_random_values<1>(
       wrap_dt_vars_corrections_ConstraintPreserving<Dim>,
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions.Bjorhus",
