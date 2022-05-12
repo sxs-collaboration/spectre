@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -15,12 +16,15 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -29,6 +33,9 @@
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
@@ -38,13 +45,42 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 
 namespace grmhd::ValenciaDivClean {
 namespace {
+
+// These solution tag and metavariables are not strictly required for testing
+// subcell time derivative, but needed for compilation since
+// BoundaryConditionGhostData requires this to be in box.
+struct DummyAnalyticSolutionTag : db::SimpleTag,
+                                  ::Tags::AnalyticSolutionOrData {
+  using type = Solutions::SmoothFlow;
+};
+
+struct DummyEvolutionMetaVars {
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<BoundaryConditions::BoundaryCondition,
+                             BoundaryConditions::standard_boundary_conditions>>;
+  };
+};
+
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
@@ -174,6 +210,20 @@ std::array<double, 4> test(const size_t num_dg_pts) {
         neighbor_data_in_direction;
   }
 
+  // Below are also dummy variables required for compilation due to boundary
+  // condition FD ghost data. Since the element used here for testing has
+  // neighbors in all directions, BoundaryConditionGhostData::apply() is not
+  // actually called so it is okay to leave these variables somewhat poorly
+  // initialized.
+  Domain<3> dummy_domain{};
+  std::optional<tnsr::I<DataVector, 3>> dummy_volume_mesh_velocity{};
+  typename evolution::dg::Tags::NormalCovectorAndMagnitude<3>::type
+      dummy_normal_covector_and_magnitude{};
+  const double dummy_time{0.0};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      dummy_functions_of_time{};
+
   auto box = db::create<
       db::AddSimpleTags<
           domain::Tags::Element<3>, evolution::dg::subcell::Tags::Mesh<3>,
@@ -186,7 +236,15 @@ std::array<double, 4> test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::OnSubcellFaces<
               typename System::flux_spacetime_variables_tag, 3>,
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>,
-          Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>>,
+          Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>,
+          domain::Tags::ElementMap<3, Frame::Grid>,
+          domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
+                                                      Frame::Inertial>,
+          domain::Tags::Domain<3>,
+          domain::Tags::MeshVelocity<3, Frame::Inertial>,
+          evolution::dg::Tags::NormalCovectorAndMagnitude<3>, ::Tags::Time,
+          domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
+          Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
       element, subcell_mesh,
@@ -203,7 +261,18 @@ std::array<double, 4> test(const size_t num_dg_pts) {
           subcell_mesh.number_of_grid_points()},
       typename variables_tag::type{},
       face_centered_gr_tags(subcell_mesh, time, coordinate_map, soln),
-      neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{});
+      neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{},
+      ElementMap<3, Frame::Grid>{
+          ElementId<3>{0},
+          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+              domain::CoordinateMaps::Identity<3>{})},
+      domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{}),
+      std::move(dummy_domain), dummy_volume_mesh_velocity,
+      dummy_normal_covector_and_magnitude, dummy_time,
+      clone_unique_ptrs(dummy_functions_of_time),
+      grmhd::Solutions::SmoothFlow{}, DummyEvolutionMetaVars{});
+
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Grid>
