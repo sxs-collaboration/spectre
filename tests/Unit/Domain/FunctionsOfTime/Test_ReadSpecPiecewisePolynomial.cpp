@@ -104,24 +104,42 @@ void test_options() {
             domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>() ==
         "FunctionOfTimeNameMap");
 
-  const std::string option_string{
-      "CubicFunctionOfTimeOverride:\n"
-      "  FunctionOfTimeFile: TestFile.h5\n"
-      "  FunctionOfTimeNameMap: {Set1: Name1, Set2: Name2}"};
   using option_tags =
       tmpl::list<domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
                  domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>;
-  Options::Parser<option_tags> options{""};
-  options.parse(option_string);
-  CHECK(
-      options.get<domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>() ==
-      "TestFile.h5"s);
-  const std::map<std::string, std::string> expected_set_names{
-      {"Set1", "Name1"}, {"Set2", "Name2"}};
-  CHECK(
-      options
-          .get<domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>() ==
-      expected_set_names);
+  {
+    const std::string option_string{
+        "CubicFunctionOfTimeOverride:\n"
+        "  FunctionOfTimeFile: TestFile.h5\n"
+        "  FunctionOfTimeNameMap: {Set1: Name1, Set2: Name2}"};
+    Options::Parser<option_tags> options{""};
+    options.parse(option_string);
+    CHECK(*std::optional<std::string>(
+              options.get<
+                  domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>()) ==
+          "TestFile.h5"s);
+    const std::map<std::string, std::string> expected_set_names{
+        {"Set1", "Name1"}, {"Set2", "Name2"}};
+    CHECK(options.get<
+              domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>() ==
+          expected_set_names);
+  }
+  {
+    const std::string option_string{
+        "CubicFunctionOfTimeOverride:\n"
+        "  FunctionOfTimeFile: None\n"
+        "  FunctionOfTimeNameMap: {}"};
+    Options::Parser<option_tags> options{""};
+    options.parse(option_string);
+    CHECK(std::optional<std::string>(
+              options.get<
+                  domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile>()) ==
+          std::nullopt);
+    const std::map<std::string, std::string> expected_set_names{};
+    CHECK(options.get<
+              domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>() ==
+          expected_set_names);
+  }
 }
 
 void test_errors();

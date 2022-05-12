@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 
 namespace domain::FunctionsOfTime::OptionTags {
@@ -22,7 +23,7 @@ struct CubicFunctionOfTimeOverride {
  * \brief Path to an H5 file containing SpEC FunctionOfTime data
  */
 struct FunctionOfTimeFile {
-  using type = std::string;
+  using type = Options::Auto<std::string, Options::AutoLabel::None>;
   static constexpr Options::String help{
       "Path to an H5 file containing SpEC FunctionOfTime data"};
   using group = CubicFunctionOfTimeOverride;

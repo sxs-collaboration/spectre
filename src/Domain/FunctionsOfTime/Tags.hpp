@@ -79,9 +79,8 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const std::optional<std::string>& function_of_time_file,
-      const std::optional<std::map<std::string, std::string>>&
-          function_of_time_name_map) {
-    if (function_of_time_file and function_of_time_name_map) {
+      const std::map<std::string, std::string>& function_of_time_name_map) {
+    if (function_of_time_file) {
       // Currently, only support order 2 or 3 piecewise polynomials.
       // This could be generalized later, but the SpEC functions of time
       // that we will read in with this action will always be 2nd-order or
@@ -99,10 +98,10 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
       // Import those functions of time of each supported order
       domain::FunctionsOfTime::read_spec_piecewise_polynomial(
           make_not_null(&spec_functions_of_time_second_order),
-          *function_of_time_file, *function_of_time_name_map);
+          *function_of_time_file, function_of_time_name_map);
       domain::FunctionsOfTime::read_spec_piecewise_polynomial(
           make_not_null(&spec_functions_of_time_third_order),
-          *function_of_time_file, *function_of_time_name_map);
+          *function_of_time_file, function_of_time_name_map);
 
       auto functions_of_time{domain_creator->functions_of_time()};
 
@@ -120,10 +119,10 @@ struct FunctionsOfTimeInitialize : FunctionsOfTime, db::SimpleTag {
       if (uses_quaternion_rotation) {
         domain::FunctionsOfTime::read_spec_piecewise_polynomial(
             make_not_null(&spec_functions_of_time_quaternion),
-            *function_of_time_file, *function_of_time_name_map, true);
+            *function_of_time_file, function_of_time_name_map, true);
       }
 
-      for (const auto& [spec_name, spectre_name] : *function_of_time_name_map) {
+      for (const auto& [spec_name, spectre_name] : function_of_time_name_map) {
         (void)spec_name;
         // The FunctionsOfTime we are mutating must already have
         // an element with key==spectre_name; this action only
