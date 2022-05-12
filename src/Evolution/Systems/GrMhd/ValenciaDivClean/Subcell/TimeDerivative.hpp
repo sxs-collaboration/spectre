@@ -20,6 +20,7 @@
 #include "Evolution/DgSubcell/CartesianFluxDivergence.hpp"
 #include "Evolution/DgSubcell/ComputeBoundaryTerms.hpp"
 #include "Evolution/DgSubcell/CorrectPackagedData.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/OnSubcellFaces.hpp"
@@ -27,6 +28,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/PackageDataImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/BoundaryConditionGhostData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
@@ -34,6 +36,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/ComputeFluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -96,8 +99,16 @@ struct TimeDerivative {
         db::get<grmhd::ValenciaDivClean::fd::Tags::Reconstructor>(*box);
 
     const Element<3>& element = db::get<domain::Tags::Element<3>>(*box);
-    ASSERT(element.external_boundaries().size() == 0,
-           "Can't have external boundaries right now with subcell. ElementID "
+
+    const bool element_is_interior = element.external_boundaries().size() == 0;
+    constexpr bool subcell_enabled_at_external_boundary =
+        std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
+            *box))>::SubcellOptions::subcell_enabled_at_external_boundary;
+
+    ASSERT(element_is_interior or subcell_enabled_at_external_boundary,
+           "Subcell time derivative is called at a boundary element while "
+           "using subcell is disabled at external boundaries."
+           "ElementID "
                << element.id());
 
     // Now package the data and compute the correction
@@ -106,6 +117,15 @@ struct TimeDerivative {
     using derived_boundary_corrections =
         typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
     std::array<Variables<evolved_vars_tags>, 3> boundary_corrections{};
+
+    // If the element has external boundaries and subcell is enabled for
+    // boundary elements, compute FD ghost data with a given boundary condition.
+    if constexpr (subcell_enabled_at_external_boundary) {
+      if (element.external_boundaries().size() != 0) {
+        fd::BoundaryConditionGhostData::apply(box, element, recons);
+      }
+    }
+
     tmpl::for_each<derived_boundary_corrections>([&](auto
                                                          derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
