@@ -35,8 +35,7 @@ namespace grmhd::ValenciaDivClean::fd {
 template <typename TagsList, size_t ThermodynamicDim>
 void compute_conservatives_for_reconstruction(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        eos) {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos) {
   // Computes:
   // 1. W v^i
   // 2. Lorentz factor as sqrt(1 + Wv^i Wv^j\gamma_{ij})
@@ -141,8 +140,7 @@ void reconstruct_prims_work(
                                                 &vars_in_neighbor_count,
                                                 &vars_on_lower_face,
                                                 &vars_on_upper_face,
-                                                &subcell_mesh](
-                                                   auto tag_v) {
+                                                &subcell_mesh](auto tag_v) {
     using tag = tmpl::type_from<decltype(tag_v)>;
     const typename tag::type* volume_tensor_ptr = nullptr;
     Variables<tmpl::list<
@@ -186,24 +184,36 @@ void reconstruct_prims_work(
     }
 
     DirectionMap<3, gsl::span<const double>> ghost_cell_vars{};
+
     for (const auto& direction : Direction<3>::all_directions()) {
-      const auto& neighbors_in_direction = element.neighbors().at(direction);
-      ASSERT(neighbors_in_direction.size() == 1,
-             "Currently only support one neighbor in each direction, but "
-             "got "
-                 << neighbors_in_direction.size() << " in direction "
-                 << direction);
-      ASSERT(not neighbor_data
-                     .at(std::pair{direction, *neighbors_in_direction.begin()})
-                     .empty(),
-             "The neighber data is empty in direction "
-                 << direction << " on element id " << element.id());
-      ghost_cell_vars[direction] = gsl::make_span(
-          &neighbor_data.at(std::pair{
-              direction,
-              *neighbors_in_direction
-                   .begin()})[vars_in_neighbor_count * neighbor_num_pts],
-          number_of_variables * neighbor_num_pts);
+      if (element.neighbors().contains(direction)) {
+        const auto& neighbors_in_direction = element.neighbors().at(direction);
+        ASSERT(neighbors_in_direction.size() == 1,
+               "Currently only support one neighbor in each direction, but "
+               "got "
+                   << neighbors_in_direction.size() << " in direction "
+                   << direction);
+        ASSERT(
+            not neighbor_data
+                    .at(std::pair{direction, *neighbors_in_direction.begin()})
+                    .empty(),
+            "The neighber data is empty in direction "
+                << direction << " on element id " << element.id());
+        ghost_cell_vars[direction] = gsl::make_span(
+            &neighbor_data.at(std::pair{
+                direction,
+                *neighbors_in_direction
+                     .begin()})[vars_in_neighbor_count * neighbor_num_pts],
+            number_of_variables * neighbor_num_pts);
+      } else {
+        // retrieve boundary ghost data from neighbor_data
+        ghost_cell_vars[direction] = gsl::make_span(
+            &neighbor_data.at(std::pair{
+                direction,
+                ElementId<3>::external_boundary_id()})[vars_in_neighbor_count *
+                                                       neighbor_num_pts],
+            number_of_variables * neighbor_num_pts);
+      }
     }
 
     reconstruct(make_not_null(&upper_face_vars),

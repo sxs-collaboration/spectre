@@ -311,7 +311,7 @@ struct EvolutionMetavars {
                          tmpl::size_t<volume_dim>, Frame::Inertial>;
 
     static constexpr bool subcell_enabled = use_dg_subcell;
-    static constexpr bool subcell_enabled_at_external_boundary = false;
+    static constexpr bool subcell_enabled_at_external_boundary = true;
 
     // We send `ghost_zone_size` cell-centered grid points for variable
     // reconstruction, of which we need `ghost_zone_size-1` for reconstruction
