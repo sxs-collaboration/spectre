@@ -157,7 +157,8 @@ cd $dep_dir
 
 # Set up Charm++ because that can be difficult
 charm_version=7.0.0
-charm_config=ucx-linux-x86_64-smp
+backend=mpi
+charm_config=${backend}-linux-x86_64-smp
 if [ -f $dep_dir/charm/${charm_config}/lib/libck.a ]; then
     echo "Charm++ is already installed"
 else
@@ -173,7 +174,7 @@ else
     cd $dep_dir
     rm v${charm_version}.tar.gz
     echo "Installed Charm++ into $dep_dir/charm"
-    cat >$dep_dir/modules/charm <<EOF
+    cat >$dep_dir/modules/charm_${backend} <<EOF
 #%Module1.0
 prepend-path PATH "$dep_dir/charm/${charm_config}/bin"
 prepend-path LIBRARY_PATH "$dep_dir/charm/${charm_config}/lib"
