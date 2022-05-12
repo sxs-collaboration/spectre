@@ -12,6 +12,7 @@ spectre_target_sources(
   Minmod.cpp
   MonotonisedCentral.cpp
   Unlimited.cpp
+  Wcns5z.cpp
   )
 
 spectre_target_headers(
@@ -25,6 +26,7 @@ spectre_target_headers(
   Reconstruct.hpp
   Reconstruct.tpp
   Unlimited.hpp
+  Wcns5z.hpp
   )
 
 target_link_libraries(
