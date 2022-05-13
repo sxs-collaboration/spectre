@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
@@ -138,6 +139,9 @@ namespace callbacks {
 template <typename InterpolationTargetTag, typename Frame>
 struct FindApparentHorizon
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<
+          typename InterpolationTargetTag::post_horizon_find_callbacks>;
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
