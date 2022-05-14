@@ -35,6 +35,18 @@ want to load the modules, source the shell file for your system and run
 8. Build the targets you are interested in by running, e.g.
    `make -j4 test-executables`
 
+## Anvil at Purdue University
+
+You should build and run tests on a compute node. You can get a compute node by
+running
+```
+sinteractive -N1 -n 20 -p debug -t 60:00
+```
+Avoid running `module purge` because this also removes various default modules
+that are necessary for proper operation. Instead, use `module
+restore`. Currently the tests can only be run in serial, e.g. `ctest -j1`
+because all the MPI jobs end up being launched on the same core.
+
 ## Cedar, Graham, and Niagara at ComputeCanada
 
 Use `compute_canada` as the `SYSTEM_TO_RUN_ON` in the general instructions.
