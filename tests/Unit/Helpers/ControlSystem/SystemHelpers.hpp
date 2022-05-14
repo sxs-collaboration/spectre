@@ -25,6 +25,7 @@
 #include "ControlSystem/UpdateControlSystem.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Domain.hpp"

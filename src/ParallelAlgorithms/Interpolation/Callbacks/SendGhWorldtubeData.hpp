@@ -36,32 +36,21 @@ namespace callbacks {
 ///
 /// \note This callback requires the temporal ID in an InterpolationTargetTag be
 /// a TimeStepId.
-template <typename CceEvolutionComponent>
+template <typename CceEvolutionComponent, bool DuringSelfStart>
 struct SendGhWorldtubeData
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
-    static_assert(
-        std::is_same_v<TemporalId, TimeStepId>,
-        "SendGhWorldtubeData expects a TimeStepId as its temporal ID.");
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
-    Parallel::simple_action<
-        typename Cce::Actions::ReceiveGhWorldtubeData<CceEvolutionComponent>>(
+    Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
+        CceEvolutionComponent, DuringSelfStart>>(
         cce_gh_boundary_component, temporal_id,
         db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
         db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
-        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box),
-        db::get<::Tags::dt<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>>(
-            box),
-        db::get<
-            ::Tags::dt<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>>(
-            box));
+        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
   }
 };
 }  // namespace callbacks

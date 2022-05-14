@@ -11,7 +11,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
-#include "Evolution/Systems/Cce/InterfaceManagers/GhInterpolationStrategies.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeStepId.hpp"
@@ -31,9 +30,9 @@ namespace Cce::InterfaceManagers {
  * component as soon as it becomes available from the GH system.
  *
  * \warning Using this interface manager when the GH components and the CCE
- * evolution are not identically stepped is considered undefined behavior. The
- * outcome will likely be that CCE will fail to evolve and the boundary data
- * will be continually inserted into a rapidly expanding inbox.
+ * evolution are not identically stepped is considered undefined behavior. For
+ * current implementations involving dense output and local time-stepping, this
+ * interface manager can only be used during self-start.
  */
 class GhLockstep : public GhInterfaceManager {
  public:
@@ -61,18 +60,9 @@ class GhLockstep : public GhInterfaceManager {
   void insert_gh_data(TimeStepId time_id,
                       const tnsr::aa<DataVector, 3>& spacetime_metric,
                       const tnsr::iaa<DataVector, 3>& phi,
-                      const tnsr::aa<DataVector, 3>& pi,
-                      const tnsr::aa<DataVector, 3>& dt_spacetime_metric = {},
-                      const tnsr::iaa<DataVector, 3>& dt_phi = {},
-                      const tnsr::aa<DataVector, 3>& dt_pi = {}) override;
+                      const tnsr::aa<DataVector, 3>& pi);
 
-  /// \brief next time information is ignored by this implementation, so this is
-  /// a no-op.
-  void insert_next_gh_time(TimeStepId /*time_id*/,
-                           TimeStepId /*next_time_id*/) override {}
-
-  /// \brief Requests are ignored by this implementation, so this is a no-op.
-  void request_gh_data(const TimeStepId& /*time_id*/) override {}
+  void request_gh_data(const TimeStepId& time_id) override;
 
   /// \brief Return a `std::optional<std::tuple>` of the least recently
   /// submitted generalized harmonic boundary data if any exists and removes it
@@ -91,12 +81,9 @@ class GhLockstep : public GhInterfaceManager {
   /// Serialization for Charm++.
   void pup(PUP::er& p) override;
 
-  InterpolationStrategy get_interpolation_strategy() const override {
-    return InterpolationStrategy::EverySubstep;
-  };
-
  private:
-  std::deque<std::tuple<TimeStepId, gh_variables>> provided_data_;
+  std::map<TimeStepId, gh_variables> provided_data_;
+  std::set<TimeStepId> requests_;
 };
 
 }  // namespace Cce::InterfaceManagers
