@@ -108,8 +108,8 @@ void AnalyticBoundaryDataManager::write_news(
   }
   auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   auto observer_proxy = Parallel::get_parallel_component<
-      observers::ObserverWriter<Metavariables>>(cache)[static_cast<size_t>(
-      Parallel::my_node(*Parallel::local(my_proxy)))];
+      observers::ObserverWriter<Metavariables>>(
+      cache)[Parallel::my_node<size_t>(*Parallel::local(my_proxy))];
   const std::string prefix =
       generator_->use_noninertial_news() ? "Noninertial_" : "";
   Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(

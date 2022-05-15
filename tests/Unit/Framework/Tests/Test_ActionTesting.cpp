@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <string>
+#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
@@ -564,6 +565,10 @@ struct ValueTag : db::SimpleTag {
   using type = int;
 };
 
+struct ValueTagSizeT : db::SimpleTag {
+  using type = size_t;
+};
+
 template <typename Metavariables>
 struct ComponentA {
   using metavariables = Metavariables;
@@ -571,99 +576,126 @@ struct ComponentA {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<ValueTag, ValueTagSizeT>>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
 struct MyProc {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_proc(*Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    return Parallel::my_proc<RetType>(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct MyNode {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_node(*Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    return Parallel::my_node<RetType>(*Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct LocalRank {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::my_local_rank(*Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    return Parallel::my_local_rank<RetType>(
+        *Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumProcs {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::number_of_procs(*Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    return Parallel::number_of_procs<RetType>(
+        *Parallel::local(my_proxy[array_index]));
   }
 };
 
 struct NumNodes {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::number_of_nodes(*Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    return Parallel::number_of_nodes<RetType>(
+        *Parallel::local(my_proxy[array_index]));
   }
 };
 
 template <int NodeIndex>
 struct ProcsOnNode {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::procs_on_node(NodeIndex,
-                                   *Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    const RetType value_from_int = Parallel::procs_on_node<RetType>(
+        static_cast<int>(NodeIndex), *Parallel::local(my_proxy[array_index]));
+    const RetType value_from_size_t = Parallel::procs_on_node<RetType>(
+        static_cast<size_t>(NodeIndex),
+        *Parallel::local(my_proxy[array_index]));
+    CHECK(value_from_int == value_from_size_t);
+    return value_from_int;
   }
 };
 
 template <int NodeIndex>
 struct FirstProcOnNode {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::first_proc_on_node(
-        NodeIndex, *Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    const RetType value_from_int = Parallel::first_proc_on_node<RetType>(
+        static_cast<int>(NodeIndex), *Parallel::local(my_proxy[array_index]));
+    const RetType value_from_size_t = Parallel::first_proc_on_node<RetType>(
+        static_cast<size_t>(NodeIndex),
+        *Parallel::local(my_proxy[array_index]));
+    CHECK(value_from_int == value_from_size_t);
+    return value_from_int;
   }
 };
 
 template <int ProcIndex>
 struct NodeOf {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::node_of(ProcIndex,
-                             *Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    const RetType value_from_int = Parallel::node_of<RetType>(
+        static_cast<int>(ProcIndex), *Parallel::local(my_proxy[array_index]));
+    const RetType value_from_size_t =
+        Parallel::node_of<RetType>(static_cast<size_t>(ProcIndex),
+                                   *Parallel::local(my_proxy[array_index]));
+    CHECK(value_from_int == value_from_size_t);
+    return value_from_int;
   }
 };
 
 template <int ProcIndex>
 struct LocalRankOf {
-  template <typename MyProxy, typename ArrayIndex>
-  static int f(MyProxy& my_proxy, const ArrayIndex& array_index) {
-    return Parallel::local_rank_of(ProcIndex,
-                                   *Parallel::local(my_proxy[array_index]));
+  template <typename MyProxy, typename ArrayIndex, typename RetType>
+  static auto f(MyProxy& my_proxy, const ArrayIndex& array_index) -> RetType {
+    const RetType value_from_int = Parallel::local_rank_of<RetType>(
+        static_cast<int>(ProcIndex), *Parallel::local(my_proxy[array_index]));
+    const RetType value_from_size_t = Parallel::local_rank_of<RetType>(
+        static_cast<size_t>(ProcIndex),
+        *Parallel::local(my_proxy[array_index]));
+    CHECK(value_from_int == value_from_size_t);
+    return value_from_int;
   }
 };
 
-template <typename Functor>
+template <typename Tag, typename Functor>
 struct ActionSetValueTo {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+            Requires<tmpl::list_contains_v<DbTagsList, Tag>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
     auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    auto function_value = Functor::f(my_proxy, array_index);
-    db::mutate<ValueTag>(make_not_null(&box),
-                         [&function_value](const gsl::not_null<int*> value) {
-                           *value = function_value;
-                         });
+    using ProxyType = std::decay_t<decltype(my_proxy)>;
+    using T = typename Tag::type;
+    // We must specify all templates here explicitly otherwise it won't build
+    T function_value =
+        Functor::template f<ProxyType, ArrayIndex, T>(my_proxy, array_index);
+    db::mutate<Tag>(make_not_null(&box),
+                    [&function_value](const gsl::not_null<T*> value) {
+                      *value = function_value;
+                    });
   }
 };
 
@@ -691,19 +723,19 @@ void test_parallel_info_functions() {
   // arbitrary initial values.
   ActionTesting::emplace_array_component_and_initialize<component_a>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {-1});
+      {-1, 101_st});
   ActionTesting::emplace_array_component_and_initialize<component_a>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{1}, 2,
-      {-2});
+      {-2, 102_st});
   ActionTesting::emplace_array_component_and_initialize<component_a>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{2}, 4,
-      {-3});
+      {-3, 103_st});
   ActionTesting::emplace_array_component_and_initialize<component_a>(
       &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{0}, 1,
-      {-4});
+      {-4, 104_st});
   ActionTesting::emplace_array_component_and_initialize<component_a>(
       &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{1}, 3,
-      {-5});
+      {-5, 105_st});
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
@@ -713,106 +745,163 @@ void test_parallel_info_functions() {
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == -2);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == -5);
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == -3);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTagSizeT>(runner, 0) ==
+        101);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTagSizeT>(runner, 1) ==
+        104);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTagSizeT>(runner, 2) ==
+        102);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTagSizeT>(runner, 3) ==
+        105);
+  CHECK(ActionTesting::get_databox_tag<component_a, ValueTagSizeT>(runner, 4) ==
+        103);
 
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component_a, ActionSetValueTo<MyProc>>(
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTag, MyProc>>(
+        make_not_null(&runner), i);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTagSizeT, MyProc>>(
         make_not_null(&runner), i);
   }
+  using tag_list = tmpl::list<ValueTag, ValueTagSizeT>;
   // Should all be set to proc (which Mark computed by hand)
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 3);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 4);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 2);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 3);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 4);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 4) == 2);
+  });
 
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component_a, ActionSetValueTo<MyNode>>(
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTag, MyNode>>(
+        make_not_null(&runner), i);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTagSizeT, MyNode>>(
         make_not_null(&runner), i);
   }
   // Should all be set to node (which Mark computed by hand)
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 0);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 4) == 0);
+  });
 
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRank>>(
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTag, LocalRank>>(
+        make_not_null(&runner), i);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<ValueTagSizeT, LocalRank>>(
         make_not_null(&runner), i);
   }
   // Should all be set to local rank (which Mark computed by hand)
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 2);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 4) == 2);
+  });
 
-  for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component_a, ActionSetValueTo<NumProcs>>(
-        make_not_null(&runner), i);
-    CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, i) ==
-          5);
-  }
-  for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component_a, ActionSetValueTo<NumNodes>>(
-        make_not_null(&runner), i);
-    CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, i) ==
-          2);
-  }
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    for (size_t i = 0; i < 5; ++i) {
+      ActionTesting::simple_action<component_a,
+                                   ActionSetValueTo<tag, NumProcs>>(
+          make_not_null(&runner), i);
+      CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, i) == 5);
+    }
+    for (size_t i = 0; i < 5; ++i) {
+      ActionTesting::simple_action<component_a,
+                                   ActionSetValueTo<tag, NumNodes>>(
+          make_not_null(&runner), i);
+      CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, i) == 2);
+    }
+  });
 
-  // procs_on_node for the 2 nodes.
-  ActionTesting::simple_action<component_a, ActionSetValueTo<ProcsOnNode<0>>>(
-      make_not_null(&runner), 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 3);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<ProcsOnNode<1>>>(
-      make_not_null(&runner), 2);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 2);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    // procs_on_node for the 2 nodes.
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, ProcsOnNode<0>>>(
+        make_not_null(&runner), 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 3);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, ProcsOnNode<1>>>(
+        make_not_null(&runner), 2);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 2);
 
-  // first_proc_on_node for the 2 nodes.
-  ActionTesting::simple_action<component_a,
-                               ActionSetValueTo<FirstProcOnNode<0>>>(
-      make_not_null(&runner), 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
-  ActionTesting::simple_action<component_a,
-                               ActionSetValueTo<FirstProcOnNode<1>>>(
-      make_not_null(&runner), 3);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 3);
+    // first_proc_on_node for the 2 nodes.
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, FirstProcOnNode<0>>>(
+        make_not_null(&runner), 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 0);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, FirstProcOnNode<1>>>(
+        make_not_null(&runner), 3);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 3);
+  });
 
   // node_of
-  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<0>>>(
-      make_not_null(&runner), 0);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<1>>>(
-      make_not_null(&runner), 1);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<2>>>(
-      make_not_null(&runner), 2);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<3>>>(
-      make_not_null(&runner), 3);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<NodeOf<4>>>(
-      make_not_null(&runner), 4);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    ActionTesting::simple_action<component_a, ActionSetValueTo<tag, NodeOf<0>>>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<component_a, ActionSetValueTo<tag, NodeOf<1>>>(
+        make_not_null(&runner), 1);
+    ActionTesting::simple_action<component_a, ActionSetValueTo<tag, NodeOf<2>>>(
+        make_not_null(&runner), 2);
+    ActionTesting::simple_action<component_a, ActionSetValueTo<tag, NodeOf<3>>>(
+        make_not_null(&runner), 3);
+    ActionTesting::simple_action<component_a, ActionSetValueTo<tag, NodeOf<4>>>(
+        make_not_null(&runner), 4);
+  });
   // Check if set to values that Mark computed by hand.
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 4) == 1);
+  });
 
   // local_rank_of
-  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<0>>>(
-      make_not_null(&runner), 0);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<1>>>(
-      make_not_null(&runner), 1);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<2>>>(
-      make_not_null(&runner), 2);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<3>>>(
-      make_not_null(&runner), 3);
-  ActionTesting::simple_action<component_a, ActionSetValueTo<LocalRankOf<4>>>(
-      make_not_null(&runner), 4);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, LocalRankOf<0>>>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, LocalRankOf<1>>>(
+        make_not_null(&runner), 1);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, LocalRankOf<2>>>(
+        make_not_null(&runner), 2);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, LocalRankOf<3>>>(
+        make_not_null(&runner), 3);
+    ActionTesting::simple_action<component_a,
+                                 ActionSetValueTo<tag, LocalRankOf<4>>>(
+        make_not_null(&runner), 4);
+  });
   // Check if set to values that Mark computed by hand.
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 1) == 1);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 2) == 2);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 3) == 0);
-  CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 4) == 1);
+  tmpl::for_each<tag_list>([&runner](const auto tag_v) {
+    using tag = tmpl::type_from<decltype(tag_v)>;
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 0) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 1) == 1);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 2) == 2);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 3) == 0);
+    CHECK(ActionTesting::get_databox_tag<component_a, tag>(runner, 4) == 1);
+  });
 
   // Check the parallel info functions of the GlobalCache in the testing
   // framework
@@ -823,17 +912,17 @@ void test_parallel_info_functions() {
   CHECK(cache.procs_on_node(1) == procs_node_1);
   CHECK(cache.first_proc_on_node(0) == 0);
   CHECK(cache.first_proc_on_node(1) == procs_node_0);
-  CHECK(Parallel::number_of_procs(cache) == num_procs);
-  CHECK(Parallel::number_of_nodes(cache) == num_nodes);
-  CHECK(Parallel::procs_on_node(0, cache) == procs_node_0);
-  CHECK(Parallel::procs_on_node(1, cache) == procs_node_1);
-  CHECK(Parallel::first_proc_on_node(0, cache) == 0);
-  CHECK(Parallel::first_proc_on_node(1, cache) == procs_node_0);
+  CHECK(Parallel::number_of_procs<int>(cache) == num_procs);
+  CHECK(Parallel::number_of_nodes<int>(cache) == num_nodes);
+  CHECK(Parallel::procs_on_node<int>(0, cache) == procs_node_0);
+  CHECK(Parallel::procs_on_node<int>(1, cache) == procs_node_1);
+  CHECK(Parallel::first_proc_on_node<int>(0, cache) == 0);
+  CHECK(Parallel::first_proc_on_node<int>(1, cache) == procs_node_0);
   for (int i = 0; i < num_procs; i++) {
     CHECK(cache.node_of(i) == (i < procs_node_0 ? 0 : 1));
     CHECK(cache.local_rank_of(i) == (i < procs_node_0 ? i : i - procs_node_0));
-    CHECK(Parallel::node_of(i, cache) == (i < procs_node_0 ? 0 : 1));
-    CHECK(Parallel::local_rank_of(i, cache) ==
+    CHECK(Parallel::node_of<int>(i, cache) == (i < procs_node_0 ? 0 : 1));
+    CHECK(Parallel::local_rank_of<int>(i, cache) ==
           (i < procs_node_0 ? i : i - procs_node_0));
   }
   for (int i = 0; i < num_procs; i++) {
@@ -841,14 +930,15 @@ void test_parallel_info_functions() {
         ActionTesting::cache<component_a>(runner, static_cast<size_t>(i));
     auto& proxy = Parallel::get_parallel_component<component_a>(local_cache);
     auto& local_obj = *Parallel::local(proxy[static_cast<size_t>(i)]);
-    const int my_proc = Parallel::my_proc(local_obj);
+    const int my_proc = Parallel::my_proc<int>(local_obj);
     CHECK(local_cache.my_proc() == my_proc);
     CHECK(local_cache.my_node() == (my_proc < procs_node_0 ? 0 : 1));
     CHECK(local_cache.my_local_rank() ==
           (my_proc < procs_node_0 ? my_proc : my_proc - procs_node_0));
-    CHECK(Parallel::my_proc(local_cache) == my_proc);
-    CHECK(Parallel::my_node(local_cache) == (my_proc < procs_node_0 ? 0 : 1));
-    CHECK(Parallel::my_local_rank(local_cache) ==
+    CHECK(Parallel::my_proc<int>(local_cache) == my_proc);
+    CHECK(Parallel::my_node<int>(local_cache) ==
+          (my_proc < procs_node_0 ? 0 : 1));
+    CHECK(Parallel::my_local_rank<int>(local_cache) ==
           (my_proc < procs_node_0 ? my_proc : my_proc - procs_node_0));
   }
 }
@@ -894,20 +984,22 @@ void test_group_emplace() {
 
   // Number of procs should be 5 for all indices.
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<NumProcs>>(
+    ActionTesting::simple_action<component,
+                                 ActionSetValueTo<ValueTag, NumProcs>>(
         make_not_null(&runner), i);
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 5);
   }
 
   // Number of nodes should be 2 for all indices.
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<NumNodes>>(
+    ActionTesting::simple_action<component,
+                                 ActionSetValueTo<ValueTag, NumNodes>>(
         make_not_null(&runner), i);
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 2);
   }
 
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<MyProc>>(
+    ActionTesting::simple_action<component, ActionSetValueTo<ValueTag, MyProc>>(
         make_not_null(&runner), i);
   }
 
@@ -919,7 +1011,7 @@ void test_group_emplace() {
   CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 4) == 4);
 
   for (size_t i = 0; i < 5; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<MyNode>>(
+    ActionTesting::simple_action<component, ActionSetValueTo<ValueTag, MyNode>>(
         make_not_null(&runner), i);
   }
   // Should all be set to node (which Mark computed by hand)
@@ -971,20 +1063,22 @@ void test_nodegroup_emplace() {
 
   // Number of procs should be 5 for all indices.
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<NumProcs>>(
+    ActionTesting::simple_action<component,
+                                 ActionSetValueTo<ValueTag, NumProcs>>(
         make_not_null(&runner), i);
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 5);
   }
 
   // Number of nodes should be 2 for all indices.
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<NumNodes>>(
+    ActionTesting::simple_action<component,
+                                 ActionSetValueTo<ValueTag, NumNodes>>(
         make_not_null(&runner), i);
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == 2);
   }
 
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<MyProc>>(
+    ActionTesting::simple_action<component, ActionSetValueTo<ValueTag, MyProc>>(
         make_not_null(&runner), i);
   }
 
@@ -993,7 +1087,7 @@ void test_nodegroup_emplace() {
   CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, 1) == 3);
 
   for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::simple_action<component, ActionSetValueTo<MyNode>>(
+    ActionTesting::simple_action<component, ActionSetValueTo<ValueTag, MyNode>>(
         make_not_null(&runner), i);
   }
   // Should all be set to node (which Mark computed by hand)
@@ -1002,8 +1096,7 @@ void test_nodegroup_emplace() {
 }
 
 struct MetavariablesWithPup {
-  using component_list =
-      tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
+  using component_list = tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
 
   enum class Phase { Initialization, Testing, Exit };
 
@@ -1049,7 +1142,7 @@ struct CacheTag : db::SimpleTag {
 
 template <int Value>
 struct CacheTagUpdater {
-  static void apply(gsl::not_null<typename CacheTag::type*> tag_value){
+  static void apply(gsl::not_null<typename CacheTag::type*> tag_value) {
     *tag_value = Value;
   }
 };

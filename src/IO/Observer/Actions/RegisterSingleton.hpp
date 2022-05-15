@@ -61,8 +61,7 @@ struct RegisterSingletonWithObserverWriter {
     Parallel::simple_action<Actions::RegisterReductionNodeWithWritingNode>(
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
-        observation_key,
-        static_cast<size_t>(Parallel::my_node(*Parallel::local(my_proxy))));
+        observation_key, Parallel::my_node<size_t>(*Parallel::local(my_proxy)));
     return {std::move(box), true};
   }
 };

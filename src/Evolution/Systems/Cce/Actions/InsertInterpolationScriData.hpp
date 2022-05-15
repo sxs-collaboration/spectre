@@ -79,7 +79,7 @@ void output_impl(const size_t observation_l_max, const size_t l_max,
   auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   auto observer_proxy = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache)[static_cast<size_t>(
-      Parallel::my_node(*Parallel::local(my_proxy)))];
+      Parallel::my_node<int>(*Parallel::local(my_proxy)))];
   // swsh transform
   const ComplexModalVector goldberg_modes =
       Spectral::Swsh::libsharp_to_goldberg_modes(

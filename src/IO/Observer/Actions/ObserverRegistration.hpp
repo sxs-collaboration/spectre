@@ -156,8 +156,8 @@ struct RegisterReductionNodeWithWritingNode {
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id = static_cast<size_t>(
-          Parallel::my_node(*Parallel::local_branch(my_proxy)));
+      const auto node_id =
+          Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
       ASSERT(node_id == 0, "Only node zero, not node "
                                << node_id
                                << ", should be called from another node");
@@ -211,8 +211,8 @@ struct DeregisterReductionNodeWithWritingNode {
                       DbTagsList, Tags::NodesExpectedToContributeReductions>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id = static_cast<size_t>(
-          Parallel::my_node(*Parallel::local_branch(my_proxy)));
+      const auto node_id =
+          Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
       ASSERT(node_id == 0,
              "Only node zero, not node "
                  << node_id
@@ -277,8 +277,8 @@ struct RegisterReductionContributorWithObserverWriter {
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id = static_cast<size_t>(
-          Parallel::my_node(*Parallel::local_branch(my_proxy)));
+      const auto node_id =
+          Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
       db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](
@@ -342,8 +342,8 @@ struct DeregisterReductionContributorWithObserverWriter {
                       DbTagsList, Tags::ExpectedContributorsForObservations>) {
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
-      const auto node_id = static_cast<size_t>(
-          Parallel::my_node(*Parallel::local_branch(my_proxy)));
+      const auto node_id =
+          Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
       db::mutate<Tags::ExpectedContributorsForObservations>(
           make_not_null(&box),
           [&cache, &id_of_caller, &node_id, &observation_key](

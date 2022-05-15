@@ -91,12 +91,11 @@ struct ContributeMemoryData {
             constexpr bool is_group =
                 Parallel::is_group_v<ContributingComponent>;
 
-            const int num_nodes =
-                Parallel::number_of_nodes(*Parallel::local(mem_monitor_proxy));
-            const int num_procs =
-                Parallel::number_of_procs(*Parallel::local(mem_monitor_proxy));
-            const size_t expected_number =
-                static_cast<size_t>(is_group ? num_procs : num_nodes);
+            const size_t num_nodes = Parallel::number_of_nodes<size_t>(
+                *Parallel::local(mem_monitor_proxy));
+            const size_t num_procs = Parallel::number_of_procs<size_t>(
+                *Parallel::local(mem_monitor_proxy));
+            const size_t expected_number = is_group ? num_procs : num_nodes;
             ASSERT(memory_holder.at(time).size() <= expected_number,
                    "ContributeMemoryData received more data than it was "
                    "expecting. Was expecting "
@@ -114,14 +113,14 @@ struct ContributeMemoryData {
               double avg_size_per_node = 0.0;
               double max_usage_on_proc = -std::numeric_limits<double>::max();
               int proc_of_max = 0;
-              for (int node = 0; node < num_nodes; node++) {
+              for (size_t node = 0; node < num_nodes; node++) {
                 double size_on_node = 0.0;
                 if (not is_group) {
                   size_on_node = memory_holder.at(time).at(node);
                 } else {
-                  const int first_proc = Parallel::first_proc_on_node(
+                  const int first_proc = Parallel::first_proc_on_node<int>(
                       node, *Parallel::local(mem_monitor_proxy));
-                  const int procs_on_node = Parallel::procs_on_node(
+                  const int procs_on_node = Parallel::procs_on_node<int>(
                       node, *Parallel::local(mem_monitor_proxy));
                   const int last_proc = first_proc + procs_on_node;
                   for (int proc = first_proc; proc < last_proc; proc++) {
