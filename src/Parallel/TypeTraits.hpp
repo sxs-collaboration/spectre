@@ -58,32 +58,44 @@ struct is_bound_array<T, std::void_t<typename T::bind_to>> : std::true_type {
 };
 
 /// \ingroup ParallelGroup
+/// @{
 /// Check if `T` is a SpECTRE Array
 template <typename T>
-constexpr bool is_array_v =
-    std::is_same_v<Parallel::Algorithms::Array,
-                   typename T::chare_type::component_type>;
+struct is_array : std::is_same<Parallel::Algorithms::Array,
+                               typename T::chare_type::component_type> {};
+template <typename T>
+constexpr bool is_array_v = is_array<T>::value;
+/// @}
 
 /// \ingroup ParallelGroup
+/// @{
 /// Check if `T` is a SpECTRE Singleton
 template <typename T>
-constexpr bool is_singleton_v =
-    std::is_same_v<Parallel::Algorithms::Singleton,
-                   typename T::chare_type::component_type>;
+struct is_singleton : std::is_same<Parallel::Algorithms::Singleton,
+                                   typename T::chare_type::component_type> {};
+template <typename T>
+constexpr bool is_singleton_v = is_singleton<T>::value;
+/// @}
 
 /// \ingroup ParallelGroup
+/// @{
 /// Check if `T` is a SpECTRE Group
 template <typename T>
-constexpr bool is_group_v =
-    std::is_same_v<Parallel::Algorithms::Group,
-                   typename T::chare_type::component_type>;
+struct is_group : std::is_same<Parallel::Algorithms::Group,
+                               typename T::chare_type::component_type> {};
+template <typename T>
+constexpr bool is_group_v = is_group<T>::value;
+/// @}
 
 /// \ingroup ParallelGroup
+/// @{
 /// Check if `T` is a SpECTRE Nodegroup
 template <typename T>
-constexpr bool is_nodegroup_v =
-    std::is_same_v<Parallel::Algorithms::Nodegroup,
-                   typename T::chare_type::component_type>;
+struct is_nodegroup : std::is_same<Parallel::Algorithms::Nodegroup,
+                                   typename T::chare_type::component_type> {};
+template <typename T>
+constexpr bool is_nodegroup_v = is_nodegroup<T>::value;
+/// @}
 
 /// @{
 /// \ingroup ParallelGroup

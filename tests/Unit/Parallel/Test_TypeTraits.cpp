@@ -139,3 +139,12 @@ static_assert(Parallel::is_nodegroup_v<NodegroupParallelComponent>);
 static_assert(
     Parallel::is_group_v<Parallel::MutableGlobalCache<Metavariables>>);
 static_assert(Parallel::is_nodegroup_v<Parallel::GlobalCache<Metavariables>>);
+
+static_assert(Parallel::is_singleton<SingletonParallelComponent>::value);
+static_assert(Parallel::is_array<ArrayParallelComponent>::value);
+static_assert(Parallel::is_group<GroupParallelComponent>::value);
+static_assert(Parallel::is_nodegroup<NodegroupParallelComponent>::value);
+static_assert(
+    Parallel::is_group<Parallel::MutableGlobalCache<Metavariables>>::value);
+static_assert(
+    Parallel::is_nodegroup<Parallel::GlobalCache<Metavariables>>::value);
