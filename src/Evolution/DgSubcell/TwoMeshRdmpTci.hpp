@@ -6,7 +6,6 @@
 #include <algorithm>
 
 #include "DataStructures/Variables.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -34,24 +33,28 @@ namespace evolution::dg::subcell {
  * \f$\epsilon\f$ for all variables, but this could be generalized to choosing
  * the allowed variation in a variable-specific manner.
  */
-template <typename... EvolvedVarsTags>
+template <typename... DgEvolvedVarsTags, typename... SubcellEvolvedVarsTags>
 bool two_mesh_rdmp_tci(
-    const Variables<tmpl::list<EvolvedVarsTags...>>& dg_evolved_vars,
-    const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
+    const Variables<tmpl::list<DgEvolvedVarsTags...>>& dg_evolved_vars,
+    const Variables<tmpl::list<SubcellEvolvedVarsTags...>>&
         subcell_evolved_vars,
     const double rdmp_delta0, const double rdmp_epsilon) {
+  static_assert(sizeof...(DgEvolvedVarsTags) ==
+                sizeof...(SubcellEvolvedVarsTags));
   ASSERT(rdmp_delta0 > 0.0, "The RDMP delta0 parameter must be positive.");
   ASSERT(rdmp_epsilon > 0.0, "The RDMP epsilon parameter must be positive.");
   bool cell_is_troubled = false;
-  tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
+  tmpl::for_each<
+      tmpl::list<tmpl::list<DgEvolvedVarsTags, SubcellEvolvedVarsTags>...>>(
       [&cell_is_troubled, &dg_evolved_vars, rdmp_delta0, rdmp_epsilon,
        &subcell_evolved_vars](auto tag_v) {
         if (cell_is_troubled) {
           return;
         }
 
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        using inactive_tag = Tags::Inactive<tag>;
+        using tags_list = tmpl::type_from<decltype(tag_v)>;
+        using tag = tmpl::front<tags_list>;
+        using inactive_tag = tmpl::back<tags_list>;
         const auto& dg_var = get<tag>(dg_evolved_vars);
         const auto& subcell_var = get<inactive_tag>(subcell_evolved_vars);
 
