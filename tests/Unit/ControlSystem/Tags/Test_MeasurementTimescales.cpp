@@ -142,6 +142,29 @@ void test_measurement_tag() {
             initial_time, -time_step);
     CHECK(timescales.empty());
   }
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        const TimescaleTuner tuner1({27.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                                    0.99);
+        const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
+                                    0.99);
+        const Averager<1> averager(0.25, true);
+        const Controller<2> controller(0.3);
+        const control_system::TestHelpers::ControlError control_error{};
+
+        OptionHolder<1> option_holder1(averager, controller, tuner1,
+                                       control_error);
+        OptionHolder<2> option_holder2(averager, controller, tuner1,
+                                       control_error);
+        OptionHolder<3> option_holder3(averager, controller, tuner2,
+                                       control_error);
+
+        measurement_tag::create_from_options<Metavariables>(
+            initial_time, -1.0, option_holder1, option_holder2, option_holder3);
+      })(),
+      Catch::Contains(
+          "Control systems can only be used in forward-in-time evolutions."));
 }
 }  // namespace
 
@@ -150,24 +173,4 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.MeasurementTimescales",
   test_calculate_measurement_timescales<2>();
   test_calculate_measurement_timescales<3>();
   test_measurement_tag();
-}
-
-// [[OutputRegex, Control systems can only be used in forward-in-time
-// evolutions.]]
-SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.MeasurementTimescales.Backwards",
-                  "[ControlSystem][Unit]") {
-  ERROR_TEST();
-  const TimescaleTuner tuner1({27.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
-  const Averager<1> averager(0.25, true);
-  const Controller<2> controller(0.3);
-  const control_system::TestHelpers::ControlError control_error{};
-
-  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
-  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
-  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
-
-  using measurement_tag = control_system::Tags::MeasurementTimescales;
-  measurement_tag::create_from_options<Metavariables>(
-      initial_time, -1.0, option_holder1, option_holder2, option_holder3);
 }
