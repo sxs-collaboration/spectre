@@ -14,6 +14,7 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Informer
   Options
   Parallel
+  ParallelHelpers
   PhaseControl
   SystemUtilities
   Utilities

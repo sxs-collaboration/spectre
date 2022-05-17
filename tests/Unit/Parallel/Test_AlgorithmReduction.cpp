@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -245,16 +246,10 @@ struct ArrayParallelComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
 
-    const size_t number_of_procs = static_cast<size_t>(sys::number_of_procs());
-    size_t which_proc = 0;
-    for (int i = 0; i < number_of_1d_array_elements; ++i) {
-      while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
-        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-      }
-      array_proxy[i].insert(global_cache, {}, which_proc);
-      which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-    }
-    array_proxy.doneInserting();
+    TestHelpers::Parallel::assign_array_elements_round_robin_style(
+        array_proxy, static_cast<size_t>(number_of_1d_array_elements),
+        static_cast<size_t>(sys::number_of_procs()), {}, global_cache,
+        procs_to_ignore);
   }
 
   static void execute_next_phase(
