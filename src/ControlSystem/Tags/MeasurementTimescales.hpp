@@ -4,13 +4,16 @@
 #pragma once
 
 #include <array>
+#include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/InitialExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
+#include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -66,17 +69,19 @@ struct MeasurementTimescales : db::SimpleTag {
   static constexpr bool pass_metavariables = true;
 
   template <typename Metavariables>
-  using option_tags = tmpl::flatten<
-      tmpl::list<::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
-                 control_system::inputs<tmpl::transform<
-                     tmpl::filter<typename Metavariables::component_list,
-                                  tt::is_a<ControlComponent, tmpl::_1>>,
-                     tmpl::bind<tmpl::back, tmpl::_1>>>>>;
+  using option_tags = typename detail::OptionList<
+      Metavariables, false,
+      ::detail::has_override_functions_of_time_v<Metavariables>>::type;
 
+  /// This version of create_from_options is used if the metavariables
+  /// defined a constexpr bool `override_functions_of_time` and it is `true`,
+  /// and there are control systems in the metavariables
   template <typename Metavariables, typename... OptionHolders>
-  static type create_from_options(const double initial_time,
-                                  const double initial_time_step,
-                                  const OptionHolders&... option_holders) {
+  static type create_from_options(
+      const std::optional<std::string>& function_of_time_file,
+      const std::map<std::string, std::string>& function_of_time_name_map,
+      const double initial_time, const double initial_time_step,
+      const OptionHolders&... option_holders) {
     std::unordered_map<std::string,
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         timescales{};
@@ -86,7 +91,8 @@ struct MeasurementTimescales : db::SimpleTag {
 
     [[maybe_unused]] const auto construct_measurement_timescales =
         [&timescales, &initial_time, &initial_time_step,
-         &initial_expiration_times](const auto& option_holder) {
+         &initial_expiration_times, &function_of_time_file,
+         &function_of_time_name_map](const auto& option_holder) {
           // This check is intentionally inside the lambda so that it will not
           // trigger for domains without control systems.
           if (initial_time_step <= 0.0) {
@@ -108,17 +114,51 @@ struct MeasurementTimescales : db::SimpleTag {
                 std::max(initial_time_step, measurement_timescales[i]);
           }
 
+          double expr_time = initial_expiration_times.at(name);
+
+          // If we are reading this function of time in from a file, set the
+          // measurement timescales to be infinity, and to never expire.
+          if (function_of_time_file.has_value()) {
+            for (const auto& [spec_name, spectre_name] :
+                 function_of_time_name_map) {
+              (void)spec_name;
+              if (name == spectre_name) {
+                expr_time = std::numeric_limits<double>::infinity();
+
+                for (size_t i = 0; i < measurement_timescales.size(); i++) {
+                  measurement_timescales[i] =
+                      std::numeric_limits<double>::infinity();
+                }
+              }
+            }
+          }
+
           timescales.emplace(
               name,
               std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
                   initial_time, std::array{std::move(measurement_timescales)},
-                  initial_expiration_times.at(name)));
+                  expr_time));
         };
 
     EXPAND_PACK_LEFT_TO_RIGHT(construct_measurement_timescales(option_holders));
 
     return timescales;
   }
+
+  /// This version of create_from_options is used if the metavariables did not
+  /// define a constexpr bool `override_functions_of_time` or it did define it
+  /// and it is `false`, and the metavariables did define control systems
+  template <typename Metavariables, typename... OptionHolders>
+  static type create_from_options(const double initial_time,
+                                  const double initial_time_step,
+                                  const OptionHolders&... option_holders) {
+    return MeasurementTimescales::create_from_options<Metavariables>(
+        std::nullopt, {}, initial_time, initial_time_step, option_holders...);
+  }
+
+  // We don't define a `create_from_options` for when there aren't control
+  // systems in the metavariables because it doesn't make sense to have
+  // measurement timescales without control systems
 };
 }  // namespace Tags
 }  // namespace control_system

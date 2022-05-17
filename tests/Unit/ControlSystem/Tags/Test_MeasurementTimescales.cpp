@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <optional>
 #include <string>
 
@@ -43,13 +44,19 @@ struct FakeControlSystem
 };
 
 struct Metavariables {
+  static constexpr size_t volume_dim = 3;
   using control_systems = tmpl::list<FakeControlSystem<1>, FakeControlSystem<2>,
                                      FakeControlSystem<3>>;
   using component_list =
       control_system::control_components<Metavariables, control_systems>;
 };
 
+struct MetavariablesReplace : Metavariables {
+  static constexpr bool override_functions_of_time = true;
+};
+
 struct MetavariablesNoControlSystems {
+  static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<>;
 };
 
@@ -80,7 +87,7 @@ void test_measurement_tag() {
   static_assert(
       tmpl::size<
           measurement_tag::option_tags<MetavariablesNoControlSystems>>::value ==
-      2);
+      0);
   static_assert(
       tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 5);
 
@@ -102,6 +109,16 @@ void test_measurement_tag() {
     OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
     OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
 
+    static_assert(
+        std::is_same_v<
+            measurement_tag::option_tags<Metavariables>,
+            tmpl::list<::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
+                       control_system::OptionTags::ControlSystemInputs<
+                           FakeControlSystem<1>>,
+                       control_system::OptionTags::ControlSystemInputs<
+                           FakeControlSystem<2>>,
+                       control_system::OptionTags::ControlSystemInputs<
+                           FakeControlSystem<3>>>>);
     const measurement_tag::type timescales =
         measurement_tag::create_from_options<Metavariables>(
             initial_time, time_step, option_holder1, option_holder2,
@@ -130,21 +147,31 @@ void test_measurement_tag() {
           std::array{initial_time, expr_time2});
     CHECK(timescales.at("Controlled3")->func(2.1)[0] ==
           DataVector{measure_time2});
-  }
-  {
-    // Verify that no control systems means no measurement timescales
-    const measurement_tag::type timescales =
-        measurement_tag::create_from_options<MetavariablesNoControlSystems>(
-            initial_time, time_step);
-    CHECK(timescales.empty());
-  }
-  {
-    // Verify that negative time steps are accepted with no control
-    // systems.
-    const measurement_tag::type timescales =
-        measurement_tag::create_from_options<MetavariablesNoControlSystems>(
-            initial_time, -time_step);
-    CHECK(timescales.empty());
+
+    // Replace Controlled2 with something read in from an h5 file. This means
+    // the measurement timescale and expiration time for Controlled2 is
+    // infinity.
+    static_assert(
+        std::is_same_v<
+            measurement_tag::option_tags<MetavariablesReplace>,
+            tmpl::list<
+                domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
+                domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap,
+                ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
+                control_system::OptionTags::ControlSystemInputs<
+                    FakeControlSystem<1>>,
+                control_system::OptionTags::ControlSystemInputs<
+                    FakeControlSystem<2>>,
+                control_system::OptionTags::ControlSystemInputs<
+                    FakeControlSystem<3>>>>);
+    const auto replaced_timescales =
+        measurement_tag::create_from_options<MetavariablesReplace>(
+            {"FakeFileName"}, {{"FakeSpecName", "Controlled2"}}, initial_time,
+            time_step, option_holder1, option_holder2, option_holder3);
+    CHECK(replaced_timescales.at("Controlled2")->time_bounds() ==
+          std::array{initial_time, std::numeric_limits<double>::infinity()});
+    CHECK(replaced_timescales.at("Controlled2")->func(2.0)[0][0] ==
+          std::numeric_limits<double>::infinity());
   }
 
   CHECK_THROWS_WITH(
