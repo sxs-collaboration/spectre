@@ -71,6 +71,15 @@ class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
 
   PolytropicFluid(double polytropic_constant, double polytropic_exponent);
 
+  std::unique_ptr<EquationOfState<IsRelativistic, 1>> get_clone()
+      const override;
+
+  bool is_equal(const EquationOfState<IsRelativistic, 1>& rhs) const override;
+
+  bool operator==(const PolytropicFluid<IsRelativistic>& rhs) const;
+
+  bool operator!=(const PolytropicFluid<IsRelativistic>& rhs) const;
+
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(PolytropicFluid, 1)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT

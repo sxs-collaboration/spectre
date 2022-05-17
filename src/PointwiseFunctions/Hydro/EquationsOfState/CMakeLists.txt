@@ -9,6 +9,7 @@ spectre_target_sources(
   HybridEos.cpp
   IdealFluid.cpp
   PolytropicFluid.cpp
+  RegisterDerivedWithCharm.cpp
   Spectral.cpp
   )
 
@@ -17,13 +18,14 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   DarkEnergyFluid.hpp
+  Enthalpy.hpp
   EquationOfState.hpp
   Factory.hpp
   HybridEos.hpp
   IdealFluid.hpp
   PolytropicFluid.hpp
+  RegisterDerivedWithCharm.hpp
   Spectral.hpp
-  Enthalpy.hpp
   )
 
 add_subdirectory(Python)

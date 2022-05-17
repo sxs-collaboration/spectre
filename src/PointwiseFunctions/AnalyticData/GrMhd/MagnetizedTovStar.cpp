@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -24,16 +24,17 @@
 
 namespace grmhd::AnalyticData {
 MagnetizedTovStar::MagnetizedTovStar(
-    const double central_rest_mass_density, const double polytropic_constant,
-    const double polytropic_exponent,
+    const double central_rest_mass_density,
+    std::unique_ptr<MagnetizedTovStar::equation_of_state_type>
+        equation_of_state,
     const RelativisticEuler::Solutions::TovCoordinates coordinate_system,
     const size_t pressure_exponent, const double cutoff_pressure_fraction,
     const double vector_potential_amplitude)
-    : tov_star(central_rest_mass_density, polytropic_constant,
-               polytropic_exponent, coordinate_system),
+    : tov_star(central_rest_mass_density, std::move(equation_of_state),
+               coordinate_system),
       pressure_exponent_(pressure_exponent),
       cutoff_pressure_(cutoff_pressure_fraction *
-                       get(equation_of_state().pressure_from_density(
+                       get(this->equation_of_state().pressure_from_density(
                            Scalar<double>{central_rest_mass_density}))),
       vector_potential_amplitude_(vector_potential_amplitude) {}
 

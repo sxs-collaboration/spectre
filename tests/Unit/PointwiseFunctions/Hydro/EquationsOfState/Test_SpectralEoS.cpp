@@ -25,12 +25,20 @@ void check_exact() {
   TestHelpers::test_creation<std::unique_ptr<EoS::EquationOfState<true, 1>>>(
       {"Spectral:\n"
        "  ReferenceDensity: 2.0\n"
-       "  ReferencePressure: 4.0  \n"
+       "  ReferencePressure: 4.0\n"
        "  Coefficients: [3.0,0.25,0.375,0.5]\n"
        "  UpperDensity: 15.0\n"});
 
   EquationsOfState::Spectral eos(2.0, 4.0, {3.0, 0.25, 0.375, 0.5},
                                  2.0 * exp(2.0));
+  TestHelpers::EquationsOfState::test_get_clone(eos);
+
+  EquationsOfState::Spectral other_eos(1.0, 4.0, {3.0, 0.25, 0.375, 0.5},
+                                       2.0 * exp(2.0));
+  const auto other_type_eos = EoS::PolytropicFluid<true>{100.0, 2.0};
+  CHECK(eos == eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
   // Test DataVector functions
   {
     const Scalar<DataVector> rho{DataVector{

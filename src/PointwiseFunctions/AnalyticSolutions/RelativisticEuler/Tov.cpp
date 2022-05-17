@@ -82,15 +82,19 @@ void lindblom_rhs(
   double& d_mass_over_radius = (*dvars)[1];
   const double specific_enthalpy = std::exp(log_enthalpy);
   const double rest_mass_density =
-      get(equation_of_state.rest_mass_density_from_enthalpy(
-          Scalar<double>{specific_enthalpy}));
-  const double pressure = get(equation_of_state.pressure_from_density(
-      Scalar<double>{rest_mass_density}));
+      specific_enthalpy == 1.0
+          ? 0.0
+          : get(equation_of_state.rest_mass_density_from_enthalpy(
+                Scalar<double>{specific_enthalpy}));
+  const double pressure = specific_enthalpy == 1.0
+                              ? 0.0
+                              : get(equation_of_state.pressure_from_density(
+                                    Scalar<double>{rest_mass_density}));
   const double energy_density =
       specific_enthalpy * rest_mass_density - pressure;
 
   // At the center of the star: (u,v) = (0,0)
-  if (UNLIKELY((radius_squared == 0.0) and (mass_over_radius == 0.0))) {
+  if (UNLIKELY((radius_squared < 1.0e-20) and (mass_over_radius < 1.0e-20))) {
     d_radius_squared = -3.0 / (2.0 * M_PI * (energy_density + 3.0 * pressure));
     d_mass_over_radius =
         -2.0 * energy_density / (energy_density + 3.0 * pressure);
@@ -99,6 +103,16 @@ void lindblom_rhs(
       d_log_conformal_factor = -0.25 * d_mass_over_radius;
     }
   } else {
+    // This statement is triggered by one of the test examples,
+    // Test_Tov.cpp: void {anonymous}::test_rueter()
+    // Test_Tov.cpp: void {anonymous}::test_baumgarte_shapiro()
+    // not sure what to do about that
+    if constexpr (CoordSystem == TovCoordinates::Schwarzschild) {
+      ASSERT(mass_over_radius < .5,
+             "Compactness of Star is greater than BH"
+             "limit in TOV solver, currently, " +
+                 std::to_string(mass_over_radius));
+    }
     const double one_minus_two_m_over_r = 1.0 - 2.0 * mass_over_radius;
     const double denominator =
         4.0 * M_PI * radius_squared * pressure + mass_over_radius;
@@ -206,17 +220,19 @@ void TovSolution::integrate(
       // Transform observed radius to isotropic, so we use the isotropic radius
       // for all interpolations below
       observer.radius[i] /= square(observer.conformal_factor[i]);
+      // The interpolation is not safe otherwise
     }
+    observer.radius.back() = outer_radius_;
     conformal_factor_interpolant_ = intrp::BarycentricRational(
         observer.radius, observer.conformal_factor, 5);
   }
 
   mass_over_radius_interpolant_ =
-      intrp::BarycentricRational(observer.radius, observer.mass_over_radius, 5);
+      intrp::CubicSpline(observer.radius, observer.mass_over_radius);
   // log_enthalpy(radius) is almost linear so an interpolant of order 3
   // maximizes precision
   log_enthalpy_interpolant_ =
-      intrp::BarycentricRational(observer.radius, observer.log_enthalpy, 3);
+      intrp::CubicSpline(observer.radius, observer.log_enthalpy);
 }
 
 TovSolution::TovSolution(

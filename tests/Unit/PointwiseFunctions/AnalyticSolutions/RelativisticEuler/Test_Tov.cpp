@@ -162,7 +162,7 @@ void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
 
   // Take a finite-difference numerical derivative of the pressure from the
   // radial solution, and compare to the TOV equation dp/dr
-  auto custom_approx = Approx::custom().epsilon(1.e-6);
+  auto custom_approx = Approx::custom().epsilon(2.e-5);
   for (size_t i = 2; i < num_radial_pts - 2; ++i) {
     CAPTURE(i);
     CAPTURE(radii[i]);
@@ -183,17 +183,25 @@ void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
 void test_baumgarte_shapiro() {
   // Reproduces Fig. 1.2 in BaumgarteShapiro, as suggested in footnote 25 on p.
   // 18, and as listed in Table 14.1
-  const EquationsOfState::PolytropicFluid<true> eos{1., 2.};
-  const double central_energy_density = 0.42;
-  // For polytropic_exponent = 2
+  // We use the polytropic scaling relations to prevent
+  // nonsensical behavior inside of the NS
+  const double K = 100.0;
+  const double Gamma = 2.0;
+  const EquationsOfState::PolytropicFluid<true> eos{K, Gamma};
+  const double central_energy_density = 0.42 / K;
+  const double K_over_Gamma_minus_1 = K / (Gamma - 1);
   const double central_rest_mass_density =
-      0.5 * (sqrt(1. + 4. * central_energy_density) - 1.);
+      (sqrt(1.0 + 4.0 * K_over_Gamma_minus_1 * central_energy_density) - 1.) /
+      (2 * K_over_Gamma_minus_1);
   const RelativisticEuler::Solutions::TovSolution tov{
       eos, central_rest_mass_density};
   // The values in BaumgarteShapiro are given to this precision
-  Approx custom_approx = Approx::custom().epsilon(1.e-03).scale(1.0);
-  CHECK(tov.total_mass() == custom_approx(0.164));
-  CHECK(tov.outer_radius() == custom_approx(0.763));
+  // rescale macroscopic quantites to new units
+  const double target_total_mass = 0.164 * pow(K, 0.5);
+  const double target_outer_radius = 0.763 * pow(K, 0.5);
+  Approx custom_approx = Approx::custom().epsilon(1.e-03).scale(pow(K, 0.5));
+  CHECK(tov.total_mass() == custom_approx(target_total_mass));
+  CHECK(tov.outer_radius() == custom_approx(target_outer_radius));
 }
 
 void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,

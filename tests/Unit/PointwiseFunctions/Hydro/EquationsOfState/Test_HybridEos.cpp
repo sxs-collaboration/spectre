@@ -61,6 +61,15 @@ void check_exact_polytrope() {
   CHECK(c_s_sq == (IsRelativistic ? 0.96 : 1.0));
   EquationsOfState::HybridEos<EquationsOfState::PolytropicFluid<IsRelativistic>>
       eos{cold_eos, 1.5};
+  TestHelpers::EquationsOfState::test_get_clone(eos);
+
+  const EquationsOfState::HybridEos<EquationsOfState::PolytropicFluid<true>>
+      other_eos{{100.0, 2.0}, 1.4};
+  const auto other_type_eos =
+      EquationsOfState::PolytropicFluid<true>{100.0, 2.0};
+  CHECK(eos == eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
   const Scalar<double> eps{5.0};
   const auto p = eos.pressure_from_density_and_energy(rho, eps);
   CHECK(get(p) == 34.0);

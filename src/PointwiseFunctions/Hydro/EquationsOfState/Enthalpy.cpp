@@ -11,7 +11,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
-#include "PointwiseFunctions/Hydro/EquationsOfState/Spectral.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -41,6 +41,19 @@ Enthalpy<LowDensityEoS>::Coefficients::Coefficients(
     exponential_external_constant =
         std::numeric_limits<double>::signaling_NaN();
   }
+}
+template <typename LowDensityEoS>
+bool Enthalpy<LowDensityEoS>::Coefficients::operator==(
+    const Coefficients& rhs) const {
+  return polynomial_coefficients == rhs.polynomial_coefficients and
+         sin_coefficients == rhs.sin_coefficients and
+         cos_coefficients == rhs.cos_coefficients and
+         trig_scale == rhs.trig_scale and
+         reference_density == rhs.reference_density and
+         has_exponential_prefactor == rhs.has_exponential_prefactor and
+         (has_exponential_prefactor ? exponential_external_constant ==
+                                          rhs.exponential_external_constant
+                                    : true);
 }
 
 // Given an expansion h(x) = sum_i f_i(x) , compute int_a^x sum_i f_i(x) e^x +
@@ -213,9 +226,37 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <typename LowDensityEoS>,
                                      Enthalpy<LowDensityEoS>, DataVector, 1)
 
 template <typename LowDensityEoS>
+std::unique_ptr<EquationOfState<true, 1>> Enthalpy<LowDensityEoS>::get_clone()
+    const {
+  auto clone = std::make_unique<Enthalpy>(*this);
+  return std::unique_ptr<EquationOfState<true, 1>>(std::move(clone));
+}
+
+template <typename LowDensityEoS>
+bool Enthalpy<LowDensityEoS>::is_equal(
+    const EquationOfState<true, 1>& rhs) const {
+  const auto& derived_ptr =
+      dynamic_cast<const Enthalpy<LowDensityEoS>* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+template <typename LowDensityEoS>
+bool Enthalpy<LowDensityEoS>::operator==(
+    const Enthalpy<LowDensityEoS>& rhs) const {
+  return low_density_eos_ == rhs.low_density_eos_ and
+         coefficients_ == rhs.coefficients_ and
+         exponential_integral_coefficients_ ==
+             rhs.exponential_integral_coefficients_;
+  // Don't need to check the derivative coefficients
+}
+template <typename LowDensityEoS>
+bool Enthalpy<LowDensityEoS>::operator!=(
+    const Enthalpy<LowDensityEoS>& rhs) const {
+  return not(*this == rhs);
+}
+
+template <typename LowDensityEoS>
 Enthalpy<LowDensityEoS>::Enthalpy(CkMigrateMessage* msg)
     : EquationOfState<true, 1>(msg) {}
-
 
 template <typename LowDensityEoS>
 void Enthalpy<LowDensityEoS>::pup(PUP::er& p) {
@@ -232,6 +273,7 @@ void Enthalpy<LowDensityEoS>::pup(PUP::er& p) {
 
 template <typename LowDensityEoS>
 double Enthalpy<LowDensityEoS>::x_from_density(const double density) const {
+  ASSERT(density > 0.0, "Density must be greater than zero");
   return log(density / reference_density_);
 }
 template <typename LowDensityEoS>
@@ -398,7 +440,7 @@ template <typename LowDensityEoS>
 double Enthalpy<LowDensityEoS>::pressure_from_log_density(
     const double x) const {
   auto rest_mass_density = density_from_x(x);
-  if (in_low_density_domain(rest_mass_density)) {
+  if (UNLIKELY(in_low_density_domain(rest_mass_density))) {
     // Currently this branch is inaccessible
     ERROR(
         "This branch is untested, it may be useful in "
@@ -454,5 +496,6 @@ template <typename LowDensityEoS>
 PUP::able::PUP_ID EquationsOfState::Enthalpy<LowDensityEoS>::my_PUP_ID = 0;
 
 template class EquationsOfState::Enthalpy<Spectral>;
+template class EquationsOfState::Enthalpy<PolytropicFluid<true>>;
 
 }  // namespace EquationsOfState

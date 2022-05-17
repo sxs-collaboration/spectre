@@ -69,6 +69,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.IdealFluid",
       "PointwiseFunctions/Hydro/EquationsOfState/"};
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
+  TestHelpers::EquationsOfState::test_get_clone(
+      EoS::IdealFluid<true>(5.0 / 3.0));
+  const auto eos = EoS::IdealFluid<true>{5.0 / 3.0};
+  const auto other_eos = EoS::IdealFluid<true>{4.0 / 3.0};
+  const auto other_type_eos = EoS::PolytropicFluid<true>{100.0, 2.0};
+  CHECK(eos == eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
+
   TestHelpers::EquationsOfState::check(EoS::IdealFluid<true>{5.0 / 3.0},
                                        "IdealFluid", "ideal_fluid", d_for_size,
                                        5.0 / 3.0);

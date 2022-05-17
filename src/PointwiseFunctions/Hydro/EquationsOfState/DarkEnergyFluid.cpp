@@ -26,6 +26,33 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      DataVector, 2)
 
 template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 2>>
+DarkEnergyFluid<IsRelativistic>::get_clone() const {
+  auto clone = std::make_unique<DarkEnergyFluid<IsRelativistic>>(*this);
+  return std::unique_ptr<EquationOfState<IsRelativistic, 2>>(std::move(clone));
+}
+
+template <bool IsRelativistic>
+bool DarkEnergyFluid<IsRelativistic>::is_equal(
+    const EquationOfState<IsRelativistic, 2>& rhs) const {
+  const auto& derived_ptr =
+      dynamic_cast<const DarkEnergyFluid<IsRelativistic>* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
+template <bool IsRelativistic>
+bool DarkEnergyFluid<IsRelativistic>::operator==(
+    const DarkEnergyFluid<IsRelativistic>& rhs) const {
+  return parameter_w_ == rhs.parameter_w_;
+}
+
+template <bool IsRelativistic>
+bool DarkEnergyFluid<IsRelativistic>::operator!=(
+    const DarkEnergyFluid<IsRelativistic>& rhs) const {
+  return not(*this == rhs);
+}
+
+template <bool IsRelativistic>
 DarkEnergyFluid<IsRelativistic>::DarkEnergyFluid(CkMigrateMessage* msg)
     : EquationOfState<IsRelativistic, 2>(msg) {}
 

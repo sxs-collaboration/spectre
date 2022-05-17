@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -248,8 +249,8 @@ class TovSolution {
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
   double total_mass_{std::numeric_limits<double>::signaling_NaN()};
   double injection_energy_{std::numeric_limits<double>::signaling_NaN()};
-  intrp::BarycentricRational mass_over_radius_interpolant_;
-  intrp::BarycentricRational log_enthalpy_interpolant_;
+  intrp::CubicSpline mass_over_radius_interpolant_;
+  intrp::CubicSpline log_enthalpy_interpolant_;
   intrp::BarycentricRational conformal_factor_interpolant_;
 };
 

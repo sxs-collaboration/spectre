@@ -106,6 +106,14 @@ class Spectral : public EquationOfState<true, 1> {
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Spectral, 1)
 
+  std::unique_ptr<EquationOfState<true, 1>> get_clone() const override;
+
+  bool operator==(const Spectral& rhs) const;
+
+  bool operator!=(const Spectral& rhs) const;
+
+  bool is_equal(const EquationOfState<true, 1>& rhs) const override;
+
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<true, 1>), Spectral);
 

@@ -55,6 +55,7 @@ void test_cubic_spline(const F& function, const double lower_bound,
   // tolerance. Also check that the serialized-and-deserialized interpolant does
   // the same.
   const auto deserialized_interpolant = serialize_and_deserialize(interpolant);
+  CHECK(deserialized_interpolant == interpolant);
   double max_error = 0.;
   double max_error_x_value = std::numeric_limits<double>::signaling_NaN();
   double max_error_interior = 0.;
@@ -66,6 +67,7 @@ void test_cubic_spline(const F& function, const double lower_bound,
     const double y_value = function(x_value);
     const double interpolated_y_value = interpolant(x_value);
     CHECK(interpolated_y_value == custom_approx(y_value));
+    // Test the == operator
     CHECK(deserialized_interpolant(x_value) == interpolated_y_value);
     // Record max error for better test failure reports
     const double error = abs(interpolated_y_value - y_value);
@@ -85,6 +87,16 @@ void test_cubic_spline(const F& function, const double lower_bound,
         max_error_interior_x_value = x_value;
       }
     }
+  }
+  // Check the copy constructors
+  {
+    intrp::CubicSpline interpolant_copy_assigned{{-1.0, 0.0, 1.0, 2.0},
+                                                 {0.0, 0.0, 0.0, 6.0}};
+    interpolant_copy_assigned = interpolant;
+    const auto interpolant_copy_constructed{interpolant};
+
+    CHECK(interpolant_copy_assigned == interpolant);
+    CHECK(interpolant_copy_constructed == interpolant);
   }
   // Output information on the precision the interpolation achieved when it
   // failed to stay within the given tolerances

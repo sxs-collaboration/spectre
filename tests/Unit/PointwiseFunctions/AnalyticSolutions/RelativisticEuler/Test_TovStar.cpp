@@ -21,6 +21,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
@@ -39,21 +40,25 @@ void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
   const auto domain = brick.create_domain();
-  verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-10, 1.234,
+  verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-7, 1.234,
                         1.e-4);
 }
 
 void test_tov_star(const TovCoordinates coord_system) {
   Parallel::register_classes_with_charm<
       RelativisticEuler::Solutions::TovStar>();
+  Parallel::register_classes_with_charm<
+      EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,
           RelativisticEuler::Solutions::TovStar>(
           "TovStar:\n"
           "  CentralDensity: 1.0e-3\n"
-          "  PolytropicConstant: 100.0\n"
-          "  PolytropicExponent: 2.0\n"
+          "  EquationOfState:\n"
+          "    PolytropicFluid:\n"
+          "      PolytropicConstant: 100.0\n"
+          "      PolytropicExponent: 2.0\n"
           "  Coordinates: " +
           get_output(coord_system));
   const auto deserialized_option_solution =
@@ -63,7 +68,13 @@ void test_tov_star(const TovCoordinates coord_system) {
           *deserialized_option_solution);
   {
     INFO("Semantics");
-    CHECK(solution == TovStar{1.0e-3, 100.0, 2.0, coord_system});
+    CHECK(solution ==
+          TovStar{1.0e-3,
+                  std::make_unique<EquationsOfState::PolytropicFluid<true>>(
+                      100.0, 2.0),
+                  coord_system});
+    // Add support for arbitrary EOSes would require custom copy
+    // semantics that we haven't needed yet.
     test_copy_semantics(solution);
     TovStar star_copy = solution;
     test_move_semantics(std::move(star_copy), solution);
@@ -75,7 +86,9 @@ void test_tov_star(const TovCoordinates coord_system) {
     CHECK(solution.radial_solution().outer_radius() ==
           custom_approx(10.0473500683));
     // Check a second solution
-    TovStar second_solution{1.0e-3, 8.0, 2.0};
+    TovStar second_solution{
+        1.0e-3,
+        std::make_unique<EquationsOfState::PolytropicFluid<true>>(8.0, 2.0)};
     CHECK(second_solution.radial_solution().outer_radius() ==
           custom_approx(3.4685521362));
   }

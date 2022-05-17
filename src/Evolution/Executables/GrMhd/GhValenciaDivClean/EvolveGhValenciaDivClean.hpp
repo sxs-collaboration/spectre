@@ -20,6 +20,7 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "Utilities/TMPL.hpp"
 
 template <typename InitialData, typename... InterpolationTargetTags>
@@ -53,6 +54,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &grmhd::GhValenciaDivClean::BoundaryCorrections::
         register_derived_with_charm,
+    &EquationsOfState::register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 

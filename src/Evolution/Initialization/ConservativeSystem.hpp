@@ -109,8 +109,9 @@ struct ConservativeSystem {
 
       PrimitiveVars primitive_vars{
           db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
-      auto equation_of_state =
-          db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
+      auto equation_of_state = db::get<::Tags::AnalyticSolutionOrData>(box)
+                                   .equation_of_state()
+                                   .get_clone();
       Initialization::mutate_assign<simple_tags>(
           make_not_null(&box), std::move(vars), std::move(primitive_vars),
           std::move(equation_of_state));

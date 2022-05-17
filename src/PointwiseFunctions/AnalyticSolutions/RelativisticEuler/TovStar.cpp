@@ -20,22 +20,36 @@ namespace RelativisticEuler::Solutions {
 TovStar::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
 TovStar::TovStar(
-    const double central_rest_mass_density, const double polytropic_constant,
-    const double polytropic_exponent,
+    const double central_rest_mass_density,
+    std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+        equation_of_state,
     const RelativisticEuler::Solutions::TovCoordinates coordinate_system)
     : central_rest_mass_density_(central_rest_mass_density),
-      polytropic_constant_(polytropic_constant),
-      polytropic_exponent_(polytropic_exponent),
-      equation_of_state_{polytropic_constant_, polytropic_exponent_},
+      equation_of_state_(std::move(equation_of_state)),
       coordinate_system_(coordinate_system),
-      radial_solution_(equation_of_state_, central_rest_mass_density_,
+      radial_solution_(*equation_of_state_, central_rest_mass_density_,
                        coordinate_system_) {}
+
+TovStar::TovStar(const TovStar& rhs)
+    : evolution::initial_data::InitialData(rhs),
+      central_rest_mass_density_(rhs.central_rest_mass_density_),
+      equation_of_state_(rhs.equation_of_state_->get_clone()),
+      coordinate_system_(rhs.coordinate_system_),
+      radial_solution_(*equation_of_state_, central_rest_mass_density_,
+                       coordinate_system_) {}
+
+TovStar& TovStar::operator=(const TovStar& rhs) {
+  central_rest_mass_density_ = rhs.central_rest_mass_density_;
+  equation_of_state_ = rhs.equation_of_state_->get_clone();
+  coordinate_system_ = rhs.coordinate_system_;
+  radial_solution_ = RelativisticEuler::Solutions::TovSolution(
+      *equation_of_state_, central_rest_mass_density_, coordinate_system_);
+  return *this;
+}
 
 void TovStar::pup(PUP::er& p) {
   InitialData::pup(p);
   p | central_rest_mass_density_;
-  p | polytropic_constant_;
-  p | polytropic_exponent_;
   p | equation_of_state_;
   p | coordinate_system_;
   p | radial_solution_;
@@ -193,7 +207,12 @@ void TovVariables<DataType, Region>::operator()(
   } else {
     const auto& specific_enthalpy =
         cache->get_var(*this, hydro::Tags::SpecificEnthalpy<DataType>{});
-    *rest_mass_density = eos.rest_mass_density_from_enthalpy(specific_enthalpy);
+    if (get(specific_enthalpy) == 1.) {
+      get(*rest_mass_density) = 0.;
+    } else {
+      *rest_mass_density =
+          eos.rest_mass_density_from_enthalpy(specific_enthalpy);
+    }
   }
 }
 
@@ -207,7 +226,11 @@ void TovVariables<DataType, Region>::operator()(
   } else {
     const auto& rest_mass_density =
         cache->get_var(*this, hydro::Tags::RestMassDensity<DataType>{});
-    *pressure = eos.pressure_from_density(rest_mass_density);
+    if (get(rest_mass_density) == 0.) {
+      get(*pressure) = 0.;
+    } else {
+      *pressure = eos.pressure_from_density(rest_mass_density);
+    }
   }
 }
 
@@ -221,8 +244,12 @@ void TovVariables<DataType, Region>::operator()(
   } else {
     const auto& rest_mass_density =
         cache->get_var(*this, hydro::Tags::RestMassDensity<DataType>{});
-    *specific_internal_energy =
-        eos.specific_internal_energy_from_density(rest_mass_density);
+    if (get(rest_mass_density) == 0.) {
+      get(*specific_internal_energy) = 0.;
+    } else {
+      *specific_internal_energy =
+          eos.specific_internal_energy_from_density(rest_mass_density);
+    }
   }
 }
 
@@ -310,6 +337,7 @@ void TovVariables<DataType, Region>::operator()(
         get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
     get(*metric_radial_potential) = 2. * log(conformal_factor);
   } else {
+    // Schwarzschild coords
     if constexpr (Region == StarRegion::Exterior) {
       const auto& metric_time_potential =
           get(cache->get_var(*this, Tags::MetricTimePotential<DataType>{}));
@@ -676,12 +704,9 @@ void TovVariables<DataType, Region>::operator()(
 PUP::able::PUP_ID TovStar::my_PUP_ID = 0;
 
 bool operator==(const TovStar& lhs, const TovStar& rhs) {
-  // there is no comparison operator for the EoS, but should be okay as
-  // the `polytropic_exponent`s and `polytropic_constant`s are compared
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and
-         lhs.polytropic_constant_ == rhs.polytropic_constant_ and
-         lhs.polytropic_exponent_ == rhs.polytropic_exponent_ and
-         lhs.coordinate_system_ == rhs.coordinate_system_;
+         lhs.coordinate_system_ == rhs.coordinate_system_ and
+         *lhs.equation_of_state_ == *rhs.equation_of_state_;
 }
 
 bool operator!=(const TovStar& lhs, const TovStar& rhs) {

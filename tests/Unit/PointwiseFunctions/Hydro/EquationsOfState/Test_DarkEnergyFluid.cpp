@@ -37,6 +37,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
       "PointwiseFunctions/Hydro/EquationsOfState/"};
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
+  const auto eos = EoS::DarkEnergyFluid<true>{1.0};
+  const auto other_eos = EoS::DarkEnergyFluid<true>{0.5};
+  const auto other_type_eos = EoS::PolytropicFluid<true>{100.0, 2.0};
+  CHECK(eos == eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
+  TestHelpers::EquationsOfState::test_get_clone(
+      EoS::DarkEnergyFluid<true>(1.0));
 
   TestHelpers::EquationsOfState::check(EoS::DarkEnergyFluid<true>(1.0),
                                        "DarkEnergyFluid", "dark_energy_fluid",

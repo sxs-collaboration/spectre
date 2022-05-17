@@ -17,7 +17,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/Gsl.hpp"
@@ -132,11 +132,10 @@ struct TovVariables {
   TovVariables(TovVariables&&) = default;
   TovVariables& operator=(TovVariables&&) = default;
   virtual ~TovVariables() = default;
-
   TovVariables(
       const tnsr::I<DataType, 3>& local_coords, const DataType& local_radius,
       const RelativisticEuler::Solutions::TovSolution& local_radial_solution,
-      const EquationsOfState::PolytropicFluid<true>& local_eos)
+      const EquationsOfState::EquationOfState<true, 1>& local_eos)
       : coords(local_coords),
         radius(local_radius),
         radial_solution(local_radial_solution),
@@ -145,7 +144,7 @@ struct TovVariables {
   const tnsr::I<DataType, 3>& coords;
   const DataType& radius;
   const RelativisticEuler::Solutions::TovSolution& radial_solution;
-  const EquationsOfState::PolytropicFluid<true>& eos;
+  const EquationsOfState::EquationOfState<true, 1>& eos;
 
   void operator()(gsl::not_null<Scalar<DataType>*> mass_over_radius,
                   gsl::not_null<Cache*> cache,
@@ -308,11 +307,12 @@ struct TovVariables {
  * (Schwarzschild) radius and $\bar{r}$ is the isotropic radius. See
  * `RelativisticEuler::Solutions::TovSolution` for details.
  */
+
 class TovStar : public virtual evolution::initial_data::InitialData,
                 public MarkAsAnalyticSolution,
                 public AnalyticSolution<3> {
  public:
-  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
+  using equation_of_state_type = EquationsOfState::EquationOfState<true, 1>;
 
   /// The central density of the star.
   struct CentralDensity {
@@ -320,22 +320,6 @@ class TovStar : public virtual evolution::initial_data::InitialData,
     static constexpr Options::String help = {
         "The central density of the star."};
     static type lower_bound() { return 0.; }
-  };
-
-  /// The polytropic constant of the polytropic fluid.
-  struct PolytropicConstant {
-    using type = double;
-    static constexpr Options::String help = {
-        "The polytropic constant of the fluid."};
-    static type lower_bound() { return 0.; }
-  };
-
-  /// The polytropic exponent of the polytropic fluid.
-  struct PolytropicExponent {
-    using type = double;
-    static constexpr Options::String help = {
-        "The polytropic exponent of the fluid."};
-    static type lower_bound() { return 1.; }
   };
 
   /// Areal (Schwarzschild) or isotropic coordinates
@@ -347,23 +331,24 @@ class TovStar : public virtual evolution::initial_data::InitialData,
 
   static constexpr size_t volume_dim = 3_st;
 
-  using options = tmpl::list<CentralDensity, PolytropicConstant,
-                             PolytropicExponent, Coordinates>;
+  using options =
+      tmpl::list<CentralDensity, hydro::OptionTags::EquationOfState<true, 1>,
+                 Coordinates>;
 
   static constexpr Options::String help = {
       "A static, spherically-symmetric star found by solving the \n"
       "Tolman-Oppenheimer-Volkoff (TOV) equations, with a given central \n"
-      "density and polytropic fluid."};
+      "density and equation of state."};
 
   TovStar() = default;
-  TovStar(const TovStar& /*rhs*/) = default;
-  TovStar& operator=(const TovStar& /*rhs*/) = default;
+  TovStar(const TovStar& /*rhs*/);
+  TovStar& operator=(const TovStar& /*rhs*/);
   TovStar(TovStar&& /*rhs*/) = default;
   TovStar& operator=(TovStar&& /*rhs*/) = default;
   ~TovStar() = default;
-
-  TovStar(double central_rest_mass_density, double polytropic_constant,
-          double polytropic_exponent,
+  TovStar(double central_rest_mass_density,
+          std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
+              equation_of_state,
           const RelativisticEuler::Solutions::TovCoordinates coordinate_system =
               RelativisticEuler::Solutions::TovCoordinates::Schwarzschild);
 
@@ -384,8 +369,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   /// NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/);
 
-  const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
-    return equation_of_state_;
+  const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
+    return *equation_of_state_;
   }
 
   /// The radial profile of the star
@@ -417,7 +402,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
           VarsComputer<DataType, tov_detail::StarRegion::Exterior>;
       typename ExteriorVarsComputer::Cache cache{get_size(radius)};
       ExteriorVarsComputer computer{
-          x, radius, radial_solution_, equation_of_state_,
+          x, radius, radial_solution_, *equation_of_state_,
           std::forward<VarsComputerArgs>(vars_computer_args)...};
       return {cache.get_var(computer, Tags{})...};
     } else if (max(radius) <= outer_radius and
@@ -427,7 +412,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
           VarsComputer<DataType, tov_detail::StarRegion::Interior>;
       typename InteriorVarsComputer::Cache cache{get_size(radius)};
       InteriorVarsComputer computer{
-          x, radius, radial_solution_, equation_of_state_,
+          x, radius, radial_solution_, *equation_of_state_,
           std::forward<VarsComputerArgs>(vars_computer_args)...};
       return {cache.get_var(computer, Tags{})...};
     } else {
@@ -468,19 +453,22 @@ class TovStar : public virtual evolution::initial_data::InitialData,
         if (get_element(radius, i) > outer_radius) {
           typename ExteriorVarsComputer::Cache cache{1};
           ExteriorVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_,
+              *equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         } else if (get_element(radius, i) > center_radius_cutoff) {
           typename InteriorVarsComputer::Cache cache{1};
           InteriorVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_,
+              *equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         } else {
           typename CenterVarsComputer::Cache cache{1};
           CenterVarsComputer computer{
-              x_i, get_element(radius, i), radial_solution_, equation_of_state_,
+              x_i, get_element(radius, i), radial_solution_,
+              *equation_of_state_,
               std::forward<VarsComputerArgs>(vars_computer_args)...};
           expand_pack(get_var(i, cache, computer, Tags{})...);
         }
@@ -514,13 +502,10 @@ class TovStar : public virtual evolution::initial_data::InitialData,
 
   double central_rest_mass_density_ =
       std::numeric_limits<double>::signaling_NaN();
-  double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
-  double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
-  EquationsOfState::PolytropicFluid<true> equation_of_state_{};
+  std::unique_ptr<equation_of_state_type> equation_of_state_;
   RelativisticEuler::Solutions::TovCoordinates coordinate_system_{};
   RelativisticEuler::Solutions::TovSolution radial_solution_{};
 };
 
 bool operator!=(const TovStar& lhs, const TovStar& rhs);
-
 }  // namespace RelativisticEuler::Solutions

@@ -42,8 +42,10 @@ DomainCreator:
 AnalyticSolution:
   TovStar:
     CentralDensity: 1.28e-3
-    PolytropicConstant: 100.0
-    PolytropicExponent: 2.0
+    EquationOfState:
+        PolytropicFluid:
+            PolytropicConstant: 100.0
+            PolytropicExponent: 2.0
     Coordinates: Schwarzschild
 
 VariableFixing:
