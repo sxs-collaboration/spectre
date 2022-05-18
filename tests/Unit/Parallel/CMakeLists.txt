@@ -172,6 +172,7 @@ set(LIBRARY "Test_Parallel")
 set(LIBRARY_SOURCES
   Test_GlobalCacheDataBox.cpp
   Test_InboxInserters.cpp
+  Test_MemoryMonitor.cpp
   Test_NodeLock.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
@@ -188,7 +189,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  "Options;SystemUtilities"
+  "IO;Options;SystemUtilities"
   )
 
 add_dependencies(
