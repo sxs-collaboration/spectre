@@ -39,6 +39,30 @@ class TestGenerateXdmf(unittest.TestCase):
         self.assertTrue(os.path.isfile(output_filename + '.xmf'))
         os.remove(output_filename + '.xmf')
 
+    def test_surface_generate_xdmf(self):
+        data_file_prefix = os.path.join(spectre_informer.unit_test_src_path(),
+                                        'Visualization/Python',
+                                        'SurfaceTestData')
+        #write output file to same relative path in build directory
+        output_filename = os.path.join(spectre_informer.unit_test_build_path(),
+                                       'Visualization/Python',
+                                       'Test_SurfaceGenerateXdmf_output')
+        if os.path.isfile(output_filename + '.xmf'):
+            os.remove(output_filename + '.xmf')
+
+        generate_xdmf(file_prefix=data_file_prefix,
+                      output=output_filename,
+                      subfile_name="AhA",
+                      start_time=0.,
+                      stop_time=0.03,
+                      stride=1,
+                      coordinates='InertialCoordinates')
+
+        # The script is quite opaque right now, so we only test that we can run
+        # it and it produces output without raising an error. To test more
+        # details, we should refactor the script into smaller units.
+        self.assertTrue(os.path.isfile(output_filename + '.xmf'))
+
     def test_subfile_not_found(self):
         data_file_prefix = os.path.join(spectre_informer.unit_test_src_path(),
                                         'Visualization/Python', 'VolTestData')
