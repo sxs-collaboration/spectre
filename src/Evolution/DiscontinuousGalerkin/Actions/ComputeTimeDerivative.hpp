@@ -84,9 +84,12 @@ namespace evolution::dg::Actions {
  *
  * where \f$F^i_{\alpha}\f$ are the fluxes when the mesh isn't moving,
  * \f$v^i_g\f$ is the velocity of the mesh, \f$u_{\alpha}\f$ are the evolved
- * variables, \f$S_{\alpha}\f$ are the source terms, and \f$\hat{t}\f$ is the
- * time in the logical frame. For evolution equations that do not have any
- * fluxes and only nonconservative products we evolve:
+ * variables, \f$S_{\alpha}\f$ are the source terms, \f$\hat{t}\f$ is the
+ * time in the logical frame, \f$t\f$ is the time in the inertial frame, hatted
+ * indices correspond to logical frame quantites, and unhatted indices to
+ * inertial frame quantities (e.g. \f$\partial_i\f$ is the derivative with
+ * respect to the inertial coordinates). For evolution equations that do not
+ * have any fluxes and only nonconservative products we evolve:
  *
  * \f{align*}{
  * \frac{\partial u_\alpha}{\partial \hat{t}}
@@ -131,6 +134,12 @@ namespace evolution::dg::Actions {
  *
  * \note The term is always added in the `Frame::Inertial` frame, and the plus
  * sign arises because we add it to the time derivative.
+ *
+ * \warning The mesh velocity terms are added to the time derivatives before
+ * invoking the boundary conditions. This means that the time derivatives passed
+ * to the boundary conditions are with respect to \f$\hat{t}\f$, not \f$t\f$.
+ * This is especially important in the TimeDerivative/Bjorhus boundary
+ * conditions.
  *
  * Here are examples of the `TimeDerivative` struct used to compute the volume
  * time derivative. This struct is what the type alias

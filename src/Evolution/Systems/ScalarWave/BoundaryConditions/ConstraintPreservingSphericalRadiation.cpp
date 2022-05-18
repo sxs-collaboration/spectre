@@ -77,18 +77,32 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
     const Scalar<DataVector>& gamma2,
 
-    const Scalar<DataVector>& dt_psi, const Scalar<DataVector>& dt_pi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& dt_phi,
-
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) const {
   {
+    // The first contribution to dt_pi_correction is the negative of volume
+    // inertial dt Pi, where we have used the evolution equation to replace time
+    // derivatives by space derivatives.
+    get(*dt_pi_correction) = get<0, 0>(d_phi);
+    for (size_t i = 1; i < Dim; ++i) {
+      get(*dt_pi_correction) += d_phi.get(i, i);
+    }
+
+    // the dt_pi that would be passed in is actually the logical time
+    // derivative, and so we instead just compute the time derivatives with
+    // respect to the inertial time locally since the flat scalar wave system is
+    // quite simple.
+    const Scalar<DataVector> mesh_velocity_dot_d_pi =
+        face_mesh_velocity.has_value()
+            ? dot_product(face_mesh_velocity.value(), d_pi)
+            : Scalar<DataVector>{get(pi).size(), 0.0};
     if (type_ ==
         detail::ConstraintPreservingSphericalRadiationType::Sommerfeld) {
-      get(*dt_pi_correction) = -get(dt_pi);
       for (size_t i = 0; i < Dim; ++i) {
-        get(*dt_pi_correction) += normal_covector.get(i) * dt_phi.get(i);
+        get(*dt_pi_correction) +=
+            normal_covector.get(i) *
+            (get(gamma2) * (d_psi.get(i) - phi.get(i)) - d_pi.get(i));
       }
     } else {
       DataVector& inv_radius = get(*dt_psi_correction);
@@ -97,23 +111,30 @@ ConstraintPreservingSphericalRadiation<Dim>::dg_time_derivative(
 
       if (type_ == detail::ConstraintPreservingSphericalRadiationType::
                        FirstOrderBaylissTurkel) {
-        get(*dt_pi_correction) = -get(dt_pi) + inv_radius * get(dt_psi);
+        // dt_psi=-Pi, replace directly then we don't need to worry about
+        // logical vs. inertial time derivatives.
+        get(*dt_pi_correction) -= inv_radius * get(pi);
         for (size_t i = 0; i < Dim; ++i) {
-          get(*dt_pi_correction) += normal_covector.get(i) * dt_phi.get(i);
+          get(*dt_pi_correction) +=
+              normal_covector.get(i) *
+              (get(gamma2) * (d_psi.get(i) - phi.get(i)) - d_pi.get(i));
         }
       } else {
         // second-order Bayliss-Turkel
-        get(*dt_pi_correction) =
-            -get(dt_pi) -
+        get(*dt_pi_correction) -=
             2.0 * inv_radius * (2.0 * get(pi) - inv_radius * get(psi));
         for (size_t i = 0; i < Dim; ++i) {
           // Note: here we are handling `dt dr Psi` as `n^i dt Phi_i` and
           // `dr dt Psi` as `-n^i d_i Pi`. The only thing we are assuming is
           // that `d_r` is time-independent. This is why we have `n^i (dt Phi_i
           // - d_i Pi)` instead of `2 n^i dt Phi_i`.
+          //
+          // We can also replace `dt_phi_i - d_i Pi` with
+          //  `-2.0 d_i Pi + gamma_2 (d_i Psi - Phi_i)`
           get(*dt_pi_correction) +=
               normal_covector.get(i) *
-              (dt_phi.get(i) - d_pi.get(i) + 4.0 * inv_radius * phi.get(i));
+              (get(gamma2) * (d_psi.get(i) - phi.get(i)) - 2.0 * d_pi.get(i) +
+               4.0 * inv_radius * phi.get(i));
           for (size_t j = 0; j < Dim; ++j) {
             get(*dt_pi_correction) += normal_covector.get(i) *
                                       normal_covector.get(j) * d_phi.get(i, j);

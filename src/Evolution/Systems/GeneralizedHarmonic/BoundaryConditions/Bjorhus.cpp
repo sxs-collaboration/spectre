@@ -117,35 +117,100 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
     const tnsr::ab<DataVector, Dim, Frame::Inertial>&
         spacetime_deriv_gauge_source,
     // c.f. dg_interior_dt_vars_tags
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& dt_spacetime_metric,
-    const tnsr::aa<DataVector, Dim, Frame::Inertial>& dt_pi,
-    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& dt_phi,
+    const tnsr::aa<DataVector, Dim, Frame::Inertial>&
+        logical_dt_spacetime_metric,
+    const tnsr::aa<DataVector, Dim, Frame::Inertial>& logical_dt_pi,
+    const tnsr::iaa<DataVector, Dim, Frame::Inertial>& logical_dt_phi,
     // c.f. dg_interior_deriv_vars_tags
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_spacetime_metric,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& d_pi,
     const tnsr::ijaa<DataVector, Dim, Frame::Inertial>& d_phi) const {
-  TempBuffer<tmpl::list<::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempii<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::TempA<1, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::TempA<2, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::TempAb<0, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::TempAA<1, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
-                        ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>>>
+  TempBuffer<tmpl::list<
+      ::Tags::TempI<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempiaa<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempII<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempii<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempa<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempA<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempA<2, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempAb<0, Dim, Frame::Inertial, DataVector>,
+      ::Tags::TempAA<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<1, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempiaa<2, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<2, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<3, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempa<2, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempa<3, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<4, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempiaa<3, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<5, Dim, Frame::Inertial, DataVector>,
+      ::Tags::Tempaa<6, Dim, Frame::Inertial, DataVector>,
+      // inertial time derivatives
+      ::Tags::dt<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>,
+      ::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>,
+      ::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>>
       local_buffer(get_size(get<0>(normal_covector)), 0.);
+
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric;
+  tnsr::aa<DataVector, Dim, Frame::Inertial> dt_pi;
+  tnsr::iaa<DataVector, Dim, Frame::Inertial> dt_phi;
+  if (face_mesh_velocity.has_value()) {
+    for (size_t storage_index = 0; storage_index < dt_pi.size();
+         ++storage_index) {
+      dt_spacetime_metric[storage_index].set_data_ref(make_not_null(
+          &get<::Tags::dt<
+              gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>>(
+              local_buffer)[storage_index]));
+      dt_pi[storage_index].set_data_ref(
+          make_not_null(&get<::Tags::dt<Tags::Pi<Dim, Frame::Inertial>>>(
+              local_buffer)[storage_index]));
+    }
+    for (size_t storage_index = 0; storage_index < dt_phi.size();
+         ++storage_index) {
+      dt_phi[storage_index].set_data_ref(
+          make_not_null(&get<::Tags::dt<Tags::Phi<Dim, Frame::Inertial>>>(
+              local_buffer)[storage_index]));
+    }
+    // Compute inertial time derivative by subtracting mesh velocity from
+    // logical time derivative.
+    for (size_t a = 0; a < Dim + 1; ++a) {
+      for (size_t b = a; b < Dim + 1; ++b) {
+        dt_spacetime_metric.get(a, b) = logical_dt_spacetime_metric.get(a, b);
+        dt_pi.get(a, b) = logical_dt_pi.get(a, b);
+        for (size_t d = 0; d < Dim; ++d) {
+          dt_spacetime_metric.get(a, b) -=
+              face_mesh_velocity->get(d) * d_spacetime_metric.get(d, a, b);
+          dt_pi.get(a, b) -= face_mesh_velocity->get(d) * d_pi.get(d, a, b);
+        }
+        for (size_t i = 0; i < Dim; ++i) {
+          dt_phi.get(i, a, b) = logical_dt_phi.get(i, a, b);
+          for (size_t d = 0; d < Dim; ++d) {
+            dt_phi.get(i, a, b) -=
+                face_mesh_velocity->get(d) * d_phi.get(d, i, a, b);
+          }
+        }
+      }
+    }
+  } else {
+    for (size_t storage_index = 0; storage_index < dt_pi.size();
+         ++storage_index) {
+      dt_spacetime_metric[storage_index].set_data_ref(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          make_not_null(&const_cast<DataVector&>(
+              logical_dt_spacetime_metric[storage_index])));
+      dt_pi[storage_index].set_data_ref(make_not_null(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          &const_cast<DataVector&>(logical_dt_pi[storage_index])));
+    }
+    for (size_t storage_index = 0; storage_index < dt_phi.size();
+         ++storage_index) {
+      dt_phi[storage_index].set_data_ref(make_not_null(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          &const_cast<DataVector&>(logical_dt_phi[storage_index])));
+    }
+  }
 
   auto& unit_interface_normal_vector =
       get<::Tags::TempI<0, Dim, Frame::Inertial, DataVector>>(local_buffer);
