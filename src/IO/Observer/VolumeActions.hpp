@@ -157,6 +157,12 @@ struct ContributeVolumeData {
 }  // namespace Actions
 
 namespace ThreadedActions {
+namespace VolumeActions_detail {
+void write_data(const std::string& h5_file_name,
+                const std::string& subfile_path,
+                const observers::ObservationId& observation_id,
+                std::vector<ElementVolumeData>&& volume_data);
+}  // namespace VolumeActions_detail
 /*!
  * \ingroup ObserversGroup
  * \brief Move data to the observer writer for writing to disk.
@@ -333,6 +339,48 @@ struct ContributeVolumeDataToWriter {
           "ContributorsOfTensorData, "
           "VolumeDataLock, or H5FileLock in the DataBox.");
     }
+  }
+};
+
+/*!
+ * \brief Write volume data (such as surface data) at a given time (specified by
+ * an `ObservationId`) without the need to register or reduce anything, e.g.
+ * from a singleton component or from a specific chare.
+ *
+ * Use `observers::Actions::ContributeVolumeDataToWriter` instead if you need to
+ * write volume data from an array chare (e.g., writing volume data from all the
+ * elements in a domain).
+ *
+ * Invoke this action on the `observers::ObserverWriter` component on node 0.
+ * Pass the following arguments when invoking this action:
+ *
+ * - `h5_file_name`: the name of the HDF5 file where the volume data is to be
+ * written (without the .h5 extension).
+ * - `subfile_path`: the path where the volume data should be written in the
+ *   HDF5 file. Include a leading slash, e.g., `/AhA`.
+ * - `observation_id`: the ObservationId corresponding to the volume data.
+ * - `volume_data`: the volume data to be written.
+ */
+struct WriteVolumeData {
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... Ts,
+      typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<Tags::H5FileLock, DataBox>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& h5_file_name,
+                    const std::string& subfile_path,
+                    const observers::ObservationId& observation_id,
+                    std::vector<ElementVolumeData>&& volume_data) {
+    auto& volume_file_lock =
+        db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
+    volume_file_lock.lock();
+    VolumeActions_detail::write_data(h5_file_name, subfile_path, observation_id,
+                                     std::move(volume_data));
+    volume_file_lock.unlock();
   }
 };
 }  // namespace ThreadedActions

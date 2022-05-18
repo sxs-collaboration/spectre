@@ -95,6 +95,13 @@ HDF5 file name is specified in the input file using the
 `observers::Tags::VolumeFileName` option. The data is written into a subfile of
 the HDF5 file using the `h5::VolumeFile` class.
 
+If a singleton parallel component or a specific chare needs to write volume data
+directly to disk, such as surface data from an apparent horizon, it should use
+the `observers::ThreadedActions::WriteVolumeData` action called on the zeroth
+element of the `observers::ObserverWriter` component. For surface data (such as
+output from horizon finds), this data should be written to a file specified by
+the `observers::Tags::SurfaceFileName` option.
+
 ### Threading and NodeLocks
 
 Since the `observers::ObserverWriter` class is a nodegroup, its entry methods

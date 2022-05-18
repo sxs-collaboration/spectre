@@ -198,6 +198,7 @@ EventsAndTriggers:
 Observers:
   VolumeFileName: "GhBinaryBlackHoleVolumeData"
   ReductionFileName: "GhBinaryBlackHoleReductionData"
+  SurfaceFileName: "GhBinaryBlackHoleSurfacesData"
 
 ApparentHorizons:
   AhA:

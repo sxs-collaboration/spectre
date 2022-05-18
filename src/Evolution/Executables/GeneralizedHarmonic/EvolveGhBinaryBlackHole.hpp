@@ -88,6 +88,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
@@ -258,6 +259,7 @@ struct EvolutionMetavars {
         horizons_vars_to_interpolate_to_target;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using tags_to_observe = horizons_tags_to_observe;
+    using surface_tags_to_observe = tmpl::list<StrahlkorperTags::RicciScalar>;
     using compute_items_on_target = horizons_compute_items_on_target;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Grid>;
@@ -266,7 +268,8 @@ struct EvolutionMetavars {
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>>;
   };
 
   struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
@@ -275,6 +278,7 @@ struct EvolutionMetavars {
         horizons_vars_to_interpolate_to_target;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using tags_to_observe = horizons_tags_to_observe;
+    using surface_tags_to_observe = tmpl::list<StrahlkorperTags::RicciScalar>;
     using compute_items_on_target = horizons_compute_items_on_target;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhB, ::Frame::Grid>;
@@ -283,7 +287,8 @@ struct EvolutionMetavars {
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA, AhB>;

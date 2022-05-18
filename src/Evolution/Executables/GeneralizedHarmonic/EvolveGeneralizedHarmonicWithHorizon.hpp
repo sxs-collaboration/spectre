@@ -31,6 +31,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/Callbacks/ObserveSurfaceData.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
@@ -77,6 +78,7 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
         StrahlkorperTags::MinRicciScalarCompute,
         StrahlkorperGr::Tags::ChristodoulouMassCompute<frame>,
         StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<frame>>;
+    using surface_tags_to_observe = tmpl::list<StrahlkorperTags::RicciScalar>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
@@ -111,7 +113,8 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
     using horizon_find_failure_callback =
         intrp::callbacks::ErrorOnFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
-        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA>;

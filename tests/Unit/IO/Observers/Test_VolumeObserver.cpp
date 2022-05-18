@@ -20,6 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
+#include "Helpers/IO/VolumeDataHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
@@ -44,6 +45,118 @@
 
 // NOLINTNEXTLINE(google-build-using-namespace)
 namespace helpers = TestObservers_detail;
+
+namespace {
+auto make_fake_volume_data(const observers::ArrayComponentId& id,
+                           const std::string& element_name) {
+  const auto hashed_id =
+      static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
+  std::vector<TensorComponent> data(6);
+  data[0] = TensorComponent(element_name + "T_x"s,
+                            DataVector{0.5 * hashed_id, 1.0 * hashed_id,
+                                       3.0 * hashed_id, -2.0 * hashed_id});
+  data[1] = TensorComponent(element_name + "T_y"s,
+                            DataVector{-0.5 * hashed_id, -1.0 * hashed_id,
+                                       -3.0 * hashed_id, 2.0 * hashed_id});
+
+  data[2] = TensorComponent(element_name + "S_xx"s,
+                            DataVector{10.5 * hashed_id, 11.0 * hashed_id,
+                                       13.0 * hashed_id, -22.0 * hashed_id});
+  data[3] = TensorComponent(element_name + "S_xy"s,
+                            DataVector{10.5 * hashed_id, -11.0 * hashed_id,
+                                       -13.0 * hashed_id, -22.0 * hashed_id});
+  data[4] = TensorComponent(element_name + "S_yx"s,
+                            DataVector{-10.5 * hashed_id, 11.0 * hashed_id,
+                                       13.0 * hashed_id, 22.0 * hashed_id});
+  data[5] = TensorComponent(element_name + "S_yy"s,
+                            DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
+                                       -13.0 * hashed_id, 22.0 * hashed_id});
+
+  return std::make_tuple(
+      Index<2>{2, 2}, std::move(data),
+      std::array<Spectral::Basis, 2>{
+          {Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
+      std::array<Spectral::Quadrature, 2>{
+          {Spectral::Quadrature::GaussLobatto,
+           Spectral::Quadrature::GaussLobatto}});
+}
+
+// Check that WriteVolumeData correctly writes a single element of volume
+// data to a file.
+template <typename Metavariables, typename ObsWriter, typename ElementComp>
+void check_write_volume_data(
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+        runner,
+    const ElementId<2>& element_id,
+    const std::vector<std::string>& expected_tensor_names) {
+  const std::string h5_write_volume_file_name{
+      "./Unit.IO.Observers.VolumeObserver.WriteVolumeData"};
+  const std::string h5_write_volume_group_name{"/element_data"};
+  const std::string h5_write_volume_element_name{"TestElement"};
+
+  const observers::ArrayComponentId h5_write_volume_array_id(
+      std::add_pointer_t<ElementComp>{nullptr},
+      Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
+
+  // Although the WriteVolumeData action would typically be writing
+  // 2D surface "volume" data from a Strahlkorper, to simplify this test, here
+  // just reuse make_fake_volume_data().
+  const auto h5_write_volume_fake = make_fake_volume_data(
+      h5_write_volume_array_id, h5_write_volume_element_name + "/"s);
+
+  const std::vector<size_t> h5_write_volume_expected_extents{
+      {std::get<0>(h5_write_volume_fake)[0],
+       std::get<0>(h5_write_volume_fake)[1]}};
+  const std::vector<Spectral::Basis> h5_write_volume_expected_bases{
+      {std::get<2>(h5_write_volume_fake)[0],
+       std::get<2>(h5_write_volume_fake)[1]}};
+  const std::vector<Spectral::Quadrature> h5_write_volume_expected_quadratures{
+      {std::get<3>(h5_write_volume_fake)[0],
+       std::get<3>(h5_write_volume_fake)[1]}};
+
+  const observers::ObservationId write_vol_observation_id{
+      1., "ElementObservationType"};
+
+  if (file_system::check_if_file_exists(h5_write_volume_file_name)) {
+    file_system::rm(h5_write_volume_file_name, true);
+  }
+
+  runner->template threaded_action<ObsWriter,
+                                   observers::ThreadedActions::WriteVolumeData>(
+      0, h5_write_volume_file_name, h5_write_volume_group_name,
+      write_vol_observation_id,
+      std::vector<ElementVolumeData>{{h5_write_volume_expected_extents,
+                                      std::get<1>(h5_write_volume_fake),
+                                      h5_write_volume_expected_bases,
+                                      h5_write_volume_expected_quadratures}});
+
+  {
+    std::vector<DataVector> h5_write_volume_expected_tensor_data{};
+    for (const auto& tensor_component : std::get<1>(h5_write_volume_fake)) {
+      h5_write_volume_expected_tensor_data.push_back(
+          std::get<DataVector>(tensor_component.data));
+    }
+
+    // Expected_tensor_names order is Tx, Ty, Sxx, Syy, Sxy, Syx, but
+    // h5_write_volume_tensor_data is in order Tx, Ty, Sxx, Sxy, Syx, Syy.
+    // Ensuring that the tensor data components are checked in the correct order
+    // determines the order of components in the last argument to
+    // check_volume_data.
+    TestHelpers::io::VolumeData::check_volume_data(
+        h5_write_volume_file_name + ".h5"s, 0, "element_data",
+        write_vol_observation_id.hash(), write_vol_observation_id.value(),
+        h5_write_volume_expected_tensor_data, {h5_write_volume_element_name},
+        {h5_write_volume_expected_bases},
+        {h5_write_volume_expected_quadratures},
+        {h5_write_volume_expected_extents}, expected_tensor_names,
+        {{0, 1, 2, 5, 3, 4}}, {});
+  }
+
+  if (file_system::check_if_file_exists(h5_write_volume_file_name + ".h5"s)) {
+    file_system::rm(h5_write_volume_file_name + ".h5"s, true);
+  }
+}
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   using registration_list = tmpl::list<
@@ -102,41 +215,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-  const auto make_fake_volume_data = [](const observers::ArrayComponentId& id,
-                                        const std::string& element_name) {
-    const auto hashed_id =
-        static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
-    std::vector<TensorComponent> data(6);
-    data[0] = TensorComponent(element_name + "T_x"s,
-                              DataVector{0.5 * hashed_id, 1.0 * hashed_id,
-                                         3.0 * hashed_id, -2.0 * hashed_id});
-    data[1] = TensorComponent(element_name + "T_y"s,
-                              DataVector{-0.5 * hashed_id, -1.0 * hashed_id,
-                                         -3.0 * hashed_id, 2.0 * hashed_id});
-
-    data[2] = TensorComponent(element_name + "S_xx"s,
-                              DataVector{10.5 * hashed_id, 11.0 * hashed_id,
-                                         13.0 * hashed_id, -22.0 * hashed_id});
-    data[3] = TensorComponent(element_name + "S_xy"s,
-                              DataVector{10.5 * hashed_id, -11.0 * hashed_id,
-                                         -13.0 * hashed_id, -22.0 * hashed_id});
-    data[4] = TensorComponent(element_name + "S_yx"s,
-                              DataVector{-10.5 * hashed_id, 11.0 * hashed_id,
-                                         13.0 * hashed_id, 22.0 * hashed_id});
-    data[5] = TensorComponent(element_name + "S_yy"s,
-                              DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
-                                         -13.0 * hashed_id, 22.0 * hashed_id});
-
-    return std::make_tuple(
-        Index<2>{2, 2}, std::move(data),
-        std::array<Spectral::Basis, 2>{
-            {Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-        std::array<Spectral::Quadrature, 2>{
-            {Spectral::Quadrature::GaussLobatto,
-             Spectral::Quadrature::GaussLobatto}});
-  };
 
   // Test passing volume data...
+  const observers::ObservationId observation_id{3., "ElementObservationType"};
   for (const auto& id : element_ids) {
     const observers::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
@@ -146,8 +227,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
         make_fake_volume_data(array_id, MakeString{} << id << '/');
     runner
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
-            0, observers::ObservationId(3., "ElementObservationType"),
-            std::string{"/element_data"}, array_id,
+            0, observation_id, std::string{"/element_data"}, array_id,
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
             /* get<0> = index of dimensions */
@@ -167,8 +247,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
   const auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
 
-  const auto temporal_id =
-      observers::ObservationId(3., "ElementObservationType").hash();
+  const auto temporal_id = observation_id.hash();
   CHECK(volume_file.list_observation_ids() == std::vector<size_t>{temporal_id});
 
   const auto tensor_names = volume_file.list_tensor_components(temporal_id);
@@ -260,4 +339,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
+
+  check_write_volume_data<metavariables, obs_writer, element_comp>(
+      make_not_null(&runner), element_ids[0], expected_tensor_names);
 }

@@ -7,6 +7,7 @@
 # ExpectedOutput:
 #   GhKerrSchildVolume0.h5
 #   GhKerrSchildReductions.h5
+#   GhKerrSchildSurfaces.h5
 # OutputFileChecks:
 #   - Label: "check_horizon_find"
 #     Subfile: "/AhA.dat"
@@ -161,6 +162,7 @@ EventsAndDenseTriggers:
 Observers:
   VolumeFileName: "GhKerrSchildVolume"
   ReductionFileName: "GhKerrSchildReductions"
+  SurfaceFileName: "GhKerrSchildSurfaces"
 
 ApparentHorizons:
   AhA:

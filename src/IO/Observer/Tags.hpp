@@ -187,15 +187,26 @@ struct ReductionFileName {
       "Name of the reduction data file without extension"};
   using group = Group;
 };
+
+/// The name of the H5 file on disk to which all surface data is written.
+struct SurfaceFileName {
+  using type = std::string;
+  static constexpr Options::String help = {
+      "Name of the surface data file without extension"};
+  using group = Group;
+};
 }  // namespace OptionTags
 
 namespace Tags {
-/// \brief The name of the HDF5 file on disk into which volume data is written.
+/// \brief The name of the HDF5 file on disk into which volume data is
+/// written.
 ///
 /// By volume data we mean any data that is not written once across all nodes.
-/// For example, data on a 2d surface written from a 3d simulation is considered
-/// volume data, while an integral over the entire (or a subset of the) domain
-/// is considered reduction data.
+/// For example, data on a 2d surface written from a 2d simulation is
+/// considered volume data, while an integral over the entire (or a subset of
+/// the) domain is considered reduction data. Data for a 2d surface in
+/// a 3d simulation, such as a horizon, is considered surface data and
+/// is written to a file specified by SurfaceFileName.
 struct VolumeFileName : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::VolumeFileName>;
@@ -211,8 +222,10 @@ struct VolumeFileName : db::SimpleTag {
 ///
 /// By reduction data we mean any data that is written once across all nodes.
 /// For example, an integral over the entire (or a subset of the) domain
-/// is considered reduction data, while data on a 2d surface written from a 3d
-/// simulation is considered volume data.
+/// is considered reduction data, while data on a 3d surface written from a 3d
+/// simulation is considered volume data. Data for a 2d surface in
+/// a 3d simulation, such as a horizon, is considered surface data and
+/// is written to a file specified by SurfaceFileName.
 struct ReductionFileName : db::SimpleTag {
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::ReductionFileName>;
@@ -221,6 +234,24 @@ struct ReductionFileName : db::SimpleTag {
   static std::string create_from_options(
       const std::string& reduction_file_name) {
     return reduction_file_name;
+  }
+};
+
+/// \brief The name of the HDF5 file on disk into which surface data is
+/// written.
+///
+/// By surface data we mean data for a 2d surface in
+/// a 3d simulation, such as a horizon. Surface data is written once across
+/// all nodes. For example, data on a 2d surface written from a 2d simulation is
+/// considered volume data, while an integral over the entire (or a subset of
+/// the) domain is considered reduction data.
+struct SurfaceFileName : db::SimpleTag {
+  using type = std::string;
+  using option_tags = tmpl::list<::observers::OptionTags::SurfaceFileName>;
+
+  static constexpr bool pass_metavariables = false;
+  static std::string create_from_options(const std::string& surface_file_name) {
+    return surface_file_name;
   }
 };
 }  // namespace Tags
