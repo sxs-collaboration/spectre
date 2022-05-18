@@ -37,6 +37,10 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace control_system::Tags {
+struct FunctionsOfTimeInitialize;
+}  // namespace control_system::Tags
+
 namespace {
 template <size_t MeshDim>
 using TranslationMap =
@@ -160,6 +164,15 @@ void test(const Spectral::Quadrature quadrature) {
   CAPTURE(quadrature);
   using metavars = Metavariables<Dim>;
   using component = Component<metavars>;
+
+  static_assert(
+      std::is_same_v<typename evolution::dg::Initialization::Domain<
+                         Dim>::mutable_global_cache_tags,
+                     tmpl::list<::domain::Tags::FunctionsOfTimeInitialize>>);
+  static_assert(std::is_same_v<
+                typename evolution::dg::Initialization::Domain<
+                    Dim, false, true>::mutable_global_cache_tags,
+                tmpl::list<control_system::Tags::FunctionsOfTimeInitialize>>);
 
   PUPable_reg(SINGLE_ARG(
       TimeIndependentMap<Dim, Frame::BlockLogical, Frame::Inertial>));
