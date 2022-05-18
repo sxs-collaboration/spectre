@@ -230,6 +230,7 @@ EOF
 HDF5_DIR=$HDF5_HOME pip install --no-binary=h5py h5py
 pip install yapf==0.29.0
 pip install pyyaml
+pip install matplotlib
 
 module unload impi
 module unuse $dep_dir/modules
