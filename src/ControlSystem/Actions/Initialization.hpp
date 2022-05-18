@@ -38,6 +38,7 @@ namespace Actions {
  *   - `control_system::Tags::TimescaleTuner<ControlSystem>`
  *   - `control_system::Tags::ControlError<ControlSystem>`
  *   - `control_system::Tags::WriteDataToDisk`
+ *   - `control_system::Tags::IsActive<ControlSystem>`
  * - Removes: Nothing
  * - Modifies:
  *   - `control_system::Tags::Averager<ControlSystem>`
@@ -55,7 +56,8 @@ struct Initialize {
                  control_system::Tags::Averager<ControlSystem>,
                  control_system::Tags::Controller<ControlSystem>,
                  control_system::Tags::TimescaleTuner<ControlSystem>,
-                 control_system::Tags::ControlError<ControlSystem>>;
+                 control_system::Tags::ControlError<ControlSystem>,
+                 control_system::Tags::IsActive<ControlSystem>>;
 
   using initialization_tags_to_keep = initialization_tags;
 

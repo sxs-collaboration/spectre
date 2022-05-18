@@ -44,12 +44,14 @@ namespace control_system {
  *
  * The algorithm to determine whether or not to update the functions of time is
  * as follows:
- * 1. Determine if we need to update now. This is done by checking if the next
+ * 1. Ensure this control system is active. If it isn't, end here and don't
+ *    process the measurements.
+ * 2. Determine if we need to update now. This is done by checking if the next
  *    measurement scheduled to happen will be after the current expiration time
  *    of the function of time we are controlling. If it is, we need to update
  *    now, otherwise the functions of time will be expired the next time we
  *    measure.
- * 2. Determine if we should store the current measurement. Not all control
+ * 3. Determine if we should store the current measurement. Not all control
  *    systems are on the same timescale; some are on shorter timescales (like
  *    characteristic speed control), some are on longer timescales (like
  *    Rotation). The ones on longer timescales don't need to record measurements
@@ -57,20 +59,20 @@ namespace control_system {
  *    introduce unnecessary noise into the measurements. It also causes the
  *    control errors to be calculated based off only measurements from the end
  *    of the update interval. This is not what we want. We want measurements
- *    throughout the udpate interval. If we don't need to store the current
+ *    throughout the update interval. If we don't need to store the current
  *    measurement and we don't need to update now, end here.
- * 3. Calculate the control error and update the averager (store the current
+ * 4. Calculate the control error and update the averager (store the current
  *    measurement).
- * 4. Determine if we need to update. We only want to update at the very end of
+ * 5. Determine if we need to update. We only want to update at the very end of
  *    the update interval, not sooner. If we don't need to update, end here.
- * 5. Compute control signal using the control error and its derivatives.
- * 6. Determine the new expiration time.
- * 7. Update the function of time.
- * 8. Update the damping timescale using the control error and one derivative.
- * 9. Determine the new measurement timescale for this function of time using
- *    the new damping timescale.
- * 10. Update the measurement timescale.
- * 11. Write the function of time, control error, their derivatives, and the
+ * 6. Compute control signal using the control error and its derivatives.
+ * 7. Determine the new expiration time.
+ * 8. Update the function of time.
+ * 9. Update the damping timescale using the control error and one derivative.
+ * 10. Determine the new measurement timescale for this function of time using
+ *     the new damping timescale.
+ * 11. Update the measurement timescale.
+ * 12. Write the function of time, control error, their derivatives, and the
  *     control signal to disk if specified in the input file.
  */
 template <typename ControlSystem>
@@ -99,6 +101,12 @@ struct UpdateControlSystem {
                       ::control_system::Tags::WriteDataToDisk,
                       db::DataBox<DbTags>>) {
       // Begin step 1
+      // If this control system isn't active, don't do anything
+      if (not get<control_system::Tags::IsActive<ControlSystem>>(*box)) {
+        return;
+      }
+
+      // Begin step 2
       const auto& functions_of_time =
           Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
       const auto& measurement_timescales =
@@ -127,7 +135,7 @@ struct UpdateControlSystem {
           current_expiration_time <
           time + current_min_time_between_measurements;
 
-      // Begin step 2
+      // Begin step 3
       // Get the averager, controller, tuner, and control error from the box
       auto& averager = db::get_mutable_reference<
           control_system::Tags::Averager<ControlSystem>>(box);
@@ -145,7 +153,7 @@ struct UpdateControlSystem {
         return;
       }
 
-      // Begin step 3
+      // Begin step 4
       // Compute control error
       const DataVector Q =
           control_error(cache, time, function_of_time_name, data);
@@ -155,13 +163,13 @@ struct UpdateControlSystem {
       // updating at this time
       averager.update(time, Q, current_timescale);
 
-      // Begin step 4
+      // Begin step 5
       // Check if it is time to update
       if (not(controller.is_ready(time) or need_to_update_now)) {
         return;
       }
 
-      // Begin step 5
+      // Begin step 6
       // Get the averaged values of the control error and its derivatives
       const auto& opt_avg_values = averager(time);
 
@@ -176,18 +184,18 @@ struct UpdateControlSystem {
           controller(time, current_timescale, opt_avg_values.value(),
                      time_offset_0th, time_offset);
 
-      // Begin step 6
+      // Begin step 7
       // Calculate the next expiration time based on the current one
       const double new_expiration_time =
           controller.next_expiration_time(current_expiration_time);
 
-      // Begin step 7
+      // Begin step 8
       // Actually update the FunctionOfTime
       Parallel::mutate<::domain::Tags::FunctionsOfTime, UpdateFunctionOfTime>(
           cache, function_of_time_name, current_expiration_time, control_signal,
           new_expiration_time);
 
-      // Begin step 8
+      // Begin step 9
       // Update the damping timescales with the newly calculated control error
       // and its derivative
       std::array<DataVector, 2> q_and_dtq{
@@ -197,12 +205,12 @@ struct UpdateControlSystem {
       }
       tuner.update_timescale(q_and_dtq);
 
-      // Begin step 9
+      // Begin step 10
       // Calculate new measurement timescales with updated damping timescales
       const DataVector new_measurement_timescale =
           calculate_measurement_timescales(controller, tuner);
 
-      // Begin step 10
+      // Begin step 11
       // Update the measurement timescales
       Parallel::mutate<Tags::MeasurementTimescales, UpdateFunctionOfTime>(
           cache, function_of_time_name, current_expiration_time,
@@ -212,7 +220,7 @@ struct UpdateControlSystem {
       // averager when to expect the next measurement
       averager.assign_time_between_measurements(min(new_measurement_timescale));
 
-      // Begin step 11
+      // Begin step 12
       if (db::get<control_system::Tags::WriteDataToDisk>(*box)) {
         write_components_to_disk<ControlSystem>(
             time, cache, function_of_time, *opt_avg_values, control_signal);

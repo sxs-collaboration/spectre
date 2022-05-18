@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -24,13 +25,14 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
+struct LabelA {};
+using system = control_system::TestHelpers::System<
+    2, LabelA, control_system::TestHelpers::Measurement<LabelA>>;
+
+struct MetavarsEmpty {};
+
 void test_all_tags() {
   INFO("Test all tags");
-  using system = control_system::TestHelpers::System<
-      2, control_system::TestHelpers::TestStructs_detail::LabelA,
-      control_system::TestHelpers::Measurement<
-          control_system::TestHelpers::TestStructs_detail::LabelA>>;
-
   using write_tag = control_system::Tags::WriteDataToDisk;
   TestHelpers::db::test_simple_tag<write_tag>("WriteDataToDisk");
   using averager_tag = control_system::Tags::Averager<system>;
@@ -44,6 +46,18 @@ void test_all_tags() {
 
   using control_error_tag = control_system::Tags::ControlError<system>;
   TestHelpers::db::test_simple_tag<control_error_tag>("ControlError");
+
+  using active_tag = control_system::Tags::IsActive<system>;
+  TestHelpers::db::test_simple_tag<active_tag>("IsActive");
+  // The create_from_options function doesn't actually use the metavars, only
+  // the option_list type alias uses the metavars, so we pass an empty struct
+  // here.
+  CHECK(active_tag::create_from_options<MetavarsEmpty>());
+  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
+      {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
+  CHECK(active_tag::create_from_options<MetavarsEmpty>({"/fake/path"}, {}));
+  CHECK(active_tag::create_from_options<MetavarsEmpty>(
+      std::nullopt, {{"FakeSpecName", "LabelA"}}));
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
@@ -64,10 +78,6 @@ void test_control_sys_inputs() {
   const Controller<2> expected_controller(0.3);
   const std::string expected_name{"LabelA"};
 
-  using system = control_system::TestHelpers::System<
-      2, control_system::TestHelpers::TestStructs_detail::LabelA,
-      control_system::TestHelpers::Measurement<
-          control_system::TestHelpers::TestStructs_detail::LabelA>>;
   const auto input_holder = TestHelpers::test_option_tag<
       control_system::OptionTags::ControlSystemInputs<system>>(
       "Averager:\n"
