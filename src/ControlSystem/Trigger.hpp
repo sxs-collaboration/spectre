@@ -81,19 +81,30 @@ class Trigger : public DenseTrigger {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
+    const double next_measurement = tmpl::as_pack<ControlSystems>(
+        [&measurement_timescales, &time](auto... control_systems) {
+          return std::min(
+              {min(measurement_timescales
+                       .at(tmpl::type_from<decltype(control_systems)>::name())
+                       ->func(time)[0])...});
+        });
+
+    // This will happen if an executable has control systems, but all functions
+    // of time were overriden by ones read in from a file. So there is no need
+    // to trigger control systems
+    if (next_measurement == std::numeric_limits<double>::infinity()) {
+      next_trigger_ = next_measurement;
+      return {false, *next_trigger_};
+    }
+
+    // At least one control system is active
     if (UNLIKELY(not next_trigger_.has_value())) {
       // First call
       next_trigger_ = time;
     }
     const bool triggered = time == *next_trigger_;
     if (triggered) {
-      *next_trigger_ += tmpl::as_pack<ControlSystems>(
-          [&measurement_timescales, &time](auto... control_systems) {
-            return std::min(
-                {min(measurement_timescales
-                         .at(tmpl::type_from<decltype(control_systems)>::name())
-                         ->func(time)[0])...});
-          });
+      *next_trigger_ += next_measurement;
     }
     return {triggered, *next_trigger_};
   }

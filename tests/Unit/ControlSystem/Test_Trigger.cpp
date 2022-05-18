@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <limits>
 #include <memory>
 #include <utility>
 
@@ -69,12 +70,12 @@ struct Metavariables {
 
   using Phase = Parallel::Phase;
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Trigger", "[Domain][Unit]") {
+using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+using component = Component<Metavariables>;
+
+void test_trigger_no_replace() {
   Parallel::register_classes_with_charm<MeasurementFoT>();
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using component = Component<Metavariables>;
   const component* const component_p = nullptr;
 
   control_system::Tags::MeasurementTimescales::type measurement_timescales{};
@@ -147,4 +148,42 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Trigger", "[Domain][Unit]") {
     CHECK(is_triggered.is_triggered);
     CHECK(is_triggered.next_check == 4.0);
   }
+}
+
+void test_trigger_with_replace() {
+  Parallel::register_classes_with_charm<MeasurementFoT>();
+
+  control_system::Tags::MeasurementTimescales::type measurement_timescales{};
+  measurement_timescales["LabelA"] = std::make_unique<MeasurementFoT>(
+      0.0, std::array{DataVector{std::numeric_limits<double>::infinity()}},
+      std::numeric_limits<double>::infinity());
+  measurement_timescales["LabelB"] = std::make_unique<MeasurementFoT>(
+      0.0, std::array{DataVector{std::numeric_limits<double>::infinity()}},
+      std::numeric_limits<double>::infinity());
+
+  MockRuntimeSystem runner{{}, {std::move(measurement_timescales)}};
+  ActionTesting::emplace_array_component_and_initialize<component>(
+      make_not_null(&runner), ActionTesting::NodeId{0},
+      ActionTesting::LocalCoreId{0}, 0, {0.0});
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
+
+  auto& box = ActionTesting::get_databox<
+      component,
+      tmpl::list<Tags::Time, Parallel::Tags::FromGlobalCache<
+                                 control_system::Tags::MeasurementTimescales>>>(
+      make_not_null(&runner), 0);
+
+  MeasureTrigger typed_trigger{};
+  DenseTrigger& trigger = typed_trigger;
+
+  const auto is_triggered = trigger.is_triggered(box);
+  CHECK_FALSE(is_triggered.is_triggered);
+  CHECK(is_triggered.next_check == std::numeric_limits<double>::infinity());
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.Trigger", "[Domain][Unit]") {
+  test_trigger_no_replace();
+  test_trigger_with_replace();
 }
