@@ -267,6 +267,34 @@ struct get_array_index;
  * are `ActionTesting::is_threaded_action_queue_empty()`, and
  * `ActionTesting::invoke_queued_threaded_action()`.
  *
+ * ### Reduction Actions
+ *
+ * The ATF, in general, does not support reduction actions at the moment.
+ * Meaning that calls to `Parallel::contribute_to_reduction` and
+ * `Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>`
+ * are not supported. However, the ATF does support calls using
+ * `WriteReductionDataRow` without having to actually write any data to disk
+ * (this avoids unnecessary IO when all we really care about is if the values
+ * are correct).
+ *
+ * If you want to test code that has a call to
+ * `Parallel::threaded_action<
+ * observers::ThreadedActions::WriteReductionDataRow>`,
+ * you'll need to add the `TestHelpers::observers::MockObserverWriter`
+ * component, found in Helpers/IO/Observers/MockWriteReductionDataRow.hpp, to
+ * your test metavars (see next section for what mocking a component means).
+ * Initialize the component as follows:
+ *
+ * \snippet Test_MockWriteReductionDataRow.cpp initialize_component
+ *
+ * Then, when you want to check the data that was "written", you can do
+ * something along the lines of
+ *
+ * \snippet Test_MockWriteReductionDataRow.cpp check_mock_writer_data
+ *
+ * The data is stored in `MockH5File` and `MockDat` objects, which have similar
+ * interfaces to `h5::H5File` and `h5::Dat`, respectively.
+ *
  * ### Mocking or replacing components with stubs
  *
  * An action can invoke an action on another parallel component. In this case we

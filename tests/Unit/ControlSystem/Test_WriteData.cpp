@@ -24,6 +24,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -76,33 +77,6 @@ struct FakeQuatControlSystem
   };
 };
 
-template <typename Metavariables>
-struct MockObserverWriter {
-  using component_being_mocked = observers::ObserverWriter<Metavariables>;
-  using replace_these_simple_actions = tmpl::list<>;
-  using with_these_simple_actions = tmpl::list<>;
-
-  using const_global_cache_tags =
-      tmpl::list<observers::Tags::ReductionFileName>;
-
-  using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 observers::Actions::InitializeWriter<Metavariables>>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockNodeGroupChare;
-  using array_index = int;
-
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::WriteData, tmpl::list<>>>;
-};
-
 template <typename Metavariables, typename ControlSystem>
 struct MockControlComponent {
   using component_being_mocked = ControlComponent<Metavariables, ControlSystem>;
@@ -125,16 +99,16 @@ struct TestMetavars {
   enum class Phase { Initialization, Register, WriteData, Exit };
 
   using component_list =
-      tmpl::list<MockObserverWriter<TestMetavars>,
+      tmpl::list<::TestHelpers::observers::MockObserverWriter<TestMetavars>,
                  MockControlComponent<TestMetavars, FakeControlSystem>,
                  MockControlComponent<TestMetavars, FakeQuatControlSystem>>;
 };
 
 using FoTPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
 
-template <typename ControlSystem>
+template <typename ControlSystem, typename Metavariables>
 void check_written_data(
-    const h5::H5File<h5::AccessType::ReadOnly>& read_file,
+    const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
     const std::vector<double>& times, FoTPtr& fot,
     const std::vector<std::array<DataVector, ControlSystem::deriv_order>>&
         q_and_derivs,
@@ -144,14 +118,17 @@ void check_written_data(
   const std::vector<std::string> compare_legend{
       "Time",         "Lambda",         "dtLambda",     "d2tLambda",
       "ControlError", "dtControlError", "ControlSignal"};
+
+  auto& read_file = ActionTesting::get_databox_tag<
+      ::TestHelpers::observers::MockObserverWriter<Metavariables>,
+      ::TestHelpers::observers::MockReductionFileTag>(runner, 0);
   for (size_t component_num = 0; component_num < total_components;
        component_num++) {
     // per file checks
-    read_file.close_current_object();
-    const auto& dataset = read_file.get<h5::Dat>(
-        "/ControlSystems/" + ControlSystem::name() + "/" +
-        ControlSystem::component_name(component_num));
-    const Matrix data = dataset.get_data();
+    const auto& dataset =
+        read_file.get_dat("/ControlSystems/" + ControlSystem::name() + "/" +
+                          ControlSystem::component_name(component_num));
+    const Matrix& data = dataset.get_data();
     const std::vector<std::string>& legend = dataset.get_legend();
     // Check legend is correct
     for (size_t i = 0; i < legend.size(); i++) {
@@ -200,23 +177,18 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
   domain::FunctionsOfTime::register_derived_with_charm();
   constexpr size_t deriv_order = FakeControlSystem::deriv_order;
   constexpr size_t quat_deriv_order = FakeQuatControlSystem::deriv_order;
-  using observer = MockObserverWriter<TestMetavars>;
+  using observer = ::TestHelpers::observers::MockObserverWriter<TestMetavars>;
   using control_comp = MockControlComponent<TestMetavars, FakeControlSystem>;
   using quat_control_comp =
       MockControlComponent<TestMetavars, FakeQuatControlSystem>;
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<double> dist{-1.0, 1.0};
-  const std::string filename = "WriteDataTest_Output";
-
-  // clean up just in case
-  if (file_system::check_if_file_exists(filename + ".h5")) {
-    file_system::rm(filename + ".h5", true);
-  }
 
   // set up runner and stuff
-  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{filename}};
+  ActionTesting::MockRuntimeSystem<TestMetavars> runner{{}};
   runner.set_phase(TestMetavars::Phase::Initialization);
-  ActionTesting::emplace_nodegroup_component<observer>(make_not_null(&runner));
+  ActionTesting::emplace_nodegroup_component_and_initialize<observer>(
+      make_not_null(&runner), {});
   ActionTesting::emplace_singleton_component<control_comp>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0});
@@ -224,11 +196,6 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0});
   auto& cache = ActionTesting::cache<observer>(runner, 0);
-
-  // the initialization actions
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<observer>(make_not_null(&runner), 0);
-  }
 
   runner.set_phase(TestMetavars::Phase::WriteData);
 
@@ -303,20 +270,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
     CHECK(not num_threaded_actions);
   }
 
-  // scoped to close file
-  {
-    h5::H5File<h5::AccessType::ReadOnly> read_file{filename + ".h5"};
-    check_written_data<FakeControlSystem>(read_file, times, normal_fot,
-                                          normal_q_and_derivs,
-                                          normal_control_signals);
-    check_written_data<FakeQuatControlSystem>(
-        read_file, times, quat_fot, quat_q_and_derivs, quat_control_signals);
-  }
-
-  // clean up now that we are done
-  if (file_system::check_if_file_exists(filename + ".h5")) {
-    file_system::rm(filename + ".h5", true);
-  }
+  check_written_data<FakeControlSystem>(
+      runner, times, normal_fot, normal_q_and_derivs, normal_control_signals);
+  check_written_data<FakeQuatControlSystem>(
+      runner, times, quat_fot, quat_q_and_derivs, quat_control_signals);
 }
 }  // namespace
 }  // namespace control_system

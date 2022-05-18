@@ -24,4 +24,5 @@ target_link_libraries(
   GeneralRelativityHelpers
   )
 
+add_subdirectory(IO)
 add_subdirectory(PointwiseFunctions)

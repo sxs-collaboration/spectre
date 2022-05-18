@@ -38,5 +38,6 @@ target_link_libraries(
   ControlSystem
   EventsAndDenseTriggers
   FunctionsOfTime
+  ObserverHelpers
   Utilities
 )
