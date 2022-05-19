@@ -23,6 +23,7 @@ spectre_target_headers(
   ComputeItems.hpp
   FastFlow.hpp
   ObjectLabel.hpp
+  ObserveCenters.hpp
   StrahlkorperGr.hpp
   StrahlkorperInDifferentFrame.hpp
   Tags.hpp
