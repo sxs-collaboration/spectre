@@ -45,7 +45,7 @@ spack:
   - blaze@3.8
   - 'boost@1.60:+math+program_options'
   - brigand@master
-  - 'catch2@2.8:'
+  - 'catch2@2.8:2'
   # Charm++:
   # - The 'multicore' backend runs with shared memory on a single node. On
   #   clusters you should choose one of the multi-node backends instead.
