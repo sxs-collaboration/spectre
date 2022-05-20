@@ -6,7 +6,7 @@ set(LIBRARY "Test_FiniteDifference")
 set(LIBRARY_SOURCES
   Test_AoWeno53.cpp
   Test_Minmod.cpp
-  Test_MonotisedCentral.cpp
+  Test_MonotonisedCentral.cpp
   Test_Unlimited.cpp
   )
 

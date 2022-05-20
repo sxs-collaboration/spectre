@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
   using fluxes_tags = typename Fluxes::return_tags;
 
   // Perform test with MC reconstruction & Rusanov riemann solver
-  using ReconstructorUsedForTest = fd::MonotisedCentral;
+  using ReconstructorUsedForTest = fd::MonotonisedCentral;
   using BoundaryCorrectionUsedForTest = BoundaryCorrections::Rusanov;
 
   // create an element and its neighbor elements

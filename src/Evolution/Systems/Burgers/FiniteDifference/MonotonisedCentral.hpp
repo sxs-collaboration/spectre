@@ -46,10 +46,10 @@ class er;
 
 namespace Burgers::fd {
 /*!
- * \brief Monotised central reconstruction. See
- * ::fd::reconstruction::monotised_central() for details.
+ * \brief Monotonised central reconstruction. See
+ * ::fd::reconstruction::monotonised_central() for details.
  */
-class MonotisedCentral : public Reconstructor {
+class MonotonisedCentral : public Reconstructor {
  private:
   using face_vars_tags = tmpl::list<
       Burgers::Tags::U,
@@ -59,20 +59,20 @@ class MonotisedCentral : public Reconstructor {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme."};
+      "Monotonised central reconstruction scheme."};
 
-  MonotisedCentral() = default;
-  MonotisedCentral(MonotisedCentral&&) = default;
-  MonotisedCentral& operator=(MonotisedCentral&&) = default;
-  MonotisedCentral(const MonotisedCentral&) = default;
-  MonotisedCentral& operator=(const MonotisedCentral&) = default;
-  ~MonotisedCentral() override = default;
+  MonotonisedCentral() = default;
+  MonotonisedCentral(MonotonisedCentral&&) = default;
+  MonotonisedCentral& operator=(MonotonisedCentral&&) = default;
+  MonotonisedCentral(const MonotonisedCentral&) = default;
+  MonotonisedCentral& operator=(const MonotonisedCentral&) = default;
+  ~MonotonisedCentral() override = default;
 
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit MonotisedCentral(CkMigrateMessage* msg);
-  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotisedCentral);
+  explicit MonotonisedCentral(CkMigrateMessage* msg);
+  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentral);
   /// \endcond
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;
@@ -108,8 +108,8 @@ class MonotisedCentral : public Reconstructor {
       const Direction<1> direction_to_reconstruct) const;
 };
 
-bool operator==(const MonotisedCentral& /*lhs*/,
-                const MonotisedCentral& /*rhs*/);
+bool operator==(const MonotonisedCentral& /*lhs*/,
+                const MonotonisedCentral& /*rhs*/);
 
-bool operator!=(const MonotisedCentral& lhs, const MonotisedCentral& rhs);
+bool operator!=(const MonotonisedCentral& lhs, const MonotonisedCentral& rhs);
 }  // namespace Burgers::fd

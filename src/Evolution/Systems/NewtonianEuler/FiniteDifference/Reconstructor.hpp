@@ -14,7 +14,7 @@ namespace NewtonianEuler::fd {
 template <size_t Dim>
 class AoWeno53Prim;
 template <size_t Dim>
-class MonotisedCentralPrim;
+class MonotonisedCentralPrim;
 /// \endcond
 
 /*!
@@ -45,7 +45,7 @@ class Reconstructor : public PUP::able {
   /// \endcond
 
   using creatable_classes =
-      tmpl::list<AoWeno53Prim<Dim>, MonotisedCentralPrim<Dim>>;
+      tmpl::list<AoWeno53Prim<Dim>, MonotonisedCentralPrim<Dim>>;
 
   virtual std::unique_ptr<Reconstructor<Dim>> get_clone() const = 0;
 

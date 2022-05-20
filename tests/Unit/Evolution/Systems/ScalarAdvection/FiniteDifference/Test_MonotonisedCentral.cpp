@@ -17,33 +17,33 @@ namespace {
 template <size_t Dim>
 void test_create() {
   const auto mc =
-      TestHelpers::test_creation<ScalarAdvection::fd::MonotisedCentral<Dim>>(
+      TestHelpers::test_creation<ScalarAdvection::fd::MonotonisedCentral<Dim>>(
           "");
-  CHECK(mc == ScalarAdvection::fd::MonotisedCentral<Dim>());
+  CHECK(mc == ScalarAdvection::fd::MonotonisedCentral<Dim>());
 }
 
 template <size_t Dim>
 void test_serialize() {
-  ScalarAdvection::fd::MonotisedCentral<Dim> mc;
+  ScalarAdvection::fd::MonotonisedCentral<Dim> mc;
   test_serialization(mc);
 }
 
 template <size_t Dim>
 void test_move() {
-  ScalarAdvection::fd::MonotisedCentral<Dim> mc;
-  ScalarAdvection::fd::MonotisedCentral<Dim> mc_copy;
+  ScalarAdvection::fd::MonotonisedCentral<Dim> mc;
+  ScalarAdvection::fd::MonotonisedCentral<Dim> mc_copy;
   test_move_semantics(std::move(mc), mc_copy);  //  NOLINT
 }
 
 template <size_t Dim>
 void test_derived() {
-  const ScalarAdvection::fd::MonotisedCentral<Dim> mc_recons{};
+  const ScalarAdvection::fd::MonotonisedCentral<Dim> mc_recons{};
   const auto mc_from_options_base = TestHelpers::test_factory_creation<
       ScalarAdvection::fd::Reconstructor<Dim>,
       ScalarAdvection::fd::OptionTags::Reconstructor<Dim>>(
-      "MonotisedCentral:\n");
+      "MonotonisedCentral:\n");
   auto* const mc_from_options =
-      dynamic_cast<const ScalarAdvection::fd::MonotisedCentral<Dim>*>(
+      dynamic_cast<const ScalarAdvection::fd::MonotonisedCentral<Dim>*>(
           mc_from_options_base.get());
   REQUIRE(mc_from_options != nullptr);
   CHECK(*mc_from_options == mc_recons);
@@ -51,7 +51,7 @@ void test_derived() {
 
 template <size_t Dim>
 void test_mc() {
-  const ScalarAdvection::fd::MonotisedCentral<Dim> mc_recons{};
+  const ScalarAdvection::fd::MonotonisedCentral<Dim> mc_recons{};
   const size_t num_pts_per_dimension = 5;
   TestHelpers::ScalarAdvection::fd::test_reconstructor<Dim>(
       num_pts_per_dimension, mc_recons);
@@ -59,8 +59,9 @@ void test_mc() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarAdvection.Fd.MonotisedCentral",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.ScalarAdvection.Fd.MonotonisedCentral",
+    "[Unit][Evolution]") {
   test_create<1>();
   test_create<2>();
   test_serialize<1>();

@@ -12,7 +12,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/NumericalAlgorithms/FiniteDifference/Exact.hpp"
 #include "Helpers/NumericalAlgorithms/FiniteDifference/Python.hpp"
-#include "NumericalAlgorithms/FiniteDifference/MonotisedCentral.hpp"
+#include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 
 namespace {
 
@@ -26,7 +26,7 @@ void test() {
          const gsl::span<const double>& volume_vars,
          const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
          const Index<Dim>& volume_extents, const size_t number_of_variables) {
-        fd::reconstruction::monotised_central(
+        fd::reconstruction::monotonised_central(
             reconstructed_upper_side_of_face_vars,
             reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
             volume_extents, number_of_variables);
@@ -39,14 +39,14 @@ void test() {
         if (direction_to_reconstruct.side() == Side::Upper) {
           fd::reconstruction::reconstruct_neighbor<
               Side::Upper,
-              fd::reconstruction::detail::MonotisedCentralReconstructor>(
+              fd::reconstruction::detail::MonotonisedCentralReconstructor>(
               face_data, volume_data, neighbor_data, volume_extents,
               ghost_data_extents, direction_to_reconstruct);
         }
         if (direction_to_reconstruct.side() == Side::Lower) {
           fd::reconstruction::reconstruct_neighbor<
               Side::Lower,
-              fd::reconstruction::detail::MonotisedCentralReconstructor>(
+              fd::reconstruction::detail::MonotonisedCentralReconstructor>(
               face_data, volume_data, neighbor_data, volume_extents,
               ghost_data_extents, direction_to_reconstruct);
         }
@@ -54,12 +54,12 @@ void test() {
   TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
       Dim>(1, 4, 3, recons, recons_neighbor_data);
   TestHelpers::fd::reconstruction::test_with_python(
-      Index<Dim>{4}, 3, "MonotisedCentral", "test_monotised_central", recons,
-      recons_neighbor_data);
+      Index<Dim>{4}, 3, "MonotonisedCentral", "test_monotonised_central",
+      recons, recons_neighbor_data);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.FiniteDifference.MonotisedCentral",
+SPECTRE_TEST_CASE("Unit.FiniteDifference.MonotonisedCentral",
                   "[Unit][NumericalAlgorithms]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
       "NumericalAlgorithms/FiniteDifference/");

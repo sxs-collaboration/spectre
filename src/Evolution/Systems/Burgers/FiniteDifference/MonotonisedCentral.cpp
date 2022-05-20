@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/Burgers/FiniteDifference/MonotisedCentral.hpp"
+#include "Evolution/Systems/Burgers/FiniteDifference/MonotonisedCentral.hpp"
 
 #include <array>
 #include <boost/functional/hash.hpp>
@@ -24,25 +24,25 @@
 #include "Evolution/Systems/Burgers/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
-#include "NumericalAlgorithms/FiniteDifference/MonotisedCentral.hpp"
+#include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Burgers::fd {
-MonotisedCentral::MonotisedCentral(CkMigrateMessage* const msg)
+MonotonisedCentral::MonotonisedCentral(CkMigrateMessage* const msg)
     : Reconstructor(msg) {}
 
-std::unique_ptr<Reconstructor> MonotisedCentral::get_clone() const {
-  return std::make_unique<MonotisedCentral>(*this);
+std::unique_ptr<Reconstructor> MonotonisedCentral::get_clone() const {
+  return std::make_unique<MonotonisedCentral>(*this);
 }
 
-void MonotisedCentral::pup(PUP::er& p) { Reconstructor::pup(p); }
+void MonotonisedCentral::pup(PUP::er& p) { Reconstructor::pup(p); }
 
-PUP::able::PUP_ID MonotisedCentral::my_PUP_ID = 0;
+PUP::able::PUP_ID MonotonisedCentral::my_PUP_ID = 0;
 
-void MonotisedCentral::reconstruct(
+void MonotonisedCentral::reconstruct(
     const gsl::not_null<std::array<Variables<face_vars_tags>, 1>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<face_vars_tags>, 1>*>
@@ -59,14 +59,14 @@ void MonotisedCentral::reconstruct(
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
          const auto& volume_variables, const auto& ghost_cell_vars,
          const auto& subcell_extents, const size_t number_of_variables) {
-        ::fd::reconstruction::monotised_central(
+        ::fd::reconstruction::monotonised_central(
             upper_face_vars_ptr, lower_face_vars_ptr, volume_variables,
             ghost_cell_vars, subcell_extents, number_of_variables);
       },
       volume_vars, element, neighbor_data, subcell_mesh, ghost_zone_size());
 }
 
-void MonotisedCentral::reconstruct_fd_neighbor(
+void MonotonisedCentral::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
     const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
     const FixedHashMap<
@@ -84,7 +84,7 @@ void MonotisedCentral::reconstruct_fd_neighbor(
          const auto& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
-            ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
+            ::fd::reconstruction::detail::MonotonisedCentralReconstructor>(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
             local_direction_to_reconstruct);
@@ -96,7 +96,7 @@ void MonotisedCentral::reconstruct_fd_neighbor(
          const auto& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
-            ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
+            ::fd::reconstruction::detail::MonotonisedCentralReconstructor>(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
             local_direction_to_reconstruct);
@@ -105,12 +105,12 @@ void MonotisedCentral::reconstruct_fd_neighbor(
       direction_to_reconstruct, ghost_zone_size());
 }
 
-bool operator==(const MonotisedCentral& /*lhs*/,
-                const MonotisedCentral& /*rhs*/) {
+bool operator==(const MonotonisedCentral& /*lhs*/,
+                const MonotonisedCentral& /*rhs*/) {
   return true;
 }
 
-bool operator!=(const MonotisedCentral& lhs, const MonotisedCentral& rhs) {
+bool operator!=(const MonotonisedCentral& lhs, const MonotonisedCentral& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace Burgers::fd

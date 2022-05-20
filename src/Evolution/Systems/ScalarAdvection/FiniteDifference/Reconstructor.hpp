@@ -15,7 +15,7 @@ namespace ScalarAdvection::fd {
 template <size_t Dim>
 class AoWeno53;
 template <size_t Dim>
-class MonotisedCentral;
+class MonotonisedCentral;
 /// \endcond
 
 /*!
@@ -38,7 +38,7 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor<Dim>);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<AoWeno53<Dim>, MonotisedCentral<Dim>>;
+  using creatable_classes = tmpl::list<AoWeno53<Dim>, MonotonisedCentral<Dim>>;
 
   virtual std::unique_ptr<Reconstructor<Dim>> get_clone() const = 0;
 

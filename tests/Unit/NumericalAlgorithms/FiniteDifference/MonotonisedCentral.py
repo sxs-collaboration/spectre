@@ -4,8 +4,8 @@
 import Reconstruction
 
 
-def test_monotised_central(u, extents, dim):
-    def monotised_central(a, b):
+def test_monotonised_central(u, extents, dim):
+    def monotonised_central(a, b):
         sign = lambda x: -1 if x < 0 else 1
         sign_a = sign(a)
         sign_b = sign(b)
@@ -15,18 +15,18 @@ def test_monotised_central(u, extents, dim):
     def compute_face_values(recons_upper_of_cell, recons_lower_of_cell, v, i,
                             j, k, dim_to_recons):
         if dim_to_recons == 0:
-            slope = monotised_central(v[i, j, k] - v[i - 1, j, k],
-                                      v[i + 1, j, k] - v[i, j, k])
+            slope = monotonised_central(v[i, j, k] - v[i - 1, j, k],
+                                        v[i + 1, j, k] - v[i, j, k])
             recons_lower_of_cell.append(v[i, j, k] - 0.5 * slope)
             recons_upper_of_cell.append(v[i, j, k] + 0.5 * slope)
         if dim_to_recons == 1:
-            slope = monotised_central(v[i, j, k] - v[i, j - 1, k],
-                                      v[i, j + 1, k] - v[i, j, k])
+            slope = monotonised_central(v[i, j, k] - v[i, j - 1, k],
+                                        v[i, j + 1, k] - v[i, j, k])
             recons_lower_of_cell.append(v[i, j, k] - 0.5 * slope)
             recons_upper_of_cell.append(v[i, j, k] + 0.5 * slope)
         if dim_to_recons == 2:
-            slope = monotised_central(v[i, j, k] - v[i, j, k - 1],
-                                      v[i, j, k + 1] - v[i, j, k])
+            slope = monotonised_central(v[i, j, k] - v[i, j, k - 1],
+                                        v[i, j, k + 1] - v[i, j, k])
             recons_lower_of_cell.append(v[i, j, k] - 0.5 * slope)
             recons_upper_of_cell.append(v[i, j, k] + 0.5 * slope)
 

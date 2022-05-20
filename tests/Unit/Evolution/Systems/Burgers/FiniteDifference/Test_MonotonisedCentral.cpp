@@ -13,18 +13,18 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/Systems/Burgers/FiniteDifference/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.MonotisedCentral",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.MonotonisedCentral",
                   "[Unit][Evolution]") {
-  auto mc = TestHelpers::test_creation<Burgers::fd::MonotisedCentral>("");
-  CHECK(mc == Burgers::fd::MonotisedCentral());
+  auto mc = TestHelpers::test_creation<Burgers::fd::MonotonisedCentral>("");
+  CHECK(mc == Burgers::fd::MonotonisedCentral());
 
   test_serialization(mc);
 
   const auto mc_from_options_base = TestHelpers::test_factory_creation<
       Burgers::fd::Reconstructor, Burgers::fd::OptionTags::Reconstructor>(
-      "MonotisedCentral:\n");
+      "MonotonisedCentral:\n");
   auto* const mc_from_options =
-      dynamic_cast<const Burgers::fd::MonotisedCentral*>(
+      dynamic_cast<const Burgers::fd::MonotonisedCentral*>(
           mc_from_options_base.get());
   REQUIRE(mc_from_options != nullptr);
   CHECK(*mc_from_options == mc);
@@ -32,6 +32,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.MonotisedCentral",
   const size_t num_pts = 5;
   TestHelpers::Burgers::fd::test_reconstructor(num_pts, mc);
 
-  Burgers::fd::MonotisedCentral mc_copy;
+  Burgers::fd::MonotonisedCentral mc_copy;
   test_move_semantics(std::move(mc), mc_copy);  //  NOLINT
 }

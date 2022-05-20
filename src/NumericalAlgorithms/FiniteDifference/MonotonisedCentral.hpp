@@ -23,7 +23,7 @@ class Index;
 
 namespace fd::reconstruction {
 namespace detail {
-struct MonotisedCentralReconstructor {
+struct MonotonisedCentralReconstructor {
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
       const double* const q, const int stride) {
     using std::abs;
@@ -44,12 +44,12 @@ struct MonotisedCentralReconstructor {
 
 /*!
  * \ingroup FiniteDifferenceGroup
- * \brief Performs monotised central-difference reconstruction on the `vars` in
- * each direction.
+ * \brief Performs monotonised central-difference reconstruction on the `vars`
+ * in each direction.
  *
  * On a 1d mesh with spacing \f$\Delta x\f$ we denote the solution at the
- * \f$j\f$th point by \f$u_j\f$. The monotised central-difference reconstruction
- * \cite RezzollaBook first computes:
+ * \f$j\f$th point by \f$u_j\f$. The monotonised central-difference
+ * reconstruction \cite RezzollaBook first computes:
  *
  * \f{align}
  * \sigma_j\equiv \textrm{minmod}
@@ -79,7 +79,7 @@ struct MonotisedCentralReconstructor {
  * where \f$x_j\f$ is the coordinate \f$x\f$ at the center of the cell.
  */
 template <size_t Dim>
-void monotised_central(
+void monotonised_central(
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
         reconstructed_upper_side_of_face_vars,
     const gsl::not_null<std::array<gsl::span<double>, Dim>*>
@@ -87,7 +87,7 @@ void monotised_central(
     const gsl::span<const double>& volume_vars,
     const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
     const Index<Dim>& volume_extents, const size_t number_of_variables) {
-  detail::reconstruct<detail::MonotisedCentralReconstructor>(
+  detail::reconstruct<detail::MonotonisedCentralReconstructor>(
       reconstructed_upper_side_of_face_vars,
       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
       volume_extents, number_of_variables);

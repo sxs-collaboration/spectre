@@ -46,11 +46,11 @@ class Variables;
 
 namespace NewtonianEuler::fd {
 /*!
- * \brief Monotised central reconstruction. See
- * `::fd::reconstruction::monotised_central()` for details.
+ * \brief Monotonised central reconstruction. See
+ * `::fd::reconstruction::monotonised_central()` for details.
  */
 template <size_t Dim>
-class MonotisedCentralPrim : public Reconstructor<Dim> {
+class MonotonisedCentralPrim : public Reconstructor<Dim> {
  private:
   // Conservative vars tags
   using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
@@ -75,18 +75,19 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme using primitive variables."};
+      "Monotonised central reconstruction scheme using primitive variables."};
 
-  MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
-  MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
-  ~MonotisedCentralPrim() override = default;
+  MonotonisedCentralPrim() = default;
+  MonotonisedCentralPrim(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim& operator=(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim(const MonotonisedCentralPrim&) = default;
+  MonotonisedCentralPrim& operator=(const MonotonisedCentralPrim&) = default;
+  ~MonotonisedCentralPrim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg);
+  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotisedCentralPrim);
+  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>,
+                                     MonotonisedCentralPrim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor<Dim>> override;
 
@@ -136,14 +137,14 @@ class MonotisedCentralPrim : public Reconstructor<Dim> {
 };
 
 template <size_t Dim>
-bool operator==(const MonotisedCentralPrim<Dim>& /*lhs*/,
-                const MonotisedCentralPrim<Dim>& /*rhs*/) {
+bool operator==(const MonotonisedCentralPrim<Dim>& /*lhs*/,
+                const MonotonisedCentralPrim<Dim>& /*rhs*/) {
   return true;
 }
 
 template <size_t Dim>
-bool operator!=(const MonotisedCentralPrim<Dim>& lhs,
-                const MonotisedCentralPrim<Dim>& rhs) {
+bool operator!=(const MonotonisedCentralPrim<Dim>& lhs,
+                const MonotonisedCentralPrim<Dim>& rhs) {
   return not(lhs == rhs);
 }
 }  // namespace NewtonianEuler::fd

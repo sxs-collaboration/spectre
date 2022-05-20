@@ -12,7 +12,7 @@
 
 namespace Burgers::fd {
 /// \cond
-class MonotisedCentral;
+class MonotonisedCentral;
 /// \endcond
 
 /*!
@@ -35,7 +35,7 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<MonotisedCentral>;
+  using creatable_classes = tmpl::list<MonotonisedCentral>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 
