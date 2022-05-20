@@ -11,14 +11,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
-#include "IO/H5/AccessType.hpp"
-#include "IO/H5/Dat.hpp"
-#include "IO/H5/File.hpp"
-#include "IO/Observer/Actions/RegisterEvents.hpp"
-#include "IO/Observer/Helpers.hpp"
-#include "IO/Observer/Initialize.hpp"
-#include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/Tags.hpp"
+#include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -45,29 +38,6 @@ struct MockMemoryMonitor {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
-};
-
-template <typename Metavariables>
-struct MockObserverWriter {
-  using component_being_mocked = observers::ObserverWriter<Metavariables>;
-
-  using const_global_cache_tags =
-      tmpl::list<observers::Tags::ReductionFileName>;
-
-  using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 observers::Actions::InitializeWriter<Metavariables>>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
-
-  using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockNodeGroupChare;
-  using array_index = int;
-
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        initialize_action_list>>;
 };
 
 template <typename Metavariables>
@@ -115,8 +85,6 @@ struct ArrayParallelComponent {
 };
 
 struct TestMetavariables {
-  using observed_reduction_data_tags = tmpl::list<>;
-
   using component_list =
       tmpl::list<MockMemoryMonitor<TestMetavariables>,
                  SingletonParallelComponent<TestMetavariables>,
@@ -143,13 +111,13 @@ void test_tags() {
 struct TestMetavarsActions {
   using observed_reduction_data_tags = tmpl::list<>;
 
-  using component_list =
-      tmpl::list<MockMemoryMonitor<TestMetavarsActions>,
-                 MockObserverWriter<TestMetavarsActions>,
-                 SingletonParallelComponent<TestMetavarsActions>,
-                 GroupParallelComponent<TestMetavarsActions>,
-                 ArrayParallelComponent<TestMetavarsActions>,
-                 NodegroupParallelComponent<TestMetavarsActions>>;
+  using component_list = tmpl::list<
+      MockMemoryMonitor<TestMetavarsActions>,
+      TestHelpers::observers::MockObserverWriter<TestMetavarsActions>,
+      SingletonParallelComponent<TestMetavarsActions>,
+      GroupParallelComponent<TestMetavarsActions>,
+      ArrayParallelComponent<TestMetavarsActions>,
+      NodegroupParallelComponent<TestMetavarsActions>>;
 
   enum class Phase { Initialization, Monitor, Exit };
 
@@ -158,7 +126,7 @@ struct TestMetavarsActions {
 
 using metavars = TestMetavarsActions;
 using mem_mon_comp = MockMemoryMonitor<metavars>;
-using obs_writer_comp = MockObserverWriter<metavars>;
+using obs_writer_comp = TestHelpers::observers::MockObserverWriter<metavars>;
 using sing_comp = SingletonParallelComponent<metavars>;
 using group_comp = GroupParallelComponent<metavars>;
 using array_comp = ArrayParallelComponent<metavars>;
@@ -175,9 +143,8 @@ void setup_runner(
       runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0);
 
   // ObserverWriter
-  ActionTesting::emplace_nodegroup_component<obs_writer_comp>(runner);
-  ActionTesting::next_action<obs_writer_comp>(runner, 0);
-  ActionTesting::next_action<obs_writer_comp>(runner, 0);
+  ActionTesting::emplace_nodegroup_component_and_initialize<obs_writer_comp>(
+      runner, {});
 
   // MemoryMonitor
   ActionTesting::emplace_singleton_component_and_initialize<mem_mon_comp>(
@@ -186,13 +153,15 @@ void setup_runner(
   runner->set_phase(metavars::Phase::Monitor);
 }
 
-template <typename Component>
-void check_output(const std::string& filename, const double time,
-                  const size_t num_nodes, const std::vector<double>& sizes) {
-  h5::H5File<h5::AccessType::ReadOnly> read_file{filename + ".h5"};
+template <typename Component, typename Metavariables>
+void check_output(const ActionTesting::MockRuntimeSystem<Metavariables>& runner,
+                  const double time, const size_t num_nodes,
+                  const std::vector<double>& sizes) {
+  auto& read_file = ActionTesting::get_databox_tag<
+      obs_writer_comp, TestHelpers::observers::MockReductionFileTag>(runner, 0);
   INFO("Checking output of " + pretty_type::name<Component>());
   const auto& dataset =
-      read_file.get<h5::Dat>(mem_monitor::subfile_name<Component>());
+      read_file.get_dat(mem_monitor::subfile_name<Component>());
   const std::vector<std::string>& legend = dataset.get_legend();
 
   size_t num_columns;
@@ -232,8 +201,8 @@ void check_output(const std::string& filename, const double time,
 template <typename Component>
 void run_group_actions(
     const gsl::not_null<ActionTesting::MockRuntimeSystem<metavars>*> runner,
-    const std::string& filename, const int num_nodes, const int num_procs,
-    const double time, const std::vector<double>& sizes) {
+    const int num_nodes, const int num_procs, const double time,
+    const std::vector<double>& sizes) {
   INFO("Checking actions of " + pretty_type::name<Component>());
   size_t num_branches;
   if constexpr (Parallel::is_group_v<Component>) {
@@ -279,8 +248,7 @@ void run_group_actions(
             *runner, 0) == 1);
   ActionTesting::invoke_queued_threaded_action<obs_writer_comp>(runner, 0);
 
-  check_output<Component>(filename, time, static_cast<size_t>(num_nodes),
-                          sizes);
+  check_output<Component>(*runner, time, static_cast<size_t>(num_nodes), sizes);
 }
 
 void test_wrong_box() {
@@ -302,18 +270,13 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
   INFO("Test ContributeMemoryData with" +
        (use_process_component_actions ? ""s : "out"s) + " Process(Node)Group");
   std::uniform_real_distribution<double> dist{0, 10.0};
-  const std::string outfile_name{"TestMemoryMonitorGroupActions"};
-  // clean up just in case
-  if (file_system::check_if_file_exists(outfile_name + ".h5")) {
-    file_system::rm(outfile_name + ".h5", true);
-  }
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
   const size_t num_procs_per_node = 3;
   const size_t num_procs = num_nodes * num_procs_per_node;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {outfile_name}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -355,7 +318,7 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
     }
   }
 
-  run_group_actions<group_comp>(make_not_null(&runner), outfile_name,
+  run_group_actions<group_comp>(make_not_null(&runner),
                                 static_cast<int>(num_nodes),
                                 static_cast<int>(num_procs), time, sizes);
 
@@ -387,7 +350,7 @@ void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
     }
   }
 
-  run_group_actions<nodegroup_comp>(make_not_null(&runner), outfile_name,
+  run_group_actions<nodegroup_comp>(make_not_null(&runner),
                                     static_cast<int>(num_nodes),
                                     static_cast<int>(num_procs), time, sizes);
 }
@@ -396,17 +359,12 @@ template <typename Gen>
 void test_process_array(const gsl::not_null<Gen*> gen) {
   INFO("Test ProcessArray");
   std::uniform_real_distribution<double> dist{0, 10.0};
-  const std::string outfile_name{"TestMemoryMonitorArrayAction"};
-  // clean up just in case
-  if (file_system::check_if_file_exists(outfile_name + ".h5")) {
-    file_system::rm(outfile_name + ".h5", true);
-  }
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
   const size_t num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {outfile_name}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -431,22 +389,17 @@ void test_process_array(const gsl::not_null<Gen*> gen) {
   ActionTesting::invoke_queued_threaded_action<obs_writer_comp>(
       make_not_null(&runner), 0);
 
-  check_output<array_comp>(outfile_name, time, num_nodes, size_per_node);
+  check_output<array_comp>(runner, time, num_nodes, size_per_node);
 }
 
 void test_process_singleton() {
   INFO("Test ProcessSingleton");
-  const std::string outfile_name{"TestMemoryMonitorSingletonAction"};
-  // clean up just in case
-  if (file_system::check_if_file_exists(outfile_name + ".h5")) {
-    file_system::rm(outfile_name + ".h5", true);
-  }
 
   // 4 mock nodes, 3 mock cores per node
   const size_t num_nodes = 4;
   const size_t num_procs_per_node = 3;
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {outfile_name}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
+      {}, {}, std::vector<size_t>(num_nodes, num_procs_per_node)};
 
   setup_runner(make_not_null(&runner));
 
@@ -476,7 +429,7 @@ void test_process_singleton() {
   ActionTesting::invoke_queued_threaded_action<obs_writer_comp>(
       make_not_null(&runner), 0);
 
-  check_output<sing_comp>(outfile_name, time, num_nodes, sizes);
+  check_output<sing_comp>(runner, time, num_nodes, sizes);
 }
 
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
