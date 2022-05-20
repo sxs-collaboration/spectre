@@ -19,7 +19,7 @@ namespace TestHelpers::observers {
 /*!
  * Tag that holds a MockH5File object for the MockObserverWriter
  */
-struct MockReductionFileTag : db::SimpleTag {
+struct MockReductionFileTag : ::db::SimpleTag {
   using type = MockH5File;
 };
 
@@ -39,16 +39,16 @@ struct MockReductionFileTag : db::SimpleTag {
 struct MockWriteReductionDataRow {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex, typename... Ts>
-  static void apply(db::DataBox<DbTagsList>& box,
+  static void apply(::db::DataBox<DbTagsList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::string& subfile_name,
                     std::vector<std::string>&& legend,
                     std::tuple<Ts...>&& in_reduction_data) {
-    if constexpr (db::tag_is_retrievable_v<MockReductionFileTag,
-                                           db::DataBox<DbTagsList>>) {
-      db::mutate<MockReductionFileTag>(
+    if constexpr (::db::tag_is_retrievable_v<MockReductionFileTag,
+                                             ::db::DataBox<DbTagsList>>) {
+      ::db::mutate<MockReductionFileTag>(
           make_not_null(&box),
           [subfile_name, legend,
            in_reduction_data](const gsl::not_null<MockH5File*> mock_h5_file) {
