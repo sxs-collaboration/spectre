@@ -33,6 +33,8 @@ struct ControlComponent {
                 ControlSystem, control_system::protocols::ControlSystem>);
   using chare_type = Parallel::Algorithms::Singleton;
 
+  static std::string name() { return ControlSystem::name(); }
+
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
