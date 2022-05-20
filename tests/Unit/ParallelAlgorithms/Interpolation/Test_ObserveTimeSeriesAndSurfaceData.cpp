@@ -88,7 +88,7 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   constexpr size_t l_max = 10;
   constexpr size_t m_max = 10;
   constexpr double sphere_radius = 2.8;
-  constexpr std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  constexpr std::array<double, 3> center{{0.01, 0.02, 0.03}};
   const Strahlkorper<Frame::Inertial> strahlkorper{l_max, m_max, sphere_radius,
                                                    center};
   const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
@@ -101,9 +101,9 @@ void check_surface_volume_data(const std::string& surfaces_file_prefix) {
   const DataVector radius = ylm.spec_to_phys(strahlkorper.coefficients());
   const std::string grid_name{"SurfaceD"};
 
-  const auto x{radius * sin_theta * cos(phi)};
-  const auto y{radius * sin_theta * sin(phi)};
-  const auto z{radius * cos(theta)};
+  const auto x{radius * sin_theta * cos(phi) + center[0]};
+  const auto y{radius * sin_theta * sin(phi) + center[1]};
+  const auto z{radius * cos(theta) + center[2]};
   const std::vector<DataVector> tensor_and_coord_data{
       x, y, z, square(2.0 * x + 3.0 * y + 5.0 * z)};
   const std::vector<TensorComponent> tensor_components{
@@ -376,8 +376,8 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(10, {{0.0, 0.0, 0.0}},
-                                                        1.4, {{0.0, 0.0, 0.0}});
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(
+      10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<
