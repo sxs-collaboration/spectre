@@ -195,10 +195,10 @@ struct CharacteristicEvolution {
       Actions::RequestBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
+      ::Actions::Label<CceEvolutionLabelTag>,
       Actions::ReceiveWorldtubeData<Metavariables>,
       Actions::InitializeFirstHypersurface<
           Metavariables::uses_partially_flat_cartesian_coordinates>,
-      ::Actions::Label<CceEvolutionLabelTag>,
       Actions::UpdateGauge<
           Metavariables::uses_partially_flat_cartesian_coordinates>,
       Actions::PrecomputeGlobalCceDependencies,
@@ -206,14 +206,13 @@ struct CharacteristicEvolution {
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
       compute_scri_quantities_and_observe, record_time_stepper_data_and_step,
-      ::Actions::ChangeStepSize,
+      ::Actions::ChangeStepSize<typename Metavariables::cce_step_choosers>,
       // We cannot know our next step for certain until after we've performed
       // step size selection, as we may need to reject a step.
       Actions::RequestNextBoundaryData<
           typename Metavariables::cce_boundary_component,
           CharacteristicEvolution<Metavariables>>,
       ::Actions::AdvanceTime, Actions::ExitIfEndTimeReached,
-      Actions::ReceiveWorldtubeData<Metavariables>,
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<

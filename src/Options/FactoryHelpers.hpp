@@ -19,11 +19,11 @@ struct add_factory_classes<FactoryClasses, tmpl::pair<BaseClass, NewClasses>,
               tmpl::erase<FactoryClasses, BaseClass>,
               tmpl::pair<
                   BaseClass,
-                  tmpl::append<
+                  tmpl::remove_duplicates<tmpl::append<
                       tmpl::conditional_t<
                           tmpl::has_key<FactoryClasses, BaseClass>::value,
                           tmpl::at<FactoryClasses, BaseClass>, tmpl::list<>>,
-                      NewClasses>>>,
+                      NewClasses>>>>,
           RestNewClasses...> {};
 
 template <typename FactoryClasses>

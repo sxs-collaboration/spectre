@@ -24,6 +24,12 @@ namespace Cce {
 /// \brief The set of actions for use in the CCE evolution system
 namespace Actions {
 
+namespace detail {
+CREATE_HAS_TYPE_ALIAS(compute_tags)
+CREATE_HAS_TYPE_ALIAS_V(compute_tags)
+CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
+}  // namespace detail
+
 /*!
  * \ingroup ActionsGroup
  * \brief Initializes the main data storage for the  `CharacteristicEvolution`
@@ -113,7 +119,10 @@ struct InitializeCharacteristicEvolutionVariables {
       tmpl::append<StepChoosers::step_chooser_simple_tags<Metavariables>,
                    simple_tags_for_evolution>;
 
-  using compute_tags = StepChoosers::step_chooser_compute_tags<Metavariables>;
+  using compute_tags = tmpl::remove_duplicates<tmpl::join<
+      tmpl::transform<typename Metavariables::cce_step_choosers,
+                      tmpl::bind<detail::get_compute_tags_or_default_t,
+                                 tmpl::_1, tmpl::pin<tmpl::list<>>>>>>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
