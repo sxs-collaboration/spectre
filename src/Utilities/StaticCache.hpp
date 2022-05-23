@@ -140,8 +140,17 @@ class StaticCache {
                                    Is + IndexOffset>>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
+        // < 12
     return (this->*gsl::at(cache, std::get<0>(parameter0) - IndexOffset))(
         parameters...);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
+        // < 12
   }
 
   template <typename... IntegralConstantValues, typename EnumType,
@@ -172,7 +181,16 @@ class StaticCache {
             std::integral_constant<EnumType, EnumValues>>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
+        // < 12
     return (this->*gsl::at(cache, array_location))(parameters...);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
+        // < 12
   }
 
   const Generator generator_;

@@ -100,6 +100,14 @@ set_property(TARGET Boost::boost
   INTERFACE_COMPILE_DEFINITIONS
   $<$<COMPILE_LANGUAGE:CXX>:BOOST_SP_DISABLE_THREADS>)
 
+# With newer versions of boost, sometimes there are internal boost warnings
+# about deprecated headers. This disables those as we have no control over what
+# boost does internally.
+set_property(TARGET Boost::boost
+  APPEND PROPERTY
+  INTERFACE_COMPILE_DEFINITIONS
+  $<$<COMPILE_LANGUAGE:CXX>:BOOST_ALLOW_DEPRECATED_HEADERS>)
+
 # Override the boost index type to match the STL for Boost.MultiArray
 # (std::ptrdiff_t to std::size_t)
 # Note: This header guard changed in Boost 1.73.0
