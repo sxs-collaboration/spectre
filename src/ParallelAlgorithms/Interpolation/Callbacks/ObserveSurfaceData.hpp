@@ -72,10 +72,11 @@ struct ObserveSurfaceData
         pretty_type::name<InterpolationTargetTag>();
     std::vector<TensorComponent> tensor_components{
         {surface_name + "/InertialCoordinates_x"s,
-         radius * sin_theta * cos(phi)},
+         radius * sin_theta * cos(phi) + strahlkorper.expansion_center()[0]},
         {surface_name + "/InertialCoordinates_y"s,
-         radius * sin_theta * sin(phi)},
-        {surface_name + "/InertialCoordinates_z"s, radius * cos(theta)}};
+         radius * sin_theta * sin(phi) + strahlkorper.expansion_center()[1]},
+        {surface_name + "/InertialCoordinates_z"s,
+         radius * cos(theta) + strahlkorper.expansion_center()[2]}};
 
     // Output each tag if it is a scalar. Otherwise, throw a compile-time
     // error. This could be generalized to handle tensors of nonzero rank by
