@@ -587,8 +587,7 @@ void GaugeUpdateInertialTimeDerivatives::apply(
       l_max, 1, make_not_null(&eth_x_inertial), make_not_null(&eth_y_inertial),
       make_not_null(&eth_z_inertial), x_inertial, y_inertial, z_inertial);
 
-  // Interpolate evolution_gauge_u_at_scri and omega to the partially flat
-  // Bondi-like coordinates
+  // Interpolate evolution_gauge_u_at_scri and omega to the Cauchy coordinates
   auto& original_u_at_scri =
       get(get<::Tags::SpinWeighted<::Tags::TempScalar<6, ComplexDataVector>,
                                    std::integral_constant<int, 1>>>(
