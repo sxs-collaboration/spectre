@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <string>
 
+#include "ApparentHorizons/ObjectLabel.hpp"
+#include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -18,10 +20,13 @@
 
 namespace control_system {
 namespace {
-void test_expansion_control_error() {
+void test_rotation_control_error() {
+  // Since we are only doing rotation, turn off the
+  // other control systems by passing 0 for their deriv orders
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<0, deriv_order>;
+  using metavars = TestHelpers::MockMetavars<deriv_order, 0>;
   using element_component = typename metavars::element_component;
+  MAKE_GENERATOR(gen);
 
   // Global things
   domain::FunctionsOfTime::register_derived_with_charm();
@@ -36,14 +41,14 @@ void test_expansion_control_error() {
       "  InitialTime: 0.0\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
-      "  Expansion:\n"
+      "  Rotation:\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
       "      Average0thDeriv: true\n"
       "    Controller:\n"
       "      UpdateFraction: 0.3\n"
       "    TimescaleTuner:\n"
-      "      InitialTimescales: [0.5]\n"
+      "      InitialTimescales: [0.5, 0.5, 0.5]\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 2.0\n"
@@ -63,7 +68,7 @@ void test_expansion_control_error() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const std::string& expansion_name = system_helper.expansion_name();
+  const std::string& rotation_name = system_helper.rotation_name();
 
   // Setup runner and element component because it's the easiest way to get the
   // global cache
@@ -75,46 +80,35 @@ void test_expansion_control_error() {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
   const auto& cache = ActionTesting::cache<element_component>(runner, 0);
-  const auto& functions_of_time =
-      Parallel::get<domain::Tags::FunctionsOfTime>(cache);
 
   using QueueTuple = tuples::TaggedTuple<
       control_system::QueueTags::Center<::ah::ObjectLabel::A>,
       control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
 
-  // Create fake measurements. For expansion we only care about the x component
-  // because that's all that is used. B is on the positive x-axis, A is on the
-  // negative x-axis
-  const double pos_A_x = -5.0;
-  const double pos_B_x = 10.0;
-  QueueTuple fake_measurement_tuple{DataVector{pos_A_x, 0.0, 0.0},
-                                    DataVector{pos_B_x, 0.0, 0.0}};
+  // Create fake measurements.
+  const DataVector pos_A{{-3.0, -4.0, 5.0}};
+  const DataVector pos_B{{2.0, 3.0, 6.0}};
+  QueueTuple fake_measurement_tuple{pos_A, pos_B};
 
-  using expansion_system = typename metavars::expansion_system;
-  using ControlError = expansion_system::control_error;
+  using rotation_system = typename metavars::rotation_system;
+  using ControlError = rotation_system::control_error;
 
   // This is before the first expiration time
   const double check_time = 0.1;
   const DataVector control_error =
-      ControlError{}(cache, check_time, expansion_name, fake_measurement_tuple);
+      ControlError{}(cache, check_time, rotation_name, fake_measurement_tuple);
 
-  const auto& expansion_f_of_t =
-      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
-          *functions_of_time.at(expansion_name));
-  // Since we haven't updated, the expansion factor should just be 1.0
-  const double exp_factor = expansion_f_of_t.func(check_time)[0][0];
-  const double pos_diff = pos_B_x - pos_A_x;
-  const double grid_diff = initial_separation;
-
-  const DataVector expected_control_error{exp_factor *
-                                          (pos_diff / grid_diff - 1.0)};
+  // Calculated error = (grid_diff cross pos_diff) / (grid_diff dot pos_diff) by
+  // hand
+  const DataVector expected_control_error =
+      DataVector{{0.0, -15.0, 105.0}} / 75.0;
 
   CHECK(control_error == expected_control_error);
 }
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Expansion",
+SPECTRE_TEST_CASE("Unit.ControlSystem.ControlErrors.Rotation",
                   "[ControlSystem][Unit]") {
-  test_expansion_control_error();
+  test_rotation_control_error();
 }
 }  // namespace
 }  // namespace control_system
