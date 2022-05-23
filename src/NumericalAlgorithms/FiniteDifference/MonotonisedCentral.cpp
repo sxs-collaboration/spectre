@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "NumericalAlgorithms/FiniteDifference/MonotisedCentral.hpp"
+#include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 
 #include <array>
 
@@ -13,7 +13,7 @@ namespace fd::reconstruction {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                                 \
-  template void reconstruct<MonotisedCentralReconstructor>(                    \
+  template void reconstruct<MonotonisedCentralReconstructor>(                  \
       gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>                 \
           reconstructed_upper_side_of_face_vars,                               \
       gsl::not_null<std::array<gsl::span<double>, DIM(data)>*>                 \
@@ -33,7 +33,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #define INSTANTIATION(r, data)                                                 \
   template void                                                                \
-  reconstruct_neighbor<SIDE(data), detail::MonotisedCentralReconstructor>(     \
+  reconstruct_neighbor<SIDE(data), detail::MonotonisedCentralReconstructor>(   \
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \

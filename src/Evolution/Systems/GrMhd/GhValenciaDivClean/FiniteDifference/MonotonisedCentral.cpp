@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotisedCentral.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
 
 #include <array>
 #include <boost/functional/hash.hpp>
@@ -27,7 +27,7 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
-#include "NumericalAlgorithms/FiniteDifference/MonotisedCentral.hpp"
+#include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -41,20 +41,20 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-MonotisedCentralPrim::MonotisedCentralPrim(CkMigrateMessage* const msg)
+MonotonisedCentralPrim::MonotonisedCentralPrim(CkMigrateMessage* const msg)
     : Reconstructor(msg) {}
 
-std::unique_ptr<Reconstructor> MonotisedCentralPrim::get_clone() const {
-  return std::make_unique<MonotisedCentralPrim>(*this);
+std::unique_ptr<Reconstructor> MonotonisedCentralPrim::get_clone() const {
+  return std::make_unique<MonotonisedCentralPrim>(*this);
 }
 
-void MonotisedCentralPrim::pup(PUP::er& p) { Reconstructor::pup(p); }
+void MonotonisedCentralPrim::pup(PUP::er& p) { Reconstructor::pup(p); }
 
 // NOLINTNEXTLINE
-PUP::able::PUP_ID MonotisedCentralPrim::my_PUP_ID = 0;
+PUP::able::PUP_ID MonotonisedCentralPrim::my_PUP_ID = 0;
 
 template <size_t ThermodynamicDim, typename TagsList>
-void MonotisedCentralPrim::reconstruct(
+void MonotonisedCentralPrim::reconstruct(
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
         vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, dim>*>
@@ -74,7 +74,7 @@ void MonotisedCentralPrim::reconstruct(
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
          const auto& volume_vars, const auto& ghost_cell_vars,
          const auto& subcell_extents, const size_t number_of_variables) {
-        ::fd::reconstruction::monotised_central(
+        ::fd::reconstruction::monotonised_central(
             upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
             ghost_cell_vars, subcell_extents, number_of_variables);
       },
@@ -112,7 +112,7 @@ void MonotisedCentralPrim::reconstruct(
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
-void MonotisedCentralPrim::reconstruct_fd_neighbor(
+void MonotonisedCentralPrim::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const Variables<tmpl::list<
@@ -136,7 +136,7 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
-            ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
+            ::fd::reconstruction::detail::MonotonisedCentralReconstructor>(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
             local_direction_to_reconstruct);
@@ -162,7 +162,7 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
-            ::fd::reconstruction::detail::MonotisedCentralReconstructor>(
+            ::fd::reconstruction::detail::MonotonisedCentralReconstructor>(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
             local_direction_to_reconstruct);
@@ -206,13 +206,13 @@ void MonotisedCentralPrim::reconstruct_fd_neighbor(
       neighbor_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size());
 }
 
-bool operator==(const MonotisedCentralPrim& /*lhs*/,
-                const MonotisedCentralPrim& /*rhs*/) {
+bool operator==(const MonotonisedCentralPrim& /*lhs*/,
+                const MonotonisedCentralPrim& /*rhs*/) {
   return true;
 }
 
-bool operator!=(const MonotisedCentralPrim& lhs,
-                const MonotisedCentralPrim& rhs) {
+bool operator!=(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs) {
   return not(lhs == rhs);
 }
 
@@ -250,7 +250,7 @@ bool operator!=(const MonotisedCentralPrim& lhs,
       evolution::dg::Actions::detail::NormalVector<3>>
 
 #define INSTANTIATION(r, data)                                                 \
-  template void MonotisedCentralPrim::reconstruct(                             \
+  template void MonotonisedCentralPrim::reconstruct(                           \
       gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>                \
           vars_on_lower_face,                                                  \
       gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>                \
@@ -265,7 +265,7 @@ bool operator!=(const MonotisedCentralPrim& lhs,
           std::pair<Direction<3>, ElementId<3>>, std::vector<double>,          \
           boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,  \
       const Mesh<3>& subcell_mesh) const;                                      \
-  template void MonotisedCentralPrim::reconstruct_fd_neighbor(                 \
+  template void MonotonisedCentralPrim::reconstruct_fd_neighbor(               \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                 \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,    \
       const Variables<tmpl::list<                                              \

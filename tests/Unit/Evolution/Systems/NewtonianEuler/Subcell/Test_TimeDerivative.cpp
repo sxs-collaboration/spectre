@@ -34,7 +34,7 @@
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/AoWeno.hpp"
-#include "Evolution/Systems/NewtonianEuler/FiniteDifference/MonotisedCentral.hpp"
+#include "Evolution/Systems/NewtonianEuler/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/NewtonianEuler/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/TimeDerivative.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
@@ -207,7 +207,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
     std::vector<double> neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
-            NewtonianEuler::fd::MonotisedCentralPrim<dim>{}.ghost_zone_size(),
+            NewtonianEuler::fd::MonotonisedCentralPrim<dim>{}.ghost_zone_size(),
             directions_to_slice)
             .at(direction.opposite());
     neighbor_data[std::pair{direction,
@@ -234,7 +234,7 @@ std::array<double, 3> test(const size_t num_dg_pts) {
       metavariables{}, typename metavariables::source_term_tag::type{}, soln,
       cell_centered_coords, element, subcell_mesh,
       std::unique_ptr<NewtonianEuler::fd::Reconstructor<dim>>{
-          std::make_unique<NewtonianEuler::fd::MonotisedCentralPrim<dim>>()},
+          std::make_unique<NewtonianEuler::fd::MonotonisedCentralPrim<dim>>()},
       std::unique_ptr<
           NewtonianEuler::BoundaryCorrections::BoundaryCorrection<dim>>{
           std::make_unique<NewtonianEuler::BoundaryCorrections::Hll<dim>>()},

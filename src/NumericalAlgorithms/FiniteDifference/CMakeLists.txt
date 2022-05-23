@@ -10,7 +10,7 @@ spectre_target_sources(
   PRIVATE
   AoWeno.cpp
   Minmod.cpp
-  MonotisedCentral.cpp
+  MonotonisedCentral.cpp
   Unlimited.cpp
   )
 
@@ -21,7 +21,7 @@ spectre_target_headers(
   AoWeno.hpp
   FiniteDifference.hpp
   Minmod.hpp
-  MonotisedCentral.hpp
+  MonotonisedCentral.hpp
   Reconstruct.hpp
   Reconstruct.tpp
   Unlimited.hpp

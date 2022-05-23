@@ -17,7 +17,7 @@ class er;
 
 namespace grmhd::GhValenciaDivClean::fd {
 /// \cond
-class MonotisedCentralPrim;
+class MonotonisedCentralPrim;
 /// \endcond
 
 /*!
@@ -37,7 +37,7 @@ class Reconstructor : public PUP::able {
   WRAPPED_PUPable_abstract(Reconstructor);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<MonotisedCentralPrim>;
+  using creatable_classes = tmpl::list<MonotonisedCentralPrim>;
 
   virtual std::unique_ptr<Reconstructor> get_clone() const = 0;
 

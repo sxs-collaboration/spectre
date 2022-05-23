@@ -55,8 +55,9 @@ class er;
 
 namespace grmhd::GhValenciaDivClean::fd {
 /*!
- * \brief Monotised central reconstruction on the GRMHD primitive variables (see
- * ::fd::reconstruction::monotised_central() for details) and unlimited 3rd
+ * \brief Monotonised central reconstruction on the GRMHD primitive variables
+ * (see
+ * ::fd::reconstruction::monotonised_central() for details) and unlimited 3rd
  * order (degree 2 polynomial) reconstruction on the metric variables.
  *
  * Only the spacetime metric is reconstructed when we and the neighboring
@@ -65,25 +66,25 @@ namespace grmhd::GhValenciaDivClean::fd {
  * \f$\Pi_{ab}\f$ are all reconstructed since the Riemann solver on the DG
  * element also needs to solve for the metric variables.
  */
-class MonotisedCentralPrim : public Reconstructor {
+class MonotonisedCentralPrim : public Reconstructor {
  public:
   static constexpr size_t dim = 3;
 
   using options = tmpl::list<>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme using primitive variables and "
+      "Monotonised central reconstruction scheme using primitive variables and "
       "the metric variables."};
 
-  MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
-  MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
-  ~MonotisedCentralPrim() override = default;
+  MonotonisedCentralPrim() = default;
+  MonotonisedCentralPrim(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim& operator=(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim(const MonotonisedCentralPrim&) = default;
+  MonotonisedCentralPrim& operator=(const MonotonisedCentralPrim&) = default;
+  ~MonotonisedCentralPrim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg);
+  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotisedCentralPrim);
+  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentralPrim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;
 
@@ -133,9 +134,9 @@ class MonotisedCentralPrim : public Reconstructor {
       const Direction<dim> direction_to_reconstruct) const;
 };
 
-bool operator==(const MonotisedCentralPrim& /*lhs*/,
-                const MonotisedCentralPrim& /*rhs*/);
+bool operator==(const MonotonisedCentralPrim& /*lhs*/,
+                const MonotonisedCentralPrim& /*rhs*/);
 
-bool operator!=(const MonotisedCentralPrim& lhs,
-                const MonotisedCentralPrim& rhs);
+bool operator!=(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs);
 }  // namespace grmhd::GhValenciaDivClean::fd

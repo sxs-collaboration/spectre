@@ -5,7 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AoWeno.cpp
-  MonotisedCentral.cpp
+  MonotonisedCentral.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
   )
@@ -17,7 +17,7 @@ spectre_target_headers(
   AoWeno.hpp
   Factory.hpp
   FiniteDifference.hpp
-  MonotisedCentral.hpp
+  MonotonisedCentral.hpp
   Reconstructor.hpp
   ReconstructWork.hpp
   ReconstructWork.tpp

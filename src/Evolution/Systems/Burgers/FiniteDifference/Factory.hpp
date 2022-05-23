@@ -3,5 +3,5 @@
 
 #pragma once
 
-#include "Evolution/Systems/Burgers/FiniteDifference/MonotisedCentral.hpp"
+#include "Evolution/Systems/Burgers/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Reconstructor.hpp"

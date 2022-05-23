@@ -63,7 +63,7 @@ SpatialDiscretization:
       SafetyFactorForB: 1.0e-12
   SubcellSolver:
     Reconstructor:
-      MonotisedCentralPrim:
+      MonotonisedCentralPrim:
 
 AnalyticSolution:
   FishboneMoncriefDisk:

@@ -12,7 +12,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Hllc.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_AoWeno.cpp
-  FiniteDifference/Test_MonotisedCentral.cpp
+  FiniteDifference/Test_MonotonisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_InitialDataTci.cpp

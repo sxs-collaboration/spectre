@@ -54,10 +54,10 @@ class Variables;
 
 namespace grmhd::ValenciaDivClean::fd {
 /*!
- * \brief Monotised central reconstruction. See
- * ::fd::reconstruction::monotised_central() for details.
+ * \brief Monotonised central reconstruction. See
+ * ::fd::reconstruction::monotonised_central() for details.
  */
-class MonotisedCentralPrim : public Reconstructor {
+class MonotonisedCentralPrim : public Reconstructor {
  private:
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
@@ -71,18 +71,18 @@ class MonotisedCentralPrim : public Reconstructor {
 
   using options = tmpl::list<>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme using primitive variables."};
+      "Monotonised central reconstruction scheme using primitive variables."};
 
-  MonotisedCentralPrim() = default;
-  MonotisedCentralPrim(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim& operator=(MonotisedCentralPrim&&) = default;
-  MonotisedCentralPrim(const MonotisedCentralPrim&) = default;
-  MonotisedCentralPrim& operator=(const MonotisedCentralPrim&) = default;
-  ~MonotisedCentralPrim() override = default;
+  MonotonisedCentralPrim() = default;
+  MonotonisedCentralPrim(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim& operator=(MonotonisedCentralPrim&&) = default;
+  MonotonisedCentralPrim(const MonotonisedCentralPrim&) = default;
+  MonotonisedCentralPrim& operator=(const MonotonisedCentralPrim&) = default;
+  ~MonotonisedCentralPrim() override = default;
 
-  explicit MonotisedCentralPrim(CkMigrateMessage* msg);
+  explicit MonotonisedCentralPrim(CkMigrateMessage* msg);
 
-  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotisedCentralPrim);
+  WRAPPED_PUPable_decl_base_template(Reconstructor, MonotonisedCentralPrim);
 
   auto get_clone() const -> std::unique_ptr<Reconstructor> override;
 
@@ -126,9 +126,9 @@ class MonotisedCentralPrim : public Reconstructor {
       const Direction<dim> direction_to_reconstruct) const;
 };
 
-bool operator==(const MonotisedCentralPrim& /*lhs*/,
-                const MonotisedCentralPrim& /*rhs*/);
+bool operator==(const MonotonisedCentralPrim& /*lhs*/,
+                const MonotonisedCentralPrim& /*rhs*/);
 
-bool operator!=(const MonotisedCentralPrim& lhs,
-                const MonotisedCentralPrim& rhs);
+bool operator!=(const MonotonisedCentralPrim& lhs,
+                const MonotonisedCentralPrim& rhs);
 }  // namespace grmhd::ValenciaDivClean::fd

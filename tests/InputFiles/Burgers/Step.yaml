@@ -54,7 +54,7 @@ SpatialDiscretization:
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
   SubcellSolver:
-    Reconstructor: MonotisedCentral
+    Reconstructor: MonotonisedCentral
 
 EventsAndTriggers:
   ? Always

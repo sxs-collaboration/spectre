@@ -41,7 +41,7 @@ SpatialDiscretization:
       SubcellToDgReconstructionMethod: DimByDim
   SubcellSolver:
     Reconstructor:
-      MonotisedCentralPrim:
+      MonotonisedCentralPrim:
 
 AnalyticSolution:
   RiemannProblem:

@@ -6,7 +6,7 @@ set(LIBRARY "Test_GhValenciaDivClean")
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_ProductOfConditions.cpp
   BoundaryCorrections/Test_ProductOfCorrections.cpp
-  FiniteDifference/Test_MonotisedCentral.cpp
+  FiniteDifference/Test_MonotonisedCentral.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_PrimitiveGhostData.cpp

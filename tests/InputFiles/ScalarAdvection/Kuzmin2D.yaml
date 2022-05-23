@@ -40,7 +40,7 @@ SpatialDiscretization:
       SubcellToDgReconstructionMethod: DimByDim
   SubcellSolver:
     Reconstructor:
-      MonotisedCentral
+      MonotonisedCentral
 
 AnalyticSolution:
   Kuzmin:

@@ -60,7 +60,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
   const Mesh<1> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // Perform test with MC reconstruction & Rusanov riemann solver
-  using ReconstructionForTest = fd::MonotisedCentral;
+  using ReconstructionForTest = fd::MonotonisedCentral;
   using BoundaryCorrectionForTest = BoundaryCorrections::Rusanov;
 
   // Set the testing profile for U.

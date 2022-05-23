@@ -72,7 +72,7 @@ void test_subcell_timederivative() {
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
 
   // Perform test with MC reconstruction & Rusanov riemann solver
-  using ReconstructionForTest = typename fd::MonotisedCentral<Dim>;
+  using ReconstructionForTest = typename fd::MonotonisedCentral<Dim>;
   using BoundaryCorrectionForTest = typename BoundaryCorrections::Rusanov<Dim>;
 
   // required for calling ScalarAdvection::VelocityAtFace::apply()

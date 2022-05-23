@@ -40,7 +40,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Hll.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/MonotisedCentral.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/MonotonisedCentral.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/NeighborPackagedData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -164,7 +164,7 @@ double test(const size_t num_dg_pts) {
     std::vector<double> neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
-            grmhd::ValenciaDivClean::fd::MonotisedCentralPrim{}
+            grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim{}
                 .ghost_zone_size(),
             directions_to_slice)
             .at(direction.opposite());
@@ -236,7 +236,7 @@ double test(const size_t num_dg_pts) {
       element, dg_mesh, subcell_mesh,
       std::unique_ptr<grmhd::ValenciaDivClean::fd::Reconstructor>{
           std::make_unique<
-              grmhd::ValenciaDivClean::fd::MonotisedCentralPrim>()},
+              grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim>()},
       std::unique_ptr<
           grmhd::ValenciaDivClean::BoundaryCorrections::BoundaryCorrection>{
           std::make_unique<

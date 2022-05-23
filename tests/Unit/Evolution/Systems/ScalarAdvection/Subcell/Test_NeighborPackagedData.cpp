@@ -85,7 +85,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       evolution::dg::subcell::Tags::OnSubcellFaces<velocity_field, Dim>;
 
   // Perform test with MC reconstruction & Rusanov riemann solver
-  using ReconstructionForTest = typename fd::MonotisedCentral<Dim>;
+  using ReconstructionForTest = typename fd::MonotonisedCentral<Dim>;
   using BoundaryCorrectionForTest = typename BoundaryCorrections::Rusanov<Dim>;
 
   // create an element and its neighbor elements

@@ -46,11 +46,11 @@ class er;
 
 namespace ScalarAdvection::fd {
 /*!
- * \brief Monotised central reconstruction. See
- * ::fd::reconstruction::monotised_central() for details.
+ * \brief Monotonised central reconstruction. See
+ * ::fd::reconstruction::monotonised_central() for details.
  */
 template <size_t Dim>
-class MonotisedCentral : public Reconstructor<Dim> {
+class MonotonisedCentral : public Reconstructor<Dim> {
  private:
   using face_vars_tags =
       tmpl::list<Tags::U,
@@ -60,20 +60,20 @@ class MonotisedCentral : public Reconstructor<Dim> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
-      "Monotised central reconstruction scheme."};
+      "Monotonised central reconstruction scheme."};
 
-  MonotisedCentral() = default;
-  MonotisedCentral(MonotisedCentral&&) = default;
-  MonotisedCentral& operator=(MonotisedCentral&&) = default;
-  MonotisedCentral(const MonotisedCentral&) = default;
-  MonotisedCentral& operator=(const MonotisedCentral&) = default;
-  ~MonotisedCentral() override = default;
+  MonotonisedCentral() = default;
+  MonotonisedCentral(MonotonisedCentral&&) = default;
+  MonotonisedCentral& operator=(MonotonisedCentral&&) = default;
+  MonotonisedCentral(const MonotonisedCentral&) = default;
+  MonotonisedCentral& operator=(const MonotonisedCentral&) = default;
+  ~MonotonisedCentral() override = default;
 
   void pup(PUP::er& p) override;
 
   /// \cond
-  explicit MonotisedCentral(CkMigrateMessage* msg);
-  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotisedCentral);
+  explicit MonotonisedCentral(CkMigrateMessage* msg);
+  WRAPPED_PUPable_decl_base_template(Reconstructor<Dim>, MonotonisedCentral);
   /// \endcond
 
   auto get_clone() const -> std::unique_ptr<Reconstructor<Dim>> override;
@@ -113,10 +113,10 @@ class MonotisedCentral : public Reconstructor<Dim> {
 };
 
 template <size_t Dim>
-bool operator==(const MonotisedCentral<Dim>& /*lhs*/,
-                const MonotisedCentral<Dim>& /*rhs*/);
+bool operator==(const MonotonisedCentral<Dim>& /*lhs*/,
+                const MonotonisedCentral<Dim>& /*rhs*/);
 
 template <size_t Dim>
-bool operator!=(const MonotisedCentral<Dim>& lhs,
-                const MonotisedCentral<Dim>& rhs);
+bool operator!=(const MonotonisedCentral<Dim>& lhs,
+                const MonotonisedCentral<Dim>& rhs);
 }  // namespace ScalarAdvection::fd
