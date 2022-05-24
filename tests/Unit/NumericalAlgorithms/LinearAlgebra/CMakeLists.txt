@@ -5,6 +5,7 @@ set(LIBRARY "Test_LinearAlgebra")
 
 set(LIBRARY_SOURCES
   Test_FindGeneralizedEigenvalues.cpp
+  Test_FindGeneralizedEigenvaluesArpack.cpp
   )
 
 add_test_library(
