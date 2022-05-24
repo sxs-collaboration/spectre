@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_LagrangePolynomial.cpp
   Test_LinearLeastSquares.cpp
   Test_PolynomialInterpolation.cpp
+  Test_PredictedZeroCrossing.cpp
   Test_RegularGridInterpolant.cpp
   Test_SendGhWorldtubeData.cpp
   Test_SpanInterpolators.cpp
