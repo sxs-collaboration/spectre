@@ -69,6 +69,7 @@ all of these dependencies.
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * LAPACK
+* [Arpack](https://github.com/opencollab/arpack-ng)
 * [libsharp](https://github.com/Libsharp/libsharp) should be built with
   support disabled for openmp and mpi, as we want all of our parallelism to
   be accomplished via Charm++.

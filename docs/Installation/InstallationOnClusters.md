@@ -85,5 +85,4 @@ shell.
 
 ## Ocean at Fullerton
 
-Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`,
-you do not need to install any dependencies, so you can skip steps 5 and 6.
+Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`.
