@@ -86,7 +86,7 @@ void test_variables_construction_and_access() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   // Test constructed and member function initialized Variables are identical
@@ -241,7 +241,7 @@ void test_variables_move() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points1 = sdist(gen);
   const size_t number_of_grid_points2 = sdist(gen);
@@ -395,6 +395,17 @@ void test_variables_move() {
     CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
               reuse_after_move))[0] == initial_fill_values[0]);
   }
+
+  {
+    Vars size_one{1, initial_fill_values[0]};
+    Vars size_two{2, initial_fill_values[0]};
+    const value_type* size_one_data = size_one.data();
+    const value_type* size_two_data = size_two.data();
+    Vars size_one_moved(std::move(size_one));
+    Vars size_two_moved(std::move(size_two));
+    CHECK(size_one_moved.data() != size_one_data);
+    CHECK(size_two_moved.data() == size_two_data);
+  }
 }
 
 template <typename VectorType>
@@ -410,7 +421,7 @@ void test_variables_math() {
   // cascaded math
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{1.0,
                                                                          10.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t num_points = sdist(gen);  // number of grid points
   const auto value_in_variables = make_with_random_values<value_type>(
@@ -589,7 +600,7 @@ void test_variables_prefix_semantics() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   const auto variables_vals =
@@ -752,7 +763,7 @@ void test_variables_prefix_math() {
   // cascaded math
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{1.0,
                                                                          10.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   const auto value_in_variables = make_with_random_values<value_type>(
@@ -868,7 +879,7 @@ void test_variables_serialization() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   const auto values_in_variables =
@@ -891,7 +902,7 @@ void test_variables_assign_subset() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   const auto values_in_variables =
@@ -1027,7 +1038,7 @@ void test_variables_extract_subset() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
 
@@ -1064,7 +1075,7 @@ void test_variables_from_tagged_tuple() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
 
   const size_t number_of_grid_points = sdist(gen);
   tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>,
@@ -1103,7 +1114,7 @@ void test_variables_equal_within_roundoff() {
   using value_type = typename VectorType::value_type;
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>>
       roundoff_dist{-1.e-12, 1.e-12};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
   const size_t num_points = sdist(gen);
   using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                                     TestHelpers::Tags::Scalar<VectorType>>>;
@@ -1138,7 +1149,7 @@ void test_math_wrapper() {
   using value_type = typename VectorType::value_type;
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> value_dist{
       -10.0, 10.0};
-  UniformCustomDistribution<size_t> sdist{5, 20};
+  UniformCustomDistribution<size_t> sdist{1, 5};
   const size_t num_points = sdist(gen);
   using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                                     TestHelpers::Tags::Scalar<VectorType>>>;
