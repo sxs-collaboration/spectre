@@ -154,8 +154,7 @@ struct ChangeStepSize {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     static_assert(
-        tmpl::any<ActionList,
-                  tt::is_a_lambda<Actions::UpdateU, tmpl::_1>>::value,
+        tmpl::any<ActionList, tt::is_a<Actions::UpdateU, tmpl::_1>>::value,
         "The ChangeStepSize action requires that you also use the UpdateU "
         "action to permit step-unwinding. If you are stepping within "
         "an action that is not UpdateU, consider using the take_step function "
@@ -170,7 +169,7 @@ struct ChangeStepSize {
       return {
           std::move(box), false,
           tmpl::index_if<ActionList,
-                         tt::is_a_lambda<Actions::UpdateU, tmpl::_1>>::value};
+                         tt::is_a<Actions::UpdateU, tmpl::_1>>::value};
     }
   }
 };

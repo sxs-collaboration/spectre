@@ -6,6 +6,23 @@
 #include <type_traits>
 
 namespace tt {
+namespace detail {
+template <template <typename...> class U, typename T>
+struct is_a : std::false_type {};
+
+template <template <typename...> class U, typename... Args>
+struct is_a<U, U<Args...>> : std::true_type {};
+
+template <template <typename...> class U>
+struct is_a_wrapper;
+
+template <typename U, typename T>
+struct wrapped_is_a;
+
+template <template <typename...> class U, typename T>
+struct wrapped_is_a<is_a_wrapper<U>, T> : detail::is_a<U, T> {};
+}  // namespace detail
+
 /// @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if type `T` is a template specialization of `U`
@@ -38,33 +55,14 @@ namespace tt {
 /// \tparam T type to check
 /// \tparam U the type that T might be a template specialization of
 template <template <typename...> class U, typename T>
-struct is_a : std::false_type {};
-
-/// \cond HIDDEN_SYMBOLS
-template <template <typename...> class U, typename... Args>
-struct is_a<U, U<Args...>> : std::true_type {};
-/// \endcond
+using is_a = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
 
 /// \see is_a
-template <template <typename...> class U, typename... Args>
-constexpr bool is_a_v = is_a<U, Args...>::value;
+template <template <typename...> class U, typename T>
+constexpr bool is_a_v = is_a<U, T>::value;
 
 /// \see is_a
-template <template <typename...> class U, typename... Args>
-using is_a_t = typename is_a<U, Args...>::type;
+template <template <typename...> class U, typename T>
+using is_a_t = typename is_a<U, T>::type;
 /// @}
-
-namespace detail {
-template <template <typename...> class U>
-struct is_a_wrapper;
-
-template <typename U, typename T>
-struct wrapped_is_a;
-
-template <template <typename...> class U, typename T>
-struct wrapped_is_a<is_a_wrapper<U>, T> : tt::is_a<U, T> {};
-}  // namespace detail
-
-template <template <typename...> class U, typename T>
-using is_a_lambda = detail::wrapped_is_a<detail::is_a_wrapper<U>, T>;
 }  // namespace tt

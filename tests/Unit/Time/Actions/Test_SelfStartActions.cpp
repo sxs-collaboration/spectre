@@ -246,8 +246,8 @@ void emplace_component_and_initialize<true, true>(
 }
 
 using not_self_start_action = std::negation<std::disjunction<
-    tt::is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
-    tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+    tt::is_a<SelfStart::Actions::Initialize, tmpl::_1>,
+    tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
     std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
     std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>>>;
 
@@ -310,7 +310,7 @@ void test_actions(const size_t order, const int step_denominator) {
   {
     INFO("Initialize");
     const bool jumped =
-        run_past<tt::is_a_lambda<SelfStart::Actions::Initialize, tmpl::_1>,
+        run_past<tt::is_a<SelfStart::Actions::Initialize, tmpl::_1>,
                  not_self_start_action>(make_not_null(&runner));
     CHECK(not jumped);
     CHECK(
@@ -337,7 +337,7 @@ void test_actions(const size_t order, const int step_denominator) {
       {
         INFO("CheckForCompletion");
         const bool jumped = run_past<
-            tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+            tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
         CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
@@ -363,7 +363,7 @@ void test_actions(const size_t order, const int step_denominator) {
   {
     INFO("CheckForCompletion");
     const bool jumped = run_past<
-        tt::is_a_lambda<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
+        tt::is_a<SelfStart::Actions::CheckForCompletion, tmpl::_1>,
         not_self_start_action>(make_not_null(&runner));
     CHECK(jumped);
   }

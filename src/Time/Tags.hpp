@@ -75,8 +75,7 @@ struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
 /// specializations of `HistoryEvolvedVariables`.
 template <typename TagList>
 using get_all_history_tags =
-    tmpl::filter<TagList,
-                 tt::is_a_lambda<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
+    tmpl::filter<TagList, tt::is_a<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup

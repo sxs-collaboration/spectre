@@ -68,7 +68,7 @@ using all_step_choosers = tmpl::join<tmpl::transform<
     tmpl::filter<
         tmpl::wrap<typename Metavariables::factory_creation::factory_classes,
                    tmpl::list>,
-        tt::is_a_lambda<StepChooser, tmpl::bind<tmpl::front, tmpl::_1>>>,
+        tt::is_a<StepChooser, tmpl::bind<tmpl::front, tmpl::_1>>>,
     tmpl::bind<tmpl::back, tmpl::_1>>>;
 }  // namespace detail
 
