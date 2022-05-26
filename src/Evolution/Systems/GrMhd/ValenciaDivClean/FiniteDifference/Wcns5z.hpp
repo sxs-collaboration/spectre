@@ -75,8 +75,25 @@ class Wcns5zPrim : public Reconstructor {
         "The parameter added to the oscillation indicators to avoid division "
         "by zero"};
   };
+  struct UseFallbackToMonotonisedCentral {
+    using type = bool;
+    static constexpr Options::String help = {
+        "If true, adaptively switch to the monotonised central (MC) "
+        "reconstruction if there are more extrema in a FD stencil than a "
+        "specified number. See also the option 'MaxNumberOfExtrema' below"};
+  };
+  struct MaxNumberOfExtrema {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "The maximum allowed number of extrema in FD stencil for using Wcns5z "
+        "reconstruction before switching to low-order monotonised central (MC) "
+        "reconstruction. If UseFallbackToMonotonisedCentral=False, this option "
+        "is ignored"};
+  };
 
-  using options = tmpl::list<NonlinearWeightExponent, Epsilon>;
+  using options =
+      tmpl::list<NonlinearWeightExponent, Epsilon,
+                 UseFallbackToMonotonisedCentral, MaxNumberOfExtrema>;
 
   static constexpr Options::String help{
       "WCNS 5Z reconstruction scheme using primitive variables."};
@@ -88,7 +105,8 @@ class Wcns5zPrim : public Reconstructor {
   Wcns5zPrim& operator=(const Wcns5zPrim&) = default;
   ~Wcns5zPrim() override = default;
 
-  Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon);
+  Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon,
+             bool use_fallback_to_mc, size_t max_number_of_extrema);
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
@@ -141,22 +159,24 @@ class Wcns5zPrim : public Reconstructor {
 
   size_t nonlinear_weight_exponent_ = 0;
   double epsilon_ = std::numeric_limits<double>::signaling_NaN();
+  bool use_fallback_to_mc_ = false;
+  size_t max_number_of_extrema_ = 0;
 
   void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        const gsl::span<const double>&,
                        const DirectionMap<dim, gsl::span<const double>>&,
-                       const Index<dim>&, size_t, double) = nullptr;
+                       const Index<dim>&, size_t, double, size_t) = nullptr;
   void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const size_t&) = nullptr;
   void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const size_t&) = nullptr;
 };
 
 }  // namespace grmhd::ValenciaDivClean::fd

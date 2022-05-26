@@ -12,22 +12,30 @@
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Fd.Wcns5zPrim",
                   "[Unit][Evolution]") {
   namespace helpers = TestHelpers::grmhd::ValenciaDivClean::fd;
-  const grmhd::ValenciaDivClean::fd::Wcns5zPrim wcns5z_recons{2, 2.0e-16};
-  helpers::test_prim_reconstructor(5, wcns5z_recons);
+  const grmhd::ValenciaDivClean::fd::Wcns5zPrim wcns5z_recons{2, 2.0e-16, true,
+                                                              1};
+  helpers::test_prim_reconstructor(4, wcns5z_recons);
 
   const auto wcns5z_from_options_base = TestHelpers::test_factory_creation<
       grmhd::ValenciaDivClean::fd::Reconstructor,
       grmhd::ValenciaDivClean::fd::OptionTags::Reconstructor>(
       "Wcns5zPrim:\n"
       "  NonlinearWeightExponent: 2\n"
-      "  Epsilon: 2.0e-16\n");
+      "  Epsilon: 2.0e-16\n"
+      "  UseFallbackToMonotonisedCentral: true\n"
+      "  MaxNumberOfExtrema: 1\n");
   auto* const wcns5z_from_options =
       dynamic_cast<const grmhd::ValenciaDivClean::fd::Wcns5zPrim*>(
           wcns5z_from_options_base.get());
   REQUIRE(wcns5z_from_options != nullptr);
   CHECK(*wcns5z_from_options == wcns5z_recons);
 
-  CHECK(wcns5z_recons != grmhd::ValenciaDivClean::fd::Wcns5zPrim(1, 2.0e-16));
-  CHECK(wcns5z_recons != grmhd::ValenciaDivClean::fd::Wcns5zPrim(2, 1.0e-16));
-  CHECK(wcns5z_recons == grmhd::ValenciaDivClean::fd::Wcns5zPrim(2, 2.0e-16));
+  CHECK(wcns5z_recons !=
+        grmhd::ValenciaDivClean::fd::Wcns5zPrim(1, 2.0e-16, true, 1));
+  CHECK(wcns5z_recons !=
+        grmhd::ValenciaDivClean::fd::Wcns5zPrim(2, 1.0e-16, true, 1));
+  CHECK(wcns5z_recons !=
+        grmhd::ValenciaDivClean::fd::Wcns5zPrim(2, 2.0e-16, false, 1));
+  CHECK(wcns5z_recons !=
+        grmhd::ValenciaDivClean::fd::Wcns5zPrim(2, 2.0e-16, true, 2));
 }
