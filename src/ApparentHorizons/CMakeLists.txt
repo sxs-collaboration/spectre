@@ -22,6 +22,7 @@ spectre_target_headers(
   ComputeHorizonVolumeQuantities.tpp
   ComputeItems.hpp
   FastFlow.hpp
+  HorizonAliases.hpp
   ObjectLabel.hpp
   ObserveCenters.hpp
   StrahlkorperGr.hpp
