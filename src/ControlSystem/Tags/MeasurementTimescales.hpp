@@ -70,7 +70,7 @@ struct MeasurementTimescales : db::SimpleTag {
       tmpl::list<::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
                  control_system::inputs<tmpl::transform<
                      tmpl::filter<typename Metavariables::component_list,
-                                  tt::is_a_lambda<ControlComponent, tmpl::_1>>,
+                                  tt::is_a<ControlComponent, tmpl::_1>>,
                      tmpl::bind<tmpl::back, tmpl::_1>>>>>;
 
   template <typename Metavariables, typename... OptionHolders>

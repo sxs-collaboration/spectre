@@ -38,7 +38,7 @@ struct Interpolator {
   using metavariables = Metavariables;
   using all_interpolation_target_tags = tmpl::transform<
       tmpl::filter<typename Metavariables::component_list,
-                   tt::is_a_lambda<intrp::InterpolationTarget, tmpl::_1>>,
+                   tt::is_a<intrp::InterpolationTarget, tmpl::_1>>,
       detail::get_interpolation_target_tag<tmpl::_1>>;
   using all_temporal_ids = tmpl::remove_duplicates<tmpl::transform<
       all_interpolation_target_tags, detail::get_temporal_id<tmpl::_1>>>;
