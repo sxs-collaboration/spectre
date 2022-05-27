@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 #include <tuple>
+#include <utility>
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
@@ -1070,6 +1071,37 @@ void test_variables_extract_subset() {
 }
 
 template <typename VectorType>
+void test_variables_reference_subset() {
+  using value_type = typename VectorType::value_type;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  UniformCustomDistribution<size_t> sdist{1, 5};
+
+  using FullVars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                                        TestHelpers::Tags::Scalar<VectorType>>>;
+  const size_t number_of_grid_points = sdist(gen);
+
+  auto full_vars = make_with_random_values<FullVars>(
+      make_not_null(&gen), make_not_null(&dist), number_of_grid_points);
+  const auto check_reference = [&](auto tags) {
+    const auto reference_vars =
+        full_vars.template reference_subset<decltype(tags)>();
+    CHECK(not reference_vars.is_owning());
+    CHECK(reference_vars ==
+          full_vars.template extract_subset<decltype(tags)>());
+  };
+  check_reference(typename FullVars::tags_list{});
+  check_reference(tmpl::list<TestHelpers::Tags::Vector<VectorType>>{});
+  check_reference(tmpl::list<TestHelpers::Tags::Scalar<VectorType>>{});
+  {
+    auto empty_reference = full_vars.template reference_subset<tmpl::list<>>();
+    static_assert(
+        std::is_same_v<decltype(empty_reference), Variables<tmpl::list<>>>);
+  }
+}
+
+template <typename VectorType>
 void test_variables_from_tagged_tuple() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
@@ -1269,6 +1301,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_extract_subset<ComplexModalVector>();
     test_variables_extract_subset<DataVector>();
     test_variables_extract_subset<ModalVector>();
+  }
+
+  {
+    INFO("Test Variables reference subset");
+    test_variables_reference_subset<ComplexDataVector>();
+    test_variables_reference_subset<ComplexModalVector>();
+    test_variables_reference_subset<DataVector>();
+    test_variables_reference_subset<ModalVector>();
   }
 
   {
