@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "ApparentHorizons/ObjectLabel.hpp"
@@ -23,6 +24,7 @@
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -70,7 +72,11 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
     return pretty_type::short_name<Rotation<DerivOrder>>();
   }
 
-  static std::string component_name(const size_t component) {
+  static std::optional<std::string> component_name(
+      const size_t component, const size_t num_components) {
+    ASSERT(num_components == 3,
+           "Rotation control expects 3 components but there are "
+               << num_components << " instead.");
     return component == 0 ? "x" : component == 1 ? "y" : "z";
   }
 

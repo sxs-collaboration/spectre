@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -87,7 +88,10 @@ struct SystemB;
 
 struct SystemA : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "A"; }
-  static std::string component_name(const size_t i) { return get_output(i); }
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return get_output(i);
+  }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
   using control_error = control_system::TestHelpers::ControlError;
@@ -99,7 +103,10 @@ struct SystemA : tt::ConformsTo<control_system::protocols::ControlSystem> {
 
 struct SystemB : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "B"; }
-  static std::string component_name(const size_t /*i*/) { return ""; }
+  static std::optional<std::string> component_name(
+      const size_t /*i*/, const size_t /*num_components*/) {
+    return std::nullopt;
+  }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemA, SystemB>>;
   using control_error = control_system::TestHelpers::ControlError;
@@ -111,7 +118,10 @@ struct SystemB : tt::ConformsTo<control_system::protocols::ControlSystem> {
 
 struct SystemC : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "C"; }
-  static std::string component_name(const size_t /*i*/) { return ""; }
+  static std::optional<std::string> component_name(
+      const size_t /*i*/, const size_t /*num_components*/) {
+    return std::nullopt;
+  }
   using simple_tags = tmpl::list<>;
   using measurement = Measurement<tmpl::list<SystemC>>;
   using control_error = control_system::TestHelpers::ControlError;

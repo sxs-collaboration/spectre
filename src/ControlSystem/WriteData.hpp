@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -96,11 +97,15 @@ void write_components_to_disk(
   // ControlSystems/Translation/Z.dat
   const size_t num_components = function_at_current_time[0].size();
   for (size_t i = 0; i < num_components; ++i) {
-    const std::string component_name = ControlSystem::component_name(i);
+    const std::optional<std::string> component_name_opt =
+        ControlSystem::component_name(i, num_components);
+    if (not component_name_opt) {
+      continue;
+    }
     // Currently all reduction data is written to the reduction file so preface
     // everything with ControlSystems/
     const std::string subfile_name{"/ControlSystems/" + ControlSystem::name() +
-                                   "/" + component_name};
+                                   "/" + *component_name_opt};
     std::vector<std::string> legend{
         "Time",         "Lambda",         "dtLambda",     "d2tLambda",
         "ControlError", "dtControlError", "ControlSignal"};

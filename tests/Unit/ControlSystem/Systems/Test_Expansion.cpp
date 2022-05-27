@@ -165,8 +165,18 @@ void test_names() {
   using expansion = control_system::Systems::Expansion<2>;
 
   CHECK(pretty_type::name<expansion>() == "Expansion");
-  CHECK(expansion::component_name(0) == "Expansion");
-  CHECK(expansion::component_name(1) == "Expansion");
+  CHECK(*expansion::component_name(0, 1) == "Expansion");
+  CHECK(*expansion::component_name(1, 1) == "Expansion");
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::string component_name = *expansion::component_name(1, 2);
+        (void)component_name;
+      })(),
+      Catch::Contains(
+          "Expansion control expects 1 component but there are 2 instead."));
+#endif  // SPECTRE_DEBUG
 }
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Expansion",

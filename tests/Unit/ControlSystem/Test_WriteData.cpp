@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 
@@ -53,8 +54,10 @@ struct FakeControlSystem
   static std::string name() {
     return pretty_type::short_name<FakeControlSystem>();
   }
-  static std::string component_name(const size_t i) {
-    return i == 0 ? "Foo" : (i == 1 ? "Bar" : "Baz");
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return i == 0 ? std::optional<std::string>{"Foo"}
+                  : (i == 1 ? std::optional<std::string>{"Bar"} : std::nullopt);
   }
   using measurement = control_system::TestHelpers::Measurement<LabelA>;
   using simple_tags = tmpl::list<>;
@@ -69,7 +72,10 @@ struct FakeQuatControlSystem
   static std::string name() {
     return pretty_type::short_name<FakeQuatControlSystem>();
   }
-  static std::string component_name(const size_t i) { return get_output(i); }
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return get_output(i);
+  }
   using measurement = control_system::TestHelpers::Measurement<LabelA>;
   using simple_tags = tmpl::list<>;
   struct process_measurement {
@@ -125,9 +131,16 @@ void check_written_data(
   for (size_t component_num = 0; component_num < total_components;
        component_num++) {
     // per file checks
-    const auto& dataset =
-        read_file.get_dat("/ControlSystems/" + ControlSystem::name() + "/" +
-                          ControlSystem::component_name(component_num));
+    const auto component_name_opt =
+        ControlSystem::component_name(component_num, total_components);
+    if constexpr (std::is_same_v<ControlSystem, FakeControlSystem>) {
+      if (component_num == 2) {
+        CHECK_FALSE(component_name_opt);
+        continue;
+      }
+    }
+    const auto& dataset = read_file.get_dat(
+        "/ControlSystems/" + ControlSystem::name() + "/" + *component_name_opt);
     const Matrix& data = dataset.get_data();
     const std::vector<std::string>& legend = dataset.get_legend();
     // Check legend is correct
@@ -256,11 +269,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
     write_components_to_disk<FakeQuatControlSystem>(
         time, cache, quat_fot, quat_q_and_derivs[i], quat_control_signals[i]);
 
-    // 3 for each control system
+    // 3 for one control system, 2 for the other (because of the nullopt)
     size_t num_threaded_actions =
         ActionTesting::number_of_queued_threaded_actions<observer>(runner, 0);
-    CHECK(num_threaded_actions == total_components * 2);
-    for (size_t j = 0; j < total_components * 2; j++) {
+    const size_t expected_num_threaded_actions = 2 * total_components - 1;
+    CHECK(num_threaded_actions == expected_num_threaded_actions);
+    for (size_t j = 0; j < expected_num_threaded_actions; j++) {
       ActionTesting::invoke_queued_threaded_action<observer>(
           make_not_null(&runner), 0);
     }

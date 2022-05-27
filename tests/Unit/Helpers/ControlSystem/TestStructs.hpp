@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <pup.h>
 #include <string>
 
@@ -50,7 +51,10 @@ static_assert(tt::assert_conforms_to<Measurement<TestStructs_detail::LabelA>,
 template <size_t DerivOrder, typename Label, typename Measurement>
 struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
-  static std::string component_name(const size_t i) { return get_output(i); }
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return get_output(i);
+  }
   using measurement = Measurement;
   using simple_tags = tmpl::list<>;
   using control_error = ControlError;

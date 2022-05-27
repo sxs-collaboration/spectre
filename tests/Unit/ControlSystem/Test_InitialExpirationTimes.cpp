@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -21,7 +22,10 @@ struct FakeControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static constexpr size_t deriv_order = 2;
   static std::string name() { return "Controlled"s + get_output(Index); }
-  static std::string component_name(const size_t i) { return get_output(i); }
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return get_output(i);
+  }
   using measurement = control_system::TestHelpers::Measurement<
       control_system::TestHelpers::TestStructs_detail::LabelA>;
   using simple_tags = tmpl::list<>;
