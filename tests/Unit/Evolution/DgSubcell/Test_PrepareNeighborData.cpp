@@ -59,14 +59,16 @@ struct Metavariables {
 
     struct GhostDataToSlice {
       using return_tags = tmpl::list<>;
-      using argument_tags = tmpl::list<evolution::dg::subcell::Tags::Inactive<
-          typename system::variables_tag>>;
+      using argument_tags =
+          tmpl::list<typename system::variables_tag, domain::Tags::Mesh<Dim>,
+                     evolution::dg::subcell::Tags::Mesh<Dim>>;
       template <typename T>
-      static Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
-      apply(const T& subcell_vars) {
-        T subcell_vars_to_send = subcell_vars;
-        get(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
-            subcell_vars_to_send)) *= 2.0;
+      static Variables<tmpl::list<Var1>> apply(const T& dg_vars,
+                                               const Mesh<Dim>& dg_mesh,
+                                               const Mesh<Dim>& subcell_mesh) {
+        T subcell_vars_to_send = evolution::dg::subcell::fd::project(
+            dg_vars, dg_mesh, subcell_mesh.extents());
+        get(get<Var1>(subcell_vars_to_send)) *= 2.0;
         return subcell_vars_to_send;
       }
     };
@@ -128,13 +130,14 @@ void test() {
                                                       subcell_mesh.extents());
 
   const size_t ghost_zone_size = 2;
-  auto box = db::create<
-      tmpl::list<GhostZoneSize, evolution::dg::subcell::Tags::Mesh<Dim>,
-                 domain::Tags::Element<Dim>, variables_tag,
-                 evolution::dg::subcell::Tags::Inactive<variables_tag>,
-                 evolution::dg::subcell::Tags::DataForRdmpTci>>(
-      ghost_zone_size, subcell_mesh, element, vars, inactive_vars,
-      evolution::dg::subcell::RdmpTciData{});
+  auto box = db::create<tmpl::list<
+      GhostZoneSize, domain::Tags::Mesh<Dim>,
+      evolution::dg::subcell::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      variables_tag, evolution::dg::subcell::Tags::Inactive<variables_tag>,
+      evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      ghost_zone_size, dg_mesh, subcell_mesh, element, vars, inactive_vars,
+      // Set RDMP data since it would've been calculated before already.
+      evolution::dg::subcell::RdmpTciData{{1.0}, {-1.0}});
   const auto data_for_neighbors =
       evolution::dg::subcell::prepare_neighbor_data<Metavariables<Dim>>(
           make_not_null(&box));

@@ -4,10 +4,14 @@
 #pragma once
 
 #include <cstddef>
+#include <tuple>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -22,23 +26,21 @@ namespace Burgers::subcell {
  * \brief Troubled-cell indicator applied to the finite difference subcell
  * solution to check if the corresponding DG solution is admissible.
  *
- * Applies the Persson TCI to \f$U\f$ on the DG grid.
- *
- * \note TCI is run after reconstructing the solution to the DG grid during the
- * subcell(FD) time stepping procedure, therefore `Inactive<Tag>` is the
- * updated DG solution.
+ * Applies the Persson to \f$U\f$ on the DG grid, and the RDMP TCI to \f$U\f$.
  */
 struct TciOnFdGrid {
- private:
-  template <typename Tag>
-  using Inactive = ::evolution::dg::subcell::Tags::Inactive<Tag>;
-
- public:
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<Inactive<Burgers::Tags::U>, ::domain::Tags::Mesh<1>>;
+      tmpl::list<Burgers::Tags::U, ::domain::Tags::Mesh<1>,
+                 evolution::dg::subcell::Tags::Mesh<1>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci,
+                 evolution::dg::subcell::Tags::SubcellOptions>;
 
-  static bool apply(const Scalar<DataVector>& dg_u, const Mesh<1>& dg_mesh,
-                    const double persson_exponent);
+  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+      const Scalar<DataVector>& subcell_u, const Mesh<1>& dg_mesh,
+      const Mesh<1>& subcell_mesh,
+      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+      const evolution::dg::subcell::SubcellOptions& subcell_options,
+      double persson_exponent);
 };
 }  // namespace Burgers::subcell

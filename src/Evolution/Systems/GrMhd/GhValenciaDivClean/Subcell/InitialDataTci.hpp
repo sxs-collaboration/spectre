@@ -7,7 +7,9 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -34,21 +36,17 @@ namespace grmhd::GhValenciaDivClean::subcell {
  *   grid, not initialized to the initial data) is less than
  *   `tci_options.minimum_rest_mass_density_times_lorentz_factor`
  *   (`tci_options.minimum_tilde_tau`), then the element is flagged as troubled.
- * - apply the two-mesh relaxed discrete maximum principle TCI
  * - apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$.
  * - apply the Persson TCI to the magnitude of \f$\tilde{B}\f$ if its magnitude
  *   on the DG grid is greater than `tci_options.magnetic_field_cutoff`.
+ * - apply the two-mesh relaxed discrete maximum principle TCI
  */
 struct DgInitialDataTci {
- private:
-  template <typename Tag>
-  using Inactive = evolution::dg::subcell::Tags::Inactive<Tag>;
+  using argument_tags =
+      tmpl::list<domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
+                 ValenciaDivClean::subcell::Tags::TciOptions>;
 
- public:
-  using argument_tags = tmpl::list<domain::Tags::Mesh<3>,
-                                   ValenciaDivClean::subcell::Tags::TciOptions>;
-
-  static bool apply(
+  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       const Variables<tmpl::list<
           gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
           GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
@@ -56,17 +54,8 @@ struct DgInitialDataTci {
           ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
           ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
           ValenciaDivClean::Tags::TildePhi>>& dg_vars,
-      const Variables<tmpl::list<
-          Inactive<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>,
-          Inactive<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>,
-          Inactive<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
-          Inactive<ValenciaDivClean::Tags::TildeD>,
-          Inactive<ValenciaDivClean::Tags::TildeTau>,
-          Inactive<ValenciaDivClean::Tags::TildeS<>>,
-          Inactive<ValenciaDivClean::Tags::TildeB<>>,
-          Inactive<ValenciaDivClean::Tags::TildePhi>>>& subcell_vars,
       double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-      const Mesh<3>& dg_mesh,
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
       const ValenciaDivClean::subcell::TciOptions& tci_options);
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell

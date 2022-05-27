@@ -31,7 +31,6 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"

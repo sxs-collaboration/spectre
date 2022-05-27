@@ -4,11 +4,15 @@
 #pragma once
 
 #include <cstddef>
+#include <tuple>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
@@ -21,6 +25,10 @@ namespace EquationsOfState {
 template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
 }  // namespace EquationsOfState
+namespace evolution::dg::subcell {
+struct RdmpTciData;
+class SubcellOptions;
+}  // namespace evolution::dg::subcell
 template <size_t Dim>
 class Mesh;
 namespace gsl {
@@ -42,7 +50,7 @@ namespace grmhd::ValenciaDivClean::subcell {
  *
  * The following checks are done in the order they are listed:
  *
- * - if \f$\min(\tilde{D}^{n+1}/\sqrt{\gamma^{n}})\f$ is less than
+ * - if \f$\min(\tilde{D}^{n+1}/\textrm{avg}(\sqrt{\gamma^{n}}))\f$ is less than
  *   `tci_options.minimum_rest_mass_density_times_lorentz_factor` then we have a
  *   negative (or extremely small) density and the cell is troubled. Note that
  *   if this `tci_option` is approximately equal to or larger than the
@@ -64,6 +72,7 @@ namespace grmhd::ValenciaDivClean::subcell {
  * - apply the Persson TCI to \f$\tilde{D}^{n+1}\f$ and \f$\tilde{\tau}^{n+1}\f$
  * - apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if its
  *   magnitude is greater than `tci_options.magnetic_field_cutoff`.
+ * - apply the RDMP TCI to `TildeD`, `TildeTau` and `TildeB`.
  *
  * If the cell is not flagged as troubled then the primitives are computed at
  * time level `n+1`.
@@ -74,11 +83,7 @@ class TciOnDgGrid {
   using return_tags =
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
   using argument_tags =
-      tmpl::list<evolution::dg::subcell::Tags::Inactive<
-                     grmhd::ValenciaDivClean::Tags::TildeD>,
-                 evolution::dg::subcell::Tags::Inactive<
-                     grmhd::ValenciaDivClean::Tags::TildeTau>,
-                 grmhd::ValenciaDivClean::Tags::TildeD,
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -86,13 +91,13 @@ class TciOnDgGrid {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
                  gr::Tags::SqrtDetSpatialMetric<>,
                  hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<3>,
-                 Tags::TciOptions>;
+                 evolution::dg::subcell::Tags::Mesh<3>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
+                 evolution::dg::subcell::Tags::SubcellOptions>;
 
   template <size_t ThermodynamicDim>
-  static bool apply(
+  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
-      const Scalar<DataVector>& subcell_tilde_d,
-      const Scalar<DataVector>& subcell_tilde_tau,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
@@ -101,7 +106,10 @@ class TciOnDgGrid {
       const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
-      const Mesh<3>& dg_mesh, const TciOptions& tci_options,
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
+      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+      const TciOptions& tci_options,
+      const evolution::dg::subcell::SubcellOptions& subcell_options,
       double persson_exponent);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

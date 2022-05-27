@@ -132,6 +132,11 @@ void reconstruct_prims_work(
              "got "
                  << neighbors_in_direction.size() << " in direction "
                  << direction);
+      ASSERT(not neighbor_data
+                     .at(std::pair{direction, *neighbors_in_direction.begin()})
+                     .empty(),
+             "The neighber data is empty in direction "
+                 << direction << " on element id " << element.id());
       ghost_cell_vars[direction] = gsl::make_span(
           &neighbor_data.at(std::pair{
               direction,

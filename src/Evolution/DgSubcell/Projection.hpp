@@ -34,7 +34,7 @@ void project_impl(gsl::span<double> subcell_u, gsl::span<const double> dg_u,
  *
  * \note In the return-by-`gsl::not_null` with `Variables` interface, the
  * `SubcellTagList` and the `DgtagList` must be the same when all tag prefixes
- * are removed. Typically the `Tags::Inactive` prefix will be used.
+ * are removed.
  */
 template <size_t Dim>
 DataVector project(const DataVector& dg_u, const Mesh<Dim>& dg_mesh,

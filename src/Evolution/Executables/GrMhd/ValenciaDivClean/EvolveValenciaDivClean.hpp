@@ -29,7 +29,6 @@
 #include "Evolution/DgSubcell/NeighborReconstructedFaceSolution.hpp"
 #include "Evolution/DgSubcell/PerssonTci.hpp"
 #include "Evolution/DgSubcell/PrepareNeighborData.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ObserverMesh.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
@@ -450,7 +449,9 @@ struct EvolutionMetavars {
                   VariableFixing::FixToAtmosphere<volume_dim>>,
               Actions::MutateApply<
                   grmhd::ValenciaDivClean::subcell::SwapGrTags>,
-              Actions::UpdateConservatives>,
+              Actions::UpdateConservatives,
+              Actions::MutateApply<
+                  grmhd::ValenciaDivClean::subcell::SetInitialRdmpData>>,
           tmpl::list<>>,
 
       Initialization::Actions::AddComputeTags<

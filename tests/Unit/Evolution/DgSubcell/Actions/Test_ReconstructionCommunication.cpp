@@ -33,7 +33,6 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -233,7 +232,10 @@ void test() {
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
       {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
-       element, neighbor_data, evolution::dg::subcell::RdmpTciData{},
+       element, neighbor_data,
+       // Explicitly set RDMP data since this would be set previously by the TCI
+       evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
+                                           {min(get(get<Var1>(evolved_vars)))}},
        evolved_vars, mortar_data, mortar_next_id});
   for (const auto& [direction, neighbor_ids] : neighbors) {
     (void)direction;
@@ -267,10 +269,10 @@ void test() {
   // Check local RDMP data
   const evolution::dg::subcell::RdmpTciData& rdmp_tci_data =
       get_databox_tag<comp, rdmp_tci_data_tag>(runner, self_id);
-  CHECK(rdmp_tci_data.max_variables_values.size() == 1);
+  REQUIRE(rdmp_tci_data.max_variables_values.size() == 1);
   CHECK(rdmp_tci_data.max_variables_values[0] ==
         max(get(get<Var1>(evolved_vars))));
-  CHECK(rdmp_tci_data.min_variables_values.size() == 1);
+  REQUIRE(rdmp_tci_data.min_variables_values.size() == 1);
   CHECK(rdmp_tci_data.min_variables_values[0] ==
         min(get(get<Var1>(evolved_vars))));
   // Check data sent to neighbors

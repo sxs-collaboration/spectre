@@ -13,7 +13,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Reconstruction.hpp"
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/TciOnFdGrid.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -22,22 +22,20 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 
 namespace {
-template <typename Tag>
-using Inactive = evolution::dg::subcell::Tags::Inactive<Tag>;
-
 enum class TestThis {
   AllGood,
-  SmallDensityDg,
   SmallDensitySubcell,
-  SmallPressureDg,
   SmallPressureSubcell,
   PerssonDensity,
-  PerssonPressure
+  PerssonEnergyDensity,
+  RdmpMassDensity,
+  RdmpEnergyDensity
 };
 
 template <size_t Dim>
 void test(const TestThis test_this) {
   CAPTURE(Dim);
+  CAPTURE(test_this);
   using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
   using EnergyDensity = NewtonianEuler::Tags::EnergyDensity;
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
@@ -57,77 +55,111 @@ void test(const TestThis test_this) {
   using prim_tags =
       tmpl::list<MassDensity, Velocity, SpecificInternalEnergy, Pressure>;
   using PrimVars = Variables<prim_tags>;
-  using inactive_cons_tags =
-      tmpl::list<Inactive<MassDensityCons>, Inactive<MomentumDensity>,
-                 Inactive<EnergyDensity>>;
-  using InactiveConsVars = Variables<inactive_cons_tags>;
-  using inactive_prim_tags =
-      tmpl::list<Inactive<MassDensity>, Inactive<Velocity>,
-                 Inactive<SpecificInternalEnergy>, Inactive<Pressure>>;
-  using InactivePrimVars = Variables<inactive_prim_tags>;
 
   const double persson_exponent = 4.0;
   std::unique_ptr<EquationsOfState::EquationOfState<false, 2>> eos =
       std::make_unique<EquationsOfState::IdealFluid<false>>(5.0 / 3.0);
   ConsVars subcell_cons{subcell_mesh.number_of_grid_points()};
-  PrimVars subcell_prims{subcell_mesh.number_of_grid_points(), 1.0e-7};
-  InactivePrimVars dg_prim{dg_mesh.number_of_grid_points(), 1.0e-7};
-  InactiveConsVars dg_cons{dg_mesh.number_of_grid_points()};
+  PrimVars subcell_prim{subcell_mesh.number_of_grid_points(), 1.0e-7};
 
-  if (test_this == TestThis::SmallPressureDg) {
-    get(get<Inactive<Pressure>>(dg_prim))[dg_mesh.number_of_grid_points() / 2] =
-        0.1 * 1.0e-18;
-  } else if (test_this == TestThis::PerssonPressure) {
-    get(get<Inactive<Pressure>>(dg_prim))[dg_mesh.number_of_grid_points() / 2] =
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      1.0e-18,
+      1.0e-4,
+      1.0e-18,
+      1.0e-4,
+      persson_exponent,
+      persson_exponent,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+
+  if (test_this == TestThis::PerssonEnergyDensity) {
+    get(get<Pressure>(subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
         1.0;
-  }
-
-  get<Inactive<SpecificInternalEnergy>>(dg_prim) =
-      eos->specific_internal_energy_from_density_and_pressure(
-          get<Inactive<MassDensity>>(dg_prim),
-          get<Inactive<Pressure>>(dg_prim));
-  NewtonianEuler::ConservativeFromPrimitive<Dim>::apply(
-      make_not_null(&get<Inactive<MassDensityCons>>(dg_cons)),
-      make_not_null(&get<Inactive<MomentumDensity>>(dg_cons)),
-      make_not_null(&get<Inactive<EnergyDensity>>(dg_cons)),
-      get<Inactive<MassDensity>>(dg_prim), get<Inactive<Velocity>>(dg_prim),
-      get<Inactive<SpecificInternalEnergy>>(dg_prim));
-
-  if (test_this == TestThis::SmallDensitySubcell) {
+  } else if (test_this == TestThis::SmallDensitySubcell) {
     get(get<MassDensity>(
-        subcell_prims))[subcell_mesh.number_of_grid_points() / 2] =
+        subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
         0.1 * 1.0e-18;
   } else if (test_this == TestThis::SmallPressureSubcell) {
-    get(get<Pressure>(
-        subcell_prims))[subcell_mesh.number_of_grid_points() / 2] =
+    get(get<Pressure>(subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
         0.1 * 1.0e-18;
-  } else if (test_this == TestThis::SmallDensityDg) {
-    get(get<Inactive<MassDensityCons>>(
-        dg_cons))[dg_mesh.number_of_grid_points() / 2] = 0.1 * 1.0e-18;
   } else if (test_this == TestThis::PerssonDensity) {
-    get(get<Inactive<MassDensityCons>>(
-        dg_cons))[dg_mesh.number_of_grid_points() / 2] = 1.0e18;
+    get(get<MassDensity>(subcell_prim))[dg_mesh.number_of_grid_points() / 2] =
+        1.0e-6;
   }
 
-  get<SpecificInternalEnergy>(subcell_prims) =
+  get<SpecificInternalEnergy>(subcell_prim) =
       eos->specific_internal_energy_from_density_and_pressure(
-          get<MassDensity>(subcell_prims), get<Pressure>(subcell_prims));
+          get<MassDensity>(subcell_prim), get<Pressure>(subcell_prim));
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<cons_tags>, ::Tags::Variables<prim_tags>,
-      Inactive<::Tags::Variables<cons_tags>>, ::domain::Tags::Mesh<Dim>,
+      ::domain::Tags::Mesh<Dim>, ::evolution::dg::subcell::Tags::Mesh<Dim>,
       hydro::Tags::EquationOfState<
-          std::unique_ptr<EquationsOfState::EquationOfState<false, 2>>>>>(
-      subcell_cons, subcell_prims, dg_cons, dg_mesh, std::move(eos));
+          std::unique_ptr<EquationsOfState::EquationOfState<false, 2>>>,
+      evolution::dg::subcell::Tags::SubcellOptions,
+      evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      subcell_cons, subcell_prim, dg_mesh, subcell_mesh, std::move(eos),
+      subcell_options, evolution::dg::subcell::RdmpTciData{});
   db::mutate_apply<NewtonianEuler::ConservativeFromPrimitive<Dim>>(
       make_not_null(&box));
-  const bool result =
+
+  // Set the RDMP TCI past data.
+  using std::max;
+  using std::min;
+  evolution::dg::subcell::RdmpTciData past_rdmp_tci_data{};
+
+  past_rdmp_tci_data.max_variables_values = std::vector<double>{
+      max(max(get(db::get<MassDensityCons>(box))),
+          max(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<MassDensityCons>(box)), dg_mesh,
+              subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
+      max(max(get(db::get<EnergyDensity>(box))),
+          max(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<EnergyDensity>(box)), dg_mesh, subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim)))};
+  past_rdmp_tci_data.min_variables_values = std::vector<double>{
+      min(min(get(db::get<MassDensityCons>(box))),
+          min(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<MassDensityCons>(box)), dg_mesh,
+              subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
+      min(min(get(db::get<EnergyDensity>(box))),
+          min(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<EnergyDensity>(box)), dg_mesh, subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim)))};
+
+  evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data{};
+  expected_rdmp_tci_data.max_variables_values =
+      std::vector<double>{max(get(db::get<MassDensityCons>(box))),
+                          max(get(db::get<EnergyDensity>(box)))};
+  expected_rdmp_tci_data.min_variables_values =
+      std::vector<double>{min(get(db::get<MassDensityCons>(box))),
+                          min(get(db::get<EnergyDensity>(box)))};
+
+  // Modify past data if we are expected an RDMP TCI failure.
+  db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
+      make_not_null(&box),
+      [&past_rdmp_tci_data, &test_this](const auto rdmp_tci_data_ptr) {
+        *rdmp_tci_data_ptr = past_rdmp_tci_data;
+        if (test_this == TestThis::RdmpMassDensity) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[0] *= 1.01;
+        } else if (test_this == TestThis::RdmpEnergyDensity) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
+        }
+      });
+
+  const auto result =
       db::mutate_apply<NewtonianEuler::subcell::TciOnFdGrid<Dim>>(
           make_not_null(&box), persson_exponent);
+  CHECK(get<1>(result) == expected_rdmp_tci_data);
+
   if (test_this == TestThis::AllGood) {
-    CHECK_FALSE(result);
+    CHECK_FALSE(std::get<0>(result));
   } else {
-    CHECK(result);
+    CHECK(std::get<0>(result));
   }
 }
 }  // namespace
@@ -135,10 +167,10 @@ void test(const TestThis test_this) {
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   for (const auto test_this :
-       {TestThis::AllGood, TestThis::SmallDensityDg,
-        TestThis::SmallDensitySubcell, TestThis::SmallPressureDg,
+       {TestThis::AllGood, TestThis::SmallDensitySubcell,
         TestThis::SmallPressureSubcell, TestThis::PerssonDensity,
-        TestThis::PerssonPressure}) {
+        TestThis::PerssonEnergyDensity, TestThis::RdmpMassDensity,
+        TestThis::RdmpEnergyDensity}) {
     test<1>(test_this);
     test<2>(test_this);
     test<3>(test_this);

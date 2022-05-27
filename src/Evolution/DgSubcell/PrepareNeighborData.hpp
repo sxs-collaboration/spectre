@@ -20,7 +20,6 @@
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -38,33 +37,14 @@ namespace evolution::dg::subcell {
  * data needed by neighbor elements to do reconstruction on the FD grid is sent.
  * The data to be sent is computed in the mutator
  * `Metavariables::SubcellOptions::GhostDataToSlice`, which returns a
- * `Variables` of the tensors to slice and send to the neighbors. Note that the
- * `Tags::Inactive<variables_tag>` are already projected onto the subcells
- * before this function is called. This is because the projection needs to be
- * done anyway for the a posteriori TCI. That is, the evolved variables are
- * projected at the end of the time step rather than the beginning, while this
- * function is called at the beginning. The main reason for having the mutator
- * `GhostDataToSlice` is to allow sending primitive or characteristic variables
- * for reconstruction.
+ * `Variables` of the tensors to slice and send to the neighbors. The main
+ * reason for having the mutator `GhostDataToSlice` is to allow sending
+ * primitive or characteristic variables for reconstruction.
  */
 template <typename Metavariables, typename DbTagsList>
 DirectionMap<Metavariables::volume_dim, std::vector<double>>
 prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   constexpr size_t volume_dim = Metavariables::volume_dim;
-  using variables_tag = typename Metavariables::system::variables_tag;
-  db::mutate<subcell::Tags::DataForRdmpTci>(
-      box,
-      [](const auto rdmp_tci_ptr,
-         std::pair<std::vector<double>, std::vector<double>> max_min_of_vars) {
-        subcell::RdmpTciData rdmp_data{};
-        rdmp_data.max_variables_values = std::move(max_min_of_vars.first);
-        rdmp_data.min_variables_values = std::move(max_min_of_vars.second);
-        *rdmp_tci_ptr = std::move(rdmp_data);
-      },
-      evolution::dg::subcell::rdmp_max_min(
-          db::get<variables_tag>(*box),
-          db::get<evolution::dg::subcell::Tags::Inactive<variables_tag>>(*box),
-          true));
 
   const auto& element = db::get<::domain::Tags::Element<volume_dim>>(*box);
   DirectionMap<volume_dim, std::vector<double>>
@@ -82,16 +62,15 @@ prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   const size_t ghost_zone_size =
       Metavariables::SubcellOptions::ghost_zone_size(*box);
 
-  // We can assume that the inactive tags are projected because if the TCI
-  // passed at the end of the last step, then as part of the RDMP it
-  // projected the data. We require the data be projected during
-  // initialization.
   all_neighbor_data_for_reconstruction = subcell::slice_data(
       db::mutate_apply(
           typename Metavariables::SubcellOptions::GhostDataToSlice{}, box),
       db::get<subcell::Tags::Mesh<volume_dim>>(*box).extents(), ghost_zone_size,
       directions_to_slice);
 
+  // Note: The RDMP TCI data must be filled by the TCIs before getting to this
+  // call. That means once in the initial data and then in both the DG and FD
+  // TCIs.
   const subcell::RdmpTciData& rdmp_data =
       db::get<subcell::Tags::DataForRdmpTci>(*box);
 

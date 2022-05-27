@@ -9,11 +9,16 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
+#include "Evolution/DgSubcell/SubcellOptions.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOnDgGrid.hpp"
@@ -39,10 +44,14 @@ enum class TestThis {
   PerssonTildeB,
   NegativeTildeDSubcell,
   NegativeTildeTauSubcell,
-  NegativeTildeTau
+  NegativeTildeTau,
+  RdmpTildeD,
+  RdmpTildeTau,
+  RdmpMagnitudeTildeB
 };
 
 void test(const TestThis test_this) {
+  CAPTURE(test_this);
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -91,24 +100,32 @@ void test(const TestThis test_this) {
       test_this == TestThis::PerssonTildeB ? std::optional<double>{1.0e-2}
                                            : std::nullopt};
 
+  const evolution::dg::subcell::SubcellOptions subcell_options{
+      1.0e-60,  // Tiny value because the magnetic field is so small
+      1.0e-4,
+      1.0e-60,  // Tiny value because the magnetic field is so small
+      1.0e-4,
+      persson_exponent,
+      persson_exponent,
+      false,
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+
   auto box = db::create<db::AddSimpleTags<
-      evolution::dg::subcell::Tags::Inactive<
-          grmhd::ValenciaDivClean::Tags::TildeD>,
-      evolution::dg::subcell::Tags::Inactive<
-          grmhd::ValenciaDivClean::Tags::TildeTau>,
       ::Tags::Variables<typename ConsVars::tags_list>,
       ::Tags::Variables<typename PrimVars::tags_list>, ::domain::Tags::Mesh<3>,
+      ::evolution::dg::subcell::Tags::Mesh<3>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>>,
       gr::Tags::SqrtDetSpatialMetric<>, gr::Tags::SpatialMetric<3>,
       gr::Tags::InverseSpatialMetric<3>,
-      grmhd::ValenciaDivClean::subcell::Tags::TciOptions>>(
-      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
-      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
-      ConsVars{mesh.number_of_grid_points()}, prim_vars, mesh,
+      grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
+      evolution::dg::subcell::Tags::SubcellOptions,
+      evolution::dg::subcell::Tags::DataForRdmpTci>>(
+      ConsVars{mesh.number_of_grid_points()}, prim_vars, mesh, subcell_mesh,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>{
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(eos)},
-      sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, tci_options);
+      sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, tci_options,
+      subcell_options, evolution::dg::subcell::RdmpTciData{});
 
   db::mutate_apply<grmhd::ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
@@ -135,7 +152,7 @@ void test(const TestThis test_this) {
     // atmosphere.
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
         make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
-          get(*tilde_tau_ptr)[point_to_change] = 1.0e5;
+          get(*tilde_tau_ptr)[point_to_change] *= 1.5;
         });
   } else if (test_this == TestThis::TildeB2TooBig) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(
@@ -178,16 +195,14 @@ void test(const TestThis test_this) {
           }
         });
   } else if (test_this == TestThis::NegativeTildeDSubcell) {
-    db::mutate<evolution::dg::subcell::Tags::Inactive<
-        grmhd::ValenciaDivClean::Tags::TildeD>>(
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
-          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+          get(*tilde_d_ptr)[point_to_change] = 1.0e-200;
         });
   } else if (test_this == TestThis::NegativeTildeTauSubcell) {
-    db::mutate<evolution::dg::subcell::Tags::Inactive<
-        grmhd::ValenciaDivClean::Tags::TildeTau>>(
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
-          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+          get(*tilde_d_ptr)[point_to_change] = 1.0e-200;
         });
   } else if (test_this == TestThis::NegativeTildeTau) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
@@ -196,13 +211,66 @@ void test(const TestThis test_this) {
         });
   }
 
-  const bool result =
+  // Set the RDMP TCI past data.
+  using std::max;
+  using std::min;
+  evolution::dg::subcell::RdmpTciData past_rdmp_tci_data{};
+  const auto magnitude_tilde_b =
+      magnitude(db::get<grmhd::ValenciaDivClean::Tags::TildeB<>>(box));
+
+  past_rdmp_tci_data.max_variables_values = std::vector<double>{
+      max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
+          max(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
+              subcell_mesh.extents()))),
+      max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
+          max(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
+              subcell_mesh.extents()))),
+      max(max(get(magnitude_tilde_b)),
+          max(evolution::dg::subcell::fd::project(get(magnitude_tilde_b), mesh,
+                                                  subcell_mesh.extents())))};
+  past_rdmp_tci_data.min_variables_values = std::vector<double>{
+      min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
+          min(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
+              subcell_mesh.extents()))),
+      min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
+          min(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
+              subcell_mesh.extents()))),
+      min(min(get(magnitude_tilde_b)),
+          min(evolution::dg::subcell::fd::project(get(magnitude_tilde_b), mesh,
+                                                  subcell_mesh.extents())))};
+
+  const evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data =
+      past_rdmp_tci_data;
+
+  // Modify past data if we are expected an RDMP TCI failure.
+  db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
+      make_not_null(&box),
+      [&past_rdmp_tci_data, &test_this](const auto rdmp_tci_data_ptr) {
+        *rdmp_tci_data_ptr = past_rdmp_tci_data;
+        if (test_this == TestThis::RdmpTildeD) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[0] *= 1.01;
+        } else if (test_this == TestThis::RdmpTildeTau) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
+        } else if (test_this == TestThis::RdmpMagnitudeTildeB) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
+        }
+      });
+
+  const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(
           make_not_null(&box), persson_exponent);
+  CHECK(get<1>(result) == expected_rdmp_tci_data);
 
   if (test_this == TestThis::AllGood or test_this == TestThis::InAtmosphere) {
-    CHECK_FALSE(result);
+    CHECK_FALSE(get<0>(result));
     CHECK(db::get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
               box) ==
           get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
@@ -210,7 +278,7 @@ void test(const TestThis test_this) {
     CHECK(db::get<hydro::Tags::DivergenceCleaningField<DataVector>>(box) ==
           get<hydro::Tags::DivergenceCleaningField<DataVector>>(prim_vars));
   } else {
-    CHECK(result);
+    CHECK(get<0>(result));
   }
 }
 }  // namespace
@@ -222,7 +290,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
         TestThis::TildeB2TooBig, TestThis::PrimRecoveryFailed,
         TestThis::PerssonTildeD, TestThis::PerssonTildeTau,
         TestThis::PerssonTildeB, TestThis::NegativeTildeDSubcell,
-        TestThis::NegativeTildeTauSubcell, TestThis::NegativeTildeTau}) {
+        TestThis::NegativeTildeTauSubcell, TestThis::NegativeTildeTau,
+        TestThis::RdmpTildeD, TestThis::RdmpTildeTau,
+        TestThis::RdmpMagnitudeTildeB}) {
     test(test_this);
   }
 }

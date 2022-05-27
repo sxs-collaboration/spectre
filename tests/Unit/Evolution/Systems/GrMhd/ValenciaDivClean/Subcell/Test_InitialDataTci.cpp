@@ -6,27 +6,22 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/InitialDataTci.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
-namespace {
-template <typename Tag>
-using Inactive = evolution::dg::subcell::Tags::Inactive<Tag>;
-}  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.ValenciaDivClean.Subcell.InitialDataTci",
     "[Unit][Evolution]") {
   using ConsVars =
       typename grmhd::ValenciaDivClean::System::variables_tag::type;
-  using InactiveConsVars = typename evolution::dg::subcell::Tags::Inactive<
-      typename grmhd::ValenciaDivClean::System::variables_tag>::type;
 
   const Mesh<3> dg_mesh{5, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -38,48 +33,99 @@ SPECTRE_TEST_CASE(
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
       1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12, std::optional<double>{1.0e-2}};
 
+  const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
+                                               &subcell_mesh]() {
+    evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
+    using std::max;
+    using std::min;
+    const auto& dg_tilde_d =
+        get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars);
+    const auto& dg_tilde_tau =
+        get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars);
+    const auto dg_tilde_b_magnitude =
+        magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars));
+    const auto subcell_vars = evolution::dg::subcell::fd::project(
+        dg_vars, dg_mesh, subcell_mesh.extents());
+    const auto& subcell_tilde_d =
+        get<grmhd::ValenciaDivClean::Tags::TildeD>(subcell_vars);
+    const auto& subcell_tilde_tau =
+        get<grmhd::ValenciaDivClean::Tags::TildeTau>(subcell_vars);
+    const auto subcell_tilde_b_magnitude =
+        magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(subcell_vars));
+    rdmp_tci_data.max_variables_values = std::vector<double>{
+        max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
+        max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
+        max(max(get(dg_tilde_b_magnitude)),
+            max(get(subcell_tilde_b_magnitude)))};
+    rdmp_tci_data.min_variables_values = std::vector<double>{
+        min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
+        min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
+        min(min(get(dg_tilde_b_magnitude)),
+            min(get(subcell_tilde_b_magnitude)))};
+    return rdmp_tci_data;
+  };
+
   {
     INFO("TCI is happy");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
-    CHECK_FALSE(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
-        tci_options));
+    const auto result =
+        grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh,
+            tci_options);
+    CHECK_FALSE(std::get<0>(result));
+
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
 
   {
     INFO("Two mesh RDMP fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        2.0};
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
-        tci_options));
+    // Test that the 2-mesh RDMP fails be setting an absurdly small epsilon
+    // and delta_0 tolerance.
+    get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] *=
+        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
+    const auto result =
+        grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, 1.0e-100, 1.0e-18, exponent, dg_mesh, subcell_mesh,
+            tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+    get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] /=
+        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
+
+    // Verify TCI passes after restoring value
+    CHECK_FALSE(
+        std::get<0>(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh,
+            tci_options)));
   }
 
   {
     INFO("Persson TCI TildeD fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        tci_options));
+    const auto result =
+        grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
+            tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
   }
 
   {
     INFO("Persson TCI TildeB fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
     for (size_t i = 0; i < 3; ++i) {
       get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(
           i)[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
     }
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        tci_options));
+    const auto result =
+        grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
+            tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     for (size_t i = 0; i < 3; ++i) {
       get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(
           i)[dg_mesh.number_of_grid_points() / 2] = 1.0;
@@ -88,56 +134,86 @@ SPECTRE_TEST_CASE(
 
   {
     INFO("Persson TCI TildeTau fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, 1.0, dg_mesh,
-        tci_options));
+    const auto result =
+        grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+            dg_vars, 1.0e100, epsilon, 1.0, dg_mesh, subcell_mesh, tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
   }
 
   {
     INFO("Negative TildeD");
-    InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(), 1.0};
-
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, 1.0, dg_mesh,
-        tci_options));
+    auto result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, 1.0e100, epsilon, 1.0, dg_mesh, subcell_mesh, tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
 
-    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeD>>(
-        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = -1.0e-20;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        tci_options));
-    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeD>>(
-        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = 1.0;
+    // Verify that the restored state is admissible by the TCI.
+    result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
+        tci_options);
+    CHECK_FALSE(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
 
   {
     INFO("Negative TildeTau");
-    InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(), 1.0};
-
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        tci_options));
+    auto result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
+        tci_options);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
 
-    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeTau>>(
-        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = -1.0e-20;
-    CHECK(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        tci_options));
-    get(get<Inactive<grmhd::ValenciaDivClean::Tags::TildeTau>>(
-        subcell_vars))[subcell_mesh.number_of_grid_points() / 2] = 1.0;
+    // Verify that the restored state is admissible by the TCI.
+    result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+        dg_vars, 1.0e100, epsilon, epsilon, dg_mesh, subcell_mesh, tci_options);
+    CHECK_FALSE(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+  }
+
+  {
+    INFO("Test SetInitialRdmpData");
+    // While the code is supposed to be used on the subcells, that doesn't
+    // actually matter.
+    evolution::dg::subcell::RdmpTciData rdmp_data{};
+    grmhd::ValenciaDivClean::subcell::SetInitialRdmpData::apply(
+        make_not_null(&rdmp_data),
+        get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars),
+        evolution::dg::subcell::ActiveGrid::Dg);
+    CHECK(rdmp_data == evolution::dg::subcell::RdmpTciData{});
+    grmhd::ValenciaDivClean::subcell::SetInitialRdmpData::apply(
+        make_not_null(&rdmp_data),
+        get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars),
+        evolution::dg::subcell::ActiveGrid::Subcell);
+    evolution::dg::subcell::RdmpTciData expected_rdmp_data{};
+    const auto& dg_tilde_d =
+        get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars);
+    const auto& dg_tilde_tau =
+        get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars);
+    const auto dg_tilde_b_magnitude =
+        magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars));
+    expected_rdmp_data.max_variables_values =
+        std::vector<double>{max(get(dg_tilde_d)), max(get(dg_tilde_tau)),
+                            max(get(dg_tilde_b_magnitude))};
+    expected_rdmp_data.min_variables_values =
+        std::vector<double>{min(get(dg_tilde_d)), min(get(dg_tilde_tau)),
+                            min(get(dg_tilde_b_magnitude))};
+    CHECK(rdmp_data == expected_rdmp_data);
   }
 }

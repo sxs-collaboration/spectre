@@ -35,7 +35,6 @@
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -59,13 +58,15 @@ namespace evolution::dg::subcell::Actions {
  *
  * The action proceeds as follows:
  *
- * 1. Computes the maximum and minimum of each evolved variable, which is used
- *    by the relaxed discrete maximum principle troubled-cell indicator.
- * 2. Determine in which directions we have neighbors
- * 3. Slice the variables provided by GhostDataMutator to send to our neighbors
+ * 1. Determine in which directions we have neighbors
+ * 2. Slice the variables provided by GhostDataMutator to send to our neighbors
  *    for ghost zones
- * 4. Send the ghost zone data, appending the max/min for the TCI at the end of
+ * 3. Send the ghost zone data, appending the max/min for the TCI at the end of
  *    the `std::vector<double>` we are sending.
+ *
+ * \warning This assumes the RDMP TCI data in the DataBox has been set, it does
+ * not calculate it automatically. The reason is this way we can only calculate
+ * the RDMP data when it's needed since computing it can be pretty expensive.
  *
  * Some notes:
  * - In the future we will need to send the cell-centered fluxes to do
@@ -84,11 +85,11 @@ namespace evolution::dg::subcell::Actions {
  *   - `Tags::Next<Tags::TimeStepId>`
  *   - `subcell::Tags::ActiveGrid`
  *   - `System::variables_tag`
+ *   - `subcell::Tags::DataForRdmpTci`
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
- *   - `subcell::Tags::DataForRdmpTci`
  */
 template <size_t Dim, typename GhostDataMutator>
 struct SendDataForReconstruction {
@@ -103,25 +104,15 @@ struct SendDataForReconstruction {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    using variables_tag = typename Metavariables::system::variables_tag;
-
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "The SendDataForReconstruction action can only be called when "
            "Subcell is the active scheme.");
 
-    db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci>(
-        make_not_null(&box),
-        [](const auto neighbor_data_ptr, const auto rdmp_tci_data_ptr,
-           const auto& active_vars) {
-          auto [max_of_vars, min_of_vars] =
-              rdmp_max_min(active_vars, {}, false);
-
+    db::mutate<Tags::NeighborDataForReconstruction<Dim>>(
+        make_not_null(&box), [](const auto neighbor_data_ptr) {
           // Clear the previous neighbor data and add current local data
           neighbor_data_ptr->clear();
-          *rdmp_tci_data_ptr =
-              RdmpTciData{std::move(max_of_vars), std::move(min_of_vars)};
-        },
-        db::get<variables_tag>(box));
+        });
 
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
@@ -331,13 +322,13 @@ struct ReceiveDataForReconstruction {
           ASSERT(neighbor_data_ptr->empty(),
                  "Should have no elements in the neighbor data when "
                  "receiving neighbor data");
-          const size_t number_of_evolved_vars =
+          const size_t number_of_rdmp_vars =
               rdmp_tci_data_ptr->max_variables_values.size();
           ASSERT(rdmp_tci_data_ptr->min_variables_values.size() ==
-                     number_of_evolved_vars,
-                 "The number of evolved variables for which we have a maximum "
+                     number_of_rdmp_vars,
+                 "The number of RDMP variables for which we have a maximum "
                  "and minimum should be the same, but we have "
-                     << number_of_evolved_vars << " for the max and "
+                     << number_of_rdmp_vars << " for the max and "
                      << rdmp_tci_data_ptr->min_variables_values.size()
                      << " for the min.");
 
@@ -356,11 +347,13 @@ struct ReceiveDataForReconstruction {
               // This reduces the memory footprint.
               std::vector<double>& received_neighbor_subcell_data =
                   *std::get<2>(received_data[directional_element_id]);
+              ASSERT(not received_neighbor_subcell_data.empty(),
+                     "The received subcell data must not be empty.");
               const size_t max_offset = received_neighbor_subcell_data.size() -
-                                        2 * number_of_evolved_vars;
-              const size_t min_offset = received_neighbor_subcell_data.size() -
-                                        number_of_evolved_vars;
-              for (size_t var_index = 0; var_index < number_of_evolved_vars;
+                                        2 * number_of_rdmp_vars;
+              const size_t min_offset =
+                  received_neighbor_subcell_data.size() - number_of_rdmp_vars;
+              for (size_t var_index = 0; var_index < number_of_rdmp_vars;
                    ++var_index) {
                 rdmp_tci_data_ptr->max_variables_values[var_index] = std::max(
                     rdmp_tci_data_ptr->max_variables_values[var_index],
@@ -380,7 +373,7 @@ struct ReceiveDataForReconstruction {
                               2 * static_cast<typename std::iterator_traits<
                                       typename std::vector<double>::iterator>::
                                                   difference_type>(
-                                      number_of_evolved_vars))}});
+                                      number_of_rdmp_vars))}});
               ASSERT(insert_result.second,
                      "Failed to insert the neighbor data in direction "
                          << direction << " from neighbor " << neighbor);

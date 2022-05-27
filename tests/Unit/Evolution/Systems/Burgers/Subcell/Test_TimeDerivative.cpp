@@ -27,7 +27,6 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"

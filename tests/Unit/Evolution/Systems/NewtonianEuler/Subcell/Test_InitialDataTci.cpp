@@ -8,16 +8,14 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/NewtonianEuler/Subcell/InitialDataTci.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace {
-template <typename Tag>
-using Inactive = evolution::dg::subcell::Tags::Inactive<Tag>;
-
 template <size_t Dim>
 void test() {
   using MassDensityCons = NewtonianEuler::Tags::MassDensityCons;
@@ -25,58 +23,104 @@ void test() {
   using MomentumDensity = NewtonianEuler::Tags::MomentumDensity<Dim>;
   using ConsVars =
       Variables<tmpl::list<MassDensityCons, MomentumDensity, EnergyDensity>>;
-  using InactiveConsVars =
-      Variables<tmpl::list<Inactive<MassDensityCons>, Inactive<MomentumDensity>,
-                           Inactive<EnergyDensity>>>;
-
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
   ConsVars dg_vars{dg_mesh.number_of_grid_points(), 1.0};
-  Scalar<DataVector> dg_pressure{dg_mesh.number_of_grid_points(), 1.0};
-  const double delta0 = 1.0e-4;
-  const double epsilon = 1.0e-3;
-  const double exponent = 4.0;
+
+  const double rdmp_delta0 = 1.0e-4;
+  const double rdmp_epsilon = 1.0e-3;
+  const double persson_exponent = 4.0;
+
+  const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
+                                               &subcell_mesh]() {
+    const auto subcell_vars = evolution::dg::subcell::fd::project(
+        dg_vars, dg_mesh, subcell_mesh.extents());
+    using std::max;
+    using std::min;
+    evolution::dg::subcell::RdmpTciData rdmp_tci_data{
+        {max(max(get(get<MassDensityCons>(dg_vars))),
+             max(get(get<MassDensityCons>(subcell_vars)))),
+         max(max(get(get<EnergyDensity>(dg_vars))),
+             max(get(get<EnergyDensity>(subcell_vars))))},
+        {min(min(get(get<MassDensityCons>(dg_vars))),
+             min(get(get<MassDensityCons>(subcell_vars)))),
+         min(min(get(get<EnergyDensity>(dg_vars))),
+             min(get(get<EnergyDensity>(subcell_vars))))}};
+    return rdmp_tci_data;
+  };
 
   {
     INFO("TCI is happy");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
-    CHECK_FALSE(NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
-        dg_pressure));
+    const auto result = NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
+        dg_vars, rdmp_delta0, rdmp_epsilon, persson_exponent, dg_mesh,
+        subcell_mesh);
+    CHECK_FALSE(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
 
   {
     INFO("Two mesh RDMP fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        2.0};
-    CHECK(NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, delta0, epsilon, exponent, dg_mesh,
-        dg_pressure));
+    // set subcell_vars to be smooth but quite different from dg_vars
+    // Test that the 2-mesh RDMP fails be setting an absurdly small epsilon
+    // and delta_0 tolerance.
+    get(get<MassDensityCons>(dg_vars))[dg_mesh.number_of_grid_points() / 2] *=
+        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
+    const auto result = NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
+        dg_vars, 1.0e-100, 1.0e-18, persson_exponent, dg_mesh, subcell_mesh);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+    get(get<MassDensityCons>(dg_vars))[dg_mesh.number_of_grid_points() / 2] /=
+        1.0 + std::numeric_limits<double>::epsilon() * 2.0;
   }
 
   {
     INFO("Persson TCI mass density fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
     get(get<MassDensityCons>(dg_vars))[dg_mesh.number_of_grid_points() / 2] +=
         2.0e10;
-    CHECK(NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        dg_pressure));
-    get(get<MassDensityCons>(dg_vars))[dg_mesh.number_of_grid_points() / 2] =
-        1.0;
+    // set rdmp_delta0 to be very large to ensure that it's the Persson TCI
+    // which triggers alarm here
+    const auto result = NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
+        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh,
+        subcell_mesh);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
 
   {
-    INFO("Persson TCI pressure fails");
-    const InactiveConsVars subcell_vars{subcell_mesh.number_of_grid_points(),
-                                        1.0};
-    get(dg_pressure)[dg_mesh.number_of_grid_points() / 2] *= 2.0;
-    CHECK(NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, subcell_vars, 1.0e100, epsilon, exponent, dg_mesh,
-        dg_pressure));
+    INFO("Persson TCI energy density fails");
+    get(get<EnergyDensity>(dg_vars))[dg_mesh.number_of_grid_points() / 2] +=
+        2.0e10;
+    // set rdmp_delta0 to be very large to ensure that it's the Persson TCI
+    // which triggers alarm here
+    const auto result = NewtonianEuler::subcell::DgInitialDataTci<Dim>::apply(
+        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh,
+        subcell_mesh);
+    CHECK(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+  }
+
+  {
+    INFO("Test SetInitialRdmpData");
+    // While the code is supposed to be used on the subcells, that doesn't
+    // actually matter.
+    evolution::dg::subcell::RdmpTciData rdmp_data{};
+    NewtonianEuler::subcell::SetInitialRdmpData<Dim>::apply(
+        make_not_null(&rdmp_data), dg_vars,
+        evolution::dg::subcell::ActiveGrid::Dg);
+    CHECK(rdmp_data == evolution::dg::subcell::RdmpTciData{});
+    NewtonianEuler::subcell::SetInitialRdmpData<Dim>::apply(
+        make_not_null(&rdmp_data), dg_vars,
+        evolution::dg::subcell::ActiveGrid::Subcell);
+    const auto& dg_mass_density =
+        get<NewtonianEuler::Tags::MassDensityCons>(dg_vars);
+    const auto& dg_energy_density =
+        get<NewtonianEuler::Tags::EnergyDensity>(dg_vars);
+    const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
+        {max(get(dg_mass_density)), max(get(dg_energy_density))},
+        {min(get(dg_mass_density)), min(get(dg_energy_density))}};
+
+    CHECK(rdmp_data == expected_rdmp_data);
   }
 }
 }  // namespace
