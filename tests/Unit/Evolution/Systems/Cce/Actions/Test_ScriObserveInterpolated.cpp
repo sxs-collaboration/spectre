@@ -256,8 +256,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   UniformCustomDistribution<double> coefficient_distribution{-2.0, 2.0};
 
-  const size_t number_of_radial_points = 6;
-  const size_t l_max = 6;
+  const size_t number_of_radial_points = 4;
+  const size_t l_max = 4;
   const size_t scri_output_density = 1;
   const std::string filename = "ScriObserveInterpolatedTest_CceVolumeOutput";
 
@@ -313,7 +313,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   const double quadratic_coefficient = value_dist(gen) * 0.1;
   const size_t vector_size =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  const size_t data_points = 30;
+  const size_t data_points = 10;
 
   Variables<typename test_metavariables::cce_scri_tags> random_scri_values{
       vector_size};
