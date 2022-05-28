@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <gsl/gsl_multifit.h>
+#include <vector>
 
 /// \cond
 namespace PUP {
@@ -23,6 +24,8 @@ namespace intrp {
  * of data points `x_values` and `y_values` representing some function y(x).
  * Note that the `interpolate` function requires a set of fit coefficients,
  * which can be obtained by first calling the `fit_coefficients` function.
+ * The parameter `num_observations` refers to the number of entries in
+ * `x_values`.
  *
  * The details of the linear least squares solver can be seen here:
  * [GSL documentation](https://www.gnu.org/software/gsl/doc/html/lls.html#).
@@ -50,6 +53,21 @@ class LinearLeastSquares {
   template <typename T>
   std::array<double, Order + 1> fit_coefficients(const T& x_values,
                                                  const T& y_values);
+
+  /*!
+   * The `x_values` are a sequence of times, positions, or other abscissa.
+   * The `y_values` are a std::vector of sequences of ordinates corresponding
+   * to these abscissa, with each element of the
+   * std::vector containing one sequence. Therefore, one set of fit
+   * coefficients is found for each entry in the std::vector `y_values`.
+   * In other words, the data in `y_values` is stored as:
+   * `y_values[fit_index][x_value_index]`, where `fit_index` runs over the
+   * number of different sequences being fit to, and `x_value_index` runs over
+   * the different entries corrsponding to those in `x_values`.
+   */
+  template <typename T>
+  std::vector<std::array<double, Order + 1>> fit_coefficients(
+      const T& x_values, const std::vector<T>& y_values);
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
