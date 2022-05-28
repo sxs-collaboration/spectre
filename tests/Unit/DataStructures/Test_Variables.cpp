@@ -237,6 +237,7 @@ void test_variables_construction_and_access() {
 template <typename VectorType>
 void test_variables_move() {
   using value_type = typename VectorType::value_type;
+  using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>;
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
                                                                          100.0};
@@ -249,22 +250,101 @@ void test_variables_move() {
                                                          make_not_null(&dist));
 
   // Test moving with assignment operator
-  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> move_to{
-      number_of_grid_points1, initial_fill_values[0]};
-  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> move_from{
-      number_of_grid_points2, initial_fill_values[1]};
+  {
+    // non-owning semantics
+    std::vector<value_type> non_owning_data_to(
+        number_of_grid_points1 * Vars::number_of_independent_components,
+        initial_fill_values[0]);
+    Vars non_owning_move_to(non_owning_data_to.data(),
+                            non_owning_data_to.size());
+    std::vector<value_type> non_owning_data_from(
+        number_of_grid_points2 * Vars::number_of_independent_components,
+        initial_fill_values[1]);
+    Vars non_owning_move_from(non_owning_data_from.data(),
+                              non_owning_data_from.size());
 
-  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
-      initializer_move_to = std::move(move_to);
+    // Test that copying a non-owning provides an owning
+    Vars copied_non_owning{non_owning_move_to};
+    CHECK(copied_non_owning.is_owning());
+    CHECK(not non_owning_move_to.is_owning());
+    CHECK(copied_non_owning.size() == non_owning_move_to.size());
+    CHECK(copied_non_owning.number_of_grid_points() ==
+          non_owning_move_to.number_of_grid_points());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] == copied_non_owning.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] != non_owning_move_from.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] != non_owning_move_to.data());
+
+    copied_non_owning = non_owning_move_from;
+    CHECK(copied_non_owning.is_owning());
+    CHECK(not non_owning_move_from.is_owning());
+    CHECK(copied_non_owning.size() == non_owning_move_from.size());
+    CHECK(copied_non_owning.number_of_grid_points() ==
+          non_owning_move_from.number_of_grid_points());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] == copied_non_owning.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] != non_owning_move_from.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              copied_non_owning)[0][0] != non_owning_move_to.data());
+
+    Vars initializer_move_to = std::move(non_owning_move_to);
+    CHECK(not initializer_move_to.is_owning());
+    CHECK(initializer_move_to ==
+          Vars{number_of_grid_points1, initial_fill_values[0]});
+    CHECK(initializer_move_to.data() == non_owning_data_to.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              initializer_move_to)[0][0] == non_owning_data_to.data());
+    CHECK(non_owning_move_to.is_owning());
+    CHECK(non_owning_move_to.size() == 0);
+
+    non_owning_move_to = std::move(non_owning_move_from);
+    CHECK(non_owning_move_from.is_owning());
+    CHECK(non_owning_move_from.size() == 0);
+    CHECK(not non_owning_move_to.is_owning());
+    CHECK(non_owning_move_to ==
+          Vars{number_of_grid_points2, initial_fill_values[1]});
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              non_owning_move_to)[0][0] == non_owning_data_from.data());
+
+    // Intentionally testing self-move
+#ifdef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-move"
+#endif  // defined(__clang__)
+    non_owning_move_to = std::move(non_owning_move_to);
+#ifdef __clang__
+#pragma GCC diagnostic pop
+#endif  // defined(__clang__)
+    // clang-tidy: false positive 'move_to' used after it was moved
+    CHECK(non_owning_move_to ==  // NOLINT
+          Vars{number_of_grid_points2, initial_fill_values[1]});
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              non_owning_move_to)[0][0] == non_owning_data_from.data());
+    CHECK(not non_owning_move_to.is_owning());
+
+    // Test set_data_ref case that wasn't implicitly tested above.
+    Vars non_owning_set_data{};
+    non_owning_set_data.set_data_ref(make_not_null(&non_owning_move_to));
+    CHECK(non_owning_set_data.data() == non_owning_data_from.data());
+    CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
+              non_owning_set_data)[0][0] == non_owning_data_from.data());
+    CHECK(not non_owning_set_data.is_owning());
+  }
+
+  Vars move_to{number_of_grid_points1, initial_fill_values[0]};
+  Vars move_from{number_of_grid_points2, initial_fill_values[1]};
+
+  Vars initializer_move_to = std::move(move_to);
   CHECK(initializer_move_to ==
-        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-            number_of_grid_points1, initial_fill_values[0]});
+        Vars{number_of_grid_points1, initial_fill_values[0]});
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(
             initializer_move_to)[0][0] == initializer_move_to.data());
 
   move_to = std::move(move_from);
-  CHECK(move_to == Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-                       number_of_grid_points2, initial_fill_values[1]});
+  CHECK(move_to == Vars{number_of_grid_points2, initial_fill_values[1]});
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 
@@ -279,50 +359,39 @@ void test_variables_move() {
 #endif  // defined(__clang__)
   // clang-tidy: false positive 'move_to' used after it was moved
   CHECK(move_to ==  // NOLINT
-        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-            number_of_grid_points2, initial_fill_values[1]});
+        Vars{number_of_grid_points2, initial_fill_values[1]});
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 
-  move_to = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-      number_of_grid_points2, initial_fill_values[0]};
-  CHECK(move_to ==
-        Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-            number_of_grid_points2, initial_fill_values[0]});
+  move_to = Vars{number_of_grid_points2, initial_fill_values[0]};
+  CHECK(move_to == Vars{number_of_grid_points2, initial_fill_values[0]});
   CHECK(&get<TestHelpers::Tags::Vector<VectorType>>(move_to)[0][0] ==
         move_to.data());
 
-  move_to = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{};
+  move_to = Vars{};
   CHECK(move_to.size() == 0);
-  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
-      default_for_construction{};
+  Vars default_for_construction{};
   const auto constructed_from_default = std::move(default_for_construction);
   CHECK(constructed_from_default.size() == 0);
 
   {
-    Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>
-        reuse_after_move{number_of_grid_points1, initial_fill_values[0]};
-    {
-      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> constructed{
-          std::move(reuse_after_move)};
-    }
+    Vars reuse_after_move{number_of_grid_points1, initial_fill_values[0]};
+    { Vars constructed{std::move(reuse_after_move)}; }
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
     reuse_after_move.initialize(number_of_grid_points1, initial_fill_values[1]);
     CHECK(reuse_after_move ==
-          Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-              number_of_grid_points1, initial_fill_values[1]});
+          Vars{number_of_grid_points1, initial_fill_values[1]});
     CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
               reuse_after_move))[0] == initial_fill_values[1]);
 
     {
-      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>> assigned{};
+      Vars assigned{};
       assigned = std::move(reuse_after_move);
     }
     // NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
     reuse_after_move.initialize(number_of_grid_points1, initial_fill_values[0]);
     CHECK(reuse_after_move ==
-          Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>>>{
-              number_of_grid_points1, initial_fill_values[0]});
+          Vars{number_of_grid_points1, initial_fill_values[0]});
     CHECK(get<0>(get<TestHelpers::Tags::Vector<VectorType>>(
               reuse_after_move))[0] == initial_fill_values[0]);
   }
@@ -350,78 +419,122 @@ void test_variables_math() {
       make_not_null(&gen), make_not_null(&dist));
 
   // Test math +, -, *, /
-  const TestVariablesType vars{num_points, value_in_variables};
-  const TestVariablesType close{num_points,
-                                value_in_variables * (1.0 + 1.0e-14)};
-  CHECK(close != vars);
-  CHECK_FALSE(close == vars);
-  CHECK_VARIABLES_APPROX(close, vars);
-  const TestVariablesType equivalent{num_points, value_in_variables};
-  CHECK(equivalent == vars);
-  CHECK_FALSE(equivalent != vars);
+  const auto test_close = [&num_points, &value_in_variables](
+                              const TestVariablesType& vars,
+                              const TestVariablesType& close) {
+    CHECK(close != vars);
+    CHECK_FALSE(close == vars);
+    CHECK_VARIABLES_APPROX(close, vars);
+    const TestVariablesType equivalent{num_points, value_in_variables};
+    CHECK(equivalent == vars);
+    CHECK_FALSE(equivalent != vars);
+  };
+
+  std::vector<value_type> owning_data(
+      num_points * TestVariablesType::number_of_independent_components,
+      value_in_variables);
+  const TestVariablesType owning_vars{num_points, value_in_variables};
+  const TestVariablesType non_owning_vars{owning_data.data(),
+                                          owning_data.size()};
+
+  {
+    const TestVariablesType close{num_points,
+                                  value_in_variables * (1.0 + 1.0e-14)};
+    const TestVariablesType non_owning_close{
+        const_cast<value_type*>(close.data()), close.size()};
+    test_close(owning_vars, close);
+    test_close(non_owning_vars, close);
+    test_close(owning_vars, non_owning_close);
+    test_close(non_owning_vars, non_owning_close);
+  }
 
   TestVariablesType expected{num_points, rand_vals.at(0) * value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, rand_vals[0] * vars);
-  expected = TestVariablesType{num_points, value_in_variables * rand_vals[0]};
-  CHECK_VARIABLES_APPROX(expected, vars * rand_vals[0]);
-  expected = TestVariablesType{num_points, value_in_variables / rand_vals[0]};
-  CHECK_VARIABLES_APPROX(expected, vars / rand_vals[0]);
 
-  expected = TestVariablesType{num_points, 4. * value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars + vars + vars + vars);
-  expected = TestVariablesType{num_points, 3. * value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars + (vars + vars));
-  // clang-tidy: both sides of overloaded operator are equivalent
-  expected = TestVariablesType{num_points, -2. * value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars - vars - vars - vars);  // NOLINT
-  expected = TestVariablesType{num_points, value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars - (vars - vars));  // NOLINT
-  expected = TestVariablesType{num_points, -value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars - (vars + vars));
-  expected = TestVariablesType{num_points, value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars - vars + vars);  // NOLINT
-  expected = TestVariablesType{num_points, value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, vars + vars - vars);
-  expected = TestVariablesType{num_points, -value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, -vars);
-  expected = TestVariablesType{num_points, value_in_variables};
-  CHECK_VARIABLES_APPROX(expected, +vars);
+  const auto test_math = [&expected, &num_points, &rand_vals,
+                          &value_in_variables](const TestVariablesType& vars) {
+    expected =
+        TestVariablesType{num_points, rand_vals.at(0) * value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, rand_vals[0] * vars);
+    expected = TestVariablesType{num_points, value_in_variables * rand_vals[0]};
+    CHECK_VARIABLES_APPROX(expected, vars * rand_vals[0]);
+    expected = TestVariablesType{num_points, value_in_variables / rand_vals[0]};
+    CHECK_VARIABLES_APPROX(expected, vars / rand_vals[0]);
+
+    expected = TestVariablesType{num_points, 4. * value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, vars + vars + vars + vars);
+    expected = TestVariablesType{num_points, 3. * value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, vars + (vars + vars));
+    // clang-tidy: both sides of overloaded operator are equivalent
+    expected = TestVariablesType{num_points, -2. * value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, vars - vars - vars - vars);  // NOLINT
+    expected = TestVariablesType{num_points, value_in_variables};
+    CHECK_VARIABLES_APPROX(expected,
+                           vars - (vars - vars));  // NOLINT
+    expected = TestVariablesType{num_points, -value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, vars - (vars + vars));
+    expected = TestVariablesType{num_points, value_in_variables};
+    CHECK_VARIABLES_APPROX(expected,
+                           vars - vars + vars);  // NOLINT
+    expected = TestVariablesType{num_points, value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, vars + vars - vars);
+    expected = TestVariablesType{num_points, -value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, -vars);
+    expected = TestVariablesType{num_points, value_in_variables};
+    CHECK_VARIABLES_APPROX(expected, +vars);
+  };
+
+  test_math(owning_vars);
+  test_math(non_owning_vars);
 
   // Test math_assignment operators +=, -=, *=, /= with values
-  TestVariablesType test_assignment(vars * rand_vals[0]);
-  auto expected_val = value_in_variables * rand_vals[0];
-  test_assignment += TestVariablesType{num_points, value_in_variables};
-  expected_val += value_in_variables;
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
-  test_assignment -= TestVariablesType{num_points, rand_vals[1]};
-  expected_val -= rand_vals[1];
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
-  test_assignment *= rand_vals[2];
-  expected_val *= rand_vals[2];
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
-  test_assignment /= rand_vals[0];
-  expected_val /= rand_vals[0];
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
+  const auto assignment_test =
+      [&expected, &num_points, &rand_vals,
+       &value_in_variables](TestVariablesType& test_assignment) {
+        auto expected_val = value_in_variables * rand_vals[0];
+        test_assignment += TestVariablesType{num_points, value_in_variables};
+        expected_val += value_in_variables;
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
+        test_assignment -= TestVariablesType{num_points, rand_vals[1]};
+        expected_val -= rand_vals[1];
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
+        test_assignment *= rand_vals[2];
+        expected_val *= rand_vals[2];
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
+        test_assignment /= rand_vals[0];
+        expected_val /= rand_vals[0];
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
 
-  test_assignment +=
-      TestVariablesType{num_points, value_in_variables} * rand_vals[1];
-  expected_val += value_in_variables * rand_vals[1];
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
-  test_assignment -= TestVariablesType{num_points, rand_vals[2]} * rand_vals[0];
-  expected_val -= rand_vals[2] * rand_vals[0];
-  expected = TestVariablesType{num_points, expected_val};
-  CHECK_VARIABLES_APPROX(expected, test_assignment);
+        test_assignment +=
+            TestVariablesType{num_points, value_in_variables} * rand_vals[1];
+        expected_val += value_in_variables * rand_vals[1];
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
+        test_assignment -=
+            TestVariablesType{num_points, rand_vals[2]} * rand_vals[0];
+        expected_val -= rand_vals[2] * rand_vals[0];
+        expected = TestVariablesType{num_points, expected_val};
+        CHECK_VARIABLES_APPROX(expected, test_assignment);
 
-  TestVariablesType test_assignment2{num_points};
-  test_assignment2 = test_assignment * 1.0;
-  CHECK(test_assignment2 == test_assignment);
-  test_assignment2 = test_assignment2 * 1.0;
-  CHECK(test_assignment2 == test_assignment);
+        TestVariablesType test_assignment2{num_points};
+        test_assignment2 = test_assignment * 1.0;
+        CHECK(test_assignment2 == test_assignment);
+        test_assignment2 = test_assignment2 * 1.0;
+        CHECK(test_assignment2 == test_assignment);
+      };
+
+  TestVariablesType owning_test_assignment(owning_vars * rand_vals[0]);
+  std::vector<value_type> owning_data_assignment(
+      num_points * TestVariablesType::number_of_independent_components,
+      value_in_variables * rand_vals[0]);
+  TestVariablesType non_owning_test_assignment(owning_data_assignment.data(),
+                                               owning_data_assignment.size());
+  assignment_test(owning_test_assignment);
+  assignment_test(non_owning_test_assignment);
+  CHECK(non_owning_test_assignment.data() == owning_data_assignment.data());
 
   const auto check_components = [](const auto& variables,
                                    const VectorType& tensor) {
@@ -438,19 +551,29 @@ void test_variables_math() {
       make_not_null(&gen), make_not_null(&dist), VectorType{4});
 
   // Test math assignment operators +=, -=, *=, /= with vectors
+  const auto vector_math_test = [&check_components, &test_vector, &rand_vals](
+                                    TestVariablesType& test_vector_math) {
+    test_vector_math *= test_vector;
+    VectorType vec_expect = rand_vals[0] * test_vector;
+    check_components(test_vector_math, vec_expect);
+    vec_expect *= test_vector;
+    check_components(test_vector_math * test_vector, vec_expect);
+    check_components(test_vector * test_vector_math, vec_expect);
+    test_vector_math *= test_vector;
+    check_components(test_vector_math, vec_expect);
+    vec_expect /= test_vector;
+    check_components(test_vector_math / test_vector, vec_expect);
+    test_vector_math /= test_vector;
+    check_components(test_vector_math, vec_expect);
+  };
+
   TestVariablesType test_vector_math(4, rand_vals[0]);
-  test_vector_math *= test_vector;
-  VectorType vec_expect = rand_vals[0] * test_vector;
-  check_components(test_vector_math, vec_expect);
-  vec_expect *= test_vector;
-  check_components(test_vector_math * test_vector, vec_expect);
-  check_components(test_vector * test_vector_math, vec_expect);
-  test_vector_math *= test_vector;
-  check_components(test_vector_math, vec_expect);
-  vec_expect /= test_vector;
-  check_components(test_vector_math / test_vector, vec_expect);
-  test_vector_math /= test_vector;
-  check_components(test_vector_math, vec_expect);
+  std::vector<value_type> data_test_vector_math(
+      4 * TestVariablesType::number_of_independent_components, rand_vals[0]);
+  TestVariablesType non_owning_test_vector_math(data_test_vector_math.data(),
+                                                data_test_vector_math.size());
+  vector_math_test(test_vector_math);
+  vector_math_test(non_owning_test_vector_math);
 }
 
 template <typename VectorType>
@@ -493,6 +616,68 @@ void test_variables_prefix_semantics() {
   PrefixVariablesType assigned_from_default{number_of_grid_points};
   assigned_from_default = std::move(constructed_from_default);
   CHECK(assigned_from_default.size() == 0);
+
+  {
+    VariablesType non_owning_vars_to{prefix_vars_copy_construct_from};
+    // Check move and copy from prefix variables to non-prefix variables via
+    // assignment operator
+    std::vector<value_type> non_owning_data_copy_from(
+        number_of_grid_points *
+            PrefixVariablesType::number_of_independent_components,
+        variables_vals[2]);
+    std::vector<value_type> non_owning_data_move_from(
+        number_of_grid_points *
+            PrefixVariablesType::number_of_independent_components,
+        variables_vals[3]);
+    PrefixVariablesType prefix_vars_copy_assign_from{
+        non_owning_data_copy_from.data(), non_owning_data_copy_from.size()};
+    PrefixVariablesType prefix_vars_move_assign_from{
+        non_owning_data_move_from.data(), non_owning_data_move_from.size()};
+    non_owning_vars_to = prefix_vars_copy_assign_from;
+    CHECK(not prefix_vars_copy_assign_from.is_owning());
+    CHECK(non_owning_vars_to.is_owning());
+    CHECK_VARIABLES_APPROX(
+        non_owning_vars_to,
+        VariablesType(number_of_grid_points, variables_vals[2]));
+    CHECK_VARIABLES_APPROX(
+        prefix_vars_copy_assign_from,
+        PrefixVariablesType(number_of_grid_points, variables_vals[2]));
+
+    non_owning_vars_to = std::move(prefix_vars_move_assign_from);
+    CHECK(prefix_vars_move_assign_from.is_owning());
+    CHECK(prefix_vars_move_assign_from.size() == 0);
+    CHECK(not non_owning_vars_to.is_owning());
+    CHECK_VARIABLES_APPROX(
+        non_owning_vars_to,
+        VariablesType(number_of_grid_points, variables_vals[3]));
+
+    // Test construction
+    PrefixVariablesType non_owning_prefix_vars_copy_construct_from{
+        non_owning_data_copy_from.data(), non_owning_data_copy_from.size()};
+    PrefixVariablesType non_owning_prefix_vars_move_construct_from{
+        non_owning_data_move_from.data(), non_owning_data_copy_from.size()};
+    const VariablesType copy_constructed{
+        non_owning_prefix_vars_copy_construct_from};
+    CHECK(not non_owning_prefix_vars_copy_construct_from.is_owning());
+    CHECK(copy_constructed.is_owning());
+    CHECK_VARIABLES_APPROX(
+        copy_constructed,
+        VariablesType(number_of_grid_points, variables_vals[2]));
+    CHECK_VARIABLES_APPROX(
+        non_owning_prefix_vars_copy_construct_from,
+        PrefixVariablesType(number_of_grid_points, variables_vals[2]));
+
+    const VariablesType move_constructed{
+        std::move(non_owning_prefix_vars_move_construct_from)};
+    CHECK(non_owning_prefix_vars_move_construct_from.is_owning());
+    CHECK(non_owning_prefix_vars_move_construct_from.size() == 0);
+    CHECK(non_owning_prefix_vars_move_construct_from.number_of_grid_points() ==
+          0);
+    CHECK(not move_constructed.is_owning());
+    CHECK_VARIABLES_APPROX(
+        move_constructed,
+        VariablesType(number_of_grid_points, variables_vals[3]));
+  }
 
   // Check move and copy from prefix variables to non-prefix variables via
   // assignment operator
@@ -900,6 +1085,15 @@ void test_variables_from_tagged_tuple() {
   assigned.assign_subset(source);
   const auto created = variables_from_tagged_tuple(source);
   CHECK(assigned == created);
+
+  std::vector<value_type> owning_data(
+      number_of_grid_points * assigned.number_of_independent_components);
+  Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                       TestHelpers::Tags::Scalar<VectorType>>>
+      non_owning_assigned(owning_data.data(), owning_data.size());
+  non_owning_assigned.assign_subset(source);
+  CHECK(non_owning_assigned == created);
+  CHECK(non_owning_assigned.data() == owning_data.data());
 }
 
 template <typename VectorType>
@@ -913,18 +1107,28 @@ void test_variables_equal_within_roundoff() {
   const size_t num_points = sdist(gen);
   using Vars = Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
                                     TestHelpers::Tags::Scalar<VectorType>>>;
-  Vars vars{num_points, 0.};
-  CHECK(equal_within_roundoff(vars, 0.));
-  CHECK(equal_within_roundoff(vars, 0., 0.));
-  CHECK(equal_within_roundoff(0., vars));
-  CHECK(equal_within_roundoff(vars, Vars{num_points, 0.}));
-  get(get<TestHelpers::Tags::Scalar<VectorType>>(vars)) += 1.;
-  CHECK_FALSE(equal_within_roundoff(vars, 0.));
-  CHECK_FALSE(equal_within_roundoff(vars, Vars{num_points, 0.}));
-  vars = make_with_random_values<Vars>(
-      make_not_null(&gen), make_not_null(&roundoff_dist), num_points);
-  CHECK_FALSE(equal_within_roundoff(vars, 0., 0.));
-  CHECK(equal_within_roundoff(vars, 0., 1.e-12));
+
+  const auto do_checks = [&num_points, &gen, &roundoff_dist](Vars& vars) {
+    CHECK(equal_within_roundoff(vars, 0.));
+    CHECK(equal_within_roundoff(vars, 0., 0.));
+    CHECK(equal_within_roundoff(0., vars));
+    CHECK(equal_within_roundoff(vars, Vars{num_points, 0.}));
+    get(get<TestHelpers::Tags::Scalar<VectorType>>(vars)) += 1.;
+    CHECK_FALSE(equal_within_roundoff(vars, 0.));
+    CHECK_FALSE(equal_within_roundoff(vars, Vars{num_points, 0.}));
+    vars = make_with_random_values<Vars>(
+        make_not_null(&gen), make_not_null(&roundoff_dist), num_points);
+    CHECK_FALSE(equal_within_roundoff(vars, 0., 0.));
+    CHECK(equal_within_roundoff(vars, 0., 1.e-12));
+  };
+
+  Vars owning_vars{num_points, 0.};
+  do_checks(owning_vars);
+
+  std::vector<value_type> owning_data(
+      num_points * owning_vars.number_of_independent_components, 0.);
+  Vars non_owning_vars{owning_data.data(), owning_data.size()};
+  do_checks(non_owning_vars);
 }
 
 template <typename VectorType>
@@ -945,6 +1149,50 @@ void test_math_wrapper() {
   const auto scalar = make_with_random_values<typename Vars::value_type>(
       make_not_null(&gen), make_not_null(&value_dist), num_points);
   TestHelpers::MathWrapper::test_type(vars1, vars2, scalar);
+}
+
+void test_asserts() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>,
+                             TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            vars(1, -3.0);
+        auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
+        tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
+      }()),
+      Catch::Contains("Must copy into same size, not 10 into 1"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
+        get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
+            Scalar<DataVector>{{{{0.}}}};
+      }()),
+      Catch::Contains("Must copy into same size, not 1 into 0"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            source(2, -3.0);
+        // Multiply by one to convert to an expression template.
+        (void)static_cast<
+            Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(
+            1.0 * source);
+      }()),
+      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
+                             TestHelpers::Tags::Scalar2<DataVector>>>
+            source(2, -3.0);
+        Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>
+            destination;
+        // Multiply by one to convert to an expression template.
+        destination = 1.0 * source;
+      }()),
+      Catch::Contains("Invalid size 4 for a Variables with 3 components."));
+#endif // defined(SPECTRE_DEBUG)
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
@@ -1039,68 +1287,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   TestHelpers::db::test_simple_tag<Tags::TempScalar<1>>("TempTensor1");
 
   SECTION("Test empty variables") { test_empty_variables(); }
+
+  test_asserts();
 }
 }  // namespace
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Variables.BadCopy",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>,
-                       TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      vars(1, -3.0);
-  auto& tensor_in_vars = get<TestHelpers::Tags::Vector<DataVector>>(vars);
-  tensor_in_vars = tnsr::I<DataVector, 3>{10_st, -4.0};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// clang-format off
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.assign_to_default",
-    "[DataStructures][Unit]") {
-  // clang-format on
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>>> vars;
-  get<TestHelpers::Tags::Scalar<DataVector>>(vars) =
-      Scalar<DataVector>{{{{0.}}}};
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.BadSize.constructor",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      source(2, -3.0);
-  // Multiply by one to convert to an expression template.
-  (void)static_cast<
-      Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>>>(1.0 *
-                                                                    source);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Invalid size 4 for a Variables with 3 components]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.Variables.BadSize.assignment",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Variables<tmpl::list<TestHelpers::Tags::Scalar<DataVector>,
-                       TestHelpers::Tags::Scalar2<DataVector>>>
-      source(2, -3.0);
-  Variables<tmpl::list<TestHelpers::Tags::Vector<DataVector>>> destination;
-  // Multiply by one to convert to an expression template.
-  destination = 1.0 * source;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
