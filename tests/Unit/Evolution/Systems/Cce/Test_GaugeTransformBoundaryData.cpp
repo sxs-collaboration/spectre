@@ -191,8 +191,11 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         // There is a bug in Clang 10.0.0 that gives a nonsensical
         // error message for the following call to
         // cached_collocation_metadata unless l_max is captured in
-        // this lambda.  (The capture should not be necessary.)  This
-        // line silences the (correct) "unused capture" warnings.
+        // this lambda. The capture should not be necessary because l_max is a
+        // const integer type that is initialized by a constant expression. Note
+        // that l_max need not be declared constexpr for its value to be
+        // retrieved inside a lambda without capturing it. This
+        // line silences the warning that says capturing l_max is not necessary.
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
@@ -224,8 +227,11 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         // There is a bug in Clang 10.0.0 that gives a nonsensical
         // error message for the following call to
         // cached_collocation_metadata unless l_max is captured in
-        // this lambda.  (The capture should not be necessary.)  This
-        // line silences the (correct) "unused capture" warnings.
+        // this lambda. The capture should not be necessary because l_max is a
+        // const integer type that is initialized by a constant expression. Note
+        // that l_max need not be declared constexpr for its value to be
+        // retrieved inside a lambda without capturing it. This
+        // line silences the warning that says capturing l_max is not necessary.
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
@@ -271,8 +277,11 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         // There is a bug in Clang 10.0.0 that gives a nonsensical
         // error message for the following call to
         // cached_collocation_metadata unless l_max is captured in
-        // this lambda.  (The capture should not be necessary.)  This
-        // line silences the (correct) "unused capture" warnings.
+        // this lambda. The capture should not be necessary because l_max is a
+        // const integer type that is initialized by a constant expression. Note
+        // that l_max need not be declared constexpr for its value to be
+        // retrieved inside a lambda without capturing it. This
+        // line silences the warning that says capturing l_max is not necessary.
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
@@ -310,8 +319,11 @@ void test_gauge_transforms_via_inverse_coordinate_map(
         // There is a bug in Clang 10.0.0 that gives a nonsensical
         // error message for the following call to
         // cached_collocation_metadata unless l_max is captured in
-        // this lambda.  (The capture should not be necessary.)  This
-        // line silences the (correct) "unused capture" warnings.
+        // this lambda. The capture should not be necessary because l_max is a
+        // const integer type that is initialized by a constant expression. Note
+        // that l_max need not be declared constexpr for its value to be
+        // retrieved inside a lambda without capturing it. This
+        // line silences the warning that says capturing l_max is not necessary.
         (void)l_max;
         const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
             Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);

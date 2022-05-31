@@ -88,8 +88,18 @@ struct CharacteristicExtractDefaults {
       Cce::bondi_hypersurface_step_tags,
       tmpl::bind<Cce::integrand_terms_to_compute_for_bondi_variable,
                  tmpl::_1>>>;
-  using cce_integration_independent_tags =
-      tmpl::push_back<Cce::pre_computation_tags, Cce::Tags::DuRDividedByR>;
+  using ccm_matching_tags = tmpl::list<
+      Cce::Tags::BondiJCauchyView, Cce::Tags::Psi0Match,
+      Cce::Tags::Dy<Cce::Tags::Psi0Match>,
+      Cce::Tags::Psi0, Cce::Tags::Dy<Cce::Tags::BondiJCauchyView>,
+      Cce::Tags::Dy<Cce::Tags::Dy<Cce::Tags::BondiJCauchyView>>>;
+
+  using cce_integration_independent_tags = tmpl::conditional_t<
+      uses_partially_flat_cartesian_coordinates,
+      tmpl::append<Cce::pre_computation_tags, ccm_matching_tags,
+                   tmpl::list<Cce::Tags::DuRDividedByR>>,
+      tmpl::push_back<Cce::pre_computation_tags, Cce::Tags::DuRDividedByR>>;
+
   using cce_temporary_equations_tags = tmpl::remove_duplicates<tmpl::flatten<
       tmpl::transform<cce_integrand_tags,
                       tmpl::bind<Cce::integrand_temporary_tags, tmpl::_1>>>>;
