@@ -15,6 +15,7 @@
 #include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Evolution/Systems/Cce/Actions/InitializeFirstHypersurface.hpp"
 #include "Evolution/Systems/Cce/Actions/InsertInterpolationScriData.hpp"
+#include "Evolution/Systems/Cce/Actions/Psi0Matching.hpp"
 #include "Evolution/Systems/Cce/Actions/RequestBoundaryData.hpp"
 #include "Evolution/Systems/Cce/Actions/ScriObserveInterpolated.hpp"
 #include "Evolution/Systems/Cce/Actions/TimeManagement.hpp"
@@ -180,6 +181,9 @@ struct CharacteristicEvolution {
           Actions::UpdateGauge<
               Metavariables::uses_partially_flat_cartesian_coordinates>>,
       Actions::PrecomputeGlobalCceDependencies,
+      tmpl::conditional_t<
+          Metavariables::uses_partially_flat_cartesian_coordinates,
+          Actions::CalculatePsi0AndDerivAtInnerBoundary, tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
@@ -208,6 +212,9 @@ struct CharacteristicEvolution {
           Actions::UpdateGauge<
               Metavariables::uses_partially_flat_cartesian_coordinates>>,
       Actions::PrecomputeGlobalCceDependencies,
+      tmpl::conditional_t<
+          Metavariables::uses_partially_flat_cartesian_coordinates,
+          Actions::CalculatePsi0AndDerivAtInnerBoundary, tmpl::list<>>,
       tmpl::transform<bondi_hypersurface_step_tags,
                       tmpl::bind<hypersurface_computation, tmpl::_1>>,
       Actions::FilterSwshVolumeQuantity<Tags::BondiH>,
