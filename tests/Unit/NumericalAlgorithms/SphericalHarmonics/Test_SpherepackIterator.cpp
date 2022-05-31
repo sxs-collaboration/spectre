@@ -59,6 +59,17 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
     }
   }
 
+  // Check compact index
+  iter.reset();
+  for (size_t k = 0; k < array.size(); k++) {
+    const auto compact_index = iter.compact_index(k);
+    const size_t current_compact_index = iter.current_compact_index();
+    if (compact_index) {
+      CHECK(*compact_index == current_compact_index);
+      ++iter;
+    }
+  }
+
   // Test set functions
   CHECK(iter.set(2, 1, SpherepackIterator::CoefficientArray::b)() == 110);
   // Test the set function for the case l>m_max+1

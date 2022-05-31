@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <optional>
 #include <ostream>
 #include <vector>
 
@@ -84,6 +85,21 @@ class SpherepackIterator {
     return offset_into_spherepack_array[current_compact_index_];
   }
 
+  /// Given an offset into a SPHEREPACK coefficient array, return the compact
+  /// index corresponding to that offset.
+  ///
+  /// Essentially the inverse of operator(). If the offset points to an element
+  /// that SPHEREPACK doesn't actually use (i.e. no compact index can reach the
+  /// given offset), then a std::nullopt is returned.
+  std::optional<size_t> compact_index(const size_t offset) const {
+    return offset_to_compact_index_[offset];
+  }
+
+  /// Returns the current compact index that SpherepackIterator uses internally.
+  /// This does not index a SPHEREPACK coefficient array. \see operator() for an
+  /// index into a SPHEREPACK coefficient array
+  size_t current_compact_index() const { return current_compact_index_; }
+
   /// Current values of l and m.
   size_t l() const { return compact_l_[current_compact_index_]; }
   size_t m() const { return compact_m_[current_compact_index_]; }
@@ -119,6 +135,7 @@ class SpherepackIterator {
   size_t current_compact_index_;
   std::vector<size_t> offset_into_spherepack_array;
   std::vector<size_t> compact_l_, compact_m_;
+  std::vector<std::optional<size_t>> offset_to_compact_index_;
 };
 
 inline bool operator==(const SpherepackIterator& lhs,
