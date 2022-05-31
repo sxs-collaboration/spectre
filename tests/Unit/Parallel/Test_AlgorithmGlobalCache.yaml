@@ -3,3 +3,7 @@
 
 # Initialize to empty vector.
 VectorOfDoubles: []
+
+Observers:
+  ReductionFileName: "Test_AlgorithmGlobalCacheReduction"
+  VolumeFileName: "Test_AlgorithmGlobalCacheVolume"

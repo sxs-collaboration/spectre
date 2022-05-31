@@ -14,6 +14,12 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/Matrix.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/Dat.hpp"
+#include "IO/H5/File.hpp"
+#include "IO/Observer/Actions/GetLockPointer.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -22,9 +28,13 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Serialize.hpp"
+#include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -199,7 +209,7 @@ struct use_stored_double {
 
 }  // namespace mutate_cache
 
-// We have four ParallelComponents:
+// We have five ParallelComponents:
 //
 // 1) MutateCacheComponent mutates the value in the GlobalCache using
 //    simple_actions, and then tests that the value in the GlobalCache
@@ -214,6 +224,11 @@ struct use_stored_double {
 //
 // 4) CheckParallelInfo checks the parallel info functions of the GlobalCache
 //    against the Parallel:: and sys:: functions.
+//
+// 5) CheckMemoryMonitorRelatedMethods calls the
+//    `compute_size_for_memory_monitor` entry method of the GlobalCache and the
+//    MutableGlobalCache which requires there to be a MemoryMonitor in the
+//    component list (and also an ObserverWriter for writing data)
 template <class Metavariables>
 struct MutateCacheComponent {
   using chare_type = Parallel::Algorithms::Singleton;
@@ -348,12 +363,130 @@ struct CheckParallelInfo {
   }
 };
 
+template <class Metavariables>
+struct CheckMemoryMonitorRelatedMethods {
+ private:
+  static inline double cache_size_ = 0.0;
+  static inline double mutable_cache_size_ = 0.0;
+
+ public:
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void execute_next_phase(
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
+    auto& local_cache = *Parallel::local_branch(global_cache);
+    Parallel::get_parallel_component<CheckMemoryMonitorRelatedMethods>(
+        local_cache)
+        .start_phase(next_phase);
+
+    const double time = 1.0;
+    if (next_phase == Metavariables::Phase::CallMemoryMonitorRelatedMethods) {
+      // This will broadcast to all branches of the global cache. This
+      // executable is run on 1 core so there is only 1 branch. The time is
+      // arbitrary
+      local_cache.compute_size_for_memory_monitor(time);
+
+      // This will broadcast to all branches of the mutable global cache. This
+      // executable is run on 1 core so there is only 1 branch. The time is
+      // arbitrary
+      auto mutable_global_cache_proxy =
+          local_cache.mutable_global_cache_proxy();
+      mutable_global_cache_proxy.compute_size_for_memory_monitor(global_cache,
+                                                                 time);
+
+      // Store the values for testing. The only reason this works is because we
+      // are running on 1 core, so we are always on the "local" branch of an
+      // object whether that object be a group or nodegroup. If this is run on
+      // more than one core, this will still run, but the values will be
+      // incorrect for the test
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(local_cache) == 1);
+      cache_size_ = size_of_object_in_bytes(local_cache) / 1.0e6;
+      mutable_cache_size_ = size_of_object_in_bytes(*Parallel::local_branch(
+                                local_cache.mutable_global_cache_proxy())) /
+                            1.0e6;
+    } else if (next_phase == Metavariables::Phase::CheckMemoryMonitorFile) {
+      auto hdf5_lock =
+          Parallel::local_branch(
+              Parallel::get_parallel_component<
+                  observers::ObserverWriter<Metavariables>>(local_cache))
+              ->template local_synchronous_action<
+                  observers::Actions::GetLockPointer<
+                      observers::Tags::H5FileLock>>();
+
+      hdf5_lock->lock();
+      SPECTRE_PARALLEL_REQUIRE(file_system::check_if_file_exists(
+          "Test_AlgorithmGlobalCacheReduction.h5"));
+
+      const h5::H5File<h5::AccessType::ReadOnly> read_file{
+          "Test_AlgorithmGlobalCacheReduction.h5"};
+
+      const std::vector<std::string> cache_legend{
+          {"Time", "Size on node 0 (MB)", "Average size per node (MB)"}};
+      const std::vector<std::string> mutable_cache_legend{
+          {"Time", "Size on node 0 (MB)", "Proc of max size",
+           "Size on proc of max size (MB)", "Average size per node (MB)"}};
+
+      const std::string cache_name{"/MemoryMonitors/GlobalCache"};
+      const std::string mutable_cache_name{
+          "/MemoryMonitors/MutableGlobalCache"};
+
+      const auto check_caches = [&read_file, &time](
+                                    const std::string& name,
+                                    const std::vector<std::string>& legend,
+                                    const double check_size) {
+        const auto& dataset = read_file.get<h5::Dat>(name, legend);
+        const Matrix data = dataset.get_data();
+        const auto& legend_file = dataset.get_legend();
+
+        SPECTRE_PARALLEL_REQUIRE(legend == legend_file);
+        SPECTRE_PARALLEL_REQUIRE(data.columns() == legend.size());
+        SPECTRE_PARALLEL_REQUIRE(data.rows() == 1);
+        // First column is always time
+        SPECTRE_PARALLEL_REQUIRE(data(0, 0) == time);
+        // Second column is size on node 0 (since we are running on only one
+        // node)
+        SPECTRE_PARALLEL_REQUIRE(data(0, 1) == check_size);
+        // Last column is always average per node, but since we are running on
+        // one node, this should be the same as the size on node 0
+        SPECTRE_PARALLEL_REQUIRE(data(0, data.columns() - 1) == check_size);
+        // For groups, check the max proc and size on that proc. Since we are
+        // running on one proc, this will always be proc 0 and the size will be
+        // the same as that on node 0
+        if (data.columns() > 3) {
+          SPECTRE_PARALLEL_REQUIRE(data(0, 2) == 0.0);
+          SPECTRE_PARALLEL_REQUIRE(data(0, 3) == check_size);
+        }
+
+        read_file.close_current_object();
+      };
+
+      check_caches(cache_name, cache_legend, cache_size_);
+      check_caches(mutable_cache_name, mutable_cache_legend,
+                   mutable_cache_size_);
+
+      hdf5_lock->unlock();
+    }
+  }
+};
+
 struct TestMetavariables {
+  using observed_reduction_data_tags = tmpl::list<>;
   using component_list =
       tmpl::list<MutateCacheComponent<TestMetavariables>,
                  UseMutatedCacheComponent<TestMetavariables>,
                  CheckAndUseMutatedCacheComponent<TestMetavariables>,
-                 CheckParallelInfo<TestMetavariables>>;
+                 CheckParallelInfo<TestMetavariables>,
+                 mem_monitor::MemoryMonitor<TestMetavariables>,
+                 CheckMemoryMonitorRelatedMethods<TestMetavariables>,
+                 observers::ObserverWriter<TestMetavariables>>;
 
   static constexpr Options::String help =
       "An executable for testing mutable items in the GlobalCache.";
@@ -364,6 +497,8 @@ struct TestMetavariables {
     MutableCacheStart,
     MutableCacheFinish,
     CheckParallelInfo,
+    CallMemoryMonitorRelatedMethods,
+    CheckMemoryMonitorFile,
     Exit
   };
 
@@ -383,6 +518,10 @@ struct TestMetavariables {
       case Phase::MutableCacheFinish:
         return Phase::CheckParallelInfo;
       case Phase::CheckParallelInfo:
+        return Phase::CallMemoryMonitorRelatedMethods;
+      case Phase::CallMemoryMonitorRelatedMethods:
+        return Phase::CheckMemoryMonitorFile;
+      case Phase::CheckMemoryMonitorFile:
         [[fallthrough]];
       case Phase::Exit:
         return Phase::Exit;
