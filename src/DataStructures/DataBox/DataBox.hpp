@@ -215,15 +215,19 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   DataBox(DataBox&& rhs) = default;
   DataBox& operator=(DataBox&& rhs) {
     if (&rhs != this) {
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#if defined(__GNUC__) && !defined(__clang__) && \
+    (__GNUC__ < 8 || (__GNUC__ > 10 && __GNUC__ < 12))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 8 ||
+        // (__GNUC__ > 10 && __GNUC__ < 12))
       ::expand_pack(
           (get_item<Tags>() = std::move(rhs.template get_item<Tags>()))...);
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#if defined(__GNUC__) && !defined(__clang__) && \
+    (__GNUC__ < 8 || (__GNUC__ > 10 && __GNUC__ < 12))
 #pragma GCC diagnostic pop
-#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
+#endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 8 ||
+        // (__GNUC__ > 10 && __GNUC__ < 12))
     }
     return *this;
   }
