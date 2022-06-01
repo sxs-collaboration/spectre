@@ -31,7 +31,7 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const bool with_equiangular_map,
                  const double projective_scale_factor,
                  const bool auto_projective_scale_factor,
-                 const double sphericity)
+                 const double sphericity, const double transition_phi)
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
       with_equiangular_map_(with_equiangular_map),
@@ -101,6 +101,7 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
   delta_z_zeta_ = 0.5 * (upper_bound - lower_bound);
   w_plus_ = projective_scale_factor + 1.0;
   w_minus_ = projective_scale_factor - 1.0;
+  phi_ = transition_phi;
   // The radius is taken to be the distance from the origin to the vertex of
   // the Frustum that is furthest away from the origin. This vertex is
   // assumed to lie on a cube that is centered on the origin. Then the
@@ -137,19 +138,28 @@ std::array<tt::remove_cvref_wrap_t<T>, 3> Frustum::operator()(
       with_projective_map_
           ? (w_minus_ + w_plus_ * zeta) / (w_plus_ + w_minus_ * zeta)
           : zeta;
-  const ReturnType cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const ReturnType cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const double one_plus_phi_square = 1.0 + phi_ * phi_;
+  const ReturnType cap_xi_upper =
+      with_equiangular_map_ ? one_plus_phi_square * tan(M_PI_4 * (xi + phi_) /
+                                                        one_plus_phi_square) -
+                                  phi_
+                            : xi;
+  const ReturnType cap_xi_transition = 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
+                                       0.5 * (1.0 - cap_zeta) * cap_xi_zero;
   const ReturnType cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+
   ReturnType physical_x =
-      sigma_x_ + delta_x_xi_ * cap_xi +
-      (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi) * cap_zeta;
+      sigma_x_ + delta_x_xi_ * cap_xi_transition +
+      (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition) * cap_zeta;
   ReturnType physical_y =
       sigma_y_ + delta_y_eta_ * cap_eta +
       (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta) * cap_zeta;
   ReturnType physical_z = sigma_z_ + delta_z_zeta_ * cap_zeta;
   if (sphericity_ > 0.0) {
     const ReturnType upper_surface_x =
-        sigma_x_ + delta_x_xi_ * cap_xi +
-        (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi);
+        sigma_x_ + delta_x_xi_ * cap_xi_upper +
+        (delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_upper);
     const ReturnType upper_surface_y =
         sigma_y_ + delta_y_eta_ * cap_eta +
         (delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta);
@@ -201,7 +211,15 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     logical_coords[2] = (-w_minus_ + w_plus_ * logical_coords[2]) /
                         (w_plus_ - w_minus_ * logical_coords[2]);
   }
-  if (sphericity_ > 0.0) {
+  if (sphericity_ > 0.0 or phi_ != 0.0) {
+    // The physical_coords sometimes have magnitudes slightly
+    // larger than radius_ due to roundoff error, this 1.0e-4 margin
+    // allows these points to still be inverted. Points much further outside
+    // of this value are likely to not be invertible, so we return
+    // std::nullopt instead.
+    if (magnitude(physical_coords) > radius_ + 1.0e-4) {
+      return std::nullopt;
+    }
     const double absolute_tolerance = 1.0e-12;
     const double max_absolute_tolerance = 1.0e-10;
     const int maximum_iterations = 20;
@@ -241,12 +259,16 @@ std::optional<std::array<double, 3>> Frustum::inverse(
         coord /= abs(coord);
       }
     }
-    logical_coords = RootFinder::gsl_multiroot(
-        rootfunction, logical_coords, absolute_tolerance, maximum_iterations,
-        relative_tolerance, verbosity, max_absolute_tolerance, method,
-        condition);
-  }
+    try {
+      logical_coords = RootFinder::gsl_multiroot(
+          rootfunction, logical_coords, absolute_tolerance, maximum_iterations,
+          relative_tolerance, verbosity, max_absolute_tolerance, method,
+          condition);
 
+    } catch (const convergence_error& e) {
+      return std::nullopt;
+    }
+  }
   return logical_coords;
 }
 
@@ -257,15 +279,39 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   const ReturnType& xi = source_coords[0];
   const ReturnType& eta = source_coords[1];
   const ReturnType& zeta = source_coords[2];
-  const ReturnType& cap_xi = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
-  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
   const ReturnType cap_zeta =
       with_projective_map_
           ? (w_minus_ + w_plus_ * zeta) / (w_plus_ + w_minus_ * zeta)
           : zeta;
-  const ReturnType cap_xi_deriv = with_equiangular_map_
-                                      ? M_PI_4 * (1.0 + square(cap_xi))
-                                      : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType& cap_xi_zero = with_equiangular_map_ ? tan(M_PI_4 * xi) : xi;
+  const double one_plus_phi_square = 1.0 + phi_ * phi_;
+  const ReturnType cap_xi_upper =
+      with_equiangular_map_ ? one_plus_phi_square * tan(M_PI_4 * (xi + phi_) /
+                                                        one_plus_phi_square) -
+                                  phi_
+                            : xi;
+  const ReturnType cap_xi_transition =
+      with_equiangular_map_ ? 0.5 * (1.0 + cap_zeta) * cap_xi_upper +
+                                  0.5 * (1.0 - cap_zeta) * cap_xi_zero
+                            : xi;
+
+  const ReturnType& cap_eta = with_equiangular_map_ ? tan(M_PI_4 * eta) : eta;
+  const ReturnType cap_xi_zero_deriv =
+      with_equiangular_map_ ? M_PI_4 * (1.0 + square(cap_xi_zero))
+                            : make_with_value<ReturnType>(xi, 1.0);
+  const ReturnType cap_xi_upper_deriv =
+      with_equiangular_map_
+          ? M_PI_4 *
+                (1.0 + square(tan(M_PI_4 * (xi + phi_) / one_plus_phi_square)))
+          : make_with_value<ReturnType>(xi, 1.0);
+
+  const ReturnType cap_xi_transition_deriv =
+      with_equiangular_map_
+          ? 0.5 * (1.0 + cap_zeta) * M_PI_4 *
+                    (1.0 +
+                     square(tan(M_PI_4 * (xi + phi_) / one_plus_phi_square))) +
+                0.5 * (1.0 - cap_zeta) * cap_xi_zero_deriv
+          : make_with_value<ReturnType>(xi, 1.0);
 
   const ReturnType cap_eta_deriv = with_equiangular_map_
                                        ? M_PI_4 * (1.0 + square(cap_eta))
@@ -286,7 +332,7 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   jacobian_matrix.get(mapped_dim_0, 0) =
       delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta;
   if (with_equiangular_map_) {
-    jacobian_matrix.get(mapped_dim_0, 0) *= cap_xi_deriv;
+    jacobian_matrix.get(mapped_dim_0, 0) *= cap_xi_transition_deriv;
   }
   if (mapped_xi.side() == Side::Lower) {
     jacobian_matrix.get(mapped_dim_0, 0) *= -1.0;
@@ -309,7 +355,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   std::array<ReturnType, 3> dX_dzeta = discrete_rotation(
       orientation_of_frustum_,
       std::array<ReturnType, 3>{
-          {delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi,
+          {delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi_transition +
+               (delta_x_xi_ + delta_x_xi_zeta_ * cap_zeta) * 0.5 *
+                   (cap_xi_upper - cap_xi_zero),
            delta_y_zeta_ + delta_y_eta_zeta_ * cap_eta,
            make_with_value<ReturnType>(zeta, delta_z_zeta_)}});
 
@@ -324,8 +372,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
   get<2, 2>(jacobian_matrix) = dX_dzeta[2];
 
   if (sphericity_ > 0.0) {
-    const ReturnType flat_frustum_x = sigma_x_ + delta_x_xi_ * cap_xi +
-                                      delta_x_zeta_ + delta_x_xi_zeta_ * cap_xi;
+    const ReturnType flat_frustum_x = sigma_x_ + delta_x_xi_ * cap_xi_upper +
+                                      delta_x_zeta_ +
+                                      delta_x_xi_zeta_ * cap_xi_upper;
 
     const ReturnType flat_frustum_y = sigma_y_ + delta_y_eta_ * cap_eta +
                                       delta_y_zeta_ +
@@ -359,9 +408,9 @@ tnsr::Ij<tt::remove_cvref_wrap_t<T>, 3, Frame::NoFrame> Frustum::jacobian(
                      flat_frustum_x_hat}});
 
     if (with_equiangular_map_) {
-      delta_dX_dxi[0] *= cap_xi_deriv;
-      delta_dX_dxi[1] *= cap_xi_deriv;
-      delta_dX_dxi[2] *= cap_xi_deriv;
+      delta_dX_dxi[0] *= cap_xi_upper_deriv;
+      delta_dX_dxi[1] *= cap_xi_upper_deriv;
+      delta_dX_dxi[2] *= cap_xi_upper_deriv;
     }
 
     get<0, 0>(jacobian_matrix) += delta_dX_dxi[0];
@@ -436,6 +485,7 @@ void Frustum::pup(PUP::er& p) {
   p | w_minus_;
   p | sphericity_;
   p | radius_;
+  p | phi_;
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) {
@@ -454,7 +504,8 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) {
          lhs.sigma_z_ == rhs.sigma_z_ and
          lhs.delta_z_zeta_ == rhs.delta_z_zeta_ and
          lhs.w_plus_ == rhs.w_plus_ and lhs.w_minus_ == rhs.w_minus_ and
-         lhs.sphericity_ == rhs.sphericity_ and lhs.radius_ == rhs.radius_;
+         lhs.sphericity_ == rhs.sphericity_ and lhs.radius_ == rhs.radius_ and
+         lhs.phi_ == rhs.phi_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) {
