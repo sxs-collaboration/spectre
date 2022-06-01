@@ -294,6 +294,44 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
+// Create volume data and send it to the interpolator.
+template <typename interp_component, typename Metavariables,
+          typename DomainCreatorType, typename DomainType>
+void create_volume_data_and_send_it_to_interpolator(
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+        runner,
+    const DomainCreatorType& domain_creator, const DomainType& domain,
+    const std::vector<ElementId<3>>& element_ids,
+    const TimeStepId& temporal_id) {
+  for (const auto& element_id : element_ids) {
+    const auto& block = domain.blocks()[element_id.block_id()];
+    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
+                   Spectral::Basis::Legendre,
+                   Spectral::Quadrature::GaussLobatto};
+    if (block.is_time_dependent()) {
+      ERROR("The block must be time-independent");
+    }
+    ElementMap<3, Frame::Inertial> map{element_id,
+                                       block.stationary_map().get_clone()};
+    const auto inertial_coords = map(logical_coordinates(mesh));
+    ::Variables<typename Metavariables::interpolator_source_vars> output_vars(
+        mesh.number_of_grid_points());
+    auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
+
+    // Fill lapse with some analytic solution.
+    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
+                   3.0 * get<1>(inertial_coords) +
+                   5.0 * get<2>(inertial_coords);
+
+    // Call the action on each element_id.
+    runner->template simple_action<
+        interp_component,
+        ::intrp::Actions::InterpolatorReceiveVolumeData<
+            typename Metavariables::InterpolationTargetA::temporal_id>>(
+        0, temporal_id, element_id, mesh, std::move(output_vars));
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
@@ -367,34 +405,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  // Create volume data and send it to the interpolator.
-  for (const auto& element_id : element_ids) {
-    const auto& block = domain.blocks()[element_id.block_id()];
-    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
-    if (block.is_time_dependent()) {
-      ERROR("The block must be time-independent");
-    }
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.stationary_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
-    ::Variables<typename metavars::interpolator_source_vars> output_vars(
-        mesh.number_of_grid_points());
-    auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
-
-    // Fill lapse with some analytic solution.
-    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
-                   3.0 * get<1>(inertial_coords) +
-                   5.0 * get<2>(inertial_coords);
-
-    // Call the action on each element_id.
-    runner.simple_action<
-        interp_component,
-        ::intrp::Actions::InterpolatorReceiveVolumeData<
-            typename metavars::InterpolationTargetA::temporal_id>>(
-        0, temporal_id, element_id, mesh, std::move(output_vars));
-  }
+  create_volume_data_and_send_it_to_interpolator<interp_component>(
+      make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);
 
   // Should be no temporal_ids in the target box, since we never
   // put any there.
@@ -447,33 +459,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                        AddToTemporalIdsWhenDataHasBeenInterpolated<
                            metavars::InterpolationTargetA>>(0, temporal_id);
 
-  for (const auto& element_id : element_ids) {
-    const auto& block = domain.blocks()[element_id.block_id()];
-    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
-    if (block.is_time_dependent()) {
-      ERROR("The block must be time-independent");
-    }
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.stationary_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
-    ::Variables<typename metavars::interpolator_source_vars> output_vars(
-        mesh.number_of_grid_points());
-    auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
-
-    // Fill lapse with some analytic solution.
-    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
-                   3.0 * get<1>(inertial_coords) +
-                   5.0 * get<2>(inertial_coords);
-
-    // Call the action on each element_id.
-    runner.simple_action<
-        interp_component,
-        ::intrp::Actions::InterpolatorReceiveVolumeData<
-            typename metavars::InterpolationTargetA::temporal_id>>(
-        0, temporal_id, element_id, mesh, std::move(output_vars));
-  }
+  create_volume_data_and_send_it_to_interpolator<interp_component>(
+      make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);
 
   // volume_vars_info should still be empty.
   CHECK(volume_vars_info.empty());
