@@ -158,6 +158,7 @@ void test_with_ghost_cells() {
   bc_tag::insert_into_inbox(make_not_null(&inbox), time_step_id_a,
                             std::make_pair(nhbr_key, send_data_a));
   Type send_flux_data_a;
+  get<0>(send_flux_data_a) = get<0>(send_data_a);
   get<1>(send_flux_data_a) = get<1>(send_data_a);
   get<3>(send_flux_data_a) = std::vector<double>(
       get<1>(send_data_a).number_of_grid_points() * number_of_components);
