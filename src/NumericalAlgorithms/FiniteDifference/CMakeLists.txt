@@ -13,6 +13,7 @@ spectre_target_sources(
   MonotonisedCentral.cpp
   Unlimited.cpp
   Wcns5z.cpp
+  Wcns5zMc.cpp
   )
 
 spectre_target_headers(
@@ -27,6 +28,7 @@ spectre_target_headers(
   Reconstruct.tpp
   Unlimited.hpp
   Wcns5z.hpp
+  Wcns5zMc.hpp
   )
 
 target_link_libraries(
