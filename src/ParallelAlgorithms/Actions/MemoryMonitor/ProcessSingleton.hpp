@@ -54,9 +54,9 @@ struct ProcessSingleton {
         observers::ThreadedActions::WriteReductionDataRow>(
         // Node 0 is always the writer
         observer_writer_proxy[0], subfile_name<ParallelComponent>(), legend,
-        std::make_tuple(time,
-                        Parallel::my_proc(*Parallel::local(singleton_proxy)),
-                        size_in_MB));
+        std::make_tuple(
+            time, Parallel::my_proc<size_t>(*Parallel::local(singleton_proxy)),
+            size_in_MB));
   }
 };
 }  // namespace mem_monitor

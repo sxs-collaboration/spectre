@@ -310,8 +310,8 @@ struct ContributeVolumeDataToWriter {
               Parallel::get_parallel_component<ParallelComponent>(cache);
           h5::H5File<h5::AccessType::ReadWrite> h5file(
               file_prefix +
-                  std::to_string(
-                      Parallel::my_node(*Parallel::local_branch(my_proxy))) +
+                  std::to_string(Parallel::my_node<int>(
+                      *Parallel::local_branch(my_proxy))) +
                   ".h5",
               true);
           constexpr size_t version_number = 0;

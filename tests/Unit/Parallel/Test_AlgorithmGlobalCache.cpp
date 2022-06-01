@@ -344,20 +344,21 @@ struct CheckParallelInfo {
       SPECTRE_PARALLEL_REQUIRE(cache.my_node() == sys::my_node());
       SPECTRE_PARALLEL_REQUIRE(cache.my_local_rank() == sys::my_local_rank());
       // const auto& const_cache = *Parallel::local_branch(global_cache_proxy_);
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(cache) ==
                                sys::number_of_procs());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes<int>(cache) ==
                                sys::number_of_nodes());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::procs_on_node(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::procs_on_node<int>(0, cache) ==
                                sys::procs_on_node(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::first_proc_on_node(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::first_proc_on_node<int>(0, cache) ==
                                sys::first_proc_on_node(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::node_of(0, cache) == sys::node_of(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::local_rank_of(0, cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::node_of<int>(0, cache) ==
+                               sys::node_of(0));
+      SPECTRE_PARALLEL_REQUIRE(Parallel::local_rank_of<int>(0, cache) ==
                                sys::local_rank_of(0));
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_proc(cache) == sys::my_proc());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_node(cache) == sys::my_node());
-      SPECTRE_PARALLEL_REQUIRE(Parallel::my_local_rank(cache) ==
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_proc<int>(cache) == sys::my_proc());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_node<int>(cache) == sys::my_node());
+      SPECTRE_PARALLEL_REQUIRE(Parallel::my_local_rank<int>(cache) ==
                                sys::my_local_rank());
     }
   }

@@ -194,7 +194,7 @@ struct ContributeReductionData {
               auto& my_proxy =
                   Parallel::get_parallel_component<ParallelComponent>(cache);
               const std::optional<int> observe_with_core_id =
-                  observe_per_core ? std::make_optional(Parallel::my_proc(
+                  observe_per_core ? std::make_optional(Parallel::my_proc<int>(
                                          *Parallel::local_branch(my_proxy)))
                                    : std::nullopt;
               Parallel::threaded_action<
@@ -394,7 +394,7 @@ struct CollectReductionDataOnNode {
             std::move(reduction_data_this_core.data()),
             Parallel::get<Tags::ReductionFileName>(cache) +
                 std::to_string(
-                    Parallel::my_node(*Parallel::local_branch(my_proxy))),
+                    Parallel::my_node<int>(*Parallel::local_branch(my_proxy))),
             std::make_index_sequence<sizeof...(ReductionDatums)>{});
         reduction_file_lock->unlock();
       }
@@ -456,8 +456,7 @@ struct CollectReductionDataOnNode {
             Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                 cache)[0],
             observation_id,
-            static_cast<size_t>(
-                Parallel::my_node(*Parallel::local_branch(my_proxy))),
+            Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy)),
             subfile_name,
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names), std::move(received_reduction_data),
