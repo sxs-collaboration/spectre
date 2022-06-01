@@ -289,10 +289,9 @@ struct CheckAndUseMutatedCacheComponent {
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<mutate_cache::Actions::initialize>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<mutate_cache::Actions::initialize>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -408,7 +407,8 @@ struct CheckMemoryMonitorRelatedMethods {
       // object whether that object be a group or nodegroup. If this is run on
       // more than one core, this will still run, but the values will be
       // incorrect for the test
-      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs(local_cache) == 1);
+      SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(local_cache) ==
+                               1);
       cache_size_ = size_of_object_in_bytes(local_cache) / 1.0e6;
       mutable_cache_size_ = size_of_object_in_bytes(*Parallel::local_branch(
                                 local_cache.mutable_global_cache_proxy())) /
