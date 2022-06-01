@@ -132,7 +132,7 @@ struct ClearVolumeVarsInfo {
       Requires<tmpl::list_contains_v<DbTags, intrp::Tags::NumberOfElements>> =
           nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
     db::mutate<intrp::Tags::VolumeVarsInfo<Metavariables, TemporalIdTag>>(
         make_not_null(&box),
@@ -152,7 +152,8 @@ struct AddToTemporalIdsWhenDataHasBeenInterpolated {
       Requires<tmpl::list_contains_v<DbTags, intrp::Tags::NumberOfElements>> =
           nullptr>
   static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
@@ -163,7 +164,8 @@ struct AddToTemporalIdsWhenDataHasBeenInterpolated {
                 holders) {
           get<intrp::Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
               *holders)
-              .temporal_ids_when_data_has_been_interpolated.insert(temporal_id);
+              .temporal_ids_when_data_has_been_interpolated.push_back(
+                  temporal_id);
         });
   }
 };
@@ -175,7 +177,8 @@ struct MockInterpolationTargetReceiveVars {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
@@ -308,9 +311,7 @@ void create_volume_data_and_send_it_to_interpolator(
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    if (block.is_time_dependent()) {
-      ERROR("The block must be time-independent");
-    }
+    REQUIRE(not block.is_time_dependent());
     ElementMap<3, Frame::Inertial> map{element_id,
                                        block.stationary_map().get_clone()};
     const auto inertial_coords = map(logical_coordinates(mesh));

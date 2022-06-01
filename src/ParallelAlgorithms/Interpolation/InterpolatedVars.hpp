@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <deque>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
@@ -86,7 +87,7 @@ struct Holder {
   std::unordered_map<typename InterpolationTargetTag::temporal_id::type,
                      Info<Metavariables::volume_dim, TagList>>
       infos;
-  std::unordered_set<typename InterpolationTargetTag::temporal_id::type>
+  std::deque<typename InterpolationTargetTag::temporal_id::type>
       temporal_ids_when_data_has_been_interpolated;
 };
 

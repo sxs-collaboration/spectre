@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <algorithm>
+#include <deque>
 #include <unordered_map>
 #include <utility>
 
@@ -13,6 +15,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -61,13 +64,13 @@ struct InterpolatorReceiveVolumeData {
     const auto& holders =
         db::get<Tags::InterpolatedVarsHolders<Metavariables>>(box);
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
-        [&](auto tag_v) {
+        [&holders, &this_temporal_id_is_done, &temporal_id](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
           if constexpr (std::is_same_v<TemporalId, typename tag::temporal_id>) {
             const auto& finished_temporal_ids =
                 get<Vars::HolderTag<tag, Metavariables>>(holders)
                     .temporal_ids_when_data_has_been_interpolated;
-            if (finished_temporal_ids.count(temporal_id) == 0) {
+            if (not alg::found(finished_temporal_ids, temporal_id)) {
               this_temporal_id_is_done = false;
             }
           }
