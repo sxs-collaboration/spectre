@@ -1039,7 +1039,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
 #ifdef SPECTRE_DEBUG
   // Check that we're not removing a subitem itself, should remove the parent.
   using old_immutable_subitem_tags =
-      tmpl::filter<typename std::decay_t<Box>::immutable_item_creation_tags,
+      tmpl::filter<typename std::decay_t<Box>::immutable_item_tags,
                    tt::is_a<::Tags::Subitem, tmpl::_1>>;
   using old_subitem_tags =
       tmpl::append<typename std::decay_t<Box>::mutable_subitem_tags,

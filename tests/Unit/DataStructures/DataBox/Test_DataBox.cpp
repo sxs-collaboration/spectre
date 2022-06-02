@@ -1973,6 +1973,38 @@ void test_subitems() {
         std::make_pair(Boxed<int>(std::make_shared<int>(5)),
                        Boxed<double>(std::make_shared<double>(3.5))));
 
+    static_assert(std::is_same_v<
+                  decltype(box)::tags_list,
+                  tmpl::list<Parent<0>, First<0>, Second<0>, ParentCompute<1>,
+                             Tags::Subitem<First<1>, ParentCompute<1>>,
+                             Tags::Subitem<Second<1>, ParentCompute<1>>>>);
+
+    static_assert(
+        std::is_same_v<decltype(box)::immutable_item_tags,
+                       tmpl::list<ParentCompute<1>,
+                                  Tags::Subitem<First<1>, ParentCompute<1>>,
+                                  Tags::Subitem<Second<1>, ParentCompute<1>>>>);
+
+    static_assert(std::is_same_v<decltype(box)::immutable_item_creation_tags,
+                                 tmpl::list<ParentCompute<1>>>);
+
+    static_assert(std::is_same_v<decltype(box)::mutable_item_tags,
+                                 tmpl::list<Parent<0>, First<0>, Second<0>>>);
+
+    static_assert(std::is_same_v<decltype(box)::mutable_subitem_tags,
+                                 tmpl::list<First<0>, Second<0>>>);
+
+    static_assert(std::is_same_v<decltype(box)::compute_item_tags,
+                                 tmpl::list<ParentCompute<1>>>);
+
+    using immutable_subitem_tags =
+        tmpl::filter<decltype(box)::immutable_item_tags,
+                     tt::is_a<::Tags::Subitem, tmpl::_1>>;
+    static_assert(
+        std::is_same_v<immutable_subitem_tags,
+                       tmpl::list<Tags::Subitem<First<1>, ParentCompute<1>>,
+                                  Tags::Subitem<Second<1>, ParentCompute<1>>>>);
+
     TestHelpers::db::test_reference_tag<
         ::Tags::Subitem<First<1>, ParentCompute<1>>>("First");
 
