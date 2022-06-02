@@ -43,6 +43,8 @@ struct DimensionfulSpinVectorCompute;
 namespace StrahlkorperGr::Tags {
 template <typename Frame>
 struct AreaElement;
+template <typename Frame>
+struct AreaElementCompute;
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral;
 struct Area;

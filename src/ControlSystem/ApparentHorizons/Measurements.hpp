@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
+#include "ApparentHorizons/HorizonAliases.hpp"
 #include "ApparentHorizons/ObjectLabel.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
@@ -58,24 +59,9 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       };
 
       using vars_to_interpolate_to_target =
-          tmpl::list<gr::Tags::SpatialMetric<3, ::Frame::Grid, DataVector>,
-                     gr::Tags::InverseSpatialMetric<3, ::Frame::Grid>,
-                     gr::Tags::ExtrinsicCurvature<3, ::Frame::Grid>,
-                     gr::Tags::SpatialChristoffelSecondKind<3, ::Frame::Grid>>;
+          ::ah::vars_to_interpolate_to_target<3, ::Frame::Grid>;
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using compute_items_on_target = tmpl::list<
-          StrahlkorperTags::ThetaPhiCompute<::Frame::Grid>,
-          StrahlkorperTags::RadiusCompute<::Frame::Grid>,
-          StrahlkorperTags::RhatCompute<::Frame::Grid>,
-          StrahlkorperTags::InvJacobianCompute<::Frame::Grid>,
-          StrahlkorperTags::DxRadiusCompute<::Frame::Grid>,
-          StrahlkorperTags::OneOverOneFormMagnitudeCompute<3, ::Frame::Grid,
-                                                           DataVector>,
-          StrahlkorperTags::NormalOneFormCompute<::Frame::Grid>,
-          StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Grid>,
-          StrahlkorperTags::UnitNormalVectorCompute<::Frame::Grid>,
-          StrahlkorperTags::GradUnitNormalOneFormCompute<::Frame::Grid>,
-          StrahlkorperTags::ExtrinsicCurvatureCompute<::Frame::Grid>>;
+      using compute_items_on_target = tmpl::list<>;
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Grid>;
@@ -88,17 +74,12 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
           tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>>;
     };
 
-    using source_tensors =
-        tmpl::list<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial>,
-                   GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>,
-                   GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>;
-
    public:
     template <typename ControlSystems>
     using interpolation_target_tag = InterpolationTarget<ControlSystems>;
 
     using argument_tags =
-        tmpl::push_front<source_tensors, domain::Tags::Mesh<3>>;
+        tmpl::push_front<::ah::source_vars<3>, domain::Tags::Mesh<3>>;
 
     template <typename Metavariables, typename ParallelComponent,
               typename ControlSystems>
@@ -107,13 +88,15 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
         const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
         const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
+        const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
         const LinkedMessageId<double>& measurement_id,
         Parallel::GlobalCache<Metavariables>& cache,
         const ElementId<3>& array_index,
         const ParallelComponent* const /*meta*/, ControlSystems /*meta*/) {
       intrp::interpolate<interpolation_target_tag<ControlSystems>,
-                         source_tensors>(
-          measurement_id, mesh, cache, array_index, spacetime_metric, pi, phi);
+                         ::ah::source_vars<3>>(measurement_id, mesh, cache,
+                                               array_index, spacetime_metric,
+                                               pi, phi, deriv_phi);
     }
   };
 

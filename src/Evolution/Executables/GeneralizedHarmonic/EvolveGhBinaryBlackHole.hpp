@@ -9,6 +9,7 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"
+#include "ApparentHorizons/HorizonAliases.hpp"
 #include "ApparentHorizons/ObserveCenters.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -200,68 +201,15 @@ struct EvolutionMetavars {
     static constexpr bool enable_time_dependent_maps = true;
   };
 
-  // Find horizons in grid frame, but also interpolate
-  // inertial-frame quantities for observers.
-  using horizons_vars_to_interpolate_to_target = tmpl::list<
-      gr::Tags::SpatialMetric<volume_dim, ::Frame::Grid, DataVector>,
-      gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Grid>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, ::Frame::Grid>,
-      gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Grid>,
-      // everything below here is for observers.
-      gr::Tags::SpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKind<volume_dim, ::Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, ::Frame::Inertial>,
-      gr::Tags::SpatialRicci<volume_dim, ::Frame::Inertial>>;
-  // Observe horizons in inertial frame.
-  using horizons_tags_to_observe = tmpl::list<
-      StrahlkorperGr::Tags::AreaCompute<::Frame::Inertial>,
-      StrahlkorperGr::Tags::IrreducibleMassCompute<::Frame::Inertial>,
-      StrahlkorperTags::MaxRicciScalarCompute,
-      StrahlkorperTags::MinRicciScalarCompute,
-      StrahlkorperGr::Tags::ChristodoulouMassCompute<::Frame::Inertial>,
-      StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<
-          ::Frame::Inertial>>;
-  // These ComputeItems are used only for observers, since the
-  // actual horizon-finding does not use any ComputeItems.
-  using horizons_compute_items_on_target = tmpl::append<
-      tmpl::list<
-          StrahlkorperTags::ThetaPhiCompute<::Frame::Inertial>,
-          StrahlkorperTags::RadiusCompute<::Frame::Inertial>,
-          StrahlkorperTags::RhatCompute<::Frame::Inertial>,
-          StrahlkorperTags::InvJacobianCompute<::Frame::Inertial>,
-          StrahlkorperTags::InvHessianCompute<::Frame::Inertial>,
-          StrahlkorperTags::JacobianCompute<::Frame::Inertial>,
-          StrahlkorperTags::DxRadiusCompute<::Frame::Inertial>,
-          StrahlkorperTags::D2xRadiusCompute<::Frame::Inertial>,
-          StrahlkorperTags::NormalOneFormCompute<::Frame::Inertial>,
-          StrahlkorperTags::OneOverOneFormMagnitudeCompute<
-              volume_dim, ::Frame::Inertial, DataVector>,
-          StrahlkorperTags::TangentsCompute<::Frame::Inertial>,
-          StrahlkorperTags::UnitNormalOneFormCompute<::Frame::Inertial>,
-          StrahlkorperTags::UnitNormalVectorCompute<::Frame::Inertial>,
-          StrahlkorperTags::GradUnitNormalOneFormCompute<::Frame::Inertial>,
-          // Note that StrahlkorperTags::ExtrinsicCurvatureCompute is the
-          // 2d extrinsic curvature of the strahlkorper embedded in the 3d
-          // slice, whereas gr::tags::ExtrinsicCurvature is the 3d extrinsic
-          // curvature of the slice embedded in 4d spacetime.  Both quantities
-          // are in the DataBox.
-          StrahlkorperGr::Tags::AreaElementCompute<::Frame::Inertial>,
-          StrahlkorperTags::ExtrinsicCurvatureCompute<::Frame::Inertial>,
-          StrahlkorperTags::RicciScalarCompute<::Frame::Inertial>,
-          StrahlkorperGr::Tags::SpinFunctionCompute<::Frame::Inertial>,
-          StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<
-              ::Frame::Inertial>>,
-      horizons_tags_to_observe>;
-
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target =
-        horizons_vars_to_interpolate_to_target;
+    using vars_to_interpolate_to_target = tmpl::append<
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = horizons_tags_to_observe;
-    using surface_tags_to_observe = tmpl::list<StrahlkorperTags::RicciScalar>;
-    using compute_items_on_target = horizons_compute_items_on_target;
+    using tags_to_observe = ::ah::tags_for_observing;
+    using surface_tags_to_observe = ::ah::surface_tags_for_observing;
+    using compute_items_on_target = ::ah::compute_items_on_target<volume_dim>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Grid>;
     using post_interpolation_callback =
@@ -276,12 +224,13 @@ struct EvolutionMetavars {
 
   struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target =
-        horizons_vars_to_interpolate_to_target;
+    using vars_to_interpolate_to_target = tmpl::append<
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = horizons_tags_to_observe;
-    using surface_tags_to_observe = tmpl::list<StrahlkorperTags::RicciScalar>;
-    using compute_items_on_target = horizons_compute_items_on_target;
+    using tags_to_observe = ::ah::tags_for_observing;
+    using surface_tags_to_observe = ::ah::surface_tags_for_observing;
+    using compute_items_on_target = ::ah::compute_items_on_target<volume_dim>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhB, ::Frame::Grid>;
     using post_interpolation_callback =
@@ -295,12 +244,7 @@ struct EvolutionMetavars {
   };
 
   using interpolation_target_tags = tmpl::list<AhA, AhB>;
-  using interpolator_source_vars = tmpl::list<
-      gr::Tags::SpacetimeMetric<volume_dim, ::Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Pi<volume_dim, ::Frame::Inertial>,
-      GeneralizedHarmonic::Tags::Phi<volume_dim, ::Frame::Inertial>,
-      Tags::deriv<GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>,
-                  tmpl::size_t<3>, Frame::Inertial>>;
+  using interpolator_source_vars = ::ah::source_vars<volume_dim>;
 
   using observe_fields = tmpl::append<
       tmpl::list<gr::Tags::Lapse<DataVector>,
