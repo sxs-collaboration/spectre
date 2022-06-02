@@ -43,6 +43,7 @@ spectre_target_sources(
   Mesh.cpp
   PerssonTci.cpp
   Projection.cpp
+  RdmpTci.cpp
   RdmpTciData.cpp
   Reconstruction.cpp
   ReconstructionMethod.cpp

@@ -638,8 +638,9 @@ void test_impl(const Spectral::Quadrature quadrature,
     const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
     const auto insert_neighbor_data = [&all_mortar_data, &count, &direction,
                                        &face_mesh, &local_next_time_step_id,
-                                       &mortar_data_history, &mortar_meshes,
-                                       &neighbor_id, &runner, &self_id](
+                                       &mesh, &mortar_data_history,
+                                       &mortar_meshes, &neighbor_id, &runner,
+                                       &self_id](
                                           const TimeStepId&
                                               neighbor_time_step_id,
                                           const TimeStepId&
@@ -654,9 +655,9 @@ void test_impl(const Spectral::Quadrature quadrature,
                 direction.dimension() +
                     10 * static_cast<unsigned long>(direction.side()) +
                     100 * count);
-      std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
                  std::optional<std::vector<double>>, ::TimeStepId>
-          data{face_mesh, {}, {flux_data}, {neighbor_next_time_step_id}};
+          data{mesh, face_mesh, {}, {flux_data}, {neighbor_next_time_step_id}};
 
       runner.template mock_distributed_objects<component<metavars>>()
           .at(self_id)

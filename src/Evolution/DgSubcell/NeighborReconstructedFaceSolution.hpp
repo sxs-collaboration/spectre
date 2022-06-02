@@ -71,7 +71,8 @@ void neighbor_reconstructed_face_solution(
             maximum_number_of_neighbors(Metavariables::volume_dim),
             std::pair<Direction<Metavariables::volume_dim>,
                       ElementId<Metavariables::volume_dim>>,
-            std::tuple<Mesh<Metavariables::volume_dim - 1>,
+            std::tuple<Mesh<Metavariables::volume_dim>,
+                       Mesh<Metavariables::volume_dim - 1>,
                        std::optional<std::vector<double>>,
                        std::optional<std::vector<double>>, ::TimeStepId>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
@@ -88,13 +89,13 @@ void neighbor_reconstructed_face_solution(
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
-          ASSERT(std::get<1>(received_mortar_data.second).has_value(),
+          ASSERT(std::get<2>(received_mortar_data.second).has_value(),
                  "The subcell mortar data was not sent at TimeStepId "
                      << received_temporal_id_and_data->first
                      << " with mortar id (" << mortar_id.first << ','
                      << mortar_id.second << ")");
           const std::vector<double>& neighbor_ghost_and_subcell_data =
-              *std::get<1>(received_mortar_data.second);
+              *std::get<2>(received_mortar_data.second);
           // Compute min and max over neighbors
           const size_t offset_for_min =
               neighbor_ghost_and_subcell_data.size() - number_of_evolved_vars;
@@ -133,7 +134,7 @@ void neighbor_reconstructed_face_solution(
       mortars_to_reconstruct_to{};
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
-    if (not std::get<2>(received_mortar_data.second).has_value()) {
+    if (not std::get<3>(received_mortar_data.second).has_value()) {
       mortars_to_reconstruct_to.push_back(mortar_id);
     }
   }
@@ -155,13 +156,13 @@ void neighbor_reconstructed_face_solution(
   // src/Evolution/DiscontinuousGalerkin)
   for (auto& received_mortar_data : received_temporal_id_and_data->second) {
     const auto& mortar_id = received_mortar_data.first;
-    if (not std::get<2>(received_mortar_data.second).has_value()) {
+    if (not std::get<3>(received_mortar_data.second).has_value()) {
       ASSERT(neighbor_reconstructed_evolved_vars.find(mortar_id) !=
                  neighbor_reconstructed_evolved_vars.end(),
              "Could not find mortar id (" << mortar_id.first << ','
                                           << mortar_id.second
                                           << ") in reconstructed data map.");
-      std::get<2>(received_mortar_data.second) =
+      std::get<3>(received_mortar_data.second) =
           std::move(neighbor_reconstructed_evolved_vars.at(mortar_id));
     }
   }

@@ -27,12 +27,14 @@ namespace evolution::dg::Tags {
  *
  * The stored data consists of the following (in argument order of the tuple):
  *
- * 1. the mesh of the neighboring element's face (not the mortar mesh!)
- * 2. the variables at the ghost zone cells for finite difference/volume
+ * 1. the mesh of the ghost cell data we received. This allows eliding
+ *    projection when all neighboring elements are doing DG.
+ * 2. the mesh of the neighboring element's face (not the mortar mesh!)
+ * 3. the variables at the ghost zone cells for finite difference/volume
  *    reconstruction
- * 3. the data on the mortar needed for computing the boundary corrections (e.g.
+ * 4. the data on the mortar needed for computing the boundary corrections (e.g.
  *    fluxes, characteristic speeds, conserved variables)
- * 4. the TimeStepId beyond which the boundary terms are no longer valid, when
+ * 5. the TimeStepId beyond which the boundary terms are no longer valid, when
  *    using local time stepping.
  *
  * The TimeStepId is the neighboring element's next time step. When using local
@@ -67,7 +69,7 @@ namespace evolution::dg::Tags {
  * - Whether or not an extra communication is needed when an element switches
  *   from DG to FD/FV depends on how exactly the decision to switch is
  *   implemented. If the volume terms are integrated and verified to be
- *   valid before a DG element sends ghost cell and bonudary data then no
+ *   valid before a DG element sends ghost cell and boundary data then no
  *   additional communication is needed when switching from DG to FD/FV. In this
  *   case a second check of the data that includes the boundary correction needs
  *   to be done. If the second check determines a switch from DG to FD/FV is
@@ -93,7 +95,7 @@ namespace evolution::dg::Tags {
 template <size_t Dim>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type =
-      std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
                  std::optional<std::vector<double>>, ::TimeStepId>;
 
  public:
@@ -109,13 +111,17 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                                 const temporal_id& time_step_id,
                                 ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
-    auto& [mesh, ghost_cell_data, boundary_data, boundary_data_validity_range] =
-        data.second;
+    auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
+           boundary_data, boundary_data_validity_range] = data.second;
     (void)ghost_cell_data;
+    (void)volume_mesh_of_ghost_cell_data; // Need to use when optimizing subcell
 
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
-      auto& [current_mesh, current_ghost_cell_data, current_boundary_data,
+      auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
+             current_ghost_cell_data, current_boundary_data,
              current_boundary_data_validity_range] = it->second;
+      (void)current_volume_mesh_of_ghost_cell_data;  // Need to use when
+                                                     // optimizing subcell
       // We have already received some data at this time. Receiving data twice
       // at the same time should only occur when receiving fluxes after having
       // previously received ghost cells. We sanity check that the data we
@@ -134,10 +140,10 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                     "different ASSERT should've caught that), or the incorrect "
                     "temporal ID is being sent.");
 
-      ASSERT(current_mesh == mesh,
+      ASSERT(current_face_mesh == face_mesh,
              "The mesh being received for the fluxes is different than the "
              "mesh received for the ghost cells. Mesh for fluxes: "
-                 << mesh << " mesh for ghost cells " << current_mesh);
+                 << face_mesh << " mesh for ghost cells " << current_face_mesh);
 
       // We always move here since we take ownership of the data and moves
       // implicitly decay to copies

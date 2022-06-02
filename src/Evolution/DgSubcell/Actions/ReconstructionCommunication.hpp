@@ -186,9 +186,9 @@ struct SendDataForReconstruction {
                                     rdmp_tci_data.min_variables_values.cbegin(),
                                     rdmp_tci_data.min_variables_values.cend());
 
-        std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
+        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
-            data{dg_mesh.slice_away(direction.dimension()),
+            data{subcell_mesh, dg_mesh.slice_away(direction.dimension()),
                  std::move(subcell_data_to_send), std::nullopt,
                  next_time_step_id};
 
@@ -268,7 +268,8 @@ struct ReceiveDataForReconstruction {
     std::map<TimeStepId,
              FixedHashMap<
                  maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
+                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                            std::optional<std::vector<double>>,
                             std::optional<std::vector<double>>, ::TimeStepId>,
                  boost::hash<Key>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -282,10 +283,11 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    FixedHashMap<maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                            std::optional<std::vector<double>>, ::TimeStepId>,
-                 boost::hash<Key>>
+    FixedHashMap<
+        maximum_number_of_neighbors(Dim), Key,
+        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
+                   std::optional<std::vector<double>>, ::TimeStepId>,
+        boost::hash<Key>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
     db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
@@ -311,18 +313,18 @@ struct ReceiveDataForReconstruction {
             const auto& mortar_id = received_mortar_data.first;
             try {
               mortar_next_time_step_id->at(mortar_id) =
-                  std::get<3>(received_mortar_data.second);
+                  std::get<4>(received_mortar_data.second);
             } catch (std::exception& e) {
               ERROR("Failed retrieving the MortarId: ("
                     << mortar_id.first << ',' << mortar_id.second
                     << ") from the mortar_next_time_step_id. Got exception: "
                     << e.what());
             }
-            if (std::get<2>(received_mortar_data.second).has_value()) {
+            if (std::get<3>(received_mortar_data.second).has_value()) {
               mortar_data->at(mortar_id).insert_neighbor_mortar_data(
                   current_time_step_id,
-                  std::get<0>(received_mortar_data.second),
-                  std::move(*std::get<2>(received_mortar_data.second)));
+                  std::get<1>(received_mortar_data.second),
+                  std::move(*std::get<3>(received_mortar_data.second)));
             }
           }
 
@@ -346,14 +348,14 @@ struct ReceiveDataForReconstruction {
               ASSERT(neighbor_data_ptr->count(directional_element_id) == 0,
                      "Found neighbor already inserted in direction "
                          << direction << " with ElementId " << neighbor);
-              ASSERT(std::get<1>(received_data[directional_element_id])
+              ASSERT(std::get<2>(received_data[directional_element_id])
                          .has_value(),
                      "Received subcell data message that does not contain any "
                      "actual subcell data for reconstruction.");
               // Collect the max/min of u(t^n) for the RDMP as we receive data.
               // This reduces the memory footprint.
               std::vector<double>& received_neighbor_subcell_data =
-                  *std::get<1>(received_data[directional_element_id]);
+                  *std::get<2>(received_data[directional_element_id]);
               const size_t max_offset = received_neighbor_subcell_data.size() -
                                         2 * number_of_evolved_vars;
               const size_t min_offset = received_neighbor_subcell_data.size() -

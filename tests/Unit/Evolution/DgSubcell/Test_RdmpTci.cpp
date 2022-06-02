@@ -94,6 +94,38 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
   CHECK(evolution::dg::subcell::rdmp_tci(
             dg_vars, subcell_vars, past_max_values, past_min_values,
             rdmp_delta0, rdmp_epsilon) == expected_tci_triggered);
+
+  // Check with only std::vector implementation
+  std::vector<double> current_max_values(past_max_values.size());
+  std::vector<double> current_min_values(current_max_values.size());
+  size_t component_index = 0;
+  tmpl::for_each<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>(
+      [&component_index, &current_max_values, &current_min_values, &dg_vars,
+       &subcell_vars](auto tag_v) {
+        using std::max;
+        using std::min;
+
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        const auto& dg_tensor = get<tag>(dg_vars);
+        const auto& subcell_tensor =
+            get<evolution::dg::subcell::Tags::Inactive<tag>>(subcell_vars);
+        const size_t number_of_components_in_tensor = dg_tensor.size();
+        for (size_t tensor_storage_index = 0;
+             tensor_storage_index < number_of_components_in_tensor;
+             ++tensor_storage_index) {
+          current_max_values[component_index] =
+              max(max(dg_tensor[tensor_storage_index]),
+                  max(subcell_tensor[tensor_storage_index]));
+          current_min_values[component_index] =
+              min(min(dg_tensor[tensor_storage_index]),
+                  min(subcell_tensor[tensor_storage_index]));
+          ++component_index;
+        }
+      });
+  CHECK(evolution::dg::subcell::rdmp_tci(current_max_values, current_min_values,
+                                         past_max_values, past_min_values,
+                                         rdmp_delta0, rdmp_epsilon) ==
+        expected_tci_triggered);
 }
 
 template <size_t Dim>

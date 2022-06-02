@@ -1707,7 +1707,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                      mortar_id_east.second, true));
   }
   CHECK_ITERABLE_APPROX(
-      *std::get<2>(
+      *std::get<3>(
           ActionTesting::get_inbox_tag<
               component<metavars>,
               ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -1721,7 +1721,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                    false));
 
   CHECK(
-      std::get<3>(
+      std::get<4>(
           ActionTesting::get_inbox_tag<
               component<metavars>,
               ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -1736,7 +1736,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   if constexpr (Dim > 1) {
     const auto mortar_id_south =
         std::make_pair(Direction<Dim>::lower_eta(), south_id);
-    CHECK(std::get<3>(
+    CHECK(std::get<4>(
               ActionTesting::get_inbox_tag<
                   component<metavars>,
                   ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
@@ -1769,7 +1769,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                                 Direction<Dim>::lower_eta(), south_id, true));
     }
     CHECK_ITERABLE_APPROX(
-        *std::get<2>(
+        *std::get<3>(
             ActionTesting::get_inbox_tag<
                 component<metavars>,
                 ::evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
