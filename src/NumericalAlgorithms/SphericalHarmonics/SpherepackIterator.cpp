@@ -93,11 +93,14 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
   offset_into_spherepack_array.assign(packed_size, 0);
   compact_l_.assign(packed_size, 0);
   compact_m_.assign(packed_size, 0);
+  offset_to_compact_index_.assign(spherepack_array_size() * stride_,
+                                  std::nullopt);
 
   // go through arrays and fill them
 
   // index corresponding to strided coefficient array
   size_t idx = 0;
+  size_t idx_no_stride = 0;
   // index for compact offset_into_spherepack_array, compact_l_, compact_m_
   size_t k = 0;
   for (size_t l = 0; l <= l_max_; ++l) {
@@ -105,11 +108,13 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
       // note: index m varies fastest in fortran array
       if (l >= m) {  // valid entry in a
         offset_into_spherepack_array[k] = idx;
+        offset_to_compact_index_[idx_no_stride] = k;
         compact_l_[k] = l;
         compact_m_[k] = m;
         ++k;
       }
       idx += stride;
+      ++idx_no_stride;
     }
   }
   for (size_t l = 0; l <= l_max_; ++l) {
@@ -117,11 +122,13 @@ SpherepackIterator::SpherepackIterator(const size_t l_max_input,
       // note: index m varies fastest in fortran array
       if (m >= 1 && l >= m) {  // valid entry in b
         offset_into_spherepack_array[k] = idx;
+        offset_to_compact_index_[idx_no_stride] = k;
         compact_l_[k] = l;
         compact_m_[k] = m;
         ++k;
       }
       idx += stride;
+      ++idx_no_stride;
     }
   }
 }
