@@ -345,17 +345,18 @@ void aoweno_53(
  * tight loops.
  */
 template <size_t Dim>
-std::tuple<
-    void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             const gsl::span<const double>&,
-             const DirectionMap<Dim, gsl::span<const double>>&,
-             const Index<Dim>&, size_t, double, double, double),
-    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
-             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&),
-    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
-             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&, const double&, const double&)>
-aoweno_53_function_pointers(size_t nonlinear_weight_exponent);
+auto aoweno_53_function_pointers(size_t nonlinear_weight_exponent)
+    -> std::tuple<void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                           gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                           const gsl::span<const double>&,
+                           const DirectionMap<Dim, gsl::span<const double>>&,
+                           const Index<Dim>&, size_t, double, double, double),
+                  void (*)(gsl::not_null<DataVector*>, const DataVector&,
+                           const DataVector&, const Index<Dim>&,
+                           const Index<Dim>&, const Direction<Dim>&,
+                           const double&, const double&, const double&),
+                  void (*)(gsl::not_null<DataVector*>, const DataVector&,
+                           const DataVector&, const Index<Dim>&,
+                           const Index<Dim>&, const Direction<Dim>&,
+                           const double&, const double&, const double&)>;
 }  // namespace fd::reconstruction

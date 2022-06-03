@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Minmod.cpp
   Test_MonotonisedCentral.cpp
   Test_Unlimited.cpp
+  Test_Wcns5z.cpp
   )
 
 add_test_library(
