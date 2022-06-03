@@ -156,6 +156,17 @@ inline std::ostream& operator<<(std::ostream& os,
 
 /*!
  * \ingroup UtilitiesGroup
+ * \brief Output the items of a std::unordered_multiset
+ */
+template <typename T, typename H>
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unordered_multiset<T, H>& v) {
+  unordered_print_helper(os, std::begin(v), std::end(v));
+  return os;
+}
+
+/*!
+ * \ingroup UtilitiesGroup
  * \brief Output the items of a std::set
  */
 template <typename T, typename C>
