@@ -190,6 +190,12 @@ EventsAndTriggers:
         Offset: 0
   : - AhA
     - AhB
+  ? Slabs:
+      EvenlySpaced:
+        Interval: 100
+        Offset: 0
+  : - MonitorMemory:
+        ComponentsToMonitor: All
   ? TimeCompares:
       Comparison: GreaterThan
       Value: 0.02

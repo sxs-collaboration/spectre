@@ -19,6 +19,8 @@ namespace AutoLabel {
 struct Auto {};
 /// 'None' label
 struct None {};
+/// 'All' label
+struct All {};
 }  // namespace AutoLabel
 
 /// \ingroup OptionParsingGroup

@@ -131,17 +131,25 @@ class ExampleClass {
     using type = Options::Auto<double, Options::AutoLabel::None>;
     static constexpr Options::String help = "Optional parameter";
   };
+  struct AllArg {
+    using type = Options::Auto<std::vector<int>, Options::AutoLabel::All>;
+    static constexpr Options::String help = "Optional parameter all";
+  };
 
   static constexpr Options::String help =
       "A class that can automatically choose an argument";
-  using options = tmpl::list<AutoArg, OptionalArg>;
+  using options = tmpl::list<AutoArg, OptionalArg, AllArg>;
 
   explicit ExampleClass(std::optional<int> auto_arg,
-                        std::optional<double> opt_arg)
-      : value(auto_arg ? *auto_arg : -12), optional_value(opt_arg) {}
+                        std::optional<double> opt_arg,
+                        std::optional<std::vector<int>> all_arg)
+      : value(auto_arg ? *auto_arg : -12),
+        optional_value(opt_arg),
+        all_value(all_arg) {}
 
   int value{};
   std::optional<double> optional_value{};
+  std::optional<std::vector<int>> all_value{};
 };
 // [example_class]
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8 && __GNUC__ < 11
@@ -168,14 +176,25 @@ void test_use_as_option() {
   // [example_create]
   const auto example1 = TestHelpers::test_creation<ExampleClass>(
       "AutoArg: 7\n"
-      "OptionalArg: 10.");
+      "OptionalArg: 10.\n"
+      "AllArg: [0, 1, 2]");
   CHECK(example1.value == 7);
   CHECK(example1.optional_value == 10.);
+  CHECK(example1.all_value == std::vector<int>{{0, 1, 2}});
   const auto example2 = TestHelpers::test_creation<ExampleClass>(
       "AutoArg: Auto\n"
-      "OptionalArg: None");
+      "OptionalArg: None\n"
+      "AllArg: [0, 1, 2]");
   CHECK(example2.value == -12);
   CHECK(example2.optional_value == std::nullopt);
+  CHECK(example2.all_value == std::vector<int>{{0, 1, 2}});
+  const auto example3 = TestHelpers::test_creation<ExampleClass>(
+      "AutoArg: 7\n"
+      "OptionalArg: 10.\n"
+      "AllArg: All");
+  CHECK(example3.value == 7);
+  CHECK(example3.optional_value == 10.);
+  CHECK(example3.all_value == std::nullopt);
   // [example_create]
 
   // Make sure this compiles.

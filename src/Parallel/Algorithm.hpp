@@ -593,7 +593,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 #ifdef SPECTRE_CHARM_PROJECTIONS
   p | non_action_time_start_;
 #endif
-  if (performing_action_) {
+  if (performing_action_ and not p.isSizing()) {
     ERROR("cannot serialize while performing action!");
   }
   p | performing_action_;
