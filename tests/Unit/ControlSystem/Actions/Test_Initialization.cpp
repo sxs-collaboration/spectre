@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -36,7 +37,10 @@ template <typename Label, typename Measurement>
 struct MockControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return pretty_type::short_name<Label>(); }
-  static std::string component_name(const size_t i) { return get_output(i); }
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t /*num_components*/) {
+    return get_output(i);
+  }
   using measurement = Measurement;
   using control_error = control_system::TestHelpers::ControlError;
   static constexpr size_t deriv_order = order;

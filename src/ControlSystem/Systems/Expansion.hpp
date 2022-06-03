@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <string>
 
 #include "ApparentHorizons/ObjectLabel.hpp"
@@ -24,6 +25,7 @@
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -64,7 +66,13 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
   }
 
   // Expansion only has one component so just make it "Expansion"
-  static std::string component_name(const size_t /*i*/) { return name(); }
+  static std::optional<std::string> component_name(
+      const size_t /*i*/, const size_t num_components) {
+    ASSERT(num_components == 1,
+           "Expansion control expects 1 component but there are "
+               << num_components << " instead.");
+    return name();
+  }
 
   using measurement = ah::BothHorizons;
   static_assert(

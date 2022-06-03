@@ -169,9 +169,19 @@ void test_names() {
   using rotation = control_system::Systems::Rotation<2>;
 
   CHECK(pretty_type::name<rotation>() == "Rotation");
-  CHECK(rotation::component_name(0) == "x");
-  CHECK(rotation::component_name(1) == "y");
-  CHECK(rotation::component_name(2) == "z");
+  CHECK(*rotation::component_name(0, 3) == "x");
+  CHECK(*rotation::component_name(1, 3) == "y");
+  CHECK(*rotation::component_name(2, 3) == "z");
+
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        const std::string component_name = *rotation::component_name(1, 4);
+        (void)component_name;
+      })(),
+      Catch::Contains(
+          "Rotation control expects 3 components but there are 4 instead."));
+#endif  // SPECTRE_DEBUG
 }
 }  // namespace
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <pup.h>
 
 #include "ControlSystem/Component.hpp"
@@ -19,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Actions/UpdateMessageQueue.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -120,7 +122,11 @@ struct ExampleControlError
 struct ExampleControlSystem
     : tt::ConformsTo<control_system::protocols::ControlSystem> {
   static std::string name() { return "ExampleControlSystem"; }
-  static std::string component_name(const size_t i) {
+  static std::optional<std::string> component_name(
+      const size_t i, const size_t num_components) {
+    ASSERT(num_components == 3,
+           "This control system expected 3 components but there are "
+               << num_components << " instead.");
     return i == 0 ? "X" : (i == 1 ? "Y" : "Z");
   }
   using measurement = ExampleMeasurement;
