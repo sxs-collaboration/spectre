@@ -648,7 +648,7 @@ void ResourceInfo<Metavariables>::build_singleton_map(
 
     if (proc.has_value() and *proc > num_procs - 1) {
       ERROR("Singleton " << pretty_type::name<component>()
-                         << " requested to be placed on proc " << proc
+                         << " requested to be placed on proc " << *proc
                          << ", but that proc is beyond the last proc "
                          << num_procs - 1 << ".");
     }
