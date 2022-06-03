@@ -10,6 +10,7 @@
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_vector_double.h>
+#include <memory>
 #include <ostream>
 #include <string>
 
@@ -23,8 +24,16 @@
 
 namespace RootFinder {
 namespace gsl_multiroot_detail {
+template <typename Alloc, typename Dealloc, typename... Args>
+auto gsl_alloc(Alloc* allocator, Dealloc* deallocator, Args&&... args)
+    -> std::unique_ptr<
+        std::decay_t<decltype(*allocator(std::forward<Args>(args)...))>,
+        Dealloc*> {
+  return {allocator(std::forward<Args>(args)...), deallocator};
+}
+
 template <size_t Dim, typename Solver>
-void print_state(const size_t iteration_number, const Solver* const solver,
+void print_state(const size_t iteration_number, const Solver& solver,
                  const bool print_header = false) {
   if (print_header) {
     Parallel::printf("Iter\t");
@@ -39,10 +48,10 @@ void print_state(const size_t iteration_number, const Solver* const solver,
 
   Parallel::printf("%u\t", iteration_number);
   for (size_t i = 0; i < Dim; ++i) {
-    Parallel::printf("%3.4f  ", gsl_vector_get(solver->x, i));
+    Parallel::printf("%3.4f  ", gsl_vector_get(solver.x, i));
   }
   for (size_t i = 0; i < Dim; ++i) {
-    Parallel::printf("%1.3e  ", gsl_vector_get(solver->f, i));
+    Parallel::printf("%1.3e  ", gsl_vector_get(solver.f, i));
   }
   Parallel::printf("\n");
 }
@@ -204,20 +213,20 @@ std::array<double, Dim> gsl_multiroot_impl(
   }
 
   // Supply gsl_root with the initial guess:
-  gsl_vector* const gsl_root = gsl_vector_alloc(Dim);
-  gsl_vector_set_with_std_array(gsl_root, initial_guess);
-  auto* const solver = solver_alloc(solver_type, Dim);
-  solver_set(solver, &f, gsl_root);
+  const auto gsl_root = gsl_alloc(&gsl_vector_alloc, &gsl_vector_free, Dim);
+  gsl_vector_set_with_std_array(gsl_root.get(), initial_guess);
+  const auto solver = gsl_alloc(solver_alloc, solver_free, solver_type, Dim);
+  solver_set(solver.get(), &f, gsl_root.get());
 
   // Take iterations:
   int status;
   size_t iteration_number = 0;
   do {
     if (UNLIKELY(verbosity == Verbosity::Debug)) {
-      print_state<Dim>(iteration_number, solver, iteration_number == 0);
+      print_state<Dim>(iteration_number, *solver, iteration_number == 0);
     }
     iteration_number++;
-    status = solver_iterate(solver);
+    status = solver_iterate(solver.get());
     // Check if solver is stuck
     if (UNLIKELY(status == GSL_ENOPROG)) {
       if (UNLIKELY(verbosity == Verbosity::Debug)) {
@@ -238,7 +247,8 @@ std::array<double, Dim> gsl_multiroot_impl(
   if (UNLIKELY(verbosity == Verbosity::Verbose or
                verbosity == Verbosity::Debug)) {
     Parallel::printf("Finished iterating:\n");
-    print_state<Dim>(iteration_number, solver, verbosity == Verbosity::Verbose);
+    print_state<Dim>(iteration_number, *solver,
+                     verbosity == Verbosity::Verbose);
   }
   bool success = (status == GSL_SUCCESS);
   if (UNLIKELY(verbosity != Verbosity::Silent)) {
@@ -324,12 +334,7 @@ std::array<double, Dim> gsl_multiroot_impl(
     throw convergence_error(error_message.str());
   }
 
-  // Store the converged root in result
-  std::array<double, Dim> result = gsl_to_std_array<Dim>(solver->x);
-  solver_free(solver);
-  gsl_vector_free(gsl_root);
-
-  return result;
+  return gsl_to_std_array<Dim>(solver->x);
 }
 
 void print_rootfinding_parameters(Method method, double absolute_tolerance,
