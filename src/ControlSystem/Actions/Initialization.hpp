@@ -38,6 +38,7 @@ namespace Actions {
  *   - `control_system::Tags::TimescaleTuner<ControlSystem>`
  *   - `control_system::Tags::ControlError<ControlSystem>`
  *   - `control_system::Tags::WriteDataToDisk`
+ *   - `control_system::Tags::IsActive<ControlSystem>`
  * - Removes: Nothing
  * - Modifies:
  *   - `control_system::Tags::Averager<ControlSystem>`
@@ -50,16 +51,17 @@ template <typename Metavariables, typename ControlSystem>
 struct Initialize {
   static constexpr size_t deriv_order = ControlSystem::deriv_order;
 
-  using initialization_tags = tmpl::list<control_system::Tags::WriteDataToDisk>;
+  using initialization_tags =
+      tmpl::list<control_system::Tags::WriteDataToDisk,
+                 control_system::Tags::Averager<ControlSystem>,
+                 control_system::Tags::Controller<ControlSystem>,
+                 control_system::Tags::TimescaleTuner<ControlSystem>,
+                 control_system::Tags::ControlError<ControlSystem>,
+                 control_system::Tags::IsActive<ControlSystem>>;
 
   using initialization_tags_to_keep = initialization_tags;
 
-  using simple_tags = tmpl::append<
-      tmpl::list<control_system::Tags::Averager<ControlSystem>,
-                 control_system::Tags::Controller<ControlSystem>,
-                 control_system::Tags::TimescaleTuner<ControlSystem>,
-                 control_system::Tags::ControlError<ControlSystem>>,
-      typename ControlSystem::simple_tags>;
+  using simple_tags = typename ControlSystem::simple_tags;
 
   using compute_tags = tmpl::list<>;
 

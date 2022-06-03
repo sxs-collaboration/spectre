@@ -66,6 +66,7 @@ using init_simple_tags =
                control_system::Tags::Controller<ControlSystem>,
                control_system::Tags::ControlError<ControlSystem>,
                control_system::Tags::WriteDataToDisk,
+               control_system::Tags::IsActive<ControlSystem>,
                typename ControlSystem::MeasurementQueue>;
 
 template <typename Metavariables, typename ControlSystem>
@@ -478,7 +479,7 @@ struct SystemHelper {
         get<control_system::Tags::TimescaleTuner<System>>(created_tags),
         get<control_system::Tags::Controller<System>>(created_tags),
         get<control_system::Tags::ControlError<System>>(created_tags),
-        get<control_system::Tags::WriteDataToDisk>(created_tags),
+        get<control_system::Tags::WriteDataToDisk>(created_tags), true,
         // Just need an empty queue. It will get filled in as the control
         // system is updated
         LinkedMessageQueue<

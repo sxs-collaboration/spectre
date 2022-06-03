@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@ class not_null;
 namespace domain::FunctionsOfTime {
 template <size_t max_deriv>
 class PiecewisePolynomial;
+class FunctionOfTime;
 
 /// \brief Import SpEC `FunctionOfTime` data from an H5 file.
 ///
@@ -46,4 +48,17 @@ void read_spec_piecewise_polynomial(
     const std::string& file_name,
     const std::map<std::string, std::string>& dataset_name_map,
     const bool quaternion_rotation = false);
+
+/// \brief Replace the functions of time from the `domain_creator` with the ones
+/// read in from `function_of_time_file`.
+///
+/// \note Currently, only support order 2 or 3 piecewise polynomials. This could
+/// be generalized later, but the SpEC functions of time that we will read in
+/// with this action will always be 2nd-order or 3rd-order piecewise polynomials
+void override_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const std::string& function_of_time_file,
+    const std::map<std::string, std::string>& function_of_time_name_map);
 }  // namespace domain::FunctionsOfTime

@@ -90,8 +90,7 @@ struct Expansion : tt::ConformsTo<protocols::ControlSystem> {
                                       QueueTags::Center<::ah::ObjectLabel::B>>>;
   };
 
-  using simple_tags =
-      tmpl::list<MeasurementQueue, Tags::ControlError<Expansion>>;
+  using simple_tags = tmpl::list<MeasurementQueue>;
 
   struct process_measurement {
     template <typename Submeasurement>
