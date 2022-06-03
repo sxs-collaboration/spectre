@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_MonotonisedCentral.cpp
   Test_Unlimited.cpp
   Test_Wcns5z.cpp
+  Test_Wcns5zMc.cpp
   )
 
 add_test_library(
