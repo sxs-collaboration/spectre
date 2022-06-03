@@ -13,12 +13,20 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+template <size_t Dim>
+class Direction;
+template <size_t Dim>
+class Mesh;
+/// \endcond
 
 namespace Burgers::BoundaryConditions {
 /*!
@@ -63,5 +71,18 @@ class Outflow final : public BoundaryCondition {
       const tnsr::i<DataVector, 1, Frame::Inertial>&
           outward_directed_normal_covector,
       const Scalar<DataVector>& u);
+
+  using fd_interior_evolved_variables_tags = tmpl::list<Tags::U>;
+  using fd_interior_temporary_tags =
+      tmpl::list<evolution::dg::subcell::Tags::Mesh<1>>;
+  using fd_gridless_tags = tmpl::list<>;
+
+  static void fd_outflow(
+      gsl::not_null<Scalar<DataVector>*> u, const Direction<1>& direction,
+      const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>&
+          face_mesh_velocity,
+      const tnsr::i<DataVector, 1, Frame::Inertial>&
+          outward_directed_normal_covector,
+      const Scalar<DataVector>& u_interior, const Mesh<1>& subcell_mesh);
 };
 }  // namespace Burgers::BoundaryConditions

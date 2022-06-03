@@ -21,6 +21,8 @@
 
 /// \cond
 class DataVector;
+template <size_t Dim>
+class Direction;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -80,6 +82,13 @@ class Dirichlet final : public BoundaryCondition {
       const std::optional<
           tnsr::I<DataVector, 1, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, 1, Frame::Inertial>& /*normal_covector*/) const;
+
+  using fd_interior_evolved_variables_tags = tmpl::list<>;
+  using fd_interior_temporary_tags = tmpl::list<>;
+  using fd_gridless_tags = tmpl::list<>;
+
+  void fd_ghost(gsl::not_null<Scalar<DataVector>*> u,
+                const Direction<1>& /*direction*/) const;
 
  private:
   void dg_ghost_impl(

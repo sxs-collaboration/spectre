@@ -51,7 +51,7 @@ void reconstruct_work(
                        reconstructed_num_pts);
   }
 
-  const size_t neighbor_num_ghost_fd_points = ghost_zone_size;
+  const size_t number_of_variables = 1;
 
   // make span of ghost cell variables for each direction
   DirectionMap<1, gsl::span<const double>> ghost_cell_vars{};
@@ -59,18 +59,26 @@ void reconstruct_work(
   // for all Directions, make the pointers in ghost_cell_vars span to point
   // the received neighbor data
   for (const auto& direction : Direction<1>::all_directions()) {
-    const auto& neighbors_in_direction = element.neighbors().at(direction);
+    if (element.neighbors().contains(direction)) {
+      const auto& neighbors_in_direction = element.neighbors().at(direction);
 
-    ASSERT(neighbors_in_direction.size() == 1,
-           "Currently only support one neighbor in each direction, but "
-           "got "
-               << neighbors_in_direction.size() << " in direction "
-               << direction);
+      ASSERT(neighbors_in_direction.size() == 1,
+             "Currently only support one neighbor in each direction, but "
+             "got "
+                 << neighbors_in_direction.size() << " in direction "
+                 << direction);
 
-    ghost_cell_vars[direction] =
-        gsl::make_span(&neighbor_data.at(std::pair{
-                           direction, *neighbors_in_direction.begin()})[0],
-                       neighbor_num_ghost_fd_points);
+      ghost_cell_vars[direction] =
+          gsl::make_span(&neighbor_data.at(std::pair{
+                             direction, *neighbors_in_direction.begin()})[0],
+                         number_of_variables * ghost_zone_size);
+    } else {
+      // retrieve boundary ghost data from neighbor_data
+      ghost_cell_vars[direction] = gsl::make_span(
+          &neighbor_data.at(
+              std::pair{direction, ElementId<1>::external_boundary_id()})[0],
+          number_of_variables * ghost_zone_size);
+    }
   }
 
   // make span of volume variables

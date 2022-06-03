@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -16,16 +17,22 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/Neighbors.hpp"
+#include "Domain/Tags.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/Burgers/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/Burgers/FiniteDifference/Factory.hpp"
@@ -36,9 +43,38 @@
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Burgers/FiniteDifference/TestHelpers.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Tags/Metavariables.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"
+#include "Time/Tags.hpp"
+#include "Time/Time.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
+
+namespace {
+// These solution tag and metavariables are not strictly required for testing
+// subcell time derivative, but needed for compilation since
+// BoundaryConditionGhostData requires this to be in box.
+struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
+  using type = Burgers::Solutions::Step;
+};
+
+struct DummyEvolutionMetaVars {
+  struct SubcellOptions {
+    static constexpr bool subcell_enabled_at_external_boundary = false;
+  };
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Burgers::BoundaryConditions::BoundaryCondition,
+                   Burgers::BoundaryConditions::standard_boundary_conditions>>;
+  };
+};
+}  // namespace
 
 namespace Burgers {
 
@@ -83,6 +119,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
           subcell_mesh, logical_coords_subcell, element.neighbors(),
           reconstructor.ghost_zone_size(), compute_test_solution);
 
+  // Below are also dummy variables required for compilation due to boundary
+  // condition FD ghost data. Since the element used here for testing has
+  // neighbors in all directions, BoundaryConditionGhostData::apply() is not
+  // actually called so it is okay to leave these variables somewhat poorly
+  // initialized.
+  Domain<1> dummy_domain{};
+  std::optional<tnsr::I<DataVector, 1>> dummy_volume_mesh_velocity{};
+  typename evolution::dg::Tags::NormalCovectorAndMagnitude<1>::type
+      dummy_normal_covector_and_magnitude{};
+  const double dummy_time{0.0};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      dummy_functions_of_time{};
+
   auto box = db::create<db::AddSimpleTags<
       domain::Tags::Element<1>, evolution::dg::subcell::Tags::Mesh<1>,
       evolved_vars_tag, dt_variables_tag,
@@ -92,7 +142,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
       domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                   Frame::Inertial>,
       evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
-      evolution::dg::Tags::MortarData<1>>>(
+      evolution::dg::Tags::MortarData<1>, domain::Tags::Domain<1>,
+      domain::Tags::MeshVelocity<1, Frame::Inertial>,
+      evolution::dg::Tags::NormalCovectorAndMagnitude<1>, ::Tags::Time,
+      domain::Tags::FunctionsOfTimeInitialize, DummyAnalyticSolutionTag,
+      Parallel::Tags::MetavariablesImpl<DummyEvolutionMetaVars>>>(
       element, subcell_mesh, volume_vars_subcell,
       Variables<typename dt_variables_tag::tags_list>{
           subcell_mesh.number_of_grid_points()},
@@ -108,7 +162,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TimeDerivative",
       domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<1>{}),
       logical_coords_subcell,
-      typename evolution::dg::Tags::MortarData<1>::type{});
+      typename evolution::dg::Tags::MortarData<1>::type{},
+      std::move(dummy_domain), dummy_volume_mesh_velocity,
+      dummy_normal_covector_and_magnitude, dummy_time,
+      clone_unique_ptrs(dummy_functions_of_time),
+      Burgers::Solutions::Step{2.0, 1.0, 0.0}, DummyEvolutionMetaVars{});
 
   {
     const auto coordinate_map =
