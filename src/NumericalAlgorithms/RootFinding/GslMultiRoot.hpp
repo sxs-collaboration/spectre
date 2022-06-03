@@ -19,6 +19,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
@@ -160,7 +161,6 @@ CREATE_IS_CALLABLE_V(jacobian)
  */
 enum class Method {
   /// Hybrid of Newton's method along with following the gradient direction.
-  /// \note Sometimes Hybrids works only with the Absolute stopping condition.
   Hybrids,
   /// "Unscaled version of Hybrids that uses a spherical trust region," see
   /// GSL documentation for more details.
@@ -226,6 +226,11 @@ std::array<double, Dim> gsl_multiroot_impl(
       print_state<Dim>(iteration_number, *solver, iteration_number == 0);
     }
     iteration_number++;
+
+    if (gsl_to_std_array<Dim>(solver->f) == make_array<Dim>(0.0)) {
+      return gsl_to_std_array<Dim>(solver->x);
+    }
+
     status = solver_iterate(solver.get());
     // Check if solver is stuck
     if (UNLIKELY(status == GSL_ENOPROG)) {
@@ -240,7 +245,6 @@ std::array<double, Dim> gsl_multiroot_impl(
       status = gsl_multiroot_test_delta(solver->dx, solver->x,
                                         absolute_tolerance, relative_tolerance);
     } else {  // condition is StoppingCondition::Absolute
-      // NOTE: Sometimes hybridsj works only with the test_residual condition
       status = gsl_multiroot_test_residual(solver->f, absolute_tolerance);
     }
   } while (status == GSL_CONTINUE and iteration_number < maximum_iterations);

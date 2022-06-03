@@ -67,10 +67,11 @@ class BadFunction {
 };
 
 template <typename Function>
-void test_gsl_multiroot(RootFinder::StoppingCondition condition,
+void test_gsl_multiroot(const RootFinder::StoppingCondition condition,
                         const Function& func,
                         const std::array<double, 2> initial_guess) {
   const double absolute_tolerance = 1.0e-14;
+  const double relative_tolerance = 1.0e-13;
   const double max_absolute_tolerance = 0.0;
   const int maximum_iterations = 20;
   const ::Verbosity verbosity = ::Verbosity::Silent;
@@ -79,11 +80,6 @@ void test_gsl_multiroot(RootFinder::StoppingCondition condition,
                                                RootFinder::Method::Hybrid,
                                                RootFinder::Method::Hybrids};
   for (const auto& method : methods_list) {
-    double relative_tolerance = 1.0e-13;
-    if (method == RootFinder::Method::Hybrids) {
-      condition = RootFinder::StoppingCondition::Absolute;
-      relative_tolerance = 0.0;
-    }
     std::array<double, 2> roots_array = RootFinder::gsl_multiroot(
         func, initial_guess, absolute_tolerance, maximum_iterations,
         relative_tolerance, verbosity, max_absolute_tolerance, method,
@@ -97,6 +93,7 @@ void test_gsl_multiroot(RootFinder::StoppingCondition condition,
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
   const std::array<double, 2> good_initial_guess{{-10.0, -5.0}};
+  const std::array<double, 2> perfect_initial_guess{{1.0, 1.0}};
   const Rosenbrock function_and_jac{1.0, 10.0};
   const RosenbrockNoJac function{1.0, 10.0};
 
@@ -108,6 +105,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
                      good_initial_guess);
   test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function,
                      good_initial_guess);
+
+  test_gsl_multiroot(RootFinder::StoppingCondition::AbsoluteAndRelative,
+                     function_and_jac, perfect_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingCondition::AbsoluteAndRelative,
+                     function, perfect_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function_and_jac,
+                     perfect_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function,
+                     perfect_initial_guess);
+
   CHECK(get_output(RootFinder::Method::Hybrids) == "Hybrids");
   CHECK(get_output(RootFinder::Method::Hybrid) == "Hybrid");
   CHECK(get_output(RootFinder::Method::Newton) == "Newton");
