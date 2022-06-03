@@ -259,8 +259,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
 
   const TimeStepId temporal_id(true, 0, Slab(0., observation_time).end());
 
-  intrp::interpolate<MockMetavariables::InterpolatorTargetA,
-                     tmpl::list<Tags::Lapse>>(
+  intrp::interpolate<MockMetavariables::InterpolatorTargetA>(
       temporal_id, mesh, cache, array_index, get<Tags::Lapse>(vars));
 
   check_results();

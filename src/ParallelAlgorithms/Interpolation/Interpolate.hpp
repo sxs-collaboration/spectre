@@ -29,24 +29,25 @@ struct Interpolator;
 /// \endcond
 
 namespace intrp {
-template <typename InterpolationTargetTag, typename Tensors, size_t VolumeDim,
-          typename Metavariables, typename... TensorTypes>
+template <typename InterpolationTargetTag, size_t VolumeDim,
+          typename Metavariables, typename... InterpolatorSourceVars>
 void interpolate(
     const typename InterpolationTargetTag::temporal_id::type& temporal_id,
     const Mesh<VolumeDim>& mesh, Parallel::GlobalCache<Metavariables>& cache,
-    const ElementId<VolumeDim>& array_index, const TensorTypes&... tensors) {
-  static_assert(
-      std::is_same_v<
-          tmpl::transform<Tensors, tmpl::bind<tmpl::type_from, tmpl::_1>>,
-          tmpl::list<TensorTypes...>>,
-      "Tensors passed do not match structures of Tensors list of tags.");
-  Variables<Tensors> interp_vars(mesh.number_of_grid_points());
-  const std::tuple<const TensorTypes&...> tensors_tuple{tensors...};
-  tmpl::for_each<tmpl::make_sequence<tmpl::size_t<0>, sizeof...(TensorTypes)>>(
-      [&interp_vars, &tensors_tuple](auto index_v) {
+    const ElementId<VolumeDim>& array_index,
+    const InterpolatorSourceVars&... interpolator_source_vars_input) {
+  Variables<typename Metavariables::interpolator_source_vars>
+      interpolator_source_vars(mesh.number_of_grid_points());
+  const std::tuple<const InterpolatorSourceVars&...>
+      interpolator_source_vars_tuple{interpolator_source_vars_input...};
+  tmpl::for_each<
+      tmpl::make_sequence<tmpl::size_t<0>, sizeof...(InterpolatorSourceVars)>>(
+      [&interpolator_source_vars,
+       &interpolator_source_vars_tuple](auto index_v) {
         constexpr size_t index = tmpl::type_from<decltype(index_v)>::value;
-        get<tmpl::at_c<Tensors, index>>(interp_vars) =
-            get<index>(tensors_tuple);
+        get<tmpl::at_c<typename Metavariables::interpolator_source_vars,
+                       index>>(interpolator_source_vars) =
+            get<index>(interpolator_source_vars_tuple);
       });
 
   // Send volume data to the Interpolator, to trigger interpolation.
@@ -54,7 +55,7 @@ void interpolate(
       ::Parallel::get_parallel_component<Interpolator<Metavariables>>(cache));
   Parallel::simple_action<Actions::InterpolatorReceiveVolumeData<
       typename InterpolationTargetTag::temporal_id>>(
-      interpolator, temporal_id, array_index, mesh, interp_vars);
+      interpolator, temporal_id, array_index, mesh, interpolator_source_vars);
 
   // Tell the interpolation target that it should interpolate.
   auto& target = Parallel::get_parallel_component<

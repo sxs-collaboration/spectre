@@ -50,7 +50,8 @@ struct InterpolatorReceiveVolumeData {
       const ArrayIndex& /*array_index*/,
       const typename TemporalId::type& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
-      Variables<typename Metavariables::interpolator_source_vars>&& vars) {
+      Variables<typename Metavariables::interpolator_source_vars>&&
+          interpolator_source_vars) {
     // Determine if we have already finished interpolating on this
     // temporal_id.  If so, then we simply return, ignore the incoming
     // data, and do not interpolate.
@@ -88,10 +89,10 @@ struct InterpolatorReceiveVolumeData {
     // VolumeVarsInfos that might be in the DataBox.)
     db::mutate<Tags::VolumeVarsInfo<Metavariables, TemporalId>>(
         make_not_null(&box),
-        [&temporal_id, &element_id, &mesh,
-         &vars](const gsl::not_null<
+        [&temporal_id, &element_id, &mesh, &interpolator_source_vars](
+            const gsl::not_null<
                 typename Tags::VolumeVarsInfo<Metavariables, TemporalId>::type*>
-                    container) {
+                container) {
           if (container->find(temporal_id) == container->end()) {
             container->emplace(
                 temporal_id,
@@ -101,9 +102,10 @@ struct InterpolatorReceiveVolumeData {
           }
           container->at(temporal_id)
               .emplace(std::make_pair(
-                  element_id, typename Tags::VolumeVarsInfo<Metavariables,
-                                                            TemporalId>::Info{
-                                  mesh, std::move(vars), {}}));
+                  element_id,
+                  typename Tags::VolumeVarsInfo<Metavariables,
+                                                TemporalId>::Info{
+                      mesh, std::move(interpolator_source_vars), {}}));
         });
 
     // Try to interpolate data for all InterpolationTargets for this

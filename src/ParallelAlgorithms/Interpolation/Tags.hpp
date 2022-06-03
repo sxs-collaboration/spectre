@@ -102,7 +102,7 @@ struct VolumeVarsInfo : db::SimpleTag {
     Mesh<Metavariables::volume_dim> mesh;
     // Variables that have been sent from the Elements.
     Variables<typename Metavariables::interpolator_source_vars>
-        vars_from_element;
+        source_vars_from_element;
     // Variables, for each InterpolationTargetTag, that have been
     // computed in the volume before interpolation, and that will
     // be interpolated.
@@ -113,7 +113,7 @@ struct VolumeVarsInfo : db::SimpleTag {
     // NOLINTNEXTLINE(google-runtime-references)
     void pup(PUP::er& p) {
       p | mesh;
-      p | vars_from_element;
+      p | source_vars_from_element;
       p | vars_to_interpolate;
     }
   };
