@@ -20,7 +20,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Install add-apt-repository
 RUN apt-get update -y \
-    && apt-get install -y software-properties-common
+    && apt-get install -y software-properties-common \
+    && add-apt-repository -y ppa:ubuntu-toolchain-r/test
 
 # Install required packages for SpECTRE
 #
@@ -35,6 +36,7 @@ RUN apt-get update -y \
                           gcc-8 g++-8 gfortran-8 \
                           gcc-9 g++-9 gfortran-9 \
                           gcc-10 g++-10 gfortran-10 \
+                          gcc-11 g++-11 gfortran-11 \
                           gdb git ninja-build autoconf automake \
                           bison flex \
                           libopenblas-dev liblapack-dev \
@@ -50,10 +52,13 @@ RUN apt-get update -y \
                           libbenchmark-dev \
                           libarpack2-dev
 
-# Install clang-11
+# Install clang-11 and clang-13
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
-    && apt-get update -y && apt-get install -y clang-11
+    && apt-get update -y && apt-get install -y clang-11 \
+    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
+    && apt-get update -y && apt-get install -y clang-13
 
 # Install libc++ and jemalloc
 # The second `apt-get update` is to ensure that anything that depends on

@@ -13,7 +13,7 @@ spectre_setup_modules() {
 }
 
 spectre_unload_modules() {
-    module unload gcc/7.3.0
+    module unload gcc/9.3.0
     module unload blaze/3.8
     module unload boost/1.65.0-gcc-6.4.0
     module unload brigand/master
@@ -36,7 +36,7 @@ spectre_unload_modules() {
 }
 
 spectre_load_modules() {
-    module load gcc/7.3.0
+    module load gcc/9.3.0
     module load blaze/3.8
     module load boost/1.65.0-gcc-6.4.0
     module load brigand/master
