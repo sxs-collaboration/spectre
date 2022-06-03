@@ -309,17 +309,17 @@ std::array<double, Dim> gsl_multiroot_impl(
 
     if (UNLIKELY(verbosity == Verbosity::Debug)) {
       Parallel::printf("Error: %s\n", gsl_strerror(status));
-    if (iteration_number >= maximum_iterations) {
-      Parallel::printf(
-          "The number of iterations (%d) has reached the maximum number of "
-          "iterations (%d)\n",
-          iteration_number, maximum_iterations);
-    } else {
-      Parallel::printf(
-          "The number of iterations (%d) failed to reach the maximum number of "
-          "iterations (%d)\n",
-          iteration_number, maximum_iterations);
-    }
+      if (iteration_number >= maximum_iterations) {
+        Parallel::printf(
+            "The number of iterations (%d) has reached the maximum number of "
+            "iterations (%d)\n",
+            iteration_number, maximum_iterations);
+      } else {
+        Parallel::printf(
+            "The number of iterations (%d) failed to reach the maximum number "
+            "of iterations (%d)\n",
+            iteration_number, maximum_iterations);
+      }
     }
     throw convergence_error(error_message.str());
   }
