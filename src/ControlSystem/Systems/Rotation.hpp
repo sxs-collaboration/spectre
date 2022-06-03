@@ -96,8 +96,7 @@ struct Rotation : tt::ConformsTo<protocols::ControlSystem> {
                                       QueueTags::Center<::ah::ObjectLabel::B>>>;
   };
 
-  using simple_tags =
-      tmpl::list<MeasurementQueue, Tags::ControlError<Rotation>>;
+  using simple_tags = tmpl::list<MeasurementQueue>;
 
   struct process_measurement {
     template <typename Submeasurement>
