@@ -226,7 +226,8 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     const Verbosity verbosity = Verbosity::Silent;
     const auto method = RootFinder::Method::Newton;
     const double relative_tolerance = 1.0e-12;
-    const auto condition = RootFinder::StoppingCondition::AbsoluteAndRelative;
+    const auto condition = RootFinder::StoppingConditions::Convergence(
+        absolute_tolerance, relative_tolerance);
     struct {
       std::array<double, 3> operator()(
           const std::array<double, 3>& source_coords) const {
@@ -261,9 +262,8 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     }
     try {
       logical_coords = RootFinder::gsl_multiroot(
-          rootfunction, logical_coords, absolute_tolerance, maximum_iterations,
-          relative_tolerance, verbosity, max_absolute_tolerance, method,
-          condition);
+          rootfunction, logical_coords, condition, maximum_iterations,
+          verbosity, max_absolute_tolerance, method);
 
     } catch (const convergence_error& e) {
       return std::nullopt;
