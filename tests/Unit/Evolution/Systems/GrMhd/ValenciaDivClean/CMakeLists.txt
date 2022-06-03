@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_Rusanov.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
   FiniteDifference/Test_Tag.cpp
+  FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_ComputeFluxes.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_GrTagsForHydro.cpp

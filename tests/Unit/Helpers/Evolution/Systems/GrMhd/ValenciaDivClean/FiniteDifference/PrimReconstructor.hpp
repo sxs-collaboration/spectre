@@ -31,6 +31,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -401,7 +402,13 @@ void test_prim_reconstructor_impl(
 
 template <typename Reconstructor>
 void test_prim_reconstructor(const size_t points_per_dimension,
-                             const Reconstructor& derived_reconstructor) {
+                             const Reconstructor& in_derived_reconstructor) {
+  PUPable_reg(Reconstructor);
+  const auto base_recons =
+      serialize_and_deserialize(in_derived_reconstructor.get_clone());
+  const auto& derived_reconstructor =
+      dynamic_cast<const Reconstructor&>(*base_recons);
+
   detail::test_prim_reconstructor_impl(points_per_dimension,
                                        derived_reconstructor,
                                        EquationsOfState::IdealFluid<true>{1.4});
