@@ -403,7 +403,7 @@ jobs:
           CACHE_KEY_SUFFIX=$(date +%s)
           echo "CACHE_KEY_SUFFIX=$CACHE_KEY_SUFFIX" >> $GITHUB_ENV
       - name: Restore ccache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           CACHE_KEY_PREFIX: "ccache-${{ matrix.compiler }}-\
 ${{ matrix.build_type }}-pch-${{ matrix.use_pch }}"
@@ -672,7 +672,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           CACHE_KEY_SUFFIX=$(date +%s)
           echo "CACHE_KEY_SUFFIX=$CACHE_KEY_SUFFIX" >> $GITHUB_ENV
       - name: Restore dependency cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-dependencies
         with:
           path: ~/dependencies
@@ -716,7 +716,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           rm -rf $CCACHE_DIR
           mkdir -p $CCACHE_DIR
       - name: Restore ccache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/ccache
           key: "ccache-macos-${{ github.ref }}-${{ env.CACHE_KEY_SUFFIX }}"
