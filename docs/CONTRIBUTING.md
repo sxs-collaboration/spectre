@@ -149,7 +149,7 @@ see the following sections in the [SpECTRE
 documentation](https://spectre-code.org/):
 
 * [Installing SpECTRE](installation.html)
-* [Running Status Checks Locally](travis_guide.html#perform-checks-locally)
+* [Running Status Checks Locally](github_actions_guide.html#perform-checks-locally)
 
 ## Pull Requests {#pull-requests}
 
