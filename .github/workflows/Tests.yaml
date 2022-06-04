@@ -38,6 +38,12 @@ on:
           Enter a version name YYYY.MM.DD[.TWEAK] to create a release on success
         required: false
         default: ''
+      clear_ccache:
+        description: >
+          Enter 'yes' without quotes to clear ccache before running
+        required: false
+        default: ''
+
 
 # Cancel all other queued or in-progress runs of this workflow when it is
 # scheduled, so repeated pushes to a branch or a PR don't block CI. Repeated
@@ -417,6 +423,13 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         # Print the ccache configuration and reset statistics
         run: |
           ccache -pz
+      - name: Clear ccache
+        # Clear ccache if requested
+        if: >
+          github.event_name == 'workflow_dispatch'
+            && github.event.inputs.clear_ccache == 'yes'
+        run: |
+          ccache -C
       - name: Configure build with cmake
         working-directory: /work
         # Notes on the build configuration:
@@ -725,6 +738,13 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       - name: Configure ccache
         run: |
           ccache -pz
+      - name: Clear ccache
+        # Clear ccache if requested
+        if: >
+          github.event_name == 'workflow_dispatch'
+            && github.event.inputs.clear_ccache == 'yes'
+        run: |
+          ccache -C
       # Configure, build and run tests. See the `unit_tests` job above for
       # details.
       # - We increase the timeout for tests because the GitHub-hosted macOS VMs
