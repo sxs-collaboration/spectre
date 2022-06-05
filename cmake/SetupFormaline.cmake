@@ -12,8 +12,6 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .github
   .gitignore
   .style.yapf
-  .travis
-  .travis.yml
   citation.bib
   CITATION.cff
   cmake
