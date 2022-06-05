@@ -303,13 +303,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # We have a sparse clang test configuration to reduce the amount of
+        # GitHub cache space we use. GCC being the production compiler on
+        # supercomputers means we need to thoroughly test it.
         compiler:
           - gcc-9
           - gcc-10
           - gcc-11
-          - clang-9
-          - clang-10
-          - clang-13
         build_type: [Debug, Release]
         use_pch: [ON]
         charm_name: ["Charm 7.0.0"]
@@ -330,8 +330,26 @@ jobs:
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
             ccache_max_size: 2.3G
-          # Test with ASAN
+          # Test with Python 2 so that we retain backwards compatibility. We
+          # keep track of Python versions on supercomputers in this issue:
+          # https://github.com/sxs-collaboration/spectre/issues/442
+          - compiler: gcc-11
+            build_type: Debug
+            PYTHON_EXECUTABLE: /usr/bin/python2
+          # Add a test without PCH to the build matrix, which only builds core
+          # libraries. Building all the tests without the PCH takes very long
+          # and the most we would catch is a missing include of something that's
+          # in the PCH.
           - compiler: clang-9
+            build_type: Debug
+            use_pch: OFF
+            ccache_max_size: 400M
+          # Full clang-9 build to catch any incompatibilities.
+          - compiler: clang-9
+            build_type: Release
+            ccache_max_size: 400M
+          # Test with ASAN
+          - compiler: clang-10
             build_type: Debug
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
@@ -342,33 +360,19 @@ jobs:
             BUILD_PYTHON_BINDINGS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
             ccache_max_size: 1.3G
-          # Test with Python 2 so that we retain backwards compatibility. We
-          # keep track of Python versions on supercomputers in this issue:
-          # https://github.com/sxs-collaboration/spectre/issues/442
-          - compiler: gcc-11
-            build_type: Debug
-            PYTHON_EXECUTABLE: /usr/bin/python2
+          # Test building with static libraries. Do so with clang in release
+          # mode because these builds use up little disk space compared to GCC
+          # builds or clang Debug builds
+          - compiler: clang-11
+            build_type: Release
+            BUILD_SHARED_LIBS: OFF
+            MEMORY_ALLOCATOR: JEMALLOC
           # Test compatibility with oldest supported CMake version
-          - compiler: gcc-9
+          - compiler: clang-13
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
             CHARM_DIR: /work/charm_6_10_2/multicore-linux-x86_64-
             charm_name: ["Charm 6.10.2"]
-          # Test building with static libraries. Do so with clang in release
-          # mode because these builds use up little disk space compared to GCC
-          # builds or clang Debug builds
-          - compiler: clang-9
-            build_type: Release
-            BUILD_SHARED_LIBS: OFF
-            MEMORY_ALLOCATOR: JEMALLOC
-          # Add a test without PCH to the build matrix, which only builds core
-          # libraries. Building all the tests without the PCH takes very long
-          # and the most we would catch is a missing include of something that's
-          # in the PCH.
-          - compiler: clang-9
-            build_type: Debug
-            use_pch: OFF
-            ccache_max_size: 400M
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
