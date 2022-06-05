@@ -1,0 +1,36 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Dump a large file into the cache to force GitHub to clobber it.
+name: Clobber Cache
+
+on:
+  workflow_dispatch:
+
+jobs:
+  clobber_cache:
+    name: Clobber Cache
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # Configure the clobber cache
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path:  cache
+          key: "clobber-cache"
+          restore-keys: |
+            clobber-cache
+      # Generate the random file to clobber the cache.
+      # Note that the file size must be updated as GitHub expands the cache
+      # size limits.
+      - name: Clobber cache
+        run: >
+          mkdir -p cache
+
+          cd ./cache
+
+          rm -rf ./*
+
+          head -c 9900MB /dev/urandom > clobber.txt
