@@ -55,7 +55,11 @@ namespace Actions {
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
-/// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// For requirements on InterpolationTargetTag, see InterpolationTarget and
+/// intrp::protocols::InterpolationTargetTag
+///
+/// \note This action can only be used with InterpolationTargets that are
+/// non-sequential.
 template <typename InterpolationTargetTag>
 struct InterpolationTargetVarsFromElement {
   /// For requirements on Metavariables, see InterpolationTarget
