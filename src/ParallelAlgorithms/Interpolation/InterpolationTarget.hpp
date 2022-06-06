@@ -238,11 +238,11 @@ namespace intrp {
 /// > `Actions::EnsureFunctionOfTimeUpToDate` is placed in `DgElementArray`s
 /// >  PDAL before any use of interpolation.
 ///
-/// ##### Actions::InterpolationTargetSendTimeIndepPointsToElements
+/// ##### Actions::InterpolationTargetSendPointsToElements
 ///
-/// `Actions::InterpolationTargetSendTimeIndepPointsToElements`
+/// `Actions::InterpolationTargetSendPointsToElements`
 /// is invoked on `InterpolationTarget` during the Registration PDAL,
-/// to send time-independent point information to `Element`s.
+/// to send non-sequential point information to `Element`s.
 ///
 /// ###### Current logic:
 ///
@@ -286,9 +286,8 @@ struct InterpolationTarget {
                   InterpolationTargetTag::compute_target_points::is_sequential::
                       value,
                   tmpl::list<>,
-                  tmpl::list<
-                      Actions::InterpolationTargetSendTimeIndepPointsToElements<
-                          InterpolationTargetTag>>>,
+                  tmpl::list<Actions::InterpolationTargetSendPointsToElements<
+                      InterpolationTargetTag>>>,
               Parallel::Actions::TerminatePhase>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<

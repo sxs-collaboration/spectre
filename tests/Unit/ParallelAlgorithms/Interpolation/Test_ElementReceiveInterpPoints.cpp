@@ -3,7 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
+#include <memory>
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -12,7 +14,11 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
@@ -65,6 +71,8 @@ struct mock_interpolation_target {
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
       domain::Tags::Domain<Metavariables::volume_dim>>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -73,9 +81,8 @@ struct mock_interpolation_target {
                          Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Registration,
-          tmpl::list<
-              intrp::Actions::InterpolationTargetSendTimeIndepPointsToElements<
-                  InterpolationTargetTag>>>>;
+          tmpl::list<intrp::Actions::InterpolationTargetSendPointsToElements<
+              InterpolationTargetTag>>>>;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -118,9 +125,11 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
-                  "[Unit]") {
+template <bool IsTimeDep>
+void run_test() {
   domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
 
   using metavars = MockMetavariables;
   using target_component_a =
@@ -132,23 +141,37 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   using elem_component = mock_element<metavars>;
 
   // Options
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  domain::creators::Shell domain_creator{};
+  if constexpr (IsTimeDep) {
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence = std::make_unique<
+            domain::creators::time_dependence::UniformTranslation<3>>(
+            0.0, std::array<double, 3>{{0.0, 0.0, 0.0}});
+    domain_creator =
+        domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false, {}, {},
+                                {domain::CoordinateMaps::Distribution::Linear},
+                                ShellWedges::All, std::move(time_dependence));
+  } else {
+    domain_creator = domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  }
+
   intrp::OptionHolders::LineSegment<3> line_segment_opts_a(
       {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_b(
       {{1.0, 1.0, 1.0}}, {{2.1, 2.1, 2.1}}, 12);
   tuples::TaggedTuple<intrp::Tags::LineSegment<metavars::InterpolationTargetA,
                                                metavars::volume_dim>,
+                      domain::Tags::Domain<metavars::volume_dim>,
                       intrp::Tags::LineSegment<metavars::InterpolationTargetB,
-                                               metavars::volume_dim>,
-                      domain::Tags::Domain<metavars::volume_dim>>
+                                               metavars::volume_dim>>
       tuple_of_opts{std::move(line_segment_opts_a),
-                    std::move(line_segment_opts_b),
-                    domain_creator.create_domain()};
+                    domain_creator.create_domain(),
+                    std::move(line_segment_opts_b)};
 
-  // Initialization
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+  // Initialization. It's ok if the time independent test has functions of time.
+  // They don't get used in either test.
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      std::move(tuple_of_opts), {domain_creator.functions_of_time()}};
   ActionTesting::set_phase(make_not_null(&runner),
                            metavars::Phase::Initialization);
   ActionTesting::emplace_component<target_component_a>(&runner, 0);
@@ -188,6 +211,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   // Now invoke the only Registration action (InterpolationTargetSendPoints).
   ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
   ActionTesting::next_action<target_component_b>(make_not_null(&runner), 0);
+  if constexpr (IsTimeDep) {
+    // In this case there should be no simple actions because we didn't send any
+    // points to the interpolator. So we just end here because there's nothing
+    // else left to do
+    CHECK(
+        ActionTesting::is_simple_action_queue_empty<elem_component>(runner, 0));
+    return;
+  }
   // ... and the only queued simple action (ElementReceiveInterpPoints).
   runner.invoke_queued_simple_action<elem_component>(0);
   runner.invoke_queued_simple_action<elem_component>(0);
@@ -247,5 +278,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   CHECK(runner.is_simple_action_queue_empty<target_component_a>(0));
   CHECK(runner.is_simple_action_queue_empty<target_component_b>(0));
   CHECK(runner.is_simple_action_queue_empty<elem_component>(0));
+}
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
+                  "[Unit]") {
+  run_test<false>();
+  run_test<true>();
 }
 }  // namespace

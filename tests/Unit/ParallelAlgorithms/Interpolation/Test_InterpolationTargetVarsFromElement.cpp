@@ -3,7 +3,9 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
+#include <memory>
 #include <unordered_set>
 #include <vector>
 
@@ -12,7 +14,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Creators/Shell.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -124,6 +129,8 @@ struct mock_interpolation_target {
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
   using simple_tags = typename intrp::Actions::InitializeInterpolationTarget<
       Metavariables, InterpolationTargetTag>::simple_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
@@ -150,9 +157,11 @@ struct MockMetavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
-                  "[Unit]") {
+template <bool IsTimeDep>
+void run_test() {
   domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
 
   using metavars = MockMetavariables;
   using temporal_id_type =
@@ -164,16 +173,28 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   Slab slab(0.0, 1.0);
   const TimeStepId first_temporal_id(true, 0, Time(slab, Rational(13, 15)));
   const TimeStepId second_temporal_id(true, 0, Time(slab, Rational(14, 15)));
-  const auto domain_creator =
-      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  domain::creators::Shell domain_creator{};
+  if constexpr (IsTimeDep) {
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence = std::make_unique<
+            domain::creators::time_dependence::UniformTranslation<3>>(
+            0.0, std::array<double, 3>{{0.0, 0.0, 0.0}});
+    domain_creator =
+        domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false, {}, {},
+                                {domain::CoordinateMaps::Distribution::Linear},
+                                ShellWedges::All, std::move(time_dependence));
+  } else {
+    domain_creator = domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
+  }
 
   // Type alias for better readability below.
   using vars_type = Variables<
       typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>;
 
-  // Initialization
+  // Initialization. It's ok if the time independent test has functions of time.
+  // They don't get used in either test.
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain()}};
+      {domain_creator.create_domain()}, {domain_creator.functions_of_time()}};
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0,
       {std::unordered_map<temporal_id_type, std::unordered_set<size_t>>{},
@@ -377,5 +398,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   // Should be no queued simple action.
   CHECK(
       ActionTesting::is_simple_action_queue_empty<target_component>(runner, 0));
+}
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
+                  "[Unit]") {
+  run_test<false>();
+  run_test<true>();
 }
 }  // namespace

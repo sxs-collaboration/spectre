@@ -473,7 +473,7 @@ void add_received_variables(
 /// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
 ///                             and by FindApparentHorizon)
 /// - InterpolationTargetVarsFromElement (called by DgElementArray)
-/// - InterpolationTargetSendTimeIndepPointsToElements
+/// - InterpolationTargetSendPointsToElements
 ///   (in InterpolationTarget ActionList)
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables, typename TemporalId>

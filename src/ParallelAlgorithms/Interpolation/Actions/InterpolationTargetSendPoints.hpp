@@ -18,7 +18,7 @@ namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Sends interpolation points to all the Elements.
 ///
-/// This action is for the case in which the points are time-independent.
+/// This action is for the case in which the points are non-sequential.
 ///
 /// This action should be placed in the Registration PDAL for
 /// InterpolationTarget.
@@ -33,7 +33,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 template <typename InterpolationTargetTag>
-struct InterpolationTargetSendTimeIndepPointsToElements {
+struct InterpolationTargetSendPointsToElements {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename Metavariables,
             typename ParallelComponent>
@@ -43,13 +43,22 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto coords = InterpolationTarget_detail::block_logical_coords<
-        InterpolationTargetTag>(box, tmpl::type_<Metavariables>{});
-    auto& receiver_proxy = Parallel::get_parallel_component<
-        typename InterpolationTargetTag::template interpolating_component<
-            Metavariables>>(cache);
-    Parallel::simple_action<ElementReceiveInterpPoints<InterpolationTargetTag>>(
-        receiver_proxy, std::move(coords));
+    static_assert(
+        not InterpolationTargetTag::compute_target_points::is_sequential::value,
+        "The InterpolationTargetSendPointsToElement action can only be used "
+        "with non-sequential targets.");
+    if (not InterpolationTarget_detail::maps_are_time_dependent<
+            InterpolationTargetTag>(box, tmpl::type_<Metavariables>{})) {
+      auto& receiver_proxy = Parallel::get_parallel_component<
+          typename InterpolationTargetTag::template interpolating_component<
+              Metavariables>>(cache);
+
+      Parallel::simple_action<
+          ElementReceiveInterpPoints<InterpolationTargetTag>>(
+          receiver_proxy,
+          InterpolationTarget_detail::block_logical_coords<
+              InterpolationTargetTag>(box, tmpl::type_<Metavariables>{}));
+    }
     return std::forward_as_tuple(std::move(box));
   }
 };

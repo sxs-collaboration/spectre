@@ -130,10 +130,20 @@ struct InterpolationTargetVarsFromElement {
                 InterpolationTargetTag>(make_not_null(&box),
                                         std::vector<TemporalId>{{temporal_id}})
                 .empty()) {
-      InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
-          make_not_null(&box), temporal_id,
-          InterpolationTarget_detail::block_logical_coords<
-              InterpolationTargetTag>(box, tmpl::type_<Metavariables>{}));
+      if (InterpolationTarget_detail::maps_are_time_dependent<
+              InterpolationTargetTag>(box, tmpl::type_<Metavariables>{})) {
+        InterpolationTarget_detail::set_up_interpolation<
+            InterpolationTargetTag>(
+            make_not_null(&box), temporal_id,
+            InterpolationTarget_detail::block_logical_coords<
+                InterpolationTargetTag>(box, cache, temporal_id));
+      } else {
+        InterpolationTarget_detail::set_up_interpolation<
+            InterpolationTargetTag>(
+            make_not_null(&box), temporal_id,
+            InterpolationTarget_detail::block_logical_coords<
+                InterpolationTargetTag>(box, tmpl::type_<Metavariables>{}));
+      }
     }
 
     InterpolationTarget_detail::add_received_variables<InterpolationTargetTag>(
