@@ -341,6 +341,30 @@ class Variables<tmpl::list<Tags...>> {
     }
   }
 
+  /// Create a non-owning version of this Variables with different
+  /// prefixes on the tensors.  Both sets of prefixes must have the
+  /// same tensor types.
+  ///
+  /// \warning As with other appearances of non-owning variables, this
+  /// method can cast away constness.
+  template <typename WrappedVariables>
+  WrappedVariables reference_with_different_prefixes() const {
+    static_assert(
+        tmpl::all<tmpl::transform<
+            typename WrappedVariables::tags_list, tmpl::list<Tags...>,
+            std::is_same<tmpl::bind<db::remove_all_prefixes, tmpl::_1>,
+                         tmpl::bind<db::remove_all_prefixes, tmpl::_2>>>>::
+            value,
+        "Unprefixed tags do not match!");
+    static_assert(
+        tmpl::all<tmpl::transform<
+            typename WrappedVariables::tags_list, tmpl::list<Tags...>,
+            std::is_same<tmpl::bind<tmpl::type_from, tmpl::_1>,
+                         tmpl::bind<tmpl::type_from, tmpl::_2>>>>::value,
+        "Tensor types do not match!");
+    return {const_cast<value_type*>(data()), size()};
+  }
+
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>

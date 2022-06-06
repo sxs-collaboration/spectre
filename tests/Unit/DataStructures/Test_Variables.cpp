@@ -1102,6 +1102,31 @@ void test_variables_reference_subset() {
 }
 
 template <typename VectorType>
+void test_variables_reference_with_different_prefixes() {
+  using value_type = typename VectorType::value_type;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  UniformCustomDistribution<size_t> sdist{1, 5};
+
+  const size_t number_of_grid_points = sdist(gen);
+
+  using Variables1 = Variables<tmpl::list<
+      TestHelpers::Tags::Vector<VectorType>,
+      TestHelpers::Tags::Prefix0<TestHelpers::Tags::Scalar<VectorType>>>>;
+  using Variables2 = Variables<tmpl::list<
+      TestHelpers::Tags::Prefix0<TestHelpers::Tags::Vector<VectorType>>,
+      TestHelpers::Tags::Scalar<VectorType>>>;
+
+  auto owning = make_with_random_values<Variables1>(
+      make_not_null(&gen), make_not_null(&dist), number_of_grid_points);
+  auto non_owning =
+      owning.template reference_with_different_prefixes<Variables2>();
+  CHECK(owning.size() == non_owning.size());
+  CHECK(owning.data() == non_owning.data());
+}
+
+template <typename VectorType>
 void test_variables_from_tagged_tuple() {
   using value_type = typename VectorType::value_type;
   MAKE_GENERATOR(gen);
@@ -1309,6 +1334,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_reference_subset<ComplexModalVector>();
     test_variables_reference_subset<DataVector>();
     test_variables_reference_subset<ModalVector>();
+  }
+
+  {
+    INFO("Test Variables reference_with_different_prefixes");
+    test_variables_reference_with_different_prefixes<ComplexDataVector>();
+    test_variables_reference_with_different_prefixes<ComplexModalVector>();
+    test_variables_reference_with_different_prefixes<DataVector>();
+    test_variables_reference_with_different_prefixes<ModalVector>();
   }
 
   {
