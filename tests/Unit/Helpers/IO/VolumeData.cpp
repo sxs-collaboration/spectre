@@ -1,51 +1,24 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#pragma once
+#include "Framework/TestingFramework.hpp"
+
+#include "Helpers/IO/VolumeData.hpp"
 
 #include <algorithm>
 #include <boost/iterator/transform_iterator.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <optional>
-#include <string>
-#include <vector>
+#include <tuple>
 
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 
-/// Functions for testing volume data output.
 namespace TestHelpers::io::VolumeData {
-/// Helper function that multiplies a tensor component by a double, which is
-/// typically the observation time, to generate different tensor values at
-/// different times for testing.
-template <typename T>
-T multiply(const double obs_value, const T& component) {
-  T result = component;
-  for (auto& t : result) {
-    t *= obs_value;
-  }
-  return result;
-}
-
-/// Helper function to check that volume data was written correctly.
-/// This function checks the following:
-///    0. That the provided observation_id is present in the file
-///    1. That the grid_names provided are present in the file
-///    2. That the provided bases and quadratures agree with the bases
-///       and quadratures in the file.
-///    3. That the expected_components are present in the file.
-///    4. That the expected_components, after rescaling them by a constant
-///       factor_to_rescale_components, agree with the components in the file.
-///       Note: if components_comparison_precision is defined, then the
-///       comparison is approximate, using *components_comparison_precision as
-///       the tolerance.
 template <typename DataType>
 void check_volume_data(
     const std::string& h5_file_name, const uint32_t version_number,
@@ -59,7 +32,7 @@ void check_volume_data(
     const std::vector<std::string>& expected_components,
     const std::vector<std::vector<size_t>>& grid_data_orders,
     const std::optional<double>& components_comparison_precision,
-    const double factor_to_rescale_components = 1.0) {
+    const double factor_to_rescale_components) {
   h5::H5File<h5::AccessType::ReadOnly> file_read{h5_file_name};
   const auto& volume_file =
       file_read.get<h5::VolumeData>("/"s + group_name, version_number);
@@ -182,4 +155,26 @@ void check_volume_data(
     }
   }
 }
+
+#define GET_DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATION(r, data)                                           \
+  template void check_volume_data(                                       \
+      const std::string& h5_file_name, const uint32_t version_number,    \
+      const std::string& group_name, const size_t observation_id,        \
+      const double observation_value,                                    \
+      const std::vector<GET_DTYPE(data)>& tensor_components_and_coords,  \
+      const std::vector<std::string>& grid_names,                        \
+      const std::vector<std::vector<Spectral::Basis>>& bases,            \
+      const std::vector<std::vector<Spectral::Quadrature>>& quadratures, \
+      const std::vector<std::vector<size_t>>& extents,                   \
+      const std::vector<std::string>& expected_components,               \
+      const std::vector<std::vector<size_t>>& grid_data_orders,          \
+      const std::optional<double>& components_comparison_precision,      \
+      const double factor_to_rescale_components);
+
+GENERATE_INSTANTIATIONS(INSTANTIATION, (DataVector, std::vector<float>))
+
+#undef INSTANTIATION
+#undef GET_DTYPE
 }  // namespace TestHelpers::io::VolumeData
