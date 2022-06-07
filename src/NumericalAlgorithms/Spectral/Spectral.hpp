@@ -74,6 +74,11 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis);
 /// \endcond
 
 /*!
+ * \brief Convert a string to a Basis enum.
+ */
+Basis to_basis(const std::string& basis);
+
+/*!
  * \ingroup SpectralGroup
  * \brief The choice of quadrature method to compute integration weights.
  *
@@ -98,6 +103,11 @@ enum class Quadrature {
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature);
 /// \endcond
+
+/*!
+ * \brief Convert a string to a Basis enum.
+ */
+Quadrature to_quadrature(const std::string& quadrature);
 
 namespace detail {
 constexpr size_t minimum_number_of_points(const Basis /*basis*/,
