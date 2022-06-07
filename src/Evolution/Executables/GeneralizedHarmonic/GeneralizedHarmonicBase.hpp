@@ -213,15 +213,29 @@ struct GeneralizedHarmonicTemplateBase<
           analytic_solution_fields, gr::Tags::Lapse<DataVector>,
           GeneralizedHarmonic::Tags::GaugeConstraintCompute<volume_dim, frame>,
           GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<volume_dim,
-                                                                 frame>,
+                                                               frame>,
           GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<volume_dim,
                                                                  frame>,
+          GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<
+              volume_dim, ::Frame::Inertial>,
+          gr::Tags::SpatialChristoffelFirstKindCompute<
+              volume_dim, ::Frame::Inertial, DataVector>,
+          gr::Tags::SpatialChristoffelSecondKindCompute<
+              volume_dim, ::Frame::Inertial, DataVector>,
+          ::Tags::DerivTensorCompute<
+              gr::Tags::SpatialChristoffelSecondKind<
+                  volume_dim, ::Frame::Inertial, DataVector>,
+              ::domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
+                                              Frame::Inertial>>,
+          gr::Tags::SpatialRicciCompute<volume_dim, ::Frame::Inertial,
+                                        DataVector>,
+          gr::Tags::SpatialRicciScalarCompute<volume_dim, ::Frame::Inertial,
+                                              DataVector>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
           ::Tags::PointwiseL2NormCompute<
-              GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim,
-                                                              frame>>,
+              GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim, frame>>,
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
                                                               frame>>,
@@ -231,14 +245,16 @@ struct GeneralizedHarmonicTemplateBase<
       // The 4-index constraint is only implemented in 3d
       tmpl::conditional_t<
           volume_dim == 3,
-          tmpl::list<
-              GeneralizedHarmonic::Tags::FourIndexConstraintCompute<3, frame>,
-              GeneralizedHarmonic::Tags::FConstraintCompute<3, frame>,
-              ::Tags::PointwiseL2NormCompute<
-              GeneralizedHarmonic::Tags::FConstraint<3, frame>>,
-              ::Tags::PointwiseL2NormCompute<
-                  GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>,
-              GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3, frame>>,
+          tmpl::list<GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
+                         3, frame>,
+                     GeneralizedHarmonic::Tags::FConstraintCompute<3, frame>,
+                     ::Tags::PointwiseL2NormCompute<
+                         GeneralizedHarmonic::Tags::FConstraint<3, frame>>,
+                     ::Tags::PointwiseL2NormCompute<
+                         GeneralizedHarmonic::Tags::FourIndexConstraint<3,
+                                                                        frame>>,
+                     GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
+                                                                        frame>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

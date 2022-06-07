@@ -310,6 +310,21 @@ struct EvolutionMetavars {
                      volume_dim, ::Frame::Inertial>,
                  GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
                      volume_dim, ::Frame::Inertial>,
+                 GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<
+                     volume_dim, ::Frame::Inertial>,
+                 gr::Tags::SpatialChristoffelFirstKindCompute<
+                     volume_dim, ::Frame::Inertial, DataVector>,
+                 gr::Tags::SpatialChristoffelSecondKindCompute<
+                     volume_dim, ::Frame::Inertial, DataVector>,
+                 ::Tags::DerivTensorCompute<
+                     gr::Tags::SpatialChristoffelSecondKind<
+                         volume_dim, ::Frame::Inertial, DataVector>,
+                     ::domain::Tags::InverseJacobian<
+                         volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+                 gr::Tags::SpatialRicciCompute<volume_dim, ::Frame::Inertial,
+                                               DataVector>,
+                 gr::Tags::SpatialRicciScalarCompute<
+                     volume_dim, ::Frame::Inertial, DataVector>,
                  // following tags added to observe constraints
                  ::Tags::PointwiseL2NormCompute<
                      GeneralizedHarmonic::Tags::GaugeConstraint<
