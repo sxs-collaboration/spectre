@@ -638,6 +638,38 @@ void test_partial_derivatives_compute_item(
       get<Tags::deriv<Var1<Dim>, tmpl::size_t<Dim>, Frame::Grid>>(expected_du);
   CHECK_ITERABLE_APPROX(du_prefixed, expected_du_prefixed);
 }
+
+template <size_t Dim, typename T>
+void test_partial_derivatives_tensor_compute_item(
+    const std::array<size_t, Dim> extents_array, const T& map) {
+  using tensor_tag = Var1<Dim>;
+  using map_tag = MapTag<std::decay_t<decltype(map)>>;
+  using inv_jac_tag = domain::Tags::InverseJacobianCompute<
+      map_tag, domain::Tags::LogicalCoordinates<Dim>>;
+  using deriv_tensor_tag = Tags::DerivTensorCompute<tensor_tag, inv_jac_tag>;
+
+  const std::array<size_t, Dim> array_to_functions{extents_array -
+                                                   make_array<Dim>(size_t{1})};
+  const Mesh<Dim> mesh{extents_array, Spectral::Basis::Legendre,
+                       Spectral::Quadrature::GaussLobatto};
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = map(logical_coordinates(mesh));
+
+  const auto u = tensor_tag::f(array_to_functions, x);
+  const auto expected_du = tensor_tag::df(array_to_functions, x);
+
+  auto box = db::create<
+      db::AddSimpleTags<domain::Tags::Mesh<Dim>, tensor_tag, map_tag>,
+      db::AddComputeTags<domain::Tags::LogicalCoordinates<Dim>, inv_jac_tag,
+                         deriv_tensor_tag>>(mesh, u, map);
+
+  const auto& du = db::get<deriv_tensor_tag>(box);
+
+  // CHECK_ITERABLE_APPROX(du, expected_du.data());
+  for (size_t n = 0; n < du.size(); ++n) {
+    CHECK_ITERABLE_APPROX(du[n], expected_du[n]);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
@@ -660,6 +692,29 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
                          c < max_extents[2];
            ++c) {
         test_partial_derivatives_compute_item(
+            std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
+            domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+                Affine3D{Affine{-1.0, 1.0, -0.3, 0.7},
+                         Affine{-1.0, 1.0, 0.3, 0.55},
+                         Affine{-1.0, 1.0, 2.3, 2.8}}));
+      }
+    }
+  }
+  for (size_t a = 1; a < max_extents[0]; ++a) {
+    test_partial_derivatives_tensor_compute_item(
+        std::array<size_t, 1>{{a + 1}},
+        domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+            Affine{-1.0, 1.0, -0.3, 0.7}));
+    for (size_t b = 1; b < max_extents[1]; ++b) {
+      test_partial_derivatives_tensor_compute_item(
+          std::array<size_t, 2>{{a + 1, b + 1}},
+          domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+              Affine2D{Affine{-1.0, 1.0, -0.3, 0.7},
+                       Affine{-1.0, 1.0, 0.3, 0.55}}));
+      for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
+                         c < max_extents[2];
+           ++c) {
+        test_partial_derivatives_tensor_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
             domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
                 Affine3D{Affine{-1.0, 1.0, -0.3, 0.7},
