@@ -66,6 +66,9 @@ ignore under `Point Arrays` before clicking `Apply`. Also, don't forget to check
 which dataset is being used for the color under `Coloring`. The default won't
 necessarily be the dataset you want.
 
+\note ParaView cannot understand `.xmf` files when subfile names have colons in
+them. Please avoid subfile names like `My::Subfile:Name`.
+
 ### Helpful ParaView Filters
 
 Here we describe the usage of filters we've found to better visualize our data.

@@ -51,7 +51,7 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
     struct InterpolationTarget
         : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
       static std::string name() {
-        return "ControlSystem::BothHorizons::Ah" + ::ah::name(Horizon);
+        return "ControlSystemAh" + ::ah::name(Horizon);
       }
 
       struct temporal_id : db::SimpleTag {
