@@ -7,7 +7,7 @@ add_spectre_library(${LIBRARY} INTERFACE)
 
 spectre_target_headers(
   ${LIBRARY}
-  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit
   HEADERS
   TestHelpers.hpp
   TestTags.hpp
