@@ -25,7 +25,6 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -36,7 +35,6 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -169,7 +167,6 @@ struct test_metavariables {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
                   "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   using evolution_component = mock_characteristic_evolution<test_metavariables>;
   using worldtube_component = mock_h5_worldtube_boundary<test_metavariables>;
   const size_t number_of_radial_points = 10;

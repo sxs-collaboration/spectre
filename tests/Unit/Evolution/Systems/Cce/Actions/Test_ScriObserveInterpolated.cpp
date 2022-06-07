@@ -46,7 +46,6 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -248,7 +247,6 @@ ComplexDataVector compute_expected_field_from_pypp(
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
                   "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   Parallel::register_classes_with_charm<
       Cce::Solutions::RotatingSchwarzschild>();
   Parallel::register_classes_with_charm<Cce::Solutions::TeukolskyWave>();

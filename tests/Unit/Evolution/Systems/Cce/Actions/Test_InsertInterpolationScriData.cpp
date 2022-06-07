@@ -33,7 +33,6 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -258,7 +257,6 @@ struct test_metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InsertInterpolationScriData",
     "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   Parallel::register_classes_with_charm<
       Cce::Solutions::RotatingSchwarzschild>();
   Parallel::register_classes_with_charm<

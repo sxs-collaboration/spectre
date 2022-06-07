@@ -29,7 +29,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -39,7 +38,6 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -152,7 +150,6 @@ struct metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeCharacteristicEvolution",
     "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   using component = mock_characteristic_evolution<metavariables>;
   const size_t number_of_radial_points = 10;
   const size_t l_max = 8;
