@@ -8,7 +8,6 @@
 
 #include "Framework/TestHelpers.hpp"
 #include "Time/Slab.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 

@@ -25,10 +25,8 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "Time/Slab.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -39,6 +37,7 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+class TimeDelta;
 namespace Tags {
 struct DataBox;
 template <typename Tag>

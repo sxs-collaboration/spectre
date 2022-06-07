@@ -16,7 +16,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class Time;
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;

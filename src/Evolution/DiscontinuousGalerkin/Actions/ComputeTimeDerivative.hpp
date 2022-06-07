@@ -44,6 +44,7 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
+#include "Time/BoundaryHistory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TakeStep.hpp"
 #include "Utilities/Algorithm.hpp"

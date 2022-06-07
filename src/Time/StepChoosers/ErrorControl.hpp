@@ -17,7 +17,6 @@
 #include "Utilities/TypeTraits/IsIterable.hpp"
 
 /// \cond
-class Time;
 namespace Parallel {
 template <typename Metavariables>
 class GlobalCache;

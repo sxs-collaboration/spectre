@@ -14,7 +14,6 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSequence.hpp"
 #include "Utilities/TMPL.hpp"

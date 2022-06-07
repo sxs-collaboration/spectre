@@ -14,10 +14,6 @@
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-struct TimeStepId;
-/// \endcond
-
 namespace intrp {
 namespace callbacks {
 

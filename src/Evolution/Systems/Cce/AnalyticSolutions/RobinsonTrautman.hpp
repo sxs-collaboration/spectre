@@ -16,8 +16,6 @@
 #include "NumericalAlgorithms/OdeIntegration/OdeIntegration.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/History.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"

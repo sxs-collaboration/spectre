@@ -14,7 +14,6 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"

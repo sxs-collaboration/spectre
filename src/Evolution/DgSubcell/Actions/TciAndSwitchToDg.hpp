@@ -35,7 +35,6 @@
 #include "Time/History.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
