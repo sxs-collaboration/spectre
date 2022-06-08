@@ -69,7 +69,7 @@ class TestVolumeData(unittest.TestCase):
         # Set TensorComponent and ExtentsAndTensorVolumeData to
         # be written
 
-        element_vol_data_grid_1 = [
+        self.element_vol_data_grid_1 = [
             ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
                     "field_1", ds.DataVector(
@@ -81,7 +81,7 @@ class TestVolumeData(unittest.TestCase):
             for i, observation_id in enumerate(observation_ids)
         ]
 
-        element_vol_data_grid_2 = [
+        self.element_vol_data_grid_2 = [
             ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
                     "field_1",
@@ -97,8 +97,10 @@ class TestVolumeData(unittest.TestCase):
 
         for i, observation_id in enumerate(observation_ids):
             self.vol_file.write_volume_data(
-                observation_id, observation_values[observation_id],
-                [element_vol_data_grid_1[i], element_vol_data_grid_2[i]])
+                observation_id, observation_values[observation_id], [
+                    self.element_vol_data_grid_1[i],
+                    self.element_vol_data_grid_2[i]
+                ])
 
     def tearDown(self):
         self.h5_file.close()
@@ -161,6 +163,57 @@ class TestVolumeData(unittest.TestCase):
                         observation_id=obs_id,
                         tensor_component=expected_tensor_component_names[i]))
                 [0:8], expected_tensor_component_data)
+
+    def test_get_data_by_element(self):
+        obs_id = 0
+        volume_data = self.vol_file.get_data_by_element(None, None, None)
+        self.assertEqual(len(volume_data), 2)
+
+        # Check both grids at first observation time
+        self.assertEqual(volume_data[0][0], 1)
+        self.assertEqual(volume_data[0][1], 1.3)
+        self.assertEqual(volume_data[0][2][0].element_name, "grid_1")
+        self.assertEqual(volume_data[0][2][0].basis,
+                         self.element_vol_data_grid_1[1].basis)
+        self.assertEqual(volume_data[0][2][0].quadrature,
+                         self.element_vol_data_grid_1[1].quadrature)
+        self.assertEqual(volume_data[0][2][0].extents,
+                         self.element_vol_data_grid_1[1].extents)
+        self.assertEqual(volume_data[0][2][0].tensor_components,
+                         self.element_vol_data_grid_1[1].tensor_components)
+
+        self.assertEqual(volume_data[0][2][1].element_name, "grid_2")
+        self.assertEqual(volume_data[0][2][1].basis,
+                         self.element_vol_data_grid_2[1].basis)
+        self.assertEqual(volume_data[0][2][1].quadrature,
+                         self.element_vol_data_grid_2[1].quadrature)
+        self.assertEqual(volume_data[0][2][1].extents,
+                         self.element_vol_data_grid_2[1].extents)
+        self.assertEqual(volume_data[0][2][1].tensor_components,
+                         self.element_vol_data_grid_2[1].tensor_components)
+
+        # Check both grids at second observation time
+        self.assertEqual(volume_data[1][0], 0)
+        self.assertEqual(volume_data[1][1], 7.0)
+        self.assertEqual(volume_data[1][2][0].element_name, "grid_1")
+        self.assertEqual(volume_data[1][2][0].basis,
+                         self.element_vol_data_grid_1[1].basis)
+        self.assertEqual(volume_data[1][2][0].quadrature,
+                         self.element_vol_data_grid_1[1].quadrature)
+        self.assertEqual(volume_data[1][2][0].extents,
+                         self.element_vol_data_grid_1[1].extents)
+        self.assertEqual(volume_data[1][2][0].tensor_components,
+                         self.element_vol_data_grid_1[0].tensor_components)
+
+        self.assertEqual(volume_data[1][2][1].element_name, "grid_2")
+        self.assertEqual(volume_data[1][2][1].basis,
+                         self.element_vol_data_grid_2[1].basis)
+        self.assertEqual(volume_data[1][2][1].quadrature,
+                         self.element_vol_data_grid_2[1].quadrature)
+        self.assertEqual(volume_data[1][2][1].extents,
+                         self.element_vol_data_grid_2[1].extents)
+        self.assertEqual(volume_data[1][2][1].tensor_components,
+                         self.element_vol_data_grid_2[0].tensor_components)
 
     # Test that the offset and length for certain grid is retrieved correctly
     def test_offset_and_length_for_grid(self):

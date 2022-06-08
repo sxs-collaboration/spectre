@@ -33,7 +33,10 @@ void bind_h5vol(py::module& m) {  // NOLINT
            py::arg("observation_id"))
       .def("get_quadratures", &h5::VolumeData::get_quadratures,
            py::arg("observation_id"))
-      .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"));
+      .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"))
+      .def("get_data_by_element", &h5::VolumeData::get_data_by_element,
+           py::arg("start_observation_value"), py::arg("end_observation_value"),
+           py::arg("components_to_retrieve") = std::nullopt);
   m.def("offset_and_length_for_grid", &h5::offset_and_length_for_grid,
         py::arg("grid_name"), py::arg("all_grid_names"),
         py::arg("all_extents"));

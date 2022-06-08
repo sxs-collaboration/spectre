@@ -6,20 +6,20 @@
 #include <cstddef>
 #include <cstdint>
 #include <hdf5.h>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
 class DataVector;
-class ElementVolumeData;
-class ExtentsAndTensorVolumeData;
 /// \endcond
 
 namespace h5 {
@@ -135,6 +135,27 @@ class VolumeData : public h5::Object {
   /// Read the extents of all the grids stored in the file at the observation id
   /// `observation_id`
   std::vector<std::vector<size_t>> get_extents(size_t observation_id) const;
+
+  /// Retrieve volume data for IDs in
+  /// `[start_observation_value, end_observation_value]`.
+  ///
+  /// Returns a `std::vector` over times, sorted in ascending order of the
+  /// observation value (the time in evolutions). The vector holds a
+  /// `std::tuple` that holds
+  /// 1. the integral observation ID
+  /// 2. the observation value (time in evolutions)
+  /// 3. a vector of `ElementVolumeData` sorted by the elements' name string.
+  ///
+  /// - If `start_observation_value` is not `std::nullopt` then return
+  ///   everything from the beginning of the data to `end_observation_value`. If
+  ///   `end_observation_value` is `std::nullopt` then return everything from
+  ///   `start_observation_value` to the end of the data.
+  auto get_data_by_element(std::optional<double> start_observation_value,
+                           std::optional<double> end_observation_value,
+                           const std::optional<std::vector<std::string>>&
+                               components_to_retrieve = std::nullopt) const
+      -> std::vector<
+          std::tuple<size_t, double, std::vector<ElementVolumeData>>>;
 
   /// Read the dimensionality of the grids.  Note : This is the dimension of
   /// the grids as manifolds, not the dimension of the embedding space.  For
