@@ -108,11 +108,11 @@ In contrast, an evolution executable might have phases
 similar `switch` or `if-else` logic in the `determine_next_phase`
 function. The first phase that is entered is always
 `Initialization`. During the `Initialization` phase the
-`Parallel::GlobalCache` is created, all non-array components are created,
-and empty array components are created.  Next, the function
-`allocate_array_components_and_execute_initialization_phase` is called
-which allocates the elements of each array component, and then starts
-the `Initialization` phase on all parallel components. Once all
+`Parallel::GlobalCache` is created, all (node)group components are created,
+and empty array and singleton components are created.  Next, the function
+`allocate_remaining_components_and_execute_initialization_phase` is called
+which allocates singleton components and the elements of each array component,
+and then starts the `Initialization` phase on all parallel components. Once all
 parallel components' `Initialization` phase is complete, the next
 phase is determined and the `execute_next_phase` function is called on
 all the parallel components.
