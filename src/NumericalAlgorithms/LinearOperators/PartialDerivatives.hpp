@@ -288,4 +288,40 @@ struct DerivCompute
       tmpl::list<VariablesTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
 };
 
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Computes the spatial derivative of a single tensor tag not in a
+ * Variables.
+ *
+ * Computes the spatial derivative for a single tensor represented by
+ * 'TensorTag' in the frame mapped to by 'InverseJacobianTag'. It takes a
+ * single Tensor designated by 'TensorTag', the inverse Jacobian, and a mesh.
+ */
+template <typename TensorTag, typename InverseJacobianTag>
+struct DerivTensorCompute
+    : ::Tags::deriv<TensorTag,
+                    tmpl::size_t<tmpl::back<
+                        typename InverseJacobianTag::type::index_list>::dim>,
+                    typename tmpl::back<
+                        typename InverseJacobianTag::type::index_list>::Frame>,
+      db::ComputeTag {
+ private:
+  using inv_jac_indices = typename InverseJacobianTag::type::index_list;
+  static constexpr auto Dim = tmpl::back<inv_jac_indices>::dim;
+  using deriv_frame = typename tmpl::back<inv_jac_indices>::Frame;
+
+ public:
+  using base = ::Tags::deriv<TensorTag, tmpl::size_t<Dim>, deriv_frame>;
+  using return_type = typename base::type;
+  static constexpr void (*function)(
+      gsl::not_null<return_type*>, const typename TensorTag::type&,
+      const Mesh<Dim>&,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            deriv_frame>&) =
+      partial_derivative<typename TensorTag::type::symmetry,
+                         typename TensorTag::type::index_list, Dim,
+                         deriv_frame>;
+  using argument_tags =
+      tmpl::list<TensorTag, domain::Tags::Mesh<Dim>, InverseJacobianTag>;
+};
 }  // namespace Tags
