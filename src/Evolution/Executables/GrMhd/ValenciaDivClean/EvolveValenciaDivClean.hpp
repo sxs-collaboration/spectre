@@ -93,6 +93,7 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -223,15 +224,7 @@ struct EvolutionMetavars {
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
-  enum class Phase {
-    Initialization,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {

@@ -178,6 +178,7 @@ set(LIBRARY_SOURCES
   Test_NodeLock.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
+  Test_Phase.cpp
   Test_PupStlCpp11.cpp
   Test_PupStlCpp17.cpp
   Test_ResourceInfo.cpp
@@ -191,7 +192,7 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  "IO;Options;SystemUtilities"
+  "IO;Options;Parallel;SystemUtilities"
   )
 
 add_dependencies(

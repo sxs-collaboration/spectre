@@ -67,6 +67,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -146,14 +147,7 @@ struct EvolutionMetavars {
   using limiter = Tags::Limiter<
       Limiters::Minmod<Dim, typename system::variables_tag::tags_list>>;
 
-  enum class Phase {
-    Initialization,
-    LoadBalancing,
-    RegisterWithObserver,
-    InitializeTimeStepperHistory,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {

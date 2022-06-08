@@ -14,6 +14,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -96,7 +97,7 @@ struct Metavars {
   static constexpr Options::String help{
       "Say hello from a singleton parallel component."};
 
-  enum class Phase { Initialization, Execute, Exit };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(

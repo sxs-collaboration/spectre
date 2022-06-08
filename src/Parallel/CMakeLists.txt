@@ -13,6 +13,7 @@ spectre_target_sources(
   PRIVATE
   InitializationFunctions.cpp
   NodeLock.cpp
+  Phase.cpp
   Reduction.cpp
   )
 
@@ -40,6 +41,7 @@ spectre_target_headers(
   MaxInlineMethodsReached.hpp
   NodeLock.hpp
   ParallelComponentHelpers.hpp
+  Phase.hpp
   PhaseControlReductionHelpers.hpp
   PhaseDependentActionList.hpp
   Printf.hpp
@@ -61,10 +63,10 @@ target_link_libraries(
   Boost::boost
   DataStructures
   Informer
-  Options
   PUBLIC
   Charmxx::charmxx
   ErrorHandling
+  Options
   SystemUtilities
   Utilities
   )

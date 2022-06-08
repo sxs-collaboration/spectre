@@ -35,6 +35,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepControllers/Factory.hpp"
@@ -80,12 +81,7 @@ struct EvolutionMetavars : CharacteristicExtractDefaults {
       "Perform Cauchy Characteristic Extraction using .h5 input data.\n"
       "Uses regularity-preserving formulation."};
 
-  enum class Phase {
-    Initialization,
-    InitializeTimeStepperHistory,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(

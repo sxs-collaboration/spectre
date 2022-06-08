@@ -57,6 +57,7 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -163,18 +164,7 @@ struct GeneralizedHarmonicTemplateBase<
   // `read_spec_piecewise_polynomial()`
   static constexpr bool override_functions_of_time = false;
 
-  enum class Phase {
-    Initialization,
-    RegisterWithElementDataReader,
-    ImportInitialData,
-    InitializeInitialDataDependentQuantities,
-    InitializeTimeStepperHistory,
-    Register,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {
