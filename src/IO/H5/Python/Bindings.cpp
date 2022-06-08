@@ -12,6 +12,7 @@ void bind_h5vol(py::module& m);   // NOLINT
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyH5, m) {  // NOLINT
+  py::module_::import("spectre.DataStructures");
   py_bindings::bind_h5file(m);
   py_bindings::bind_h5dat(m);
   py_bindings::bind_h5vol(m);
