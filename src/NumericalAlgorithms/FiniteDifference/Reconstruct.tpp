@@ -20,14 +20,14 @@
 namespace fd::reconstruction {
 namespace detail {
 template <typename Reconstructor, size_t Dim, typename... ArgsForReconstructor>
-void reconstruct_impl(
-    const gsl::not_null<gsl::span<double>*> recons_upper,
-    const gsl::not_null<gsl::span<double>*> recons_lower,
-    const gsl::span<const double>& volume_vars,
-    const gsl::span<const double>& lower_ghost_data,
-    const gsl::span<const double>& upper_ghost_data,
-    const Index<Dim>& volume_extents, const size_t number_of_variables,
-    const ArgsForReconstructor&... args_for_reconstructor) {
+void reconstruct_impl(const gsl::not_null<gsl::span<double>*> recons_upper,
+                      const gsl::not_null<gsl::span<double>*> recons_lower,
+                      const gsl::span<const double>& volume_vars,
+                      const gsl::span<const double>& lower_ghost_data,
+                      const gsl::span<const double>& upper_ghost_data,
+                      const Index<Dim>& volume_extents,
+                      const size_t number_of_variables,
+                      const ArgsForReconstructor&... args_for_reconstructor) {
   constexpr size_t stencil_width = Reconstructor::stencil_width();
   ASSERT(stencil_width % 2 == 1, "The stencil with should be odd but got "
                                      << stencil_width
@@ -114,6 +114,14 @@ void reconstruct_impl(
       //             ^
       //         c c c c | c
       //  c = points used for reconstruction
+
+      ASSERT(
+          volume_extents[0] >= stencil_width - 1,
+          " Subcell volume extent (current value: "
+              << volume_extents[0]
+              << ") must be not smaller than the stencil width (current value: "
+              << stencil_width << ") minus 1");
+
       size_t j = 0;
       for (size_t k =
                vars_slice_offset + volume_extents[0] - (stencil_width - 1 - i);
