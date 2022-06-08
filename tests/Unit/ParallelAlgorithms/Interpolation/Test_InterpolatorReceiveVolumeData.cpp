@@ -123,6 +123,53 @@ struct ComputeSquare
   using required_dest_tags = tmpl::list<>;
 };
 
+// Action that (artificially, for the test) clears the VolumeVarsInfo
+template <typename TemporalIdTag>
+struct ClearVolumeVarsInfo {
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTags, intrp::Tags::NumberOfElements>> =
+          nullptr>
+  static void apply(db::DataBox<DbTags>& box,
+                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/) {
+    db::mutate<intrp::Tags::VolumeVarsInfo<Metavariables, TemporalIdTag>>(
+        make_not_null(&box),
+        [](const gsl::not_null<typename intrp::Tags::VolumeVarsInfo<
+               Metavariables, TemporalIdTag>::type*>
+               container) { container->clear(); });
+  }
+};
+
+// Action that (artificially, for the test) inserts the given
+// temporal_id into temporal_ids_when_data_has_been_interpolated.
+template <typename InterpolationTargetTag>
+struct AddToTemporalIdsWhenDataHasBeenInterpolated {
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTags, intrp::Tags::NumberOfElements>> =
+          nullptr>
+  static void apply(
+      db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const typename InterpolationTargetTag::temporal_id::type& temporal_id) {
+    db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
+        make_not_null(&box),
+        [&temporal_id](
+            const gsl::not_null<typename intrp::Tags::InterpolatedVarsHolders<
+                Metavariables>::type*>
+                holders) {
+          get<intrp::Vars::HolderTag<InterpolationTargetTag, Metavariables>>(
+              *holders)
+              .temporal_ids_when_data_has_been_interpolated.push_back(
+                  temporal_id);
+        });
+  }
+};
+
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
@@ -130,7 +177,8 @@ struct MockInterpolationTargetReceiveVars {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::TemporalIds<TemporalId>>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const std::vector<::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
@@ -249,6 +297,42 @@ struct MockMetavariables {
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
+// Create volume data and send it to the interpolator.
+template <typename interp_component, typename Metavariables,
+          typename DomainCreatorType, typename DomainType>
+void create_volume_data_and_send_it_to_interpolator(
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+        runner,
+    const DomainCreatorType& domain_creator, const DomainType& domain,
+    const std::vector<ElementId<3>>& element_ids,
+    const TimeStepId& temporal_id) {
+  for (const auto& element_id : element_ids) {
+    const auto& block = domain.blocks()[element_id.block_id()];
+    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
+                   Spectral::Basis::Legendre,
+                   Spectral::Quadrature::GaussLobatto};
+    REQUIRE(not block.is_time_dependent());
+    ElementMap<3, Frame::Inertial> map{element_id,
+                                       block.stationary_map().get_clone()};
+    const auto inertial_coords = map(logical_coordinates(mesh));
+    ::Variables<typename Metavariables::interpolator_source_vars> output_vars(
+        mesh.number_of_grid_points());
+    auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
+
+    // Fill lapse with some analytic solution.
+    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
+                   3.0 * get<1>(inertial_coords) +
+                   5.0 * get<2>(inertial_coords);
+
+    // Call the action on each element_id.
+    runner->template simple_action<
+        interp_component,
+        ::intrp::Actions::InterpolatorReceiveVolumeData<
+            typename Metavariables::InterpolationTargetA::temporal_id>>(
+        0, temporal_id, element_id, mesh, std::move(output_vars));
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
@@ -322,34 +406,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  // Create volume data and send it to the interpolator.
-  for (const auto& element_id : element_ids) {
-    const auto& block = domain.blocks()[element_id.block_id()];
-    ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                   Spectral::Basis::Legendre,
-                   Spectral::Quadrature::GaussLobatto};
-    if (block.is_time_dependent()) {
-      ERROR("The block must be time-independent");
-    }
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.stationary_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
-    ::Variables<typename metavars::interpolator_source_vars> output_vars(
-        mesh.number_of_grid_points());
-    auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
-
-    // Fill lapse with some analytic solution.
-    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
-                   3.0 * get<1>(inertial_coords) +
-                   5.0 * get<2>(inertial_coords);
-
-    // Call the action on each element_id.
-    runner.simple_action<
-        interp_component,
-        ::intrp::Actions::InterpolatorReceiveVolumeData<
-            typename metavars::InterpolationTargetA::temporal_id>>(
-        0, temporal_id, element_id, mesh, std::move(output_vars));
-  }
+  create_volume_data_and_send_it_to_interpolator<interp_component>(
+      make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);
 
   // Should be no temporal_ids in the target box, since we never
   // put any there.
@@ -369,6 +427,44 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
             runner, 0)
             .front() ==
         TimeStepId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));
+
+  // No more queued simple actions.
+  CHECK(runner.is_simple_action_queue_empty<target_component>(0));
+
+  // VolumeVarsInfo should be full now, since we didn't actually
+  // do interpolation for this test.
+  const auto& volume_vars_info = ActionTesting::get_databox_tag<
+      interp_component,
+      intrp::Tags::VolumeVarsInfo<
+          metavars, typename metavars::InterpolationTargetA::temporal_id>>(
+      runner, 0);
+  CHECK(volume_vars_info.size() == 1);
+  CHECK(volume_vars_info.at(temporal_id).size() == element_ids.size());
+
+  // Now we will test that if temporal_ids_when_data_has_been_interpolated
+  // is set for this temporal_id, subsequent calls of
+  // InterpolatorReceiveVolumeData have no effect.
+  // Do do this, we
+  // 1) artificially clear volume_vars_info
+  // 2) artificially set temporal_ids_when_data_has_been_interpolated
+  // 3) call InterpolatorReceiveVolumeData
+  // 4) Check that volume_vars_info is still empty, and that no simple_actions
+  //    are queued.
+  //
+  runner
+      .simple_action<interp_component,
+                     ClearVolumeVarsInfo<
+                         typename metavars::InterpolationTargetA::temporal_id>>(
+          0);
+  runner.simple_action<interp_component,
+                       AddToTemporalIdsWhenDataHasBeenInterpolated<
+                           metavars::InterpolationTargetA>>(0, temporal_id);
+
+  create_volume_data_and_send_it_to_interpolator<interp_component>(
+      make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);
+
+  // volume_vars_info should still be empty.
+  CHECK(volume_vars_info.empty());
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<target_component>(0));
