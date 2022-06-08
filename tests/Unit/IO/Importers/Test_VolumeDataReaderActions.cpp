@@ -172,21 +172,21 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   // into, so we can test loading volume data from multiple files.
   std::vector<std::vector<ElementVolumeData>> all_element_data(2);
   for (const auto& id : element_ids) {
-    const std::string element_name = MakeString{} << id << '/';
+    const std::string element_name = MakeString{} << id;
     std::vector<TensorComponent> tensor_data(6);
     const auto& vector = get<VectorTag>(all_sample_data.at(id));
-    tensor_data[0] = TensorComponent(element_name + "V_x"s, get<0>(vector));
-    tensor_data[1] = TensorComponent(element_name + "V_y"s, get<1>(vector));
+    tensor_data[0] = TensorComponent("V_x"s, get<0>(vector));
+    tensor_data[1] = TensorComponent("V_y"s, get<1>(vector));
     const auto& tensor = get<TensorTag>(all_sample_data.at(id));
-    tensor_data[2] = TensorComponent(element_name + "T_xx"s, get<0, 0>(tensor));
-    tensor_data[3] = TensorComponent(element_name + "T_xy"s, get<0, 1>(tensor));
-    tensor_data[4] = TensorComponent(element_name + "T_yx"s, get<1, 0>(tensor));
-    tensor_data[5] = TensorComponent(element_name + "T_yy"s, get<1, 1>(tensor));
+    tensor_data[2] = TensorComponent("T_xx"s, get<0, 0>(tensor));
+    tensor_data[3] = TensorComponent("T_xy"s, get<0, 1>(tensor));
+    tensor_data[4] = TensorComponent("T_yx"s, get<1, 0>(tensor));
+    tensor_data[5] = TensorComponent("T_yy"s, get<1, 1>(tensor));
     all_element_data[id.block_id()].push_back(
         {{2, 2},
          tensor_data,
          {2, Spectral::Basis::Legendre},
-         {2, Spectral::Quadrature::GaussLobatto}});
+         {2, Spectral::Quadrature::GaussLobatto}, element_name});
   }
   // Write the sample data into an H5 file
   for (size_t i = 0; i < all_element_data.size(); ++i) {

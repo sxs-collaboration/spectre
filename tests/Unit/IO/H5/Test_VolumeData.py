@@ -72,24 +72,24 @@ class TestVolumeData(unittest.TestCase):
         element_vol_data_grid_1 = [
             ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
-                    grid_names[0] + "/field_1",
-                    ds.DataVector(self.tensor_component_data[2 * i])),
+                    "field_1", ds.DataVector(
+                        self.tensor_component_data[2 * i])),
                 ds.TensorComponent(
-                    grid_names[0] + "/field_2",
+                    "field_2",
                     ds.DataVector(self.tensor_component_data[2 * i + 1]))
-            ], [basis, basis, basis], [quad, quad, quad])
+            ], [basis, basis, basis], [quad, quad, quad], grid_names[0])
             for i, observation_id in enumerate(observation_ids)
         ]
 
         element_vol_data_grid_2 = [
             ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
-                    grid_names[1] + "/field_1",
+                    "field_1",
                     ds.DataVector(self.tensor_component_data[2 * i + 1])),
                 ds.TensorComponent(
-                    grid_names[1] + "/field_2",
-                    ds.DataVector(self.tensor_component_data[2 * i]))
-            ], [basis, basis, basis], [quad, quad, quad])
+                    "field_2", ds.DataVector(
+                        self.tensor_component_data[2 * i]))
+            ], [basis, basis, basis], [quad, quad, quad], grid_names[1])
             for i, observation_id in enumerate(observation_ids)
         ]
 

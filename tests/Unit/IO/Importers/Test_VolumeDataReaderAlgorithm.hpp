@@ -179,19 +179,19 @@ void write_test_data(const std::string& data_file_name,
     std::vector<Spectral::Quadrature> element_quadratures{};
     std::vector<Spectral::Basis> element_bases{};
     tensor_components.push_back(
-        {element_name + "/ScalarField", test_data.scalar_field_data[i]});
+        {"ScalarField", test_data.scalar_field_data[i]});
     for (size_t d = 0; d < Dim; d++) {
       static const std::array<std::string, 3> dim_suffix{{"x", "y", "z"}};
       tensor_components.push_back(
-          {element_name + "/VectorField_" + dim_suffix[d],
-           test_data.vector_field_data[i][d]});
+          {"VectorField_" + dim_suffix[d], test_data.vector_field_data[i][d]});
       element_extents.push_back(test_data.extents[i][d]);
       element_quadratures.push_back(Spectral::Quadrature::Gauss);
       element_bases.push_back(Spectral::Basis::Chebyshev);
     }
-    element_data.push_back(
-        {std::move(element_extents), std::move(tensor_components),
-         std::move(element_bases), std::move(element_quadratures)});
+    element_data.push_back({std::move(element_extents),
+                            std::move(tensor_components),
+                            std::move(element_bases),
+                            std::move(element_quadratures), element_name});
   }
   test_data_file.write_volume_data(0, observation_value,
                                    std::move(element_data));

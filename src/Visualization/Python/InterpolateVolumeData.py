@@ -166,7 +166,7 @@ def interpolate_h5_file(source_file_path,
                 component_data = DataVector(tensor[offset:offset + length],
                                             copy=False)
                 interpolated_tensor = interpolant.interpolate(component_data)
-                tensor_path = "{}/{}".format(grid_name, tensor_names[j])
+                tensor_path = tensor_names[j]
                 tensor_comps.append(
                     TensorComponent(
                         tensor_path, DataVector(interpolated_tensor,
@@ -175,7 +175,7 @@ def interpolate_h5_file(source_file_path,
             volume_data.append(
                 ElementVolumeData(target_mesh.extents(), tensor_comps,
                                   target_mesh.basis(),
-                                  target_mesh.quadrature()))
+                                  target_mesh.quadrature(), grid_name))
         target_file.close()
         target_vol = target_file.get_vol(target_volume_data)
         target_vol.write_volume_data(obs, obs_value, volume_data)

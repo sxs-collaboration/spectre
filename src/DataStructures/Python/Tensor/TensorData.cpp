@@ -50,10 +50,11 @@ void bind_tensordata(py::module& m) {  // NOLINT
                                                             "ElementVolumeData")
       .def(py::init<std::vector<size_t>, std::vector<TensorComponent>,
                     std::vector<Spectral::Basis>,
-                    std::vector<Spectral::Quadrature>>(),
+                    std::vector<Spectral::Quadrature>, std::string>(),
            py::arg("extents"), py::arg("components"), py::arg("basis"),
-           py::arg("quadrature"))
+           py::arg("quadrature"), py::arg("element_name"))
       .def_readwrite("basis", &ElementVolumeData::basis)
-      .def_readwrite("quadrature", &ElementVolumeData::quadrature);
+      .def_readwrite("quadrature", &ElementVolumeData::quadrature)
+      .def_readwrite("element_name", &ElementVolumeData::element_name);
 }
 }  // namespace py_bindings

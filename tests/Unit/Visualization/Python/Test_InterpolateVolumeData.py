@@ -108,10 +108,8 @@ class TestInterpolateH5(unittest.TestCase):
                 components = []
                 for l, tensor in enumerate(element):
                     components.append(
-                        TensorComponent(
-                            os.path.join(self.element_names[k],
-                                         self.tensor_names[l]),
-                            DataVector(tensor, copy=False)))
+                        TensorComponent(self.tensor_names[l],
+                                        DataVector(tensor, copy=False)))
 
                 # this matches the solution by sol
                 volume_data.append(
@@ -122,7 +120,7 @@ class TestInterpolateH5(unittest.TestCase):
                         Spectral.Quadrature.GaussLobatto,
                         Spectral.Quadrature.GaussLobatto,
                         Spectral.Quadrature.GaussLobatto
-                    ]))
+                    ], self.element_names[k]))
 
             target_vol.write_volume_data(self.observation_ids[j],
                                          self.observation_values[j],

@@ -108,7 +108,6 @@ void test_observe(
 
   const ElementId<volume_dim> element_id(2);
   const typename element_component::array_index array_index(element_id);
-  const std::string element_name = get_output(element_id);
   const Mesh<volume_dim> mesh(5, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
 
@@ -231,28 +230,27 @@ void test_observe(
   // gcc 6.4.0 gets confused if we try to capture tensor_data by
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
-  const auto check_component = [&element_name, &num_components_observed,
+  const auto check_component = [&num_components_observed,
                                 tensor_data = &results.in_received_tensor_data,
                                 &interpolant](const std::string& component,
                                               const DataVector& expected) {
     CAPTURE(*tensor_data);
     CAPTURE(component);
     const DataVector interpolated_expected = interpolant.interpolate(expected);
-    const auto it = alg::find_if(
-        *tensor_data,
-        [name = element_name + "/" + component](const TensorComponent& tc) {
-          return tc.name == name;
+    const auto it =
+        alg::find_if(*tensor_data, [&component](const TensorComponent& tc) {
+          return tc.name == component;
         });
-    CHECK(it != tensor_data->end());
-    if (it != tensor_data->end()) {
-      if (component.substr(0, 6) == "Tensor" or
-          component.substr(6, 7) == "Tensor2") {
-        CHECK(std::get<std::vector<float>>(it->data) ==
-              std::vector<float>{interpolated_expected.begin(),
-                                 interpolated_expected.end()});
-      } else {
-        CHECK(std::get<DataVector>(it->data) == interpolated_expected);
-      }
+    REQUIRE(it != tensor_data->end());
+    CAPTURE(component);
+    if (component.substr(0, 6) == "Tensor" or
+        component.substr(0, 7) == "Tensor2" or
+        component.substr(0, 14) == "Error(Tensor2)") {
+      CHECK(std::get<std::vector<float>>(it->data) ==
+            std::vector<float>{interpolated_expected.begin(),
+                               interpolated_expected.end()});
+    } else {
+      CHECK(std::get<DataVector>(it->data) == interpolated_expected);
     }
     ++num_components_observed;
   };

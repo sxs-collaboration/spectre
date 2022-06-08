@@ -62,13 +62,16 @@ void ExtentsAndTensorVolumeData::pup(PUP::er& p) {
 ElementVolumeData::ElementVolumeData(
     std::vector<size_t> extents_in, std::vector<TensorComponent> components,
     std::vector<Spectral::Basis> basis_in,
-    std::vector<Spectral::Quadrature> quadrature_in)
+    std::vector<Spectral::Quadrature> quadrature_in,
+    std::string element_name_in)
     : ExtentsAndTensorVolumeData(std::move(extents_in), std::move(components)),
       basis(std::move(basis_in)),
-      quadrature(std::move(quadrature_in)) {}
+      quadrature(std::move(quadrature_in)),
+      element_name(std::move(element_name_in)) {}
 
 void ElementVolumeData::pup(PUP::er& p) {
   ExtentsAndTensorVolumeData::pup(p);
   p | quadrature;
   p | basis;
+  p | element_name;
 }

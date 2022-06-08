@@ -68,14 +68,12 @@ struct ObserveSurfaceData
     const DataVector& radius = ylm.spec_to_phys(strahlkorper.coefficients());
 
     // Output the inertial-frame coordinates.
-    const std::string& surface_name =
-        pretty_type::name<InterpolationTargetTag>();
     std::vector<TensorComponent> tensor_components{
-        {surface_name + "/InertialCoordinates_x"s,
+        {"InertialCoordinates_x"s,
          radius * sin_theta * cos(phi) + strahlkorper.expansion_center()[0]},
-        {surface_name + "/InertialCoordinates_y"s,
+        {"InertialCoordinates_y"s,
          radius * sin_theta * sin(phi) + strahlkorper.expansion_center()[1]},
-        {surface_name + "/InertialCoordinates_z"s,
+        {"InertialCoordinates_z"s,
          radius * cos(theta) + strahlkorper.expansion_center()[2]}};
 
     // Output each tag if it is a scalar. Otherwise, throw a compile-time
@@ -85,18 +83,19 @@ struct ObserveSurfaceData
     // probably unnecessary, because Strahlkorpers are typically only
     // visualized with scalar quantities (used set the color at different
     // points on the surface).
-    tmpl::for_each<TagsToObserve>([&box, &surface_name,
-                                   &tensor_components](auto tag_v) {
+    tmpl::for_each<TagsToObserve>([&box, &tensor_components](auto tag_v) {
       using Tag = tmpl::type_from<decltype(tag_v)>;
       static_assert(std::is_same_v<typename Tag::type, Scalar<DataVector>>,
                     "Each tag in TagsToObserve must be a Scalar<DataVector>. "
                     "This could be generalized if needed; see the code comment "
                     "above the static_assert.");
       tensor_components.push_back(
-          {surface_name + "/"s + db::tag_name<Tag>(), get(get<Tag>(box))});
+          {db::tag_name<Tag>(), get(get<Tag>(box))});
     });
 
-    const std::string& subfile_path{std::string{"/"} + surface_name};
+    const std::string& surface_name =
+        pretty_type::name<InterpolationTargetTag>();
+    const std::string subfile_path{std::string{"/"} + surface_name};
     const std::vector<size_t> extents_vector{
         {ylm.physical_extents()[0], ylm.physical_extents()[1]}};
     const std::vector<Spectral::Basis> bases_vector{
@@ -114,9 +113,10 @@ struct ObserveSurfaceData
     // always guaranteed to be present.
     Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
         proxy[0], Parallel::get<observers::Tags::SurfaceFileName>(cache),
-        std::string{"/" + surface_name}, observation_id,
+        subfile_path, observation_id,
         std::vector<ElementVolumeData>{{extents_vector, tensor_components,
-                                        bases_vector, quadratures_vector}});
+                                        bases_vector, quadratures_vector,
+                                        surface_name}});
   }
 };
 }  // namespace callbacks
