@@ -368,6 +368,7 @@ struct CheckMemoryMonitorRelatedMethods {
  private:
   static inline double cache_size_ = 0.0;
   static inline double mutable_cache_size_ = 0.0;
+  static inline std::string filename_{"Test_AlgorithmGlobalCacheReduction.h5"};
 
  public:
   using chare_type = Parallel::Algorithms::Singleton;
@@ -389,6 +390,10 @@ struct CheckMemoryMonitorRelatedMethods {
 
     const double time = 1.0;
     if (next_phase == Metavariables::Phase::CallMemoryMonitorRelatedMethods) {
+      // Remove the file from a previous test run if it exists
+      if (file_system::check_if_file_exists(filename_)) {
+        file_system::rm(filename_, true);
+      }
       // This will broadcast to all branches of the global cache. This
       // executable is run on 1 core so there is only 1 branch. The time is
       // arbitrary
@@ -423,11 +428,9 @@ struct CheckMemoryMonitorRelatedMethods {
                       observers::Tags::H5FileLock>>();
 
       hdf5_lock->lock();
-      SPECTRE_PARALLEL_REQUIRE(file_system::check_if_file_exists(
-          "Test_AlgorithmGlobalCacheReduction.h5"));
+      SPECTRE_PARALLEL_REQUIRE(file_system::check_if_file_exists(filename_));
 
-      const h5::H5File<h5::AccessType::ReadOnly> read_file{
-          "Test_AlgorithmGlobalCacheReduction.h5"};
+      const h5::H5File<h5::AccessType::ReadOnly> read_file{filename_};
 
       const std::vector<std::string> cache_legend{
           {"Time", "Size on node 0 (MB)", "Average size per node (MB)"}};
@@ -474,6 +477,11 @@ struct CheckMemoryMonitorRelatedMethods {
                    mutable_cache_size_);
 
       hdf5_lock->unlock();
+
+      // Remove the file once we're done
+      if (file_system::check_if_file_exists(filename_)) {
+        file_system::rm(filename_, true);
+      }
     }
   }
 };
