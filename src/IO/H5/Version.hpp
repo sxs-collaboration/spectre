@@ -23,9 +23,9 @@ namespace h5 {
  *
  * \example
  * To write the version use:
- * \snippet Test_H5.cpp h5file_write_version
+ * \snippet Test_Version.cpp h5file_write_version
  * To read the version use:
- * \snippet Test_H5.cpp h5file_read_version
+ * \snippet Test_Version.cpp h5file_read_version
  *
  */
 class Version : public h5::Object {

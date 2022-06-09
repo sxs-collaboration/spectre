@@ -83,7 +83,7 @@ class Dat : public h5::Object {
    * \returns all data stored in the Dat file
    *
    * \example
-   * \snippet Test_H5.cpp h5dat_get_data
+   * \snippet Test_Dat.cpp h5dat_get_data
    */
   Matrix get_data() const;
 
@@ -95,7 +95,7 @@ class Dat : public h5::Object {
    * \returns a subset of the data from the Dat file
    *
    * \example
-   * \snippet Test_H5.cpp h5dat_get_subset
+   * \snippet Test_Dat.cpp h5dat_get_subset
    */
   Matrix get_data_subset(const std::vector<size_t>& these_columns,
                          size_t first_row = 0, size_t num_rows = 1) const;
