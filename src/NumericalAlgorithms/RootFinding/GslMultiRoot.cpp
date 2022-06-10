@@ -5,6 +5,7 @@
 
 #include <ostream>
 
+#include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 namespace RootFinder {
@@ -23,23 +24,26 @@ std::ostream& operator<<(std::ostream& os, const Method& method) {
 }
 
 std::ostream& operator<<(std::ostream& os, const StoppingCondition& condition) {
-  switch (condition) {
-    case StoppingCondition::AbsoluteAndRelative:
-      return os << "AbsoluteAndRelative";
-    case StoppingCondition::Absolute:
-      return os << "Absolute";
-    default:
-      ERROR("Invalid stopping condition specified.");
-  }
-  return os;
+  return call_with_dynamic_type<std::ostream&,
+                                tmpl::list<StoppingConditions::Convergence,
+                                           StoppingConditions::Residual>>(
+      &condition, [&](const auto* c) -> decltype(auto) { return os << *c; });
 }
+
+namespace StoppingConditions {
+std::ostream& operator<<(std::ostream& os, const Convergence& condition) {
+  return os << "Convergence(abs=" << condition.absolute_tolerance
+            << ", rel=" << condition.relative_tolerance << ")";
+}
+std::ostream& operator<<(std::ostream& os, const Residual& condition) {
+  return os << "Residual(abs=" << condition.absolute_tolerance << ")";
+}
+}  // namespace StoppingConditions
 
 namespace gsl_multiroot_detail {
 void print_rootfinding_parameters(const Method method,
-                                  const double absolute_tolerance,
-                                  const double relative_tolerance,
                                   const double maximum_absolute_tolerance,
-                                  const StoppingCondition condition) {
+                                  const StoppingCondition& condition) {
   Parallel::printf("\nAttempting a root find.\n");
   if (method == Method::Newton) {
     Parallel::printf(
@@ -50,24 +54,7 @@ void print_rootfinding_parameters(const Method method,
   } else if (method == Method::Hybrid) {
     Parallel::printf("Method: Unscaled Hybrid.\n");
   }
-  if (condition == StoppingCondition::Absolute) {
-    Parallel::printf(
-        "Stopping condition: Absolute. Convergence will be determined\n"
-        "according to gsl_multiroot_test_residual.\n");
-    Parallel::printf("Absolute tolerance: %.17g\n", absolute_tolerance);
-  } else if (condition == StoppingCondition::AbsoluteAndRelative) {
-    Parallel::printf(
-        "Stopping condition: AbsoluteAndRelative. Convergence will be\n"
-        "determined according to gsl_multiroot_test_delta.\n");
-    Parallel::printf("Absolute tolerance: %.17g\n", absolute_tolerance);
-    Parallel::printf("Relative tolerance: %.17g\n", relative_tolerance);
-    if (relative_tolerance < 1.0e-13) {
-      Parallel::printf(
-          "Warning: using a relative tolerance below 1.0e-13 can result\n"
-          "in an FPE coming from within gsl itself. Be wary of this if the\n"
-          "root find FPEs without reporting any other error messages.");
-    }
-  }
+  Parallel::printf("Stopping condition: %s\n", condition);
   Parallel::printf(
       "A failed root find may still be \"forgiven\" (said to converge) if\n"
       "each component of f is below the maximum_absolute_tolerance provided.\n"

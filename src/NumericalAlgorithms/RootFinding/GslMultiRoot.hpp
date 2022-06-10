@@ -10,6 +10,7 @@
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_multiroots.h>
 #include <gsl/gsl_vector_double.h>
+#include <memory>
 #include <ostream>
 #include <string>
 
@@ -18,13 +19,22 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 namespace RootFinder {
 namespace gsl_multiroot_detail {
+template <typename Alloc, typename Dealloc, typename... Args>
+auto gsl_alloc(Alloc* allocator, Dealloc* deallocator, Args&&... args)
+    -> std::unique_ptr<
+        std::decay_t<decltype(*allocator(std::forward<Args>(args)...))>,
+        Dealloc*> {
+  return {allocator(std::forward<Args>(args)...), deallocator};
+}
+
 template <size_t Dim, typename Solver>
-void print_state(const size_t iteration_number, const Solver* const solver,
+void print_state(const size_t iteration_number, const Solver& solver,
                  const bool print_header = false) {
   if (print_header) {
     Parallel::printf("Iter\t");
@@ -39,10 +49,10 @@ void print_state(const size_t iteration_number, const Solver* const solver,
 
   Parallel::printf("%u\t", iteration_number);
   for (size_t i = 0; i < Dim; ++i) {
-    Parallel::printf("%3.4f  ", gsl_vector_get(solver->x, i));
+    Parallel::printf("%3.4f  ", gsl_vector_get(solver.x, i));
   }
   for (size_t i = 0; i < Dim; ++i) {
-    Parallel::printf("%1.3e  ", gsl_vector_get(solver->f, i));
+    Parallel::printf("%1.3e  ", gsl_vector_get(solver.f, i));
   }
   Parallel::printf("\n");
 }
@@ -151,7 +161,6 @@ CREATE_IS_CALLABLE_V(jacobian)
  */
 enum class Method {
   /// Hybrid of Newton's method along with following the gradient direction.
-  /// \note Sometimes Hybrids works only with the Absolute stopping condition.
   Hybrids,
   /// "Unscaled version of Hybrids that uses a spherical trust region," see
   /// GSL documentation for more details.
@@ -164,6 +173,31 @@ enum class Method {
 
 std::ostream& operator<<(std::ostream& /*os*/, const Method& /*method*/);
 
+/// \see StoppingConditions
+struct StoppingCondition {
+ protected:
+  StoppingCondition() = default;
+  StoppingCondition(const StoppingCondition&) = default;
+  StoppingCondition(StoppingCondition&&) = default;
+  StoppingCondition& operator=(const StoppingCondition&) = default;
+  StoppingCondition& operator=(StoppingCondition&&) = default;
+  ~StoppingCondition() = default;
+
+ public:
+  /// \cond
+  template <typename Solver>
+  int test(const Solver& solver) const {
+    return test_impl(solver.x, solver.dx, solver.f);
+  }
+  /// \endcond
+
+ private:
+  virtual int test_impl(const gsl_vector* x, const gsl_vector* dx,
+                        const gsl_vector* f) const = 0;
+};
+
+std::ostream& operator<<(std::ostream& os, const StoppingCondition& condition);
+
 /*!
  *  \ingroup NumericalAlgorithmsGroup
  *  \brief The different options for the convergence criterion of gsl_multiroot.
@@ -173,15 +207,49 @@ std::ostream& operator<<(std::ostream& /*os*/, const Method& /*method*/);
  *  rootfinding](https://www.gnu.org/software/gsl/manual/html_node/Multidimensional-Root_002dFinding.html)
  *  for information on the different stopping conditions.
  */
-enum class StoppingCondition {
-  /// See GSL documentation for gsl_multiroot_test_delta.
-  AbsoluteAndRelative,
-  /// See GSL documentation for gsl_multiroot_test_residual.
-  Absolute
+namespace StoppingConditions {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+
+/// Terminate when the result converges to a value.  See GSL
+/// documentation for gsl_multiroot_test_delta.
+struct Convergence : StoppingCondition {
+  double absolute_tolerance;
+  double relative_tolerance;
+
+  Convergence(const double absolute_tolerance_,
+              const double relative_tolerance_)
+      : absolute_tolerance(absolute_tolerance_),
+        relative_tolerance(relative_tolerance_) {}
+
+ private:
+  int test_impl(const gsl_vector* const x, const gsl_vector* const dx,
+                const gsl_vector* const /*f*/) const override {
+    return gsl_multiroot_test_delta(dx, x, absolute_tolerance,
+                                    relative_tolerance);
+  }
 };
 
-std::ostream& operator<<(std::ostream& /*os*/,
-                         const StoppingCondition& /*condition*/);
+/// Terminate when the residual is small.  See GSL documentation for
+/// gsl_multiroot_test_residual.
+struct Residual : StoppingCondition {
+  double absolute_tolerance;
+
+  explicit Residual(const double absolute_tolerance_)
+      : absolute_tolerance(absolute_tolerance_) {}
+
+ private:
+  int test_impl(const gsl_vector* const /*x*/, const gsl_vector* const /*dx*/,
+                const gsl_vector* const f) const override {
+    return gsl_multiroot_test_residual(f, absolute_tolerance);
+  }
+};
+
+#pragma GCC diagnostic pop
+
+std::ostream& operator<<(std::ostream& os, const Convergence& condition);
+std::ostream& operator<<(std::ostream& os, const Residual& condition);
+}  // namespace StoppingConditions
 
 namespace gsl_multiroot_detail {
 template <typename SolverType, typename SolverAlloc, typename SolverSet,
@@ -189,35 +257,31 @@ template <typename SolverType, typename SolverAlloc, typename SolverSet,
           typename Function>
 std::array<double, Dim> gsl_multiroot_impl(
     Function& f, const std::array<double, Dim>& initial_guess,
-    const double absolute_tolerance, const size_t maximum_iterations,
-    const double relative_tolerance, const Verbosity verbosity,
-    const double maximum_absolute_tolerance, const Method method,
-    const SolverType solver_type, const StoppingCondition condition,
+    const StoppingCondition& condition, const size_t maximum_iterations,
+    const Verbosity verbosity, const double maximum_absolute_tolerance,
+    const Method method, const SolverType solver_type,
     const SolverAlloc solver_alloc, const SolverSet solver_set,
     const SolverIterate solver_iterate, const SolverFree solver_free) {
-  // Check for valid stopping condition:
-  if (UNLIKELY(condition != StoppingCondition::AbsoluteAndRelative and
-               condition != StoppingCondition::Absolute)) {
-    ERROR(
-        "Invalid stopping condition. Has to be either AbsoluteAndRelative"
-        "or Absolute.");
-  }
-
   // Supply gsl_root with the initial guess:
-  gsl_vector* const gsl_root = gsl_vector_alloc(Dim);
-  gsl_vector_set_with_std_array(gsl_root, initial_guess);
-  auto* const solver = solver_alloc(solver_type, Dim);
-  solver_set(solver, &f, gsl_root);
+  const auto gsl_root = gsl_alloc(&gsl_vector_alloc, &gsl_vector_free, Dim);
+  gsl_vector_set_with_std_array(gsl_root.get(), initial_guess);
+  const auto solver = gsl_alloc(solver_alloc, solver_free, solver_type, Dim);
+  solver_set(solver.get(), &f, gsl_root.get());
 
   // Take iterations:
   int status;
   size_t iteration_number = 0;
   do {
     if (UNLIKELY(verbosity == Verbosity::Debug)) {
-      print_state<Dim>(iteration_number, solver, iteration_number == 0);
+      print_state<Dim>(iteration_number, *solver, iteration_number == 0);
     }
     iteration_number++;
-    status = solver_iterate(solver);
+
+    if (gsl_to_std_array<Dim>(solver->f) == make_array<Dim>(0.0)) {
+      return gsl_to_std_array<Dim>(solver->x);
+    }
+
+    status = solver_iterate(solver.get());
     // Check if solver is stuck
     if (UNLIKELY(status == GSL_ENOPROG)) {
       if (UNLIKELY(verbosity == Verbosity::Debug)) {
@@ -227,18 +291,13 @@ std::array<double, Dim> gsl_multiroot_impl(
       }
       break;
     }
-    if (condition == StoppingCondition::AbsoluteAndRelative) {
-      status = gsl_multiroot_test_delta(solver->dx, solver->x,
-                                        absolute_tolerance, relative_tolerance);
-    } else {  // condition is StoppingCondition::Absolute
-      // NOTE: Sometimes hybridsj works only with the test_residual condition
-      status = gsl_multiroot_test_residual(solver->f, absolute_tolerance);
-    }
+    status = condition.test(*solver);
   } while (status == GSL_CONTINUE and iteration_number < maximum_iterations);
   if (UNLIKELY(verbosity == Verbosity::Verbose or
                verbosity == Verbosity::Debug)) {
     Parallel::printf("Finished iterating:\n");
-    print_state<Dim>(iteration_number, solver, verbosity == Verbosity::Verbose);
+    print_state<Dim>(iteration_number, *solver,
+                     verbosity == Verbosity::Verbose);
   }
   bool success = (status == GSL_SUCCESS);
   if (UNLIKELY(verbosity != Verbosity::Silent)) {
@@ -288,8 +347,6 @@ std::array<double, Dim> gsl_multiroot_impl(
                   << "StoppingCondition: " << condition << "\n"
                   << "Maximum absolute tolerance: "
                   << maximum_absolute_tolerance << "\n"
-                  << "Absolute tolerance: " << absolute_tolerance << "\n"
-                  << "Relative tolerance: " << relative_tolerance << "\n"
                   << "Maximum number of iterations: " << maximum_iterations
                   << "\n"
                   << "Number of iterations reached: " << iteration_number
@@ -309,33 +366,27 @@ std::array<double, Dim> gsl_multiroot_impl(
 
     if (UNLIKELY(verbosity == Verbosity::Debug)) {
       Parallel::printf("Error: %s\n", gsl_strerror(status));
-    if (iteration_number >= maximum_iterations) {
-      Parallel::printf(
-          "The number of iterations (%d) has reached the maximum number of "
-          "iterations (%d)\n",
-          iteration_number, maximum_iterations);
-    } else {
-      Parallel::printf(
-          "The number of iterations (%d) failed to reach the maximum number of "
-          "iterations (%d)\n",
-          iteration_number, maximum_iterations);
-    }
+      if (iteration_number >= maximum_iterations) {
+        Parallel::printf(
+            "The number of iterations (%d) has reached the maximum number of "
+            "iterations (%d)\n",
+            iteration_number, maximum_iterations);
+      } else {
+        Parallel::printf(
+            "The number of iterations (%d) failed to reach the maximum number "
+            "of iterations (%d)\n",
+            iteration_number, maximum_iterations);
+      }
     }
     throw convergence_error(error_message.str());
   }
 
-  // Store the converged root in result
-  std::array<double, Dim> result = gsl_to_std_array<Dim>(solver->x);
-  solver_free(solver);
-  gsl_vector_free(gsl_root);
-
-  return result;
+  return gsl_to_std_array<Dim>(solver->x);
 }
 
-void print_rootfinding_parameters(Method method, double absolute_tolerance,
-                                  double relative_tolerance,
+void print_rootfinding_parameters(Method method,
                                   double maximum_absolute_tolerance,
-                                  StoppingCondition condition);
+                                  const StoppingCondition& condition);
 }  // namespace gsl_multiroot_detail
 
 /// @{
@@ -370,10 +421,10 @@ void print_rootfinding_parameters(Method method, double absolute_tolerance,
  * uses the Method::Newton method.
  *
  * The user can select one of two possible criteria for convergence,
- * StoppingCondition::Absolute, where the sum of the absolute values of the
+ * StoppingCondition::Residual, where the sum of the absolute values of the
  * components of the residual vector f are compared against the value
  * provided to `absolute_tolerance`, and
- * StoppingCondition::AbsoluteAndRelative, where the size of the most recent
+ * StoppingCondition::Convergence, where the size of the most recent
  * step taken in the root-finding iteration is compared against
  * `absolute_tolerance` + `relative_tolerance` * |x_i|, for each component.
  * In either case, a `maximum_absolute_tolerance` may be specified if the user
@@ -388,9 +439,7 @@ void print_rootfinding_parameters(Method method, double absolute_tolerance,
  *
  * \param func Function whose root is to be found.
  * \param initial_guess Contains initial guess.
- * \param absolute_tolerance The absolute tolerance.
  * \param maximum_iterations The maximum number of iterations.
- * \param relative_tolerance The relative tolerance.
  * \param verbosity Whether to print diagnostic messages.
  * \param maximum_absolute_tolerance Acceptable absolute tolerance when
  *                                   root finder doesn't converge.
@@ -406,12 +455,10 @@ template <size_t Dim, typename Function,
               Function, std::array<double, Dim>>> = nullptr>
 std::array<double, Dim> gsl_multiroot(
     const Function& func, const std::array<double, Dim>& initial_guess,
-    const double absolute_tolerance, const size_t maximum_iterations,
-    const double relative_tolerance = 0.0,
+    const StoppingCondition& condition, const size_t maximum_iterations,
     const Verbosity verbosity = Verbosity::Silent,
     const double maximum_absolute_tolerance = 0.0,
-    const Method method = Method::Newton,
-    const StoppingCondition condition = StoppingCondition::Absolute) {
+    const Method method = Method::Newton) {
   gsl_multiroot_function_fdf gsl_func = {
       &gsl_multiroot_detail::gsl_multirootfunctionfdf_wrapper_f<Dim, Function>,
       &gsl_multiroot_detail::gsl_multirootfunctionfdf_wrapper_df<Dim, Function>,
@@ -436,15 +483,13 @@ std::array<double, Dim> gsl_multiroot(
   if (UNLIKELY(verbosity == Verbosity::Verbose or
                verbosity == Verbosity::Debug)) {
     gsl_multiroot_detail::print_rootfinding_parameters(
-        method, absolute_tolerance, relative_tolerance,
-        maximum_absolute_tolerance, condition);
+        method, maximum_absolute_tolerance, condition);
   }
   return gsl_multiroot_detail::gsl_multiroot_impl(
-      gsl_func, initial_guess, absolute_tolerance, maximum_iterations,
-      relative_tolerance, verbosity, maximum_absolute_tolerance, method,
-      solver_type, condition, &gsl_multiroot_fdfsolver_alloc,
-      &gsl_multiroot_fdfsolver_set, &gsl_multiroot_fdfsolver_iterate,
-      &gsl_multiroot_fdfsolver_free);
+      gsl_func, initial_guess, condition, maximum_iterations, verbosity,
+      maximum_absolute_tolerance, method, solver_type,
+      &gsl_multiroot_fdfsolver_alloc, &gsl_multiroot_fdfsolver_set,
+      &gsl_multiroot_fdfsolver_iterate, &gsl_multiroot_fdfsolver_free);
 }
 
 template <size_t Dim, typename Function,
@@ -452,12 +497,10 @@ template <size_t Dim, typename Function,
               Function, std::array<double, Dim>>> = nullptr>
 std::array<double, Dim> gsl_multiroot(
     const Function& func, const std::array<double, Dim>& initial_guess,
-    const double absolute_tolerance, const size_t maximum_iterations,
-    const double relative_tolerance = 0.0,
+    const StoppingCondition& condition, const size_t maximum_iterations,
     const Verbosity verbosity = Verbosity::Silent,
     const double maximum_absolute_tolerance = 0.0,
-    const Method method = Method::Newton,
-    const StoppingCondition condition = StoppingCondition::Absolute) {
+    const Method method = Method::Newton) {
   gsl_multiroot_function gsl_func = {
       &gsl_multiroot_detail::gsl_multirootfunctionfdf_wrapper_f<Dim, Function>,
       Dim, const_cast<Function*>(&func)};  // NOLINT
@@ -479,15 +522,13 @@ std::array<double, Dim> gsl_multiroot(
   if (UNLIKELY(verbosity == Verbosity::Verbose or
                verbosity == Verbosity::Debug)) {
     gsl_multiroot_detail::print_rootfinding_parameters(
-        method, absolute_tolerance, relative_tolerance,
-        maximum_absolute_tolerance, condition);
+        method, maximum_absolute_tolerance, condition);
   }
   return gsl_multiroot_detail::gsl_multiroot_impl(
-      gsl_func, initial_guess, absolute_tolerance, maximum_iterations,
-      relative_tolerance, verbosity, maximum_absolute_tolerance, method,
-      solver_type, condition, &gsl_multiroot_fsolver_alloc,
-      &gsl_multiroot_fsolver_set, &gsl_multiroot_fsolver_iterate,
-      &gsl_multiroot_fsolver_free);
+      gsl_func, initial_guess, condition, maximum_iterations, verbosity,
+      maximum_absolute_tolerance, method, solver_type,
+      &gsl_multiroot_fsolver_alloc, &gsl_multiroot_fsolver_set,
+      &gsl_multiroot_fsolver_iterate, &gsl_multiroot_fsolver_free);
 }
 /// @}
 }  // namespace RootFinder

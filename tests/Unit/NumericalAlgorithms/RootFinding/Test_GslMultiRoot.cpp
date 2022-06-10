@@ -67,10 +67,9 @@ class BadFunction {
 };
 
 template <typename Function>
-void test_gsl_multiroot(RootFinder::StoppingCondition condition,
+void test_gsl_multiroot(const RootFinder::StoppingCondition& condition,
                         const Function& func,
                         const std::array<double, 2> initial_guess) {
-  const double absolute_tolerance = 1.0e-14;
   const double max_absolute_tolerance = 0.0;
   const int maximum_iterations = 20;
   const ::Verbosity verbosity = ::Verbosity::Silent;
@@ -79,15 +78,9 @@ void test_gsl_multiroot(RootFinder::StoppingCondition condition,
                                                RootFinder::Method::Hybrid,
                                                RootFinder::Method::Hybrids};
   for (const auto& method : methods_list) {
-    double relative_tolerance = 1.0e-13;
-    if (method == RootFinder::Method::Hybrids) {
-      condition = RootFinder::StoppingCondition::Absolute;
-      relative_tolerance = 0.0;
-    }
     std::array<double, 2> roots_array = RootFinder::gsl_multiroot(
-        func, initial_guess, absolute_tolerance, maximum_iterations,
-        relative_tolerance, verbosity, max_absolute_tolerance, method,
-        condition);
+        func, initial_guess, condition, maximum_iterations, verbosity,
+        max_absolute_tolerance, method);
     CHECK(roots_array[0] == approx(1.0));
     CHECK(roots_array[1] == approx(1.0));
   }
@@ -97,29 +90,46 @@ void test_gsl_multiroot(RootFinder::StoppingCondition condition,
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
   const std::array<double, 2> good_initial_guess{{-10.0, -5.0}};
+  const std::array<double, 2> perfect_initial_guess{{1.0, 1.0}};
   const Rosenbrock function_and_jac{1.0, 10.0};
   const RosenbrockNoJac function{1.0, 10.0};
 
-  test_gsl_multiroot(RootFinder::StoppingCondition::AbsoluteAndRelative,
+  test_gsl_multiroot(
+      RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13),
+      function_and_jac, good_initial_guess);
+  test_gsl_multiroot(
+      RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13), function,
+      good_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingConditions::Residual(1.0e-14),
                      function_and_jac, good_initial_guess);
-  test_gsl_multiroot(RootFinder::StoppingCondition::AbsoluteAndRelative,
+  test_gsl_multiroot(RootFinder::StoppingConditions::Residual(1.0e-14),
                      function, good_initial_guess);
-  test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function_and_jac,
-                     good_initial_guess);
-  test_gsl_multiroot(RootFinder::StoppingCondition::Absolute, function,
-                     good_initial_guess);
+
+  test_gsl_multiroot(
+      RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13),
+      function_and_jac, perfect_initial_guess);
+  test_gsl_multiroot(
+      RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13), function,
+      perfect_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingConditions::Residual(1.0e-14),
+                     function_and_jac, perfect_initial_guess);
+  test_gsl_multiroot(RootFinder::StoppingConditions::Residual(1.0e-14),
+                     function, perfect_initial_guess);
+
   CHECK(get_output(RootFinder::Method::Hybrids) == "Hybrids");
   CHECK(get_output(RootFinder::Method::Hybrid) == "Hybrid");
   CHECK(get_output(RootFinder::Method::Newton) == "Newton");
-  CHECK(get_output(RootFinder::StoppingCondition::AbsoluteAndRelative) ==
-        "AbsoluteAndRelative");
-  CHECK(get_output(RootFinder::StoppingCondition::Absolute) == "Absolute");
+  CHECK(get_output(RootFinder::StoppingConditions::Convergence(1.5, 2.5)) ==
+        "Convergence(abs=1.5, rel=2.5)");
+  CHECK(get_output(RootFinder::StoppingConditions::Residual(1.5)) ==
+        "Residual(abs=1.5)");
 
   test_throw_exception(
       []() {
         const std::array<double, 2> bad_initial_guess{{9.0e3, 2.0e5}};
-        test_gsl_multiroot(RootFinder::StoppingCondition::AbsoluteAndRelative,
-                           BadFunction{1.0, 1.0, 1.0}, bad_initial_guess);
+        test_gsl_multiroot(
+            RootFinder::StoppingConditions::Convergence(1.0e-14, 1.0e-13),
+            BadFunction{1.0, 1.0, 1.0}, bad_initial_guess);
       },
       convergence_error(
           "The root find failed and was not forgiven. An exception has been "
@@ -127,10 +137,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.GslMultiRoot",
           "The gsl error returned is: the iteration has not converged yet\n"
           "Verbosity: Silent\n"
           "Method: Newton\n"
-          "StoppingCondition: AbsoluteAndRelative\n"
+          "StoppingCondition: Convergence(abs=1e-14, rel=1e-13)\n"
           "Maximum absolute tolerance: 0\n"
-          "Absolute tolerance: 1e-14\n"
-          "Relative tolerance: 1e-13\n"
           "Maximum number of iterations: 20\n"
           "Number of iterations reached: 20\n"
           "The last value of f in the root solver is:\n"
