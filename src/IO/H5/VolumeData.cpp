@@ -19,6 +19,7 @@
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/SpectralIo.hpp"
+#include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -414,7 +415,7 @@ std::vector<std::string> VolumeData::get_grid_names(
   return grid_names;
 }
 
-DataVector VolumeData::get_tensor_component(
+TensorComponent VolumeData::get_tensor_component(
     const size_t observation_id, const std::string& tensor_component) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
@@ -426,19 +427,32 @@ DataVector VolumeData::get_tensor_component(
   const auto rank =
       static_cast<size_t>(H5Sget_simple_extent_ndims(dataspace_id));
   h5::close_dataspace(dataspace_id);
+  const bool use_float =
+      h5::types_equal(H5Dget_type(dataset_id), h5::h5_type<float>());
   h5::close_dataset(dataset_id);
-  switch (rank) {
-    case 1:
-      return h5::read_data<1, DataVector>(observation_group.id(),
-                                          tensor_component);
-    case 2:
-      return h5::read_data<2, DataVector>(observation_group.id(),
-                                          tensor_component);
-    case 3:
-      return h5::read_data<3, DataVector>(observation_group.id(),
-                                          tensor_component);
-    default:
-      ERROR("Rank must be 1, 2, or 3. Received data with Rank = " << rank);
+
+  const auto get_data = [&observation_group, &rank,
+                         &tensor_component](auto type_to_get_v) {
+    using type_to_get = tmpl::type_from<decltype(type_to_get_v)>;
+    switch (rank) {
+      case 1:
+        return h5::read_data<1, type_to_get>(observation_group.id(),
+                                             tensor_component);
+      case 2:
+        return h5::read_data<2, type_to_get>(observation_group.id(),
+                                             tensor_component);
+      case 3:
+        return h5::read_data<3, type_to_get>(observation_group.id(),
+                                             tensor_component);
+      default:
+        ERROR("Rank must be 1, 2, or 3. Received data with Rank = " << rank);
+    }
+  };
+
+  if (use_float) {
+    return {tensor_component, get_data(tmpl::type_<std::vector<float>>{})};
+  } else {
+    return {tensor_component, get_data(tmpl::type_<DataVector>{})};
   }
 }
 
@@ -533,7 +547,7 @@ auto VolumeData::get_data_by_element(
 
     const auto& component_names =
         components_to_retrieve.value_or(known_components);
-    std::vector<DataVector> tensors{};
+    std::vector<TensorComponent> tensors{};
     tensors.reserve(grid_names.size());
     for (const std::string& component : component_names) {
       if (not alg::found(known_components, component)) {
@@ -553,14 +567,21 @@ auto VolumeData::get_data_by_element(
       std::vector<TensorComponent> tensor_components{tensors.size()};
       for (size_t component_index = 0; component_index < tensors.size();
            ++component_index) {
-        DataVector component{mesh_size};
-        std::copy(std::next(tensors[component_index].begin(),
+        std::visit(
+            [component_index, &component_names, mesh_size, offset,
+             &tensor_components](const auto& tensor_component_data) {
+              std::decay_t<decltype(tensor_component_data)> component(
+                  mesh_size);
+              std::copy(
+                  std::next(tensor_component_data.begin(),
                             static_cast<std::ptrdiff_t>(offset)),
-                  std::next(tensors[component_index].begin(),
+                  std::next(tensor_component_data.begin(),
                             static_cast<std::ptrdiff_t>(offset + mesh_size)),
                   component.begin());
-        tensor_components[component_index] = TensorComponent{
-            component_names[component_index], std::move(component)};
+              tensor_components[component_index] = TensorComponent{
+                  component_names[component_index], std::move(component)};
+            },
+            tensors[component_index].data);
       }
 
       // Sort the tensor components by name so that they are in the same order

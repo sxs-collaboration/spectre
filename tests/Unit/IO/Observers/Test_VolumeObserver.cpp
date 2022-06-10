@@ -294,8 +294,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   std::unordered_map<std::string, DataVector> read_tensor_data;
   for (const auto& tensor_name :
        volume_file.list_tensor_components(temporal_id)) {
-    read_tensor_data[tensor_name] =
-        volume_file.get_tensor_component(temporal_id, tensor_name);
+    read_tensor_data[tensor_name] = std::get<DataVector>(
+        volume_file.get_tensor_component(temporal_id, tensor_name).data);
   }
   // Read the extents that were written to file
   const std::vector<std::vector<size_t>> read_extents =

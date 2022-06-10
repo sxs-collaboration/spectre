@@ -168,11 +168,15 @@ class TestInterpolateH5(unittest.TestCase):
             self.assertEqual(vol.get_bases(obs), [["Legendre"] * 3] * 2)
             self.assertEqual(vol.get_quadratures(obs), [["Gauss"] * 3] * 2)
 
-        tensor1_obs_1 = np.asarray(vol.get_tensor_component(42, 'tensor1'))
-        tensor2_obs_1 = np.asarray(vol.get_tensor_component(42, 'tensor2'))
+        tensor1_obs_1 = np.asarray(
+            vol.get_tensor_component(42, 'tensor1').data)
+        tensor2_obs_1 = np.asarray(
+            vol.get_tensor_component(42, 'tensor2').data)
 
-        tensor1_obs_2 = np.asarray(vol.get_tensor_component(1000, 'tensor1'))
-        tensor2_obs_2 = np.asarray(vol.get_tensor_component(1000, 'tensor2'))
+        tensor1_obs_2 = np.asarray(
+            vol.get_tensor_component(1000, 'tensor1').data)
+        tensor2_obs_2 = np.asarray(
+            vol.get_tensor_component(1000, 'tensor2').data)
 
         file.close()
 

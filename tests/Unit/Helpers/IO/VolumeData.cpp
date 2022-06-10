@@ -117,14 +117,16 @@ void check_volume_data(
   // file, find the data which was written by the grid whose extents are
   // found at position `grid_index` in the vector of extents.
   const auto get_grid_data = [&element_num_points, &read_points_by_element](
-                                 const DataVector& all_data,
+                                 const auto& all_data,
                                  const size_t grid_index) {
     DataType result(element_num_points[grid_index]);
     // clang-tidy: do not use pointer arithmetic
-    std::copy(&all_data[read_points_by_element[grid_index]],
-              &all_data[read_points_by_element[grid_index]] +  // NOLINT
-                  element_num_points[grid_index],
-              result.begin());
+    std::copy(
+        &std::get<DataType>(all_data.data)[read_points_by_element[grid_index]],
+        &std::get<DataType>(
+            all_data.data)[read_points_by_element[grid_index]] +  // NOLINT
+            element_num_points[grid_index],
+        result.begin());
     return result;
   };
   // The tensor components can be written in any order to the file, we loop
@@ -187,12 +189,7 @@ void check_volume_data(
                            return tensor_component.name == component;
                          });
         REQUIRE(component_data_it != volume_data_it->tensor_components.end());
-        DataVector expected_component_data{expected_data.size()};
-        for (size_t k = 0; k < expected_component_data.size(); ++k) {
-          expected_component_data[k] = expected_data[k];
-        }
-        CHECK(std::get<DataVector>(component_data_it->data) ==
-              expected_component_data);
+        CHECK(std::get<DataType>(component_data_it->data) == expected_data);
       }
     }
   }

@@ -161,8 +161,8 @@ class TestVolumeData(unittest.TestCase):
                 np.asarray(
                     self.vol_file.get_tensor_component(
                         observation_id=obs_id,
-                        tensor_component=expected_tensor_component_names[i]))
-                [0:8], expected_tensor_component_data)
+                        tensor_component=expected_tensor_component_names[i]).
+                    data)[0:8], expected_tensor_component_data)
 
     def test_get_data_by_element(self):
         obs_id = 0
