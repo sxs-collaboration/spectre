@@ -127,7 +127,7 @@ class TestIOH5File(unittest.TestCase):
 
         #create existing file
         with self.assertRaisesRegex(RuntimeError,
-                                    "File pythontest.h5 already exists."):
+                                    "File 'pythontest.h5' already exists and"):
             spectre_h5.H5File(file_name=self.file_name, mode="w-")
 
         file_spec.insert_dat(path="/element_data",
@@ -137,16 +137,16 @@ class TestIOH5File(unittest.TestCase):
         #insert existing data file
         with self.assertRaisesRegex(
                 RuntimeError,
-                "`/element_data` already exists in file `pythontest.h5`"):
+                "/element_data already open. Cannot insert object"):
             file_spec.insert_dat(path="/element_data",
                                  legend=["Time", "Value"],
                                  version=0)
+        file_spec.close()
 
         # grab non-existing data file
         with self.assertRaisesRegex(
                 RuntimeError,
-                "Subfile `/element_dat` was not found in file `pythontest.h5`.*"
-                "\n.*element_data.dat"):
+                "Cannot open the object '/element_dat.vol' because it"):
             file_spec.get_vol("/element_dat")
 
         file_spec.close()
@@ -154,15 +154,14 @@ class TestIOH5File(unittest.TestCase):
 
         #insert existing volume data file
         with self.assertRaisesRegex(
-                RuntimeError, "A subfile with name `/volume_data` "
-                "already exists in file `pythontest.h5`"):
+                RuntimeError, "Object /volume_data already open. Cannot"):
             file_spec.insert_vol(path="/volume_data", version=0)
+        file_spec.close()
 
         # grab non-existing volume data file
         with self.assertRaisesRegex(
                 RuntimeError,
-                "Subfile `/volume_dat` was not found in file `pythontest.h5`.*"
-                "\n.*element_data.dat.*volume_data.vol"):
+                "Cannot open the object '/volume_dat.vol' because it does"):
             file_spec.get_vol("/volume_dat")
 
         file_spec.close()
