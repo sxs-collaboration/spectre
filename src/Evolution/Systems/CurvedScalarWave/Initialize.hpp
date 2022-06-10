@@ -13,7 +13,6 @@
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
-#include "Time/Time.hpp"
 
 namespace CurvedScalarWave::Initialization {
 /// \ingroup InitializationGroup

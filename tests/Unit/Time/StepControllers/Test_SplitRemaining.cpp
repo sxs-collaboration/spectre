@@ -12,7 +12,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/StepControllers/StepController.hpp"
-#include "Time/Time.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();

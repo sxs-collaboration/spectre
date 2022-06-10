@@ -111,3 +111,7 @@ struct hash<Slab> {
   size_t operator()(const Slab& s) const;
 };
 }  // namespace std
+
+// Needs to be included so various return types are complete, but
+// cannot be included at the top because Time.hpp includes this file.
+#include "Time/Time.hpp"

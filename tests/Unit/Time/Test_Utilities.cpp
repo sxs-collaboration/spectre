@@ -7,7 +7,6 @@
 #include <initializer_list>
 
 #include "Time/Slab.hpp"
-#include "Time/Time.hpp"
 #include "Time/Utilities.hpp"
 
 namespace {

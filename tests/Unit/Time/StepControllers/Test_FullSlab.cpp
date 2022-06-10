@@ -12,7 +12,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/FullSlab.hpp"
 #include "Time/StepControllers/StepController.hpp"
-#include "Time/Time.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.FullSlab", "[Unit][Time]") {
   Parallel::register_classes_with_charm<StepControllers::FullSlab>();

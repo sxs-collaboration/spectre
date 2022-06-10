@@ -11,7 +11,6 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

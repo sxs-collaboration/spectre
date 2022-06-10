@@ -25,10 +25,14 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
+#include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
+#include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -253,7 +257,6 @@ struct test_metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InsertInterpolationScriData",
     "[Unit][Cce]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
   Parallel::register_classes_with_charm<
       Cce::Solutions::RotatingSchwarzschild>();
   Parallel::register_classes_with_charm<

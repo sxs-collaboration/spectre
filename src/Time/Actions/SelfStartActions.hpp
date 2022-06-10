@@ -16,7 +16,6 @@
 #include "Parallel/Actions/TerminatePhase.hpp"     // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"

@@ -12,7 +12,6 @@
 #include "Evolution/Systems/Cce/InterfaceManagers/GhInterfaceManager.hpp"
 #include "Evolution/Systems/Cce/InterfaceManagers/GhLockstep.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
-#include "Time/TimeStepId.hpp"
 
 namespace Cce {
 

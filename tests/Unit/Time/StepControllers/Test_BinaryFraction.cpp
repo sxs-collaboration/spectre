@@ -12,7 +12,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/StepController.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {

@@ -56,9 +56,6 @@ class Mesh;
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-namespace Tags {
-struct Time;
-}  // namespace Tags
 /// \endcond
 
 namespace dg {

@@ -6,7 +6,6 @@
 #include <cmath>
 #include <limits>
 
-#include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 
 double slab_rounding_error(const Time& time) {

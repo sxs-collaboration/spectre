@@ -9,6 +9,7 @@
 
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Time.hpp"
 
 void TimeStepId::canonicalize() {
   if (time_runs_forward_ ? step_time_.is_at_slab_end()

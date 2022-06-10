@@ -27,7 +27,6 @@
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
-#include "Time/BoundaryHistory.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
