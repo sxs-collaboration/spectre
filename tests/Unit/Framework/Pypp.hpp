@@ -18,6 +18,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/PyppFundamentals.hpp"
+#include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -493,7 +494,10 @@ template <typename ReturnType, typename ConversionClassList = tmpl::list<>,
           typename... Args>
 ReturnType call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
-  return detail::CallImpl<ReturnType, ConversionClassList>::call(
+  disable_floating_point_exceptions();
+  auto result = detail::CallImpl<ReturnType, ConversionClassList>::call(
       module_name, function_name, t...);
+  enable_floating_point_exceptions();
+  return result;
 }
 }  // namespace pypp
