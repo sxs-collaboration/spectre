@@ -10,7 +10,7 @@
 #include <ostream>
 #include <string>
 
-#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -22,14 +22,10 @@
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
-
-// IWYU pragma: no_include <boost/multi_array.hpp>
-// IWYU pragma: no_include <boost/multi_array/base.hpp>
-// IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
 
 namespace {
 // Converts input data (either a std::vector or DataVector) to a T. Depending
@@ -109,6 +105,12 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
 }  // namespace
 
 namespace h5 {
+bool types_equal(const hid_t dtype1, const hid_t dtype2) {
+  const htri_t equal = H5Tequal(dtype1, dtype2);
+  CHECK_H5(equal, "Unable to compare H5 data types.");
+  return equal > 0;
+}
+
 template <typename T>
 void write_data(const hid_t group_id, const std::vector<T>& data,
                 const std::vector<size_t>& extents, const std::string& name) {
