@@ -25,10 +25,10 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   INFO("Suite for frustum");
   // Set up random number generator
   MAKE_GENERATOR(gen);
-  std::uniform_real_distribution<> lower_bound_lower_base_dis(-9, -3);
-  std::uniform_real_distribution<> upper_bound_lower_base_dis(3, 9);
-  std::uniform_real_distribution<> lower_bound_upper_base_dis(-14, -9);
-  std::uniform_real_distribution<> upper_bound_upper_base_dis(9, 14);
+  std::uniform_real_distribution<> lower_bound_lower_base_dis(-7, -3);
+  std::uniform_real_distribution<> upper_bound_lower_base_dis(3, 7);
+  std::uniform_real_distribution<> lower_bound_upper_base_dis(-13.5, -9);
+  std::uniform_real_distribution<> upper_bound_upper_base_dis(9, 13.5);
 
   const double lower_x_lower_base = lower_bound_lower_base_dis(gen);
   CAPTURE(lower_x_lower_base);
@@ -46,6 +46,45 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
   CAPTURE(upper_x_upper_base);
   const double upper_y_upper_base = upper_bound_upper_base_dis(gen);
   CAPTURE(upper_y_upper_base);
+  const double upper_z = 3.0;
+  CAPTURE(upper_z);
+  const double lower_z = -1.0;
+  CAPTURE(lower_z);
+
+  // For diagnostic purposes, compute other Frustum quantities:
+  // Frustum cross factor is small when the diagonals across each of the bases
+  // are aligned, and large when there is an angle between them.
+  const double frustum_cross = (upper_x_lower_base - lower_x_lower_base) *
+                                   (upper_y_upper_base - lower_y_upper_base) -
+                               (upper_y_lower_base - lower_y_lower_base) *
+                                   (upper_x_upper_base - lower_x_upper_base);
+  CAPTURE(frustum_cross);
+
+  // Computes how vertical the walls are of the frustum. When these
+  // quantities are zero, the frustum walls are parallel to the z-axis. This
+  // is undesired because when bulging out the Frustum the coordinates are
+  // moved along radial lines emanating from the origin.
+  const double x_wall_sep_upper = upper_x_upper_base - upper_x_lower_base;
+  const double x_wall_sep_lower = lower_x_upper_base - lower_x_lower_base;
+  const double y_wall_sep_upper = upper_y_upper_base - upper_y_lower_base;
+  const double y_wall_sep_lower = lower_y_upper_base - lower_y_lower_base;
+  const double min_wall_sep = std::min(
+      {x_wall_sep_upper, x_wall_sep_lower, y_wall_sep_upper, y_wall_sep_lower});
+  CAPTURE(x_wall_sep_upper);
+  CAPTURE(x_wall_sep_lower);
+  CAPTURE(y_wall_sep_upper);
+  CAPTURE(y_wall_sep_lower);
+  CAPTURE(min_wall_sep);
+
+  // Computes how far away the base of the Frustum is from the origin. Since
+  // the bulged Frustum is constructed by moving coordinates along radial lines,
+  // having the base of the frustum be shifted away from the origin will lead to
+  // a distorted shape. If the Frustum test fails, check if the com_shift is
+  // above 1.8. A test failure might occur in 1/25,000 cases.
+  const double x_com_bottom = 0.5 * (lower_x_lower_base + upper_x_lower_base);
+  const double y_com_bottom = 0.5 * (lower_y_lower_base + upper_y_lower_base);
+  const double com_shift = sqrt(square(x_com_bottom) + square(y_com_bottom));
+  CAPTURE(com_shift);
 
   for (OrientationMapIterator<3> map_i{}; map_i; ++map_i) {
     if (get(determinant(discrete_rotation_jacobian(*map_i))) < 0.0) {
@@ -62,9 +101,9 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
     // of the longer base to the height of the Frustum is at most 7:1. Frustums
     // with larger ratios cannot be bulged out without the root find beginning
     // to fail in extreme cases.
-    const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 3.0, map_i(),
-                                              with_equiangular_map, 1.2, false,
-                                              1.0, 1.0);
+    const CoordinateMaps::Frustum frustum_map(face_vertices, lower_z, upper_z,
+                                              map_i(), with_equiangular_map,
+                                              1.2, false, 1.0, 1.0);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
