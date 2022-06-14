@@ -325,7 +325,7 @@ jobs:
           - build_type: Release
             ccache_max_size: 400M
           # Generate code coverage report for a single build
-          - compiler: gcc-10
+          - compiler: gcc-9
             build_type: Debug
             COVERAGE: ON
             TEST_TIMEOUT_FACTOR: 3
