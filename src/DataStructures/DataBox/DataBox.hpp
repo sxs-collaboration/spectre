@@ -212,8 +212,10 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
    * \note the default constructor is only used for serialization
    */
   DataBox() = default;
-  DataBox(DataBox&& rhs) = default;
-  DataBox& operator=(DataBox&& rhs) {
+  constexpr DataBox(DataBox&& rhs) : detail::Item<Tags>(std::move(rhs))... {
+    reset_all_subitems();
+  }
+  constexpr DataBox& operator=(DataBox&& rhs) {
     if (&rhs != this) {
 #if defined(__GNUC__) && !defined(__clang__) && \
     (__GNUC__ < 8 || (__GNUC__ > 10 && __GNUC__ < 12))
@@ -228,6 +230,7 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 8 ||
         // (__GNUC__ > 10 && __GNUC__ < 12))
+      reset_all_subitems();
     }
     return *this;
   }
@@ -343,6 +346,8 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
 
   template <typename ParentTag, typename... Subtags>
   constexpr void mutate_mutable_subitems(tmpl::list<Subtags...> /*meta*/);
+
+  constexpr void reset_all_subitems();
 
   template <typename ImmutableItemTag>
   constexpr void reset_compute_item();
@@ -657,6 +662,15 @@ db::DataBox<tmpl::list<Tags...>>::mutate_mutable_subitems(
   };
 
   EXPAND_PACK_LEFT_TO_RIGHT(helper(Subtags{}));
+}
+
+template <typename... Tags>
+SPECTRE_ALWAYS_INLINE constexpr void
+db::DataBox<tmpl::list<Tags...>>::reset_all_subitems() {
+  tmpl::for_each<mutable_item_tags>([this](auto tag) {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    this->mutate_mutable_subitems<Tag>(typename Subitems<Tag>::type{});
+  });
 }
 
 /*!

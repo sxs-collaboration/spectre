@@ -1865,39 +1865,27 @@ namespace {
 template <typename T>
 class Boxed {
  public:
-  explicit Boxed(std::shared_ptr<T> data) : data_(std::move(data)) {}
-  Boxed() = default;
-  // The multiple copy constructors (assignment operators) are needed
-  // to prevent users from modifying compute item values.
+  explicit Boxed(T data) : data_(std::move(data)), ptr_(&data_) {}
+  Boxed() : data_(), ptr_(&data_) {}
   Boxed(const Boxed&) = delete;
-  Boxed(Boxed&) = default;
-  Boxed(Boxed&&) = default;
+  Boxed(Boxed&& other) : data_(std::move(other.data_)), ptr_(&data_) {}
   Boxed& operator=(const Boxed&) = delete;
-  Boxed& operator=(Boxed&) = default;
-  Boxed& operator=(Boxed&&) = default;
+  Boxed& operator=(Boxed&& other) {
+    data_ = std::move(other.data_);
+    return *this;
+  }
   ~Boxed() = default;
 
-  T& operator*() { return *data_; }
-  const T& operator*() const { return *data_; }
-  const std::shared_ptr<T>& data() const { return data_; }
+  T& operator*() { return data_; }
+  const T& operator*() const { return data_; }
+  T* const& ptr() const { return ptr_; }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) {
-    if (p.isUnpacking()) {
-      T t{};
-      p | t;
-      data_ = std::make_shared<T>(std::move(t));
-    } else {
-      p | *data_;
-    }
-  }
+  void pup(PUP::er& p) { p | data_; }
 
  private:
-  // Default-constructing this to a state that can be assigned to a subitem.
-  // This way we can test that the DataBox default-construction correctly links
-  // subitems.
-  std::shared_ptr<T> data_ =
-      std::make_shared<T>(std::numeric_limits<T>::signaling_NaN());
+  T data_;
+  T* ptr_;
 };
 
 template <size_t N>
@@ -1911,9 +1899,8 @@ struct ParentCompute : Parent<N>, db::ComputeTag {
   static void function(const gsl::not_null<return_type*> result,
                        const std::pair<Boxed<int>, Boxed<double>>& arg) {
     count++;
-    *result = std::make_pair(
-        Boxed<int>(std::make_shared<int>(*arg.first + 1)),
-        Boxed<double>(std::make_shared<double>(*arg.second * 2.)));
+    *result = std::make_pair(Boxed<int>(*arg.first + 1),
+                             Boxed<double>(*arg.second * 2.));
   }
   using argument_tags = tmpl::list<Parent<N - 1>>;
   static int count;
@@ -1924,13 +1911,13 @@ int ParentCompute<N>::count = 0;
 
 template <size_t N>
 struct First : db::SimpleTag {
-  using type = Boxed<int>;
+  using type = int*;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
 struct Second : db::SimpleTag {
-  using type = Boxed<double>;
+  using type = double*;
 
   static constexpr size_t index = 1;
 };
@@ -1946,7 +1933,7 @@ struct Subitems<Parent<N>> {
   static void create_item(
       const gsl::not_null<typename tag::type*> parent_value,
       const gsl::not_null<typename Subtag::type*> sub_value) {
-    *sub_value = std::get<Subtag::index>(*parent_value);
+    *sub_value = std::get<Subtag::index>(*parent_value).ptr();
   }
 };
 
@@ -1958,7 +1945,7 @@ struct Subitems<ParentCompute<N>> {
   template <typename Subtag>
   static const typename Subtag::type& create_compute_item(
       const typename tag::type& parent_value) {
-    return std::get<Subtag::index>(parent_value);
+    return std::get<Subtag::index>(parent_value).ptr();
   }
 };
 }  // namespace db
@@ -1970,8 +1957,7 @@ void test_subitems() {
   {
     auto box = db::create<db::AddSimpleTags<Parent<0>>,
                           db::AddComputeTags<ParentCompute<1>>>(
-        std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                       Boxed<double>(std::make_shared<double>(3.5))));
+        std::make_pair(Boxed<int>(5), Boxed<double>(3.5)));
 
     static_assert(std::is_same_v<
                   decltype(box)::tags_list,
@@ -2013,9 +1999,8 @@ void test_subitems() {
     CHECK(*db::get<Second<0>>(box) == 3.5);
     CHECK(*db::get<Second<1>>(box) == 7);
 
-    db::mutate<Second<0>>(
-        make_not_null(&box),
-        [](const gsl::not_null<Boxed<double>*> x) { **x = 12.; });
+    db::mutate<Second<0>>(make_not_null(&box),
+                          [](const gsl::not_null<double**> x) { **x = 12.; });
 
     CHECK(*db::get<First<0>>(box) == 5);
     CHECK(*db::get<First<1>>(box) == 6);
@@ -2030,15 +2015,23 @@ void test_subitems() {
       CHECK(*db::get<Second<1>>(copy_box) == 24.);
     }
 
+    {
+      auto move_box = std::move(box);
+      db::mutate<First<0>>(make_not_null(&move_box),
+                           [](const gsl::not_null<int**> val) { **val = 10; });
+      CHECK(*db::get<First<0>>(move_box) == 10);
+      CHECK(*db::get<First<1>>(move_box) == 11);
+      CHECK(*db::get<Second<0>>(move_box) == 12.);
+      CHECK(*db::get<Second<1>>(move_box) == 24.);
+    }
+
     static_assert(
         std::is_same_v<
             decltype(box),
             decltype(db::create_from<db::RemoveTags<Parent<2>>>(
                 db::create_from<db::RemoveTags<>, db::AddSimpleTags<Parent<2>>>(
                     std::move(box),
-                    std::make_pair(
-                        Boxed<int>(std::make_shared<int>(5)),
-                        Boxed<double>(std::make_shared<double>(3.5))))))>,
+                    std::make_pair(Boxed<int>(5), Boxed<double>(3.5)))))>,
         "Failed testing that adding and removing a simple subitem does "
         "not change the type of the DataBox");
 
@@ -2057,26 +2050,23 @@ void test_subitems() {
     auto box = db::create<db::AddSimpleTags<Parent<0>>,
                           db::AddComputeTags<ParentCompute<1>>>();
     // Check the default-constructed DataBox links subitems correctly
-    CHECK(db::get<Parent<0>>(box).first.data() ==
-          db::get<First<0>>(box).data());
-    CHECK(db::get<Parent<0>>(box).second.data() ==
-          db::get<Second<0>>(box).data());
+    CHECK(db::get<Parent<0>>(box).first.ptr() == db::get<First<0>>(box));
+    CHECK(db::get<Parent<0>>(box).second.ptr() == db::get<Second<0>>(box));
     db::mutate<Parent<0>>(
         make_not_null(&box),
         [](const gsl::not_null<std::pair<Boxed<int>, Boxed<double>>*> val) {
-          *val = std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                                Boxed<double>(std::make_shared<double>(3.5)));
+          *val = std::make_pair(Boxed<int>(5), Boxed<double>(3.5));
         });
     CHECK(*db::get<First<0>>(box) == 5);
     CHECK(*db::get<Second<0>>(box) == 3.5);
     CHECK(*db::get<First<1>>(box) == 6);
     CHECK(*db::get<Second<1>>(box) == 7.);
-    db::mutate<First<0>, Second<0>>(make_not_null(&box),
-                                    [](const gsl::not_null<Boxed<int>*> a,
-                                       const gsl::not_null<Boxed<double>*> b) {
-                                      **a = 2;
-                                      **b = 2.5;
-                                    });
+    db::mutate<First<0>, Second<0>>(
+        make_not_null(&box),
+        [](const gsl::not_null<int**> a, const gsl::not_null<double**> b) {
+          **a = 2;
+          **b = 2.5;
+        });
     CHECK(*db::get<First<0>>(box) == 2);
     CHECK(*db::get<Second<0>>(box) == 2.5);
     CHECK(*db::get<First<1>>(box) == 3);
@@ -2265,12 +2255,9 @@ void serialization_subitems_simple_items() {
       db::create<db::AddSimpleTags<test_databox_tags::Tag0, Parent<0>,
                                    test_databox_tags::Tag1,
                                    test_databox_tags::Tag2, Parent<1>>>(
-          3.14,
-          std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                         Boxed<double>(std::make_shared<double>(3.5))),
+          3.14, std::make_pair(Boxed<int>(5), Boxed<double>(3.5)),
           std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-          std::make_pair(Boxed<int>(std::make_shared<int>(9)),
-                         Boxed<double>(std::make_shared<double>(-4.5))));
+          std::make_pair(Boxed<int>(9), Boxed<double>(-4.5)));
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
   const std::vector<double>* before_1 =
@@ -2279,16 +2266,12 @@ void serialization_subitems_simple_items() {
       &db::get<test_databox_tags::Tag2>(serialization_test_box);
   const std::pair<Boxed<int>, Boxed<double>>* before_parent0 =
       &db::get<Parent<0>>(serialization_test_box);
-  const Boxed<int>* before_parent0f =
-      &db::get<First<0>>(serialization_test_box);
-  const Boxed<double>* before_parent0s =
-      &db::get<Second<0>>(serialization_test_box);
+  int* const* before_parent0f = &db::get<First<0>>(serialization_test_box);
+  double* const* before_parent0s = &db::get<Second<0>>(serialization_test_box);
   const std::pair<Boxed<int>, Boxed<double>>* before_parent1 =
       &db::get<Parent<1>>(serialization_test_box);
-  const Boxed<int>* before_parent1f =
-      &db::get<First<1>>(serialization_test_box);
-  const Boxed<double>* before_parent1s =
-      &db::get<Second<1>>(serialization_test_box);
+  int* const* before_parent1f = &db::get<First<1>>(serialization_test_box);
+  double* const* before_parent1s = &db::get<Second<1>>(serialization_test_box);
 
   auto deserialized_serialization_test_box =
       serialize_and_deserialize(serialization_test_box);
@@ -2374,8 +2357,7 @@ template <size_t SecondId>
 struct CountingTagDoubleCompute : CountingTagDouble<SecondId>, db::ComputeTag {
   using base = CountingTagDouble<SecondId>;
   using return_type = double;
-  static void function(const gsl::not_null<double*> result,
-                       const Boxed<double>& t) {
+  static void function(const gsl::not_null<double*> result, double* const& t) {
     count++;
     *result = *t * 6.0;
   }
@@ -2398,12 +2380,9 @@ void serialization_subitem_compute_items() {  // NOLINT
                      ParentCompute<2>, test_databox_tags::Tag5Compute,
                      ParentCompute<3>, CountingTagCompute<0>,
                      CountingTagDoubleCompute<2>, CountingTagDoubleCompute<3>>>(
-          3.14,
-          std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                         Boxed<double>(std::make_shared<double>(3.5))),
+          3.14, std::make_pair(Boxed<int>(5), Boxed<double>(3.5)),
           std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-          std::make_pair(Boxed<int>(std::make_shared<int>(9)),
-                         Boxed<double>(std::make_shared<double>(-4.5))));
+          std::make_pair(Boxed<int>(9), Boxed<double>(-4.5)));
   const double* before_0 =
       &db::get<test_databox_tags::Tag0>(serialization_test_box);
   const std::vector<double>* before_1 =
@@ -2412,16 +2391,12 @@ void serialization_subitem_compute_items() {  // NOLINT
       &db::get<test_databox_tags::Tag2>(serialization_test_box);
   const std::pair<Boxed<int>, Boxed<double>>* before_parent0 =
       &db::get<Parent<0>>(serialization_test_box);
-  const Boxed<int>* before_parent0f =
-      &db::get<First<0>>(serialization_test_box);
-  const Boxed<double>* before_parent0s =
-      &db::get<Second<0>>(serialization_test_box);
+  int* const* before_parent0f = &db::get<First<0>>(serialization_test_box);
+  double* const* before_parent0s = &db::get<Second<0>>(serialization_test_box);
   const std::pair<Boxed<int>, Boxed<double>>* before_parent1 =
       &db::get<Parent<1>>(serialization_test_box);
-  const Boxed<int>* before_parent1f =
-      &db::get<First<1>>(serialization_test_box);
-  const Boxed<double>* before_parent1s =
-      &db::get<Second<1>>(serialization_test_box);
+  int* const* before_parent1f = &db::get<First<1>>(serialization_test_box);
+  double* const* before_parent1s = &db::get<Second<1>>(serialization_test_box);
   CHECK(db::get<test_databox_tags::Tag4>(serialization_test_box) == 6.28);
   const double* before_compute_tag0 =
       &db::get<test_databox_tags::Tag4>(serialization_test_box);
@@ -2439,9 +2414,8 @@ void serialization_subitem_compute_items() {  // NOLINT
       &db::get<Parent<2>>(serialization_test_box);
   CHECK(ParentCompute<2>::count == 1);
   CHECK(ParentCompute<3>::count == 0);
-  const Boxed<int>* before_parent2_first =
-      &db::get<First<2>>(serialization_test_box);
-  const Boxed<double>* before_parent2_second =
+  int* const* before_parent2_first = &db::get<First<2>>(serialization_test_box);
+  double* const* before_parent2_second =
       &db::get<Second<2>>(serialization_test_box);
 
   // Check we are correctly pointing into parent
@@ -2640,9 +2614,8 @@ void serialization_subitem_compute_items() {  // NOLINT
   CHECK(CountingTagDoubleCompute<3>::count == 2);
 
   // Mutate subitems 1 in deserialized to see that changes propagate correctly
-  db::mutate<Second<1>>(
-      make_not_null(&serialization_test_box),
-      [](const gsl::not_null<Boxed<double>*> x) { **x = 12.; });
+  db::mutate<Second<1>>(make_not_null(&serialization_test_box),
+                        [](const gsl::not_null<double**> x) { **x = 12.; });
   CHECK(ParentCompute<2>::count == 1);
   CHECK(CountingTagDoubleCompute<2>::count == 1);
   CHECK(db::get<CountingTagDouble<2>>(serialization_test_box) == 24.0 * 6.0);
@@ -2652,9 +2625,8 @@ void serialization_subitem_compute_items() {  // NOLINT
   CHECK(db::get<CountingTagDouble<3>>(serialization_test_box) == 48.0 * 6.0);
   CHECK(CountingTagDoubleCompute<3>::count == 3);
 
-  db::mutate<Second<1>>(
-      make_not_null(&deserialized_serialization_test_box),
-      [](const gsl::not_null<Boxed<double>*> x) { **x = -7.; });
+  db::mutate<Second<1>>(make_not_null(&deserialized_serialization_test_box),
+                        [](const gsl::not_null<double**> x) { **x = -7.; });
   CHECK(ParentCompute<2>::count == 2);
   CHECK(CountingTagDoubleCompute<2>::count == 2);
   CHECK(db::get<CountingTagDouble<2>>(deserialized_serialization_test_box) ==
@@ -2778,8 +2750,7 @@ void test_get_mutable_reference() {
                                           test_databox_tags::Tag2, Parent<0>>,
                         db::AddComputeTags<test_databox_tags::Tag4Compute>>(
       3.14, "Original string"s,
-      std::make_pair(Boxed<int>(std::make_shared<int>(5)),
-                     Boxed<double>(std::make_shared<double>(3.5))));
+      std::make_pair(Boxed<int>(5), Boxed<double>(3.5)));
 
   decltype(auto) ref =
       db::get_mutable_reference<test_databox_tags::Tag2>(make_not_null(&box));
