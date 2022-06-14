@@ -261,8 +261,9 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// be acquired.
   template <
       typename Action, typename... Args,
-      Requires<(sizeof...(Args), std::is_same_v<Parallel::Algorithms::Nodegroup,
-                                                chare_type>)> = nullptr>
+      Requires<((void)sizeof...(Args),
+                std::is_same_v<Parallel::Algorithms::Nodegroup, chare_type>)> =
+          nullptr>
   void threaded_action(std::tuple<Args...> args) {
     // Note: this method is defined inline because GCC fails to compile when the
     // definition is out of line.
