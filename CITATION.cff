@@ -177,8 +177,8 @@ authors:
   family-names: Ramirez
   given-names: Teresita
   orcid: https://orcid.org/0000-0003-0994-115X
-- affiliation: CFisUC, Department of Physics, University of Coimbra,
-    3004-516 Coimbra, Portugal
+- affiliation: CFisUC, Department of Physics, University of Coimbra, 3004-516 Coimbra,
+    Portugal
   family-names: Rüter
   given-names: Hannes R.
   orcid: https://orcid.org/0000-0002-3442-5360
@@ -206,8 +206,8 @@ authors:
   given-names: Tom
   orcid: https://orcid.org/0000-0003-0005-348X
 cff-version: 1.1.0
-date-released: 2022-05-05
-doi: 10.5281/zenodo.6519635
+date-released: 2022-06-14
+doi: 10.5281/zenodo.6643787
 keywords:
 - Software
 - Astrophysics
@@ -225,4 +225,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.05.05
+version: 2022.06.14
