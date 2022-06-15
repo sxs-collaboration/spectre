@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Options/Options.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -19,7 +20,7 @@ class CProxy_GlobalCache;
 struct Metavariables {
   using component_list = tmpl::list<>;
 
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(

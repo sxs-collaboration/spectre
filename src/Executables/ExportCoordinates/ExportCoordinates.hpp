@@ -39,6 +39,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -229,7 +230,7 @@ struct Metavariables {
                    tmpl::list<Triggers::SlabCompares, Triggers::TimeCompares>>>;
   };
 
-  enum class Phase { Initialization, RegisterWithObserver, Export, Exit };
+  using Phase = Parallel::Phase;
 
   using component_list = tmpl::list<
       DgElementArray<
@@ -256,7 +257,7 @@ struct Metavariables {
                                  Actions::FindGlobalMinimumGridSpacing>,
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
-                  typename Metavariables::Phase, Metavariables::Phase::Export,
+                  typename Metavariables::Phase, Metavariables::Phase::Execute,
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
                              Actions::FindGlobalMinimumGridSpacing,
@@ -277,8 +278,8 @@ struct Metavariables {
       case Phase::Initialization:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
-        return Phase::Export;
-      case Phase::Export:
+        return Phase::Execute;
+      case Phase::Execute:
         return Phase::Exit;
       case Phase::Exit:
         ERROR(

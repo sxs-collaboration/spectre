@@ -51,6 +51,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
@@ -140,15 +141,7 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
 
-  enum class Phase {
-    Initialization,
-    Register,
-    InitializeTimeStepperHistory,
-    LoadBalancing,
-    WriteCheckpoint,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   static std::string phase_name(Phase phase) {
     if (phase == Phase::LoadBalancing) {

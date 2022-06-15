@@ -36,6 +36,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -244,7 +245,7 @@ struct Metavariables {
           linear_solver, multigrid, schwarz_smoother>>>;
 
   // Specify all global synchronization points.
-  enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
+  using Phase = Parallel::Phase;
 
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
