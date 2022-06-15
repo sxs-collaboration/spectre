@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <boost/variant/variant.hpp>
 #include <charm++.h>
 #include <converse.h>
 #include <cstddef>
@@ -18,6 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
+#include <variant>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -35,10 +35,10 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
-#include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -372,21 +372,21 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
  private:
   template <typename ThisVariant, typename... Variants>
   void touch_global_cache_proxy_in_databox_impl(
-      boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
+      std::variant<Variants...>& box, const gsl::not_null<size_t*> iter,
       const gsl::not_null<bool*> already_visited);
 
   template <typename... Variants>
-  void touch_global_cache_proxy_in_databox(boost::variant<Variants...>& box);
+  void touch_global_cache_proxy_in_databox(std::variant<Variants...>& box);
 
   template <typename ThisVariant, typename... Variants, typename... Args>
   void perform_registration_or_deregistration_impl(
-      PUP::er& p, const boost::variant<Variants...>& box,
-      const gsl::not_null<int*> iter,
+      PUP::er& p, const std::variant<Variants...>& box,
+      const gsl::not_null<size_t*> iter,
       const gsl::not_null<bool*> already_visited);
 
   template <typename... Variants, typename... Args>
   void perform_registration_or_deregistration(
-      PUP::er& p, const boost::variant<Variants...>& box);
+      PUP::er& p, const std::variant<Variants...>& box);
 
   void set_array_index();
 
@@ -431,7 +431,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       typename ParallelComponent::initialization_tags,
       Tags::GlobalCacheImplCompute<metavariables>,
       db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>>;
-  // The types held by the boost::variant, box_
+  // The types held by the std::variant, box_
   using databox_phase_types = typename Algorithm_detail::build_databox_types<
       tmpl::list<>, phase_dependent_action_lists, initial_databox,
       inbox_tags_list, metavariables, array_index, ParallelComponent>::type;
@@ -447,10 +447,10 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>>;
 
  private:
-  // Create a boost::variant that can hold any of the DataBox's
+  // Create a std::variant that can hold any of the DataBox's
   using variant_boxes =
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>;
-  make_boost_variant_over<variant_boxes> box_;
+  tmpl::make_std_variant_over<variant_boxes> box_;
   tuples::tagged_tuple_from_typelist<inbox_tags_list> inboxes_{};
   array_index array_index_;
 };
@@ -889,15 +889,16 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisVariant, typename... Variants>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     touch_global_cache_proxy_in_databox_impl(
-        boost::variant<Variants...>& box, const gsl::not_null<int*> iter,
+        std::variant<Variants...>& box, const gsl::not_null<size_t*> iter,
         const gsl::not_null<bool*> already_visited) {
   if constexpr (db::tag_is_retrievable_v<Tags::GlobalCacheProxy<metavariables>,
                                          ThisVariant>) {
-    if (box.which() == *iter and not *already_visited) {
+    if (box.index() == *iter and not *already_visited) {
       db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-          make_not_null(&(boost::get<ThisVariant>(box))),
-          [](const gsl::not_null<CProxy_GlobalCache<metavariables>*>
-                 proxy) { (void)proxy; });
+          make_not_null(&(std::get<ThisVariant>(box))),
+          [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
+            (void)proxy;
+          });
       *already_visited = true;
     }
   } else {
@@ -910,9 +911,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    touch_global_cache_proxy_in_databox(
-        boost::variant<Variants...>& box) {
-  int iter = 0;
+    touch_global_cache_proxy_in_databox(std::variant<Variants...>& box) {
+  size_t iter = 0;
   bool already_visited = false;
   EXPAND_PACK_LEFT_TO_RIGHT(touch_global_cache_proxy_in_databox_impl<Variants>(
       box, &iter, &already_visited));
@@ -922,13 +922,13 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisVariant, typename... Variants, typename... Args>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration_impl(
-        PUP::er& p, const boost::variant<Variants...>& box,
-        const gsl::not_null<int*> iter,
+        PUP::er& p, const std::variant<Variants...>& box,
+        const gsl::not_null<size_t*> iter,
         const gsl::not_null<bool*> already_visited) {
   // void cast to avoid compiler warnings about the unused variable in the
   // false branch of the constexpr
   (void)already_visited;
-  if (box.which() == *iter and not *already_visited) {
+  if (box.index() == *iter and not *already_visited) {
     // The deregistration and registration below does not actually insert
     // anything into the PUP::er stream, so nothing is done on a sizing pup.
     if constexpr (Algorithm_detail::has_registration_list_v<
@@ -941,7 +941,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
             [this, &box](auto registration_v) {
               using registration = typename decltype(registration_v)::type;
               registration::template perform_deregistration<ParallelComponent>(
-                  boost::get<ThisVariant>(box),
+                  std::get<ThisVariant>(box),
                   *Parallel::local_branch(global_cache_proxy_), array_index_);
             });
       }
@@ -950,7 +950,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
             [this, &box](auto registration_v) {
               using registration = typename decltype(registration_v)::type;
               registration::template perform_registration<ParallelComponent>(
-                  boost::get<ThisVariant>(box),
+                  std::get<ThisVariant>(box),
                   *Parallel::local_branch(global_cache_proxy_), array_index_);
             });
       }
@@ -964,8 +964,8 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants, typename... Args>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration(
-        PUP::er& p, const boost::variant<Variants...>& box) {
-  int iter = 0;
+        PUP::er& p, const std::variant<Variants...>& box) {
+  size_t iter = 0;
   bool already_visited = false;
   EXPAND_PACK_LEFT_TO_RIGHT(
       perform_registration_or_deregistration_impl<Variants>(p, box, &iter,
@@ -1015,9 +1015,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
           using this_databox =
               tmpl::at_c<databox_types_this_phase, potential_databox_index>;
           if (not box_found and
-              box_.which() ==
-                  static_cast<int>(
-                      tmpl::index_of<variant_boxes, this_databox>::value)) {
+              box_.index() ==
+                  tmpl::index_of<variant_boxes, this_databox>::value) {
             box_found = true;
             performing_action_ = true;
             ++algorithm_step_;
@@ -1054,7 +1053,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
           "The DataBox type being retrieved at algorithm step: "
           << algorithm_step_ << " in phase " << phase_index
           << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " is not the correct type but is of variant index " << box_.which()
+          << " is not the correct type but is of variant index " << box_.index()
           << ". If you are using Goto and Label actions then you are using "
              "them incorrectly.");
     }
@@ -1134,7 +1133,7 @@ bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                 "Actions no longer support is_ready methods.  Instead, "
                 "return AlgorithmExecution::Retry from apply().");
 
-  DataBoxType& my_box = boost::get<DataBoxType>(box_);
+  DataBoxType& my_box = std::get<DataBoxType>(box_);
 
   auto action_return = ThisAction::apply(
       my_box, inboxes_, *Parallel::local_branch(global_cache_proxy_),
