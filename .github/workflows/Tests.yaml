@@ -346,11 +346,13 @@ jobs:
             ccache_max_size: 400M
           # Full clang-9 build to catch any incompatibilities.
           - compiler: clang-9
+            use_pch: ON
             build_type: Release
             ccache_max_size: 400M
           # Test with ASAN
           - compiler: clang-10
             build_type: Debug
+            use_pch: ON
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/1890
@@ -364,11 +366,13 @@ jobs:
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
           - compiler: clang-11
+            use_pch: ON
             build_type: Release
             BUILD_SHARED_LIBS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Test compatibility with oldest supported CMake version
           - compiler: clang-13
+            use_pch: ON
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
             CHARM_DIR: /work/charm_6_10_2/multicore-linux-x86_64-
