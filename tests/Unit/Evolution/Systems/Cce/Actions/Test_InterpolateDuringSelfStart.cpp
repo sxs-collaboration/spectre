@@ -85,13 +85,13 @@ struct initialize_elements_and_queue_simple_actions {
 struct MockComputeTargetPoints
     : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
   using is_sequential = std::false_type;
-  using frame = ::Frame::NoFrame;
+  using frame = ::Frame::Inertial;
   template <typename Metavariables, typename DbTags, typename TemporalId>
-  static tnsr::I<DataVector, 3, Frame::NoFrame> points(
+  static tnsr::I<DataVector, 3, Frame::Inertial> points(
       const db::DataBox<DbTags>& /*box*/,
       const tmpl::type_<Metavariables>& /*meta*/,
       const TemporalId& /*temporal_id*/) {
-    return tnsr::I<DataVector, 3, Frame::NoFrame>{};
+    return tnsr::I<DataVector, 3, Frame::Inertial>{};
   }
 };
 
