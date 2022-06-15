@@ -48,6 +48,8 @@ enum class Phase {
   // vector created by known_phases() below, and add it to the stream operator
   // If the new phase is the first or last in the list, update Test_Phase.
 
+  ///  a cleanup phase
+  Cleanup,
   ///  phase in which time steps are taken for an evolution executable
   Evolve,
   ///  generic execution phase of an executable
@@ -74,7 +76,7 @@ enum class Phase {
   ///  phase in which something is solved
   Solve,
   ///  phase in which something is tested
-  Test,
+  Testing,
   ///  phase in which checkpoint files are written to disk
   WriteCheckpoint
 };

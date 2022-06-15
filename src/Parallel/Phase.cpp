@@ -15,7 +15,8 @@
 
 namespace Parallel {
 std::vector<Phase> known_phases() {
-  return {Phase::Evolve,
+  return {Phase::Cleanup,
+          Phase::Evolve,
           Phase::Execute,
           Phase::Exit,
           Phase::ImportInitialData,
@@ -27,12 +28,14 @@ std::vector<Phase> known_phases() {
           Phase::RegisterWithElementDataReader,
           Phase::RegisterWithObserver,
           Phase::Solve,
-          Phase::Test,
+          Phase::Testing,
           Phase::WriteCheckpoint};
 }
 
 std::ostream& operator<<(std::ostream& os, const Phase& phase) {
   switch (phase) {
+    case Parallel::Phase::Cleanup:
+      return os << "Cleanup";
     case Parallel::Phase::Evolve:
       return os << "Evolve";
     case Parallel::Phase::Execute:
@@ -57,8 +60,8 @@ std::ostream& operator<<(std::ostream& os, const Phase& phase) {
       return os << "RegisterWithObserver";
     case Parallel::Phase::Solve:
       return os << "Solve";
-    case Parallel::Phase::Test:
-      return os << "Test";
+    case Parallel::Phase::Testing:
+      return os << "Testing";
     case Parallel::Phase::WriteCheckpoint:
       return os << "WriteCheckpoint";
     default:  // LCOV_EXCL_LINE
