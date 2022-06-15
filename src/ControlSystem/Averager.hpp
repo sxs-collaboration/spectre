@@ -13,7 +13,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/PupStlCpp17.hpp"
-#include "Utilities/BoostHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \ingroup ControlSystemGroup

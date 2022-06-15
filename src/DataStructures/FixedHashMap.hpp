@@ -14,7 +14,6 @@
 
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Algorithm.hpp"
-#include "Utilities/BoostHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"

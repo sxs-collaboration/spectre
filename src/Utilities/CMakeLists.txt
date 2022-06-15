@@ -25,7 +25,6 @@ spectre_target_headers(
   Algorithm.hpp
   Array.hpp
   Blas.hpp
-  BoostHelpers.hpp
   CachedFunction.hpp
   CallWithDynamicType.hpp
   CloneUniquePtrs.hpp
