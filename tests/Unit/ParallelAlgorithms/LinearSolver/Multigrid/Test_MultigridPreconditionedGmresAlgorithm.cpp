@@ -17,6 +17,7 @@
 #include "Parallel/Actions/Goto.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -147,13 +148,12 @@ struct Metavariables {
       elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
-              Parallel::PhaseActions<Phase, Phase::Initialization,
+              Parallel::PhaseActions<Parallel::Phase::Initialization,
                                      initialization_actions>,
-              Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+              Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
                                      register_actions>,
-              Parallel::PhaseActions<Phase, Phase::PerformLinearSolve,
-                                     solve_actions>,
-              Parallel::PhaseActions<Phase, Phase::TestResult, test_actions>>,
+              Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
+              Parallel::PhaseActions<Parallel::Phase::Testing, test_actions>>,
           LinearSolver::multigrid::ElementsAllocator<1, MultigridSolver>>,
       observers::Observer<Metavariables>,
       observers::ObserverWriter<Metavariables>,

@@ -20,6 +20,7 @@
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
@@ -129,7 +130,7 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename Metavariables>
@@ -164,13 +165,11 @@ struct Component {
                      step_actions, typename metavariables::system>,
                  step_actions>>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
-              Actions::SetupDataBox>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, action_list>>;
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                            simple_tags, compute_tags>,
+                                        Actions::SetupDataBox>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, action_list>>;
 };
 
 template <bool HasPrimitives = false, bool MultipleHistories = false>

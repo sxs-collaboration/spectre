@@ -37,6 +37,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -255,12 +256,10 @@ struct TestDataWriter {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         tmpl::list<WriteTestData<Dim>>>,
 
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::TestResult,
+                 Parallel::PhaseActions<Parallel::Phase::Testing,
                                         tmpl::list<CleanTestData>>>;
   using initialization_tags = tmpl::list<>;
 
@@ -344,24 +343,22 @@ struct ElementArray {
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<InitializeElement<Dim>>>,
       /// [import_actions]
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Register,
+          Parallel::Phase::Register,
           tmpl::list<importers::Actions::RegisterWithElementDataReader,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::ImportData,
+          Parallel::Phase::ImportInitialData,
           tmpl::list<importers::Actions::ReadVolumeData<
                          VolumeDataOptions<TheGrid>, import_fields>,
                      importers::Actions::ReceiveVolumeData<
                          VolumeDataOptions<TheGrid>, import_fields>,
                      Parallel::Actions::TerminatePhase>>,
       /// [import_actions]
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TestResult,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<TestResult<Dim, TheGrid>>>>;
 
   static void allocate_array(
@@ -399,7 +396,7 @@ struct Metavariables {
   static constexpr const char* const help{"Test the volume data reader"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  enum class Phase { Initialization, Register, ImportData, TestResult, Exit };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -411,9 +408,9 @@ struct Metavariables {
       case Phase::Initialization:
         return Phase::Register;
       case Phase::Register:
-        return Phase::ImportData;
-      case Phase::ImportData:
-        return Phase::TestResult;
+        return Phase::ImportInitialData;
+      case Phase::ImportInitialData:
+        return Phase::Testing;
       default:
         return Phase::Exit;
     }

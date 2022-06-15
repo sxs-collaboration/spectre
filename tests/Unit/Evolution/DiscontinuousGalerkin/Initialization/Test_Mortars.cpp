@@ -32,6 +32,7 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -58,16 +59,14 @@ struct component {
   using compute_tags = tmpl::list<>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<
-              Actions::SetupDataBox,
-              evolution::dg::Initialization::Mortars<
-                  Metavariables::volume_dim, typename Metavariables::system>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::SetupDataBox,
+                                        evolution::dg::Initialization::Mortars<
+                                            Metavariables::volume_dim,
+                                            typename Metavariables::system>>>>;
 };
 
 struct Var1 : db::SimpleTag {
@@ -89,7 +88,7 @@ struct Metavariables {
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, typename MappedType>

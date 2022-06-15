@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -90,11 +91,10 @@ struct mock_characteristic_evolution {
 
   using simple_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<Actions::RequestBoundaryData<
                          H5WorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>,
@@ -161,7 +161,7 @@ struct test_metavariables {
 
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
 
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

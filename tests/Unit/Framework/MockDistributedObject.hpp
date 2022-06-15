@@ -24,6 +24,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
@@ -343,8 +344,7 @@ class MockDistributedObject {
 
   using parallel_component = Component;
 
-  using PhaseType =
-      typename tmpl::front<phase_dependent_action_lists>::phase_type;
+  using PhaseType = Parallel::Phase;
 
   using all_cache_tags = Parallel::get_const_global_cache_tags<metavariables>;
   using initialization_tags =
@@ -876,7 +876,7 @@ class MockDistributedObject {
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
-  PhaseType phase_{};
+  PhaseType phase_{Parallel::Phase::Initialization};
 
   size_t mock_node_{0};
   size_t mock_local_core_{0};
@@ -932,8 +932,9 @@ bool MockDistributedObject<Component>::next_action_if_ready() {
       };
   tmpl::for_each<phase_dependent_action_lists>(invoke_for_phase);
   if (not found_matching_phase) {
-    ERROR("Could not find any actions in the current phase for the component '"
-          << pretty_type::name<Component>() << "'.");
+    ERROR("Could not find any actions in the current phase ("
+          << phase_ << ") for the component '" << pretty_type::name<Component>()
+          << "'.");
   }
   return was_ready;
 }

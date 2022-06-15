@@ -393,18 +393,18 @@ struct GeneralizedHarmonicTemplateBase<
   using gh_dg_element_array = DgElementArray<
       derived_metavars,
       tmpl::flatten<tmpl::list<
-          Parallel::PhaseActions<Phase, Phase::Initialization,
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
               evolution::is_numeric_initial_data_v<initial_data>,
               tmpl::list<
                   Parallel::PhaseActions<
-                      Phase, Phase::RegisterWithElementDataReader,
+                      Parallel::Phase::RegisterWithElementDataReader,
                       tmpl::list<
                           importers::Actions::RegisterWithElementDataReader,
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
-                      Phase, Phase::ImportInitialData,
+                      Parallel::Phase::ImportInitialData,
                       tmpl::list<
                           GeneralizedHarmonic::Actions::ReadNumericInitialData<
                               evolution::OptionTags::NumericInitialData>,
@@ -413,16 +413,16 @@ struct GeneralizedHarmonicTemplateBase<
                           Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
-              Phase, Phase::InitializeInitialDataDependentQuantities,
+              Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
           Parallel::PhaseActions<
-              Phase, Phase::InitializeTimeStepperHistory,
+              Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
-          Parallel::PhaseActions<Phase, Phase::Register,
+          Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
-              Phase, Phase::Evolve,
+              Parallel::Phase::Evolve,
               tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>>;

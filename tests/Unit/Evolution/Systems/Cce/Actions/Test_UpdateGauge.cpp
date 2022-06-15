@@ -24,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -61,10 +62,10 @@ struct mock_characteristic_evolution {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<Actions::UpdateGauge<
               Metavariables::uses_partially_flat_cartesian_coordinates>>>>;
 };
@@ -73,7 +74,7 @@ struct metavariables {
   static constexpr bool uses_partially_flat_cartesian_coordinates = true;
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

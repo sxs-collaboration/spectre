@@ -5,6 +5,7 @@
 
 #include <type_traits>
 
+#include "Parallel/Phase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -12,12 +13,13 @@ namespace Parallel {
  * \ingroup ParallelGroup
  * \brief List of all the actions to be executed in the specified phase.
  */
-template <typename PhaseType, PhaseType Phase, typename ActionsList>
+template <Parallel::Phase Phase, typename ActionsList>
 struct PhaseActions {
   using action_list = tmpl::flatten<ActionsList>;
-  using phase_type = PhaseType;
-  static constexpr phase_type phase = Phase;
-  using integral_constant_phase = std::integral_constant<PhaseType, Phase>;
+  using phase_type = Parallel::Phase;
+  static constexpr Parallel::Phase phase = Phase;
+  using integral_constant_phase =
+      std::integral_constant<Parallel::Phase, Phase>;
   static constexpr size_t number_of_actions = tmpl::size<action_list>::value;
 };
 
@@ -36,7 +38,7 @@ struct get_action_list_from_phase_dep_action_list {
  */
 template <typename PhaseDepActionList>
 struct get_phase_type_from_phase_dep_action_list {
-  using type = typename PhaseDepActionList::phase_type;
+  using type = Parallel::Phase;
 };
 
 /*!

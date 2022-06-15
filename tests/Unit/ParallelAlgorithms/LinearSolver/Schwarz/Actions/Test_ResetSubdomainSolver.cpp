@@ -12,6 +12,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "IO/Logging/Verbosity.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/ResetSubdomainSolver.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
@@ -36,12 +37,12 @@ struct ElementArray {
   using array_index = ElementId<1>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<LinearSolver::Schwarz::Tags::SubdomainSolver<
                   std::unique_ptr<SubdomainSolver>, DummyOptionsGroup>>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<LinearSolver::Schwarz::Actions::ResetSubdomainSolver<
               DummyOptionsGroup>>>>;
 };
@@ -49,7 +50,7 @@ struct ElementArray {
 struct Metavariables {
   using element_array = ElementArray<Metavariables>;
   using component_list = tmpl::list<element_array>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_reset_subdomain_solver(const bool skip_resets) {

@@ -47,6 +47,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -103,7 +104,7 @@ struct Component {
                  Tags::Variables<tmpl::list<::Tags::dt<Var1>>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags>,
           ::Actions::SetupDataBox,
@@ -122,7 +123,7 @@ struct Metavariables {
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 

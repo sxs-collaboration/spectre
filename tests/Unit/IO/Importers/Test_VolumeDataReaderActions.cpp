@@ -30,6 +30,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -62,11 +63,11 @@ struct MockElementArray {
   using array_index = ElementIdType;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<import_tags_list>,
                      importers::Actions::RegisterWithElementDataReader>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<importers::Actions::ReadVolumeData<TestVolumeData,
                                                         import_tags_list>,
                      importers::Actions::ReceiveVolumeData<TestVolumeData,
@@ -80,8 +81,7 @@ struct MockVolumeDataReader {
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  importers::detail::InitializeElementDataReader>>>;
 };
@@ -89,7 +89,7 @@ struct MockVolumeDataReader {
 struct Metavariables {
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
-  enum class Phase { Initialization, Testing };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

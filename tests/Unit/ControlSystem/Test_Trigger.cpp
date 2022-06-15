@@ -21,6 +21,7 @@
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
@@ -53,7 +54,7 @@ struct Component {
       tmpl::list<control_system::Tags::MeasurementTimescales>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>>;
 };
 
@@ -66,7 +67,7 @@ struct Metavariables {
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<MeasureTrigger>>>;
   };
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

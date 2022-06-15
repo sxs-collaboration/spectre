@@ -12,6 +12,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -109,7 +110,7 @@ struct MockObserverWriter {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<observer_writer_tags>>>>;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 

@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -37,12 +38,11 @@ struct mock_element {
                  intrp::Tags::InterpPointInfo<Metavariables>>;
   using compute_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Cce::Actions::InterpolateDuringSelfStart<
               typename Metavariables::InterpolationTargetA>>>>;
 };
@@ -134,7 +134,7 @@ struct MockMetavariables {
       tmpl::list<InterpolateOnElementTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  mock_element<MockMetavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename MockMetavariables>

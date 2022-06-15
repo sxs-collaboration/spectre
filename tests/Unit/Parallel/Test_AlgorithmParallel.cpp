@@ -26,6 +26,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/Blas.hpp"
@@ -519,17 +520,15 @@ template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::PerformSingletonAlgorithm,
-                             tmpl::list<SingletonActions::CountReceives>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Execute, tmpl::list<SingletonActions::CountReceives>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
+    if (next_phase == Metavariables::Phase::Execute) {
       auto& local_cache = *Parallel::local_branch(global_cache);
       Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
           .start_phase(next_phase);
@@ -545,16 +544,13 @@ struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ArrayActions::Initialize>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::PerformArrayAlgorithm,
+          Parallel::Phase::Solve,
           tmpl::list<ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,
                      ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::FinalizeArray,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<ArrayActions::CheckWasUnpacked>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -579,8 +575,8 @@ struct ArrayParallelComponent {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::PerformArrayAlgorithm or
-        next_phase == Metavariables::Phase::FinalizeArray) {
+    if (next_phase == Metavariables::Phase::Solve or
+        next_phase == Metavariables::Phase::Testing) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
           .start_phase(next_phase);
     }
@@ -593,7 +589,7 @@ struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<GroupActions::Initialize, GroupActions::CheckComponentType>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -607,10 +603,10 @@ template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<NodegroupActions::Initialize,
-                 GroupActions::CheckComponentType>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<NodegroupActions::Initialize,
+                                        GroupActions::CheckComponentType>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -629,13 +625,8 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test Algorithm in parallel"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  enum class Phase {
-    Initialization,
-    PerformSingletonAlgorithm,
-    PerformArrayAlgorithm,
-    FinalizeArray,
-    Exit
-  };
+  using Phase = Parallel::Phase;
+
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<
@@ -645,12 +636,12 @@ struct TestMetavariables {
     Parallel::printf("Determining next phase\n");
 
     if (current_phase == Phase::Initialization) {
-      return Phase::PerformSingletonAlgorithm;
-    } else if (current_phase == Phase::PerformSingletonAlgorithm) {
-      return Phase::PerformArrayAlgorithm;
-    } else if (current_phase == Phase::PerformArrayAlgorithm) {
-      return Phase::FinalizeArray;
-    } else if (current_phase == Phase::FinalizeArray) {
+      return Phase::Execute;
+    } else if (current_phase == Phase::Execute) {
+      return Phase::Solve;
+    } else if (current_phase == Phase::Solve) {
+      return Phase::Testing;
+    } else if (current_phase == Phase::Testing) {
       return Phase::Exit;
     }
 

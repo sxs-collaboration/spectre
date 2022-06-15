@@ -14,6 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -38,7 +39,7 @@ struct ControlComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           Actions::SetupDataBox,
           control_system::Actions::Initialize<Metavariables, ControlSystem>,

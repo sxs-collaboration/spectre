@@ -27,6 +27,7 @@
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -52,12 +53,10 @@ struct mock_analytic_worldtube_boundary {
   using array_index = size_t;
 
   using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
     phase_dependent_action_list>;
@@ -69,7 +68,7 @@ struct H5Metavariables {
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<H5Metavariables>>;
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 
 struct GhMetavariables {
@@ -78,7 +77,7 @@ struct GhMetavariables {
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 
 struct AnalyticMetavariables {
@@ -87,7 +86,7 @@ struct AnalyticMetavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
       tmpl::list<mock_analytic_worldtube_boundary<AnalyticMetavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename Generator>

@@ -43,6 +43,7 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -90,7 +91,7 @@ struct component {
                            typename Metavariables::evolved_vars>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags, initial_compute_tags>,
           Actions::SetupDataBox,
@@ -109,7 +110,7 @@ struct Metavariables {
   using variables_tag = Tags::Variables<evolved_vars>;
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool UseRollon>

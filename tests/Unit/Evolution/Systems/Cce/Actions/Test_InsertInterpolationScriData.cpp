@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -132,12 +133,10 @@ struct MockObserver {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -168,11 +167,10 @@ struct MockCharacteristicEvolution {
 
   using simple_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<
               SetRandomBoundaryValues,
               tmpl::transform<
@@ -250,7 +248,7 @@ struct test_metavariables {
   using component_list =
       tmpl::list<MockCharacteristicEvolution<test_metavariables>,
                  MockObserver<test_metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

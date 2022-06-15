@@ -18,6 +18,7 @@
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -256,13 +257,12 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               db::AddSimpleTags<Tags::MapCounter, Tags::MemberInsertCounter,
                                 Tags::ValueCounter, Tags::PushbackCounter>>>>,
-
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Actions::SendMap, Actions::ReceiveMap,
                      Actions::SendMemberInsert, Actions::ReceiveMemberInsert,
                      Actions::SendValue, Actions::ReceiveValue,
@@ -272,7 +272,7 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {

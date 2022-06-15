@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
@@ -46,13 +47,13 @@ struct ElementArray {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
                      Actions::SetupDataBox,
                      LinearSolver::cg::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<LinearSolver::cg::detail::InitializeHasConverged<
                          fields_tag, DummyOptionsGroup, DummyOptionsGroup>,
                      LinearSolver::cg::detail::UpdateOperand<
@@ -62,7 +63,7 @@ struct ElementArray {
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

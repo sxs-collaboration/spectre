@@ -7,6 +7,7 @@
 
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
@@ -32,14 +33,13 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
                          intrp::Tags::VolumeVarsInfo<Metavariables,
                                                      ::Tags::TimeStepId>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<
           intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
@@ -54,11 +54,9 @@ struct mock_element {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Registration,
+          Parallel::Phase::Register,
           tmpl::list<intrp::Actions::RegisterElementWithInterpolator>>>;
   using initial_databox = db::compute_databox_type<tmpl::list<>>;
 };
@@ -76,7 +74,7 @@ struct MockMetavariables {
 
   using component_list = tmpl::list<mock_interpolator<MockMetavariables>,
                                     mock_element<MockMetavariables>>;
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
@@ -93,8 +91,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   }
   ActionTesting::emplace_component<elem_component>(&runner, 0);
   // There is no next_action on elem_component, so we don't call it here.
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(

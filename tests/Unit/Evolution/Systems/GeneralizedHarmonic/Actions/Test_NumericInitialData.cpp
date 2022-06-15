@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.tpp"
 #include "Utilities/GetOutput.hpp"
@@ -52,14 +53,14 @@ struct MockElementArray {
   using array_index = ElementId<3>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::append<
               gh_system_vars,
               tmpl::list<domain::Tags::Mesh<3>,
                          domain::Tags::InverseJacobian<3, Frame::ElementLogical,
                                                        Frame::Inertial>>>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<GeneralizedHarmonic::Actions::ReadNumericInitialData<
                          TestOptionGroup>,
                      GeneralizedHarmonic::Actions::SetNumericInitialData<
@@ -129,10 +130,8 @@ struct MockVolumeDataReader {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = size_t;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using replace_these_simple_actions =
       tmpl::list<importers::Actions::ReadAllVolumeDataAndDistribute<
           TestOptionGroup, detail::all_numeric_vars,
@@ -143,7 +142,7 @@ struct MockVolumeDataReader {
 struct Metavariables {
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
-  enum class Phase { Initialization, Testing };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

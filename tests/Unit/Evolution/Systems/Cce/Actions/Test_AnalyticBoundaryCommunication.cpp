@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -64,10 +65,9 @@ struct mock_analytic_worldtube_boundary {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>>;
 };
 
 template <typename Metavariables>
@@ -97,11 +97,10 @@ struct mock_characteristic_evolution {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<Actions::RequestBoundaryData<
                          AnalyticWorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>,
@@ -163,7 +162,7 @@ struct test_metavariables {
   using component_list =
       tmpl::list<mock_analytic_worldtube_boundary<test_metavariables>,
                  mock_characteristic_evolution<test_metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

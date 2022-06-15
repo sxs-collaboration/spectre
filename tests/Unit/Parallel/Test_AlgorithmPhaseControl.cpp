@@ -30,6 +30,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
@@ -40,6 +41,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Requires.hpp"
@@ -49,13 +51,13 @@
 namespace Actions {
 struct InitializePhaseRecord;
 struct RecordCurrentPhase;
-template <size_t phase>
+template <Parallel::Phase Phase>
 struct RecordPhaseIteration;
 template <typename ComponentToRestart>
 struct RestartMe;
 template <typename OtherComponent, size_t interval>
 struct TerminateAndRestart;
-struct Finalize;
+struct Testing;
 }  // namespace Actions
 
 namespace Tags {
@@ -73,14 +75,13 @@ struct ComponentAlpha;
 template <typename Metavariables>
 struct ComponentBeta;
 
-struct TempPhaseATrigger : public Trigger {
-  TempPhaseATrigger() = default;
-  explicit TempPhaseATrigger(CkMigrateMessage* /*unused*/) {}
+struct RegisterTrigger : public Trigger {
+  RegisterTrigger() = default;
+  explicit RegisterTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(TempPhaseATrigger);  // NOLINT
+  WRAPPED_PUPable_decl_template(RegisterTrigger);  // NOLINT
 
-  static constexpr Options::String help{
-    "Trigger for going to TempPhaseA."};
+  static constexpr Options::String help{"Trigger for going to Register."};
   using options = tmpl::list<>;
 
   using argument_tags = tmpl::list<Tags::Step>;
@@ -88,13 +89,13 @@ struct TempPhaseATrigger : public Trigger {
   bool operator()(const size_t step) const { return step % 5 == 0; }
 };
 
-struct TempPhaseBTrigger : public Trigger {
-  TempPhaseBTrigger() = default;
-  explicit TempPhaseBTrigger(CkMigrateMessage* /*unused*/) {}
+struct SolveTrigger : public Trigger {
+  SolveTrigger() = default;
+  explicit SolveTrigger(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
-  WRAPPED_PUPable_decl_template(TempPhaseBTrigger);  // NOLINT
+  WRAPPED_PUPable_decl_template(SolveTrigger);  // NOLINT
 
-  static constexpr Options::String help{"Trigger for going to TempPhaseB."};
+  static constexpr Options::String help{"Trigger for going to Solve."};
   using options = tmpl::list<>;
 
   using argument_tags = tmpl::list<Tags::Step>;
@@ -102,8 +103,8 @@ struct TempPhaseBTrigger : public Trigger {
   bool operator()(const size_t step) const { return step % 3 == 0; }
 };
 
-PUP::able::PUP_ID TempPhaseBTrigger::my_PUP_ID = 0;
-PUP::able::PUP_ID TempPhaseATrigger::my_PUP_ID = 0;
+PUP::able::PUP_ID SolveTrigger::my_PUP_ID = 0;
+PUP::able::PUP_ID RegisterTrigger::my_PUP_ID = 0;
 
 template <typename Metavariables>
 struct ComponentAlpha {
@@ -112,23 +113,23 @@ struct ComponentAlpha {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::InitializePhaseRecord,
-                                        Actions::RecordPhaseIteration<0_st>,
-                                        Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TempPhaseA,
-                             tmpl::list<Actions::RecordPhaseIteration<1_st>,
-                                        Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TempPhaseB,
-                             tmpl::list<Actions::RecordPhaseIteration<2_st>,
+                                        Actions::RecordPhaseIteration<
+                                            Parallel::Phase::Initialization>,
                                         Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Register,
+          tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Register>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Solve,
+          tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Solve>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Evolve,
           tmpl::list<
-              Actions::RecordPhaseIteration<3_st>,
+              Actions::RecordPhaseIteration<Parallel::Phase::Evolve>,
               Actions::TerminateAndRestart<ComponentBeta<Metavariables>, 2_st>,
               PhaseControl::Actions::ExecutePhaseChange>>>;
 
@@ -152,8 +153,8 @@ struct ComponentAlpha {
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Finalize) {
-      Parallel::simple_action<Actions::Finalize>(
+    if (next_phase == Metavariables::Phase::Testing) {
+      Parallel::simple_action<Actions::Testing>(
           Parallel::get_parallel_component<ComponentAlpha>(local_cache));
     } else {
       Parallel::get_parallel_component<ComponentAlpha>(local_cache)
@@ -169,22 +170,22 @@ struct ComponentBeta {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::InitializePhaseRecord,
-                                        Actions::RecordPhaseIteration<0_st>,
-                                        Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TempPhaseA,
-                             tmpl::list<Actions::RecordPhaseIteration<1_st>,
-                                        Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TempPhaseB,
-                             tmpl::list<Actions::RecordPhaseIteration<2_st>,
+                                        Actions::RecordPhaseIteration<
+                                            Parallel::Phase::Initialization>,
                                         Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
-          tmpl::list<Actions::RecordPhaseIteration<3_st>,
+          Parallel::Phase::Register,
+          tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Register>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Solve,
+          tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Solve>,
+                     Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Evolve,
+          tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Evolve>,
                      PhaseControl::Actions::ExecutePhaseChange,
                      Actions::TerminateAndRestart<ComponentAlpha<Metavariables>,
                                                   3_st>>>>;
@@ -196,8 +197,8 @@ struct ComponentBeta {
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Finalize) {
-      Parallel::simple_action<Actions::Finalize>(
+    if (next_phase == Metavariables::Phase::Testing) {
+      Parallel::simple_action<Actions::Testing>(
           Parallel::get_parallel_component<ComponentBeta>(local_cache));
     } else {
       Parallel::get_parallel_component<ComponentBeta>(local_cache)
@@ -228,7 +229,7 @@ struct InitializePhaseRecord {
 };
 
 // iterable action called during phases
-template <size_t Phase>
+template <Parallel::Phase Phase>
 struct RecordPhaseIteration {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -241,13 +242,9 @@ struct RecordPhaseIteration {
                     const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::PhaseRecord>(
         make_not_null(&box), [](const gsl::not_null<std::string*> phase_log) {
-          *phase_log += "Running phase: " +
-                        Metavariables::phase_name(
-                            static_cast<typename Metavariables::Phase>(Phase)) +
-                        "\n";
+          *phase_log += MakeString{} << "Running phase: " << Phase << "\n";
         });
-    if (static_cast<typename Metavariables::Phase>(Phase) ==
-        Metavariables::Phase::Evolve) {
+    if (Phase == Metavariables::Phase::Evolve) {
       db::mutate<Tags::Step>(
           make_not_null(&box),
           [](const gsl::not_null<size_t*> step) { ++(*step); });
@@ -306,7 +303,7 @@ struct TerminateAndRestart {
   }
 };
 
-struct Finalize {
+struct Testing {
   template <
       typename ParallelComponent, typename DbTagsList, typename ArrayIndex,
       typename Metavariables,
@@ -339,33 +336,26 @@ struct Finalize {
 // all events are recorded in a 'log' string that can be checked at the end.
 //
 // action request pattern:
-//   'alpha'    'beta'
-//  5:  none |   none
-//  7:   A   |   none
-// 10:  none |     B
-// 14:  none |  A and B
+//     'alpha'    'beta'
+//  5:  none    |   none
+//  7: Register |   none
+// 10:  none    |     Solve
+// 14:  none    |  Register and Solve
 struct TestMetavariables {
   using component_list = tmpl::list<ComponentAlpha<TestMetavariables>,
                                     ComponentBeta<TestMetavariables>>;
 
-  enum class Phase {
-    Initialization,
-    TempPhaseA,
-    TempPhaseB,
-    Evolve,
-    Finalize,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  TestMetavariables, Phase::TempPhaseA>,
-                              PhaseControl::VisitAndReturn<
-                                  TestMetavariables, Phase::TempPhaseB>>>,
-        tmpl::pair<Trigger, tmpl::list<TempPhaseATrigger, TempPhaseBTrigger>>>;
+                   tmpl::list<PhaseControl::VisitAndReturn<TestMetavariables,
+                                                           Phase::Register>,
+                              PhaseControl::VisitAndReturn<TestMetavariables,
+                                                           Phase::Solve>>>,
+        tmpl::pair<Trigger, tmpl::list<RegisterTrigger, SolveTrigger>>>;
   };
 
   using const_global_cache_tags =
@@ -375,18 +365,18 @@ struct TestMetavariables {
     switch (phase) {
       case Phase::Initialization:
         return "Initialization";
-      case Phase::TempPhaseA:
-        return "TempPhaseA";
-      case Phase::TempPhaseB:
-        return "TempPhaseB";
+      case Phase::Register:
+        return "Register";
+      case Phase::Solve:
+        return "Solve";
       case Phase::Evolve:
         return "Evolve";
-      case Phase::Finalize:
-        return "Finalize";
+      case Phase::Testing:
+        return "Testing";
       case Phase::Exit:
         return "Exit";
       default:
-        ERROR("phase_name: Unknown phase");
+        ERROR("phase_name: Unknown phase " << phase);
     }
   }
 
@@ -406,30 +396,30 @@ struct TestMetavariables {
     return "Running phase: Initialization\n" +
            repeat("Running phase: Evolve\n", 2_st) +
            "Terminate and Restart\n"
-           "Running phase: Evolve\n"  // step 3 -> B
-           "Running phase: TempPhaseB\n"
+           "Running phase: Evolve\n"  // step 3 -> Solve
+           "Running phase: Solve\n"
            "Running phase: Evolve\n"  // step 4
            "Terminate and Restart\n"
-           "Running phase: Evolve\n"  // step 5 -> A
-           "Running phase: TempPhaseA\n"
-           "Running phase: Evolve\n"  // step 6 -> B
+           "Running phase: Evolve\n"  // step 5 -> Register
+           "Running phase: Register\n"
+           "Running phase: Evolve\n"  // step 6 -> Solve
            "Terminate and Restart\n"
-           "Running phase: TempPhaseB\n" +
+           "Running phase: Solve\n" +
            repeat("Running phase: Evolve\n", 2_st) +  // step 7-8
            "Terminate and Restart\n"
-           "Running phase: Evolve\n"  // step 9 -> B
-           "Running phase: TempPhaseB\n"
-           "Running phase: Evolve\n"  // step 10 -> A
+           "Running phase: Evolve\n"  // step 9 -> Solve
+           "Running phase: Solve\n"
+           "Running phase: Evolve\n"  // step 10 -> Register
            "Terminate and Restart\n"
-           "Running phase: TempPhaseA\n" +
-           repeat("Running phase: Evolve\n", 2_st) +  // step 11-12 -> B
+           "Running phase: Register\n" +
+           repeat("Running phase: Evolve\n", 2_st) +  // step 11-12 -> Solve
            "Terminate and Restart\n"
-           "Running phase: TempPhaseB\n" +
+           "Running phase: Solve\n" +
            repeat("Running phase: Evolve\n", 2_st) +  // step 13-14
            "Terminate and Restart\n"
-           "Running phase: Evolve\n"  // step 15 -> B then A
-           "Running phase: TempPhaseA\n"
-           "Running phase: TempPhaseB\n"
+           "Running phase: Evolve\n"  // step 15 -> Solve then Register
+           "Running phase: Register\n"
+           "Running phase: Solve\n"
            "Running phase: Evolve\n"  // step 16
            "Terminate Completion\n";
   }
@@ -437,25 +427,26 @@ struct TestMetavariables {
   static std::string expected_log(
       tmpl::type_<ComponentBeta<TestMetavariables>> /*meta*/) {
     return "Running phase: Initialization\n" +
-           repeat("Running phase: Evolve\n", 3_st) +  // steps 1-3 -> B
-           "Running phase: TempPhaseB\n"
+           repeat("Running phase: Evolve\n", 3_st) +  // steps 1-3 -> Solve
+           "Running phase: Solve\n"
            "Terminate and Restart\n" +
-           repeat("Running phase: Evolve\n", 2_st) +  // steps 4-5 -> A
-           "Running phase: TempPhaseA\n"
-           "Running phase: Evolve\n"  // step 6 -> B
-           "Running phase: TempPhaseB\n"
+           repeat("Running phase: Evolve\n", 2_st) +  // steps 4-5 -> Register
+           "Running phase: Register\n"
+           "Running phase: Evolve\n"  // step 6 -> Solve
+           "Running phase: Solve\n"
            "Terminate and Restart\n" +
-           repeat("Running phase: Evolve\n", 3_st) +  // steps 8-9 -> B
-           "Running phase: TempPhaseB\n"
+           repeat("Running phase: Evolve\n", 3_st) +  // steps 8-9 -> Solve
+           "Running phase: Solve\n"
            "Terminate and Restart\n"
-           "Running phase: Evolve\n"  // step 10 -> A
-           "Running phase: TempPhaseA\n" +
-           repeat("Running phase: Evolve\n", 2_st) +  // steps 11-12 -> B
-           "Running phase: TempPhaseB\n"
+           "Running phase: Evolve\n"  // step 10 -> Register
+           "Running phase: Register\n" +
+           repeat("Running phase: Evolve\n", 2_st) +  // steps 11-12 -> Solve
+           "Running phase: Solve\n"
            "Terminate and Restart\n" +
-           repeat("Running phase: Evolve\n", 3_st) +  // steps 13-15 -> A then B
-           "Running phase: TempPhaseA\n"
-           "Running phase: TempPhaseB\n"
+           repeat("Running phase: Evolve\n",
+                  3_st) +  // steps 13-15 -> Register then Solve
+           "Running phase: Register\n"
+           "Running phase: Solve\n"
            "Terminate Completion\n";
   }
 
@@ -475,8 +466,8 @@ struct TestMetavariables {
       case Phase::Initialization:
         return Phase::Evolve;
       case Phase::Evolve:
-        return Phase::Finalize;
-      case Phase::Finalize:
+        return Phase::Testing;
+      case Phase::Testing:
       case Phase::Exit:
         return Phase::Exit;
       default:

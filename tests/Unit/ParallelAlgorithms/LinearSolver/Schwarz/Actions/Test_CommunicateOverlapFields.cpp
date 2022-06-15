@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
@@ -48,7 +49,7 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
               domain::Tags::Element<Dim>, domain::Tags::Mesh<Dim>,
               LinearSolver::Schwarz::Tags::IntrudingExtents<Dim,
@@ -57,7 +58,7 @@ struct ElementArray {
               LinearSolver::Schwarz::Tags::Overlaps<fields_tag, Dim,
                                                     DummyOptionsGroup>>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<
               LinearSolver::Schwarz::Actions::SendOverlapFields<
                   tmpl::list<fields_tag>, DummyOptionsGroup, RestrictToOverlap>,
@@ -70,7 +71,7 @@ template <size_t Dim, bool RestrictToOverlap>
 struct Metavariables {
   using element_array = ElementArray<Dim, RestrictToOverlap, Metavariables>;
   using component_list = tmpl::list<element_array>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool RestrictToOverlap>

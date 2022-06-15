@@ -410,7 +410,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   Parallel::CProxy_GlobalCache<metavariables> global_cache_proxy_;
   bool performing_action_ = false;
-  PhaseType phase_{};
+  PhaseType phase_{Parallel::Phase::Initialization};
   std::unordered_map<PhaseType, size_t> phase_bookmarks_{};
   std::size_t algorithm_step_ = 0;
   tmpl::conditional_t<Parallel::is_node_group_proxy<cproxy_type>::value,

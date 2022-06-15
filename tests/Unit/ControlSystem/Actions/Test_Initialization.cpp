@@ -22,6 +22,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/TestStructs.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -69,7 +70,7 @@ struct MockControlComponent {
                  control_system::Tags::Controller<mock_control_sys>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>,
                  control_system::Actions::Initialize<Metavariables,
                                                      mock_control_sys>>>>;
@@ -77,7 +78,7 @@ struct MockControlComponent {
 
 struct MockMetavars {
   using component_list = tmpl::list<MockControlComponent<MockMetavars>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

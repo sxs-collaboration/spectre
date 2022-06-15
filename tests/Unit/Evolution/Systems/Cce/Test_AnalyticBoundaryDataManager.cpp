@@ -22,6 +22,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -73,10 +74,8 @@ struct mock_observer_writer {
   using array_index = size_t;
   using const_global_cache_tags = tmpl::list<>;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -88,17 +87,17 @@ struct mock_boundary {
   using array_index = size_t;
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<simple_tags,
-                                                  db::AddComputeTags<>>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, db::AddComputeTags<>>>>>;
 };
 
 struct metavariables {
   using component_list = tmpl::list<mock_observer_writer<metavariables>,
                                     mock_boundary<metavariables>>;
   using observed_reduction_data_tags = tmpl::list<>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",

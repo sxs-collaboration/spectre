@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Actions/RestrictFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
@@ -57,7 +58,7 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
               LinearSolver::multigrid::Tags::ParentId<Dim>,
               LinearSolver::multigrid::Tags::ChildIds<Dim>,
@@ -65,7 +66,7 @@ struct ElementArray {
               LinearSolver::multigrid::Tags::ParentMesh<Dim>,
               Convergence::Tags::IterationId<DummyOptionsGroup>, fields_tag>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<
               LinearSolver::multigrid::Actions::SendFieldsToCoarserGrid<
                   tmpl::list<fields_tag>, DummyOptionsGroup,
@@ -82,7 +83,7 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::conditional_t<std::is_same_v<FieldsAreMassiveTag, void>,
                           tmpl::list<>, tmpl::list<FieldsAreMassiveTag>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename FieldsAreMassiveTag>

@@ -20,6 +20,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
@@ -74,12 +75,12 @@ struct ElementArray {
   using array_index = ElementId<1>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<domain::Tags::Coordinates<1, Frame::Inertial>>>>>,
 
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Actions::SetupDataBox,
                      elliptic::Actions::InitializeOptionalAnalyticSolution<
                          elliptic::Tags::Background<
@@ -93,7 +94,7 @@ struct Metavariables {
   using const_global_cache_tags = tmpl::list<
       elliptic::Tags::Background<elliptic::analytic_data::Background>>;
   using component_list = tmpl::list<element_array>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =

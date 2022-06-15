@@ -41,6 +41,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -86,7 +87,7 @@ struct component {
       Tags::TimeStepper<TimeStepper>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  evolution::dg::subcell::Actions::TciAndSwitchToDg<
                      typename Metavariables::TciOnSubcellGrid>>>>;
@@ -100,7 +101,7 @@ struct Metavariables {
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
       tmpl::list<evolution::dg::subcell::Tags::SubcellOptions>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;

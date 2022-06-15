@@ -54,6 +54,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
@@ -380,7 +381,7 @@ struct ElementArray {
       tmpl::list<domain::Tags::Domain<Dim>, background_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<
                   tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
@@ -401,7 +402,7 @@ struct ElementArray {
                                             typename fields_tag::tags_list>,
               ExtraInitActions, Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<apply_full_dg_operator_actions,
                      // Break here so it's easy to apply the subdomain operator
                      // only on a particular element
@@ -420,7 +421,7 @@ struct Metavariables {
       ElementArray<Metavariables, System, SubdomainOperator, ExtraInitActions>;
   using component_list = tmpl::list<element_array>;
   using const_global_cache_tags = tmpl::list<>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<

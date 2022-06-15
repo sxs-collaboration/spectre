@@ -16,6 +16,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
@@ -38,17 +39,16 @@ struct mock_component {
                                  domain::Tags::Coordinates<3, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<VariableFixing::Actions::FixVariables<
                                  VariableFixing::RadiallyFallingFloor<3>>>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 struct SomeType {};

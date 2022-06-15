@@ -9,6 +9,7 @@
 
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
@@ -31,7 +32,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolator<
                      tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables,
@@ -52,7 +53,7 @@ struct Metavariables {
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
   using component_list = tmpl::list<mock_interpolator<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",

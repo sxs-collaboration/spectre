@@ -16,6 +16,7 @@
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -48,9 +49,9 @@ struct element_component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIdType;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase,
-      Metavariables::Phase::RegisterWithObservers, RegistrationActionsList>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+                                        RegistrationActionsList>>;
 };
 
 template <typename Metavariables>
@@ -66,7 +67,7 @@ struct observer_component {
       typename observers::Actions::Initialize<Metavariables>::compute_tags;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  observers::Actions::Initialize<Metavariables>>>>;
 };
@@ -86,7 +87,7 @@ struct observer_writer_component {
       Metavariables>::compute_tags;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  observers::Actions::InitializeWriter<Metavariables>>>>;
 };
@@ -128,6 +129,6 @@ struct Metavariables {
                  reduction_data_from_ds_and_vs>>;
   /// [make_reduction_data_tags]
 
-  enum class Phase { Initialization, RegisterWithObservers, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace TestObservers_detail

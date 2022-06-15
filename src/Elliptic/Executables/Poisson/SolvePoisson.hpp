@@ -255,11 +255,11 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<Parallel::PhaseActions<Phase, Phase::Initialization,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         initialization_actions>,
-                 Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+                 Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
                                         register_actions>,
-                 Parallel::PhaseActions<Phase, Phase::Solve, solve_actions>>,
+                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename multigrid::options_group>>;
 

@@ -11,6 +11,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,20 +45,18 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<SomeNumber>>>>,
-
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<
-              Actions::SetupDataBox,
-              Initialization::Actions::AddComputeTags<SquareNumberCompute>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::SetupDataBox,
+                                        Initialization::Actions::AddComputeTags<
+                                            SquareNumberCompute>>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

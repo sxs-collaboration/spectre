@@ -36,6 +36,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
@@ -270,28 +271,26 @@ struct ElementArray {
   /// [action_list]
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox, InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
                      detail::init_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::RegisterWithObserver,
+          Parallel::Phase::RegisterWithObserver,
           tmpl::list<typename linear_solver::register_element,
                      detail::register_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::PerformLinearSolve,
+          Parallel::Phase::Solve,
           tmpl::list<
               typename linear_solver::template solve<tmpl::list<
                   detail::run_preconditioner<preconditioner>,
                   ComputeOperatorAction<typename linear_solver::operand_tag>>>,
               Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::TestResult,
+          Parallel::Phase::Testing,
           tmpl::list<TestResult<typename linear_solver::options_group>>>>;
   /// [action_list]
   using initialization_tags = Parallel::get_initialization_tags<
@@ -354,12 +353,10 @@ struct OutputCleaner {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         tmpl::list<CleanOutput<false>>>,
 
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::CleanOutput,
+                 Parallel::PhaseActions<Parallel::Phase::Cleanup,
                                         tmpl::list<CleanOutput<true>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -373,25 +370,18 @@ struct OutputCleaner {
   }
 };
 
-enum class Phase {
-  Initialization,
-  RegisterWithObserver,
-  PerformLinearSolve,
-  TestResult,
-  CleanOutput,
-  Exit
-};
+using Phase = Parallel::Phase;
 
 inline Phase determine_next_phase(const Phase& current_phase) {
   switch (current_phase) {
     case Phase::Initialization:
       return Phase::RegisterWithObserver;
     case Phase::RegisterWithObserver:
-      return Phase::PerformLinearSolve;
-    case Phase::PerformLinearSolve:
-      return Phase::TestResult;
-    case Phase::TestResult:
-      return Phase::CleanOutput;
+      return Phase::Solve;
+    case Phase::Solve:
+      return Phase::Testing;
+    case Phase::Testing:
+      return Phase::Cleanup;
     default:
       return Phase::Exit;
   }

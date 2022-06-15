@@ -27,6 +27,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
@@ -193,7 +194,7 @@ struct component {
                  Tags::Variables<tmpl::list<PrimVar>>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  evolution::Initialization::Actions::SetVariables<
                      domain::Tags::Coordinates<Dim, Frame::ElementLogical>>>>>;
@@ -257,7 +258,7 @@ struct MetavariablesAnalyticSolution {
   using temporal_id = TimeId;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool HasPrimitives>
@@ -306,7 +307,7 @@ struct MetavariablesAnalyticData {
                           typename system::variables_tag::tags_list>;
   using temporal_id = TimeId;
   using const_global_cache_tags = tmpl::list<Tags::AnalyticData<analytic_data>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool HasPrimitives>

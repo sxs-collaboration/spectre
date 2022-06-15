@@ -33,6 +33,7 @@
 #include "Helpers/ControlSystem/TestStructs.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -151,7 +152,7 @@ struct Component {
                  evolution::Tags::EventsAndDenseTriggers>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           Actions::SetupDataBox,
           evolution::Actions::InitializeRunEventsAndDenseTriggers,
@@ -170,7 +171,7 @@ struct Metavariables {
                    control_system::control_system_triggers<control_systems>>>;
   };
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",

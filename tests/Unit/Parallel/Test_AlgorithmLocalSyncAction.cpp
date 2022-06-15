@@ -24,6 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -189,8 +190,7 @@ struct NodegroupComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         tmpl::list<InitializeNodegroup>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -211,7 +211,7 @@ struct ArrayComponent {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Evolve,
+      Parallel::Phase::Evolve,
       tmpl::list<TestSyncActionIncrement, Parallel::Actions::TerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -245,11 +245,7 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  enum class Phase {
-    Initialization,
-    Evolve,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(

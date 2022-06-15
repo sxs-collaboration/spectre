@@ -22,6 +22,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Observe.hpp"
@@ -64,7 +65,7 @@ struct MockResidualMonitor {
       typename LinearSolver::cg::detail::ResidualMonitor<
           Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  LinearSolver::cg::detail::InitializeResidualMonitor<
                      fields_tag, TestLinearSolver>>>>;
@@ -77,10 +78,8 @@ struct MockElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using inbox_tags = tmpl::list<
       LinearSolver::cg::detail::Tags::InitialHasConverged<TestLinearSolver>,
       LinearSolver::cg::detail::Tags::Alpha<TestLinearSolver>,
@@ -92,7 +91,7 @@ struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
                                     MockElementArray<Metavariables>,
                                     helpers::MockObserverWriter<Metavariables>>;
-  enum class Phase { Initialization, RegisterWithObserver, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

@@ -58,7 +58,7 @@ void check_observer_registration() {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::RegisterWithObservers);
+                           metavariables::Phase::RegisterWithObserver);
 
   // Check observer component
   CHECK(

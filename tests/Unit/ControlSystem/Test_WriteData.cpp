@@ -34,6 +34,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -93,16 +94,14 @@ struct MockControlComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 struct TestMetavars {
   using observed_reduction_data_tags = tmpl::list<>;
 
-  enum class Phase { Initialization, Register, WriteData, Exit };
+  using Phase = Parallel::Phase;
 
   using component_list =
       tmpl::list<::TestHelpers::observers::MockObserverWriter<TestMetavars>,
@@ -210,7 +209,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.WriteData", "[Unit][ControlSystem]") {
       ActionTesting::LocalCoreId{0});
   auto& cache = ActionTesting::cache<observer>(runner, 0);
 
-  runner.set_phase(TestMetavars::Phase::WriteData);
+  runner.set_phase(TestMetavars::Phase::Execute);
 
   // set up data to write
   FoTPtr normal_fot = std::make_unique<

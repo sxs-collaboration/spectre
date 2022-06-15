@@ -25,6 +25,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -109,10 +110,8 @@ template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -230,10 +229,8 @@ struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -256,7 +253,7 @@ struct ArrayParallelComponent {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::CallArrayReduce) {
+    if (next_phase == Metavariables::Phase::Testing) {
       Parallel::simple_action<ArrayReduce>(
           Parallel::get_parallel_component<ArrayParallelComponent>(
               local_cache));
@@ -272,14 +269,14 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test reductions using Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  enum class Phase { Initialization, CallArrayReduce, Exit };
+  using Phase = Parallel::Phase;
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<
           tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
       const Phase& current_phase,
       const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    return current_phase == Phase::Initialization ? Phase::CallArrayReduce
+    return current_phase == Phase::Initialization ? Phase::Testing
                                                   : Phase::Exit;
   }
 

@@ -237,8 +237,7 @@ struct Metavariables {
           Metavariables,
           tmpl::list<
               Parallel::PhaseActions<
-                  typename Metavariables::Phase,
-                  Metavariables::Phase::Initialization,
+                  Parallel::Phase::Initialization,
                   tmpl::list<
                       Actions::SetupDataBox,
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
@@ -249,15 +248,14 @@ struct Metavariables {
                       ::Initialization::Actions::
                           RemoveOptionsAndTerminatePhase>>,
               Parallel::PhaseActions<
-                  typename Metavariables::Phase,
-                  Metavariables::Phase::RegisterWithObserver,
+                  Parallel::Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  Actions::ExportCoordinates<Dim>>,
                              observers::Actions::RegisterWithObservers<
                                  Actions::FindGlobalMinimumGridSpacing>,
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
-                  typename Metavariables::Phase, Metavariables::Phase::Execute,
+                  Parallel::Phase::Execute,
                   tmpl::list<Actions::AdvanceTime,
                              Actions::ExportCoordinates<Dim>,
                              Actions::FindGlobalMinimumGridSpacing,

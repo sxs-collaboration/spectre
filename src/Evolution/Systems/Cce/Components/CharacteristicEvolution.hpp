@@ -31,6 +31,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -216,19 +217,15 @@ struct CharacteristicEvolution {
       ::Actions::Goto<CceEvolutionLabelTag>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::InitializeTimeStepperHistory,
+          Parallel::Phase::InitializeTimeStepperHistory,
           SelfStart::self_start_procedure<
               self_start_extract_action_list,
               Cce::System<
                   Metavariables::uses_partially_flat_cartesian_coordinates>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve,
-                             extract_action_list>>;
+      Parallel::PhaseActions<Parallel::Phase::Evolve, extract_action_list>>;
 
   static void initialize(
       Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}

@@ -17,6 +17,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -47,7 +48,7 @@ struct ResidualMonitor {
   // `ElementActions.hpp`. See `LinearSolver::cg::ConjugateGradient` for
   // details.
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<::Actions::SetupDataBox,
                  InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
