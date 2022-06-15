@@ -468,27 +468,28 @@ void add_received_variables(
 ///
 /// block_logical_coords is called by an Action of InterpolationTarget.
 ///
-/// Currently two Actions call block_logical_coords:
-/// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
-///                             and by FindApparentHorizon)
-/// - InterpolationTargetVarsFromElement (called by DgElementArray)
+/// Currently one Action directly calls this version of block_logical_coords:
 /// - InterpolationTargetSendTimeIndepPointsToElements
 ///   (in InterpolationTarget ActionList)
-template <typename InterpolationTargetTag, typename DbTags,
-          typename Metavariables, typename TemporalId>
-auto block_logical_coords(const db::DataBox<DbTags>& box,
-                          Parallel::GlobalCache<Metavariables>& cache,
-                          const TemporalId& temporal_id) {
+/// and one Action indirectly calls this version of block_logical_coords:
+/// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
+///                             and by FindApparentHorizon)
+template <typename InterpolationTargetTag, typename Metavariables,
+          typename TemporalId>
+auto block_logical_coords(
+    const Parallel::GlobalCache<Metavariables>& cache,
+    const tnsr::I<
+        DataVector, Metavariables::volume_dim,
+        typename InterpolationTargetTag::compute_target_points::frame>& coords,
+    const TemporalId& temporal_id) {
   const auto& domain =
-      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+      get<domain::Tags::Domain<Metavariables::volume_dim>>(cache);
   if constexpr (std::is_same_v<typename InterpolationTargetTag::
                                    compute_target_points::frame,
                                ::Frame::Grid>) {
     // Frame is grid frame, so don't need any FunctionsOfTime,
     // whether or not the maps are time_dependent.
-    return ::block_logical_coordinates(
-        domain, InterpolationTargetTag::compute_target_points::points(
-                    box, tmpl::type_<Metavariables>{}, temporal_id));
+    return ::block_logical_coordinates(domain, coords);
   }
 
   if (maps_are_time_dependent<InterpolationTargetTag>(cache)) {
@@ -499,9 +500,7 @@ auto block_logical_coords(const db::DataBox<DbTags>& box,
       // that functions_of_time are up to date at temporal_id.
       const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
       return ::block_logical_coordinates(
-          domain,
-          InterpolationTargetTag::compute_target_points::points(
-              box, tmpl::type_<Metavariables>{}, temporal_id),
+          domain, coords,
           InterpolationTarget_detail::evaluate_temporal_id_for_expiration(
               temporal_id),
           functions_of_time);
@@ -522,13 +521,34 @@ auto block_logical_coords(const db::DataBox<DbTags>& box,
   }
 
   // Time-independent case.
-  return ::block_logical_coordinates(
-      domain, InterpolationTargetTag::compute_target_points::points(
-                  box, tmpl::type_<Metavariables>{}, temporal_id));
+  return ::block_logical_coordinates(domain, coords);
 }
 
-/// This is a version of block_logical_coords for when the coords
-/// are time-independent.
+/// Version of block_logical_coords that computes the interpolation
+/// points on the fly.  This version is called when the interpolation
+/// points are (or might be) time-dependent in the
+/// InterpolationTargetTag's frame.
+///
+/// This version of block_logical_coordinates is called when there
+/// is an Interpolator ParallelComponent.
+///
+/// Currently one Action directly calls this version of block_logical_coords:
+/// - SendPointsToInterpolator (called by AddTemporalIdsToInterpolationTarget
+///                             and by FindApparentHorizon)
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables, typename TemporalId>
+auto block_logical_coords(const db::DataBox<DbTags>& box,
+                          const Parallel::GlobalCache<Metavariables>& cache,
+                          const TemporalId& temporal_id) {
+  return block_logical_coords<InterpolationTargetTag>(
+      cache,
+      InterpolationTargetTag::compute_target_points::points(
+          box, tmpl::type_<Metavariables>{}, temporal_id),
+      temporal_id);
+}
+
+/// Version of block_logical_coords for when the coords are
+/// time-independent.
 template <typename InterpolationTargetTag, typename DbTags,
           typename Metavariables>
 auto block_logical_coords(const db::DataBox<DbTags>& box,
