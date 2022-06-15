@@ -344,8 +344,6 @@ class MockDistributedObject {
 
   using parallel_component = Component;
 
-  using PhaseType = Parallel::Phase;
-
   using all_cache_tags = Parallel::get_const_global_cache_tags<metavariables>;
   using initialization_tags =
       typename detail::get_initialization_tags_from_component<Component>::type;
@@ -401,13 +399,13 @@ class MockDistributedObject {
         std::forward<Options>(opts)...);
   }
 
-  void set_phase(PhaseType phase) {
+  void set_phase(Parallel::Phase phase) {
     phase_ = phase;
     algorithm_step_ = 0;
     terminate_ = number_of_actions_in_phase(phase) == 0;
     halt_algorithm_until_next_phase_ = false;
   }
-  PhaseType get_phase() const { return phase_; }
+  Parallel::Phase get_phase() const { return phase_; }
 
   void set_terminate(bool t) { terminate_ = t; }
   bool get_terminate() const { return terminate_; }
@@ -416,7 +414,7 @@ class MockDistributedObject {
   // no effect.
   void perform_algorithm() {}
 
-  size_t number_of_actions_in_phase(const PhaseType phase) const {
+  size_t number_of_actions_in_phase(const Parallel::Phase phase) const {
     size_t number_of_actions = 0;
     tmpl::for_each<phase_dependent_action_lists>(
         [&number_of_actions, phase](auto pdal_v) {
@@ -876,7 +874,7 @@ class MockDistributedObject {
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
-  PhaseType phase_{Parallel::Phase::Initialization};
+  Parallel::Phase phase_{Parallel::Phase::Initialization};
 
   size_t mock_node_{0};
   size_t mock_local_core_{0};
@@ -922,7 +920,7 @@ bool MockDistributedObject<Component>::next_action_if_ready() {
   const auto invoke_for_phase =
       [this, &found_matching_phase, &was_ready](auto phase_dep_v) {
         using PhaseDep = typename decltype(phase_dep_v)::type;
-        constexpr PhaseType phase = PhaseDep::phase;
+        constexpr Parallel::Phase phase = PhaseDep::phase;
         using actions_list = typename PhaseDep::action_list;
         if (phase_ == phase) {
           found_matching_phase = true;
