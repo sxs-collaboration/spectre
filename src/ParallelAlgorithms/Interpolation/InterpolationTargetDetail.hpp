@@ -283,12 +283,11 @@ bool have_data_at_all_points(const db::DataBox<DbTags>& box,
 
 /// Returns true if at least one Block in the Domain has
 /// time-dependent maps.
-template <typename InterpolationTargetTag, typename DbTags,
-          typename Metavariables>
-bool maps_are_time_dependent(const db::DataBox<DbTags>& box,
-                             const tmpl::type_<Metavariables>& /*meta*/) {
+template <typename InterpolationTargetTag, typename Metavariables>
+bool maps_are_time_dependent(
+    const Parallel::GlobalCache<Metavariables>& cache) {
   const auto& domain =
-      db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box);
+      get<domain::Tags::Domain<Metavariables::volume_dim>>(cache);
   return alg::any_of(domain.blocks(), [](const auto& block) {
     return block.is_time_dependent();
   });
@@ -492,8 +491,7 @@ auto block_logical_coords(const db::DataBox<DbTags>& box,
                     box, tmpl::type_<Metavariables>{}, temporal_id));
   }
 
-  if (maps_are_time_dependent<InterpolationTargetTag>(
-          box, tmpl::type_<Metavariables>{})) {
+  if (maps_are_time_dependent<InterpolationTargetTag>(cache)) {
     if constexpr (Parallel::is_in_mutable_global_cache<
                       Metavariables, domain::Tags::FunctionsOfTime>) {
       // Whoever calls block_logical_coords when the maps are

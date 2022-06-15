@@ -238,7 +238,7 @@ struct VerifyTemporalIdsAndSendPoints {
                                                      cache);
     } else {
       if (InterpolationTarget_detail::maps_are_time_dependent<
-              InterpolationTargetTag>(box, tmpl::type_<Metavariables>{})) {
+              InterpolationTargetTag>(cache)) {
         if constexpr (Parallel::is_in_mutable_global_cache<
                           Metavariables, domain::Tags::FunctionsOfTime>) {
           detail::verify_temporal_ids_and_send_points_time_dependent<
