@@ -25,14 +25,14 @@ struct has_func<
 template <class T>
 void func(T t) {
   auto my_lambdas =
-      make_overloader([](auto& /*f*/, std::integral_constant<bool, false>,
-                         std::integral_constant<bool, false>) { return 0; },
-                      [](auto& /*f*/, std::integral_constant<bool, true>,
-                         std::integral_constant<bool, false>) { return 1; },
-                      [](auto& /*f*/, std::integral_constant<bool, false>,
-                         std::integral_constant<bool, true>) { return 2; },
-                      [](auto& /*f*/, std::integral_constant<bool, true>,
-                         std::integral_constant<bool, true>) { return 3; });
+      Overloader{[](auto& /*f*/, std::integral_constant<bool, false>,
+                    std::integral_constant<bool, false>) { return 0; },
+                 [](auto& /*f*/, std::integral_constant<bool, true>,
+                    std::integral_constant<bool, false>) { return 1; },
+                 [](auto& /*f*/, std::integral_constant<bool, false>,
+                    std::integral_constant<bool, true>) { return 2; },
+                 [](auto& /*f*/, std::integral_constant<bool, true>,
+                    std::integral_constant<bool, true>) { return 3; }};
   CHECK(static_cast<int>(has_func<T>::value) ==
         (my_lambdas(t, std::integral_constant<bool, has_func<T>::value>{},
                     std::integral_constant<bool, false>{})));
@@ -50,17 +50,17 @@ void caller() {
 
 SPECTRE_TEST_CASE("Unit.Utilities.Overloader", "[Unit][Utilities]") {
   auto my_lambdas =
-      make_overloader([](std::integral_constant<int, 0>) { return 0; },
-                      [](std::integral_constant<int, 1>) { return 1; },
-                      [](std::integral_constant<int, 2>) { return 2; },
-                      [](std::integral_constant<int, 3>) { return 3; },
-                      [](std::integral_constant<int, 4>) { return 4; },
-                      [](std::integral_constant<int, 5>) { return 5; },
-                      [](std::integral_constant<int, 6>) { return 6; },
-                      [](std::integral_constant<int, 7>) { return 7; },
-                      [](std::integral_constant<int, 8>) { return 8; },
-                      [](std::integral_constant<int, 9>) { return 9; },
-                      [](std::integral_constant<int, 10>) { return 10; });
+      Overloader{[](std::integral_constant<int, 0>) { return 0; },
+                 [](std::integral_constant<int, 1>) { return 1; },
+                 [](std::integral_constant<int, 2>) { return 2; },
+                 [](std::integral_constant<int, 3>) { return 3; },
+                 [](std::integral_constant<int, 4>) { return 4; },
+                 [](std::integral_constant<int, 5>) { return 5; },
+                 [](std::integral_constant<int, 6>) { return 6; },
+                 [](std::integral_constant<int, 7>) { return 7; },
+                 [](std::integral_constant<int, 8>) { return 8; },
+                 [](std::integral_constant<int, 9>) { return 9; },
+                 [](std::integral_constant<int, 10>) { return 10; }};
   CHECK((0 == my_lambdas(std::integral_constant<int, 0>{})));
   CHECK((1 == my_lambdas(std::integral_constant<int, 1>{})));
   CHECK((2 == my_lambdas(std::integral_constant<int, 2>{})));

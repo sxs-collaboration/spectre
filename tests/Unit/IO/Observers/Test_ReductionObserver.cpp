@@ -144,7 +144,7 @@ void test_reduction_observer(const bool observe_per_core) {
   ActionTesting::set_phase(make_not_null(&runner),
                            metavariables::Phase::Testing);
 
-  const auto make_fake_reduction_data = make_overloader(
+  const auto make_fake_reduction_data = Overloader{
       [](const observers::ArrayComponentId& id, const double time,
          const helpers::reduction_data_from_doubles& /*meta*/) {
         const auto hashed_id =
@@ -179,7 +179,7 @@ void test_reduction_observer(const bool observe_per_core) {
                                           1.0e-13 * hashed_id + 6.0 * time};
         return helpers::reduction_data_from_ds_and_vs{
             time, number_of_grid_points, error0, vector1, vector2, error1};
-      });
+      }};
 
   using reduction_data_list =
       tmpl::list<helpers::reduction_data_from_doubles,
