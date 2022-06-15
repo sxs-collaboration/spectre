@@ -32,6 +32,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
@@ -180,8 +181,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   using cbase_type =
       typename chare_type::template cbase<parallel_component, array_index>;
   /// The type of the phases
-  using PhaseType =
-      typename tmpl::front<tmpl::list<PhaseDepActionListsPack...>>::phase_type;
+  using PhaseType = Parallel::Phase;
 
   using phase_dependent_action_lists = tmpl::list<PhaseDepActionListsPack...>;
 
@@ -555,6 +555,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_state()
     const {
+  using ::operator<<;
   std::ostringstream os;
   os << "State:\n";
   os << "performing_action_ = " << std::boolalpha << performing_action_
