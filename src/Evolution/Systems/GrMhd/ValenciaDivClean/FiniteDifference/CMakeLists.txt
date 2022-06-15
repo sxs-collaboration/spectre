@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
@@ -16,6 +17,7 @@ spectre_target_headers(
   HEADERS
   Factory.hpp
   FiniteDifference.hpp
+  MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
   Reconstructor.hpp
   ReconstructWork.hpp
