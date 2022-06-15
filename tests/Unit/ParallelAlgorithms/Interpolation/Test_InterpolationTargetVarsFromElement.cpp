@@ -19,6 +19,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
@@ -210,13 +211,35 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
     }
   };
 
+  // Compute block_logical coordinates (which will not be used except
+  // for its size and for determining which points are valid/invalid).
+  // For this test, there are 10 points and all are valid; the call
+  // to intrp::InterpolationTarget_detail::block_logical_coords should
+  // set up those coordinates appropriately.
+  using box_tags = tmpl::append<
+      ActionTesting::InitializeDataBox<
+          target_component::simple_tags,
+          typename metavars::InterpolationTargetA::compute_items_on_target>::
+          action_testing_simple_tags,
+      ActionTesting::InitializeDataBox<
+          target_component::simple_tags,
+          typename metavars::InterpolationTargetA::compute_items_on_target>::
+          action_testing_compute_tags>;
+  auto& target_box = ActionTesting::get_databox<target_component, box_tags>(
+      make_not_null(&runner), 0);
+  const auto block_logical_coords =
+      intrp::InterpolationTarget_detail::block_logical_coords<
+          typename metavars::InterpolationTargetA>(target_box,
+                                                   tmpl::type_<metavars>{});
+
   // Add points at first_temporal_id
   add_to_vars_src({{3.0, 6.0}}, {{3, 6}});
   add_to_vars_src({{2.0, 7.0}}, {{2, 7}});
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      first_temporal_id);
 
   // It should know about only one temporal_id
   CHECK(ActionTesting::get_databox_tag<
@@ -240,7 +263,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      first_temporal_id);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
@@ -259,7 +283,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      second_temporal_id);
 
   // It should know about two temporal_ids
   CHECK(ActionTesting::get_databox_tag<
@@ -290,7 +315,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      second_temporal_id);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
@@ -310,7 +336,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, second_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      second_temporal_id);
 
   // It should have interpolated all the points by now,
   // and the list of points should have been cleaned up.
@@ -348,7 +375,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   ActionTesting::simple_action<
       target_component, intrp::Actions::InterpolationTargetVarsFromElement<
                             typename metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, vars_src, global_offsets, first_temporal_id);
+      make_not_null(&runner), 0, vars_src, block_logical_coords, global_offsets,
+      first_temporal_id);
 
   // It should have interpolated all the points by now,
   // and the list of points should have been cleaned up.
