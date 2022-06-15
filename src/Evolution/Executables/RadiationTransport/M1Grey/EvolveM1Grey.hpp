@@ -175,8 +175,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<
             RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
                 metavariables::neutrino_species>,

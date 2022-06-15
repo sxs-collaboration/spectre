@@ -187,8 +187,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<RelativisticEuler::Valencia::BoundaryConditions::
                        BoundaryCondition<volume_dim>,
                    RelativisticEuler::Valencia::BoundaryConditions::

@@ -201,8 +201,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

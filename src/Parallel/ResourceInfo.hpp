@@ -540,7 +540,6 @@ ResourceInfo<Metavariables>::ResourceInfo(
   // proc it wants to be on. Use nullopt as a sentinel for choosing the proc
   // automatically.
   tmpl::for_each<singletons>(parse_singletons);
-  using ::operator<<;
   [[maybe_unused]] const auto sanity_checks =
       [this, &context, &requested_procs](const auto component_v) {
         using component = tmpl::type_from<decltype(component_v)>;
@@ -556,7 +555,7 @@ ResourceInfo<Metavariables>::ResourceInfo(
             requested_procs.count(*proc) > 1) {
           PARSE_ERROR(context,
                       "Two singletons have requested to be on proc "
-                          << proc
+                          << proc.value()
                           << ", but at least one of them has requested to be "
                              "exclusively on this proc.");
         }

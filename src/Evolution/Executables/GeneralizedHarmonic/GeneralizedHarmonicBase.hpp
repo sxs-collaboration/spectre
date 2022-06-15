@@ -269,8 +269,7 @@ struct GeneralizedHarmonicTemplateBase<
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   GeneralizedHarmonicTemplateBase,
                                   Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  GeneralizedHarmonicTemplateBase>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

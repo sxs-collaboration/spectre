@@ -188,8 +188,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
             ScalarWave::BoundaryConditions::standard_boundary_conditions<
