@@ -24,7 +24,7 @@ section below).
 # Guarantees and non-guarantees of releases
 
 Each release is **guaranteed** to pass all automated tests laid out in the
-\ref travis_guide "guide on automated tests".
+\ref github_actions_guide "guide on automated tests".
 
 We provide **no guarantee** that releases satisfy any notion of "compatibility"
 with each other. In particular, the interface of any C++ library, Python module

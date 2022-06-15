@@ -52,7 +52,8 @@ Terms with SpECTRE-specific meanings are defined here.
   maintainability of the project.
 - \subpage writing_unit_tests "Writing Unit Tests" to catch bugs and to make
   sure future changes don't cause your code to regress.
-- \subpage travis_guide "Travis CI" is used to test every pull request.
+- \subpage github_actions_guide "GitHub Actions" is used to test every pull
+  request.
 - \subpage code_review_guide "Code review guidelines." All code merged into
   develop must follow these requirements.
 
