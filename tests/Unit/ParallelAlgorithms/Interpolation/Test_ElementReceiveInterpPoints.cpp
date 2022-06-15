@@ -166,24 +166,23 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   }
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
-  using point_info_type = std::vector<std::optional<
-      IdPair<domain::BlockId, tnsr::I<double, metavars::volume_dim,
-                                      typename ::Frame::BlockLogical>>>>;
+  using point_info_type = tnsr::I<
+      DataVector, metavars::volume_dim,
+      typename metavars::InterpolationTargetA::compute_target_points::frame>;
 
   // element should contain an intrp::Tags::InterpPointInfo<Metavariables>
-  // that has an empty point_info for InterpolationTargetA and
+  // that contains a default-constructed point_info for InterpolationTargetA and
   // InterpolationTargetB. This tests ElementInitInterpPoints.
   const auto& init_point_infos =
       ActionTesting::get_databox_tag<elem_component,
                                      ::intrp::Tags::InterpPointInfo<metavars>>(
           runner, 0);
-
   CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetA,
-                                      metavars::volume_dim>>(init_point_infos)
-            .empty());
+                                      metavars::volume_dim>>(
+            init_point_infos) == point_info_type{});
   CHECK(get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetB,
-                                      metavars::volume_dim>>(init_point_infos)
-            .empty());
+                                      metavars::volume_dim>>(
+            init_point_infos) == point_info_type{});
 
   // Now invoke the only Registration action (InterpolationTargetSendPoints).
   ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
@@ -198,7 +197,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   // intrp::Tags::InterpPointInfo<Metavariables> that has a
   // point_info for InterpolationTargetA/B containing the
   // expected point info.
-  const auto expected_point_info_a = [&domain_creator]() {
+  const auto expected_point_info_a = []() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -206,9 +205,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
         points.get(d)[i] = 1.0 + 0.1 * i;  // Worked out by hand.
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return points;
   }();
-  const auto expected_point_info_b = [&domain_creator]() {
+  const auto expected_point_info_b = []() {
     const size_t n_pts = 12;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
@@ -216,7 +215,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
         points.get(d)[i] = 1.0 + 0.1 * i;  // Worked out by hand.
       }
     }
-    return block_logical_coordinates(domain_creator.create_domain(), points);
+    return points;
   }();
 
   const auto& point_infos =
@@ -229,19 +228,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   const auto& point_info_b =
       get<intrp::Vars::PointInfoTag<metavars::InterpolationTargetB,
                                     metavars::volume_dim>>(point_infos);
-
-  auto check_point_info = [](const point_info_type& result,
-                             const point_info_type& expected) {
-    const size_t number_of_points = expected.size();
-    CHECK(result.size() == number_of_points);
-    for (size_t i = 0; i < number_of_points; ++i) {
-      CHECK(result[i].value().id == expected[i].value().id);
-      CHECK_ITERABLE_APPROX(result[i].value().data, expected[i].value().data);
-    }
-  };
-
-  check_point_info(point_info_a, expected_point_info_a);
-  check_point_info(point_info_b, expected_point_info_b);
+  CHECK_ITERABLE_APPROX(point_info_a, expected_point_info_a);
+  CHECK_ITERABLE_APPROX(point_info_b, expected_point_info_b);
 
   // Should be no queued simple actions on either component.
   CHECK(runner.is_simple_action_queue_empty<target_component_a>(0));

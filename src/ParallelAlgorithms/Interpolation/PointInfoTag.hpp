@@ -14,16 +14,16 @@
 
 namespace intrp {
 namespace Vars {
+/// PointInfoTag holds the points to be interpolated onto,
+/// in whatever frame those points are to be held constant.
+/// PointInfoTag is used only for interpolation points that are
+/// time-independent in some frame, so that there is no `Interpolator`
+/// ParallelComponent.
 template <typename InterpolationTargetTag, size_t VolumeDim>
 struct PointInfoTag {
-  /// This is the type returned from BlockLogicalCoords.
-  /// It encodes the list of all points (in block
-  /// logical coordinates) that need to be interpolated onto for a
-  /// given `InterpolationTarget`.  Only a subset of those points
-  /// will be contained in the `Element` that uses this Tag.
-  using type = std::vector<std::optional<
-      IdPair<domain::BlockId,
-             tnsr::I<double, VolumeDim, typename ::Frame::BlockLogical>>>>;
+  using type =
+      tnsr::I<DataVector, VolumeDim,
+              typename InterpolationTargetTag::compute_target_points::frame>;
 };
 }  // namespace Vars
 

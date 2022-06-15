@@ -104,9 +104,13 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const {
-    // Get element logical coordinates of the target points.
     const auto& block_logical_coords =
-        get<Vars::PointInfoTag<InterpolationTargetTag, VolumeDim>>(point_infos);
+        InterpolationTarget_detail::block_logical_coords<
+            InterpolationTargetTag>(
+            cache,
+            get<Vars::PointInfoTag<InterpolationTargetTag, VolumeDim>>(
+                point_infos),
+            temporal_id);
     const std::vector<ElementId<VolumeDim>> element_ids{{array_index}};
     const auto element_coord_holders =
         element_logical_coordinates(element_ids, block_logical_coords);
@@ -190,6 +194,7 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
         std::vector<Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
             {interpolator.interpolate(interp_vars)}),
+        block_logical_coords,
         std::vector<std::vector<size_t>>({element_coord_holder.offsets}),
         temporal_id);
   }

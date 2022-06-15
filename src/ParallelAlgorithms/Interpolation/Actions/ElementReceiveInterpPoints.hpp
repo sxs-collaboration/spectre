@@ -35,21 +35,20 @@ struct ElementReceiveInterpPoints {
             Requires<tmpl::list_contains_v<
                 DbTags, intrp::Tags::InterpPointInfo<Metavariables>>> = nullptr>
   static void apply(
-      db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& /*cache*/,
+      db::DataBox<DbTags>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      std::vector<std::optional<
-          IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
-                                          typename ::Frame::BlockLogical>>>>&&
-          block_logical_coords) {
+      tnsr::I<DataVector, Metavariables::volume_dim,
+              typename InterpolationTargetTag::compute_target_points::frame>&&
+          coords) {
     db::mutate<intrp::Tags::InterpPointInfo<Metavariables>>(
         make_not_null(&box),
-        [&block_logical_coords](
-            const gsl::not_null<
-                typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
-                point_infos) {
+        [&coords](const gsl::not_null<
+                  typename intrp::Tags::InterpPointInfo<Metavariables>::type*>
+                      point_infos) {
           get<intrp::Vars::PointInfoTag<InterpolationTargetTag,
                                         Metavariables::volume_dim>>(
-              *point_infos) = std::move(block_logical_coords);
+              *point_infos) = std::move(coords);
         });
   }
 };
