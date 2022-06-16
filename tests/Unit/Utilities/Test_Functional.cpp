@@ -234,7 +234,7 @@ void test_functional_combinations(const gsl::not_null<Gen*> gen) {
       [](const auto& w, const auto& x, const auto& y, const auto& z) {
         return w * sin(x + y * z);
       },
-      gen, generic, std::make_index_sequence<4>());
+      gen, small, std::make_index_sequence<4>());
   // This function needs the distribution to be `small` to avoid rare
   // accumulation of error
   test_functional_against_function<Multiplies<Plus<Plus<>, Plus<>>, Identity>,
