@@ -44,7 +44,8 @@ staged_grep() {
 # allowed to follow the pattern.
 pretty_grep() {
     local -a non_file_args
-    local file file_prefix
+    local color file file_prefix
+    color=${color_option}
     # This loop extracts all the flags and the pattern into
     # non_file_args, leaving the filenames in $@.
     while [ $# -gt 0 ] ; do
@@ -56,6 +57,10 @@ pretty_grep() {
                 non_file_args+=("$1" "$2")
                 shift 2
                 break
+                ;;
+            --color=*)
+                color=$1
+                shift
                 ;;
             -*)
                 non_file_args+=("$1")
@@ -71,9 +76,13 @@ pretty_grep() {
     done
 
     for file in "$@" ; do
-        printf -v file_prefix "\033[0;35m%s\033[0m:" "${file}"
+        if [ -n "${color}" ] && [ "${color}" != "--color=no" ] ; then
+            printf -v file_prefix "\033[0;35m%s\033[0m:" "${file}"
+        else
+            file_prefix=${file}:
+        fi
         git show ":./${file}" | \
-            GREP_COLOR='1;37;41' grep -n $color_option "${non_file_args[@]}" | \
+            GREP_COLOR='1;37;41' grep -n $color "${non_file_args[@]}" | \
             sed "s|^|${file_prefix}|"
     done
 }

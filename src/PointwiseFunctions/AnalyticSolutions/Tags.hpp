@@ -288,7 +288,7 @@ struct Subitems<Tag, Requires<Tags::detail::is_analytic_solutions_v<Tag>>> {
     if (parent_value->has_value()) {
       auto& tensor = get<::Tags::detail::AnalyticImpl<typename Subtag::tag>>(
           parent_value->value());
-      *sub_value = std::decay_t<decltype(tensor)>{};
+      sub_value->emplace();
       // Only update the Tensor if the Variables has changed its allocation
       if constexpr (not is_any_spin_weighted_v<
                         typename Subtag::tag::type::type>) {

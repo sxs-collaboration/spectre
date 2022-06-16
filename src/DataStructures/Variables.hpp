@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <blaze/math/AlignmentFlag.h>
 #include <blaze/math/CustomVector.h>
 #include <blaze/math/DenseVector.h>
@@ -208,7 +209,7 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   void set_data_ref(pointer const start, const size_t size) {
-    variable_data_impl_.reset();
+    variable_data_impl_dynamic_.reset();
     if (start == nullptr) {
       variable_data_ = pointer_type{};
       size_ = 0;
@@ -475,12 +476,13 @@ class Variables<tmpl::list<Tags...>> {
   template <class FriendTags>
   friend class Variables;
 
-  std::unique_ptr<value_type[]> variable_data_impl_{};
+  std::array<value_type, number_of_independent_components>
+      variable_data_impl_static_;
+  std::unique_ptr<value_type[]> variable_data_impl_dynamic_{};
   bool owning_{true};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
-  // variable_data_ is only used to plug into the Blaze expression templates
   pointer_type variable_data_;
   tuples::TaggedTuple<Tags...> reference_variable_data_;
 };
@@ -550,30 +552,33 @@ template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
     const size_t number_of_grid_points) {
   if (number_of_grid_points_ == 0) {
-    variable_data_impl_ = nullptr;
+    variable_data_impl_dynamic_.reset();
     size_ = 0;
     number_of_grid_points_ = 0;
   }
-  if (UNLIKELY(variable_data_impl_ == nullptr and size_ != 0)) {
-    ERROR(
-        "Variables::initialize_vector cannot be called when "
-        "variable_data_impl_ is nullptr. This likely happened because you are "
-        "trying to resize a non-owning Variables. The size is: "
-        << size_ << " and number of grid points: " << number_of_grid_points_);
+  if (number_of_grid_points_ == number_of_grid_points) {
+    return;
   }
-  if (number_of_grid_points_ != number_of_grid_points) {
-    number_of_grid_points_ = number_of_grid_points;
-    size_ = number_of_grid_points * number_of_independent_components;
-    if (size_ > 0) {
-      variable_data_impl_ =
+  if (UNLIKELY(not is_owning())) {
+    ERROR("Variables::initialize cannot be called on a non-owning Variables.  "
+          "This likely happened because of an attempted resize.  The current "
+          "number of grid points is " << number_of_grid_points_ << " and the "
+          "requested number is " << number_of_grid_points << ".");
+  }
+  number_of_grid_points_ = number_of_grid_points;
+  size_ = number_of_grid_points * number_of_independent_components;
+  if (size_ > 0) {
+    if (number_of_grid_points_ == 1) {
+      variable_data_impl_dynamic_.reset();
+    } else {
+      variable_data_impl_dynamic_ =
           cpp20::make_unique_for_overwrite<value_type[]>(size_);
-#if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
-      std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-                make_signaling_NaN<value_type>());
-#endif  // SPECTRE_DEBUG
-      variable_data_.reset(variable_data_impl_.get(), size_);
-      add_reference_variable_data();
     }
+    add_reference_variable_data();
+#if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
+    std::fill(variable_data_.data(), variable_data_.data() + size_,
+              make_signaling_NaN<value_type>());
+#endif  // SPECTRE_DEBUG
   }
 }
 
@@ -609,16 +614,26 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(Variables<tmpl::list<Tags...>>&& rhs)
-    : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+    : variable_data_impl_dynamic_(std::move(rhs.variable_data_impl_dynamic_)),
       owning_(rhs.owning_),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
-      variable_data_(std::move(rhs.variable_data_)),
-      reference_variable_data_(std::move(rhs.reference_variable_data_)) {
-  rhs.variable_data_impl_.reset();
+      variable_data_(std::move(rhs.variable_data_)) {
+  if (number_of_grid_points_ == 1) {
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) and not defined(__clang__)
+    variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) and not defined(__clang__)
+  }
+  rhs.variable_data_impl_dynamic_.reset();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
+  add_reference_variable_data();
 }
 
 template <typename... Tags>
@@ -627,13 +642,23 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   if (this == &rhs) {
     return *this;
   }
-  variable_data_impl_ = std::move(rhs.variable_data_impl_);
   owning_ = rhs.owning_;
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
   variable_data_ = std::move(rhs.variable_data_);
+  variable_data_impl_dynamic_ = std::move(rhs.variable_data_impl_dynamic_);
+  if (number_of_grid_points_ == 1) {
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) and not defined(__clang__)
+    variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) and not defined(__clang__)
+  }
 
-  rhs.variable_data_impl_.reset();
+  rhs.variable_data_impl_dynamic_.reset();
   rhs.owning_ = true;
   rhs.size_ = 0;
   rhs.number_of_grid_points_ = 0;
@@ -681,19 +706,29 @@ template <typename... WrappedTags,
                            db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>::Variables(
     Variables<tmpl::list<WrappedTags...>>&& rhs)
-    : variable_data_impl_(std::move(rhs.variable_data_impl_)),
+    : variable_data_impl_dynamic_(std::move(rhs.variable_data_impl_dynamic_)),
       owning_(rhs.owning_),
       size_(rhs.size()),
       number_of_grid_points_(rhs.number_of_grid_points()),
-      variable_data_(std::move(rhs.variable_data_)),
-      reference_variable_data_(std::move(rhs.reference_variable_data_)) {
+      variable_data_(std::move(rhs.variable_data_)) {
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  rhs.variable_data_impl_.reset();
+  if (number_of_grid_points_ == 1) {
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) and not defined(__clang__)
+    variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) and not defined(__clang__)
+  }
+  rhs.variable_data_impl_dynamic_.reset();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
+  add_reference_variable_data();
 }
 
 template <typename... Tags>
@@ -706,12 +741,23 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
   static_assert(
       (std::is_same_v<typename Tags::type, typename WrappedTags::type> and ...),
       "Tensor types do not match!");
-  variable_data_impl_ = std::move(rhs.variable_data_impl_);
   variable_data_ = std::move(rhs.variable_data_);
   owning_ = rhs.owning_;
   size_ = rhs.size_;
   number_of_grid_points_ = std::move(rhs.number_of_grid_points_);
-  rhs.variable_data_impl_.reset();
+  variable_data_impl_dynamic_ = std::move(rhs.variable_data_impl_dynamic_);
+  if (number_of_grid_points_ == 1) {
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) and not defined(__clang__)
+    variable_data_impl_static_ = std::move(rhs.variable_data_impl_static_);
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) and not defined(__clang__)
+  }
+
+  rhs.variable_data_impl_dynamic_.reset();
   rhs.size_ = 0;
   rhs.owning_ = true;
   rhs.number_of_grid_points_ = 0;
@@ -737,7 +783,7 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) {
   if (p.isUnpacking()) {
     initialize(number_of_grid_points);
   }
-  PUParray(p, variable_data_impl_.get(), size_);
+  PUParray(p, variable_data_.data(), size_);
 }
 /// \endcond
 
@@ -798,6 +844,13 @@ template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::add_reference_variable_data() {
   if (size_ == 0) {
     return;
+  }
+  if (is_owning()) {
+    if (number_of_grid_points_ == 1) {
+      variable_data_.reset(variable_data_impl_static_.data(), size_);
+    } else {
+      variable_data_.reset(variable_data_impl_dynamic_.get(), size_);
+    }
   }
   ASSERT(variable_data_.size() == size_ and
              size_ == number_of_grid_points_ * number_of_independent_components,
