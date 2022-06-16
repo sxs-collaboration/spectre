@@ -69,8 +69,8 @@ struct get_creatable_classes {
   using factory_creation = typename Metavariables::factory_creation;
   // This assertion is normally done in tests, but the executable
   // metavariables don't have tests, so we do it here.
-  static_assert(tt::assert_conforms_to<factory_creation,
-                                       Options::protocols::FactoryCreation>);
+  static_assert(tt::assert_conforms_to_v<factory_creation,
+                                         Options::protocols::FactoryCreation>);
   using type = tmpl::at<typename factory_creation::factory_classes, BaseClass>;
 };
 

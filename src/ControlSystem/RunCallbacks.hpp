@@ -35,12 +35,11 @@ template <typename Submeasurement, typename ControlSystems>
 struct RunCallbacks {
  private:
   static_assert(
-      tt::assert_conforms_to<Submeasurement, protocols::Submeasurement>);
-  template <typename System>
-  using assert_conforms_to_t = std::bool_constant<
-      tt::assert_conforms_to<System, protocols::ControlSystem>>;
-  static_assert(tmpl::all<ControlSystems,
-                          tmpl::bind<assert_conforms_to_t, tmpl::_1>>::value);
+      tt::assert_conforms_to_v<Submeasurement, protocols::Submeasurement>);
+  static_assert(
+      tmpl::all<
+          ControlSystems,
+          tt::assert_conforms_to<tmpl::_1, protocols::ControlSystem>>::value);
 
  public:
   template <typename DbTags, typename Metavariables>

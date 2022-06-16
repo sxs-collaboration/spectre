@@ -11,7 +11,8 @@ struct ValidNumericInitialData
     : tt::ConformsTo<evolution::protocols::NumericInitialData> {};
 // [conforming_type_example]
 
-static_assert(tt::assert_conforms_to<ValidNumericInitialData,
-                                     evolution::protocols::NumericInitialData>);
+static_assert(
+    tt::assert_conforms_to_v<ValidNumericInitialData,
+                             evolution::protocols::NumericInitialData>);
 
 }  // namespace

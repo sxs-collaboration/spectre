@@ -48,10 +48,20 @@ template <typename ConformingType, typename Protocol>
 constexpr bool conforms_to_v = conforms_to<ConformingType, Protocol>::value;
 /// @}
 
-namespace detail {
-
+/// @{
+/*!
+ * \ingroup ProtocolsGroup
+ * \brief Assert that the `ConformingType` conforms to the `Protocol`.
+ *
+ * Similar to `tt::conforms_to`, but not SFINAE-friendly. Instead, triggers
+ * static asserts with diagnostic messages to understand why the
+ * `ConformingType` fails to conform to the `Protocol`.
+ *
+ * \see Documentation on \ref protocols
+ * \see tt::conforms_to
+ */
 template <typename ConformingType, typename Protocol>
-struct AssertConformsToImpl : std::true_type {
+struct assert_conforms_to : std::true_type {
   static_assert(
       tt::conforms_to_v<ConformingType, Protocol>,
       "The type does not indicate it conforms to the protocol. The type is "
@@ -65,21 +75,9 @@ struct AssertConformsToImpl : std::true_type {
           decltype(typename Protocol::template test<ConformingType>{}), void>);
 };
 
-}  // namespace detail
-
-/*!
- * \ingroup ProtocolsGroup
- * \brief Assert that the `ConformingType` conforms to the `Protocol`.
- *
- * Similar to `tt::conforms_to`, but not SFINAE-friendly. Instead, triggers
- * static asserts with diagnostic messages to understand why the
- * `ConformingType` fails to conform to the `Protocol`.
- *
- * \see Documentation on \ref protocols
- * \see tt::conforms_to
- */
 template <typename ConformingType, typename Protocol>
-static constexpr bool assert_conforms_to =
-    detail::AssertConformsToImpl<ConformingType, Protocol>::value;
+static constexpr bool assert_conforms_to_v =
+    assert_conforms_to<ConformingType, Protocol>::value;
+/// @}
 
 }  // namespace tt

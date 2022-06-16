@@ -51,8 +51,8 @@ struct ContributeReductionData;
 
 namespace {
 static_assert(
-    tt::assert_conforms_to<Events::detail::FormatTimeOutput,
-                           observers::protocols::ReductionDataFormatter>);
+    tt::assert_conforms_to_v<Events::detail::FormatTimeOutput,
+                             observers::protocols::ReductionDataFormatter>);
 
 template <typename Metavariables>
 struct MockContributeReductionData {

@@ -30,7 +30,7 @@
  */
 template <class Metavariables, typename ControlSystem>
 struct ControlComponent {
-  static_assert(tt::assert_conforms_to<
+  static_assert(tt::assert_conforms_to_v<
                 ControlSystem, control_system::protocols::ControlSystem>);
   using chare_type = Parallel::Algorithms::Singleton;
 

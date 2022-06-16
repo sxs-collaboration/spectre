@@ -348,10 +348,10 @@ SPECTRE_TEST_CASE(
   using callback_D =
       typename MockMetavariables::SurfaceD::post_interpolation_callback;
   using protocol = intrp::protocols::PostInterpolationCallback;
-  static_assert(tt::assert_conforms_to<callback_A, protocol>);
-  static_assert(tt::assert_conforms_to<callback_B, protocol>);
-  static_assert(tt::assert_conforms_to<callback_C, protocol>);
-  static_assert(tt::assert_conforms_to<callback_D, protocol>);
+  static_assert(tt::assert_conforms_to_v<callback_A, protocol>);
+  static_assert(tt::assert_conforms_to_v<callback_B, protocol>);
+  static_assert(tt::assert_conforms_to_v<callback_C, protocol>);
+  static_assert(tt::assert_conforms_to_v<callback_D, protocol>);
 
   using metavars = MockMetavariables;
   using interp_component = MockInterpolator<metavars>;

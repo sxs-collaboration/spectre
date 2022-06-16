@@ -67,8 +67,9 @@ void test_equations(const DataVector& used_for_size) {
 
 template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
-  static_assert(tt::assert_conforms_to<Elasticity::FirstOrderSystem<Dim>,
-                                       elliptic::protocols::FirstOrderSystem>);
+  static_assert(
+      tt::assert_conforms_to_v<Elasticity::FirstOrderSystem<Dim>,
+                               elliptic::protocols::FirstOrderSystem>);
   using field_tag = Elasticity::Tags::Displacement<Dim>;
   using auxiliary_field_tag = Elasticity::Tags::Strain<Dim>;
   using field_flux_tag = Elasticity::Tags::MinusStress<Dim>;

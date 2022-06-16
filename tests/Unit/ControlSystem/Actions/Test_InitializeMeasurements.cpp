@@ -132,12 +132,12 @@ struct SystemC : tt::ConformsTo<control_system::protocols::ControlSystem> {
   };
 };
 
-static_assert(
-    tt::assert_conforms_to<SystemA, control_system::protocols::ControlSystem>);
-static_assert(
-    tt::assert_conforms_to<SystemB, control_system::protocols::ControlSystem>);
-static_assert(
-    tt::assert_conforms_to<SystemC, control_system::protocols::ControlSystem>);
+static_assert(tt::assert_conforms_to_v<
+              SystemA, control_system::protocols::ControlSystem>);
+static_assert(tt::assert_conforms_to_v<
+              SystemB, control_system::protocols::ControlSystem>);
+static_assert(tt::assert_conforms_to_v<
+              SystemC, control_system::protocols::ControlSystem>);
 
 using control_systems = tmpl::list<SystemA, SystemB, SystemC>;
 

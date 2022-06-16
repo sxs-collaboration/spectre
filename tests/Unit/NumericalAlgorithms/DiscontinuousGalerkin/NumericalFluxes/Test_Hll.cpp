@@ -116,7 +116,7 @@ void apply_hll_flux(
 template <size_t Dim>
 void test_hll_flux(const DataVector& used_for_size) {
   static_assert(
-      tt::assert_conforms_to<
+      tt::assert_conforms_to_v<
           dg::NumericalFluxes::Hll<TestHelpers::NumericalFluxes::System<Dim>>,
           dg::protocols::NumericalFlux>);
 

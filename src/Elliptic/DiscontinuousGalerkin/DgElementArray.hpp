@@ -95,8 +95,8 @@ template <typename Metavariables, typename PhaseDepActionList,
 struct DgElementArray {
   static constexpr size_t volume_dim = Metavariables::volume_dim;
   static_assert(
-      tt::assert_conforms_to<ElementsAllocator,
-                             Parallel::protocols::ArrayElementsAllocator>);
+      tt::assert_conforms_to_v<ElementsAllocator,
+                               Parallel::protocols::ArrayElementsAllocator>);
 
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;

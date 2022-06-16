@@ -495,7 +495,8 @@ struct WriteReductionData {
       std::optional<Formatter>&& formatter = std::nullopt) {
     if constexpr (not std::is_same_v<Formatter, observers::NoFormatter>) {
       static_assert(
-          tt::assert_conforms_to<Formatter, protocols::ReductionDataFormatter>);
+          tt::assert_conforms_to_v<Formatter,
+                                   protocols::ReductionDataFormatter>);
       static_assert(
           std::is_same_v<typename Formatter::reduction_data,
                          Parallel::ReductionData<ReductionDatums...>>,

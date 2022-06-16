@@ -45,8 +45,8 @@ struct ControlError : tt::ConformsTo<control_system::protocols::ControlError> {
   }
 };
 
-static_assert(tt::assert_conforms_to<Measurement<TestStructs_detail::LabelA>,
-                                     control_system::protocols::Measurement>);
+static_assert(tt::assert_conforms_to_v<Measurement<TestStructs_detail::LabelA>,
+                                       control_system::protocols::Measurement>);
 
 template <size_t DerivOrder, typename Label, typename Measurement>
 struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
@@ -62,7 +62,7 @@ struct System : tt::ConformsTo<control_system::protocols::ControlSystem> {
 };
 
 static_assert(
-    tt::assert_conforms_to<System<2, TestStructs_detail::LabelA,
-                                  Measurement<TestStructs_detail::LabelA>>,
-                           control_system::protocols::ControlSystem>);
+    tt::assert_conforms_to_v<System<2, TestStructs_detail::LabelA,
+                                    Measurement<TestStructs_detail::LabelA>>,
+                             control_system::protocols::ControlSystem>);
 }  // namespace control_system::TestHelpers

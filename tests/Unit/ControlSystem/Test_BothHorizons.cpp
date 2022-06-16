@@ -10,7 +10,7 @@
 #include "Utilities/ProtocolHelpers.hpp"
 
 static_assert(
-    tt::assert_conforms_to<
+    tt::assert_conforms_to_v<
         control_system::ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>::
             interpolation_target_tag<
                 tmpl::list<control_system::TestHelpers::ExampleControlSystem>>,

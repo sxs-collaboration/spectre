@@ -35,9 +35,9 @@ struct dispatch_to_send_gh_worldtube_data {
     if constexpr (tmpl2::flat_any_v<std::is_same_v<::Tags::Time, DbTags>...>) {
       using post_intrp_callback = intrp::callbacks::SendGhWorldtubeData<
           Cce::CharacteristicEvolution<Metavariables>, false>;
-      static_assert(
-          tt::assert_conforms_to<post_intrp_callback,
-                                 intrp::protocols::PostInterpolationCallback>);
+      static_assert(tt::assert_conforms_to_v<
+                    post_intrp_callback,
+                    intrp::protocols::PostInterpolationCallback>);
       post_intrp_callback::apply(box, cache, db::get<::Tags::Time>(box));
     } else {
       ERROR("Missing required tag ::Tag::Time");
