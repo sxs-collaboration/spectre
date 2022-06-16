@@ -42,11 +42,10 @@ struct ConformsTo {};
  * \see tt::assert_conforms_to
  */
 template <typename ConformingType, typename Protocol>
-using conforms_to =
-    typename std::is_convertible<ConformingType*, ConformsTo<Protocol>*>;
+struct conforms_to
+    : std::is_convertible<ConformingType*, ConformsTo<Protocol>*> {};
 template <typename ConformingType, typename Protocol>
-constexpr bool conforms_to_v =
-    std::is_convertible_v<ConformingType*, ConformsTo<Protocol>*>;
+constexpr bool conforms_to_v = conforms_to<ConformingType, Protocol>::value;
 /// @}
 
 namespace detail {

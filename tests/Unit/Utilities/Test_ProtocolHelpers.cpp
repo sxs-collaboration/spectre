@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
@@ -97,6 +98,12 @@ struct NotNamed {};
 class DerivedNonConformingClass : private Person {};
 class DerivedConformingClass : public Person {};
 }  // namespace
+
+static_assert(not tmpl::apply<tt::conforms_to<tmpl::_1, tmpl::_2>, NotNamed,
+                              protocols::Named>::value);
+static_assert(tmpl::apply<tt::conforms_to<tmpl::_1, tmpl::_2>, Person,
+                          protocols::Named>::value);
+
 static_assert(not tt::conforms_to_v<NotNamed, protocols::Named>,
               "Failed testing tt::conforms_to_v");
 static_assert(
