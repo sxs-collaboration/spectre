@@ -178,8 +178,8 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
 
   // Setup grid
   const size_t num_points_1d = 8;
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
-  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+  const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
+  const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const size_t SpatialDim = 3;
   Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -263,7 +263,7 @@ void test_einstein_solution() {
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
   //   ...for grid
-  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const double time = -2.8;
 
   gr::Solutions::KerrSchild solution(mass, spin, center);
@@ -273,7 +273,7 @@ void test_einstein_solution() {
     // Don't look at time-independent solution in other than the inertial
     // frame.
     const size_t grid_size = 8;
-    const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+    const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
     TestHelpers::VerifyGrSolution::verify_time_independent_einstein_solution(
         solution, grid_size, lower_bound, upper_bound,
         std::numeric_limits<double>::epsilon() * 1.e5);
