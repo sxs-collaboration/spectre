@@ -232,10 +232,6 @@ namespace intrp {
 ///
 /// ###### Current logic:
 ///
-/// >  `Actions::EnsureFunctionOfTimeUpToDate` does not exist
-///
-/// ###### New logic:
-///
 /// > `Actions::EnsureFunctionOfTimeUpToDate` is placed in `DgElementArray`s
 /// >  PDAL before any use of interpolation.
 ///
@@ -247,16 +243,19 @@ namespace intrp {
 ///
 /// ###### Current logic:
 ///
-/// > Call `block_logical_coordinates` and send points to `Element`s.
-///
-/// ###### New logic:
-///
 /// > Send the result of `compute_target_points` to all `Element`s.
 ///
 /// Note that this may need to be revisited because every `Element` has
-/// a copy of every target point, which will use a lot of memory.  An
-/// alternative is to invoke an Action on each `InterpolationTarget`
-/// (presumably from an `Event`).
+/// a copy of every target point, which may use a lot of memory.  An
+/// alternative is for each Element to invoke an Action on each
+/// `InterpolationTarget` (presumably from an `Event`) at each time,
+/// and then the InterpolationTarget invokes another Action to send points
+/// to only those `Elements` that contain the points; this alternative
+/// uses less memory but much more communication. Another alternative would
+/// be to place the points in the MutableGlobalCache (so that there is one
+/// copy per core, rather than one copy per Element), or even in the
+/// GlobalCache (one copy per node) since the points need be computed only
+/// once.
 ///
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
