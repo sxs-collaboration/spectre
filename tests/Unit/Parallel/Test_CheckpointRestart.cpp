@@ -24,6 +24,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -117,15 +118,10 @@ struct ArrayComponent {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::SetupDataBox, InitializeLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::MutateDatabox,
-                             tmpl::list<MutateLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::CheckDatabox,
-                             tmpl::list<CheckLog>>>;
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -158,15 +154,10 @@ struct GroupComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::SetupDataBox, InitializeLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::MutateDatabox,
-                             tmpl::list<MutateLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::CheckDatabox,
-                             tmpl::list<CheckLog>>>;
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -185,15 +176,10 @@ struct NodegroupComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::SetupDataBox, InitializeLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::MutateDatabox,
-                             tmpl::list<MutateLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::CheckDatabox,
-                             tmpl::list<CheckLog>>>;
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -212,15 +198,10 @@ struct SingletonComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<Actions::SetupDataBox, InitializeLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::MutateDatabox,
-                             tmpl::list<MutateLog>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::CheckDatabox,
-                             tmpl::list<CheckLog>>>;
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -243,13 +224,7 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  enum class Phase {
-    Initialization,
-    MutateDatabox,
-    WriteCheckpoint,
-    CheckDatabox,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -259,12 +234,12 @@ struct TestMetavariables {
       const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
-        return Phase::MutateDatabox;
-      case Phase::MutateDatabox:
+        return Phase::Execute;
+      case Phase::Execute:
         return Phase::WriteCheckpoint;
       case Phase::WriteCheckpoint:
-        return Phase::CheckDatabox;
-      case Phase::CheckDatabox:
+        return Phase::Testing;
+      case Phase::Testing:
         return Phase::Exit;
       default:
         ERROR("Unknown Phase...");

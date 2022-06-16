@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
@@ -44,7 +45,7 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolationTarget<
                      Metavariables, InterpolationTargetTag>>>>;
@@ -66,7 +67,7 @@ struct Metavariables {
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",

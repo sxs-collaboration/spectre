@@ -15,6 +15,7 @@
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -28,10 +29,8 @@ struct FakeSingleton {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   static std::string name() { return "FakeSingleton" + get_output(Index); }
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = tmpl::list<
       Parallel::Tags::AvoidGlobalProc0,
       Parallel::Tags::SingletonInfo<FakeSingleton<Metavariables, Index>>>;
@@ -42,10 +41,8 @@ struct FakeSingletonInfoOnly {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   static std::string name() { return "FakeSingleton" + get_output(Index); }
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = tmpl::list<Parallel::Tags::SingletonInfo<
       FakeSingletonInfoOnly<Metavariables, Index>>>;
 };
@@ -53,10 +50,8 @@ template <typename Metavariables>
 struct FakeSingletonAvoidGlobalProc0 {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = tmpl::list<Parallel::Tags::AvoidGlobalProc0>;
 };
 
@@ -64,22 +59,22 @@ template <size_t... Indices>
 struct MetavariablesBoth {
   using component_list =
       tmpl::list<FakeSingleton<MetavariablesBoth, Indices>...>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 template <size_t... Indices>
 struct MetavariablesInfoOnly {
   using component_list =
       tmpl::list<FakeSingletonInfoOnly<MetavariablesInfoOnly, Indices>...>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 struct MetavariablesAvoidGlobalProc0 {
   using component_list =
       tmpl::list<FakeSingletonAvoidGlobalProc0<MetavariablesAvoidGlobalProc0>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 struct EmptyMetavars {
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Index>

@@ -37,6 +37,7 @@
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -112,14 +113,14 @@ struct component {
   using simple_tags = db::AddSimpleTags<TemporalId, domain::Tags::Mesh<Dim>,
                                         domain::Tags::Element<Dim>,
                                         domain::Tags::ElementMap<Dim>, Var>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Limiters::Actions::SendData<Metavariables>,
-                     Limiters::Actions::Limit<Metavariables>>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Testing,
+                     tmpl::list<Limiters::Actions::SendData<Metavariables>,
+                                Limiters::Actions::Limit<Metavariables>>>>;
 };
 
 template <size_t Dim>
@@ -129,7 +130,7 @@ struct Metavariables {
   using system = System<Dim>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

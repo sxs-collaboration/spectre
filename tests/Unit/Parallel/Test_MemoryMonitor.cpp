@@ -19,6 +19,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
@@ -44,7 +45,7 @@ struct MockMemoryMonitor {
   using metavariables = Metavariables;
   using simple_tags = tmpl::list<mem_monitor::Tags::MemoryHolder>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
@@ -53,10 +54,8 @@ struct SingletonParallelComponent {
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -64,10 +63,8 @@ struct GroupParallelComponent {
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -75,10 +72,8 @@ struct NodegroupParallelComponent {
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = int;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -86,10 +81,8 @@ struct ArrayParallelComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 // This component deserves special mention. It is supposed to be playing the
@@ -107,10 +100,10 @@ struct FakeDgElementArray {
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<
-          tmpl::list<domain::Tags::Element<3>>>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 tmpl::list<domain::Tags::Element<3>>>>>>;
 };
 
 struct TestMetavariables {
@@ -122,7 +115,7 @@ struct TestMetavariables {
                  FakeDgElementArray<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
 
-  enum class Phase { Initialization, Monitor, Exit };
+  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -149,7 +142,7 @@ struct TestMetavarsActions {
       ArrayParallelComponent<TestMetavarsActions>,
       NodegroupParallelComponent<TestMetavarsActions>>;
 
-  enum class Phase { Initialization, Monitor, Exit };
+  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -205,7 +198,7 @@ void setup_runner(
                                      ActionTesting::LocalCoreId{0}, {element});
   }
 
-  runner->set_phase(Metavariables::Phase::Monitor);
+  runner->set_phase(Metavariables::Phase::Testing);
 }
 
 template <typename Component, typename Metavariables>
@@ -500,7 +493,7 @@ struct BadArrayChareMetavariables {
   using component_list =
       tmpl::list<ArrayParallelComponent<BadArrayChareMetavariables>>;
 
-  enum class Phase { Initialization, Monitor, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_event_construction() {

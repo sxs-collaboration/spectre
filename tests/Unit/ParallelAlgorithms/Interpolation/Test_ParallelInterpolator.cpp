@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -204,14 +205,12 @@ struct mock_interpolation_target {
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -224,16 +223,14 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
                          intrp::Tags::VolumeVarsInfo<Metavariables,
                                                      ::Tags::TimeStepId>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
@@ -282,7 +279,7 @@ struct MockMetavariables {
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetC>,
       mock_interpolator<MockMetavariables>>;
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 // This tests whether all the Actions of Interpolator and InterpolationTarget
@@ -345,8 +342,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));

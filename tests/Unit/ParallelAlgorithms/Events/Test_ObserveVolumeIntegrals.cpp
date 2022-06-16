@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -110,10 +111,8 @@ struct ElementComponent {
   using metavariables = Metavariables;
   using array_index = int;
   using chare_type = ActionTesting::MockArrayChare;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -126,10 +125,8 @@ struct MockObserverComponent {
   using metavariables = Metavariables;
   using array_index = int;
   using chare_type = ActionTesting::MockGroupChare;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 struct ScalarVar : db::SimpleTag {
@@ -182,7 +179,7 @@ struct Metavariables {
     using factory_classes =
         tmpl::map<tmpl::pair<Event, tmpl::list<ObserveEvent>>>;
   };
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t SpatialDim>

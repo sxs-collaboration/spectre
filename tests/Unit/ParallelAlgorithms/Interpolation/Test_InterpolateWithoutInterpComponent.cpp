@@ -19,6 +19,7 @@
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
@@ -38,10 +39,8 @@ struct mock_element {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Metavariables::volume_dim>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<db::AddSimpleTags<>>;
 };
 
@@ -156,7 +155,7 @@ struct MockMetavariables {
     using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
   };
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename MockMetavariables>

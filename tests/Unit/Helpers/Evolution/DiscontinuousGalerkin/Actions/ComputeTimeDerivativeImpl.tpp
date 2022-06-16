@@ -55,6 +55,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/History.hpp"
@@ -823,14 +824,14 @@ struct component {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::flatten<tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::Actions::SetupDataBox,
               ::evolution::dg::Initialization::Mortars<
                   Metavariables::volume_dim, typename Metavariables::system>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<
               ::evolution::dg::Actions::ComputeTimeDerivative<Metavariables>>>>;
 };
@@ -858,7 +859,7 @@ struct Metavariables {
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename BoundaryCorrection, typename... PackagedFieldTags,

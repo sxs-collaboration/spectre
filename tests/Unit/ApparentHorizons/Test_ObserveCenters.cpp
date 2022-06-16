@@ -29,7 +29,7 @@ namespace {
 struct AhA {};
 
 struct TestMetavars {
-  enum class Phase { Initialization, WriteData, Exit };
+  using Phase = Parallel::Phase;
 
   using component_list =
       tmpl::list<TestHelpers::observers::MockObserverWriter<TestMetavars>>;
@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
       make_not_null(&runner), {});
   auto& cache = ActionTesting::cache<observer_writer>(runner, 0);
 
-  runner.set_phase(TestMetavars::Phase::WriteData);
+  runner.set_phase(TestMetavars::Phase::Execute);
 
   const auto make_center = [&gen, &center_dist]() -> std::array<double, 3> {
     return make_with_random_values<std::array<double, 3>>(

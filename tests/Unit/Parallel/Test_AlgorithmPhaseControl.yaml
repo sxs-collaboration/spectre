@@ -4,7 +4,7 @@
 # note that this is a vector of pairs, so has the peculiar '- -' for the
 # elements
 PhaseChangeAndTriggers:
-  - - TempPhaseATrigger:
-    - - VisitAndReturn(TempPhaseA)
-  - - TempPhaseBTrigger:
-    - - VisitAndReturn(TempPhaseB)
+  - - RegisterTrigger:
+    - - VisitAndReturn(Register)
+  - - SolveTrigger:
+    - - VisitAndReturn(Solve)

@@ -9,6 +9,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,7 +45,7 @@ struct MemoryMonitor {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  Initialization::Actions::AddSimpleTags<
                      mem_monitor::detail::InitializeMutator>,

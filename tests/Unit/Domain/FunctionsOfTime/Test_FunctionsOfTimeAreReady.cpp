@@ -18,6 +18,7 @@
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Tags.hpp"
@@ -49,13 +50,13 @@ struct Component {
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize, OtherFunctionsOfTime>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
+      Parallel::Phase::Testing,
       tmpl::list<domain::Actions::CheckFunctionsOfTimeAreReady>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

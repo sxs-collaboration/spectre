@@ -13,6 +13,7 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
@@ -40,7 +41,7 @@ struct ResidualMonitor {
                  NonlinearSolver::Tags::MaxGlobalizationSteps<OptionsGroup>>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<::Actions::SetupDataBox,
                  InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
 

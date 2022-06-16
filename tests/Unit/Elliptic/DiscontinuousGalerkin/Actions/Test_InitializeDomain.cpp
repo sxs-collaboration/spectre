@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -41,13 +42,13 @@ struct ElementArray {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                          domain::Tags::InitialExtents<Dim>>>>>,
 
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Actions::SetupDataBox,
                      ::elliptic::dg::Actions::InitializeDomain<Dim>>>>;
 };
@@ -55,7 +56,7 @@ struct ElementArray {
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

@@ -33,6 +33,7 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -403,7 +404,7 @@ struct component {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::Actions::SetupDataBox,
@@ -411,7 +412,7 @@ struct component {
                   Metavariables::volume_dim, typename Metavariables::system>,
               SetLocalMortarData>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<tmpl::conditional_t<
               Metavariables::local_time_stepping,
               ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
@@ -430,7 +431,7 @@ struct Metavariables {
   using const_global_cache_tags = tmpl::list<domain::Tags::InitialExtents<Dim>>;
 
   using component_list = tmpl::list<component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename Tag, typename Metavariables, size_t Dim>

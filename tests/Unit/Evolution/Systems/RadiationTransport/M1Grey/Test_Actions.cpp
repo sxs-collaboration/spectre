@@ -15,6 +15,7 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Utilities/Gsl.hpp"
@@ -36,22 +37,22 @@ struct mock_component {
   using simple_tags = db::AddSimpleTags<tmpl::flatten<
       tmpl::list<typename Closure::return_tags, typename Closure::argument_tags,
                  domain::Tags::Coordinates<3, Frame::Inertial>>>>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Actions::MutateApply<
-              typename RadiationTransport::M1Grey::ComputeM1Closure<
-                  typename metavariables::neutrino_species>>>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Testing,
+                     tmpl::list<Actions::MutateApply<
+                         typename RadiationTransport::M1Grey::ComputeM1Closure<
+                             typename metavariables::neutrino_species>>>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
                                       neutrinos::HeavyLeptonNeutrinos<0>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

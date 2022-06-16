@@ -21,6 +21,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
@@ -123,11 +124,9 @@ struct ArrayComponent {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::TestReductions,
+          Parallel::Phase::Testing,
           tmpl::list<Count<EvenOrOddTag>,
                      // Test performing a reduction over another section
                      Count<IsFirstElementTag>,
@@ -217,7 +216,7 @@ struct Metavariables {
 
   static constexpr Options::String help = "Test section reductions";
 
-  enum class Phase { Initialization, TestReductions, Exit };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -227,8 +226,8 @@ struct Metavariables {
       const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
-        return Phase::TestReductions;
-      case Phase::TestReductions:
+        return Phase::Testing;
+      case Phase::Testing:
         return Phase::Exit;
       case Phase::Exit:
         ERROR(

@@ -187,8 +187,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<RelativisticEuler::Valencia::BoundaryConditions::
                        BoundaryCondition<volume_dim>,
                    RelativisticEuler::Valencia::BoundaryConditions::
@@ -263,19 +262,19 @@ struct EvolutionMetavars {
   using dg_element_array = DgElementArray<
       EvolutionMetavars,
       tmpl::list<
-          Parallel::PhaseActions<Phase, Phase::Initialization,
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
 
           Parallel::PhaseActions<
-              Phase, Phase::InitializeTimeStepperHistory,
+              Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
 
-          Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+          Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
-              Phase, Phase::Evolve,
+              Parallel::Phase::Evolve,
               tmpl::list<VariableFixing::Actions::FixVariables<
                              VariableFixing::FixToAtmosphere<volume_dim>>,
                          Actions::UpdateConservatives,

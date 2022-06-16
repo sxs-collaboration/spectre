@@ -27,6 +27,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -199,14 +200,13 @@ template <class Metavariables>
 struct NoOpsComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<no_op_test::initialize>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::NoOpsStart,
-          tmpl::list<no_op_test::increment_count_actions_called,
-                     no_op_test::no_op>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        tmpl::list<no_op_test::initialize>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::list<no_op_test::increment_count_actions_called,
+                                no_op_test::no_op>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -218,7 +218,7 @@ struct NoOpsComponent {
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
         .start_phase(next_phase);
     // [start_phase]
-    if (next_phase == Metavariables::Phase::NoOpsFinish) {
+    if (next_phase == Metavariables::Phase::RegisterWithObserver) {
       Parallel::simple_action<no_op_test::finalize>(
           Parallel::get_parallel_component<NoOpsComponent>(local_cache));
     }
@@ -364,11 +364,9 @@ struct MutateComponent {
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<add_remove_test::initialize>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::MutateStart,
+      Parallel::PhaseActions<Parallel::Phase::Solve,
                              tmpl::list<add_remove_test::add_int_value_10,
                                         add_remove_test::increment_int0,
                                         add_remove_test::remove_int0>>>;
@@ -382,7 +380,7 @@ struct MutateComponent {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<MutateComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::MutateFinish) {
+    if (next_phase == Metavariables::Phase::Evolve) {
       // [simple_action_call]
       Parallel::simple_action<add_remove_test::test_args>(
           Parallel::get_parallel_component<MutateComponent>(local_cache),
@@ -536,11 +534,10 @@ struct ReceiveComponent {
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<receive_data_test::initialize>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::ReceiveStart,
+          Parallel::Phase::ImportInitialData,
           tmpl::list<receive_data_test::add_int0_to_box,
                      receive_data_test::set_int0_from_receive,
                      add_remove_test::increment_int0,
@@ -555,7 +552,7 @@ struct ReceiveComponent {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ReceiveComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::ReceiveStart) {
+    if (next_phase == Metavariables::Phase::ImportInitialData) {
       for (TestAlgorithmArrayInstance instance{0};
            not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
         int dummy_int = 10;
@@ -563,7 +560,8 @@ struct ReceiveComponent {
             Parallel::get_parallel_component<ReceiveComponent>(local_cache),
             instance, dummy_int);
       }
-    } else if (next_phase == Metavariables::Phase::ReceiveFinish) {
+    } else if (next_phase ==
+               Metavariables::Phase::InitializeInitialDataDependentQuantities) {
       Parallel::simple_action<receive_data_test::finalize>(
           Parallel::get_parallel_component<ReceiveComponent>(local_cache));
     }
@@ -646,11 +644,9 @@ struct AnyOrderComponent {
   using array_index = ElementId;  // Just to test nothing breaks
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<add_remove_test::initialize>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::AnyOrderStart,
+      Parallel::PhaseActions<Parallel::Phase::Execute,
                              tmpl::list<add_remove_test::add_int_value_10,
                                         add_remove_test::increment_int0,
                                         any_order::iterate_increment_int0,
@@ -665,7 +661,7 @@ struct AnyOrderComponent {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::AnyOrderFinish) {
+    if (next_phase == Metavariables::Phase::Cleanup) {
       Parallel::simple_action<any_order::finalize>(
           Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
     }
@@ -692,18 +688,7 @@ struct TestMetavariables {
   // [help_string_example]
 
   // [determine_next_phase_example]
-  enum class Phase {
-    Initialization,
-    NoOpsStart,
-    NoOpsFinish,
-    MutateStart,
-    MutateFinish,
-    ReceiveStart,
-    ReceiveFinish,
-    AnyOrderStart,
-    AnyOrderFinish,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -713,22 +698,22 @@ struct TestMetavariables {
       const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
-        return Phase::NoOpsStart;
-      case Phase::NoOpsStart:
-        return Phase::NoOpsFinish;
-      case Phase::NoOpsFinish:
-        return Phase::MutateStart;
-      case Phase::MutateStart:
-        return Phase::MutateFinish;
-      case Phase::MutateFinish:
-        return Phase::ReceiveStart;
-      case Phase::ReceiveStart:
-        return Phase::ReceiveFinish;
-      case Phase::ReceiveFinish:
-        return Phase::AnyOrderStart;
-      case Phase::AnyOrderStart:
-        return Phase::AnyOrderFinish;
-      case Phase::AnyOrderFinish:
+        return Phase::Register;
+      case Phase::Register:
+        return Phase::RegisterWithObserver;
+      case Phase::RegisterWithObserver:
+        return Phase::Solve;
+      case Phase::Solve:
+        return Phase::Evolve;
+      case Phase::Evolve:
+        return Phase::ImportInitialData;
+      case Phase::ImportInitialData:
+        return Phase::InitializeInitialDataDependentQuantities;
+      case Phase::InitializeInitialDataDependentQuantities:
+        return Phase::Execute;
+      case Phase::Execute:
+        return Phase::Cleanup;
+      case Phase::Cleanup:
         [[fallthrough]];
       case Phase::Exit:
         return Phase::Exit;
@@ -759,12 +744,11 @@ using charmxx_main_component = Parallel::Main<TestMetavariables>;
 SPECTRE_TEST_CASE("Unit.Parallel.Algorithm.NullptrConstructError",
                   "[Parallel][Unit]") {
   ERROR_TEST();
-  Parallel::AlgorithmImpl < NoOpsComponent<TestMetavariables>,
-      tmpl::list<
-          Parallel::PhaseActions<typename TestMetavariables::Phase,
-                                 TestMetavariables::Phase::Initialization,
-                                 tmpl::list<add_remove_test::initialize>>>>{
-          nullptr};
+  Parallel::AlgorithmImpl<NoOpsComponent<TestMetavariables>,
+                          tmpl::list<Parallel::PhaseActions<
+                              Parallel::Phase::Initialization,
+                              tmpl::list<add_remove_test::initialize>>>>{
+      nullptr};
 }
 
 #include "Parallel/CharmMain.tpp"  // IWYU pragma: keep

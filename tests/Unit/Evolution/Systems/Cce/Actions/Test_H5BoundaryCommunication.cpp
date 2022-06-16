@@ -37,6 +37,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -69,7 +70,7 @@ struct mock_observer_writer {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
@@ -90,12 +91,10 @@ struct mock_h5_worldtube_boundary {
   using array_index = size_t;
 
   using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
           phase_dependent_action_list>;
@@ -126,11 +125,10 @@ struct mock_characteristic_evolution {
 
   using simple_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<Actions::RequestBoundaryData<
                          H5WorldtubeBoundary<Metavariables>,
                          mock_characteristic_evolution<Metavariables>>,
@@ -199,7 +197,7 @@ struct test_metavariables {
 
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
 
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

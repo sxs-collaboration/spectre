@@ -23,6 +23,7 @@
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetVarsFromElement.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTarget.hpp"
@@ -176,7 +177,7 @@ struct mock_interpolation_target {
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using simple_tags = tmpl::list<Tags::TestTargetPoints>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetVarsFromElement<

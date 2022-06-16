@@ -14,6 +14,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -57,7 +58,7 @@ struct mock_observer_writer {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
@@ -72,16 +73,14 @@ struct mock_array {
   using metavariables = Metavariables;
   using array_index = size_t;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 struct test_metavariables {
   using component_list = tmpl::list<mock_observer_writer<test_metavariables>,
                                     mock_array<test_metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

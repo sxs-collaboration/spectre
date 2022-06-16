@@ -16,6 +16,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -46,11 +47,9 @@ struct mock_characteristic_evolution {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve,
+      Parallel::PhaseActions<Parallel::Phase::Evolve,
                              tmpl::list<Actions::ExitIfEndTimeReached>>>;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
@@ -60,7 +59,7 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

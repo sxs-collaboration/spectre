@@ -10,6 +10,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/CheckpointAndExitAfterWallclock.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
@@ -25,12 +26,11 @@ struct Metavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::CheckpointAndExitAfterWallclock<
-                       Metavariables>>>,
+                   tmpl::list<PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
-  enum class Phase { PhaseA, WriteCheckpoint, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
@@ -50,12 +50,10 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
   using phase_change_decision_data_type = tuples::tagged_tuple_from_typelist<
       PhaseControl::get_phase_change_tags<Metavariables>>;
   phase_change_decision_data_type phase_change_decision_data{
-      Metavariables::Phase::PhaseA, true, 1.0, true};
+      Parallel::Phase::Execute, true, 1.0, true};
 
-  const PhaseControl::CheckpointAndExitAfterWallclock<Metavariables>
-      phase_change0(0.0);
-  const PhaseControl::CheckpointAndExitAfterWallclock<Metavariables>
-      phase_change1(1.0);
+  const PhaseControl::CheckpointAndExitAfterWallclock phase_change0(0.0);
+  const PhaseControl::CheckpointAndExitAfterWallclock phase_change1(1.0);
   {
     INFO("Test initialize phase change decision data");
     phase_change0.initialize_phase_data<Metavariables>(
@@ -74,8 +72,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     phase_change_decision_data =
         phase_change_decision_data_type{std::nullopt, std::nullopt, true, true};
     auto decision_result = phase_change1.arbitrate_phase_change(
-        make_not_null(&phase_change_decision_data),
-        Metavariables::Phase::PhaseA, cache);
+        make_not_null(&phase_change_decision_data), Parallel::Phase::Execute,
+        cache);
     CHECK((decision_result == std::nullopt));
     CHECK((phase_change_decision_data ==
            phase_change_decision_data_type{std::nullopt, std::nullopt, false,
@@ -87,17 +85,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     phase_change_decision_data =
         phase_change_decision_data_type{std::nullopt, std::nullopt, true, true};
     decision_result = phase_change0.arbitrate_phase_change(
-        make_not_null(&phase_change_decision_data),
-        Metavariables::Phase::PhaseA, cache);
+        make_not_null(&phase_change_decision_data), Parallel::Phase::Execute,
+        cache);
     CHECK((decision_result ==
            std::make_pair(
-               Metavariables::Phase::WriteCheckpoint,
+               Parallel::Phase::WriteCheckpoint,
                PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
     // It's impossible to know what the elapsed wallclock time will be, so we
     // check the tags one by one...
-    CHECK((tuples::get<
-               PhaseControl::Tags::RestartPhase<typename Metavariables::Phase>>(
-               phase_change_decision_data) == Metavariables::Phase::PhaseA));
+    CHECK((tuples::get<PhaseControl::Tags::RestartPhase>(
+               phase_change_decision_data) == Parallel::Phase::Execute));
     // Check recorded time in range: 0 second < time < 1 second
     // (this assumes test run duration falls in this time window)
     CHECK(tuples::get<PhaseControl::Tags::WallclockHoursAtCheckpoint>(
@@ -113,13 +110,13 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     // to restarting from a checkpoint.
     // (this assumes the test doesn't take 1h to get here)
     phase_change_decision_data = phase_change_decision_data_type{
-        Metavariables::Phase::PhaseA, 1.0, false, true};
+        Parallel::Phase::Execute, 1.0, false, true};
     decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
-        Metavariables::Phase::WriteCheckpoint, cache);
+        Parallel::Phase::WriteCheckpoint, cache);
     CHECK((decision_result ==
            std::make_pair(
-               Metavariables::Phase::PhaseA,
+               Parallel::Phase::Execute,
                PhaseControl::ArbitrationStrategy::PermitAdditionalJumps)));
     CHECK((phase_change_decision_data ==
            phase_change_decision_data_type{std::nullopt, std::nullopt, false,
@@ -129,16 +126,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",
     // having just written a checkpoint. We want to exit now.
     // (this assumes the test takes at least a few cycles to get here)
     phase_change_decision_data = phase_change_decision_data_type{
-        Metavariables::Phase::PhaseA, 1e-15, false, true};
+        Parallel::Phase::Execute, 1e-15, false, true};
     decision_result = phase_change0.arbitrate_phase_change(
         make_not_null(&phase_change_decision_data),
-        Metavariables::Phase::WriteCheckpoint, cache);
+        Parallel::Phase::WriteCheckpoint, cache);
     CHECK((decision_result ==
            std::make_pair(
-               Metavariables::Phase::Exit,
+               Parallel::Phase::Exit,
                PhaseControl::ArbitrationStrategy::RunPhaseImmediately)));
     CHECK((phase_change_decision_data ==
-           phase_change_decision_data_type{Metavariables::Phase::PhaseA, 1e-15,
+           phase_change_decision_data_type{Parallel::Phase::Execute, 1e-15,
                                            false, true}));
   }
 }

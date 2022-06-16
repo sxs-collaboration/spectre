@@ -15,6 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -41,7 +42,7 @@ struct component {
   using initial_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  Actions::SetupDataBox,
                  Initialization::Actions::NonconservativeSystem<
@@ -53,7 +54,7 @@ struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim>;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim>

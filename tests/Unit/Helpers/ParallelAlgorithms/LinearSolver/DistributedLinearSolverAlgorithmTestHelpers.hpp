@@ -41,6 +41,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -353,19 +354,14 @@ using test_actions =
 template <typename Metavariables>
 using ElementArray = elliptic::DgElementArray<
     Metavariables,
-    tmpl::list<
-        Parallel::PhaseActions<typename Metavariables::Phase,
-                               Metavariables::Phase::Initialization,
-                               initialization_actions<Metavariables>>,
-        Parallel::PhaseActions<typename Metavariables::Phase,
-                               Metavariables::Phase::RegisterWithObserver,
-                               register_actions<Metavariables>>,
-        Parallel::PhaseActions<typename Metavariables::Phase,
-                               Metavariables::Phase::PerformLinearSolve,
-                               solve_actions<Metavariables>>,
-        Parallel::PhaseActions<typename Metavariables::Phase,
-                               Metavariables::Phase::TestResult,
-                               test_actions<Metavariables>>>>;
+    tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                      initialization_actions<Metavariables>>,
+               Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+                                      register_actions<Metavariables>>,
+               Parallel::PhaseActions<Parallel::Phase::Solve,
+                                      solve_actions<Metavariables>>,
+               Parallel::PhaseActions<Parallel::Phase::Testing,
+                                      test_actions<Metavariables>>>>;
 
 template <typename Metavariables>
 using component_list =

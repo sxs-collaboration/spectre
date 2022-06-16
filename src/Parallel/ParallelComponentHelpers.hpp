@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Parallel/Callback.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -233,9 +234,9 @@ struct get_initialization_actions_list {
   using type = tmpl::list<>;
 };
 
-template <typename PhaseType, typename InitializationActionsList>
+template <typename InitializationActionsList>
 struct get_initialization_actions_list<Parallel::PhaseActions<
-    PhaseType, PhaseType::Initialization, InitializationActionsList>> {
+    Parallel::Phase::Initialization, InitializationActionsList>> {
   using type = InitializationActionsList;
 };
 }  // namespace detail

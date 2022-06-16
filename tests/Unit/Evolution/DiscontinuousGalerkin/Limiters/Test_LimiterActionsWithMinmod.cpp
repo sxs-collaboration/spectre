@@ -36,6 +36,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -80,12 +81,11 @@ struct component {
           ::domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       domain::Tags::SizeOfElementCompute<Dim>>;
   using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Limiters::Actions::SendData<Metavariables>,
                      Limiters::Actions::Limit<Metavariables>>>>;
 };
@@ -97,7 +97,7 @@ struct Metavariables {
   using system = System<Dim>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

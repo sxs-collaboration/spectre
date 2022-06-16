@@ -40,6 +40,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -78,7 +79,7 @@ struct component {
       evolution::dg::Tags::MortarNextTemporalId<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags>,
           evolution::dg::subcell::Actions::SendDataForReconstruction<
@@ -93,7 +94,7 @@ struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim>;
   using const_global_cache_tags = tmpl::list<>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool ghost_zone_size_invoked;

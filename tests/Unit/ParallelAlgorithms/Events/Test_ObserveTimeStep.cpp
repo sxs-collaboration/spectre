@@ -28,6 +28,7 @@
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -120,10 +121,8 @@ struct ElementComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -137,10 +136,8 @@ struct MockObserverComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 struct Var : db::SimpleTag {
@@ -164,7 +161,7 @@ struct Metavariables {
         tmpl::list<Events::ObserveTimeStep<typename Metavariables::system>>>>;
   };
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename Observer>

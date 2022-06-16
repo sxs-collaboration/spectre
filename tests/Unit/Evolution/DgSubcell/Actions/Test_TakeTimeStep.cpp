@@ -37,6 +37,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -66,7 +67,7 @@ struct component {
       tmpl::list<evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags, initial_compute_tags>,
           evolution::dg::subcell::fd::Actions::TakeTimeStep<
@@ -78,7 +79,7 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool time_derivative_invoked;

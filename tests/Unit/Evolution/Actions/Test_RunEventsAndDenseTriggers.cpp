@@ -38,6 +38,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -277,7 +278,7 @@ struct Component {
       tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<1>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
+      Parallel::Phase::Testing,
       tmpl::list<
           evolution::Actions::RunEventsAndDenseTriggers<prim_from_con>>>>;
 };
@@ -296,7 +297,7 @@ struct Metavariables {
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<TestTrigger>>,
                   tmpl::pair<Event, tmpl::list<TestEvent>>>;
   };
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename Metavariables>

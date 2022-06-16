@@ -23,6 +23,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -87,7 +88,7 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
+      Parallel::Phase::Testing,
       tmpl::list<observers::Actions::RegisterEventsWithObservers>>>;
 };
 
@@ -148,8 +149,7 @@ struct MockObserverComponent {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using replace_these_simple_actions =
@@ -169,7 +169,7 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Event, tmpl::list<SomeEvent>>,
                   tmpl::pair<Trigger, Triggers::logical_triggers>>;
   };
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {

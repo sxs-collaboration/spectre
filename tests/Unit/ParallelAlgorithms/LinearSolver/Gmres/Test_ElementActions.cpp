@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
@@ -58,13 +59,13 @@ struct ElementArray {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
                      Actions::SetupDataBox,
                      LinearSolver::gmres::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup, Preconditioned>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<
               LinearSolver::gmres::detail::NormalizeInitialOperand<
                   fields_tag, DummyOptionsGroup, Preconditioned,
@@ -82,7 +83,7 @@ template <bool Preconditioned>
 struct Metavariables {
   using element_array = ElementArray<Metavariables, Preconditioned>;
   using component_list = tmpl::list<element_array>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <bool Preconditioned>

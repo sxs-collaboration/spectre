@@ -29,6 +29,7 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -75,14 +76,13 @@ struct ElementArray {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<1>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<domain::Tags::InitialRefinementLevels<1>,
                                     domain::Tags::InitialExtents<1>>>,
                      Actions::SetupDataBox,
                      elliptic::dg::Actions::InitializeDomain<1>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<elliptic::Actions::InitializeFields<
                                  typename Metavariables::system,
                                  elliptic::Tags::InitialGuess<
@@ -94,7 +94,7 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags = tmpl::list<
       elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =

@@ -11,6 +11,7 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/Goto.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -29,7 +30,7 @@ struct component {
   using initial_tags = tmpl::list<evolution::dg::subcell::Tags::ActiveGrid>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags>,
           evolution::dg::subcell::Actions::SelectNumericalMethod,
@@ -42,7 +43,7 @@ struct component {
 
 struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test(const evolution::dg::subcell::ActiveGrid active_grid) {

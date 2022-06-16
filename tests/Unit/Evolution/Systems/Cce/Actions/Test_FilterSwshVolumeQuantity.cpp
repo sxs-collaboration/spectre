@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Parallel/Phase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Literals.hpp"
@@ -54,11 +55,10 @@ struct mock_characteristic_evolution {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<Actions::FilterSwshVolumeQuantity<Tags::BondiJ>>>>;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
@@ -68,7 +68,7 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

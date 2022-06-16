@@ -13,6 +13,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -55,12 +56,10 @@ struct mock_h5_worldtube_boundary {
   using array_index = size_t;
 
   using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -87,12 +86,10 @@ struct mock_gh_worldtube_boundary {
   using array_index = size_t;
 
   using simple_tags = tmpl::list<>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             initialize_action_list>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                        initialize_action_list>,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve, tmpl::list<>>>;
   using const_global_cache_tags =
       Parallel::get_const_global_cache_tags_from_actions<
     phase_dependent_action_list>;

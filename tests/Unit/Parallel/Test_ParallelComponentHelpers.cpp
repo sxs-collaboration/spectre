@@ -8,6 +8,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"  // IWYU pragma: keep
+#include "Parallel/Phase.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -52,11 +53,9 @@ struct InitAction3 {
   using initialization_tags = tmpl::list<InitTag0, InitTag1, InitTag3>;
 };
 
-enum class Phase { Initialization, Execute, Exit };
-
 struct ComponentInit {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Phase, Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -64,7 +63,7 @@ struct ComponentInit {
 
 struct ComponentExecute {
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Phase, Phase::Execute,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -73,9 +72,9 @@ struct ComponentExecute {
 
 struct ComponentInitAndExecute {
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Phase, Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<InitAction3>>,
-      Parallel::PhaseActions<Phase, Phase::Execute,
+      Parallel::PhaseActions<Parallel::Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -83,7 +82,7 @@ struct ComponentInitAndExecute {
 
 struct ComponentInitWithAllocate {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Phase, Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
   using array_allocation_tags = tmpl::list<InitTag4, InitTag5>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -94,7 +93,7 @@ struct ComponentInitWithAllocate {
 
 struct ComponentExecuteWithAllocate {
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Phase, Phase::Execute,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
   using array_allocation_tags = tmpl::list<InitTag6, InitTag7>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -104,9 +103,9 @@ struct ComponentExecuteWithAllocate {
 
 struct ComponentInitAndExecuteWithAllocate {
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Phase, Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<InitAction3>>,
-      Parallel::PhaseActions<Phase, Phase::Execute,
+      Parallel::PhaseActions<Parallel::Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
   using array_allocation_tags = tmpl::list<InitTag3, InitTag4>;
   using initialization_tags = Parallel::get_initialization_tags<

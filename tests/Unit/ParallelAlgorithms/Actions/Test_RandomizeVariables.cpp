@@ -19,6 +19,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,19 +42,18 @@ struct ElementArray {
   using const_global_cache_tags = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<::Tags::Variables<tmpl::list<ScalarFieldTag>>>>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<
-              Actions::RandomizeVariables<VariablesTag, RandomizeVariables>>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing,
+                             tmpl::list<Actions::RandomizeVariables<
+                                 VariablesTag, RandomizeVariables>>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_randomize_variables(

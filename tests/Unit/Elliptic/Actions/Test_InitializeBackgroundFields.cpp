@@ -20,6 +20,7 @@
 #include "Elliptic/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -52,19 +53,19 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<1>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<1>>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<
-                         tmpl::list<domain::Tags::InitialRefinementLevels<1>,
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+                                    domain::Tags::InitialRefinementLevels<1>,
                                     domain::Tags::InitialExtents<1>>>,
-                     Actions::SetupDataBox,
-                     elliptic::dg::Actions::InitializeDomain<1>>>,
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<::elliptic::Actions::InitializeBackgroundFields<
-              typename Metavariables::system,
-              elliptic::Tags::Background<Background>>>>>;
+                                Actions::SetupDataBox,
+                                elliptic::dg::Actions::InitializeDomain<1>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Testing,
+                     tmpl::list<::elliptic::Actions::InitializeBackgroundFields<
+                         typename Metavariables::system,
+                         elliptic::Tags::Background<Background>>>>>;
 };
 
 struct Metavariables {
@@ -72,7 +73,7 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags =
       tmpl::list<elliptic::Tags::Background<Background>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace

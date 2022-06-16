@@ -43,6 +43,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -173,13 +174,11 @@ struct MockObserverWriter {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      observers::Actions::InitializeWriter<Metavariables>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
 };
@@ -196,12 +195,11 @@ struct MockInterpolationTarget {
       tmpl::list<domain::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -213,7 +211,7 @@ struct MockInterpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
                          tmpl::list<intrp::Tags::VolumeVarsInfo<
@@ -221,10 +219,8 @@ struct MockInterpolator {
                                     intrp::Tags::VolumeVarsInfo<Metavariables,
                                                                 ::Tags::Time>>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };
 
@@ -320,7 +316,7 @@ struct MockMetavariables {
                  MockInterpolationTarget<MockMetavariables, SurfaceC>,
                  MockInterpolationTarget<MockMetavariables, SurfaceD>,
                  MockInterpolator<MockMetavariables>>;
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE(
@@ -430,8 +426,7 @@ SPECTRE_TEST_CASE(
       ActionTesting::next_action<obs_writer>(make_not_null(&runner), node);
     }
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));

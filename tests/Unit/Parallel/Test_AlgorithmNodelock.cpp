@@ -24,6 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -255,16 +256,10 @@ struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using array_index = int;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>,
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::ArrayToNodegroup,
-                                        tmpl::list<>>,
-                 Parallel::PhaseActions<
-                     typename Metavariables::Phase,
-                     Metavariables::Phase::TestThreadedMethod, tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -291,10 +286,10 @@ struct ArrayParallelComponent {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
-    if (next_phase == Metavariables::Phase::ArrayToNodegroup) {
+    if (next_phase == Metavariables::Phase::Register) {
       Parallel::simple_action<reduce_to_nodegroup>(array_proxy);
     }
-    if (next_phase == Metavariables::Phase::TestThreadedMethod) {
+    if (next_phase == Metavariables::Phase::Execute) {
       Parallel::simple_action<reduce_threaded_method>(array_proxy);
     }
   }
@@ -304,22 +299,13 @@ template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<nodegroup_initialize>>,
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::ArrayToNodegroup,
-                                        tmpl::list<>>,
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::CheckFirstResult,
-                                        tmpl::list<>>,
-                 Parallel::PhaseActions<
-                     typename Metavariables::Phase,
-                     Metavariables::Phase::TestThreadedMethod, tmpl::list<>>,
-                 Parallel::PhaseActions<
-                     typename Metavariables::Phase,
-                     Metavariables::Phase::CheckThreadedResult, tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<nodegroup_initialize>>,
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Solve, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -330,10 +316,10 @@ struct NodegroupParallelComponent {
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);
-    if (next_phase == Metavariables::Phase::CheckFirstResult) {
+    if (next_phase == Metavariables::Phase::Solve) {
       Parallel::simple_action<nodegroup_check_first_result>(nodegroup_proxy);
     }
-    if (next_phase == Metavariables::Phase::CheckThreadedResult) {
+    if (next_phase == Metavariables::Phase::Testing) {
       Parallel::simple_action<nodegroup_check_threaded_result>(nodegroup_proxy);
     }
   }
@@ -347,14 +333,7 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test nodelocks in Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  enum class Phase {
-    Initialization,
-    ArrayToNodegroup,
-    CheckFirstResult,
-    TestThreadedMethod,
-    CheckThreadedResult,
-    Exit
-  };
+  using Phase = Parallel::Phase;
   template <typename... Tags>
   static Phase determine_next_phase(
       const gsl::not_null<
@@ -364,16 +343,16 @@ struct TestMetavariables {
     Parallel::printf("Determining next phase\n");
 
     if (current_phase == Phase::Initialization) {
-      return Phase::ArrayToNodegroup;
+      return Phase::Register;
     }
-    if (current_phase == Phase::ArrayToNodegroup) {
-      return Phase::CheckFirstResult;
+    if (current_phase == Phase::Register) {
+      return Phase::Solve;
     }
-    if (current_phase == Phase::CheckFirstResult) {
-      return Phase::TestThreadedMethod;
+    if (current_phase == Phase::Solve) {
+      return Phase::Execute;
     }
-    if (current_phase == Phase::TestThreadedMethod) {
-      return Phase::CheckThreadedResult;
+    if (current_phase == Phase::Execute) {
+      return Phase::Testing;
     }
 
     return Phase::Exit;

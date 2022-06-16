@@ -16,6 +16,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
@@ -43,7 +44,7 @@ struct mock_element {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::ElementInitInterpPoints<
                      intrp::Tags::InterpPointInfo<Metavariables>>>>>;
@@ -67,12 +68,12 @@ struct mock_interpolation_target {
       domain::Tags::Domain<Metavariables::volume_dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Registration,
+          Parallel::Phase::Register,
           tmpl::list<
               intrp::Actions::InterpolationTargetSendTimeIndepPointsToElements<
                   InterpolationTargetTag>>>>;
@@ -115,7 +116,7 @@ struct MockMetavariables {
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
       mock_element<MockMetavariables>>;
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
@@ -163,8 +164,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   using point_info_type = std::vector<std::optional<
       IdPair<domain::BlockId, tnsr::I<double, metavars::volume_dim,

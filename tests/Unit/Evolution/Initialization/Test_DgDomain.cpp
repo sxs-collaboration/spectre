@@ -30,6 +30,7 @@
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -134,11 +135,11 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
 
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<::Actions::SetupDataBox,
                      evolution::dg::Initialization::Domain<dim>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
@@ -149,7 +150,7 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   static constexpr size_t dim = Dim;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool TimeDependent>

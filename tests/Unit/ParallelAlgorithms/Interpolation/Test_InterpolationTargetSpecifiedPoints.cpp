@@ -19,6 +19,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/SpecifiedPoints.hpp"
@@ -50,7 +51,7 @@ struct MockMetavariables {
       InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables<Dim>,
                                                          InterpolationTargetA>,
       InterpTargetTestHelpers::mock_interpolator<MockMetavariables<Dim>>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_1d() {

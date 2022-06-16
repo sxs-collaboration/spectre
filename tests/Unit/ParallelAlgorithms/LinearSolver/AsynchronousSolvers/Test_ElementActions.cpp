@@ -19,6 +19,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -49,18 +50,18 @@ struct ElementArray {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<fields_tag, source_tag>>,
                      Actions::SetupDataBox,
                      LinearSolver::async_solvers::InitializeElement<
                          fields_tag, TestSolver, source_tag>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Register,
+          Parallel::Phase::Register,
           tmpl::list<LinearSolver::async_solvers::RegisterElement<
               fields_tag, TestSolver, source_tag>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Test,
+          Parallel::Phase::Testing,
           tmpl::list<LinearSolver::async_solvers::PrepareSolve<
                          fields_tag, TestSolver, source_tag, TestSolver>,
                      LinearSolver::async_solvers::CompleteStep<
@@ -74,7 +75,7 @@ struct Metavariables {
                  ElementArray<Metavariables>>;
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<LinearSolver::async_solvers::reduction_data>>;
-  enum class Phase { Initialization, Register, Test, Exit };
+  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -149,7 +150,8 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
 
-  ActionTesting::set_phase(make_not_null(&runner), Metavariables::Phase::Test);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   {
     INFO("InitializeElement");

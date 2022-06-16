@@ -71,8 +71,7 @@ struct HelloWorld {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Execute, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(

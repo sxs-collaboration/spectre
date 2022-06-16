@@ -32,6 +32,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
@@ -179,9 +180,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// The Charm++ base object type
   using cbase_type =
       typename chare_type::template cbase<parallel_component, array_index>;
-  /// The type of the phases
-  using PhaseType =
-      typename tmpl::front<tmpl::list<PhaseDepActionListsPack...>>::phase_type;
 
   using phase_dependent_action_lists = tmpl::list<PhaseDepActionListsPack...>;
 
@@ -296,7 +294,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   /// Start execution of the phase-dependent action list in `next_phase`. If
   /// `next_phase` has already been visited, execution will resume at the point
   /// where the previous execution of the same phase left off.
-  void start_phase(const PhaseType next_phase);
+  void start_phase(const Parallel::Phase next_phase);
 
   /// Tell the Algorithm it should no longer execute the algorithm. This does
   /// not mean that the execution of the program is terminated, but only that
@@ -380,7 +378,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
   void forward_tuple_to_threaded_action(
       std::tuple<Args...>&& args, std::index_sequence<Is...> /*meta*/);
 
-  size_t number_of_actions_in_phase(const PhaseType phase) const;
+  size_t number_of_actions_in_phase(const Parallel::Phase phase) const;
 
   // Invoke the static `apply` method of `ThisAction`. The if constexprs are for
   // handling the cases where the `apply` method returns a tuple of one, two,
@@ -410,8 +408,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   Parallel::CProxy_GlobalCache<metavariables> global_cache_proxy_;
   bool performing_action_ = false;
-  PhaseType phase_{};
-  std::unordered_map<PhaseType, size_t> phase_bookmarks_{};
+  Parallel::Phase phase_{Parallel::Phase::Initialization};
+  std::unordered_map<Parallel::Phase, size_t> phase_bookmarks_{};
   std::size_t algorithm_step_ = 0;
   tmpl::conditional_t<Parallel::is_node_group_proxy<cproxy_type>::value,
                       Parallel::NodeLock, NoSuchType>
@@ -535,7 +533,6 @@ std::string AlgorithmImpl<ParallelComponent,
   os << "using chare_type = " << pretty_type::get_name<chare_type>() << ";\n";
   os << "using cproxy_type = " << pretty_type::get_name<cproxy_type>() << ";\n";
   os << "using cbase_type = " << pretty_type::get_name<cbase_type>() << ";\n";
-  os << "using PhaseType = " << pretty_type::get_name<PhaseType>() << ";\n";
   os << "using phase_dependent_action_lists = "
      << pretty_type::get_name<phase_dependent_action_lists>() << ";\n";
   os << "using all_cache_tags = " << pretty_type::get_name<all_cache_tags>()
@@ -555,6 +552,7 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 std::string AlgorithmImpl<ParallelComponent,
                           tmpl::list<PhaseDepActionListsPack...>>::print_state()
     const {
+  using ::operator<<;
   std::ostringstream os;
   os << "State:\n";
   os << "performing_action_ = " << std::boolalpha << performing_action_
@@ -801,7 +799,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     }
     const auto invoke_for_phase = [this](auto phase_dep_v) {
       using PhaseDep = decltype(phase_dep_v);
-      constexpr PhaseType phase = PhaseDep::phase;
+      constexpr Parallel::Phase phase = PhaseDep::phase;
       using actions_list = typename PhaseDep::action_list;
       if (phase_ == phase) {
         while (
@@ -844,7 +842,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    start_phase(const PhaseType next_phase) {
+    start_phase(const Parallel::Phase next_phase) {
   try {
     // terminate should be true since we exited a phase previously.
     if (not get_terminate() and not halt_algorithm_until_next_phase_) {
@@ -1074,7 +1072,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 size_t
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    number_of_actions_in_phase(const PhaseType phase) const {
+    number_of_actions_in_phase(const Parallel::Phase phase) const {
   size_t number_of_actions = 0;
   const auto helper = [&number_of_actions, phase](auto pdal_v) {
     if (pdal_v.phase == phase) {

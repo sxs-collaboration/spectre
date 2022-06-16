@@ -23,6 +23,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -138,10 +139,10 @@ struct GroupComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox, InitializeStepTag>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolution,
+          Parallel::Phase::Evolve,
           tmpl::list<IncrementStep, ReportGroupPhaseControlDataAndTerminate>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -163,10 +164,10 @@ struct ArrayComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox, InitializeStepTag>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolution,
+          Parallel::Phase::Evolve,
           tmpl::list<IncrementStep, ReportArrayPhaseControlDataAndTerminate>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -211,11 +212,7 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  enum class Phase {
-    Initialization,
-    Evolution,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   struct DummyPhaseChange : public PhaseChange {
     using phase_change_tags_and_combines =
@@ -237,8 +234,8 @@ struct TestMetavariables {
       const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
-        return Phase::Evolution;
-      case Phase::Evolution:
+        return Phase::Evolve;
+      case Phase::Evolve:
         // confirm that the reduction is being performed consistently each step
         SPECTRE_PARALLEL_REQUIRE(
             tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) ==
@@ -254,7 +251,7 @@ struct TestMetavariables {
         } else {
           tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) =
               false;
-          return Phase::Evolution;
+          return Phase::Evolve;
         }
       case Phase::Exit:
         return Phase::Exit;

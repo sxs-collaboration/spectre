@@ -15,6 +15,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -39,8 +40,7 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::EventsAndTriggers>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
-      tmpl::list<Actions::RunEventsAndTriggers>>>;
+      Parallel::Phase::Testing, tmpl::list<Actions::RunEventsAndTriggers>>>;
 };
 
 struct Metavariables {
@@ -51,7 +51,7 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Event, tmpl::list<Events::Completion>>,
                   tmpl::pair<Trigger, Triggers::logical_triggers>>;
   };
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,

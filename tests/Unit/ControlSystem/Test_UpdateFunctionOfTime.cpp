@@ -18,6 +18,7 @@
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,14 +32,12 @@ struct TestSingleton {
   using get_const_global_cache_tags = tmpl::list<>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename metavariables::Phase,
-                                        metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 struct TestingMetavariables {
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
   using component_list = tmpl::list<TestSingleton<TestingMetavariables>>;
 };
 

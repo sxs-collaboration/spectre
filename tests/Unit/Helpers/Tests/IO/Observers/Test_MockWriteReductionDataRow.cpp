@@ -13,6 +13,7 @@
 #include "Helpers/IO/Observers/MockWriteReductionDataRow.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace TestHelpers::observers {
@@ -23,7 +24,7 @@ using mock_observer_writer = MockObserverWriter<TestMetavariables>;
 struct TestMetavariables {
   using component_list = tmpl::list<mock_observer_writer>;
 
-  enum class Phase { Initialization, Test, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void run_test() {
@@ -37,8 +38,7 @@ void run_test() {
   REQUIRE(ActionTesting::tag_is_retrievable<mock_observer_writer,
                                             MockReductionFileTag>(runner, 0));
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           TestMetavariables::Phase::Test);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& cache = ActionTesting::cache<mock_observer_writer>(runner, 0);
 

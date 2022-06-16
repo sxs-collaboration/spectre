@@ -36,6 +36,7 @@
 #include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -116,7 +117,7 @@ struct ElementArray {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                                     domain::Tags::InitialExtents<Dim>>>,
@@ -132,7 +133,7 @@ struct ElementArray {
                      ::elliptic::dg::Actions::initialize_operator<System>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<::elliptic::dg::Actions::
                          ImposeInhomogeneousBoundaryConditionsOnSource<
                              System, fixed_sources_tag>,
@@ -150,7 +151,7 @@ struct Metavariables {
   using component_list = tmpl::list<element_array>;
   using const_global_cache_tags =
       tmpl::list<::Tags::AnalyticSolution<AnalyticSolution>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<

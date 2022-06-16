@@ -195,7 +195,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::RegisterWithObservers);
+                           metavariables::Phase::RegisterWithObserver);
 
   // Register elements
   for (const auto& id : element_ids) {

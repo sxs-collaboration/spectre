@@ -13,6 +13,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Actions/Goto.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
@@ -88,10 +89,10 @@ struct Component {
                                  history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<Actions::ChangeStepSize<
                          typename Metavariables::step_choosers_to_use>,
                      ::Actions::Label<NoOpLabel>,
@@ -113,7 +114,7 @@ struct Metavariables {
                               StepRejector>>>;
   };
   using component_list = tmpl::list<Component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename StepChoosersToUse = AllStepChoosers>

@@ -11,6 +11,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"  // IWYU pragma: keep
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
@@ -86,14 +87,14 @@ struct Component {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox, InitializationAction, MutateAction>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Initialization, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

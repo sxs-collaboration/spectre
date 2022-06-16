@@ -14,6 +14,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/Examples.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -32,8 +33,7 @@ struct ElementComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -49,8 +49,7 @@ struct MockControlSystemComponent {
       control_system::TestHelpers::MeasurementResultTime,
       control_system::TestHelpers::MeasurementResultTag>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 struct Metavariables {
@@ -63,7 +62,7 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Event, tmpl::list<MeasureEvent>>>;
   };
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

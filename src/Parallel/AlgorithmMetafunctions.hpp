@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>  // for declval
 
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -93,11 +94,10 @@ struct build_action_return_types<tmpl::list<AllActions...>> {
       template f<FirstInputParameterType, tmpl::list<>, AllActions...>;
 };
 
-template <typename PhaseType, PhaseType Phase, typename DataBoxTypes>
+template <Parallel::Phase Phase, typename DataBoxTypes>
 struct PhaseDependentDataBoxTypes {
   using databox_types = DataBoxTypes;
-  using phase_type = PhaseType;
-  static constexpr phase_type phase = Phase;
+  static constexpr Parallel::Phase phase = Phase;
 };
 
 template <typename CumulativeDataboxTypes, typename PhaseDepActionLists,
@@ -147,8 +147,7 @@ struct build_databox_types<
       typename build_action_return_types<action_list_of_this_phase>::template f<
           InputDataBox, additional_args_list>;
   using current_phase_dep_databox_types =
-      PhaseDependentDataBoxTypes<typename CurrentPhaseDepActionList::phase_type,
-                                 CurrentPhaseDepActionList::phase,
+      PhaseDependentDataBoxTypes<CurrentPhaseDepActionList::phase,
                                  databox_types_for_this_phase>;
   using cumulative_databox_types =
       tmpl::push_back<CumulativeDataboxTypes, current_phase_dep_databox_types>;

@@ -11,6 +11,7 @@
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
@@ -30,7 +31,7 @@ struct Observer {
   using chare_type = Parallel::Algorithms::Group;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<::Actions::SetupDataBox, Actions::Initialize<Metavariables>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -53,7 +54,7 @@ struct ObserverWriter {
       tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<::Actions::SetupDataBox,
                  Actions::InitializeWriter<Metavariables>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;

@@ -201,8 +201,7 @@ struct EvolutionMetavars {
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock<
-                                  EvolutionMetavars>>>,
+                              PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -324,19 +323,19 @@ struct EvolutionMetavars {
   using dg_element_array = DgElementArray<
       EvolutionMetavars,
       tmpl::list<
-          Parallel::PhaseActions<Phase, Phase::Initialization,
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
 
-          Parallel::PhaseActions<Phase, Phase::RegisterWithObserver,
+          Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
 
           Parallel::PhaseActions<
-              Phase, Phase::InitializeTimeStepperHistory,
+              Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
 
           Parallel::PhaseActions<
-              Phase, Phase::Evolve,
+              Parallel::Phase::Evolve,
               tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
                          PhaseControl::Actions::ExecutePhaseChange>>>>;

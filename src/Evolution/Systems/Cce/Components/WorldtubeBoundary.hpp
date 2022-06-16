@@ -10,6 +10,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 
 namespace Cce {
@@ -33,11 +34,9 @@ struct WorldtubeComponentBase {
   using worldtube_boundary_computation_steps = tmpl::list<>;
 
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                         initialize_action_list>,
-                 Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Evolve,
+                 Parallel::PhaseActions<Parallel::Phase::Evolve,
                                         worldtube_boundary_computation_steps>>;
 
   using options = tmpl::list<>;

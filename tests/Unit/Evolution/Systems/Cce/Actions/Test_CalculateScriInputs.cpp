@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
@@ -87,10 +88,10 @@ struct mock_characteristic_evolution {
   using local_precompute = PrecomputeCceDependencies<Tags::BoundaryValue, Tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Evolve,
+          Parallel::Phase::Evolve,
           tmpl::list<tmpl::transform<
                          extra_pre_swsh_derivative_scri_tags,
                          tmpl::bind<::Actions::MutateApply,
@@ -105,7 +106,7 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  enum class Phase { Initialization, Evolve, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

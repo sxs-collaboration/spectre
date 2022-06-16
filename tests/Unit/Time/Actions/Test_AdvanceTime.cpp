@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
@@ -41,19 +42,18 @@ struct Component {
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                         Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<Actions::AdvanceTime>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+                 Parallel::PhaseActions<Parallel::Phase::Testing,
+                                        tmpl::list<Actions::AdvanceTime>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void check_rk3(const Time& start, const TimeDelta& time_step) {

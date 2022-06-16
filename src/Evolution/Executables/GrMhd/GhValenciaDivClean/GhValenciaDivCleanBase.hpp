@@ -425,18 +425,18 @@ struct GhValenciaDivCleanTemplateBase<
   using dg_element_array_component = DgElementArray<
       derived_metavars,
       tmpl::flatten<tmpl::list<
-          Parallel::PhaseActions<Phase, Phase::Initialization,
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
               evolution::is_numeric_initial_data_v<initial_data>,
               tmpl::list<
                   Parallel::PhaseActions<
-                      Phase, Phase::RegisterWithElementDataReader,
+                      Parallel::Phase::RegisterWithElementDataReader,
                       tmpl::list<
                           importers::Actions::RegisterWithElementDataReader,
                           Parallel::Actions::TerminatePhase>>,
                   Parallel::PhaseActions<
-                      Phase, Phase::ImportInitialData,
+                      Parallel::Phase::ImportInitialData,
                       tmpl::list<importers::Actions::ReadVolumeData<
                                      evolution::OptionTags::NumericInitialData,
                                      typename system::variables_tag::tags_list>,
@@ -446,16 +446,16 @@ struct GhValenciaDivCleanTemplateBase<
                                  Parallel::Actions::TerminatePhase>>>,
               tmpl::list<>>,
           Parallel::PhaseActions<
-              Phase, Phase::InitializeInitialDataDependentQuantities,
+              Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
           Parallel::PhaseActions<
-              Phase, Phase::InitializeTimeStepperHistory,
+              Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
-          Parallel::PhaseActions<Phase, Phase::Register,
+          Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
-              Phase, Phase::Evolve,
+              Parallel::Phase::Evolve,
               tmpl::list<VariableFixing::Actions::FixVariables<
                              VariableFixing::FixToAtmosphere<volume_dim>>,
                          Actions::UpdateConservatives,

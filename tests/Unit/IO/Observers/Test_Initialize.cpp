@@ -12,6 +12,7 @@
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"                   // IWYU pragma: keep
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,7 +32,7 @@ struct observer_component {
       typename observers::Actions::Initialize<Metavariables>::compute_tags;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  observers::Actions::Initialize<Metavariables>>>>;
 };
@@ -40,7 +41,7 @@ struct Metavariables {
   using component_list = tmpl::list<observer_component<Metavariables>>;
   using observed_reduction_data_tags = tmpl::list<>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {

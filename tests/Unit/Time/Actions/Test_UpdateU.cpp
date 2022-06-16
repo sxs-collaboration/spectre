@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -65,13 +66,12 @@ struct Component {
       db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag,
                         ::Tags::IsUsingTimeSteppingErrorControl<>>;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
-                             tmpl::list<Actions::UpdateU<>>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+                 Parallel::PhaseActions<Parallel::Phase::Testing,
+                                        tmpl::list<Actions::UpdateU<>>>>;
 };
 
 template <typename Metavariables>
@@ -85,12 +85,10 @@ struct ComponentWithTemplateSpecifiedVariables {
                         ::Tags::IsUsingTimeSteppingErrorControl<>>;
   using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing,
                              tmpl::list<Actions::UpdateU<AlternativeVar>>>>;
 };
 
@@ -99,7 +97,7 @@ struct Metavariables {
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

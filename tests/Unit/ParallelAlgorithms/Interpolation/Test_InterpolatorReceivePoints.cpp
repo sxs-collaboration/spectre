@@ -22,6 +22,7 @@
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
@@ -117,12 +118,11 @@ struct mock_interpolation_target {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<::Actions::SetupDataBox,
                      intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -140,14 +140,13 @@ struct mock_interpolator {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<::Actions::SetupDataBox,
                      ::intrp::Actions::InitializeInterpolator<
                          intrp::Tags::VolumeVarsInfo<Metavariables,
                                                      ::Tags::TimeStepId>,
                          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked = void;  // not needed.
 };
 
@@ -170,7 +169,7 @@ struct Metavariables {
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,
                  mock_interpolator<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",

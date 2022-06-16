@@ -13,6 +13,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "Utilities/Gsl.hpp"
@@ -67,12 +68,12 @@ struct ElementArray {
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<Convergence::Tags::HasConverged<TestOptionsGroup>,
                          FieldsTag, SourceTag, CheckRunIfSkippedTag>>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<TestActions, Parallel::Actions::TerminatePhase>>>;
 };
 
@@ -80,7 +81,7 @@ template <typename TestActions>
 struct Metavariables {
   using element_array = ElementArray<Metavariables, TestActions>;
   using component_list = tmpl::list<element_array>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename TestActions>

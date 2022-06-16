@@ -10,6 +10,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "Utilities/TMPL.hpp"
@@ -43,7 +44,7 @@ struct Interpolator {
   using all_temporal_ids = tmpl::remove_duplicates<tmpl::transform<
       all_interpolation_target_tags, detail::get_temporal_id<tmpl::_1>>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<
           ::Actions::SetupDataBox,
           Actions::InitializeInterpolator<

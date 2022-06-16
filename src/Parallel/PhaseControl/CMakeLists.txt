@@ -3,7 +3,13 @@
 
 set(LIBRARY PhaseControl)
 
-add_spectre_library(${LIBRARY} INTERFACE)
+add_spectre_library(${LIBRARY})
+
+spectre_target_sources(
+  ${LIBRARY}
+  PRIVATE
+  CheckpointAndExitAfterWallclock.cpp
+  )
 
 spectre_target_headers(
   ${LIBRARY}
@@ -22,6 +28,8 @@ target_link_libraries(
   INTERFACE
   DataStructures
   EventsAndTriggers
+  PUBLIC
+  Charmxx::charmxx
   Options
   Parallel
   Utilities

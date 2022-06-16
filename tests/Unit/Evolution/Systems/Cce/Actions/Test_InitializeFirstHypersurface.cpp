@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "Time/Slab.hpp"
@@ -80,7 +81,7 @@ struct mock_observer_writer {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
@@ -102,10 +103,10 @@ struct mock_characteristic_evolution {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase::Testing,
           tmpl::list<
               Actions::InitializeFirstHypersurface<
                   metavariables::uses_partially_flat_cartesian_coordinates>,
@@ -136,7 +137,7 @@ struct metavariables {
   static constexpr bool uses_partially_flat_cartesian_coordinates =
       EvolvePartiallyFlatCartesianCoordinates;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <bool EvolvePartiallyFlatCartesianCoordinates>

@@ -47,6 +47,7 @@
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -81,7 +82,7 @@ struct MockControlComponent {
   using simple_tags = init_simple_tags<ControlSystem>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename metavariables::Phase, metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
@@ -101,10 +102,8 @@ struct MockElementComponent {
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize,
                  control_system::Tags::MeasurementTimescales>;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename metavariables::Phase,
-                                        metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <typename Metavars>
@@ -121,15 +120,15 @@ struct MockObserverWriter {
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = int;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavars::Phase, Metavars::Phase::Initialization, tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 template <size_t RotationDerivOrder, size_t ExpansionDerivOrder>
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 
   using metavars = MockMetavars<RotationDerivOrder, ExpansionDerivOrder>;
 

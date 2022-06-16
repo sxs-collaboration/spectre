@@ -26,6 +26,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/WriteSimpleData.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,7 +45,7 @@ struct test_metavariables {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<helpers::reduction_data_from_doubles>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 }  // namespace
 

@@ -5,6 +5,7 @@
 
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -15,15 +16,14 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Testing,
-      tmpl::list<Parallel::Actions::TerminatePhase>>>;
+      Parallel::Phase::Testing, tmpl::list<Parallel::Actions::TerminatePhase>>>;
 };
 // [component]
 
 // [metavariables]
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 // [metavariables]
 }  // namespace

@@ -36,6 +36,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
@@ -239,14 +240,12 @@ struct mock_interpolation_target {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<Actions::SetupDataBox,
                      intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -266,12 +265,10 @@ struct mock_interpolator {
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked = void;  // not needed.
 };
 
@@ -294,7 +291,7 @@ struct MockMetavariables {
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables>>;
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 // Create volume data and send it to the interpolator.
@@ -387,8 +384,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   // Create Element_ids.
   std::vector<ElementId<3>> element_ids{};

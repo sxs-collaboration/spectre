@@ -10,7 +10,7 @@
 SPECTRE_TEST_CASE("Unit.Parallel.Phase", "[Parallel][Unit]") {
   // These two variables must correspond to the first and last
   // enum values of Parallel::Phase for the test to work properly
-  const Parallel::Phase first_enum = Parallel::Phase::Evolve;
+  const Parallel::Phase first_enum = Parallel::Phase::Cleanup;
   const Parallel::Phase last_enum = Parallel::Phase::WriteCheckpoint;
 
   using enum_t = std::underlying_type_t<Parallel::Phase>;

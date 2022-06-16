@@ -45,6 +45,7 @@
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
 #include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
@@ -230,7 +231,7 @@ struct mock_interpolation_target {
                           tmpl::list<domain::Tags::FunctionsOfTimeInitialize>,
                           tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolationTarget<
                      Metavariables, InterpolationTargetTag>>>>;
@@ -245,7 +246,7 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      Parallel::Phase::Initialization,
       tmpl::list<Actions::SetupDataBox,
                  intrp::Actions::InitializeInterpolator<
                      intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
@@ -284,7 +285,7 @@ struct MockMetavariables {
                  mock_interpolator<MockMetavariables>>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
 
-  enum class Phase { Initialization, Registration, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
@@ -379,8 +380,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
 
   // Find horizon at three temporal_ids.  The horizon find at the
   // second temporal_id will use the result from the first temporal_id

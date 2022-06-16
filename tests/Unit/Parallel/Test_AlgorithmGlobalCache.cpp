@@ -30,6 +30,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/MemoryMonitor/MemoryMonitor.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
@@ -235,9 +236,9 @@ struct MutateCacheComponent {
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<mutate_cache::Actions::initialize>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<mutate_cache::Actions::initialize>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -247,10 +248,10 @@ struct MutateCacheComponent {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<MutateCacheComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::MutableCacheStart) {
+    if (next_phase == Metavariables::Phase::Solve) {
       Parallel::simple_action<mutate_cache::Actions::add_new_stored_double>(
           Parallel::get_parallel_component<MutateCacheComponent>(local_cache));
-    } else if (next_phase == Metavariables::Phase::MutableCacheFinish) {
+    } else if (next_phase == Metavariables::Phase::Evolve) {
       Parallel::simple_action<mutate_cache::Actions::finalize>(
           Parallel::get_parallel_component<MutateCacheComponent>(local_cache));
     }
@@ -264,12 +265,10 @@ struct UseMutatedCacheComponent {
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<mutate_cache::Actions::initialize>>,
       Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::MutableCacheStart,
+          Parallel::Phase::Solve,
           tmpl::list<mutate_cache::Actions::use_stored_double>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
@@ -289,9 +288,9 @@ struct CheckAndUseMutatedCacheComponent {
   using metavariables = Metavariables;
   using mutable_global_cache_tags =
       tmpl::list<mutate_cache::Tags::VectorOfDoubles>;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<mutate_cache::Actions::initialize>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<mutate_cache::Actions::initialize>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -302,7 +301,7 @@ struct CheckAndUseMutatedCacheComponent {
     Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
         local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::MutableCacheSimpleActionStart) {
+    if (next_phase == Metavariables::Phase::Register) {
       Parallel::simple_action<
           mutate_cache::Actions::simple_action_check_and_use_stored_double>(
           Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
@@ -315,10 +314,8 @@ template <class Metavariables>
 struct CheckParallelInfo {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -328,7 +325,7 @@ struct CheckParallelInfo {
     auto& cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<CheckParallelInfo>(cache).start_phase(
         next_phase);
-    if (next_phase == Metavariables::Phase::CheckParallelInfo) {
+    if (next_phase == Metavariables::Phase::Execute) {
       // Check parallel info
       SPECTRE_PARALLEL_REQUIRE(cache.number_of_procs() ==
                                sys::number_of_procs());
@@ -373,10 +370,8 @@ struct CheckMemoryMonitorRelatedMethods {
  public:
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -389,7 +384,7 @@ struct CheckMemoryMonitorRelatedMethods {
         .start_phase(next_phase);
 
     const double time = 1.0;
-    if (next_phase == Metavariables::Phase::CallMemoryMonitorRelatedMethods) {
+    if (next_phase == Metavariables::Phase::Testing) {
       // Remove the file from a previous test run if it exists
       if (file_system::check_if_file_exists(filename_)) {
         file_system::rm(filename_, true);
@@ -418,7 +413,7 @@ struct CheckMemoryMonitorRelatedMethods {
       mutable_cache_size_ = size_of_object_in_bytes(*Parallel::local_branch(
                                 local_cache.mutable_global_cache_proxy())) /
                             1.0e6;
-    } else if (next_phase == Metavariables::Phase::CheckMemoryMonitorFile) {
+    } else if (next_phase == Metavariables::Phase::Cleanup) {
       auto hdf5_lock =
           Parallel::local_branch(
               Parallel::get_parallel_component<
@@ -500,16 +495,7 @@ struct TestMetavariables {
   static constexpr Options::String help =
       "An executable for testing mutable items in the GlobalCache.";
 
-  enum class Phase {
-    Initialization,
-    MutableCacheSimpleActionStart,
-    MutableCacheStart,
-    MutableCacheFinish,
-    CheckParallelInfo,
-    CallMemoryMonitorRelatedMethods,
-    CheckMemoryMonitorFile,
-    Exit
-  };
+  using Phase = Parallel::Phase;
 
   template <typename... Tags>
   static Phase determine_next_phase(
@@ -519,18 +505,18 @@ struct TestMetavariables {
       const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
     switch (current_phase) {
       case Phase::Initialization:
-        return Phase::MutableCacheSimpleActionStart;
-      case Phase::MutableCacheSimpleActionStart:
-        return Phase::MutableCacheStart;
-      case Phase::MutableCacheStart:
-        return Phase::MutableCacheFinish;
-      case Phase::MutableCacheFinish:
-        return Phase::CheckParallelInfo;
-      case Phase::CheckParallelInfo:
-        return Phase::CallMemoryMonitorRelatedMethods;
-      case Phase::CallMemoryMonitorRelatedMethods:
-        return Phase::CheckMemoryMonitorFile;
-      case Phase::CheckMemoryMonitorFile:
+        return Phase::Register;
+      case Phase::Register:
+        return Phase::Solve;
+      case Phase::Solve:
+        return Phase::Evolve;
+      case Phase::Evolve:
+        return Phase::Execute;
+      case Phase::Execute:
+        return Phase::Testing;
+      case Phase::Testing:
+        return Phase::Cleanup;
+      case Phase::Cleanup:
         [[fallthrough]];
       case Phase::Exit:
         return Phase::Exit;

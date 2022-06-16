@@ -12,6 +12,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 
@@ -39,10 +40,10 @@ template <typename Metavariables>
 struct ElementDataReader {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<::Actions::SetupDataBox,
-                 detail::InitializeElementDataReader>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<::Actions::SetupDataBox,
+                                        detail::InitializeElementDataReader>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 

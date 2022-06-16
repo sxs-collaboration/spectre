@@ -16,6 +16,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Serialize.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -74,12 +75,10 @@ struct component_for_simple_action_mock {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  db::AddSimpleTags<ValueTag, PassedToB>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   // [simple action replace]
   using replace_these_simple_actions =
@@ -196,7 +195,7 @@ struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 struct MockMetavariablesWithGlobalCacheTags {
@@ -206,7 +205,7 @@ struct MockMetavariablesWithGlobalCacheTags {
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
   // [const global cache metavars]
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_mock_runtime_system_constructors() {
@@ -347,16 +346,14 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Testing,
-                                        tmpl::list<Action0>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<Action0>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
@@ -418,15 +415,14 @@ struct Component {
   using array_index = int;
 
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Testing,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Testing,
                                         tmpl::list<Actions::SendValue>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  enum class Phase { Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
@@ -472,8 +468,7 @@ struct ComponentA {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 template <typename Metavariables>
@@ -489,13 +484,10 @@ struct ComponentBMock {
   using component_being_mocked = ComponentB<Metavariables>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
-
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 // [mock component b]
 
@@ -528,7 +520,7 @@ struct Metavariables {
   using component_list =
       tmpl::list<ComponentA<Metavariables>, ComponentBMock<Metavariables>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
@@ -576,12 +568,10 @@ struct ComponentA {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  db::AddSimpleTags<ValueTag, ValueTagSizeT>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 struct MyProc {
@@ -702,7 +692,7 @@ struct ActionSetValueTo {
 struct MetavariablesOneComponent {
   using component_list = tmpl::list<ComponentA<MetavariablesOneComponent>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_parallel_info_functions() {
@@ -950,19 +940,17 @@ struct GroupComponent {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 struct MetavariablesGroupComponent {
   using component_list =
       tmpl::list<GroupComponent<MetavariablesGroupComponent>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_group_emplace() {
@@ -1029,19 +1017,17 @@ struct NodeGroupComponent {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<ValueTag>>>>,
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
 struct MetavariablesNodeGroupComponent {
   using component_list =
       tmpl::list<NodeGroupComponent<MetavariablesNodeGroupComponent>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 void test_nodegroup_emplace() {
@@ -1098,7 +1084,7 @@ void test_nodegroup_emplace() {
 struct MetavariablesWithPup {
   using component_list = tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -1153,10 +1139,8 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
-                                        Metavariables::Phase::Initialization,
-                                        tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
 // This Action does nothing other than set a bool so that we can
@@ -1179,7 +1163,7 @@ struct Metavariables {
   using mutable_global_cache_tags = tmpl::list<CacheTag>;
   // [mutable global cache metavars]
 
-  enum class Phase { Initialization, Testing, Exit };
+  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {
