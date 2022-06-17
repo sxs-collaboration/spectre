@@ -346,11 +346,13 @@ jobs:
             ccache_max_size: 400M
           # Full clang-9 build to catch any incompatibilities.
           - compiler: clang-9
+            use_pch: ON
             build_type: Release
             ccache_max_size: 400M
           # Test with ASAN
           - compiler: clang-10
             build_type: Debug
+            use_pch: ON
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/1890
@@ -364,11 +366,13 @@ jobs:
           # mode because these builds use up little disk space compared to GCC
           # builds or clang Debug builds
           - compiler: clang-11
+            use_pch: ON
             build_type: Release
             BUILD_SHARED_LIBS: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Test compatibility with oldest supported CMake version
           - compiler: clang-13
+            use_pch: ON
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
             CHARM_DIR: /work/charm_6_10_2/multicore-linux-x86_64-
@@ -568,9 +572,11 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make install
       - name: Print size of install directory
         working-directory: /work/spectre_install
+        # Remove files post-install to reduce disk space for later on.
         run: |
           ls | xargs du -sh
           du -sh .
+          rm -r ./*
       - name: Test formaline tar can be built
         if: matrix.build_type == 'Debug'
         working-directory: /work/build
@@ -641,6 +647,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           make EvolveBurgersStep -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml
+
+          make clean
       - name: Diagnose ccache
         run: |
           ccache -s
@@ -651,6 +659,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         if: github.ref != 'refs/heads/develop'
         run: |
           rm -rf $CCACHE_DIR
+      # Delete the built objects to ensure there is enough disk space for
+      # creating a tarball of the cache.
+      - name: Cleanup install
+        working-directory: /work/build
+        run: |
+          make clean
 
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
@@ -808,6 +822,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         run: |
           ls | xargs du -sh
           du -sh .
+          rm -r ./*
       # Retain caches only on the 'develop' branch (see unit_tests job)
       - name: Clear caches
         if: github.ref != 'refs/heads/develop'
@@ -826,6 +841,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         # Allow the buildcache creation to fail without failing the job, since
         # it sometimes runs out of memory
         continue-on-error: true
+      # Delete the built objects to ensure there is enough disk space for
+      # creating a tarball of the cache.
+      - name: Cleanup install
+        working-directory: build
+        run: |
+          make clean
 
   # Release a new version on manual events when requested and the tests pass.
   # Only enable this on the `sxs-collaboration/spectre` repository (not on
