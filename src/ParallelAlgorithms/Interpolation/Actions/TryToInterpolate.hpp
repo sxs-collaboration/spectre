@@ -105,13 +105,14 @@ void interpolate_data(
                 // vars_to_interpolate has not been filled for
                 // this element at this temporal_id.  So fill it.
                 vars_to_interpolate.initialize(
-                    volume_info.vars_from_element.number_of_grid_points());
+                    volume_info.source_vars_from_element
+                        .number_of_grid_points());
 
                 InterpolationTarget_detail::compute_dest_vars_from_source_vars<
-                    InterpolationTargetTag>(make_not_null(&vars_to_interpolate),
-                                            volume_info.vars_from_element,
-                                            domain, volume_info.mesh,
-                                            element_id, cache, temporal_id);
+                    InterpolationTargetTag>(
+                    make_not_null(&vars_to_interpolate),
+                    volume_info.source_vars_from_element, domain,
+                    volume_info.mesh, element_id, cache, temporal_id);
               }
             }
 
@@ -126,10 +127,10 @@ void interpolate_data(
                   interpolator.interpolate(vars_to_interpolate));
             } else {
               // If compute_vars_to_interpolate does not exist, then
-              // volume_info.vars_from_element is the same as
+              // volume_info.source_vars_from_element is the same as
               // volume_info.vars_to_interpolate.
-              interp_info.vars.emplace_back(
-                  interpolator.interpolate(volume_info.vars_from_element));
+              interp_info.vars.emplace_back(interpolator.interpolate(
+                  volume_info.source_vars_from_element));
             }
             interp_info.global_offsets.emplace_back(
                 element_coord_holder.offsets);

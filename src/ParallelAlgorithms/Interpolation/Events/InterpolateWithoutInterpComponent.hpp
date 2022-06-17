@@ -49,7 +49,7 @@ struct InterpolationTarget;
 namespace intrp::Events {
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename Tensors>
+          typename Metavariables, typename SourceVarTags>
 class InterpolateWithoutInterpComponent;
 /// \endcond
 
@@ -60,9 +60,10 @@ CREATE_GET_STATIC_MEMBER_VARIABLE_OR_DEFAULT(use_dg_subcell)
 /// Does an interpolation onto an InterpolationTargetTag by calling Actions on
 /// the InterpolationTarget component.
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... Tensors>
+          typename Metavariables, typename... SourceVarTags>
 class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
-                                        Metavariables, tmpl::list<Tensors...>>
+                                        Metavariables,
+                                        tmpl::list<SourceVarTags...>>
     : public Event {
   /// \cond
   explicit InterpolateWithoutInterpComponent(CkMigrateMessage* /*unused*/) {}
@@ -89,16 +90,17 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
                  Tags::InterpPointInfo<Metavariables>,
                  domain::Tags::Mesh<VolumeDim>,
                  evolution::dg::subcell::Tags::Mesh<VolumeDim>,
-                 evolution::dg::subcell::Tags::ActiveGrid, Tensors...>,
+                 evolution::dg::subcell::Tags::ActiveGrid, SourceVarTags...>,
       tmpl::list<typename InterpolationTargetTag::temporal_id,
                  Tags::InterpPointInfo<Metavariables>,
-                 domain::Tags::Mesh<VolumeDim>, Tensors...>>;
+                 domain::Tags::Mesh<VolumeDim>, SourceVarTags...>>;
 
   template <typename ParallelComponent>
   void operator()(
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
       const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
-      const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
+      const Mesh<VolumeDim>& mesh,
+      const typename SourceVarTags::type&... source_vars_input,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const {
@@ -135,24 +137,24 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       // InterpolationTarget_detail::compute_dest_vars_from_source_vars
       // allows the source variables to be different from the
       // destination variables).
-      Variables<tmpl::list<Tensors...>> source_vars(
+      Variables<tmpl::list<SourceVarTags...>> source_vars(
           mesh.number_of_grid_points());
       [[maybe_unused]] const auto copy_to_variables =
-          [&source_vars](const auto tensor_tag_v, const auto& tensor) {
-            using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-            get<tensor_tag>(source_vars) = tensor;
+          [&source_vars](const auto source_var_tag_v, const auto& source_var) {
+            using source_var_tag = tmpl::type_from<decltype(source_var_tag_v)>;
+            get<source_var_tag>(source_vars) = source_var;
             return 0;
           };
-      expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
+      expand_pack(copy_to_variables(tmpl::type_<SourceVarTags>{},
+                                    source_vars_input)...);
 
       InterpolationTarget_detail::compute_dest_vars_from_source_vars<
-          InterpolationTargetTag>(
-          make_not_null(&interp_vars), source_vars,
-          get<domain::Tags::Domain<VolumeDim>>(cache), mesh,
-          array_index, cache, temporal_id);
+          InterpolationTargetTag>(make_not_null(&interp_vars), source_vars,
+                                  get<domain::Tags::Domain<VolumeDim>>(cache),
+                                  mesh, array_index, cache, temporal_id);
     } else {
       // 1b. There is no compute_vars_to_interpolate. So copy the
-      // tensors directly into the variables.
+      // source vars directly into the variables.
       // This copy would be unnecessary if:
       //   - We passed a Variables into InterpolateWithoutInterpComponent
       //     instead of passing individual Tensors.
@@ -171,7 +173,8 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
             get<tensor_tag>(interp_vars) = tensor;
             return 0;
           };
-      expand_pack(copy_to_variables(tmpl::type_<Tensors>{}, tensors)...);
+      expand_pack(copy_to_variables(tmpl::type_<SourceVarTags>{},
+                                    source_vars_input)...);
     }
 
     // 2. Set up interpolator
@@ -197,17 +200,17 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
       const typename Tags::InterpPointInfo<Metavariables>::type& point_infos,
       const Mesh<VolumeDim>& dg_mesh, const Mesh<VolumeDim>& subcell_mesh,
       const evolution::dg::subcell::ActiveGrid active_grid,
-      const typename Tensors::type&... tensors,
+      const typename SourceVarTags::type&... source_vars,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const meta) const {
     if (active_grid == evolution::dg::subcell::ActiveGrid::Dg) {
-      this->operator()(temporal_id, point_infos, dg_mesh, tensors..., cache,
+      this->operator()(temporal_id, point_infos, dg_mesh, source_vars..., cache,
                        array_index, meta);
     } else {
       ASSERT(active_grid == evolution::dg::subcell::ActiveGrid::Subcell,
              "Active grid must be either Dg or Subcell");
-      this->operator()(temporal_id, point_infos, subcell_mesh, tensors...,
+      this->operator()(temporal_id, point_infos, subcell_mesh, source_vars...,
                        cache, array_index, meta);
     }
   }
@@ -226,10 +229,10 @@ class InterpolateWithoutInterpComponent<VolumeDim, InterpolationTargetTag,
 
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename Metavariables, typename... Tensors>
+          typename Metavariables, typename... SourceVarTags>
 PUP::able::PUP_ID InterpolateWithoutInterpComponent<
     VolumeDim, InterpolationTargetTag, Metavariables,
-    tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
+    tmpl::list<SourceVarTags...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 
 }  // namespace intrp::Events

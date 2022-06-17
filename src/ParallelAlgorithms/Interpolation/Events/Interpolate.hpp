@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <pup.h>
 #include <string>
+#include <type_traits>
 
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -33,13 +34,14 @@ namespace intrp {
 namespace Events {
 /// Does an interpolation onto InterpolationTargetTag by calling Actions on
 /// the Interpolator and InterpolationTarget components.
-template <size_t VolumeDim, typename InterpolationTargetTag, typename Tensors>
+template <size_t VolumeDim, typename InterpolationTargetTag,
+          typename InterpolatorSourceVarTags>
 class Interpolate;
 
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename... Tensors>
-class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
-    : public Event {
+          typename... InterpolatorSourceVarTags>
+class Interpolate<VolumeDim, InterpolationTargetTag,
+                  tmpl::list<InterpolatorSourceVarTags...>> : public Event {
   /// \cond
   explicit Interpolate(CkMigrateMessage* /*unused*/) {}
   using PUP::able::register_constructor;
@@ -58,18 +60,24 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
 
   using compute_tags_for_observation_box = tmpl::list<>;
 
-  using argument_tags = tmpl::list<typename InterpolationTargetTag::temporal_id,
-                                   domain::Tags::Mesh<VolumeDim>, Tensors...>;
+  using argument_tags =
+      tmpl::list<typename InterpolationTargetTag::temporal_id,
+                 domain::Tags::Mesh<VolumeDim>, InterpolatorSourceVarTags...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
       const typename InterpolationTargetTag::temporal_id::type& temporal_id,
-      const Mesh<VolumeDim>& mesh, const typename Tensors::type&... tensors,
+      const Mesh<VolumeDim>& mesh,
+      const typename InterpolatorSourceVarTags::
+          type&... interpolator_source_vars,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const {
-    interpolate<InterpolationTargetTag, tmpl::list<Tensors...>>(
-        temporal_id, mesh, cache, array_index, tensors...);
+    static_assert(
+        std::is_same_v<typename Metavariables::interpolator_source_vars,
+                       tmpl::list<InterpolatorSourceVarTags...>>);
+    interpolate<InterpolationTargetTag>(temporal_id, mesh, cache, array_index,
+                                        interpolator_source_vars...);
   }
 
   using is_ready_argument_tags = tmpl::list<>;
@@ -86,9 +94,11 @@ class Interpolate<VolumeDim, InterpolationTargetTag, tmpl::list<Tensors...>>
 
 /// \cond
 template <size_t VolumeDim, typename InterpolationTargetTag,
-          typename... Tensors>
-PUP::able::PUP_ID Interpolate<VolumeDim, InterpolationTargetTag,
-                              tmpl::list<Tensors...>>::my_PUP_ID = 0;  // NOLINT
+          typename... InterpolatorSourceVarTags>
+PUP::able::PUP_ID
+    Interpolate<VolumeDim, InterpolationTargetTag,
+                tmpl::list<InterpolatorSourceVarTags...>>::my_PUP_ID =
+        0;  // NOLINT
 /// \endcond
 
 }  // namespace Events
