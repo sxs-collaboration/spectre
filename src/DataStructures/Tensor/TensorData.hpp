@@ -75,10 +75,12 @@ struct ElementVolumeData : ExtentsAndTensorVolumeData {
   ElementVolumeData(std::vector<size_t> extents_in,
                     std::vector<TensorComponent> components,
                     std::vector<Spectral::Basis> basis_in,
-                    std::vector<Spectral::Quadrature> quadrature_in);
+                    std::vector<Spectral::Quadrature> quadrature_in,
+                    std::string element_name_in);
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
   std::vector<Spectral::Basis> basis{};
   std::vector<Spectral::Quadrature> quadrature{};
+  std::string element_name{};
 };

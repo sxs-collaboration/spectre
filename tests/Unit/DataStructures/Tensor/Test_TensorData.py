@@ -73,7 +73,7 @@ class TestTensorData(unittest.TestCase):
         quad = Quadrature.Gauss
         element_data = ElementVolumeData(
             [1, 2, 3, 4], [tensor_component_1, tensor_component_2],
-            [basis, basis], [quad, quad])
+            [basis, basis], [quad, quad], "grid_name")
 
         # Test extents
         self.assertEqual(element_data.extents, [1, 2, 3, 4])
@@ -97,6 +97,7 @@ class TestTensorData(unittest.TestCase):
         # Test basis and quadrature
         self.assertEqual(element_data.basis, [basis, basis])
         self.assertEqual(element_data.quadrature, [quad, quad])
+        self.assertEqual(element_data.element_name, "grid_name")
 
 
 if __name__ == '__main__':

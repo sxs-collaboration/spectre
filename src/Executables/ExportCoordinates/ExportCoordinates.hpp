@@ -112,8 +112,6 @@ struct ExportCoordinates {
                                               Frame::Inertial>>(box);
     const auto& inertial_coordinates =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
-                                                  << '/';
     const auto deriv_inertial_coordinates =
         partial_derivative(inertial_coordinates, mesh, inv_jacobian);
     // Collect volume data
@@ -121,7 +119,7 @@ struct ExportCoordinates {
     std::vector<TensorComponent> components;
     components.reserve(Dim + 1);
     for (size_t d = 0; d < Dim; d++) {
-      components.emplace_back(element_name + "InertialCoordinates_" +
+      components.emplace_back("InertialCoordinates_" +
                                   inertial_coordinates.component_name(
                                       inertial_coordinates.get_tensor_index(d)),
                               inertial_coordinates.get(d));
@@ -129,7 +127,7 @@ struct ExportCoordinates {
 
     for (size_t i = 0; i < deriv_inertial_coordinates.size(); ++i) {
       components.emplace_back(
-          element_name + "DerivInertialCoordinates_" +
+          "DerivInertialCoordinates_" +
               deriv_inertial_coordinates.component_name(
                   deriv_inertial_coordinates.get_tensor_index(i)),
           deriv_inertial_coordinates[i]);
@@ -141,21 +139,23 @@ struct ExportCoordinates {
         domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>>(
         box);
     components.emplace_back(
-        element_name +
-            db::tag_name<domain::Tags::DetInvJacobian<Frame::ElementLogical,
-                                                      Frame::Inertial>>(),
+        db::tag_name<domain::Tags::DetInvJacobian<Frame::ElementLogical,
+                                                  Frame::Inertial>>(),
         get(det_inv_jac));
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
             cache));
+    const std::string element_name = MakeString{}
+                                     << ElementId<Dim>(array_index);
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
-        std::move(components), mesh.extents(), mesh.basis(), mesh.quadrature());
+        element_name, std::move(components), mesh.extents(), mesh.basis(),
+        mesh.quadrature());
     return std::forward_as_tuple(std::move(box));
   }
 };

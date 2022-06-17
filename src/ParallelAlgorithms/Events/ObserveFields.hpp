@@ -217,9 +217,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) {
-    const std::string element_name =
-        MakeString{} << ElementId<VolumeDim>(array_index) << '/';
-
     // if no interpolation_mesh is provided, the interpolation is essentially
     // ignored by the RegularGridInterpolant except for a single copy.
     const intrp::RegularGrid interpolant(mesh,
@@ -236,20 +233,19 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         0_st));
 
     const auto record_tensor_component_impl =
-        [&components, &element_name, &interpolant](
-            const auto& tensor, const FloatingPointType floating_point_type,
-            const std::string& tag_name) {
+        [&components, &interpolant](const auto& tensor,
+                                    const FloatingPointType floating_point_type,
+                                    const std::string& tag_name) {
           for (size_t i = 0; i < tensor.size(); ++i) {
             const auto tensor_component = interpolant.interpolate(tensor[i]);
             if (floating_point_type == FloatingPointType::Float) {
               components.emplace_back(
-                  element_name + tag_name + tensor.component_suffix(i),
+                  tag_name + tensor.component_suffix(i),
                   std::vector<float>{tensor_component.begin(),
                                      tensor_component.end()});
             } else {
-              components.emplace_back(
-                  element_name + tag_name + tensor.component_suffix(i),
-                  tensor_component);
+              components.emplace_back(tag_name + tensor.component_suffix(i),
+                                      tensor_component);
             }
           }
         };
@@ -273,8 +269,10 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                                          tag_name);
           }
         };
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        record_tensor_components(tmpl::type_<Tensors>{}));
+    EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(tmpl::type_<Tensors>{}));
+
+    const std::string element_name = MakeString{}
+                                     << ElementId<VolumeDim>(array_index);
 
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(
@@ -287,7 +285,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
-        std::move(components), interpolation_mesh.value_or(mesh).extents(),
+        element_name, std::move(components),
+        interpolation_mesh.value_or(mesh).extents(),
         interpolation_mesh.value_or(mesh).basis(),
         interpolation_mesh.value_or(mesh).quadrature());
   }

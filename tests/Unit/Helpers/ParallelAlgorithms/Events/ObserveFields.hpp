@@ -60,6 +60,7 @@ struct MockContributeVolumeData {
     observers::ObservationId observation_id{};
     std::string subfile_name{};
     observers::ArrayComponentId array_component_id{};
+    std::string element_name{};
     std::vector<TensorComponent> in_received_tensor_data{};
     std::vector<size_t> received_extents{};
     std::vector<Spectral::Basis> received_basis{};
@@ -76,6 +77,7 @@ struct MockContributeVolumeData {
       const observers::ObservationId& observation_id,
       const std::string& subfile_name,
       const observers::ArrayComponentId& array_component_id,
+      std::string element_name,
       std::vector<TensorComponent>&& in_received_tensor_data,
       const Index<Dim>& received_extents,
       const std::array<Spectral::Basis, Dim>& received_basis,
@@ -83,6 +85,7 @@ struct MockContributeVolumeData {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
+    results.element_name = element_name;
     results.in_received_tensor_data = in_received_tensor_data;
     results.received_extents.assign(received_extents.indices().begin(),
                                     received_extents.indices().end());

@@ -47,30 +47,29 @@
 namespace helpers = TestObservers_detail;
 
 namespace {
-auto make_fake_volume_data(const observers::ArrayComponentId& id,
-                           const std::string& element_name) {
+auto make_fake_volume_data(const observers::ArrayComponentId& id) {
   const auto hashed_id =
       static_cast<double>(std::hash<observers::ArrayComponentId>{}(id));
   std::vector<TensorComponent> data(6);
-  data[0] = TensorComponent(element_name + "T_x"s,
-                            DataVector{0.5 * hashed_id, 1.0 * hashed_id,
-                                       3.0 * hashed_id, -2.0 * hashed_id});
-  data[1] = TensorComponent(element_name + "T_y"s,
-                            DataVector{-0.5 * hashed_id, -1.0 * hashed_id,
-                                       -3.0 * hashed_id, 2.0 * hashed_id});
+  data[0] =
+      TensorComponent("T_x"s, DataVector{0.5 * hashed_id, 1.0 * hashed_id,
+                                         3.0 * hashed_id, -2.0 * hashed_id});
+  data[1] =
+      TensorComponent("T_y"s, DataVector{-0.5 * hashed_id, -1.0 * hashed_id,
+                                         -3.0 * hashed_id, 2.0 * hashed_id});
 
-  data[2] = TensorComponent(element_name + "S_xx"s,
-                            DataVector{10.5 * hashed_id, 11.0 * hashed_id,
-                                       13.0 * hashed_id, -22.0 * hashed_id});
-  data[3] = TensorComponent(element_name + "S_xy"s,
+  data[2] =
+      TensorComponent("S_xx"s, DataVector{10.5 * hashed_id, 11.0 * hashed_id,
+                                          13.0 * hashed_id, -22.0 * hashed_id});
+  data[3] = TensorComponent("S_xy"s,
                             DataVector{10.5 * hashed_id, -11.0 * hashed_id,
                                        -13.0 * hashed_id, -22.0 * hashed_id});
-  data[4] = TensorComponent(element_name + "S_yx"s,
-                            DataVector{-10.5 * hashed_id, 11.0 * hashed_id,
-                                       13.0 * hashed_id, 22.0 * hashed_id});
-  data[5] = TensorComponent(element_name + "S_yy"s,
-                            DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
-                                       -13.0 * hashed_id, 22.0 * hashed_id});
+  data[4] =
+      TensorComponent("S_yx"s, DataVector{-10.5 * hashed_id, 11.0 * hashed_id,
+                                          13.0 * hashed_id, 22.0 * hashed_id});
+  data[5] =
+      TensorComponent("S_yy"s, DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
+                                          -13.0 * hashed_id, 22.0 * hashed_id});
 
   return std::make_tuple(
       Index<2>{2, 2}, std::move(data),
@@ -101,8 +100,8 @@ void check_write_volume_data(
   // Although the WriteVolumeData action would typically be writing
   // 2D surface "volume" data from a Strahlkorper, to simplify this test, here
   // just reuse make_fake_volume_data().
-  const auto h5_write_volume_fake = make_fake_volume_data(
-      h5_write_volume_array_id, h5_write_volume_element_name + "/"s);
+  const auto h5_write_volume_fake =
+      make_fake_volume_data(h5_write_volume_array_id);
 
   const std::vector<size_t> h5_write_volume_expected_extents{
       {std::get<0>(h5_write_volume_fake)[0],
@@ -125,10 +124,10 @@ void check_write_volume_data(
                                    observers::ThreadedActions::WriteVolumeData>(
       0, h5_write_volume_file_name, h5_write_volume_group_name,
       write_vol_observation_id,
-      std::vector<ElementVolumeData>{{h5_write_volume_expected_extents,
-                                      std::get<1>(h5_write_volume_fake),
-                                      h5_write_volume_expected_bases,
-                                      h5_write_volume_expected_quadratures}});
+      std::vector<ElementVolumeData>{
+          {h5_write_volume_expected_extents, std::get<1>(h5_write_volume_fake),
+           h5_write_volume_expected_bases, h5_write_volume_expected_quadratures,
+           h5_write_volume_element_name}});
 
   {
     std::vector<DataVector> h5_write_volume_expected_tensor_data{};
@@ -223,11 +222,12 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
         std::add_pointer_t<element_comp>{nullptr},
         Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
 
-    auto volume_data_fakes =
-        make_fake_volume_data(array_id, MakeString{} << id << '/');
+    auto volume_data_fakes = make_fake_volume_data(array_id);
+    const std::string element_name = MakeString{} << id;
     runner
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
             0, observation_id, std::string{"/element_data"}, array_id,
+            element_name,
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
             /* get<0> = index of dimensions */
@@ -316,7 +316,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     const observers::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
         Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{element_id}});
-    const auto volume_data_fakes = make_fake_volume_data(array_id, "");
+    const auto volume_data_fakes = make_fake_volume_data(array_id);
     // Each element contains as many data points as the product of its
     // extents, compute this number
     const size_t stride =

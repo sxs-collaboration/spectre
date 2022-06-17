@@ -39,10 +39,10 @@ void test_strahlkorper() {
       radius * sin_theta * cos(phi), radius * sin_theta * sin(phi),
       radius * cos(theta), cos(2.0 * theta)};
   const std::vector<TensorComponent> tensor_components{
-      {grid_name + "/InertialCoordinates_x", tensor_and_coord_data[0]},
-      {grid_name + "/InertialCoordinates_y", tensor_and_coord_data[1]},
-      {grid_name + "/InertialCoordinates_z", tensor_and_coord_data[2]},
-      {grid_name + "/TestScalar", tensor_and_coord_data[3]}};
+      {"InertialCoordinates_x", tensor_and_coord_data[0]},
+      {"InertialCoordinates_y", tensor_and_coord_data[1]},
+      {"InertialCoordinates_z", tensor_and_coord_data[2]},
+      {"TestScalar", tensor_and_coord_data[3]}};
 
   const std::vector<size_t> observation_ids{4444};
   const std::vector<double> observation_values{1.0};
@@ -67,7 +67,7 @@ void test_strahlkorper() {
     volume_file.write_volume_data(
         observation_ids[0], observation_values[0],
         std::vector<ElementVolumeData>{
-            {extents, tensor_components, bases, quadratures}});
+          {extents, tensor_components, bases, quadratures, grid_name}});
     strahlkorper_file.close_current_object();
 
     // Open the read volume file and check that the observation id and values
@@ -131,68 +131,62 @@ void test() {
           observation_id, observation_value,
           std::vector<ElementVolumeData>{
               {{2, 2, 2},
-               {TensorComponent{
-                    first_grid + "/S",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[0])},
+               {TensorComponent{"S", TestHelpers::io::VolumeData::multiply(
+                                         observation_value,
+                                         tensor_components_and_coords[0])},
                 TensorComponent{
-                    first_grid + "/x-coord",
+                    "x-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[1])},
                 TensorComponent{
-                    first_grid + "/y-coord",
+                    "y-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[2])},
                 TensorComponent{
-                    first_grid + "/z-coord",
+                    "z-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[3])},
-                TensorComponent{
-                    first_grid + "/T_x",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[4])},
-                TensorComponent{
-                    first_grid + "/T_y",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[5])},
-                TensorComponent{
-                    first_grid + "/T_z",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[6])}},
+                TensorComponent{"T_x", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[4])},
+                TensorComponent{"T_y", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[5])},
+                TensorComponent{"T_z", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[6])}},
                bases.front(),
-               quadratures.front()},
+               quadratures.front(),
+               first_grid},
               // Second Element Data
               {{2, 2, 2},
-               {TensorComponent{
-                    last_grid + "/S",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[1])},
+               {TensorComponent{"S", TestHelpers::io::VolumeData::multiply(
+                                         observation_value,
+                                         tensor_components_and_coords[1])},
                 TensorComponent{
-                    last_grid + "/x-coord",
+                    "x-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[0])},
                 TensorComponent{
-                    last_grid + "/y-coord",
+                    "y-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[5])},
                 TensorComponent{
-                    last_grid + "/z-coord",
+                    "z-coord",
                     TestHelpers::io::VolumeData::multiply(
                         observation_value, tensor_components_and_coords[3])},
-                TensorComponent{
-                    last_grid + "/T_x",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[6])},
-                TensorComponent{
-                    last_grid + "/T_y",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[4])},
-                TensorComponent{
-                    last_grid + "/T_z",
-                    TestHelpers::io::VolumeData::multiply(
-                        observation_value, tensor_components_and_coords[2])}},
+                TensorComponent{"T_x", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[6])},
+                TensorComponent{"T_y", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[4])},
+                TensorComponent{"T_z", TestHelpers::io::VolumeData::multiply(
+                                           observation_value,
+                                           tensor_components_and_coords[2])}},
                bases.back(),
-               quadratures.back()}});
+               quadratures.back(),
+               last_grid}});
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
@@ -271,35 +265,13 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
         volume_file.write_volume_data(
             100, 10.0,
             {{{2},
-              {TensorComponent{"S", DataVector{1.0, 2.0}}},
+              {TensorComponent{"grid_name/S", DataVector{1.0, 2.0}}},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {Spectral::Quadrature::Gauss},
+              "grid_name"}});
       }(),
-      Catch::Contains(
-          "The expected format of the tensor component names is "
-          "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in"));
-  CHECK_THROWS_WITH(
-      []() {
-        const std::string h5_file_name(
-            "Unit.IO.H5.VolumeData.ComponentFormat1.h5");
-        const uint32_t version_number = 4;
-        if (file_system::check_if_file_exists(h5_file_name)) {
-          file_system::rm(h5_file_name, true);
-        }
-        h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-        auto& volume_file =
-            my_file.insert<h5::VolumeData>("/element_data", version_number);
-        volume_file.write_volume_data(
-            100, 10.0,
-            {{{2},
-              {TensorComponent{"A/S", DataVector{1.0, 2.0}},
-               TensorComponent{"S", DataVector{1.0, 2.0}}},
-              {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
-      }(),
-      Catch::Contains(
-          "The expected format of the tensor component names is "
-          "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in"));
+      Catch::Contains("The expected format of the tensor component names is "
+                      "'COMPONENT_NAME' but found a '/' in"));
   CHECK_THROWS_WITH(
       []() {
         const std::string h5_file_name("Unit.IO.H5.VolumeData.WriteTwice.h5");
@@ -313,10 +285,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
         volume_file.write_volume_data(
             100, 10.0,
             {{{2},
-              {TensorComponent{"A/S", DataVector{1.0, 2.0}},
-               TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+              {TensorComponent{"S", DataVector{1.0, 2.0}},
+               TensorComponent{"S", DataVector{1.0, 2.0}}},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {Spectral::Quadrature::Gauss},
+              "grid_name"}});
       }(),
       Catch::Contains(
           "Trying to write tensor component 'S' which already exists in HDF5 "
@@ -337,9 +310,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
         volume_file.write_volume_data(
             100, 10.0,
             {{{2},
-              {TensorComponent{"A/S", DataVector{1.0, 2.0}}},
+              {TensorComponent{"S", DataVector{1.0, 2.0}}},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss}}});
+              {Spectral::Quadrature::Gauss},
+              "grid_name"}});
         volume_file.find_observation_id(11.0);
       }(),
       Catch::Contains("No observation with value"));

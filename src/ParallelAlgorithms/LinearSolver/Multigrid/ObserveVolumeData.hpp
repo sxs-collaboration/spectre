@@ -76,20 +76,16 @@ struct ObserveVolumeData {
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const auto& inertial_coords =
         db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    const std::string element_name = MakeString{} << element_id << '/';
-
     // Collect tensor components to observe
     std::vector<TensorComponent> components{};
     components.reserve(inertial_coords.size() +
                        VolumeDataVars::number_of_independent_components);
-    const auto record_tensor_components = [&components, &element_name](
-                                              const auto tensor_tag_v,
-                                              const auto& tensor) {
+    const auto record_tensor_components = [&components](const auto tensor_tag_v,
+                                                        const auto& tensor) {
       using tensor_tag = std::decay_t<decltype(tensor_tag_v)>;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        components.emplace_back(element_name + db::tag_name<tensor_tag>() +
-                                    tensor.component_suffix(i),
-                                tensor[i]);
+        components.emplace_back(
+            db::tag_name<tensor_tag>() + tensor.component_suffix(i), tensor[i]);
       }
     };
     record_tensor_components(domain::Tags::Coordinates<Dim, Frame::Inertial>{},
@@ -106,6 +102,7 @@ struct ObserveVolumeData {
             cache));
     const auto& level_observation_key =
         *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
+    const std::string element_name = MakeString{} << element_id;
     const std::string subfile_path =
         "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
@@ -114,7 +111,8 @@ struct ObserveVolumeData {
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
-        std::move(components), mesh.extents(), mesh.basis(), mesh.quadrature());
+        element_name, std::move(components), mesh.extents(), mesh.basis(),
+        mesh.quadrature());
 
     // Increment observation ID
     db::mutate<Tags::ObservationId<OptionsGroup>>(

@@ -59,13 +59,14 @@ struct ContributeVolumeData {
       const observers::ObservationId& observation_id,
       const std::string& subfile_name,
       const observers::ArrayComponentId& sender_array_id,
+      std::string element_name,
       std::vector<TensorComponent>&& received_tensor_data,
       const Index<Dim>& received_extents,
       const std::array<Spectral::Basis, Dim>& received_basis,
       const std::array<Spectral::Quadrature, Dim>& received_quadrature) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         make_not_null(&box),
-        [&array_index, &cache, &observation_id, &sender_array_id,
+        [&array_index, &cache, &element_name, &observation_id, &sender_array_id,
          &received_basis, &received_extents, &received_quadrature,
          &received_tensor_data, &subfile_name](
             const gsl::not_null<std::unordered_map<
@@ -118,7 +119,8 @@ struct ContributeVolumeData {
                              std::move(received_tensor_data),
                              {received_basis.begin(), received_basis.end()},
                              {received_quadrature.begin(),
-                              received_quadrature.end()}));
+                              received_quadrature.end()},
+                             element_name));
           } else {
             auto& current_data =
                 volume_data->at(observation_id).at(sender_array_id);

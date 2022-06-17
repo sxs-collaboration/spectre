@@ -152,22 +152,6 @@ void append_element_extents_and_connectivity(
     }
   }
 }
-
-// Append the name of an element to the string of grid names
-void append_element_name(const gsl::not_null<std::string*> grid_names,
-                         const ExtentsAndTensorVolumeData& element) {
-  // Get the name of the element
-  const auto& first_tensor_name = element.tensor_components.front().name;
-  ASSERT(first_tensor_name.find_last_of('/') != std::string::npos,
-         "The expected format of the tensor component names is "
-         "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in '"
-             << first_tensor_name << "'.");
-
-  const auto spatial_name =
-      first_tensor_name.substr(0, first_tensor_name.find_last_of('/'));
-  *grid_names += spatial_name + VolumeData::separator();
-}
-
 }  // namespace
 
 VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
@@ -225,11 +209,11 @@ void VolumeData::write_volume_data(
                          observation_value);
   // Get first element to extract the component names and dimension
   const auto get_component_name = [](const auto& component) {
-    ASSERT(component.name.find_last_of('/') != std::string::npos,
+    ASSERT(component.name.find_last_of('/') == std::string::npos,
            "The expected format of the tensor component names is "
-           "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in '"
+           "'COMPONENT_NAME' but found a '/' in '"
                << component.name << "'.");
-    return component.name.substr(component.name.find_last_of('/') + 1);
+    return component.name;
   };
   const std::vector<std::string> component_names(
       boost::make_transform_iterator(elements.front().tensor_components.begin(),
@@ -276,7 +260,7 @@ void VolumeData::write_volume_data(
           for (const auto& element : elements) {
             if (UNLIKELY(i == 0)) {
               // True if first tensor component being accessed
-              append_element_name(&grid_names, element);
+              grid_names += element.element_name + h5::VolumeData::separator();
               // append element basis
               alg::transform(
                   element.basis, std::back_inserter(bases),
@@ -322,6 +306,7 @@ void VolumeData::write_volume_data(
             << ") in std::variant of tensor component.");
     }
   }  // for each component
+  grid_names.pop_back();
 
   // Write the grid extents contiguously, the first `dim` belong to the
   // First grid, the second `dim` belong to the second grid, and so on,
@@ -425,9 +410,6 @@ std::vector<std::string> VolumeData::get_grid_names(
   std::vector<std::string> grid_names{};
   boost::split(grid_names, all_names,
                [](const char c) { return c == h5::VolumeData::separator(); });
-  // boost::split counts the last separator as a split even though there are no
-  // characters after it, so the last entry of the vector is empty
-  grid_names.pop_back();
   return grid_names;
 }
 
