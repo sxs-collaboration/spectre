@@ -31,45 +31,6 @@ if (NOT SHELL_EXECUTABLE)
     "Could not find 'sh' shell to execute failure tests of algorithms")
 endif()
 
-# Note that we have a 'balance' here that happens 2.5e4 of times per second just
-# to be completely certain that the desired number of migrations occur during
-# the test (2). This tends to have a lot of fluctuation depending on how quickly
-# the machine manages to execute this fairly short test, and the current balance
-# frequency has been roughly tuned to a) very consistently get at least 5
-# balances (usually gets several dozen), and b) complete the test in a
-# reasonable duration. Balancing too frequently can mean the test time explodes
-# due to balancing so much that the test computation doesn't get much of a
-# chance to execute.
-function(add_algorithm_test_with_balancing TEST_NAME EXECUTABLE_NAME REGEX_TO_MATCH)
-  add_standalone_test_executable("Test_${EXECUTABLE_NAME}")
-  target_link_libraries(
-    "Test_${EXECUTABLE_NAME}"
-    PRIVATE
-    "${ALGORITHM_TEST_LINK_LIBRARIES}")
-  add_test(
-    NAME "Unit.Parallel.${TEST_NAME}"
-    COMMAND
-    ${SHELL_EXECUTABLE}
-    -c "${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${EXECUTABLE_NAME} \
-    +p2 +balancer RotateLB +LBPeriod 4.0e-5 +LBDebug 3 2>&1"
-    )
-
-  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
-  if("${REGEX_TO_MATCH}" STREQUAL "")
-    set_tests_properties(
-      "Unit.Parallel.${TEST_NAME}"
-      PROPERTIES
-      FAIL_REGULAR_EXPRESSION "ERROR")
-  else()
-    set_tests_properties(
-      "Unit.Parallel.${TEST_NAME}"
-      PROPERTIES
-      PASS_REGULAR_EXPRESSION
-      "${REGEX_TO_MATCH}"
-      FAIL_REGULAR_EXPRESSION "ERROR")
-  endif()
-endfunction()
-
 # Run TEST_NAME twice: first with no command-line args, then with the
 # `+restart SpectreCheckpoint0` command-line arg to restart from a Charm++
 # checkpoint named `SpectreCheckpoint0`. The checkpoint file is then deleted
@@ -147,16 +108,6 @@ add_algorithm_test(
   "SectionReductions"
   REGEX_TO_MATCH
   "Element 0 received reduction: Counted 2 odd elements.")
-
-# Charm 7.0.0 has different output in the following test.
-if(CHARM_VERSION VERSION_EQUAL 7.0.0)
-  message(STATUS "Periodic load balancing with the RotateLB is not working \
-correctly with Charm++ 7.0.0. Disabling the test for now until this is \
-resolved.")
-else()
-  add_algorithm_test_with_balancing("AlgorithmParallelWithBalancing"
-    "AlgorithmParallel" "Objects migrating: 15")
-endif()
 
 add_algorithm_test(
   "AlgorithmGlobalCache"
