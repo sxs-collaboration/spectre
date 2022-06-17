@@ -269,7 +269,7 @@ struct DgOperatorImpl<System, Linearized, tmpl::list<PrimalFields...>,
                       tmpl::list<PrimalFluxes...>,
                       tmpl::list<AuxiliaryFluxes...>> {
   static_assert(
-      tt::assert_conforms_to<System, elliptic::protocols::FirstOrderSystem>);
+      tt::assert_conforms_to_v<System, elliptic::protocols::FirstOrderSystem>);
 
   static constexpr size_t Dim = System::volume_dim;
   using FluxesComputer = typename System::fluxes_computer;

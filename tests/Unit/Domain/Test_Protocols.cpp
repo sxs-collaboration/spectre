@@ -12,6 +12,6 @@ struct DomainMetavariables : tt::ConformsTo<domain::protocols::Metavariables> {
 };
 // [domain_metavariables_example]
 
-static_assert(tt::assert_conforms_to<DomainMetavariables,
-                                     domain::protocols::Metavariables>);
+static_assert(tt::assert_conforms_to_v<DomainMetavariables,
+                                       domain::protocols::Metavariables>);
 }  // namespace

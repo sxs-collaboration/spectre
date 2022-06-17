@@ -8,7 +8,8 @@
 namespace {
 
 // Test that the numeric initial data class conforms to the protocol
-static_assert(tt::assert_conforms_to<evolution::NumericInitialData,
-                                     evolution::protocols::NumericInitialData>);
+static_assert(
+    tt::assert_conforms_to_v<evolution::NumericInitialData,
+                             evolution::protocols::NumericInitialData>);
 
 }  // namespace

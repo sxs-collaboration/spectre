@@ -44,7 +44,7 @@ void test_computers(const DataVector& used_for_size) {
   CAPTURE(Dim);
   using system = Poisson::FirstOrderSystem<Dim, BackgroundGeometry>;
   static_assert(
-      tt::assert_conforms_to<system, elliptic::protocols::FirstOrderSystem>);
+      tt::assert_conforms_to_v<system, elliptic::protocols::FirstOrderSystem>);
   helpers::test_first_order_fluxes_computer<system>(used_for_size);
   helpers::test_first_order_sources_computer<system>(used_for_size);
 }

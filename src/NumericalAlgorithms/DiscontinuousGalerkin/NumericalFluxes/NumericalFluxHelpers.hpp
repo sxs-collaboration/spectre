@@ -66,7 +66,7 @@ void package_data(
         packaged_data,
     const NumericalFluxType& numerical_flux_computer, const Args&... args) {
   static_assert(
-      tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
+      tt::assert_conforms_to_v<NumericalFluxType, protocols::NumericalFlux>);
   detail::package_data_impl(packaged_data, numerical_flux_computer,
                             typename NumericalFluxType::package_field_tags{},
                             typename NumericalFluxType::package_extra_tags{},
@@ -86,7 +86,7 @@ void normal_dot_numerical_fluxes(
                                  tmpl::list<AllExtraTags...>>&
         packaged_data_ext) {
   static_assert(
-      tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
+      tt::assert_conforms_to_v<NumericalFluxType, protocols::NumericalFlux>);
   detail::normal_dot_numerical_fluxes_impl(
       numerical_flux_computer, packaged_data_int, packaged_data_ext,
       typename NumericalFluxType::package_field_tags{},
@@ -108,7 +108,7 @@ void normal_dot_numerical_fluxes(
     // parameter pack deduction works
     gsl::not_null<NormalDotNumericalFluxes*>... n_dot_num_fluxes) {
   static_assert(
-      tt::assert_conforms_to<NumericalFluxType, protocols::NumericalFlux>);
+      tt::assert_conforms_to_v<NumericalFluxType, protocols::NumericalFlux>);
   detail::normal_dot_numerical_fluxes_impl(
       numerical_flux_computer, packaged_data_int, packaged_data_ext,
       typename NumericalFluxType::package_field_tags{},

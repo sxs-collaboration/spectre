@@ -86,7 +86,7 @@ struct ControlSystem {
                                  std::optional<std::string>>);
 
     using measurement = typename ConformingType::measurement;
-    static_assert(tt::assert_conforms_to<measurement, Measurement>);
+    static_assert(tt::assert_conforms_to_v<measurement, Measurement>);
 
     template <typename Submeasurement>
     struct check_process_measurement_argument_tags {
@@ -98,7 +98,7 @@ struct ControlSystem {
     using simple_tags = typename ConformingType::simple_tags;
 
     using control_error = typename ConformingType::control_error;
-    static_assert(tt::assert_conforms_to<control_error, ControlError>);
+    static_assert(tt::assert_conforms_to_v<control_error, ControlError>);
 
     static constexpr size_t deriv_order = ConformingType::deriv_order;
 

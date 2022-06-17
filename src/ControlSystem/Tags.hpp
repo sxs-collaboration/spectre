@@ -270,7 +270,7 @@ struct IsActive : db::SimpleTag {
 /// their public member names and assigned to their corresponding DataBox tags.
 template <typename ControlSystem>
 struct OptionHolder {
-  static_assert(tt::assert_conforms_to<
+  static_assert(tt::assert_conforms_to_v<
                 ControlSystem, control_system::protocols::ControlSystem>);
   using control_system = ControlSystem;
   static constexpr size_t deriv_order = control_system::deriv_order;

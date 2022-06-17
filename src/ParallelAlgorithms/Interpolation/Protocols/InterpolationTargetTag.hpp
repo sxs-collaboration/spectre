@@ -30,7 +30,7 @@ struct if_alias_exists_assert_conforms_to<ConformingType, false> {
 template <typename ConformingType>
 struct if_alias_exists_assert_conforms_to<ConformingType, true> {
   static constexpr bool value = true;
-  static_assert(tt::assert_conforms_to<
+  static_assert(tt::assert_conforms_to_v<
                 typename ConformingType::compute_vars_to_interpolate,
                 ComputeVarsToInterpolate>);
 };
@@ -102,12 +102,12 @@ struct InterpolationTargetTag {
     using compute_target_points =
         typename ConformingType::compute_target_points;
     static_assert(
-        tt::assert_conforms_to<compute_target_points, ComputeTargetPoints>);
+        tt::assert_conforms_to_v<compute_target_points, ComputeTargetPoints>);
 
     using post_interpolation_callback =
         typename ConformingType::post_interpolation_callback;
-    static_assert(tt::assert_conforms_to<post_interpolation_callback,
-                                         PostInterpolationCallback>);
+    static_assert(tt::assert_conforms_to_v<post_interpolation_callback,
+                                           PostInterpolationCallback>);
   };
 };
 }  // namespace intrp::protocols

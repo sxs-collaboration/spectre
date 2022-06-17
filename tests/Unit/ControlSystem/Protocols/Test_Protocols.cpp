@@ -8,14 +8,14 @@
 #include "Utilities/ProtocolHelpers.hpp"
 
 static_assert(
-    tt::assert_conforms_to<control_system::TestHelpers::ExampleSubmeasurement,
-                           control_system::protocols::Submeasurement>);
+    tt::assert_conforms_to_v<control_system::TestHelpers::ExampleSubmeasurement,
+                             control_system::protocols::Submeasurement>);
 static_assert(
-    tt::assert_conforms_to<control_system::TestHelpers::ExampleMeasurement,
-                           control_system::protocols::Measurement>);
+    tt::assert_conforms_to_v<control_system::TestHelpers::ExampleMeasurement,
+                             control_system::protocols::Measurement>);
 static_assert(
-    tt::assert_conforms_to<control_system::TestHelpers::ExampleControlSystem,
-                           control_system::protocols::ControlSystem>);
+    tt::assert_conforms_to_v<control_system::TestHelpers::ExampleControlSystem,
+                             control_system::protocols::ControlSystem>);
 static_assert(
-    tt::assert_conforms_to<control_system::TestHelpers::ExampleControlError,
-                           control_system::protocols::ControlError>);
+    tt::assert_conforms_to_v<control_system::TestHelpers::ExampleControlError,
+                             control_system::protocols::ControlError>);

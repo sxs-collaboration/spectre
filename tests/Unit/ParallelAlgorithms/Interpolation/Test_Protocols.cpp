@@ -9,14 +9,14 @@
 #include "Utilities/ProtocolHelpers.hpp"
 
 static_assert(
-    tt::assert_conforms_to<intrp::TestHelpers::ExampleComputeTargetPoints,
-                           intrp::protocols::ComputeTargetPoints>);
+    tt::assert_conforms_to_v<intrp::TestHelpers::ExampleComputeTargetPoints,
+                             intrp::protocols::ComputeTargetPoints>);
+static_assert(tt::assert_conforms_to_v<
+              intrp::TestHelpers::ExampleComputeVarsToInterpolate,
+              intrp::protocols::ComputeVarsToInterpolate>);
+static_assert(tt::assert_conforms_to_v<
+              intrp::TestHelpers::ExamplePostInterpolationCallback,
+              intrp::protocols::PostInterpolationCallback>);
 static_assert(
-    tt::assert_conforms_to<intrp::TestHelpers::ExampleComputeVarsToInterpolate,
-                           intrp::protocols::ComputeVarsToInterpolate>);
-static_assert(
-    tt::assert_conforms_to<intrp::TestHelpers::ExamplePostInterpolationCallback,
-                           intrp::protocols::PostInterpolationCallback>);
-static_assert(
-    tt::assert_conforms_to<intrp::TestHelpers::ExampleInterpolationTargetTag,
-                           intrp::protocols::InterpolationTargetTag>);
+    tt::assert_conforms_to_v<intrp::TestHelpers::ExampleInterpolationTargetTag,
+                             intrp::protocols::InterpolationTargetTag>);

@@ -262,8 +262,8 @@ template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
   using interpolation_target_tag = InterpolationTargetTag;
   static_assert(
-      tt::assert_conforms_to<interpolation_target_tag,
-                             intrp::protocols::InterpolationTargetTag>);
+      tt::assert_conforms_to_v<interpolation_target_tag,
+                               intrp::protocols::InterpolationTargetTag>);
   static std::string name() {
     return pretty_type::name<InterpolationTargetTag>();
   }

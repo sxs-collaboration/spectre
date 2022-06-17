@@ -217,8 +217,8 @@ struct TestKerrHorizon {
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   static_assert(
-      tt::assert_conforms_to<InterpolationTargetTag,
-                             intrp::protocols::InterpolationTargetTag>);
+      tt::assert_conforms_to_v<InterpolationTargetTag,
+                               intrp::protocols::InterpolationTargetTag>);
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = size_t;
@@ -304,7 +304,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       mock_interpolation_target<metavars, typename metavars::AhA>;
 
   // Assert that the FindApparentHorizon callback conforms to the protocol
-  static_assert(tt::assert_conforms_to<
+  static_assert(tt::assert_conforms_to_v<
                 typename metavars::AhA::post_interpolation_callback,
                 intrp::protocols::PostInterpolationCallback>);
 

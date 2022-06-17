@@ -166,8 +166,8 @@ struct Metavars {
         tmpl::pair<OtherBase, tmpl::list<OtherDerived>>>;
   };
   // [factory_creation]
-  static_assert(tt::assert_conforms_to<factory_creation,
-                                       Options::protocols::FactoryCreation>);
+  static_assert(tt::assert_conforms_to_v<factory_creation,
+                                         Options::protocols::FactoryCreation>);
 };
 
 void test_factory() {

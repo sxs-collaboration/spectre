@@ -114,9 +114,9 @@ void apply_llf_flux(
 template <size_t Dim>
 void test_llf_flux(const DataVector& used_for_size) {
   static_assert(
-      tt::assert_conforms_to<dg::NumericalFluxes::LocalLaxFriedrichs<
-                                 TestHelpers::NumericalFluxes::System<Dim>>,
-                             dg::protocols::NumericalFlux>);
+      tt::assert_conforms_to_v<dg::NumericalFluxes::LocalLaxFriedrichs<
+                                   TestHelpers::NumericalFluxes::System<Dim>>,
+                               dg::protocols::NumericalFlux>);
 
   pypp::check_with_random_values<16>(
       &apply_llf_flux<Dim>, "TestFunctions",

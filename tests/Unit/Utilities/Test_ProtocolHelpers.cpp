@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 #include "Utilities/TypeTraits/CreateIsCallable.hpp"
@@ -54,7 +55,7 @@ class Person : public tt::ConformsTo<protocols::Named> {
 template <typename NamedThing>
 std::string greet(const NamedThing& named_thing) {
   // Make sure the template parameter conforms to the protocol
-  static_assert(tt::assert_conforms_to<NamedThing, protocols::Named>);
+  static_assert(tt::assert_conforms_to_v<NamedThing, protocols::Named>);
   // Now we can rely on the interface that the protocol defines
   return "Hello, " + named_thing.name() + "!";
 }
@@ -87,7 +88,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.ProtocolHelpers", "[Utilities][Unit]") {
 constexpr bool person_class_is_named =
     tt::conforms_to_v<Person, protocols::Named>;
 // Assert-friendly version with more diagnostics:
-static_assert(tt::assert_conforms_to<Person, protocols::Named>);
+static_assert(tt::assert_conforms_to_v<Person, protocols::Named>);
 // [conforms_to]
 static_assert(person_class_is_named,
               "The 'Person' class does not conform to the 'Named' protocol.");
@@ -97,6 +98,12 @@ struct NotNamed {};
 class DerivedNonConformingClass : private Person {};
 class DerivedConformingClass : public Person {};
 }  // namespace
+
+static_assert(not tmpl::apply<tt::conforms_to<tmpl::_1, tmpl::_2>, NotNamed,
+                              protocols::Named>::value);
+static_assert(tmpl::apply<tt::conforms_to<tmpl::_1, tmpl::_2>, Person,
+                          protocols::Named>::value);
+
 static_assert(not tt::conforms_to_v<NotNamed, protocols::Named>,
               "Failed testing tt::conforms_to_v");
 static_assert(
@@ -144,7 +151,7 @@ struct PersonWithNameType : tt::ConformsTo<protocols::NamedWithType> {
 // [person_with_name_type]
 // [example_check_name_type]
 static_assert(
-    tt::assert_conforms_to<PersonWithNameType, protocols::NamedWithType>);
+    tt::assert_conforms_to_v<PersonWithNameType, protocols::NamedWithType>);
 static_assert(
     std::is_same_v<typename PersonWithNameType::NameType, std::string>,
     "The `NameType` isn't a `std::string`!");
@@ -153,5 +160,5 @@ static_assert(
 
 // Give an example how protocol consumers should test protocol conformance
 // [test_protocol_conformance]
-static_assert(tt::assert_conforms_to<Person, protocols::Named>);
+static_assert(tt::assert_conforms_to_v<Person, protocols::Named>);
 // [test_protocol_conformance]

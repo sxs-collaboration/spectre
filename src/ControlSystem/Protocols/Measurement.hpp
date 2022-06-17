@@ -29,11 +29,9 @@ struct Measurement {
   struct test {
     using submeasurements = typename ConformingType::submeasurements;
 
-    template <typename T>
-    using assert_conforms_to_t =
-        std::bool_constant<tt::assert_conforms_to<T, Submeasurement>>;
-    static_assert(tmpl::all<submeasurements,
-                            tmpl::bind<assert_conforms_to_t, tmpl::_1>>::value);
+    static_assert(
+        tmpl::all<submeasurements,
+                  tt::assert_conforms_to<tmpl::_1, Submeasurement>>::value);
   };
 };
 }  // namespace control_system::protocols

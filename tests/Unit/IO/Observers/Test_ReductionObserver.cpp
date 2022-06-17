@@ -54,7 +54,7 @@ struct FormatErrors
   void pup(PUP::er& /*p*/) {}
 };
 // [formatter_example]
-static_assert(tt::assert_conforms_to<
+static_assert(tt::assert_conforms_to_v<
               FormatErrors, observers::protocols::ReductionDataFormatter>);
 }  // namespace
 

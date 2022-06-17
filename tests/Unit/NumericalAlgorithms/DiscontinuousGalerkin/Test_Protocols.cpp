@@ -40,6 +40,6 @@ struct CentralFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
 // [numerical_flux_example]
 
 static_assert(
-    tt::assert_conforms_to<CentralFlux, dg::protocols::NumericalFlux>);
+    tt::assert_conforms_to_v<CentralFlux, dg::protocols::NumericalFlux>);
 
 }  // namespace
