@@ -25,11 +25,22 @@ void test_streaming() {
   CHECK(get_output(Spectral::Basis::Legendre) == "Legendre");
   CHECK(get_output(Spectral::Basis::Chebyshev) == "Chebyshev");
   CHECK(get_output(Spectral::Basis::FiniteDifference) == "FiniteDifference");
+  for (const auto& basis :
+       {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
+        Spectral::Basis::FiniteDifference}) {
+    CHECK(Spectral::to_basis(get_output(basis)) == basis);
+  }
 
   CHECK(get_output(Spectral::Quadrature::Gauss) == "Gauss");
   CHECK(get_output(Spectral::Quadrature::GaussLobatto) == "GaussLobatto");
   CHECK(get_output(Spectral::Quadrature::CellCentered) == "CellCentered");
   CHECK(get_output(Spectral::Quadrature::FaceCentered) == "FaceCentered");
+  for (const auto& quadrature :
+       {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
+        Spectral::Quadrature::CellCentered,
+        Spectral::Quadrature::FaceCentered}) {
+    CHECK(Spectral::to_quadrature(get_output(quadrature)) == quadrature);
+  }
 }
 
 void test_creation() {

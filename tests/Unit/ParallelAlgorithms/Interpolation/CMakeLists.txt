@@ -47,6 +47,7 @@ target_link_libraries(
   GeneralRelativitySolutions
   Interpolation
   IO
+  IoTestHelpers
   Logging
   MathFunctions
   ParallelInterpolation

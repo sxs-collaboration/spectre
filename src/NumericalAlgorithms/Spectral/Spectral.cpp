@@ -56,6 +56,34 @@ std::ostream& operator<<(std::ostream& os, const Quadrature& quadrature) {
   }
 }
 
+Basis to_basis(const std::string& basis) {
+  if ("Chebyshev" == basis) {
+    return Spectral::Basis::Chebyshev;
+  } else if ("Legendre" == basis) {
+    return Spectral::Basis::Legendre;
+  } else if ("FiniteDifference" == basis) {
+    return Spectral::Basis::FiniteDifference;
+  } else if ("SphericalHarmonic" == basis) {
+    return Spectral::Basis::SphericalHarmonic;
+  }
+  ERROR("Unknown basis " << basis);
+}
+
+Quadrature to_quadrature(const std::string& quadrature) {
+  if ("Gauss" == quadrature) {
+    return Spectral::Quadrature::Gauss;
+  } else if ("GaussLobatto" == quadrature) {
+    return Spectral::Quadrature::GaussLobatto;
+  } else if ("CellCentered" == quadrature) {
+    return Spectral::Quadrature::CellCentered;
+  } else if ("FaceCentered" == quadrature) {
+    return Spectral::Quadrature::FaceCentered;
+  } else if ("Equiangular" == quadrature) {
+    return Spectral::Quadrature::Equiangular;
+  }
+  ERROR("Unknown quadrature " << quadrature);
+}
+
 template <Basis BasisType>
 Matrix spectral_indefinite_integral_matrix(size_t num_points);
 
@@ -646,38 +674,29 @@ Spectral::Quadrature
 Options::create_from_yaml<Spectral::Quadrature>::create<void>(
     const Options::Option& options) {
   const auto type_read = options.parse_as<std::string>();
-  if ("Gauss" == type_read) {
-    return Spectral::Quadrature::Gauss;
-  } else if ("GaussLobatto" == type_read) {
-    return Spectral::Quadrature::GaussLobatto;
-  } else if ("CellCentered" == type_read) {
-    return Spectral::Quadrature::CellCentered;
-  } else if ("FaceCentered" == type_read) {
-    return Spectral::Quadrature::FaceCentered;
+  try {
+    return Spectral::to_quadrature(type_read);
+  } catch (const std::exception& /*e*/) {
+    PARSE_ERROR(
+        options.context(),
+        "Failed to convert \""
+            << type_read
+            << "\" to Spectral::Quadrature. Must be one "
+               "of Gauss, GaussLobatto, CellCentered, or FaceCentered.");
   }
-  PARSE_ERROR(options.context(),
-              "Failed to convert \""
-                  << type_read
-                  << "\" to Spectral::Quadrature. Must be one "
-                     "of Gauss, GaussLobatto, CellCentered, or FaceCentered.");
 }
 
 template <>
 Spectral::Basis Options::create_from_yaml<Spectral::Basis>::create<void>(
     const Options::Option& options) {
   const auto type_read = options.parse_as<std::string>();
-  if ("Chebyshev" == type_read) {
-    return Spectral::Basis::Chebyshev;
-  } else if ("Legendre" == type_read) {
-    return Spectral::Basis::Legendre;
-  } else if ("FiniteDifference" == type_read) {
-    return Spectral::Basis::FiniteDifference;
-  } else if ("SphericalHarmonic" == type_read) {
-    return Spectral::Basis::SphericalHarmonic;
+  try {
+    return Spectral::to_basis(type_read);
+  } catch (const std::exception& /*e*/) {
+    PARSE_ERROR(options.context(),
+                "Failed to convert \""
+                    << type_read
+                    << "\" to Spectral::Basis. Must be one "
+                       "of Chebyshev, Legendre, or FiniteDifference.");
   }
-  PARSE_ERROR(options.context(),
-              "Failed to convert \""
-                  << type_read
-                  << "\" to Spectral::Basis. Must be one "
-                     "of Chebyshev, Legendre, or FiniteDifference.");
 }

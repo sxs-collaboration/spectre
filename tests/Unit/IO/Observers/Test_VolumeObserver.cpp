@@ -20,7 +20,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
-#include "Helpers/IO/VolumeDataHelpers.hpp"
+#include "Helpers/IO/VolumeData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
