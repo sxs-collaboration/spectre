@@ -214,7 +214,7 @@ struct ReadAllVolumeDataAndDistribute {
 
       // Select observation ID
       const size_t observation_id = std::visit(
-          make_overloader(
+          Overloader{
               [&volume_file](const double local_obs_value) {
                 return volume_file.find_observation_id(local_obs_value);
               },
@@ -230,7 +230,7 @@ struct ReadAllVolumeDataAndDistribute {
                     ERROR("Unknown importers::ObservationSelector: "
                           << local_obs_selector);
                 }
-              }),
+              }},
           Parallel::get<Tags::ObservationValue<ImporterOptionsGroup>>(cache));
       if (prev_observation_id.has_value() and
           prev_observation_id.value() != observation_id) {

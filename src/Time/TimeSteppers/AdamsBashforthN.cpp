@@ -428,7 +428,7 @@ void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
   // Calculating the Adams-Bashforth coefficients is somewhat
   // expensive, so we cache them.  ab_coefs(it, step) returns the
   // coefficients used to step from *it to *it + step.
-  auto ab_coefs = make_overloader(
+  auto ab_coefs = Overloader{
       make_cached_function<std::tuple<UnionIter, TimeDelta>, std::map>(
           [order_s](const std::tuple<UnionIter, TimeDelta>& args) {
             return get_coefficients(
@@ -445,7 +445,7 @@ void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
                     static_cast<typename UnionIter::difference_type>(order_s -
                                                                      1),
                 std::get<0>(args) + 1, std::get<1>(args));
-          }));
+          })};
 
   // The value of the coefficient of `evaluation_step` when doing
   // a standard Adams-Bashforth integration over the union times
