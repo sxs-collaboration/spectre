@@ -369,10 +369,12 @@ struct OutputCleaner {
   }
 };
 
+// [default_phase_order_array]
 static constexpr std::array<Parallel::Phase, 6> default_phase_order{
     {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
      Parallel::Phase::Solve, Parallel::Phase::Testing, Parallel::Phase::Cleanup,
      Parallel::Phase::Exit}};
+// [default_phase_order_array]
 
 namespace detail {
 

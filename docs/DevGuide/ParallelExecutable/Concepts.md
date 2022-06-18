@@ -228,7 +228,7 @@ all messages and entry methods have been processed.
 Charm++ provides a special notation to simplify expression of such
 control structures, but this requires writing specialized interface
 files that are parsed by Charm++.  SpECTRE does not support this;
-rather we split the executable into a set of user-defined phases. In
+rather we split the executable into a set of phases. In
 each phase, each parallel component will execute a user-defined list
 of actions.
 

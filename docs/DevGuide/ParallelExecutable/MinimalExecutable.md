@@ -88,13 +88,12 @@ definition of the metavariables struct.
 
 \snippet MinimalExecutable.hpp metavariables_definition
 
-The metavariables struct must define an enum class `Phase` with the
-phases of the executable (which must include `Initialization` and
-`Exit`), and a static function `determine_next_phase`.  In this
-example, no additional phases are defined, and the executable will
-execute the `Initialization` phase followed by the `Exit` phase.
-(`Parallel::CProxy_GlobalCache` is an unused proxy to the
-`GlobalCache` that is explained below)
+The metavariables struct must define a `static constexpr
+std::array<Parallel::Phase, N> default_phase_order` that is used to
+define the default order in which phases are executed.  In this
+example the executable will execute the `Initialization` phase
+followed by the `Exit` phase.  (`Parallel::CProxy_GlobalCache` is an
+unused proxy to the `GlobalCache` that is explained below)
 
 The metavariables struct must define a type alias `component_list`
 that is a `tmpl::list` (a typelist defined in `Utilities/TMPL.hpp`) of

@@ -61,16 +61,9 @@ specify the following:
 - `using mutable_global_cache_tags`: a `tmpl::list` of tags that are
   used to place mutable items in the GlobalCache.  The alias may be
   omitted if the list is empty.
-- `Phase`: an `enum class` that must contain at least `Initialization` and
-  `Exit`. Phases are described in the next section.
-- `determine_next_phase`: a static function with the signature
-  \code
-    static Phase determine_next_phase(
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy);
-  \endcode
-  What this function does is described below in the discussion of
-  \ref dev_guide_parallelization_phases_of_execution "phases".
+- `default_phase_order`: an array of Parallel::Phase that must contain at least
+  `Initialization` as the first element and `Exit`as the last element. Phases
+  are described in the next section.
 
 There are also several optional members:
 
@@ -94,19 +87,19 @@ synchronization we mean that no parallel components are executing or have more
 tasks to execute: everything is waiting to be told what tasks to perform next.
 
 Every executable must have at least two phases, `Initialization` and
-`Exit`. The next phase is decided by the static member function
-`determine_next_phase` in the metavariables. Currently this function has access
-to the phase that is
-ending, and also the global cache. In the future we will add support for
-receiving data from various components to allow for more complex decision
-making. Here is an example of a `determine_next_phase` function and the `Phase`
-enum class:
-\snippet Test_AlgorithmCore.cpp determine_next_phase_example
+`Exit`. The next phase is decided by the member function
+Parallel::Main<Metavariables>::execute_next_phase.
+Usually the next phase is determined
+from the `default_phase_order` provided by the metavariables.  If more
+complex decision making is desired, various components can send data
+to Parallel::Main via the PhaseControl infrastructure.  This allows the next
+Phase to be determined dynamically. Here is an example of a
+`default_phase_order` member variable:
+\snippet LinearSolverAlgorithmTestHelpers.hpp default_phase_order_array
 
 In contrast, an evolution executable might have phases
-`Initialization`, `SetInitialData`, `Evolve`, and `Exit`, but have a
-similar `switch` or `if-else` logic in the `determine_next_phase`
-function. The first phase that is entered is always
+`Initialization`, `SetInitialData`, `Evolve`, and `Exit`.
+The first phase that is entered is always
 `Initialization`. During the `Initialization` phase the
 `Parallel::GlobalCache` is created, all (node)group components are created,
 and empty array and singleton components are created.  Next, the function
@@ -202,7 +195,7 @@ Each %Parallel Component struct must have the following type aliases:
    Component struct have a template parameter `Metavariables` that is the
    global metavariables struct. Examples of this technique are given below.
 3. `using phase_dependent_action_list` is set to a `tmpl::list` of
-   `Parallel::PhaseActions<PhaseType, Phase, tmpl::list<Actions...>>`
+   `Parallel::PhaseActions<Phase, tmpl::list<Actions...>>`
    where each `PhaseAction` represents a PDAL that will be executed on
    the parallel component during the specified phase. The %Actions are
    executed in the order that they are given in the `tmpl::list`s of
@@ -292,15 +285,15 @@ the execution. This is controlled by an `execute_next_phase` function with
 signature:
 \code
 static void execute_next_phase(
-    const typename metavariables::Phase next_phase,
+    const Parallel::Phase next_phase,
     const Parallel::CProxy_GlobalCache<metavariables>& global_cache);
 \endcode
-The `determine_next_phase` function in the Metavariables determines the next
-phase, after which the `execute_next_phase` function gets called. The
+Parallel::Main<Metavariables>::execute_next_phase`
+determines the next phase, after
+which the `execute_next_phase` function of each component gets called. The
 `execute_next_phase` function determines what the parallel component should do
 during the next phase. Typically the `execute_next_phase` function should just
-call `start_phase(phase)` on the parallel component. In the future
-`execute_next_phase` may be removed.
+call `start_phase(phase)` on the parallel component.
 
 ## 3. Examples {#dev_guide_parallelization_component_examples}
 

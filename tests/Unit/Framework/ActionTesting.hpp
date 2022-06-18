@@ -52,19 +52,16 @@ struct get_array_index;
  *
  * The action testing framework (ATF) works essentially identically to the
  * parallel infrastructure. A metavariables must be supplied which must at least
- * list the components used (`using component_list = tmpl::list<>`) and the
- * phases (`enum class Phase {}`). As a simple example, let's look at the test
- * for the `Parallel::Actions::TerminatePhase` action.
+ * list the components used (`using component_list = tmpl::list<>`). As a simple
+ * example, let's look at the test for the `Parallel::Actions::TerminatePhase`
+ * action.
  *
  * The `Metavariables` is given by:
  *
  * \snippet Test_TerminatePhase.cpp metavariables
  *
  * The component list in this case just contains a single component that is
- * described below. The `Phase` enum contains the standard `Initialization` and
- * `Exit` phases. A `Testing` phase is also added, but the name of the phase has
- * no special meaning. Multiple phases with different names could instead be
- * used.
+ * described below.
  *
  * The component is templated on the metavariables, which, while not always
  * necessary, eliminates some compilation issues that may arise otherwise. The
@@ -145,23 +142,25 @@ struct get_array_index;
  *
  * \snippet Test_Goto.cpp metavariables
  *
- * You can see that this time there are two test phases, `TestGoto` and
- * `TestRepeatUntil`.
+ * You can see that this time there are two test phases, `Testing` and
+ * `Execute`.
  *
  * The component for this case is quite a bit more complicated so we will go
  * through it in detail. It is given by
  *
  * \snippet Test_Goto.cpp component
  *
+ * In addition to the `Initialization` and `Exit` phases, there are two
+ * additional phases, `Testing` and `Execute`.
  * Just as before there are `metavariables`, `chare_type`, and `array_index`
  * type aliases. The `repeat_until_phase_action_list` is the list of iterable
- * actions that are called during the `TestRepeatUntil` phase. The
+ * actions that are called during the `Execute` phase. The
  * `Initialization` phase action list now has the action
  * `ActionTesting::InitializeDataBox`, which takes simple tags and compute tags
- * that will be added to the DataBox in the initial phase. How the values for
- * the simple tags are set will be made clear below when we discuss the
+ * that will be added to the DataBox in the Initialization phase. How the values
+ * for the simple tags are set will be made clear below when we discuss the
  * `ActionTesting::emplace_component_and_initialize()` functions. The action
- * lists for the `TestGoto` and `TestRepeatUntil` phases are fairly simple and
+ * lists for the `Testing` and `Execute` phases are fairly simple and
  * not the focus of this discussion.
  *
  * Having discussed the metavariables and component, let us now look at the test
@@ -183,7 +182,7 @@ struct get_array_index;
  * the `ActionTesting::emplace_component_and_initialize()` functions is a
  * `tuples::TaggedTuple` of the simple tags, which is to be populated with the
  * initial values for the component. Note that there is no call to
- * `ActionTesting::set_phase (&runner, Metavariables::Phase::Initialization)`:
+ * `ActionTesting::set_phase (&runner, Parallel::Phase::Initialization)`:
  * this and the required action invocation is handled internally by the
  * `ActionTesting::emplace_component_and_initialize()` functions.
  *
@@ -194,7 +193,7 @@ struct get_array_index;
  * which to set the next action. After the `Label<Label1>` action is invoked we
  * check that the next action is the fourth (index `3` because we use zero-based
  * indexing) by calling the `MockRuntimeSystem::get_next_action_index()` member
- * function. For clarity, the indices of the actions in the `Phase::TestGoto`
+ * function. For clarity, the indices of the actions in the `Phase::Testing`
  * phase are:
  * - 0: `Actions::Goto<Label1>`
  * - 1: `Actions::Label<Label2>`

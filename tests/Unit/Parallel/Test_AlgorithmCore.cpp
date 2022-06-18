@@ -686,7 +686,6 @@ struct TestMetavariables {
       "are required";
   // [help_string_example]
 
-  // [determine_next_phase_example]
   static constexpr std::array<Parallel::Phase, 10> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,
        Parallel::Phase::RegisterWithObserver, Parallel::Phase::Solve,
@@ -694,7 +693,6 @@ struct TestMetavariables {
        Parallel::Phase::InitializeInitialDataDependentQuantities,
        Parallel::Phase::Execute, Parallel::Phase::Cleanup,
        Parallel::Phase::Exit}};
-  // [determine_next_phase_example]
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
