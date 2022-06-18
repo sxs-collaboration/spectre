@@ -19,6 +19,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -72,7 +73,7 @@ struct DgElementArray {
       const std::unordered_set<size_t>& procs_to_ignore = {});
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<DgElementArray>(local_cache)

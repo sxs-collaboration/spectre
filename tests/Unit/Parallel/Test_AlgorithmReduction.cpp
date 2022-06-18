@@ -116,9 +116,8 @@ struct SingletonParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_GlobalCache<
-          Metavariables>& /*global_cache*/) {}
+      const Parallel::Phase /*next_phase*/,
+      const Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
 template <class Metavariables>
@@ -250,10 +249,10 @@ struct ArrayParallelComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Testing) {
       Parallel::simple_action<ArrayReduce>(
           Parallel::get_parallel_component<ArrayParallelComponent>(
               local_cache));
@@ -269,16 +268,9 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test reductions using Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  using Phase = Parallel::Phase;
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    return current_phase == Phase::Initialization ? Phase::Testing
-                                                  : Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 3> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Testing,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

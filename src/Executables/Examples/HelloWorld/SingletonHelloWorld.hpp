@@ -75,13 +75,13 @@ struct HelloWorld {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache);
 };
 
 template <class Metavariables>
 void HelloWorld<Metavariables>::execute_next_phase(
-    const typename Metavariables::Phase /* next_phase */,
+    const Parallel::Phase /* next_phase */,
     Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
   Parallel::simple_action<Actions::PrintMessage>(
       Parallel::get_parallel_component<HelloWorld>(
@@ -96,17 +96,9 @@ struct Metavars {
   static constexpr Options::String help{
       "Say hello from a singleton parallel component."};
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavars>& /*cache_proxy*/) {
-    return current_phase == Phase::Initialization ? Phase::Execute
-                                                  : Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 3> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Execute,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

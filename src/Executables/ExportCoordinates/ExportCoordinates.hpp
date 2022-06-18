@@ -230,8 +230,6 @@ struct Metavariables {
                    tmpl::list<Triggers::SlabCompares, Triggers::TimeCompares>>>;
   };
 
-  using Phase = Parallel::Phase;
-
   using component_list = tmpl::list<
       DgElementArray<
           Metavariables,
@@ -266,27 +264,9 @@ struct Metavariables {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<MinGridSpacingReductionData>>;
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
-        return Phase::Execute;
-      case Phase::Execute:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR("Unknown type of phase.");
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+       Parallel::Phase::Execute, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

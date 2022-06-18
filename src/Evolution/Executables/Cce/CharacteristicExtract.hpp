@@ -81,22 +81,10 @@ struct EvolutionMetavars : CharacteristicExtractDefaults {
       "Perform Cauchy Characteristic Extraction using .h5 input data.\n"
       "Uses regularity-preserving formulation."};
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& /*cache_proxy*/) {
-    if (current_phase == Phase::Initialization) {
-      return Phase::InitializeTimeStepperHistory;
-    } else if (current_phase == Phase::InitializeTimeStepperHistory) {
-      return Phase::Evolve;
-    } else {
-      return Phase::Exit;
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

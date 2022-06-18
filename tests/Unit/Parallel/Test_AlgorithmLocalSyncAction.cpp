@@ -196,7 +196,7 @@ struct NodegroupComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<NodegroupComponent>(local_cache)
@@ -229,7 +229,7 @@ struct ArrayComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ArrayComponent>(local_cache)
@@ -245,19 +245,9 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    if(current_phase == Phase::Initialization) {
-      return Phase::Evolve;
-    }
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 3> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

@@ -20,6 +20,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/Numeric.hpp"
@@ -127,7 +128,7 @@ struct DgElementArray {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<DgElementArray>(local_cache)

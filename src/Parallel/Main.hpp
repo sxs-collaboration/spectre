@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <array>
 #include <boost/program_options.hpp>
 #include <charm++.h>
 #include <initializer_list>
@@ -23,6 +24,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
@@ -35,6 +37,7 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -600,9 +603,9 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 template <typename Metavariables>
 void Main<Metavariables>::
     allocate_remaining_components_and_execute_initialization_phase() {
-  ASSERT(current_phase_ == Parallel::Phase::Initialization,
-         "Must be in the Initialization phase.");
-
+  if (current_phase_ != Parallel::Phase::Initialization) {
+    ERROR("Must be in the Initialization phase.");
+  }
   // Since singletons are actually single-element Charm++ arrays, we have to
   // allocate them here along with the other Charm++ arrays.
   tmpl::for_each<singleton_component_list>([this](auto singleton_component_v) {
@@ -646,9 +649,36 @@ void Main<Metavariables>::
 
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() {
-  current_phase_ = Metavariables::determine_next_phase(
+  if (Parallel::Phase::Exit == current_phase_) {
+    ERROR("Current phase is Exit, but program did not exit!");
+  }
+
+  const auto next_phase = PhaseControl::arbitrate_phase_change(
       make_not_null(&phase_change_decision_data_), current_phase_,
-      global_cache_proxy_);
+      *Parallel::local_branch(global_cache_proxy_));
+  if (next_phase.has_value()) {
+    current_phase_ = next_phase.value();
+  } else {
+    const auto& default_order = Metavariables::default_phase_order;
+    auto it = alg::find(default_order, current_phase_);
+    using ::operator<<;
+    if (it == std::end(default_order)) {
+      ERROR("Cannot determine next phase as '"
+            << current_phase_
+            << "' is not in Metavariables::default_phase_order "
+            << default_order << "\n");
+    }
+    if (std::next(it) == std::end(default_order)) {
+      ERROR("Cannot determine next phase as '"
+            << current_phase_
+            << "' is last in Metavariables::default_phase_order "
+            << default_order << "\n");
+    }
+    current_phase_ = *std::next(it);
+  }
+
+  Parallel::printf("Entering phase: %s\n", current_phase_);
+
   if (Parallel::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     sys::exit();
@@ -720,7 +750,6 @@ void Main<Metavariables>::phase_change_reduction(
       make_not_null(&phase_change_decision_data_),
       get<0>(reduction_data.data()));
 }
-
 
 template <typename Metavariables>
 std::tuple<std::string, std::string, size_t>

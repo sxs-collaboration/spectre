@@ -526,9 +526,9 @@ struct SingletonParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    if (next_phase == Metavariables::Phase::Execute) {
+    if (next_phase == Parallel::Phase::Execute) {
       auto& local_cache = *Parallel::local_branch(global_cache);
       Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
           .start_phase(next_phase);
@@ -572,11 +572,11 @@ struct ArrayParallelComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Solve or
-        next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Solve or
+        next_phase == Parallel::Phase::Testing) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
           .start_phase(next_phase);
     }
@@ -595,7 +595,7 @@ struct GroupParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
+      const Parallel::Phase /*next_phase*/,
       Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
@@ -611,7 +611,7 @@ struct NodegroupParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
+      const Parallel::Phase /*next_phase*/,
       Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 };
 
@@ -625,28 +625,10 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test Algorithm in parallel"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    Parallel::printf("Determining next phase\n");
-
-    if (current_phase == Phase::Initialization) {
-      return Phase::Execute;
-    } else if (current_phase == Phase::Execute) {
-      return Phase::Solve;
-    } else if (current_phase == Phase::Solve) {
-      return Phase::Testing;
-    } else if (current_phase == Phase::Testing) {
-      return Phase::Exit;
-    }
-
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Execute,
+       Parallel::Phase::Solve, Parallel::Phase::Testing,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

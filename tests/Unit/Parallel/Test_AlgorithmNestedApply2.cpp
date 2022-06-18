@@ -55,9 +55,9 @@ struct Component {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    if (next_phase == Metavariables::Phase::Execute) {
+    if (next_phase == Parallel::Phase::Execute) {
       auto& local_cache = *Parallel::local_branch(global_cache);
       Parallel::simple_action<error_call_single_action_from_action>(
           *Parallel::local(
@@ -69,21 +69,11 @@ struct Component {
 struct TestMetavariables {
   using component_list = tmpl::list<Component<TestMetavariables>>;
 
-  using Phase = Parallel::Phase;
+  static constexpr std::array<Parallel::Phase, 3> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Execute,
+       Parallel::Phase::Exit}};
 
   static constexpr Options::String help = "Executable for testing";
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    if (current_phase == Phase::Initialization) {
-      return Phase::Execute;
-    }
-    return Phase::Exit;
-  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

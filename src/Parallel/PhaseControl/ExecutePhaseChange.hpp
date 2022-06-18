@@ -15,6 +15,7 @@
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -128,36 +129,45 @@ typename std::optional<Parallel::Phase> arbitrate_phase_change(
         phase_change_decision_data,
     Parallel::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
-  const auto& phase_change_and_triggers =
-      Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
-  bool phase_chosen = false;
-  for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-    // avoid unused variable warning
-    (void)trigger;
-    for (const auto& phase_change : phase_changes) {
-      const auto phase_result = phase_change->arbitrate_phase_change(
-          phase_change_decision_data, current_phase, cache);
-      if (phase_result.has_value()) {
-        if (phase_result.value().second ==
-            ArbitrationStrategy::RunPhaseImmediately) {
-          tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-              *phase_change_decision_data) = false;
-          return phase_result.value().first;
+  if constexpr (tmpl::list_contains_v<
+                    typename Parallel::GlobalCache<Metavariables>::tags_list,
+                    Tags::PhaseChangeAndTriggers>) {
+    const auto& phase_change_and_triggers =
+        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
+    bool phase_chosen = false;
+    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
+      // avoid unused variable warning
+      (void)trigger;
+      for (const auto& phase_change : phase_changes) {
+        const auto phase_result = phase_change->arbitrate_phase_change(
+            phase_change_decision_data, current_phase, cache);
+        if (phase_result.has_value()) {
+          if (phase_result.value().second ==
+              ArbitrationStrategy::RunPhaseImmediately) {
+            tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+                *phase_change_decision_data) = false;
+            return phase_result.value().first;
+          }
+          current_phase = phase_result.value().first;
+          phase_chosen = true;
         }
-        current_phase = phase_result.value().first;
-        phase_chosen = true;
       }
     }
-  }
-  if (tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-          *phase_change_decision_data) == false and
-      not phase_chosen) {
+    if (tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+            *phase_change_decision_data) == false and
+        not phase_chosen) {
+      return std::nullopt;
+    }
+    // if no phase change object suggests a specific phase, return to execution
+    // in the current phase.
+    tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+        *phase_change_decision_data) = false;
+    return current_phase;
+  } else {
+    (void)phase_change_decision_data;
+    (void)current_phase;
+    (void)cache;
     return std::nullopt;
   }
-  // if no phase change object suggests a specific phase, return to execution
-  // in the current phase.
-  tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-      *phase_change_decision_data) = false;
-  return current_phase;
 }
 }  // namespace PhaseControl

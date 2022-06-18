@@ -244,9 +244,6 @@ struct Metavariables {
           tmpl::at<factory_creation::factory_classes, Event>, nonlinear_solver,
           linear_solver, multigrid, schwarz_smoother>>>;
 
-  // Specify all global synchronization points.
-  using Phase = Parallel::Phase;
-
   using initialization_actions = tmpl::list<
       Actions::SetupDataBox,
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
@@ -338,30 +335,9 @@ struct Metavariables {
                  observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
-  // Specify the transitions between phases.
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
-        return Phase::Solve;
-      case Phase::Solve:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> an integral "
-            "value?");
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+       Parallel::Phase::Solve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

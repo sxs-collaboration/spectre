@@ -223,8 +223,6 @@ struct EvolutionMetavars {
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
-  using Phase = Parallel::Phase;
-
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
@@ -283,9 +281,10 @@ struct EvolutionMetavars {
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             PhaseChange,
-            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
-                       PhaseControl::VisitAndReturn<Phase::WriteCheckpoint>,
-                       PhaseControl::CheckpointAndExitAfterWallclock>>,
+            tmpl::list<
+                PhaseControl::VisitAndReturn<Parallel::Phase::LoadBalancing>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::WriteCheckpoint>,
+                PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -513,37 +512,10 @@ struct EvolutionMetavars {
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning.\n\n"};
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change(
-        phase_change_decision_data, current_phase,
-        *Parallel::local_branch(cache_proxy));
-    if (next_phase.has_value()) {
-      return next_phase.value();
-    }
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::InitializeTimeStepperHistory;
-      case Phase::InitializeTimeStepperHistory:
-        return Phase::Register;
-      case Phase::Register:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> to an integral "
-            "value?");
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
+       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

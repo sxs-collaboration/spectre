@@ -168,8 +168,6 @@ struct EvolutionMetavars {
   // `read_spec_piecewise_polynomial()`
   static constexpr bool override_functions_of_time = true;
 
-  using Phase = Parallel::Phase;
-
   using initialize_initial_data_dependent_quantities_actions =
       tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
                      volume_dim, use_damped_harmonic_rollon>,
@@ -306,9 +304,10 @@ struct EvolutionMetavars {
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             PhaseChange,
-            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
-                       PhaseControl::VisitAndReturn<Phase::WriteCheckpoint>,
-                       PhaseControl::CheckpointAndExitAfterWallclock>>,
+            tmpl::list<
+                PhaseControl::VisitAndReturn<Parallel::Phase::LoadBalancing>,
+                PhaseControl::VisitAndReturn<Parallel::Phase::WriteCheckpoint>,
+                PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<
@@ -341,43 +340,14 @@ struct EvolutionMetavars {
       tmpl::list<observers::Actions::RegisterEventsWithObservers,
                  intrp::Actions::RegisterElementWithInterpolator>;
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change(
-        phase_change_decision_data, current_phase,
-        *Parallel::local_branch(cache_proxy));
-    if (next_phase.has_value()) {
-      return next_phase.value();
-    }
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::RegisterWithElementDataReader;
-      case Phase::RegisterWithElementDataReader:
-        return Phase::ImportInitialData;
-      case Phase::ImportInitialData:
-        return Phase::InitializeInitialDataDependentQuantities;
-      case Phase::InitializeInitialDataDependentQuantities:
-        return Phase::InitializeTimeStepperHistory;
-      case Phase::InitializeTimeStepperHistory:
-        return Phase::Register;
-      case Phase::Register:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> an integral "
-            "value?");
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 8> default_phase_order{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::RegisterWithElementDataReader,
+       Parallel::Phase::ImportInitialData,
+       Parallel::Phase::InitializeInitialDataDependentQuantities,
+       Parallel::Phase::InitializeTimeStepperHistory,
+       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
