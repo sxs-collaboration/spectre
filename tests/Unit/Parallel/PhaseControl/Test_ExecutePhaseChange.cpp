@@ -3,6 +3,8 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <array>
+
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/PhaseControl/ExecutePhaseChange.hpp"
 #include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
@@ -11,6 +13,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -79,12 +82,12 @@ struct TestPhaseChange : public PhaseChange {
       const ArrayIndex& /*array_index*/) const {}
 
   template <typename... DecisionTags, typename Metavariables>
-  typename std::optional<std::pair<typename Metavariables::Phase,
-                                   PhaseControl::ArbitrationStrategy>>
+  typename std::optional<
+      std::pair<Parallel::Phase, PhaseControl::ArbitrationStrategy>>
   arbitrate_phase_change_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
-      const typename Metavariables::Phase /*current_phase*/,
+      const Parallel::Phase /*current_phase*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     if (tuples::get<TestTags::Request<Strategy, Index>>(
             *phase_change_decision_data)) {
@@ -93,8 +96,8 @@ struct TestPhaseChange : public PhaseChange {
       // Choose a unique phase, all after the first phase, for each choice of
       // the template parameters.
       return std::make_pair(
-          static_cast<typename Metavariables::Phase>(
-              1_st + static_cast<size_t>(Strategy) + Index * 2_st),
+          gsl::at(Metavariables::default_phase_order,
+                  1_st + static_cast<size_t>(Strategy) + Index * 2_st),
           Strategy);
     } else {
       return std::nullopt;
@@ -129,7 +132,12 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
 
-  enum class Phase { PhaseA, PhaseB, PhaseC, PhaseD, PhaseE, PhaseF, PhaseG };
+  using Phase = Parallel::Phase;
+  static constexpr std::array<Parallel::Phase, 7> default_phase_order{
+      {Parallel::Phase::Register, Parallel::Phase::RegisterWithObserver,
+       Parallel::Phase::Solve, Parallel::Phase::ImportInitialData,
+       Parallel::Phase::Evolve, Parallel::Phase::Execute,
+       Parallel::Phase::Cleanup}};
 };
 }  // namespace
 
@@ -199,11 +207,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
   {
     INFO("Arbitrate based on phase change decision data");
     // if used, the phase change objects correspond to phases:
-    // B, C, D, E, and G (in that order)
+    // RegisterWithObserver, Solve, ImportInitialData, Evolve, Cleanup  (in that
+    // order)
     phase_change_data = phase_change_decision_data_type{false, false, false,
                                                         false, false, false};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
               global_cache)) == std::nullopt);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, false, false, false}));
@@ -211,35 +220,35 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     phase_change_data = phase_change_decision_data_type{false, false, false,
                                                         false, false, true};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseA);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::Register);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, false, false, false}));
 
     phase_change_data =
         phase_change_decision_data_type{true, false, true, true, false, true};
     // test the versions that use `RunPhaseImmediately`, so the phase jumps to
-    // those phaases without evaluating the other phase change objects
+    // those phases without evaluating the other phase change objects
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseB);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::RegisterWithObserver);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
     phase_change_data =
         phase_change_decision_data_type{true, false, true, true, false, true};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseB);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::RegisterWithObserver);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseD);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::ImportInitialData);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, true, false, false}));
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseE);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::Evolve);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, false, false, false}));
 
@@ -249,16 +258,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     phase_change_data =
         phase_change_decision_data_type{false, true, false, true, false, true};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseE);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::Evolve);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, false, false, false}));
 
     phase_change_data =
         phase_change_decision_data_type{false, true, false, true, true, true};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
-              make_not_null(&phase_change_data), Metavariables::Phase::PhaseA,
-              global_cache)) == Metavariables::Phase::PhaseG);
+              make_not_null(&phase_change_data), Parallel::Phase::Register,
+              global_cache)) == Parallel::Phase::Cleanup);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, false, false, false, false}));
 
@@ -268,8 +277,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
                                                           false, false, true};
       CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
                 make_not_null(&phase_change_data),
-                static_cast<typename Metavariables::Phase>(i), global_cache)) ==
-            Metavariables::Phase::PhaseD);
+                gsl::at(Metavariables::default_phase_order, i),
+                global_cache)) == Parallel::Phase::ImportInitialData);
       CHECK(phase_change_data ==
             SINGLE_ARG(phase_change_decision_data_type{false, false, false,
                                                        false, false, false}));

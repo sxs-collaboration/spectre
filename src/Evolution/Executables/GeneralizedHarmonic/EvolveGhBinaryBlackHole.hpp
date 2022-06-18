@@ -170,18 +170,6 @@ struct EvolutionMetavars {
 
   using Phase = Parallel::Phase;
 
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    } else if (phase == Phase::WriteCheckpoint) {
-      return "WriteCheckpoint";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
   using initialize_initial_data_dependent_quantities_actions =
       tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
                      volume_dim, use_damped_harmonic_rollon>,
@@ -316,12 +304,11 @@ struct EvolutionMetavars {
                               GeneralizedHarmonic::BoundaryConditions::Outflow<
                                   volume_dim>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::WriteCheckpoint>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
+                       PhaseControl::VisitAndReturn<Phase::WriteCheckpoint>,
+                       PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

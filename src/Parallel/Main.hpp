@@ -22,6 +22,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/InitializePhaseChangeDecisionData.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
@@ -151,8 +152,7 @@ class Main : public CBase_Main<Metavariables> {
   using singleton_component_list =
       tmpl::filter<component_list, Parallel::is_singleton<tmpl::_1>>;
 
-  typename Metavariables::Phase current_phase_{
-      Metavariables::Phase::Initialization};
+  Parallel::Phase current_phase_{Parallel::Phase::Initialization};
   CProxy_MutableGlobalCache<Metavariables> mutable_global_cache_proxy_;
   CProxy_GlobalCache<Metavariables> global_cache_proxy_;
   detail::CProxy_AtSyncIndicator<Metavariables> at_sync_indicator_proxy_;
@@ -379,10 +379,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
       // already exist. For example, running the executable with flags like
       // `--help` or `--dump-source-tree-as` should succeed even if checkpoints
       // were previously written.
-      if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
-                        typename Metavariables::Phase>) {
-        check_future_checkpoint_dirs_available();
-      }
+      check_future_checkpoint_dirs_available();
 
       sys::exit();
     }
@@ -407,10 +404,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     ERROR(e.what());
   }
 
-  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
-                    typename Metavariables::Phase>) {
-    check_future_checkpoint_dirs_available();
-  }
+  check_future_checkpoint_dirs_available();
 
   mutable_global_cache_proxy_ = CProxy_MutableGlobalCache<Metavariables>::ckNew(
       Parallel::create_from_options<Metavariables>(
@@ -445,13 +439,10 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         resource_info_;
   }
 
-  if constexpr (Algorithm_detail::has_LoadBalancing_v<
-                    typename Metavariables::Phase>) {
-    at_sync_indicator_proxy_ =
-        detail::CProxy_AtSyncIndicator<Metavariables>::ckNew();
-    at_sync_indicator_proxy_[0].insert(this->thisProxy, sys::my_proc());
-    at_sync_indicator_proxy_.doneInserting();
-  }
+  at_sync_indicator_proxy_ =
+      detail::CProxy_AtSyncIndicator<Metavariables>::ckNew();
+  at_sync_indicator_proxy_[0].insert(this->thisProxy, sys::my_proc());
+  at_sync_indicator_proxy_.doneInserting();
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
@@ -574,11 +565,8 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 
   p | checkpoint_dir_counter_;
   p | resource_info_;
-  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
-                    typename Metavariables::Phase>) {
-    if (p.isUnpacking()) {
-      check_future_checkpoint_dirs_available();
-    }
+  if (p.isUnpacking()) {
+    check_future_checkpoint_dirs_available();
   }
 
   // For now we only support restarts on the same hardware configuration (same
@@ -612,7 +600,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 template <typename Metavariables>
 void Main<Metavariables>::
     allocate_remaining_components_and_execute_initialization_phase() {
-  ASSERT(current_phase_ == Metavariables::Phase::Initialization,
+  ASSERT(current_phase_ == Parallel::Phase::Initialization,
          "Must be in the Initialization phase.");
 
   // Since singletons are actually single-element Charm++ arrays, we have to
@@ -661,7 +649,7 @@ void Main<Metavariables>::execute_next_phase() {
   current_phase_ = Metavariables::determine_next_phase(
       make_not_null(&phase_change_decision_data_), current_phase_,
       global_cache_proxy_);
-  if (Metavariables::Phase::Exit == current_phase_) {
+  if (Parallel::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
     sys::exit();
   }
@@ -682,22 +670,15 @@ void Main<Metavariables>::execute_next_phase() {
   // load balance or checkpoint work could be initiated *before* the call to
   // component::execute_next_phase and *without* the need for a quiescence
   // detection. This may be a slight optimization.
-  if constexpr (Algorithm_detail::has_LoadBalancing_v<
-                    typename Metavariables::Phase>) {
-    if (current_phase_ == Metavariables::Phase::LoadBalancing) {
-      CkStartQD(CkCallback(CkIndex_Main<Metavariables>::start_load_balance(),
-                           this->thisProxy));
-      return;
-    }
+  if (current_phase_ == Parallel::Phase::LoadBalancing) {
+    CkStartQD(CkCallback(CkIndex_Main<Metavariables>::start_load_balance(),
+                         this->thisProxy));
+    return;
   }
-  if constexpr (Algorithm_detail::has_WriteCheckpoint_v<
-                    typename Metavariables::Phase>) {
-    if (current_phase_ == Metavariables::Phase::WriteCheckpoint) {
-      CkStartQD(
-          CkCallback(CkIndex_Main<Metavariables>::start_write_checkpoint(),
-                     this->thisProxy));
-      return;
-    }
+  if (current_phase_ == Parallel::Phase::WriteCheckpoint) {
+    CkStartQD(CkCallback(CkIndex_Main<Metavariables>::start_write_checkpoint(),
+                         this->thisProxy));
+    return;
   }
 
   // The general case simply returns to execute_next_phase

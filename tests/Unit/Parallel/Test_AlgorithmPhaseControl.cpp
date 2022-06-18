@@ -351,34 +351,13 @@ struct TestMetavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
         tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<TestMetavariables,
-                                                           Phase::Register>,
-                              PhaseControl::VisitAndReturn<TestMetavariables,
-                                                           Phase::Solve>>>,
+                   tmpl::list<PhaseControl::VisitAndReturn<Phase::Register>,
+                              PhaseControl::VisitAndReturn<Phase::Solve>>>,
         tmpl::pair<Trigger, tmpl::list<RegisterTrigger, SolveTrigger>>>;
   };
 
   using const_global_cache_tags =
       tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
-
-  static std::string phase_name(const Phase phase) {
-    switch (phase) {
-      case Phase::Initialization:
-        return "Initialization";
-      case Phase::Register:
-        return "Register";
-      case Phase::Solve:
-        return "Solve";
-      case Phase::Evolve:
-        return "Evolve";
-      case Phase::Testing:
-        return "Testing";
-      case Phase::Exit:
-        return "Exit";
-      default:
-        ERROR("phase_name: Unknown phase " << phase);
-    }
-  }
 
   static constexpr Options::String help =
       "An executable for testing basic phase control flow.";

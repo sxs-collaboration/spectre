@@ -165,16 +165,6 @@ struct GeneralizedHarmonicTemplateBase<
 
   using Phase = Parallel::Phase;
 
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
   using analytic_solution_fields = typename system::variables_tag::tags_list;
 
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
@@ -265,11 +255,10 @@ struct GeneralizedHarmonicTemplateBase<
                    GeneralizedHarmonic::BoundaryConditions::
                        standard_boundary_conditions<volume_dim>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  GeneralizedHarmonicTemplateBase,
-                                  Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
+                       PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

@@ -11,6 +11,7 @@
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -101,7 +102,7 @@ struct ExecutePhaseChange {
  *
  * \details This function will iterate through each of the option-created pairs
  * of `PhaseChange`s, and obtain from each a
- * `std::optional<std::pair<Metavariables::Phase,
+ * `std::optional<std::pair<Parallel::Phase,
  * PhaseControl::ArbitrationStrategy>`. Any `std::nullopt` is skipped. If all
  * `PhaseChange`s provide `std::nullopt`, the phase will either keep its
  * current value (if the halt was caused by one of the triggers associated with
@@ -122,10 +123,10 @@ struct ExecutePhaseChange {
  * `ArbitrationStrategy` must be chosen carefully.
  */
 template <typename... DecisionTags, typename Metavariables>
-typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
+typename std::optional<Parallel::Phase> arbitrate_phase_change(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data,
-    typename Metavariables::Phase current_phase,
+    Parallel::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
   const auto& phase_change_and_triggers =
       Parallel::get<Tags::PhaseChangeAndTriggers>(cache);

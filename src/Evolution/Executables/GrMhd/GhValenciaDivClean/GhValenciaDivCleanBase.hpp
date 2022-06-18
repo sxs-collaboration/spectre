@@ -205,16 +205,6 @@ struct GhValenciaDivCleanDefaults {
 
   using Phase = Parallel::Phase;
 
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-        return "LoadBalancing";
-      }
-      ERROR(
-          "Passed phase that should not be used in input file. Integer "
-          "corresponding to phase is: "
-          << static_cast<int>(phase));
-  }
-
   using initialize_initial_data_dependent_quantities_actions = tmpl::list<
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim, use_damped_harmonic_rollon>,
@@ -304,9 +294,8 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                       GhValenciaDivCleanTemplateBase, Phase::LoadBalancing>>>,
+        tmpl::pair<PhaseChange, tmpl::list<PhaseControl::VisitAndReturn<
+                                    Phase::LoadBalancing>>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

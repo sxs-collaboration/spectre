@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/CallWithDynamicType.hpp"
 #include "Utilities/Gsl.hpp"
@@ -117,15 +118,15 @@ enum ArbitrationStrategy {
  * ```
  * template <typename... DecisionTags, typename Metavariables>
  * typename std::optional<
- *     std::pair<typename Metavariables::Phase, ArbitrationStrategy>>
+ *     std::pair<Parallel::Phase, ArbitrationStrategy>>
  * arbitrate_phase_change_impl(
  *     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
  *         phase_change_decision_data,
- *     const typename Metavariables::Phase current_phase,
+ *     const Parallel::Phase current_phase,
  *     const Parallel::GlobalCache<Metavariables>& cache) const;
  * ```
  * - Should examine the collected data in `phase_change_decision_data` and
- *   optionally return a `std::pair` with the desired `Metavariables::Phase` and
+ *   optionally return a `std::pair` with the desired `Parallel::Phase` and
  *   an `PhaseControl::ArbitrationStrategy` indicating a method for arbitrating
  *   multiple simultaneous requests. Alternatively, it may return `std::nullopt`
  *   to abstain from the phase decision.
@@ -185,18 +186,17 @@ struct PhaseChange : public PUP::able {
   /// Determine a phase request and `PhaseControl::ArbitrationStrategy` based on
   /// aggregated `phase_change_decision_data` on the Main Chare.
   template <typename... DecisionTags, typename Metavariables>
-  std::optional<std::pair<typename Metavariables::Phase,
-                          PhaseControl::ArbitrationStrategy>>
+  std::optional<std::pair<Parallel::Phase, PhaseControl::ArbitrationStrategy>>
   arbitrate_phase_change(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
-      const typename Metavariables::Phase current_phase,
+      const Parallel::Phase current_phase,
       const Parallel::GlobalCache<Metavariables>& cache) const {
     using factory_classes =
         typename Metavariables::factory_creation::factory_classes;
     return call_with_dynamic_type<
-        std::optional<std::pair<typename Metavariables::Phase,
-                                PhaseControl::ArbitrationStrategy>>,
+        std::optional<
+            std::pair<Parallel::Phase, PhaseControl::ArbitrationStrategy>>,
         tmpl::at<factory_classes, PhaseChange>>(
         this, [&current_phase, &phase_change_decision_data,
                &cache](const auto* const phase_change) {

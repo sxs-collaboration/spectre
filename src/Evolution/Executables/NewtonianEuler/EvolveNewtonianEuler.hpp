@@ -174,18 +174,6 @@ struct EvolutionMetavars {
 
   using Phase = Parallel::Phase;
 
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    } else if (phase == Phase::WriteCheckpoint) {
-      return "WriteCheckpoint";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<volume_dim,
                                                 analytic_variables_tags>;
@@ -232,12 +220,11 @@ struct EvolutionMetavars {
             NewtonianEuler::BoundaryConditions::BoundaryCondition<volume_dim>,
             NewtonianEuler::BoundaryConditions::standard_boundary_conditions<
                 volume_dim>>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::WriteCheckpoint>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
+                       PhaseControl::VisitAndReturn<Phase::WriteCheckpoint>,
+                       PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<StepChooser<StepChooserUse::LtsStep>,
                    StepChoosers::standard_step_choosers<system>>,
         tmpl::pair<

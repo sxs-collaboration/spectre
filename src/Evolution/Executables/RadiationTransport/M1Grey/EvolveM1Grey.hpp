@@ -135,16 +135,6 @@ struct EvolutionMetavars {
 
   using Phase = Parallel::Phase;
 
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<volume_dim,
                                                 analytic_variables_tags>;
@@ -172,10 +162,10 @@ struct EvolutionMetavars {
                                   non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::LoadBalancing>,
-                              PhaseControl::CheckpointAndExitAfterWallclock>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<Phase::LoadBalancing>,
+                       PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<
             RadiationTransport::M1Grey::BoundaryConditions::BoundaryCondition<
                 metavariables::neutrino_species>,
