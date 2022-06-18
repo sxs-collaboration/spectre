@@ -18,7 +18,9 @@ namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Sends interpolation points to all the Elements.
 ///
-/// This action is for the case in which the points are time-independent.
+/// This action is for the case in which the points are time-independent
+/// in the frame of the InterpolationTarget (which may or may not mean that
+/// the points are time-independent in the grid frame).
 ///
 /// This action should be placed in the Registration PDAL for
 /// InterpolationTarget.
@@ -43,8 +45,13 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto coords = InterpolationTarget_detail::block_logical_coords<
-        InterpolationTargetTag>(box, tmpl::type_<Metavariables>{});
+    static_assert(
+        not InterpolationTargetTag::compute_target_points::is_sequential::value,
+        "Actions::InterpolationTargetSendTimeIndepPointsToElement can be used "
+        "only with non-sequential targets, since a sequential target is "
+        "time-dependent by definition.");
+    auto coords = InterpolationTargetTag::compute_target_points::points(
+        box, tmpl::type_<Metavariables>{});
     auto& receiver_proxy = Parallel::get_parallel_component<
         typename InterpolationTargetTag::template interpolating_component<
             Metavariables>>(cache);

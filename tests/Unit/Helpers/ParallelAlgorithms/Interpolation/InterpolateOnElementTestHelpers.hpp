@@ -123,6 +123,10 @@ struct MockInterpolationTargetVarsFromElement {
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
+      const std::vector<std::optional<
+          IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
+                                          typename ::Frame::BlockLogical>>>>&
+      /*block_logical_coords*/,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& /*temporal_id*/) {
     CHECK(global_offsets.size() == vars_src.size());
@@ -263,10 +267,7 @@ void test_interpolate_on_element(
   const size_t num_points = 10;
   tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_points);
   const typename intrp::Tags::InterpPointInfo<
-      metavars>::type interp_point_info = [&domain, &domain_creator,
-                                           &temporal_id,
-                                           &initial_expiration_times,
-                                           &target_points]() {
+      metavars>::type interp_point_info = [&target_points]() {
     MAKE_GENERATOR(gen);
     std::uniform_real_distribution<> r_dist(0.9001, 2.8999);
     std::uniform_real_distribution<> theta_dist(0.0, M_PI);
@@ -280,22 +281,8 @@ void test_interpolate_on_element(
       get<2>(target_points)[i] = r * cos(theta);
     }
     typename intrp::Tags::InterpPointInfo<metavars>::type interp_point_info_l{};
-
-    if constexpr (Metavariables::use_time_dependent_maps) {
-      get<intrp::Vars::PointInfoTag<typename metavars::InterpolationTargetA,
-                                    3>>(interp_point_info_l) =
-          block_logical_coordinates(
-              domain, target_points, temporal_id.substep_time().value(),
-              domain_creator.functions_of_time(initial_expiration_times));
-    } else {
-      get<intrp::Vars::PointInfoTag<typename metavars::InterpolationTargetA,
-                                    3>>(interp_point_info_l) =
-          block_logical_coordinates(domain, target_points);
-      (void)temporal_id;
-      (void)domain_creator;
-      (void)initial_expiration_times;
-    }
-
+    get<intrp::Vars::PointInfoTag<typename metavars::InterpolationTargetA, 3>>(
+        interp_point_info_l) = target_points;
     return interp_point_info_l;
   }();
 

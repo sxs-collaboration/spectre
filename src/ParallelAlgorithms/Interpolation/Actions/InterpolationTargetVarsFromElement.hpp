@@ -56,6 +56,10 @@ namespace Actions {
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
+/// and intrp::protocols::InterpolationTargetTag
+///
+/// \note This action can be used only with InterpolationTargets that are
+/// non-sequential.
 template <typename InterpolationTargetTag>
 struct InterpolationTargetVarsFromElement {
   /// For requirements on Metavariables, see InterpolationTarget
@@ -70,6 +74,10 @@ struct InterpolationTargetVarsFromElement {
       const std::vector<Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
           vars_src,
+      const std::vector<std::optional<
+          IdPair<domain::BlockId, tnsr::I<double, Metavariables::volume_dim,
+                                          typename ::Frame::BlockLogical>>>>&
+          block_logical_coords,
       const std::vector<std::vector<size_t>>& global_offsets,
       const TemporalId& temporal_id) {
     static_assert(
@@ -127,9 +135,7 @@ struct InterpolationTargetVarsFromElement {
                                         std::vector<TemporalId>{{temporal_id}})
                 .empty()) {
       InterpolationTarget_detail::set_up_interpolation<InterpolationTargetTag>(
-          make_not_null(&box), temporal_id,
-          InterpolationTarget_detail::block_logical_coords<
-              InterpolationTargetTag>(box, tmpl::type_<Metavariables>{}));
+          make_not_null(&box), temporal_id, block_logical_coords);
     }
 
     InterpolationTarget_detail::add_received_variables<InterpolationTargetTag>(
