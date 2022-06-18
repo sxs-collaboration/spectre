@@ -316,7 +316,6 @@ struct MockMetavariables {
                  MockInterpolationTarget<MockMetavariables, SurfaceC>,
                  MockInterpolationTarget<MockMetavariables, SurfaceD>,
                  MockInterpolator<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE(
@@ -392,7 +391,7 @@ SPECTRE_TEST_CASE(
       std::move(tuple_of_opts), {}, {2, 1, 4}};
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     for (size_t core = 0; core < 7; ++core) {
@@ -426,7 +425,7 @@ SPECTRE_TEST_CASE(
       ActionTesting::next_action<obs_writer>(make_not_null(&runner), node);
     }
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
@@ -486,7 +485,7 @@ SPECTRE_TEST_CASE(
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 2));
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

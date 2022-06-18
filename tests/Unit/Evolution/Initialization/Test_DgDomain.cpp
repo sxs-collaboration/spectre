@@ -150,7 +150,6 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   static constexpr size_t dim = Dim;
 
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool TimeDependent>
@@ -213,7 +212,7 @@ void test(const Spectral::Quadrature quadrature) {
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, self_id,
       {initial_extents, initial_refinement, quadrature, initial_time});
-  runner.set_phase(metavars::Phase::Testing);
+  runner.set_phase(Parallel::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), self_id);

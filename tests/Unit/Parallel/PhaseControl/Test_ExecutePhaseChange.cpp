@@ -132,7 +132,6 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
 
-  using Phase = Parallel::Phase;
   static constexpr std::array<Parallel::Phase, 7> default_phase_order{
       {Parallel::Phase::Register, Parallel::Phase::RegisterWithObserver,
        Parallel::Phase::Solve, Parallel::Phase::ImportInitialData,

@@ -229,7 +229,6 @@ struct TestMetavariables {
        Parallel::Phase::WriteCheckpoint, Parallel::Phase::Testing,
        Parallel::Phase::Exit}};
 
-  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

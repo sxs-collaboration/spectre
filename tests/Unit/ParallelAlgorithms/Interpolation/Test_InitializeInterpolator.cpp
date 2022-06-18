@@ -53,7 +53,6 @@ struct Metavariables {
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
   using component_list = tmpl::list<mock_interpolator<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
@@ -62,13 +61,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
   using component = mock_interpolator<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<component,
                                        ::intrp::Tags::NumberOfElements>(

@@ -68,7 +68,6 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -117,8 +116,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.FilterSwshVolumeQuantity",
 
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0, {l_max, std::move(component_variables)});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   Spectral::Swsh::filter_swsh_volume_quantity(make_not_null(&get(to_filter)),

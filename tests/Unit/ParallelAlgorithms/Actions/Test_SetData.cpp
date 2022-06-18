@@ -31,7 +31,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -42,8 +41,7 @@ SPECTRE_TEST_CASE("Unit.Actions.SetData", "[Unit][Actions]") {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<component>(&runner, 0, {0});
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   ActionTesting::simple_action<component,
                                Actions::SetData<tmpl::list<SomeNumber>>>(

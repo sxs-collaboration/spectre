@@ -100,7 +100,7 @@ void test_rotation_control_system(const bool newtonian) {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const BinaryTrajectories binary_trajectories{
       initial_separation, {0.0, 0.0, 0.0}, newtonian};

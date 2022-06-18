@@ -258,7 +258,6 @@ struct MetavariablesAnalyticSolution {
   using temporal_id = TimeId;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool HasPrimitives>
@@ -307,7 +306,6 @@ struct MetavariablesAnalyticData {
                           typename system::variables_tag::tags_list>;
   using temporal_id = TimeId;
   using const_global_cache_tags = tmpl::list<Tags::AnalyticData<analytic_data>>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool HasPrimitives>

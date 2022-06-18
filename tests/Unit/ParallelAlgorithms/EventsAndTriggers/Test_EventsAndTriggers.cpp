@@ -51,7 +51,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Event, tmpl::list<Events::Completion>>,
                   tmpl::pair<Trigger, Triggers::logical_triggers>>;
   };
-  using Phase = Parallel::Phase;
 };
 
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
@@ -63,8 +62,7 @@ void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
 

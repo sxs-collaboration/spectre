@@ -71,7 +71,6 @@ template <size_t Dim, bool RestrictToOverlap>
 struct Metavariables {
   using element_array = ElementArray<Dim, RestrictToOverlap, Metavariables>;
   using component_list = tmpl::list<element_array>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool RestrictToOverlap>
@@ -125,8 +124,7 @@ void test_communicate_overlap_fields(const size_t num_points_per_dim,
                  {{Direction<Dim>::lower_xi(), {{first_element_id}, {}}}}});
   }
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Send from first element
   ActionTesting::next_action<element_array>(make_not_null(&runner),

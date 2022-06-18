@@ -47,7 +47,7 @@ struct mock_element {
               typename Metavariables::InterpolationTargetA>>>>;
 };
 
-template <typename Metavariables, typename ElemComponent>
+template <typename ElemComponent>
 struct initialize_elements_and_queue_simple_actions {
   template <typename InterpPointInfo, typename Runner>
   void operator()(const DomainCreator<3>& domain_creator,
@@ -55,7 +55,6 @@ struct initialize_elements_and_queue_simple_actions {
                   const std::vector<ElementId<3>>& element_ids,
                   const InterpPointInfo& interp_point_info, Runner& runner,
                   const double time) {
-    using metavars = Metavariables;
     using elem_component = ElemComponent;
 
     // Emplace elements.
@@ -72,7 +71,7 @@ struct initialize_elements_and_queue_simple_actions {
           {time, mesh, std::move(vars), interp_point_info});
     }
 
-    ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
     // Call the action on all the elements.
     for (const auto& element_id : element_ids) {
@@ -134,7 +133,6 @@ struct MockMetavariables {
       tmpl::list<InterpolateOnElementTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  mock_element<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename MockMetavariables>
@@ -143,7 +141,7 @@ void run_test() {
   using elem_component = mock_element<metavars>;
   InterpolateOnElementTestHelpers::test_interpolate_on_element<metavars,
                                                                elem_component>(
-      initialize_elements_and_queue_simple_actions<metavars, elem_component>{});
+      initialize_elements_and_queue_simple_actions<elem_component>{});
 }
 
 SPECTRE_TEST_CASE(

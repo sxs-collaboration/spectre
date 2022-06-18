@@ -80,7 +80,6 @@ struct mock_array {
 struct test_metavariables {
   using component_list = tmpl::list<mock_observer_writer<test_metavariables>,
                                     mock_array<test_metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -91,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observer.GetNodeLockPointer", "[Unit][Cce]") {
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{{}};
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           test_metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_array_component_and_initialize<writer_component>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {Parallel::NodeLock{}, Parallel::NodeLock{}});

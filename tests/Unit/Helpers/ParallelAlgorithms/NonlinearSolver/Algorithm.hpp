@@ -185,7 +185,6 @@ template <typename Metavariables>
 using OutputCleaner =
     LinearSolverAlgorithmTestHelpers::OutputCleaner<Metavariables>;
 
-using Phase = Parallel::Phase;
 
 static constexpr std::array<Parallel::Phase, 6> default_phase_order = {
     {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,

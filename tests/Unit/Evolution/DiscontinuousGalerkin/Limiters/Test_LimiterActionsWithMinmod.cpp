@@ -97,7 +97,6 @@ struct Metavariables {
   using system = System<Dim>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -158,8 +157,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
       {0, mesh, element, std::move(logical_to_grid_map),
        std::move(grid_to_inertial_map), 1.0, std::move(functions_of_time),
        std::move(var)});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // SendData
   runner.next_action<my_component>(self_id);

@@ -88,7 +88,6 @@ struct Metavariables {
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, typename MappedType>
@@ -118,7 +117,7 @@ void test_impl(
            initial_extents, element.id(), quadrature, {}),
        quadrature});
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Run the SetupDataBox action
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),

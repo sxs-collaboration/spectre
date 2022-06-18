@@ -151,7 +151,6 @@ struct Metavariables {
   using component_list = tmpl::list<element_array>;
   using const_global_cache_tags =
       tmpl::list<::Tags::AnalyticSolution<AnalyticSolution>>;
-  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -246,7 +245,7 @@ void test_dg_operator(
     }
     set_tag(TemporalIdTag{}, 0_st, element_id);
   }
-  ActionTesting::set_phase(make_not_null(&runner), Metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   if constexpr (Linearized) {
     INFO(

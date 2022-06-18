@@ -248,7 +248,6 @@ struct test_metavariables {
   using component_list =
       tmpl::list<MockCharacteristicEvolution<test_metavariables>,
                  MockObserver<test_metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -280,7 +279,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       {start_time, l_max, l_max, number_of_radial_points, scri_output_density,
        true}};
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
@@ -298,7 +297,7 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 6; ++i) {
     ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
   // five steps to create then put the data in each of the interpolation
   // queues
   for (size_t i = 0; i < 5; ++i) {

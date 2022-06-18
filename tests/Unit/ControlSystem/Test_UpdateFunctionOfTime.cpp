@@ -37,7 +37,6 @@ struct TestSingleton {
 };
 
 struct TestingMetavariables {
-  using Phase = Parallel::Phase;
   using component_list = tmpl::list<TestSingleton<TestingMetavariables>>;
 };
 
@@ -81,8 +80,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.UpdateFunctionOfTime",
       TestSingleton<TestingMetavariables>>(make_not_null(&runsys),
                                            ActionTesting::NodeId{0},
                                            ActionTesting::LocalCoreId{0});
-  ActionTesting::set_phase(make_not_null(&runsys),
-                           TestingMetavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runsys), Parallel::Phase::Testing);
 
   // Update functions of time in global cache with new deriv
   auto& cache =

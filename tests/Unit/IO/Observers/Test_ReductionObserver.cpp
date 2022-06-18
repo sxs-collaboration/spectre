@@ -115,7 +115,7 @@ void test_reduction_observer(const bool observe_per_core) {
         ActionTesting::LocalCoreId{get_local_core_id(id)}, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::RegisterWithObserver);
+                           Parallel::Phase::RegisterWithObserver);
 
   // Register elements
   for (const auto& id : element_ids) {
@@ -141,8 +141,7 @@ void test_reduction_observer(const bool observe_per_core) {
                                                          0);
   REQUIRE(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const auto make_fake_reduction_data = Overloader{
       [](const observers::ArrayComponentId& id, const double time,

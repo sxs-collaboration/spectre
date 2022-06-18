@@ -144,7 +144,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<PhaseChange, tmpl::list<TestPhaseChange>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseChange",

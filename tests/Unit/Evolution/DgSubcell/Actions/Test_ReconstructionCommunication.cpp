@@ -94,7 +94,6 @@ struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim>;
   using const_global_cache_tags = tmpl::list<>;
-  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool ghost_zone_size_invoked;

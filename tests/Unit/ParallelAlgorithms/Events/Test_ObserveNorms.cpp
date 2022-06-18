@@ -165,7 +165,6 @@ struct Metavariables {
         tmpl::pair<Event, tmpl::list<ObserveNormsEvent<ArraySectionIdTag>>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 template <typename ArraySectionIdTag, typename ObserveEvent>

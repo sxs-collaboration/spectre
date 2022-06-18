@@ -58,7 +58,7 @@ void check_observer_registration() {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::RegisterWithObserver);
+                           Parallel::Phase::RegisterWithObserver);
 
   // Check observer component
   CHECK(
@@ -123,8 +123,7 @@ void check_observer_registration() {
   REQUIRE(
       ActionTesting::is_threaded_action_queue_empty<obs_component>(runner, 0));
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Test registration occurred as expected
   const observers::ObservationKey obs_id_key{"ElementObservationType"};

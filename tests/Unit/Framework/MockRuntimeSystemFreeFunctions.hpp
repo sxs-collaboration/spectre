@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "Framework/MockRuntimeSystem.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -21,7 +22,7 @@ namespace ActionTesting {
 /// Set the phase of all parallel components to `phase`
 template <typename Metavariables>
 void set_phase(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
-               const typename Metavariables::Phase& phase) {
+               const Parallel::Phase& phase) {
   runner->set_phase(phase);
 }
 
@@ -95,8 +96,7 @@ void emplace_nodegroup_component(
 /// to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the simple tags
 /// in the DataBox are initialized from the values set in `initial_values`.
 template <typename Component, typename... Options,
-          typename Metavars = typename Component::metavariables,
-          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+          typename Metavars = typename Component::metavariables>
 void emplace_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
@@ -114,8 +114,7 @@ void emplace_component_and_initialize(
 /// simple tags in the DataBox are initialized from the values set in
 /// `initial_values`.
 template <typename Component, typename... Options,
-          typename Metavars = typename Component::metavariables,
-          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+          typename Metavars = typename Component::metavariables>
 void emplace_array_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
@@ -135,8 +134,7 @@ void emplace_array_component_and_initialize(
 /// Additionally, the simple tags in the DataBox are initialized from
 /// the values set in `initial_values`.
 template <typename Component, typename... Options,
-          typename Metavars = typename Component::metavariables,
-          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+          typename Metavars = typename Component::metavariables>
 void emplace_singleton_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
@@ -154,8 +152,7 @@ void emplace_singleton_component_and_initialize(
 /// simple tags in the DataBox are initialized from the values set in
 /// `initial_values`.
 template <typename Component, typename... Options,
-          typename Metavars = typename Component::metavariables,
-          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+          typename Metavars = typename Component::metavariables>
 void emplace_group_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,
@@ -172,8 +169,7 @@ void emplace_group_component_and_initialize(
 /// simple tags in the DataBox are initialized from the values set in
 /// `initial_values`.
 template <typename Component, typename... Options,
-          typename Metavars = typename Component::metavariables,
-          Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+          typename Metavars = typename Component::metavariables>
 void emplace_nodegroup_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
         runner,

@@ -51,7 +51,6 @@ struct MockMetavariables {
       InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables<Dim>,
                                                          InterpolationTargetA>,
       InterpTargetTestHelpers::mock_interpolator<MockMetavariables<Dim>>>;
-  using Phase = Parallel::Phase;
 };
 
 void test_1d() {

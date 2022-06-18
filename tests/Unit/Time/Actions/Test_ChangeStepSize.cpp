@@ -114,7 +114,6 @@ struct Metavariables {
                               StepRejector>>>;
   };
   using component_list = tmpl::list<Component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename StepChoosersToUse = AllStepChoosers>
@@ -155,8 +154,7 @@ void check(const bool time_runs_forward,
        std::make_unique<StepControllers::BinaryFraction>(), false,
        typename history_tag::type{}, 1.});
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables<StepChoosersToUse>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
   const auto& box =
       ActionTesting::get_databox<component, typename component::simple_tags>(

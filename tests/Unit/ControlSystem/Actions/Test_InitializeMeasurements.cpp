@@ -171,7 +171,6 @@ struct Metavariables {
                    control_system::control_system_triggers<control_systems>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",

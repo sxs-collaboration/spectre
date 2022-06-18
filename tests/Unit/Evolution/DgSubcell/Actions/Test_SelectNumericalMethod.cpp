@@ -43,7 +43,6 @@ struct component {
 
 struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 void test(const evolution::dg::subcell::ActiveGrid active_grid) {

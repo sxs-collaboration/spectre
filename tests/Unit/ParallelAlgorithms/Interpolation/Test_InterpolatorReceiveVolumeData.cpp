@@ -291,7 +291,6 @@ struct MockMetavariables {
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 // Create volume data and send it to the interpolator.
@@ -384,7 +383,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   // Create Element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -400,7 +399,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   for (size_t i = 0; i < element_ids.size(); ++i) {
     runner.simple_action<interp_component, intrp::Actions::RegisterElement>(0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   create_volume_data_and_send_it_to_interpolator<interp_component>(
       make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);

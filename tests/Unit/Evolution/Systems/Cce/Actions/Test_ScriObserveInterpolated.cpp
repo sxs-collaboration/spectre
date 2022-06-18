@@ -217,7 +217,6 @@ struct test_metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<test_metavariables>,
                  mock_observer<test_metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -277,7 +276,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
       {start_time, filename, l_max, l_max, number_of_radial_points,
        scri_output_density, false}};
 
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   // Serialize and deserialize to get around the lack of implicit copy
   // constructor.
   ActionTesting::emplace_component<evolution_component>(
@@ -303,7 +302,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
     ActionTesting::next_action<observation_component>(make_not_null(&runner),
                                                       0);
   }
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
 
   // generate data that will be well behaved for the interpolation and the
   // decomposition to modes done in the observation routine

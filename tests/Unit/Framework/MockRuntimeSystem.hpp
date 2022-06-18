@@ -44,12 +44,11 @@ namespace detail {
 // `get_initialization` also performs various sanity checks for the user.
 template <typename Component>
 struct get_initialization {
-  using phase = typename Component::metavariables::Phase;
-
   template <typename T>
   struct is_initialization_phase {
     using type =
-        std::integral_constant<bool, T::phase == phase::Initialization>;
+        std::integral_constant<bool,
+                               T::phase == Parallel::Phase::Initialization>;
   };
 
   using initialization_pdal_list =
@@ -73,19 +72,6 @@ struct get_initialization {
 
   using InitialValues = typename initialize_databox_action::InitialValues;
 };
-
-// Checks whether or not the `Metavariables` has a `Phase::Initialization`.
-template <typename Metavariables, typename = std::void_t<>>
-struct has_initialization_phase : std::false_type {};
-
-template <typename Metavariables>
-struct has_initialization_phase<
-    Metavariables, std::void_t<decltype(Metavariables::Phase::Initialization)>>
-    : std::true_type {};
-
-template <typename Metavariables>
-constexpr bool has_initialization_phase_v =
-    has_initialization_phase<Metavariables>::value;
 }  // namespace detail
 
 /// \ingroup TestingFrameworkGroup
@@ -350,7 +336,7 @@ class MockRuntimeSystem {
             << pretty_type::get_name<Component>() << "' with index "
             << array_index);
     }
-    iterator->second.set_phase(Metavariables::Phase::Initialization);
+    iterator->second.set_phase(Parallel::Phase::Initialization);
     iterator->second.next_action();
   }
 
@@ -387,7 +373,7 @@ class MockRuntimeSystem {
             << pretty_type::get_name<Component>() << "' with index "
             << array_index);
     }
-    iterator->second.set_phase(Metavariables::Phase::Initialization);
+    iterator->second.set_phase(Parallel::Phase::Initialization);
     iterator->second.next_action();
   }
 
@@ -425,7 +411,7 @@ class MockRuntimeSystem {
               << pretty_type::get_name<Component>() << "' with index "
               << array_index);
       }
-      iterator->second.set_phase(Metavariables::Phase::Initialization);
+      iterator->second.set_phase(Parallel::Phase::Initialization);
       iterator->second.next_action();
     }
   }
@@ -466,7 +452,7 @@ class MockRuntimeSystem {
               << pretty_type::get_name<Component>() << "' with index "
               << array_index);
       }
-      iterator->second.set_phase(Metavariables::Phase::Initialization);
+      iterator->second.set_phase(Parallel::Phase::Initialization);
       iterator->second.next_action();
     }
   }
@@ -478,8 +464,7 @@ class MockRuntimeSystem {
   /// emplace_group_component_and_initialize, and
   /// emplace_nodegroup_component_and_initialize.
   template <typename Component, typename... Options,
-            typename Metavars = Metavariables,
-            Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>
+            typename Metavars = Metavariables>
   void emplace_component_and_initialize(
       const typename Component::array_index& array_index,
       const typename detail::get_initialization<Component>::InitialValues&
@@ -613,7 +598,7 @@ class MockRuntimeSystem {
     const auto invoke_for_phase =
         [this, &array_index, &found_matching_phase](auto phase_dep_v) {
           using PhaseDep = decltype(phase_dep_v);
-          constexpr typename Metavariables::Phase phase = PhaseDep::type::phase;
+          constexpr Parallel::Phase phase = PhaseDep::type::phase;
           using actions_list = typename PhaseDep::type::action_list;
           auto& distributed_object =
               this->mock_distributed_objects<Component>().at(array_index);
@@ -717,7 +702,7 @@ class MockRuntimeSystem {
   }
 
   /// Set the phase of all parallel components to `next_phase`
-  void set_phase(const typename Metavariables::Phase next_phase) {
+  void set_phase(const Parallel::Phase next_phase) {
     tmpl::for_each<mock_objects_tags>(
         [this, &next_phase](auto component_v) {
           for (auto& object : tuples::get<typename decltype(component_v)::type>(

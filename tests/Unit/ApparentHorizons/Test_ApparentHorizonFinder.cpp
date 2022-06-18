@@ -284,8 +284,6 @@ struct MockMetavariables {
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
-
-  using Phase = Parallel::Phase;
 };
 
 template <typename PostHorizonFindCallbacks, typename IsTimeDependent,
@@ -367,7 +365,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   auto& runner = *runner_ptr;
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     for (size_t indx = 0; indx < 5; ++indx) {
@@ -380,7 +378,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   // Find horizon at three temporal_ids.  The horizon find at the
   // second temporal_id will use the result from the first temporal_id
@@ -421,7 +419,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       core = 0;
     }
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Tell the InterpolationTargets that we want to interpolate at
   // two temporal_ids.

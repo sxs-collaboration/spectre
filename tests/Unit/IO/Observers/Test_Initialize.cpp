@@ -41,7 +41,6 @@ struct Metavariables {
   using component_list = tmpl::list<observer_component<Metavariables>>;
   using observed_reduction_data_tags = tmpl::list<>;
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {

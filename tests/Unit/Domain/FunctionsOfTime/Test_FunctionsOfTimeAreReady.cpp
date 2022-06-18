@@ -56,7 +56,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -89,8 +88,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTimeAreReady", "[Domain][Unit]") {
   ActionTesting::emplace_array_component<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0, 2.0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& cache = ActionTesting::cache<component>(runner, 0);
 

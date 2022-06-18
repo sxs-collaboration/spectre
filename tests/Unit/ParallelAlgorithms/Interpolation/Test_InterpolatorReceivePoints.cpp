@@ -169,7 +169,6 @@ struct Metavariables {
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,
                  mock_interpolator<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
@@ -186,7 +185,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
@@ -195,7 +194,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Make sure that we have one Element registered,
   // or else ReceivePoints will (correctly) do nothing because it

@@ -74,7 +74,6 @@ struct metavariables {
   static constexpr bool uses_partially_flat_cartesian_coordinates = true;
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -127,7 +126,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.UpdateGauge",
       Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
       l_max);
 
-  runner.set_phase(metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
   // apply the `UpdateGauge` action
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 

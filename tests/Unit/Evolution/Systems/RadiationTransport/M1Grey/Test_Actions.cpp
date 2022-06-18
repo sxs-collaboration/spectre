@@ -52,7 +52,6 @@ struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
                                       neutrinos::HeavyLeptonNeutrinos<0>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -112,8 +111,7 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Actions", "[Unit][M1Grey]") {
        tnsr::I<DataVector, 3, Frame::Inertial>{{{vx, vy, vz}}},
        Scalar<DataVector>{W}, metric, inverse_metric,
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   runner.next_action<component>(0);
 

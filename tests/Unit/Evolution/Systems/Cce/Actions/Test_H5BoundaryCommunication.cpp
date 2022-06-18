@@ -197,7 +197,6 @@ struct test_metavariables {
 
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -246,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   const size_t buffer_size = 5;
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           test_metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<writer_component>(
       &runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<evolution_component>(
@@ -271,8 +270,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.H5BoundaryCommunication",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           test_metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
 
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

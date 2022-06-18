@@ -125,13 +125,12 @@ struct Component {
       interface_compute_tag<ScalarWave::Tags::CharacteristicSpeedsCompute<1>>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<Parallel::Phase, Parallel::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 simple_tags, compute_tags>>>,
 
       Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          Parallel::Phase, Parallel::Phase::Testing,
           tmpl::list<
               evolution::dg::Actions::ComputeTimeDerivative<Metavariables>,
               dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
@@ -245,8 +244,7 @@ std::pair<tnsr::I<DataVector, 1>, EvolvedVariables> evaluate_rhs(
                             {Direction<1>::upper_xi(), right_id}});
   emplace_element(left_id, {{Direction<1>::upper_xi(), self_id}});
   emplace_element(right_id, {{Direction<1>::lower_xi(), self_id}});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // The neighbors only have to get as far as sending data
   for (size_t i = 0; i < 1; ++i) {

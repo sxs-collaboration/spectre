@@ -82,7 +82,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 // [metavariables]
 }  // namespace
@@ -95,8 +94,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   ActionTesting::emplace_component_and_initialize<component>(&runner, 0,
                                                              {size_t{0}});
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.force_next_action_to_be<component, Actions::Label<Label1>>(0);
   runner.next_action<component>(0);
   CHECK(runner.get_next_action_index<component>(0) == 3);
@@ -109,8 +107,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   runner.next_action<component>(0);
   CHECK(runner.get_next_action_index<component>(0) == 1);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Execute);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Execute);
   while (not ActionTesting::get_terminate<component>(runner, 0)) {
     runner.next_action<component>(0);
   }
@@ -118,8 +115,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   CHECK(ActionTesting::get_databox_tag<component, Counter>(runner, 0) == 2);
 
   // Test zero iterations of the `RepeatUntil` loop
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Execute);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Execute);
   runner.next_action<component>(0);
   CHECK(runner.get_next_action_index<component>(0) ==
         tmpl::index_of<typename component::repeat_until_phase_action_list,

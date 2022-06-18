@@ -56,7 +56,6 @@ struct ElementArray {
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -81,8 +80,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                 element_id);
@@ -151,8 +149,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                 element_id);
@@ -225,8 +222,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_refinement_levels(),
                               domain_creator.initial_extents()});
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     for (size_t i = 0; i < 2; ++i) {
       ActionTesting::next_action<element_array>(make_not_null(&runner),
                                                 element_id);

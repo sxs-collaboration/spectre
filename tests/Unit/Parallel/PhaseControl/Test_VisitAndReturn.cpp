@@ -23,7 +23,6 @@ namespace {
 struct Metavariables {
   using component_list = tmpl::list<>;
 
-  using Phase = Parallel::Phase;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {

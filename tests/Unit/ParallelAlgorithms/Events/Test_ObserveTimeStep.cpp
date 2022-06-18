@@ -161,7 +161,6 @@ struct Metavariables {
         tmpl::list<Events::ObserveTimeStep<typename Metavariables::system>>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 template <typename Observer>

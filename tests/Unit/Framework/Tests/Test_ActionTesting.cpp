@@ -195,7 +195,6 @@ struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 struct MockMetavariablesWithGlobalCacheTags {
@@ -205,7 +204,6 @@ struct MockMetavariablesWithGlobalCacheTags {
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
   // [const global cache metavars]
 
-  using Phase = Parallel::Phase;
 };
 
 void test_mock_runtime_system_constructors() {
@@ -234,7 +232,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<
       component_for_simple_action_mock<metavars>>(&runner, 0, {0, -1});
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // [get databox]
   const auto& box =
@@ -353,7 +351,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
@@ -362,8 +359,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
                                                                        0));
   // Runs Action0
@@ -422,7 +418,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
@@ -432,8 +427,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
             make_not_null(&runner), 0)
@@ -520,7 +514,6 @@ struct Metavariables {
   using component_list =
       tmpl::list<ComponentA<Metavariables>, ComponentBMock<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
@@ -535,7 +528,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
       ComponentBMock<Metavariables>>(&runner, 0, {0});
   // [initialize component b]
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
         0);
   ActionTesting::simple_action<component_a, CallActionOnComponentB>(
@@ -692,7 +685,6 @@ struct ActionSetValueTo {
 struct MetavariablesOneComponent {
   using component_list = tmpl::list<ComponentA<MetavariablesOneComponent>>;
 
-  using Phase = Parallel::Phase;
 };
 
 void test_parallel_info_functions() {
@@ -727,7 +719,7 @@ void test_parallel_info_functions() {
       &runner, ActionTesting::NodeId{1}, ActionTesting::LocalCoreId{1}, 3,
       {-5, 105_st});
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Check that initial values are correct.
   CHECK(ActionTesting::get_databox_tag<component_a, ValueTag>(runner, 0) == -1);
@@ -950,7 +942,6 @@ struct MetavariablesGroupComponent {
   using component_list =
       tmpl::list<GroupComponent<MetavariablesGroupComponent>>;
 
-  using Phase = Parallel::Phase;
 };
 
 void test_group_emplace() {
@@ -968,7 +959,7 @@ void test_group_emplace() {
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == -3);
   }
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Number of procs should be 5 for all indices.
   for (size_t i = 0; i < 5; ++i) {
@@ -1027,7 +1018,6 @@ struct MetavariablesNodeGroupComponent {
   using component_list =
       tmpl::list<NodeGroupComponent<MetavariablesNodeGroupComponent>>;
 
-  using Phase = Parallel::Phase;
 };
 
 void test_nodegroup_emplace() {
@@ -1045,7 +1035,7 @@ void test_nodegroup_emplace() {
     CHECK(ActionTesting::get_databox_tag<component, ValueTag>(runner, i) == -3);
   }
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Number of procs should be 5 for all indices.
   for (size_t i = 0; i < 2; ++i) {
@@ -1084,7 +1074,6 @@ void test_nodegroup_emplace() {
 struct MetavariablesWithPup {
   using component_list = tmpl::list<NodeGroupComponent<MetavariablesWithPup>>;
 
-  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -1163,7 +1152,6 @@ struct Metavariables {
   using mutable_global_cache_tags = tmpl::list<CacheTag>;
   // [mutable global cache metavars]
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MutableGlobalCache", "[Unit]") {

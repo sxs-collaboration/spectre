@@ -161,7 +161,6 @@ struct test_metavariables {
 
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -209,7 +208,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
        start_time, number_of_radial_points}};
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           test_metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   // requested step size and slab size chosen to be sure that the step
   // controller gives a predictable value (not subject to roundoff fluctuations
   // in the generated value)
@@ -236,8 +235,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   for(size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           test_metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
 
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

@@ -119,7 +119,6 @@ struct Metavariables {
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
       tmpl::list<evolution::dg::subcell::Tags::SubcellOptions>;
-  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;

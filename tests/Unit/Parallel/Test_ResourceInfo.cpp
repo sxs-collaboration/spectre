@@ -59,22 +59,18 @@ template <size_t... Indices>
 struct MetavariablesBoth {
   using component_list =
       tmpl::list<FakeSingleton<MetavariablesBoth, Indices>...>;
-  using Phase = Parallel::Phase;
 };
 template <size_t... Indices>
 struct MetavariablesInfoOnly {
   using component_list =
       tmpl::list<FakeSingletonInfoOnly<MetavariablesInfoOnly, Indices>...>;
-  using Phase = Parallel::Phase;
 };
 struct MetavariablesAvoidGlobalProc0 {
   using component_list =
       tmpl::list<FakeSingletonAvoidGlobalProc0<MetavariablesAvoidGlobalProc0>>;
-  using Phase = Parallel::Phase;
 };
 
 struct EmptyMetavars {
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Index>

@@ -59,7 +59,6 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -73,8 +72,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.TimeManagement",
 
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0, {std::move(current_id), end_time});  // NOLINT
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
 
