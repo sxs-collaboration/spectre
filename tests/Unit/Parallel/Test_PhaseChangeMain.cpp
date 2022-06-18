@@ -24,6 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"

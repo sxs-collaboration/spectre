@@ -10,8 +10,8 @@
 
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Main.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"

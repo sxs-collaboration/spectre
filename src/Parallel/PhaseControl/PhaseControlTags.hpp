@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "Options/Options.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
