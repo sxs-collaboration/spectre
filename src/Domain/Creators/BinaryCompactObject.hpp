@@ -395,6 +395,25 @@ class BinaryCompactObject : public DomainCreator<3> {
         "spherical shell that covers the wave zone."};
   };
 
+  struct RadiusAdditionalOuterShell {
+    using group = OuterShell;
+    static std::string name() { return "RadiusAdditionalOuterShell"; }
+    using type = double;
+    static constexpr Options::String help = {
+        "Radius of an additional layer of Blocks beyond Layer 5."};
+  };
+
+  struct RadialDistributionAdditionalOuterShell {
+    using group = OuterShell;
+    static std::string name() {
+      return "RadialDistributionAdditionalOuterShell";
+    }
+    using type = CoordinateMaps::Distribution;
+    static constexpr Options::String help = {
+        "The distribution of radial grid points in Layer 6, the additional "
+        "outer spherical shell that covers the wave zone."};
+  };
+
   template <typename BoundaryConditionsBase>
   struct OuterBoundaryCondition {
     using group = OuterShell;
@@ -531,7 +550,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, OuterRadius,
                  InitialRefinement, InitialGridPoints, UseProjectiveMap,
                  FrustumSphericity, RadiusEnvelopingSphere,
-                 RadialDistributionOuterShell>,
+                 RadialDistributionOuterShell, RadiusAdditionalOuterShell,
+                 RadialDistributionAdditionalOuterShell>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -608,6 +628,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       const std::optional<double>& radius_enveloping_sphere = std::nullopt,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
+      double radius_add_outer_shell = 0.0,
+      CoordinateMaps::Distribution radial_distribution_additional_outer_shell =
+          CoordinateMaps::Distribution::Inverse,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -633,6 +656,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       const std::optional<double>& radius_enveloping_sphere = std::nullopt,
       CoordinateMaps::Distribution radial_distribution_outer_shell =
           CoordinateMaps::Distribution::Linear,
+      double radius_add_outer_shell = 0.0,
+      CoordinateMaps::Distribution radial_distribution_additional_outer_shell =
+          CoordinateMaps::Distribution::Inverse,
       std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
           outer_boundary_condition = nullptr,
       const Options::Context& context = {});
@@ -688,6 +714,9 @@ class BinaryCompactObject : public DomainCreator<3> {
   double length_inner_cube_{};
   double length_outer_cube_{};
   size_t number_of_blocks_{};
+  double radius_add_outer_shell_ = 0.0;
+  CoordinateMaps::Distribution radial_distribution_additional_outer_shell_ =
+      CoordinateMaps::Distribution::Inverse;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       outer_boundary_condition_;
   std::vector<std::string> block_names_{};
