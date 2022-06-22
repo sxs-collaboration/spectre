@@ -700,11 +700,11 @@ standard_checks+=(namespace_details)
 
 # Check for .cpp includes in cpp, hpp, and tpp files
 prevent_cpp_includes() {
-    is_c++ "$1" && staged_grep -q "include .*\.cpp" "$1"
+    is_c++ "$1" && staged_grep -q "#include .*\.cpp" "$1"
 }
 prevent_cpp_includes_report() {
     echo "Found cpp files included in cpp, hpp. or tpp files."
-    pretty_grep "include .*\.cpp" "$@"
+    pretty_grep "#include .*\.cpp" "$@"
 }
 prevent_cpp_includes_test() {
     test_check pass foo.hpp ''
@@ -718,6 +718,7 @@ prevent_cpp_includes_test() {
     test_check pass foo.hpp '#include "blah/blue/bla.tpp"'
     test_check pass foo.tpp '#include "blah/blue/bla.tpp"'
     test_check pass foo.cpp '#include "blah/blue/bla.tpp"'
+    test_check pass foo.hpp 'include "blah/blue/bla.cpp"'
 }
 standard_checks+=(prevent_cpp_includes)
 
