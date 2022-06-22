@@ -6,6 +6,9 @@
 # ExpectedOutput:
 #   ScalarAdvectionKuzmin2DVolume0.h5
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.001

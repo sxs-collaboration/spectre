@@ -4,6 +4,16 @@
 # Executable: EvolveGhBinaryBlackHole
 # Check: parse
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    AhA:
+      Proc: Auto
+      Exclusive: true
+    AhB:
+      Proc: Auto
+      Exclusive: true
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01

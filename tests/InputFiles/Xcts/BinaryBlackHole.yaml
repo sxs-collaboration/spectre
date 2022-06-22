@@ -5,6 +5,9 @@
 # Check: parse
 # Timeout: 20
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]

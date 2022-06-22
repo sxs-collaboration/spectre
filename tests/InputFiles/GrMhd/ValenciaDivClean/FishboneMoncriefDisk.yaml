@@ -4,6 +4,13 @@
 # Executable: EvolveValenciaDivCleanFishboneMoncriefDisk
 # Check: parse;execute
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons:
+    KerrHorizon:
+      Proc: Auto
+      Exclusive: false
+
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01

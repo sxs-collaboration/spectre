@@ -14,6 +14,9 @@
 #     SkipColumns: [0, 1, 2]
 #     AbsoluteTolerance: 0.08
 
+ResourceInfo:
+  AvoidGlobalProc0: false
+
 Background:
   KerrSchild:
     Mass: 1.

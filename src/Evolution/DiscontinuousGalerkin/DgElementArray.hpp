@@ -19,6 +19,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
@@ -57,9 +58,12 @@ struct DgElementArray {
   using array_allocation_tags =
       tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>>;
 
-  using initialization_tags = Parallel::get_initialization_tags<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
+  using initialization_tags =
+      tmpl::append<Parallel::get_initialization_tags<
+                       Parallel::get_initialization_actions_list<
+                           phase_dependent_action_list>,
+                       array_allocation_tags>,
+                   tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,

@@ -436,6 +436,15 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   resource_info_.build_singleton_map(
       *Parallel::local_branch(global_cache_proxy_));
 
+  // Now that the singleton map has been built, we have to replace the
+  // ResourceInfo that was created from options with the one that has all the
+  // correct singleton assignments so simple tags can be created from options
+  // with a valid ResourceInfo.
+  if constexpr (Parallel::detail::using_resource_info<Metavariables>) {
+    get<Parallel::OptionTags::ResourceInfo<Metavariables>>(options_) =
+        resource_info_;
+  }
+
   if constexpr (Algorithm_detail::has_LoadBalancing_v<
                     typename Metavariables::Phase>) {
     at_sync_indicator_proxy_ =
