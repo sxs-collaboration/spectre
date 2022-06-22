@@ -3,6 +3,7 @@
 
 module AlgorithmArray {
 
+  include "DataStructures/DataBox/DataBox.hpp";
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/MaxInlineMethodsReached.hpp";
@@ -68,5 +69,8 @@ module AlgorithmArray {
                             bool enable_if_disabled = false);
 
     entry void set_terminate(bool);
+
+    template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
+    entry[local] bool invoke_iterable_action();
   }
 }

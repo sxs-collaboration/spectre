@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_Algorithm.cpp
   Test_Array.cpp
   Test_Blas.cpp
-  Test_BoostHelpers.cpp
   Test_CachedFunction.cpp
   Test_CallWithDynamicType.cpp
   Test_CloneUniquePtrs.cpp

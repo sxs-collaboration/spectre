@@ -55,6 +55,15 @@ if (USE_SCOTCH_LB)
   target_link_libraries(Charmxx::charmxx INTERFACE Scotch)
 endif()
 
+if(CHARM_TRACE_PROJECTIONS OR CHARM_TRACE_PROJECTIONS)
+  set_property(TARGET SpectreFlags
+    APPEND PROPERTY
+    INTERFACE_COMPILE_OPTIONS
+    -DSPECTRE_CHARM_PROJECTIONS
+    -DSPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID=1000
+    )
+endif()
+
 file(APPEND
   "${CMAKE_BINARY_DIR}/BuildInfo.txt"
   "Charm++ version: ${CHARM_VERSION}\n"

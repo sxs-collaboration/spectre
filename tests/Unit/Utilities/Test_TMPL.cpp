@@ -125,6 +125,14 @@ void test_transform() {
   // using bad_list_4 =
   //     tmpl::transform<double, double, make_list<tmpl::_1, tmpl::_2>>;
 }
+
+void test_make_std_variant_over() {
+  static_assert(std::is_same_v<
+                std::variant<char, bool, double>,
+                tmpl::make_std_variant_over<tmpl::list<char, bool, double>>>);
+  static_assert(std::is_same_v<std::variant<char>,
+                               tmpl::make_std_variant_over<tmpl::list<char>>>);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
@@ -137,4 +145,5 @@ SPECTRE_TEST_CASE("Unit.Utilities.TMPL", "[Unit][Utilities]") {
                      std::integral_constant<size_t, 3>>{});
   test_as_pack();
   test_transform();
+  test_make_std_variant_over();
 }

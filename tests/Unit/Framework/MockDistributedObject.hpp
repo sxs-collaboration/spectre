@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -28,7 +30,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
-#include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -353,7 +354,7 @@ class MockDistributedObject {
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
 
-  // The types held by the boost::variant, box_
+  // The types held by the std::variant, box_
   using databox_phase_types =
       typename Parallel::Algorithm_detail::build_databox_types<
           tmpl::list<>, phase_dependent_action_lists, initial_databox,
@@ -434,14 +435,14 @@ class MockDistributedObject {
   auto& get_databox() {
     using box_type = db::compute_databox_type<
         tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
-    return boost::get<box_type>(box_);
+    return std::get<box_type>(box_);
   }
 
   template <typename AdditionalTagsList>
   const auto& get_databox() const {
     using box_type = db::compute_databox_type<
         tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
-    return boost::get<box_type>(box_);
+    return std::get<box_type>(box_);
   }
   /// @}
 
@@ -464,7 +465,7 @@ class MockDistributedObject {
   }
 
   /// @{
-  /// Returns the `boost::variant` of DataBoxes.
+  /// Returns the `std::variant` of DataBoxes.
   auto& get_variant_box() { return box_; }
 
   const auto& get_variant_box() const { return box_; }
@@ -765,11 +766,11 @@ class MockDistributedObject {
                          std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value !=
                      0> = nullptr>
   void get_databox_tag_visitation_impl(
-      const Type** result, const gsl::not_null<int*> iter,
+      const Type** result, const gsl::not_null<size_t*> iter,
       const gsl::not_null<bool*> already_visited,
-      const boost::variant<Variants...>& box) const {
-    if (box.which() == *iter and not *already_visited) {
-      *result = &db::get<Tag>(boost::get<ThisVariantBox>(box));
+      const std::variant<Variants...>& box) const {
+    if (box.index() == *iter and not *already_visited) {
+      *result = &db::get<Tag>(std::get<ThisVariantBox>(box));
       (void)result;
       *already_visited = true;
     }
@@ -782,10 +783,10 @@ class MockDistributedObject {
                          std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value ==
                      0> = nullptr>
   void get_databox_tag_visitation_impl(
-      const Type** /*result*/, const gsl::not_null<int*> iter,
+      const Type** /*result*/, const gsl::not_null<size_t*> iter,
       const gsl::not_null<bool*> already_visited,
-      const boost::variant<Variants...>& box) const {
-    if (box.which() == *iter and not *already_visited) {
+      const std::variant<Variants...>& box) const {
+    if (box.index() == *iter and not *already_visited) {
       ERROR("Cannot retrieve tag: "
             << db::tag_name<Tag>()
             << " from the current DataBox because it is not in it.");
@@ -795,7 +796,7 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   const auto& get_databox_tag_visitation(
-      const boost::variant<Variants...>& box) const {
+      const std::variant<Variants...>& box) const {
     using item_types = tmpl::remove_duplicates<tmpl::remove_if<
         tmpl::list<cpp20::remove_cvref_t<
             detail::item_type_if_contained_t<Tag, Variants>>...>,
@@ -812,7 +813,7 @@ class MockDistributedObject {
         "explicitly. We have not yet encountered a need for this functionality "
         "but it could be added.");
     const tmpl::front<item_types>* result = nullptr;
-    int iter = 0;
+    size_t iter = 0;
     bool already_visited = false;
     EXPAND_PACK_LEFT_TO_RIGHT(get_databox_tag_visitation_impl<Tag, Variants>(
         &result, &iter, &already_visited, box));
@@ -826,9 +827,9 @@ class MockDistributedObject {
             Requires<tmpl::list_contains_v<typename ThisVariantBox::tags_list,
                                            Tag>> = nullptr>
   void box_contains_visitation_impl(
-      bool* const contains_tag, const gsl::not_null<int*> iter,
-      const boost::variant<Variants...>& box) const {
-    if (box.which() == *iter) {
+      bool* const contains_tag, const gsl::not_null<size_t*> iter,
+      const std::variant<Variants...>& box) const {
+    if (box.index() == *iter) {
       *contains_tag =
           tmpl::list_contains_v<typename ThisVariantBox::tags_list, Tag>;
     }
@@ -838,15 +839,15 @@ class MockDistributedObject {
             Requires<not tmpl::list_contains_v<
                 typename ThisVariantBox::tags_list, Tag>> = nullptr>
   void box_contains_visitation_impl(
-      bool* const /*contains_tag*/, const gsl::not_null<int*> iter,
-      const boost::variant<Variants...>& /*box*/) const {
+      bool* const /*contains_tag*/, const gsl::not_null<size_t*> iter,
+      const std::variant<Variants...>& /*box*/) const {
     (*iter)++;
   }
 
   template <typename Tag, typename... Variants>
-  bool box_contains_visitation(const boost::variant<Variants...>& box) const {
+  bool box_contains_visitation(const std::variant<Variants...>& box) const {
     bool contains_tag = false;
-    int iter = 0;
+    size_t iter = 0;
     EXPAND_PACK_LEFT_TO_RIGHT(
         box_contains_visitation_impl<Tag, Variants>(&contains_tag, &iter, box));
     return contains_tag;
@@ -854,13 +855,12 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   bool tag_is_retrievable_visitation(
-      const boost::variant<Variants...>& box) const {
+      const std::variant<Variants...>& box) const {
     bool is_retrievable = false;
     const auto helper = [&box, &is_retrievable](auto box_type) {
       using DataBoxType = typename decltype(box_type)::type;
-      if (static_cast<int>(
-              tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value) ==
-          box.which()) {
+      if (tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value ==
+          box.index()) {
         is_retrievable = db::tag_is_retrievable_v<Tag, DataBoxType>;
       }
     };
@@ -870,7 +870,7 @@ class MockDistributedObject {
 
   bool terminate_{false};
   bool halt_algorithm_until_next_phase_{false};
-  make_boost_variant_over<variant_boxes> box_ = db::DataBox<tmpl::list<>>{};
+  tmpl::make_std_variant_over<variant_boxes> box_ = db::DataBox<tmpl::list<>>{};
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
@@ -984,11 +984,10 @@ bool MockDistributedObject<Component>::next_action_impl(
           using this_databox =
               tmpl::at_c<databox_types_this_phase, potential_databox_index>;
           if (not box_found and
-              box_.which() ==
-                  static_cast<int>(
-                      tmpl::index_of<variant_boxes, this_databox>::value)) {
+              box_.index() ==
+                  tmpl::index_of<variant_boxes, this_databox>::value) {
             box_found = true;
-            auto& box = boost::get<this_databox>(box_);
+            auto& box = std::get<this_databox>(box_);
             performing_action_ = true;
             ++algorithm_step_;
             if (not invoke_iterable_action<this_action, actions_list>(box)) {
@@ -1002,7 +1001,7 @@ bool MockDistributedObject<Component>::next_action_impl(
           "The DataBox type being retrieved at algorithm step: "
           << algorithm_step_ << " in phase " << phase_index
           << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " is not the correct type but is of variant index " << box_.which()
+          << " is not the correct type but is of variant index " << box_.index()
           << ". If you are using Goto and Label actions then you are using "
              "them incorrectly.");
     }
