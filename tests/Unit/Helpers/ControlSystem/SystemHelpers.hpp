@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -17,10 +18,12 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
+#include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
+#include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -124,18 +127,21 @@ struct MockObserverWriter {
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };
 
-template <size_t RotationDerivOrder, size_t ExpansionDerivOrder>
+template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
+          size_t ExpansionDerivOrder>
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
   using Phase = Parallel::Phase;
 
-  using metavars = MockMetavars<RotationDerivOrder, ExpansionDerivOrder>;
+  using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
+                                ExpansionDerivOrder>;
 
   using observed_reduction_data_tags = tmpl::list<>;
 
   static constexpr bool using_expansion = ExpansionDerivOrder != 0;
   static constexpr bool using_rotation = RotationDerivOrder != 0;
+  static constexpr bool using_translation = TranslationDerivOrder != 0;
 
   // Even if we aren't using certain control systems, we still need valid deriv
   // orders becuse everything is constructed by default in the SystemHelper. The
@@ -145,20 +151,28 @@ struct MockMetavars {
       using_expansion ? ExpansionDerivOrder : 2;
   static constexpr size_t rot_deriv_order =
       using_rotation ? RotationDerivOrder : 2;
+  static constexpr size_t trans_deriv_order =
+      using_translation ? TranslationDerivOrder : 2;
 
   using element_component = MockElementComponent<metavars>;
 
   using expansion_system = control_system::Systems::Expansion<exp_deriv_order>;
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
+  using translation_system =
+      control_system::Systems::Translation<trans_deriv_order>;
 
   using expansion_component = MockControlComponent<metavars, expansion_system>;
   using rotation_component = MockControlComponent<metavars, rotation_system>;
+  using translation_component =
+      MockControlComponent<metavars, translation_system>;
 
   using observer_component = MockObserverWriter<metavars>;
 
   using control_components = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<using_expansion, expansion_component, tmpl::list<>>,
-      tmpl::conditional_t<using_rotation, rotation_component, tmpl::list<>>>>;
+      tmpl::conditional_t<using_rotation, rotation_component, tmpl::list<>>,
+      tmpl::conditional_t<using_translation, translation_component,
+                          tmpl::list<>>>>;
 
   using component_list = tmpl::flatten<
       tmpl::list<observer_component, element_component, control_components>>;
@@ -184,18 +198,22 @@ template <typename Metavars>
 struct SystemHelper {
   static constexpr size_t exp_deriv_order = Metavars::exp_deriv_order;
   static constexpr size_t rot_deriv_order = Metavars::rot_deriv_order;
+  static constexpr size_t trans_deriv_order = Metavars::trans_deriv_order;
 
   static constexpr bool using_expansion = Metavars::using_expansion;
   static constexpr bool using_rotation = Metavars::using_rotation;
+  static constexpr bool using_translation = Metavars::using_translation;
 
   using expansion_system = typename Metavars::expansion_system;
   using rotation_system = typename Metavars::rotation_system;
+  using translation_system = typename Metavars::translation_system;
 
   using element_component = typename Metavars::element_component;
   using control_components = typename Metavars::control_components;
 
   using expansion_init_simple_tags = init_simple_tags<expansion_system>;
   using rotation_init_simple_tags = init_simple_tags<rotation_system>;
+  using translation_init_simple_tags = init_simple_tags<translation_system>;
 
   // Members that may be moved out of this struct once they are
   // constructed
@@ -208,10 +226,12 @@ struct SystemHelper {
   // Members that won't be moved out of this struct
   const auto& init_exp_tuple() { return init_exp_tuple_; }
   const auto& init_rot_tuple() { return init_rot_tuple_; }
+  const auto& init_trans_tuple() { return init_trans_tuple_; }
   const auto& grid_position_of_a() { return grid_position_of_a_; }
   const auto& grid_position_of_b() { return grid_position_of_b_; }
   const auto& expansion_name() { return expansion_name_; }
   const auto& rotation_name() { return rotation_name_; }
+  const auto& translation_name() { return translation_name_; }
 
   void setup_control_system_test(const double initial_time,
                                  const double initial_separation,
@@ -325,6 +345,64 @@ struct SystemHelper {
           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
               initial_time_, rotation_measurement_timescale,
               initial_rotation_rotation_time);
+    }
+    if constexpr (using_translation) {
+      init_trans_tuple_ = parse_options<translation_system>(option_string);
+      auto& trans_averager =
+          get<control_system::Tags::Averager<translation_system>>(
+              init_trans_tuple_);
+      const auto& trans_controller =
+          get<control_system::Tags::Controller<translation_system>>(
+              init_trans_tuple_);
+      const auto& trans_tuner =
+          get<control_system::Tags::TimescaleTuner<translation_system>>(
+              init_trans_tuple_);
+
+      const std::array<DataVector, 1> translation_measurement_timescale{
+          {control_system::calculate_measurement_timescales(trans_controller,
+                                                            trans_tuner)}};
+      trans_averager.assign_time_between_measurements(
+          min(translation_measurement_timescale[0]));
+
+      const double initial_translation_expiration_time =
+          trans_controller.get_update_fraction() *
+          min(trans_tuner.current_timescale());
+
+      auto init_func_translation =
+          make_array<trans_deriv_order + 1, DataVector>(DataVector{3, 0.0});
+
+      initial_functions_of_time_[translation_name_] = std::make_unique<
+          domain::FunctionsOfTime::PiecewisePolynomial<trans_deriv_order>>(
+          initial_time_, init_func_translation,
+          initial_translation_expiration_time);
+      initial_measurement_timescales_[translation_name_] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+              initial_time_, translation_measurement_timescale,
+              initial_translation_expiration_time);
+
+      // Translation control error requires a quaternion and expansion. Thus, if
+      // we aren't already controlling rotation or expansion we have to add
+      // these in. To avoid solving an ODE, we use a constant
+      // PiecewisePolynomial representing the unit quaternion to signify there
+      // isn't any rotation
+      if constexpr (not using_rotation) {
+        auto local_init_func_rotation =
+            make_array<1, DataVector>(DataVector{4, 0.0});
+        local_init_func_rotation[0][0] = 1.0;
+        initial_functions_of_time_[rotation_name_] =
+            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+                initial_time, local_init_func_rotation,
+                std::numeric_limits<double>::infinity());
+      }
+      if constexpr (not using_expansion) {
+        auto local_init_func_expansion =
+            make_array<1, DataVector>(DataVector{1, 0.0});
+        local_init_func_expansion[0][0] = 1.0;
+        initial_functions_of_time_[expansion_name_] =
+            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+                initial_time, local_init_func_expansion,
+                std::numeric_limits<double>::infinity());
+      }
     }
   }
 
@@ -500,9 +578,12 @@ struct SystemHelper {
   tuples::tagged_tuple_from_typelist<expansion_init_simple_tags>
       init_exp_tuple_;
   tuples::tagged_tuple_from_typelist<rotation_init_simple_tags> init_rot_tuple_;
+  tuples::tagged_tuple_from_typelist<translation_init_simple_tags>
+      init_trans_tuple_;
   std::array<double, 3> grid_position_of_a_{};
   std::array<double, 3> grid_position_of_b_{};
   const std::string expansion_name_{expansion_system::name()};
+  const std::string translation_name_{translation_system::name()};
   const std::string rotation_name_{rotation_system::name()};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
 };

@@ -5,21 +5,26 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <utility>
 
-#include "ControlSystem/Systems/Expansion.hpp"
+#include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
-#include "Domain/CoordinateMaps/TimeDependent/CubicScale.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
-#include "Helpers/PointwiseFunctions/PostNewtonian/BinaryTrajectories.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Frame {
@@ -29,17 +34,18 @@ struct Inertial;
 
 namespace control_system {
 namespace {
-using ExpansionMap = domain::CoordinateMaps::TimeDependent::CubicScale<3>;
+using TranslationMap = domain::CoordinateMaps::TimeDependent::Translation<3>;
 
 using CoordMap =
-    domain::CoordinateMap<Frame::Grid, Frame::Inertial, ExpansionMap>;
+    domain::CoordinateMap<Frame::Grid, Frame::Inertial, TranslationMap>;
 
 template <size_t DerivOrder>
-void test_expansion_control_system() {
-  using metavars = TestHelpers::MockMetavars<0, 0, DerivOrder>;
-  using expansion_component = typename metavars::expansion_component;
+void test_translation_control_system() {
+  // Since we are only doing translation, turn off the
+  // other control systems by passing 0 for their deriv orders
+  using metavars = TestHelpers::MockMetavars<DerivOrder, 0, 0>;
+  using translation_component = typename metavars::translation_component;
   using element_component = typename metavars::element_component;
-  using observer_component = typename metavars::observer_component;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -48,7 +54,7 @@ void test_expansion_control_system() {
   const double initial_separation = 15.0;
   // This final time is chosen so that the damping timescales have adequate time
   // to reach the maximum damping timescale
-  const double final_time = 500.0;
+  const double final_time = 600.0;
 
   // Set up the system helper.
   control_system::TestHelpers::SystemHelper<metavars> system_helper{};
@@ -58,14 +64,14 @@ void test_expansion_control_system() {
       "  InitialTime: 0.0\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
-      "  Expansion:\n"
+      "  Translation:\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
       "      Average0thDeriv: true\n"
       "    Controller:\n"
       "      UpdateFraction: 0.3\n"
       "    TimescaleTuner:\n"
-      "      InitialTimescales: [0.5]\n"
+      "      InitialTimescales: [0.5, 0.5, 0.5]\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 2.0\n"
@@ -85,7 +91,8 @@ void test_expansion_control_system() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_exp_tuple = system_helper.init_exp_tuple();
+  const auto& init_trans_tuple = system_helper.init_trans_tuple();
+  const std::string& translation_name = system_helper.translation_name();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -93,37 +100,32 @@ void test_expansion_control_system() {
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<
-      expansion_component>(make_not_null(&runner), ActionTesting::NodeId{0},
-                           ActionTesting::LocalCoreId{0}, init_exp_tuple);
+      translation_component>(make_not_null(&runner), ActionTesting::NodeId{0},
+                             ActionTesting::LocalCoreId{0}, init_trans_tuple);
   ActionTesting::emplace_array_component<element_component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
-  ActionTesting::emplace_nodegroup_component<observer_component>(
-      make_not_null(&runner));
 
   ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
-  const BinaryTrajectories binary_trajectories{initial_separation};
-
-  const std::string& expansion_name = system_helper.expansion_name();
-
-  // Create coordinate maps for mapping the PN expansion to the "grid" frame
+  // Create coordinate map for mapping the translation to the "grid" frame
   // where the control system does its calculations
-  // The outer boundary is at 1000.0 so that we don't have to worry about it.
-  ExpansionMap expansion_map{1000.0, expansion_name,
-                             expansion_name + "OuterBoundary"s};
+  TranslationMap translation_map{translation_name};
 
-  CoordMap coord_map{expansion_map};
+  CoordMap coord_map{translation_map};
 
   // Get the functions of time from the cache to use in the maps
   const auto& cache = ActionTesting::cache<element_component>(runner, 0);
   const auto& functions_of_time =
       Parallel::get<domain::Tags::FunctionsOfTime>(cache);
 
-  const auto position_function = [&binary_trajectories](const double time) {
-    const double separation = binary_trajectories.separation(time);
+  const std::array<double, 3> velocity{{0.1, -0.2, 0.3}};
+
+  const auto position_function = [&initial_separation,
+                                  &velocity](const double time) {
+    const std::array<double, 3> init_pos{{0.5 * initial_separation, 0.0, 0.0}};
     return std::pair<std::array<double, 3>, std::array<double, 3>>{
-        {-0.5 * separation, 0.0, 0.0}, {0.5 * separation, 0.0, 0.0}};
+        -init_pos + velocity * time, init_pos + velocity * time};
   };
 
   // Run the actual control system test.
@@ -131,9 +133,9 @@ void test_expansion_control_system() {
                                         position_function, coord_map);
 
   // Grab results
-  const std::array<double, 3>& grid_position_of_a =
+  const std::array<double, 3> grid_position_of_a =
       system_helper.grid_position_of_a();
-  const std::array<double, 3>& grid_position_of_b =
+  const std::array<double, 3> grid_position_of_b =
       system_helper.grid_position_of_b();
 
   // Our expected positions are just the initial positions
@@ -142,18 +144,24 @@ void test_expansion_control_system() {
   const std::array<double, 3> expected_grid_position_of_b{
       {0.5 * initial_separation, 0.0, 0.0}};
 
-  const auto& expansion_f_of_t =
+  const auto& translation_f_of_t =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>&>(
-          *functions_of_time.at(expansion_name));
+          *functions_of_time.at(translation_name));
 
-  const double exp_factor = expansion_f_of_t.func(final_time)[0][0];
+  const auto trans_and_2_derivs =
+      translation_f_of_t.func_and_2_derivs(final_time);
 
-  // The control system gets more accurate the longer you run for. However, this
-  // is the floor of our accuracy for a changing function of time.
-  Approx custom_approx = Approx::custom().epsilon(5.0e-6).scale(1.0);
-  const double expected_exp_factor =
-      binary_trajectories.separation(final_time) / initial_separation;
-  CHECK(custom_approx(expected_exp_factor) == exp_factor);
+  // The control system gets more accurate the longer you run for. This is
+  // the accuracy we can achieve in this amount of time.
+  Approx custom_approx = Approx::custom().epsilon(1.0e-10).scale(1.0);
+  const DataVector expected_translation_2nd_deriv{3, 0.0};
+  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[2],
+                               expected_translation_2nd_deriv, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[1],
+                               array_to_datavector(velocity), custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[0],
+                               array_to_datavector(velocity * final_time),
+                               custom_approx);
 
   CHECK_ITERABLE_CUSTOM_APPROX(expected_grid_position_of_a, grid_position_of_a,
                                custom_approx);
@@ -162,28 +170,29 @@ void test_expansion_control_system() {
 }
 
 void test_names() {
-  using expansion = control_system::Systems::Expansion<2>;
+  using translation = control_system::Systems::Translation<2>;
 
-  CHECK(pretty_type::name<expansion>() == "Expansion");
-  CHECK(*expansion::component_name(0, 1) == "Expansion");
-  CHECK(*expansion::component_name(1, 1) == "Expansion");
+  CHECK(pretty_type::name<translation>() == "Translation");
+  CHECK(*translation::component_name(0, 3) == "x");
+  CHECK(*translation::component_name(1, 3) == "y");
+  CHECK(*translation::component_name(2, 3) == "z");
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
       ([]() {
-        const std::string component_name = *expansion::component_name(1, 2);
+        const std::string component_name = *translation::component_name(1, 4);
         (void)component_name;
       })(),
       Catch::Contains(
-          "Expansion control expects 1 component but there are 2 instead."));
+          "Translation control expects 3 components but there are 4 instead."));
 #endif  // SPECTRE_DEBUG
 }
+}  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Expansion",
+SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Translation",
                   "[ControlSystem][Unit]") {
   test_names();
-  test_expansion_control_system<2>();
-  test_expansion_control_system<3>();
+  test_translation_control_system<2>();
+  test_translation_control_system<3>();
 }
-}  // namespace
 }  // namespace control_system
