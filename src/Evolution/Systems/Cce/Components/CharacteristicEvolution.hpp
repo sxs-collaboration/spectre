@@ -32,6 +32,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -113,8 +114,9 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using initialization_tags = tmpl::push_back<
+      Parallel::get_initialization_tags<initialize_action_list>,
+      Parallel::Tags::SingletonInfo<CharacteristicEvolution<Metavariables>>>;
 
   // the list of actions that occur for each of the hypersurface-integrated
   // Bondi tags
