@@ -5,6 +5,7 @@ set(LIBRARY "Test_FiniteDifference")
 
 set(LIBRARY_SOURCES
   Test_AoWeno53.cpp
+  Test_FallbackReconstructorType.cpp
   Test_Minmod.cpp
   Test_MonotonisedCentral.cpp
   Test_Unlimited.cpp

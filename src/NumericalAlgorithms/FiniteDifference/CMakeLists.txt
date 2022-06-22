@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AoWeno.cpp
+  FallbackReconstructorType.cpp
   Minmod.cpp
   MonotonisedCentral.cpp
   Unlimited.cpp
@@ -21,6 +22,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AoWeno.hpp
+  FallbackReconstructorType.hpp
   FiniteDifference.hpp
   Minmod.hpp
   MonotonisedCentral.hpp
