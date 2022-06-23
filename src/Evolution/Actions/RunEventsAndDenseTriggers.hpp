@@ -177,7 +177,8 @@ struct RunEventsAndDenseTriggers {
             }
 
             if constexpr (Metavariables::local_time_stepping) {
-              dg::apply_boundary_corrections<system, true, true>(
+              db::mutate_apply<
+                  dg::ApplyBoundaryCorrections<system, true, true>>(
                   make_not_null(&box));
             }
 
