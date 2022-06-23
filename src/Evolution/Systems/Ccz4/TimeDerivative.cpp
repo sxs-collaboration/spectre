@@ -310,12 +310,8 @@ void TimeDerivative<Dim>::apply(
       symmetrized_d_field_b,
       0.5 * (d_field_b(ti::k, ti::j, ti::I) + d_field_b(ti::j, ti::k, ti::I)));
 
-  for (size_t k = 0; k < Dim; k++) {
-    contracted_symmetrized_d_field_b->get(k) = d_field_b.get(k, 0, 0);
-    for (size_t i = 1; i < Dim; i++) {
-      contracted_symmetrized_d_field_b->get(k) += d_field_b.get(k, i, i);
-    }
-  }
+  ::tenex::evaluate<ti::k>(contracted_symmetrized_d_field_b,
+                           (*symmetrized_d_field_b)(ti::k, ti::i, ti::I));
 
   ::tenex::evaluate<ti::i, ti::j, ti::k>(
       field_b_times_field_d,
