@@ -42,10 +42,15 @@ void bind_tensordata(py::module& m) {  // NOLINT
              return "(" + get_output(extents_and_data.extents) + "," +
                     get_output(extents_and_data.tensor_components) + ")";
            })
-      .def("__repr__", [](const ExtentsAndTensorVolumeData& extents_and_data) {
-        return "(" + get_output(extents_and_data.extents) + "," +
-               get_output(extents_and_data.tensor_components) + ")";
-      });
+      .def("__repr__",
+           [](const ExtentsAndTensorVolumeData& extents_and_data) {
+             return "(" + get_output(extents_and_data.extents) + "," +
+                    get_output(extents_and_data.tensor_components) + ")";
+           })
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self == py::self)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self != py::self);
   py::class_<ElementVolumeData, ExtentsAndTensorVolumeData>(m,
                                                             "ElementVolumeData")
       .def(py::init<std::vector<size_t>, std::vector<TensorComponent>,
@@ -55,6 +60,10 @@ void bind_tensordata(py::module& m) {  // NOLINT
            py::arg("quadrature"), py::arg("element_name"))
       .def_readwrite("basis", &ElementVolumeData::basis)
       .def_readwrite("quadrature", &ElementVolumeData::quadrature)
-      .def_readwrite("element_name", &ElementVolumeData::element_name);
+      .def_readwrite("element_name", &ElementVolumeData::element_name)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self == py::self)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self != py::self);
 }
 }  // namespace py_bindings

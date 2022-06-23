@@ -59,6 +59,17 @@ void ExtentsAndTensorVolumeData::pup(PUP::er& p) {
   p | tensor_components;
 }
 
+bool operator==(const ExtentsAndTensorVolumeData& lhs,
+                const ExtentsAndTensorVolumeData& rhs) {
+  return lhs.extents == rhs.extents and
+         lhs.tensor_components == rhs.tensor_components;
+}
+
+bool operator!=(const ExtentsAndTensorVolumeData& lhs,
+                const ExtentsAndTensorVolumeData& rhs) {
+  return not(lhs == rhs);
+}
+
 ElementVolumeData::ElementVolumeData(
     std::vector<size_t> extents_in, std::vector<TensorComponent> components,
     std::vector<Spectral::Basis> basis_in,
@@ -74,4 +85,15 @@ void ElementVolumeData::pup(PUP::er& p) {
   p | quadrature;
   p | basis;
   p | element_name;
+}
+
+bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs) {
+  return static_cast<const ExtentsAndTensorVolumeData&>(lhs) ==
+             static_cast<const ExtentsAndTensorVolumeData&>(rhs) and
+         lhs.quadrature == rhs.quadrature and lhs.basis == rhs.basis and
+         lhs.element_name == rhs.element_name;
+}
+
+bool operator!=(const ElementVolumeData& lhs, const ElementVolumeData& rhs) {
+  return not(lhs == rhs);
 }
