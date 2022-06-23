@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <deque>
 #include <gsl/gsl_spline.h>
 #include <memory>
 #include <pup.h>
@@ -112,7 +113,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ORDER, (1, 2, 3, 4))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE1, (1, 2, 3, 4),
                         (std::vector<double>, DataVector, ModalVector,
-                         gsl::span<double>))
+                         gsl::span<double>, std::deque<double>))
 
 #define INSTANTIATE_DTYPE2(_, data)                         \
   template std::vector<std::array<double, ORDER(data) + 1>> \
@@ -120,7 +121,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE1, (1, 2, 3, 4),
       const DTYPE(data) & x_values, const std::vector<DTYPE(data)>& y_values);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DTYPE2, (1, 2, 3, 4),
-                        (std::vector<double>, DataVector, ModalVector))
+                        (std::vector<double>, DataVector, ModalVector,
+                         std::deque<double>))
 #undef ORDER
 #undef DTYPE
 
