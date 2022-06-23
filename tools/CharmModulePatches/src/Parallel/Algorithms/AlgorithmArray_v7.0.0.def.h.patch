@@ -1,11 +1,6 @@
 --- ./AlgorithmArray_orig.def.h	2022-06-16 14:42:37.978886843 -0700
 +++ src/Parallel/Algorithms/AlgorithmArray.def.h	2022-06-16 14:43:04.995671535 -0700
-@@ -547,7 +547,7 @@
-   envelope env;
-   env.setMsgtype(ForArrayEltMsg);
-   env.setTotalsize(0);
+@@ -550,2 +550,2 @@
 -  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>());
 +  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()));
    _TRACE_CREATION_DONE(1);
-   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
- #if CMK_LBDB_ON
