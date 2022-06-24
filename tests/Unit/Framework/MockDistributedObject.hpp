@@ -202,7 +202,7 @@ struct hash<ActionTesting::GlobalCoreId> {
 }  // namespace std
 
 namespace ActionTesting {
-/// MockDistributedObject mocks the AlgorithmImpl class. It should not be
+/// MockDistributedObject mocks the DistributedObject class. It should not be
 /// considered as part of the user interface.
 ///
 /// `MockDistributedObject` represents an object on a supercomputer
@@ -215,7 +215,7 @@ namespace ActionTesting {
 /// of mock distributed objects, each with its own array
 /// index.
 /// `MockDistributedObject` is a modified implementation of
-/// `AlgorithmImpl` and so some of the code is shared between the
+/// `DistributedObject` and so some of the code is shared between the
 /// two. The main difference is that `MockDistributedObject` has
 /// support for introspection. For example, it is possible to check
 /// how many simple actions are queued, to look at the inboxes,

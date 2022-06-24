@@ -30,15 +30,15 @@
  */
 template <typename ParallelComponent, typename SpectreArrayIndex>
 class AlgorithmSingleton
-    : public Parallel::AlgorithmImpl<
+    : public Parallel::DistributedObject<
           ParallelComponent,
           typename ParallelComponent::phase_dependent_action_list> {
   using algorithm = Parallel::Algorithms::Singleton;
 
  public:
-  using Parallel::AlgorithmImpl<
-      ParallelComponent,
-      typename ParallelComponent::phase_dependent_action_list>::AlgorithmImpl;
+  using Parallel::DistributedObject<
+      ParallelComponent, typename ParallelComponent::
+                             phase_dependent_action_list>::DistributedObject;
 };
 
 #include "Parallel/Algorithms/AlgorithmArray.hpp"

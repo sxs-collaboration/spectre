@@ -60,7 +60,7 @@
 namespace Parallel {
 /// \cond
 template <typename ParallelComponent, typename PhaseDepActionList>
-class AlgorithmImpl;
+class DistributedObject;
 /// \endcond
 
 namespace Algorithm_detail {
@@ -145,7 +145,8 @@ constexpr bool has_registration_list_v =
  * necessary to reproduce the issue.
  */
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
+class DistributedObject<ParallelComponent,
+                        tmpl::list<PhaseDepActionListsPack...>>
     : public ParallelComponent::chare_type::template cbase<
           ParallelComponent,
           typename get_array_index<typename ParallelComponent::chare_type>::
@@ -154,7 +155,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
       sizeof...(PhaseDepActionListsPack) > 0,
       "Must have at least one phase dependent action list "
       "(PhaseActions) in a parallel component. See the first template "
-      "parameter of 'AlgorithmImpl' in the error message to see which "
+      "parameter of 'DistributedObject' in the error message to see which "
       "component doesn't have any phase dependent action lists.");
 
  public:
@@ -185,25 +186,25 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
   /// \cond
   // Needed for serialization
-  AlgorithmImpl();
+  DistributedObject();
   /// \endcond
 
   /// Constructor used by Main to initialize the algorithm
   template <class... InitializationTags>
-  AlgorithmImpl(
+  DistributedObject(
       const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
       tuples::TaggedTuple<InitializationTags...> initialization_items);
 
   /// Charm++ migration constructor, used after a chare is migrated
-  explicit AlgorithmImpl(CkMigrateMessage* /*msg*/);
+  explicit DistributedObject(CkMigrateMessage* /*msg*/);
 
   /// \cond
-  ~AlgorithmImpl() override;
+  ~DistributedObject() override;
 
-  AlgorithmImpl(const AlgorithmImpl& /*unused*/) = delete;
-  AlgorithmImpl& operator=(const AlgorithmImpl& /*unused*/) = delete;
-  AlgorithmImpl(AlgorithmImpl&& /*unused*/) = delete;
-  AlgorithmImpl& operator=(AlgorithmImpl&& /*unused*/) = delete;
+  DistributedObject(const DistributedObject& /*unused*/) = delete;
+  DistributedObject& operator=(const DistributedObject& /*unused*/) = delete;
+  DistributedObject(DistributedObject&& /*unused*/) = delete;
+  DistributedObject& operator=(DistributedObject&& /*unused*/) = delete;
   /// \endcond
 
   /// Print the expanded type aliases
@@ -461,19 +462,18 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>
 
 /// \cond
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl() {
+DistributedObject<ParallelComponent,
+                  tmpl::list<PhaseDepActionListsPack...>>::DistributedObject() {
   set_array_index();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <class... InitializationTags>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    DistributedObject(
         const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
-        tuples::TaggedTuple<InitializationTags...>
-            initialization_items)
-    : AlgorithmImpl() {
+        tuples::TaggedTuple<InitializationTags...> initialization_items)
+    : DistributedObject() {
   try {
     (void)initialization_items;  // avoid potential compiler warnings if unused
     // When we are using the LoadBalancing phase, we want the Main component to
@@ -504,14 +504,14 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    AlgorithmImpl(CkMigrateMessage* msg)
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    DistributedObject(CkMigrateMessage* msg)
     : cbase_type(msg) {}
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-AlgorithmImpl<ParallelComponent,
-              tmpl::list<PhaseDepActionListsPack...>>::~AlgorithmImpl() {
-  // We place the registrar in the destructor since every AlgorithmImpl will
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    ~DistributedObject() {
+  // We place the registrar in the destructor since every DistributedObject will
   // have a destructor, but we have different constructors so it's not clear
   // which will be instantiated.
   (void)Parallel::charmxx::RegisterParallelComponent<
@@ -519,9 +519,9 @@ AlgorithmImpl<ParallelComponent,
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-std::string AlgorithmImpl<ParallelComponent,
-                          tmpl::list<PhaseDepActionListsPack...>>::print_types()
-    const {
+std::string
+DistributedObject<ParallelComponent,
+                  tmpl::list<PhaseDepActionListsPack...>>::print_types() const {
   std::ostringstream os;
   os << "Algorithm type aliases:\n";
   os << "using all_actions_list = " << pretty_type::get_name<all_actions_list>()
@@ -553,9 +553,9 @@ std::string AlgorithmImpl<ParallelComponent,
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-std::string AlgorithmImpl<ParallelComponent,
-                          tmpl::list<PhaseDepActionListsPack...>>::print_state()
-    const {
+std::string
+DistributedObject<ParallelComponent,
+                  tmpl::list<PhaseDepActionListsPack...>>::print_state() const {
   using ::operator<<;
   std::ostringstream os;
   os << "State:\n";
@@ -572,26 +572,27 @@ std::string AlgorithmImpl<ParallelComponent,
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-std::string AlgorithmImpl<ParallelComponent,
-                          tmpl::list<PhaseDepActionListsPack...>>::print_inbox()
-    const {
+std::string
+DistributedObject<ParallelComponent,
+                  tmpl::list<PhaseDepActionListsPack...>>::print_inbox() const {
   std::ostringstream os;
   os << "inboxes_ = " << inboxes_ << ";\n";
   return os.str();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-std::string
-AlgorithmImpl<ParallelComponent,
-              tmpl::list<PhaseDepActionListsPack...>>::print_databox() const {
+std::string DistributedObject<
+    ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::print_databox()
+    const {
   std::ostringstream os;
   os << "box_:\n" << box_;
   return os.str();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    pup(PUP::er& p) {  // NOLINT
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::pup(PUP::er& p) {  // NOLINT
 #ifdef SPECTRE_CHARM_PROJECTIONS
   p | non_action_time_start_;
 #endif
@@ -638,8 +639,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename Arg>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    reduction_action(Arg arg) {
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::reduction_action(Arg arg) {
   try {
     (void)Parallel::charmxx::RegisterReductionAction<
         ParallelComponent, Action, std::decay_t<Arg>>::registrar;
@@ -669,7 +671,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     simple_action(std::tuple<Args...> args) {
   try {
     (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
@@ -699,8 +702,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
-void AlgorithmImpl<ParallelComponent,
-                   tmpl::list<PhaseDepActionListsPack...>>::simple_action() {
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::simple_action() {
   try {
     (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                   Action>::registrar;
@@ -731,7 +735,7 @@ void AlgorithmImpl<ParallelComponent,
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args>
 typename Action::return_type
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     local_synchronous_action(Args&&... args) {
   static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
                 "Cannot call a (blocking) local synchronous action on a "
@@ -743,8 +747,9 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    threaded_action() {
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::threaded_action() {
   try {
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
@@ -760,7 +765,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ReceiveTag, typename ReceiveDataType>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     receive_data(typename ReceiveTag::temporal_id instance, ReceiveDataType&& t,
                  const bool enable_if_disabled) {
   try {
@@ -785,8 +791,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    perform_algorithm() {
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::perform_algorithm() {
   try {
     if (performing_action_ or get_terminate() or
         halt_algorithm_until_next_phase_) {
@@ -829,7 +836,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     perform_algorithm(const bool restart_if_terminated) {
   try {
     if (restart_if_terminated) {
@@ -842,7 +850,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     start_phase(const Parallel::Phase next_phase) {
   try {
     // terminate should be true since we exited a phase previously.
@@ -881,7 +890,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisVariant, typename... Variants>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     touch_global_cache_proxy_in_databox_impl(
         std::variant<Variants...>& box, const gsl::not_null<size_t*> iter,
         const gsl::not_null<bool*> already_visited) {
@@ -904,7 +914,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     touch_global_cache_proxy_in_databox(std::variant<Variants...>& box) {
   size_t iter = 0;
   bool already_visited = false;
@@ -914,7 +925,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisVariant, typename... Variants, typename... Args>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration_impl(
         PUP::er& p, const std::variant<Variants...>& box,
         const gsl::not_null<size_t*> iter,
@@ -956,7 +968,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename... Variants, typename... Args>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     perform_registration_or_deregistration(
         PUP::er& p, const std::variant<Variants...>& box) {
   size_t iter = 0;
@@ -967,8 +980,9 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    set_array_index() {
+void DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::set_array_index() {
   // down cast to the algorithm_type, so that the `thisIndex` method can be
   // called, which is defined in the CBase class
   array_index_ = static_cast<typename chare_type::template algorithm_type<
@@ -979,7 +993,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename PhaseDepActions, size_t... Is>
 constexpr bool
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     iterate_over_actions(const std::index_sequence<Is...> /*meta*/) {
   bool take_next_action = true;
   const auto helper = [this, &take_next_action](auto iteration) {
@@ -1067,7 +1081,8 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args, size_t... Is>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     forward_tuple_to_action(std::tuple<Args...>&& args,
                             std::index_sequence<Is...> /*meta*/) {
   Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
@@ -1078,10 +1093,10 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename Action, typename... Args, size_t... Is>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    forward_tuple_to_threaded_action(
-        std::tuple<Args...>&& args,
-        std::index_sequence<Is...> /*meta*/) {
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
+    forward_tuple_to_threaded_action(std::tuple<Args...>&& args,
+                                     std::index_sequence<Is...> /*meta*/) {
   const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
   Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
       box_, *Parallel::local_branch(global_cache_proxy_),
@@ -1091,7 +1106,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 size_t
-AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     number_of_actions_in_phase(const Parallel::Phase phase) const {
   size_t number_of_actions = 0;
   const auto helper = [&number_of_actions, phase](auto pdal_v) {
@@ -1105,8 +1120,9 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
-bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
-    invoke_iterable_action() {
+bool DistributedObject<
+    ParallelComponent,
+    tmpl::list<PhaseDepActionListsPack...>>::invoke_iterable_action() {
   using phase_dep_action =
       tmpl::at_c<phase_dependent_action_lists, PhaseIndex::value>;
   using actions_list = typename phase_dep_action::action_list;
@@ -1187,7 +1203,8 @@ bool AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
     initiate_shutdown(const std::exception& exception) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
   CkError("\nException caught in Algorithm:\n%s\n\nShutting down...\n",
@@ -1199,7 +1216,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 template <typename ParallelComponent, typename PhaseDepActionLists>
 std::ostream& operator<<(
     std::ostream& os,
-    const AlgorithmImpl<ParallelComponent, PhaseDepActionLists>&
+    const DistributedObject<ParallelComponent, PhaseDepActionLists>&
         algorithm_impl) {
   os << algorithm_impl.print_types() << "\n";
   os << algorithm_impl.print_state() << "\n";
