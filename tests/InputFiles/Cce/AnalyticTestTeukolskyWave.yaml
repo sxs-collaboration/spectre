@@ -17,6 +17,15 @@ Evolution:
   InitialTimeStep: 0.1
   InitialSlabSize: 1.0
 
+ResourceInfo:
+  Singletons:
+    CharacteristicEvolution:
+      Proc: Auto
+      Exclusive: false
+    AnalyticWorldtubeBoundary:
+      Proc: Auto
+      Exclusive: false
+
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
   ReductionFileName: "CharacteristicExtractUnusedReduction"

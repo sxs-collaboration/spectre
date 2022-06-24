@@ -11,6 +11,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 
 namespace Cce {
@@ -29,7 +30,8 @@ struct WorldtubeComponentBase {
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+      tmpl::push_back<Parallel::get_initialization_tags<initialize_action_list>,
+                      Parallel::Tags::SingletonInfo<WorldtubeComponent>>;
 
   using worldtube_boundary_computation_steps = tmpl::list<>;
 
