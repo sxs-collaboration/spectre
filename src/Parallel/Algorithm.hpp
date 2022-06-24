@@ -19,7 +19,7 @@
 #include <utility>
 #include <variant>
 
-#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/Algorithms/AlgorithmArrayDeclarations.hpp"
@@ -52,10 +52,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
-
-// IWYU pragma: no_include <array>  // for tuple_size
-
-// IWYU pragma: no_include "Parallel/Algorithm.hpp"  // Include... ourself?
 
 namespace Parallel {
 /// \cond
