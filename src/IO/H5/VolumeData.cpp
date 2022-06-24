@@ -29,6 +29,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace h5 {
 namespace {
@@ -479,6 +480,119 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
         gsl::at(all_extents, element_index), 1_st, std::multiplies<>{});
     return {element_data_offset, element_data_length};
   }
+}
+
+auto VolumeData::get_data_by_element(
+    const std::optional<double> start_observation_value,
+    const std::optional<double> end_observation_value,
+    const std::optional<std::vector<std::string>>& components_to_retrieve) const
+    -> std::vector<std::tuple<size_t, double, std::vector<ElementVolumeData>>> {
+  // First get list of all observations we need to retrieve
+  const auto names = get_group_names(volume_data_group_.id(), "");
+  const auto get_observation_id_from_group_name = [](const std::string& s) {
+    return std::stoul(s.substr(std::string("ObservationId").size()));
+  };
+  std::vector<size_t> obs_ids{
+      boost::make_transform_iterator(names.begin(),
+                                     get_observation_id_from_group_name),
+      boost::make_transform_iterator(names.end(),
+                                     get_observation_id_from_group_name)};
+  std::vector<std::tuple<size_t, double, std::vector<ElementVolumeData>>>
+      result{};
+  result.reserve(obs_ids.size());
+  // Sort observation IDs and observation values into the result. This only
+  // copies observed times in
+  // [`start_observation_value`, `end_observation_value`]
+  for (const auto& observation_id : obs_ids) {
+    const double observation_value = get_observation_value(observation_id);
+    if (start_observation_value.value_or(std::numeric_limits<double>::min()) <=
+            observation_value and
+        observation_value <= end_observation_value.value_or(
+                                 std::numeric_limits<double>::max())) {
+      result.emplace_back(observation_id, observation_value,
+                          std::vector<ElementVolumeData>{});
+    }
+  }
+  result.shrink_to_fit();
+  // Sort by observation_value
+  alg::sort(result, [](const auto& lhs, const auto& rhs) {
+    return std::get<1>(lhs) < std::get<1>(rhs);
+  });
+
+  // Retrieve element data and insert into result
+  for (auto& single_time_data : result) {
+    const auto known_components =
+        list_tensor_components(std::get<0>(single_time_data));
+
+    std::vector<ElementVolumeData> element_volume_data{};
+    const auto grid_names = get_grid_names(std::get<0>(single_time_data));
+    const auto extents = get_extents(std::get<0>(single_time_data));
+    const auto bases = get_bases(std::get<0>(single_time_data));
+    const auto quadratures = get_quadratures(std::get<0>(single_time_data));
+    element_volume_data.reserve(grid_names.size());
+
+    const auto& component_names =
+        components_to_retrieve.value_or(known_components);
+    std::vector<DataVector> tensors{};
+    tensors.reserve(grid_names.size());
+    for (const std::string& component : component_names) {
+      if (not alg::found(known_components, component)) {
+        using ::operator<<;  // STL streams
+        ERROR("Could not find tensor component '"
+              << component
+              << "' in file. Known components are: " << known_components);
+      }
+      tensors.emplace_back(
+          get_tensor_component(std::get<0>(single_time_data), component));
+    }
+    // Now split the data by element
+    for (size_t grid_index = 0, offset = 0; grid_index < grid_names.size();
+         ++grid_index) {
+      const size_t mesh_size =
+          alg::accumulate(extents[grid_index], 1_st, std::multiplies<>{});
+      std::vector<TensorComponent> tensor_components{tensors.size()};
+      for (size_t component_index = 0; component_index < tensors.size();
+           ++component_index) {
+        DataVector component{mesh_size};
+        std::copy(std::next(tensors[component_index].begin(),
+                            static_cast<std::ptrdiff_t>(offset)),
+                  std::next(tensors[component_index].begin(),
+                            static_cast<std::ptrdiff_t>(offset + mesh_size)),
+                  component.begin());
+        tensor_components[component_index] = TensorComponent{
+            component_names[component_index], std::move(component)};
+      }
+
+      // Sort the tensor components by name so that they are in the same order
+      // in all elements.
+      alg::sort(tensor_components, [](const auto& lhs, const auto& rhs) {
+        return lhs.name < rhs.name;
+      });
+
+      element_volume_data.emplace_back(
+          extents[grid_index], std::move(tensor_components),
+          std::vector<Spectral::Basis>(
+              boost::make_transform_iterator(bases[grid_index].begin(),
+                                             Spectral::to_basis),
+              boost::make_transform_iterator(bases[grid_index].end(),
+                                             Spectral::to_basis)),
+          std::vector<Spectral::Quadrature>(
+              boost::make_transform_iterator(quadratures[grid_index].begin(),
+                                             Spectral::to_quadrature),
+              boost::make_transform_iterator(quadratures[grid_index].end(),
+                                             Spectral::to_quadrature)),
+          grid_names[grid_index]);
+      offset += mesh_size;
+    }  // for grid_index
+
+    // Sort the elements so they are in the same order at all time steps
+    alg::sort(element_volume_data,
+              [](const ElementVolumeData& lhs, const ElementVolumeData& rhs) {
+                return lhs.element_name < rhs.element_name;
+              });
+    std::get<2>(single_time_data) = std::move(element_volume_data);
+  }
+  return result;
 }
 
 size_t VolumeData::get_dimension() const {

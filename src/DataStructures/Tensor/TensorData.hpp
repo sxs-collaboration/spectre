@@ -65,6 +65,11 @@ struct ExtentsAndTensorVolumeData {
   std::vector<TensorComponent> tensor_components{};
 };
 
+bool operator==(const ExtentsAndTensorVolumeData& lhs,
+                const ExtentsAndTensorVolumeData& rhs);
+bool operator!=(const ExtentsAndTensorVolumeData& lhs,
+                const ExtentsAndTensorVolumeData& rhs);
+
 /*!
  * An extension of `ExtentsAndTensorVolumeData` to store `Spectral::Quadrature`
  * and `Spectral::Basis`  associated with each axis of the element, in addition
@@ -84,3 +89,6 @@ struct ElementVolumeData : ExtentsAndTensorVolumeData {
   std::vector<Spectral::Quadrature> quadrature{};
   std::string element_name{};
 };
+
+bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs);
+bool operator!=(const ElementVolumeData& lhs, const ElementVolumeData& rhs);

@@ -154,6 +154,66 @@ void check_volume_data(
       }
     }
   }
+
+  // Read volume data on meshes. We previously tested all the get functions so
+  // we can just use those now.
+  const auto volume_data =
+      volume_file.get_data_by_element(std::nullopt, std::nullopt, std::nullopt);
+  for (const auto& single_time_data : volume_data) {
+    if (std::get<0>(single_time_data) != observation_id) {
+      continue;
+    }
+    CHECK(std::get<1>(single_time_data) == approx(observation_value));
+
+    for (size_t j = 0; j < grid_names.size(); j++) {
+      const std::string& grid_name = grid_names[j];
+      // Find the element in the vector
+      const auto volume_data_it = alg::find_if(
+          std::get<2>(single_time_data),
+          [&grid_name](const ElementVolumeData& local_volume_data) {
+            return local_volume_data.element_name == grid_name;
+          });
+      REQUIRE(volume_data_it != std::get<2>(single_time_data).end());
+      CHECK(volume_data_it->element_name == grid_name);
+
+      for (size_t i = 0; i < expected_components.size(); i++) {
+        const auto& component = expected_components[i];
+        const auto expected_data = get_grid_data(
+            volume_file.get_tensor_component(observation_id, component),
+            grid_positions[j]);
+        const auto component_data_it =
+            alg::find_if(volume_data_it->tensor_components,
+                         [&component](const TensorComponent& tensor_component) {
+                           return tensor_component.name == component;
+                         });
+        REQUIRE(component_data_it != volume_data_it->tensor_components.end());
+        DataVector expected_component_data{expected_data.size()};
+        for (size_t k = 0; k < expected_component_data.size(); ++k) {
+          expected_component_data[k] = expected_data[k];
+        }
+        CHECK(std::get<DataVector>(component_data_it->data) ==
+              expected_component_data);
+      }
+    }
+  }
+  // Test that the data is sorted by copying it, sorting it, and verifying
+  // everything is the same. First sort outer vector by observation value, then
+  // sort the vector of ElementVolumeData on each time slice.
+  auto volume_data_sorted = volume_data;
+  alg::sort(volume_data_sorted, [](const auto& lhs, const auto& rhs) {
+    return std::get<1>(lhs) < std::get<1>(rhs);
+  });
+  for (auto& data_at_time : volume_data_sorted) {
+    alg::sort(std::get<2>(data_at_time), [](const auto& lhs, const auto& rhs) {
+      return lhs.element_name < rhs.element_name;
+    });
+    for (auto& element_data : std::get<2>(data_at_time)) {
+      alg::sort(
+          element_data.tensor_components,
+          [](const auto& lhs, const auto& rhs) { return lhs.name < rhs.name; });
+    }
+  }
+  CHECK((volume_data == volume_data_sorted));
 }
 
 #define GET_DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
