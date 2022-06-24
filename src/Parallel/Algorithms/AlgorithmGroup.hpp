@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Parallel/Algorithm.hpp"
 #include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/DistributedObject.hpp"
 
 /*!
  * \ingroup ParallelGroup
