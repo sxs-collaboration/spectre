@@ -12,6 +12,7 @@ class DataVector;
 namespace Ccz4 {
 /// \brief Tags for the CCZ4 formulation of Einstein equations
 namespace Tags {
+// Quantities of interest
 template <typename DataType = DataVector>
 struct ConformalFactor;
 template <typename DataType = DataVector>
@@ -77,6 +78,50 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct GradSpatialZ4Constraint;
 template <typename DataType = DataVector>
 struct RicciScalarPlusDivergenceZ4Constraint;
+// Temporary expressions for computing above quantities of interest
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct GammaHatMinusContractedConformalChristoffel;
+template <typename DataType = DataVector>
+struct KMinus2ThetaC;
+template <typename DataType = DataVector>
+struct KMinusK0Minus2ThetaC;
+template <typename DataType = DataVector>
+struct ContractedFieldB;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ConformalMetricTimesFieldB;
+template <typename DataType = DataVector>
+struct LapseTimesRicciScalarPlus2DivergenceZ4Constraint;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ConformalMetricTimesTraceATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct LapseTimesATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct FieldDUpTimesATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct LapseTimesDerivATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct InverseConformalMetricTimesDerivATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ATildeMinusOneThirdConformalMetricTimesTraceATilde;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct LapseTimesFieldA;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct ShiftTimesDerivGammaHat;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
+struct InverseTauTimesConformalMetric;
+template <typename DataType = DataVector>
+struct LapseTimesSlicingCondition;
 }  // namespace Tags
 
 /// \brief Input option tags for the CCZ4 evolution system
