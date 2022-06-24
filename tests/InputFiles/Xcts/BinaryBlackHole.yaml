@@ -31,7 +31,7 @@ DomainCreator:
   BinaryCompactObject:
     ObjectA:
       InnerRadius: 0.8
-      OuterRadius: 5.
+      OuterRadius: 4.
       XCoord: *x_left
       Interior:
         ExciseWithBoundaryCondition:
@@ -43,7 +43,7 @@ DomainCreator:
       UseLogarithmicMap: True
     ObjectB:
       InnerRadius: 0.8
-      OuterRadius: 5.
+      OuterRadius: 4.
       XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
@@ -54,11 +54,11 @@ DomainCreator:
             NegativeExpansion: *kerr_right
       UseLogarithmicMap: True
     EnvelopingCube:
-      Radius: 55.
+      Radius: 60.
       UseProjectiveMap: True
-      Sphericity: 0.
+      Sphericity: 1.
     OuterShell:
-      InnerRadius: 60.
+      InnerRadius: Auto
       OuterRadius: 300.
       RadialDistribution: Inverse
       BoundaryCondition: Flatness
@@ -68,28 +68,18 @@ DomainCreator:
     InitialRefinement:
       ObjectAShell:               [1, 1, 1]
       ObjectBShell:               [1, 1, 1]
-      ObjectACube:                [1, 1, 0]
-      ObjectBCube:                [1, 1, 0]
-      EnvelopingCubeUpperZLeft:   [1, 1, 0]
-      EnvelopingCubeLowerZLeft:   [1, 1, 0]
-      EnvelopingCubeUpperYLeft:   [1, 1, 0]
-      EnvelopingCubeLowerYLeft:   [1, 1, 0]
-      EnvelopingCubeLowerX:       [1, 1, 0]
-      EnvelopingCubeUpperZRight:  [1, 1, 0]
-      EnvelopingCubeLowerZRight:  [1, 1, 0]
-      EnvelopingCubeUpperYRight:  [1, 1, 0]
-      EnvelopingCubeLowerYRight:  [1, 1, 0]
-      EnvelopingCubeUpperX:       [1, 1, 0]
-      CubedShellUpperZLeft:       [0, 1, 0]
-      CubedShellLowerZLeft:       [0, 1, 0]
-      CubedShellUpperYLeft:       [0, 1, 0]
-      CubedShellLowerYLeft:       [0, 1, 0]
-      CubedShellLowerX:           [1, 1, 0]
-      CubedShellUpperZRight:      [0, 1, 0]
-      CubedShellLowerZRight:      [0, 1, 0]
-      CubedShellUpperYRight:      [0, 1, 0]
-      CubedShellLowerYRight:      [0, 1, 0]
-      CubedShellUpperX:           [1, 1, 0]
+      ObjectACube:                [1, 1, 1]
+      ObjectBCube:                [1, 1, 1]
+      EnvelopingCubeUpperZLeft:   [1, 1, 1]
+      EnvelopingCubeLowerZLeft:   [1, 1, 1]
+      EnvelopingCubeUpperYLeft:   [1, 1, 1]
+      EnvelopingCubeLowerYLeft:   [1, 1, 1]
+      EnvelopingCubeLowerX:       [1, 1, 1]
+      EnvelopingCubeUpperZRight:  [1, 1, 1]
+      EnvelopingCubeLowerZRight:  [1, 1, 1]
+      EnvelopingCubeUpperYRight:  [1, 1, 1]
+      EnvelopingCubeLowerYRight:  [1, 1, 1]
+      EnvelopingCubeUpperX:       [1, 1, 1]
       OuterShellUpperZLeft:       [0, 1, 0]
       OuterShellLowerZLeft:       [0, 1, 0]
       OuterShellUpperYLeft:       [0, 1, 0]
@@ -103,13 +93,12 @@ DomainCreator:
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
-      ObjectAShell:   [6, 6, 9]
-      ObjectBShell:   [6, 6, 9]
+      ObjectAShell:   [6, 6, 10]
+      ObjectBShell:   [6, 6, 10]
       ObjectACube:    [6, 6, 7]
       ObjectBCube:    [6, 6, 7]
       EnvelopingCube: [6, 6, 6]
-      CubedShell:     [6, 6, 6]
-      OuterShell:     [6, 6, 5]
+      OuterShell:     [6, 6, 6]
 
 Discretization:
   DiscontinuousGalerkin:
@@ -124,8 +113,8 @@ NonlinearSolver:
   NewtonRaphson:
     ConvergenceCriteria:
       MaxIterations: 20
-      RelativeResidual: 0.
-      AbsoluteResidual: 1.e-10
+      RelativeResidual: 1.e-10
+      AbsoluteResidual: 1.e-11
     SufficientDecrease: 1.e-4
     MaxGlobalizationSteps: 40
     DampingFactor: 1.
