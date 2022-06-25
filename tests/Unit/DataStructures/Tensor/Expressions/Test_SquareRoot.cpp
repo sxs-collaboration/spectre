@@ -36,6 +36,21 @@ void assign_unique_values_to_tensor(
   }
 }
 
+// Checks that the number of ops in the expressions match what is expected
+void test_tensor_ops_properties() {
+  const Scalar<double> G{5.0};
+  const double H = 5.0;
+
+  const auto sqrt_G = sqrt(G());
+  const auto sqrt_HGG = sqrt(H * G() * G());
+  // Expected: 2 sqrt + 2 negations + 2 multiplies = 6 total ops
+  const auto sqrt_sqrt_GHG = sqrt(sqrt(-G() * H * -G()));
+
+  CHECK(sqrt_G.num_ops_subtree == 1);
+  CHECK(sqrt_HGG.num_ops_subtree == 3);
+  CHECK(sqrt_sqrt_GHG.num_ops_subtree == 6);
+}
+
 // \brief Test the square root of a rank 0 tensor expression is correctly
 // evaluated
 //
@@ -119,6 +134,7 @@ void test_sqrt(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.SquareRoot",
                   "[DataStructures][Unit]") {
+  test_tensor_ops_properties();
   test_sqrt(std::numeric_limits<double>::signaling_NaN());
   test_sqrt(DataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

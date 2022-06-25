@@ -493,7 +493,7 @@ void TimeDerivative<Dim>::apply(
                    (*spatial_z4_constraint)(ti::j)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti::I>(
+    ::tenex::update<ti::I>(
         dt_gamma_hat,
         (*dt_gamma_hat)(ti::I) +
             // terms with lapse and s
@@ -537,7 +537,7 @@ void TimeDerivative<Dim>::apply(
                2.0 * c * d_theta(ti::k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti::k>(
+    ::tenex::update<ti::k>(
         dt_field_a, (*dt_field_a)(ti::k) -
                         (*lapse_times_slicing_condition)() *
                             ((*inv_conformal_metric_times_d_a_tilde)(ti::k) -
@@ -584,7 +584,7 @@ void TimeDerivative<Dim>::apply(
                    (*field_d_up_times_a_tilde)(ti::k)));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti::k, ti::i, ti::j>(
+    ::tenex::update<ti::k, ti::i, ti::j>(
         dt_field_d, (*dt_field_d)(ti::k, ti::i, ti::j) +
                         0.5 * ((*conformal_metric_times_symmetrized_d_field_b)(
                                    ti::i, ti::k, ti::j) +
@@ -604,7 +604,7 @@ void TimeDerivative<Dim>::apply(
                            field_a(ti::k) * trace_extrinsic_curvature()));
   // now, if s == 1, also add terms with s
   if (static_cast<bool>(evolve_shift)) {
-    ::tenex::evaluate<ti::k>(
+    ::tenex::update<ti::k>(
         dt_field_p,
         (*dt_field_p)(ti::k) +
             one_third *

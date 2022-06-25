@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <type_traits>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -58,7 +60,7 @@ template <
     size_t NumConcreteTimeIndices,
     Requires<(NumIndices >= 2 and (NumSpatialSpacetimeIndices != 0 or
                                    NumConcreteTimeIndices != 0))> = nullptr>
-constexpr std::array<std::int32_t, NumIndices>
+SPECTRE_ALWAYS_INLINE constexpr std::array<std::int32_t, NumIndices>
 get_transformed_spacetime_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
     const std::array<size_t, NumSpatialSpacetimeIndices>&
@@ -86,7 +88,7 @@ template <size_t NumIndices, size_t NumSpatialSpacetimeIndices,
           size_t NumConcreteTimeIndices,
           Requires<(NumIndices < 2 or (NumSpatialSpacetimeIndices == 0 and
                                        NumConcreteTimeIndices == 0))> = nullptr>
-constexpr std::array<std::int32_t, NumIndices>
+SPECTRE_ALWAYS_INLINE constexpr std::array<std::int32_t, NumIndices>
 get_transformed_spacetime_symmetry(
     const std::array<std::int32_t, NumIndices>& symmetry,
     const std::array<size_t, NumSpatialSpacetimeIndices>&
@@ -162,6 +164,10 @@ struct TensorAsExpressionSymm<SymmList<Symm...>, TensorIndexTypeList,
 /// tensor, this is already over 500 base classes, which the Intel compiler
 /// takes too long to compile.
 ///
+/// For details on aliases and members defined in this class, as well as general
+/// `TensorExpression` terminology used in its members' documentation, see
+/// documentation for `TensorExpression`.
+///
 /// \tparam T the type of Tensor being represented as an expression
 /// \tparam ArgsList the tensor indices, e.g. `_a` and `_b` in `F(_a, _b)`
 template <typename T, typename ArgsList>
@@ -179,18 +185,100 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
           typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
                                                   ArgsList<Args...>>::type,
           IndexList<Indices...>, ArgsList<Args...>> {
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = X;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using symmetry =
       typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
                                               ArgsList<Args...>>::type;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = IndexList<Indices...>;
-  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+  /// The list of generic `TensorIndex`s of the result of the expression
   using args_list = ArgsList<Args...>;
+  /// The number of tensor indices in the result of the expression
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_left_child = 0;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_right_child = 0;
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree, which is 0 because this is a leaf expression
+  static constexpr size_t num_ops_subtree = 0;
+
+  // === Properties for splitting up subexpressions along the primary path ===
+  // These definitions only have meaning if this expression actually ends up
+  // being along the primary path that is taken when evaluating the whole tree.
+  // See documentation for `TensorExpression` for more details.
+  /// If on the primary path, whether or not the expression is an ending point
+  /// of a leg
+  static constexpr bool is_primary_end = true;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done in the subtree of the child along the
+  /// primary path, given that we will have already computed the whole subtree
+  /// at the next lowest leg's starting point. This is just 0 because this
+  /// expression is a leaf.
+  static constexpr size_t num_ops_to_evaluate_primary_left_child = 0;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done in the right operand's subtree. This is
+  /// just 0 because this expression is a leaf.
+  static constexpr size_t num_ops_to_evaluate_primary_right_child = 0;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done for this expression's subtree, given that
+  /// we will have already computed the subtree at the next lowest leg's
+  /// starting point. This is just 0 because this expression is a leaf.
+  static constexpr size_t num_ops_to_evaluate_primary_subtree = 0;
+  /// If on the primary path, whether or not the expression is a starting point
+  /// of a leg
+  static constexpr bool is_primary_start = false;
+  /// If on the primary path, whether or not the expression's child along the
+  /// primary path is a subtree that contains a starting point of a leg along
+  /// the primary path. This is always falls because this expression is a leaf.
+  static constexpr bool primary_child_subtree_contains_primary_start = false;
+  /// If on the primary path, whether or not this subtree contains a starting
+  /// point of a leg along the primary path
+  static constexpr bool primary_subtree_contains_primary_start =
+      is_primary_start;
 
   /// Construct an expression from a Tensor
   explicit TensorAsExpression(const Tensor<X, Symm, IndexList<Indices...>>& t)
       : t_(&t) {}
   ~TensorAsExpression() override = default;
+
+  /// \brief Assert that the LHS tensor of the equation is not equal to the
+  /// `Tensor` represented by this expression
+  template <typename LhsTensor>
+  SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
+      const gsl::not_null<LhsTensor*> lhs_tensor) const {
+    (void)lhs_tensor;
+    ASSERT(static_cast<const void*>(&(*t_)) != &(*lhs_tensor),
+           "The LHS Tensor cannot also be in the RHS expression in the call to "
+           "tenex::evaluate(). Use tenex::update() instead.");
+  }
+
+  /// \brief If the LHS tensor is the tensor represented by this expression,
+  /// assert that the order of the generic indices are the same
+  ///
+  /// \tparam LhsTensorIndices the list of generic `TensorIndex`s of the LHS
+  /// result `Tensor` being computed
+  /// \param lhs_tensor the LHS result `Tensor` being computed
+  template <typename LhsTensorIndices, typename LhsTensor>
+  SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
+      const gsl::not_null<LhsTensor*> lhs_tensor) const {
+    if (static_cast<const void*>(&(*t_)) == &(*lhs_tensor)) {
+      ASSERT(
+          (std::is_same_v<LhsTensorIndices, args_list>),
+          "The LHS Tensor was also found in the RHS tensor expression, but the "
+          "generic index order used for it on the RHS does not match the order "
+          "used for it on the LHS.");
+    }
+  }
 
   /// \brief Returns the value of the contained tensor's multi-index
   ///
@@ -201,12 +289,39 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
     return t_->get(multi_index);
   }
 
+  /// \brief Returns the value of the contained tensor's multi-index
+  ///
+  /// \param multi_index the multi-index of the tensor component to retrieve
+  /// \return the value of the component at `multi_index` in the tensor
+  SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
+      const type& /*result_component*/,
+      const std::array<size_t, num_tensor_indices>& multi_index) const {
+    return t_->get(multi_index);
+  }
+
+  /// \brief If this expression is the start of a leg, update the LHS result
+  /// component to be the value of the component at the given multi-index of the
+  /// `Tensor` represented by the expression
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param multi_index the multi-index of the component of the `Tensor`
+  /// represented by the expression
+  SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
+      type& result_component,
+      const std::array<size_t, num_tensor_indices>& multi_index) const {
+    if constexpr (is_primary_start) {
+      // We want to evaluate the subtree for this expression
+      result_component = get(multi_index);
+    }
+  }
+
   /// Retrieve the i'th entry of the Tensor being held
   SPECTRE_ALWAYS_INLINE type operator[](const size_t i) const {
     return t_->operator[](i);
   }
 
  private:
+  /// `Tensor` represented by this expression
   const Tensor<X, Symm, IndexList<Indices...>>* t_ = nullptr;
 };
 }  // namespace tenex

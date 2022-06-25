@@ -265,6 +265,21 @@ struct AddSubType {
 };
 }  // namespace detail
 
+/// \ingroup TensorExpressionsGroup
+/// \brief Defines the tensor expression representing the addition or
+/// subtraction of two tensor expressions
+///
+/// \details
+/// For details on aliases and members defined in this class, as well as general
+/// `TensorExpression` terminology used in its members' documentation, see
+/// documentation for `TensorExpression`.
+///
+/// \tparam T1 the left operand expression
+/// \tparam T2 the right operand expression
+/// \tparam ArgsList1 generic `TensorIndex`s of the left operand
+/// \tparam ArgsList2 generic `TensorIndex`s of the right operand
+/// \tparam Sign the sign of the operation selected, 1 for addition or -1 for
+/// subtraction
 template <typename T1, typename T2, typename ArgsList1, typename ArgsList2,
           int Sign>
 struct AddSub;
@@ -295,36 +310,238 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
                 "Invalid Sign provided for addition or subtraction of Tensor "
                 "elements. Sign must be 1 (addition) or -1 (subtraction).");
 
+  // === Index properties ===
+  /// The type of the data being stored in the result of the expression
   using type = typename detail::AddSubType<T1, T2>::type;
+  /// The ::Symmetry of the result of the expression
   using symmetry = typename detail::AddSubType<T1, T2>::symmetry;
+  /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
+  /// expression
   using index_list = typename detail::AddSubType<T1, T2>::index_list;
-  // number of indices in the tensor resulting from addition or subtraction
-  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
-  // number of indices in the second operand in the addition or subtraction
-  static constexpr auto num_tensor_indices_op2 = sizeof...(Args2);
+  /// The list of generic `TensorIndex`s of the result of the
+  /// expression
   using args_list = typename T1::args_list;
+  /// The number of tensor indices in the result of the expression. This also
+  /// doubles as the left operand's number of indices.
+  static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
+  /// The number of tensor indices in the right operand expression
+  static constexpr auto num_tensor_indices_op2 = sizeof...(Args2);
+  /// Mapping from the left operand's index order to the right operand's index
+  /// order
   static constexpr std::array<size_t, num_tensor_indices_op2>
       operand_index_transformation =
           compute_tensorindex_transformation<num_tensor_indices,
                                              num_tensor_indices_op2>(
               {{Args1::value...}}, {{Args2::value...}});
-  // positions of indices in first operand where generic spatial indices are
-  // used for spacetime indices
+  /// Positions of indices in first operand where generic spatial indices are
+  /// used for spacetime indices
   static constexpr auto op1_spatial_spacetime_index_positions =
       detail::get_spatial_spacetime_index_positions<typename T1::index_list,
                                                     ArgsList1<Args1...>>();
-  // positions of indices in second operand where generic spatial indices are
-  // used for spacetime indices
+  /// Positions of indices in second operand where generic spatial indices are
+  /// used for spacetime indices
   static constexpr auto op2_spatial_spacetime_index_positions =
       detail::get_spatial_spacetime_index_positions<typename T2::index_list,
                                                     ArgsList2<Args2...>>();
 
+  /// Whether or not the two operands have the same `TensorIndex`s in the same
+  /// order (including concrete time indices)
   static constexpr bool ops_have_generic_indices_at_same_positions =
       generic_indices_at_same_positions<tmpl::list<Args1...>,
                                         tmpl::list<Args2...>>::value;
 
+  // === Arithmetic tensor operations properties ===
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// left operand
+  static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
+  /// The number of arithmetic tensor operations done in the subtree for the
+  /// right operand
+  static constexpr size_t num_ops_right_child = T2::num_ops_subtree;
+  // This helps ensure we are minimizing breadth in the overall tree when we
+  // have addition (subtraction is not commutative)
+  static_assert(Sign == -1 or num_ops_left_child >= num_ops_right_child,
+                "The left operand of an AddSub expression performing addition "
+                "should be a subtree with equal or more tensor operations than "
+                "the right operand's subtree.");
+  /// The total number of arithmetic tensor operations done in this expression's
+  /// whole subtree
+  static constexpr size_t num_ops_subtree =
+      num_ops_left_child + num_ops_right_child + 1;
+
+  // === Properties for splitting up subexpressions along the primary path ===
+  // These definitions only have meaning if this expression actually ends up
+  // being along the primary path that is taken when evaluating the whole tree.
+  // See documentation for `TensorExpression` for more details.
+  /// If on the primary path, whether or not the expression is an ending point
+  /// of a leg
+  static constexpr bool is_primary_end = T1::is_primary_start;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done in the subtree of the child along the
+  /// primary path, given that we will have already computed the whole subtree
+  /// at the next lowest leg's starting point.
+  static constexpr size_t num_ops_to_evaluate_primary_left_child =
+      is_primary_end ? 0 : T1::num_ops_to_evaluate_primary_subtree;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done in the right operand's subtree. No
+  /// splitting is currently done, so this is just `num_ops_right_child`.
+  static constexpr size_t num_ops_to_evaluate_primary_right_child =
+      num_ops_right_child;
+  /// If on the primary path, this is the remaining number of arithmetic tensor
+  /// operations that need to be done for this expression's subtree, given that
+  /// we will have already computed the subtree at the next lowest leg's
+  /// starting point
+  static constexpr size_t num_ops_to_evaluate_primary_subtree =
+      num_ops_to_evaluate_primary_left_child +
+      num_ops_to_evaluate_primary_right_child + 1;
+  /// If on the primary path, whether or not the expression is a starting point
+  /// of a leg
+  static constexpr bool is_primary_start =
+      num_ops_to_evaluate_primary_subtree >=
+      detail::max_num_ops_in_sub_expression<type>;
+  /// When evaluating along a primary path, whether each operand's subtrees
+  /// should be evaluated separately. Since `DataVector` expression runtime
+  /// scales poorly with increased number of operations, evaluating the two
+  /// expression subtrees separately like this is beneficial when at least one
+  /// of the subtrees contains a large number of operations.
+  static constexpr bool evaluate_children_separately =
+      is_primary_start and (num_ops_to_evaluate_primary_left_child >=
+                                detail::max_num_ops_in_sub_expression<type> or
+                            num_ops_to_evaluate_primary_right_child >=
+                                detail::max_num_ops_in_sub_expression<type>);
+  /// If on the primary path, whether or not the expression's child along the
+  /// primary path is a subtree that contains a starting point of a leg along
+  /// the primary path
+  static constexpr bool primary_child_subtree_contains_primary_start =
+      T1::primary_subtree_contains_primary_start;
+  /// If on the primary path, whether or not this subtree contains a starting
+  /// point of a leg along the primary path
+  static constexpr bool primary_subtree_contains_primary_start =
+      is_primary_start or primary_child_subtree_contains_primary_start;
+
   AddSub(T1 t1, T2 t2) : t1_(std::move(t1)), t2_(std::move(t2)) {}
   ~AddSub() override = default;
+
+  /// \brief Assert that the LHS tensor of the equation does not also appear in
+  /// this expression's subtree
+  template <typename LhsTensor>
+  SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
+      const gsl::not_null<LhsTensor*> lhs_tensor) const {
+    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+      t1_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
+    }
+    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+      t2_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
+    }
+  }
+
+  /// \brief Assert that each instance of the LHS tensor in the RHS tensor
+  /// expression uses the same generic index order that the LHS uses
+  ///
+  /// \tparam LhsTensorIndices the list of generic `TensorIndex`s of the LHS
+  /// result `Tensor` being computed
+  /// \param lhs_tensor the LHS result `Tensor` being computed
+  template <typename LhsTensorIndices, typename LhsTensor>
+  SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
+      const gsl::not_null<LhsTensor*> lhs_tensor) const {
+    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+      t1_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
+          lhs_tensor);
+    }
+    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+      t2_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
+          lhs_tensor);
+    }
+  }
+
+  /// \brief Return the second operand's multi-index given the first operand's
+  /// multi-index
+  ///
+  /// \param op1_multi_index the multi-index of the left operand
+  /// \return the second operand's multi-index
+  SPECTRE_ALWAYS_INLINE std::array<size_t, num_tensor_indices_op2>
+  get_op2_multi_index(
+      const std::array<size_t, num_tensor_indices>& op1_multi_index) const {
+    if constexpr (ops_have_generic_indices_at_same_positions) {
+      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
+                    op2_spatial_spacetime_index_positions.size() != 0) {
+        // Operands have the same generic index order, but at least one of them
+        // has at least one spacetime index where a spatial index has been used,
+        // so we need to compute the 2nd operand's (possibly) shifted
+        // multi-index values
+        constexpr std::array<std::int32_t, num_tensor_indices>
+            spatial_spacetime_index_transformation =
+                detail::spatial_spacetime_index_transformation_from_positions<
+                    num_tensor_indices>(op1_spatial_spacetime_index_positions,
+                                        op2_spatial_spacetime_index_positions);
+        std::array<size_t, num_tensor_indices> op2_multi_index =
+            op1_multi_index;
+        for (size_t i = 0; i < num_tensor_indices; i++) {
+          gsl::at(op2_multi_index, i) = static_cast<size_t>(
+              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
+              gsl::at(spatial_spacetime_index_transformation, i));
+        }
+        return op2_multi_index;
+      } else {
+        // Operands have the same generic index order and neither of them has
+        // a spacetime index where a spatial index has been used, so
+        // both operands have the same multi-index
+        return op1_multi_index;
+      }
+    } else {
+      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
+                    op2_spatial_spacetime_index_positions.size() != 0) {
+        // Operands don't have the same generic index order and at least one of
+        // them has at least one spacetime index where a spatial index has been
+        // used, so we need to compute the 2nd operand's (possibly) shifted
+        // multi-index values and reorder them with respect to the 2nd operand's
+        // generic index order
+
+        // The list of positions where generic spatial indices were used for
+        // spacetime indices in the second operand, but rearranged in terms of
+        // the first operand's generic index order.
+        constexpr std::array<size_t,
+                             op2_spatial_spacetime_index_positions.size()>
+            transformed_op2_spatial_spacetime_index_positions = []() {
+              std::array<size_t, op2_spatial_spacetime_index_positions.size()>
+                  transformed_positions{};
+              for (size_t i = 0;
+                   i < op2_spatial_spacetime_index_positions.size(); i++) {
+                gsl::at(transformed_positions, i) =
+                    gsl::at(operand_index_transformation,
+                            gsl::at(op2_spatial_spacetime_index_positions, i));
+              }
+              return transformed_positions;
+            }();
+
+        // According to the transformed positions above, compute the value shift
+        // needed to convert from multi-indices of the first operand to
+        // multi-indices of the 2nd operand (with the generic index order of the
+        // first)
+        constexpr std::array<std::int32_t, num_tensor_indices>
+            spatial_spacetime_index_transformation =
+                detail::spatial_spacetime_index_transformation_from_positions<
+                    num_tensor_indices>(
+                    op1_spatial_spacetime_index_positions,
+                    transformed_op2_spatial_spacetime_index_positions);
+        std::array<size_t, num_tensor_indices> op2_multi_index =
+            op1_multi_index;
+        for (size_t i = 0; i < num_tensor_indices; i++) {
+          gsl::at(op2_multi_index, i) = static_cast<size_t>(
+              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
+              gsl::at(spatial_spacetime_index_transformation, i));
+        }
+        return transform_multi_index(op2_multi_index,
+                                     operand_index_transformation);
+      } else {
+        // Operands don't have the same generic index order, but neither of them
+        // has a spacetime index where a spatial index has been used, so we just
+        // need to reorder the 2nd operand's multi_index according to its
+        // generic index order
+        return transform_multi_index(op1_multi_index,
+                                     operand_index_transformation);
+      }
+    }
+  }
 
   /// \brief Helper function for computing the sum of or difference between
   /// components at given multi-indices from both operands of the expression
@@ -393,94 +610,205 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// tensor
   SPECTRE_ALWAYS_INLINE decltype(auto) get(
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
-    if constexpr (ops_have_generic_indices_at_same_positions) {
-      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
-                    op2_spatial_spacetime_index_positions.size() != 0) {
-        // Operands have the same generic index order, but at least one of them
-        // has at least one spacetime index where a spatial index has been used,
-        // so we need to compute the 2nd operand's (possibly) shifted
-        // multi-index values
-        constexpr std::array<std::int32_t, num_tensor_indices>
-            spatial_spacetime_index_transformation =
-                detail::spatial_spacetime_index_transformation_from_positions<
-                    num_tensor_indices>(op1_spatial_spacetime_index_positions,
-                                        op2_spatial_spacetime_index_positions);
-        std::array<size_t, num_tensor_indices> op2_multi_index =
-            result_multi_index;
-        for (size_t i = 0; i < num_tensor_indices; i++) {
-          gsl::at(op2_multi_index, i) = static_cast<size_t>(
-              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
-              gsl::at(spatial_spacetime_index_transformation, i));
-        }
-        return add_or_subtract(result_multi_index, op2_multi_index);
+    return add_or_subtract(result_multi_index,
+                           get_op2_multi_index(result_multi_index));
+  }
+
+  /// \brief Helper for evaluating the LHS Tensor's result component at this
+  /// subtree by evaluating the two operand's subtrees separately and adding or
+  /// subtracting them
+  ///
+  /// \details
+  /// The left and right operands' subtrees are evaluated successively with
+  /// two separate assignments to the LHS result component. Since `DataVector`
+  /// expression runtime scales poorly with increased number of operations,
+  /// evaluating the two expression subtrees separately like this is beneficial
+  /// when at least one of the subtrees contains a large number of operations.
+  /// Instead of evaluating a larger expression with their combined total number
+  /// of operations, we evaluate two smaller ones.
+  ///
+  /// This function also differs from `add_or_subtract` in that it takes into
+  /// account whether we have already computed part of the result component at a
+  /// lower subtree. In recursively computing this sum/difference, the current
+  /// result component will be substituted in for the most recent (highest)
+  /// subtree below it that has already been evaluated.
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param op1_multi_index the multi-index of the component of the first
+  /// operand of the sum or difference to evaluate
+  /// \param op2_multi_index the multi-index of the component of the second
+  /// operand of the sum or difference to evaluate
+  SPECTRE_ALWAYS_INLINE void add_or_subtract_primary_children(
+      type& result_component,
+      const std::array<size_t, num_tensor_indices>& op1_multi_index,
+      const std::array<size_t, num_tensor_indices_op2>& op2_multi_index) const {
+    if constexpr (Sign == 1) {
+      // We're performing addition
+      if constexpr (is_primary_end) {
+        (void)op1_multi_index;
+        // We've already computed the whole child subtree on the primary path,
+        // so just add the result of the other child's subtree to the current
+        // result
+        result_component += t2_.get(op2_multi_index);
       } else {
-        // Operands have the same generic index order and neither of them has
-        // a spacetime index where a spatial index has been used, so
-        // both operands have the same multi-index
-        return add_or_subtract(result_multi_index, result_multi_index);
+        // We haven't yet evaluated the whole subtree of the primary child, so
+        // first assign the result component to be the result of computing the
+        // primary child's subtree
+        result_component = t1_.get_primary(result_component, op1_multi_index);
+        // Now that the primary child's subtree has been computed, add the
+        // result of evaluating the other child's subtree to the current result
+        result_component += t2_.get(op2_multi_index);
       }
     } else {
-      if constexpr (op1_spatial_spacetime_index_positions.size() != 0 or
-                    op2_spatial_spacetime_index_positions.size() != 0) {
-        // Operands don't have the same generic index order and at least one of
-        // them has at least one spacetime index where a spatial index has been
-        // used, so we need to compute the 2nd operand's (possibly) shifted
-        // multi-index values and reorder them with respect to the 2nd operand's
-        // generic index order
-
-        // The list of positions where generic spatial indices were used for
-        // spacetime indices in the second operand, but rearranged in terms of
-        // the first operand's generic index order.
-        constexpr std::array<size_t,
-                             op2_spatial_spacetime_index_positions.size()>
-            transformed_op2_spatial_spacetime_index_positions = []() {
-              std::array<size_t, op2_spatial_spacetime_index_positions.size()>
-                  transformed_positions{};
-              for (size_t i = 0;
-                   i < op2_spatial_spacetime_index_positions.size(); i++) {
-                gsl::at(transformed_positions, i) =
-                    gsl::at(operand_index_transformation,
-                            gsl::at(op2_spatial_spacetime_index_positions, i));
-              }
-              return transformed_positions;
-            }();
-
-        // According to the transformed positions above, compute the value shift
-        // needed to convert from multi-indices of the first operand to
-        // multi-indices of the 2nd operand (with the generic index order of the
-        // first)
-        constexpr std::array<std::int32_t, num_tensor_indices>
-            spatial_spacetime_index_transformation =
-                detail::spatial_spacetime_index_transformation_from_positions<
-                    num_tensor_indices>(
-                    op1_spatial_spacetime_index_positions,
-                    transformed_op2_spatial_spacetime_index_positions);
-        std::array<size_t, num_tensor_indices> op2_multi_index =
-            result_multi_index;
-        for (size_t i = 0; i < num_tensor_indices; i++) {
-          gsl::at(op2_multi_index, i) = static_cast<size_t>(
-              static_cast<std::int32_t>(gsl::at(op2_multi_index, i)) +
-              gsl::at(spatial_spacetime_index_transformation, i));
-        }
-        return add_or_subtract(
-            result_multi_index,
-            transform_multi_index(op2_multi_index,
-                                  operand_index_transformation));
+      // We're performing subtraction
+      if constexpr (is_primary_end) {
+        (void)op1_multi_index;
+        // We've already computed the whole child subtree on the primary path,
+        // so just subtract the result of the other child's subtree from the
+        // current result
+        result_component -= t2_.get(op2_multi_index);
       } else {
-        // Operands don't have the same generic index order, but neither of them
-        // has a spacetime index where a spatial index has been used, so we just
-        // need to reorder the 2nd operand's multi_index according to its
-        // generic index order
-        return add_or_subtract(
-            result_multi_index,
-            transform_multi_index(result_multi_index,
-                                  operand_index_transformation));
+        // We haven't yet evaluated the whole subtree of the primary child, so
+        // first assign the result component to be the result of computing the
+        // primary child's subtree
+        result_component = t1_.get_primary(result_component, op1_multi_index);
+        // Now that the primary child's subtree has been computed, subtract the
+        // result of evaluating the other child's subtree from the current
+        // result
+        result_component -= t2_.get(op2_multi_index);
+      }
+    }
+  }
+
+  /// \brief Evaluate the LHS Tensor's result component at this subtree by
+  /// evaluating the two operand's subtrees separately and adding or subtracting
+  /// them
+  ///
+  /// \details
+  /// See `add_or_subtract_primary_children` for more details
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param result_multi_index the multi-index of the component of the result
+  /// tensor to evaluate
+  SPECTRE_ALWAYS_INLINE void evaluate_primary_children(
+      type& result_component,
+      const std::array<size_t, num_tensor_indices>& result_multi_index) const {
+    add_or_subtract_primary_children(result_component, result_multi_index,
+                                     get_op2_multi_index(result_multi_index));
+  }
+
+  /// \brief Helper function for returning the sum of or difference between
+  /// components at given multi-indices from both operands of the expression
+  ///
+  /// \details
+  /// This function differs from `add_or_subtract` in that it takes into account
+  /// whether we have already computed part of the result component at a lower
+  /// subtree. In recursively computing this sum/difference, the current result
+  /// component will be substituted in for the most recent (highest) subtree
+  /// below it that has already been evaluated.
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param op1_multi_index the multi-index of the component of the first
+  /// operand
+  /// \param op2_multi_index the multi-index of the component of the second
+  /// operand
+  /// \return the sum of or difference between the two components' values
+  SPECTRE_ALWAYS_INLINE decltype(auto) add_or_subtract_primary(
+      const type& result_component,
+      const std::array<size_t, num_tensor_indices>& op1_multi_index,
+      const std::array<size_t, num_tensor_indices_op2>& op2_multi_index) const {
+    if constexpr (Sign == 1) {
+      // We're performing addition
+      if constexpr (is_primary_end) {
+        (void)op1_multi_index;
+        // We've already computed the whole child subtree on the primary path,
+        // so just add the result of the other child's subtree to the current
+        // result
+        return result_component + t2_.get(op2_multi_index);
+      } else {
+        // We haven't yet evaluated the whole subtree for this expression, so
+        // return the sum of the results of the two operands' subtrees
+        return t1_.get_primary(result_component, op1_multi_index) +
+               t2_.get(op2_multi_index);
+      }
+    } else {
+      // We're performing subtraction
+      if constexpr (is_primary_end) {
+        (void)op1_multi_index;
+        // We've already computed the whole child subtree on the primary path,
+        // so just subtract the result of the other child's subtree from the
+        // current result
+        return result_component - t2_.get(op2_multi_index);
+      } else {
+        // We haven't yet evaluated the whole subtree for this expression, so
+        // return the difference between the results of the two operands'
+        // subtrees
+        return t1_.get_primary(result_component, op1_multi_index) -
+               t2_.get(op2_multi_index);
+      }
+    }
+  }
+
+  /// \brief Return the value of the component at the given multi-index of the
+  /// tensor resulting from addition or subtraction
+  ///
+  /// \details
+  /// This function differs from `get` in that it takes into account whether we
+  /// have already computed part of the result component at a lower subtree.
+  /// In recursively computing this sum/difference, the current result component
+  /// will be substituted in for the most recent (highest) subtree below it that
+  /// has already been evaluated.
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param result_multi_index the multi-index of the component of the result
+  /// tensor to retrieve
+  /// \return the value of the component at `result_multi_index` in the result
+  /// tensor
+  SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
+      const type& result_component,
+      const std::array<size_t, num_tensor_indices>& result_multi_index) const {
+    return add_or_subtract_primary(result_component, result_multi_index,
+                                   get_op2_multi_index(result_multi_index));
+  }
+
+  /// \brief Successively evaluate the LHS Tensor's result component at each
+  /// leg in this expression's subtree
+  ///
+  /// \details
+  /// This function takes into account whether we have already computed part of
+  /// the result component at a lower subtree. In recursively computing this
+  /// sum/difference, the current result component will be substituted in for
+  /// the most recent (highest) subtree below it that has already been
+  /// evaluated.
+  ///
+  /// \param result_component the LHS tensor component to evaluate
+  /// \param result_multi_index the multi-index of the component of the result
+  /// tensor to evaluate
+  SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
+      type& result_component,
+      const std::array<size_t, num_tensor_indices>& result_multi_index) const {
+    if constexpr (primary_child_subtree_contains_primary_start) {
+      // The primary child's subtree contains at least one leg, so recurse down
+      // and evaluate that first
+      t1_.evaluate_primary_subtree(result_component, result_multi_index);
+    }
+
+    if constexpr (is_primary_start) {
+      // We want to evaluate the subtree for this expression
+      if constexpr (evaluate_children_separately) {
+        // Evaluate operand's subtrees separately
+        evaluate_primary_children(result_component, result_multi_index);
+      } else {
+        // Evaluate whole subtree as one expression
+        result_component = get_primary(result_component, result_multi_index);
       }
     }
   }
 
  private:
+  /// Left operand expression
   T1 t1_;
+  /// Right operand expression
   T2 t2_;
 };
 }  // namespace tenex
@@ -506,7 +834,11 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when adding two tensors must be equal. This error "
       "occurs from expressions like R(ti::a, ti::b) + S(ti::c, ti::a)");
-  return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
+  if constexpr (T1::num_ops_subtree >= T2::num_ops_subtree) {
+    return tenex::AddSub<T1, T2, Args1, Args2, 1>(~t1, ~t2);
+  } else {
+    return tenex::AddSub<T2, T1, Args2, Args1, 1>(~t2, ~t1);
+  }
 }
 
 /// @{
@@ -558,7 +890,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       (... and tt::is_time_index<Args>::value),
       "Can only add a number to a tensor expression that evaluates to a rank 0"
       "tensor.");
-  return tenex::NumberAsExpression(number) + t;
+  return t + tenex::NumberAsExpression(number);
 }
 /// @}
 
@@ -582,8 +914,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
   static_assert(
       tmpl::equal_members<op1_generic_indices, op2_generic_indices>::value,
       "The generic indices when subtracting two tensors must be equal. This "
-      "error "
-      "occurs from expressions like R(ti::a, ti::b) - S(ti::c, ti::a)");
+      "error occurs from expressions like R(ti::a, ti::b) - S(ti::c, ti::a)");
   return tenex::AddSub<T1, T2, Args1, Args2, -1>(~t1, ~t2);
 }
 
@@ -625,7 +956,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
       "rank 0 tensor.");
-  return t - tenex::NumberAsExpression(number);
+  return t + tenex::NumberAsExpression(-number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
           typename... Args>

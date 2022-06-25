@@ -37,6 +37,45 @@ void assign_unique_values_to_tensor(
   }
 }
 
+// Checks that the number of ops in the expressions match what is expected
+void test_tensor_ops_properties() {
+  const Scalar<double> G{5.0};
+  const double H = 5.0;
+  const tnsr::II<double, 3> R{};
+  const tnsr::ia<double, 3> S{};
+
+  const auto HG_outer_product = H * G();
+  const auto HGG_outer_product = H * G() * G();
+  const auto RG_outer_product = R(ti::I, ti::J) * G();
+  const auto HSGR_outer_product = H * S(ti::i, ti::j) * G() * R(ti::K, ti::L);
+  // Expected: 3 multiplies + 2 adds = 5 total ops
+  const auto RS_inner_product = R(ti::I, ti::J) * S(ti::j, ti::k);
+  // Expected: 9 multiplies + 8 adds = 17 total ops
+  const auto RS_fully_contract = R(ti::I, ti::J) * S(ti::j, ti::i);
+  // Expected:
+  // If tempIk = R(ti::I, ti::J) * S(ti::j, ti::k) is 5 ops (see above), then
+  // (tempIk) * R(ti::K, ti::L) should be:
+  //      (3 multiplies * (tmpIk ops)) + 3 multiplies + 2 adds = 20 total ops
+  const auto RSR_inner_product =
+      R(ti::I, ti::J) * S(ti::j, ti::k) * R(ti::K, ti::L);
+  // Expected:
+  // If tempij = ((G() * H) * (S(ti::i, ti::j) - S(ti::j, ti::i))), then tempij
+  // should be 2 multiplies + 1 subtract = 3 total ops. Then,
+  // (tempij) * R(ti::I, ti::K) should be:
+  //    (3 multiplies * (tempij ops)) + 3 multiplies + 2 adds = 14 total ops
+  const auto mixed_op_expression =
+      ((G() * H) * (S(ti::i, ti::j) - S(ti::j, ti::i))) * R(ti::I, ti::K);
+
+  CHECK(HG_outer_product.num_ops_subtree == 1);
+  CHECK(HGG_outer_product.num_ops_subtree == 2);
+  CHECK(RG_outer_product.num_ops_subtree == 1);
+  CHECK(HSGR_outer_product.num_ops_subtree == 3);
+  CHECK(RS_inner_product.num_ops_subtree == 5);
+  CHECK(RS_fully_contract.num_ops_subtree == 17);
+  CHECK(RSR_inner_product.num_ops_subtree == 20);
+  CHECK(mixed_op_expression.num_ops_subtree == 14);
+}
+
 // \brief Test the outer product and of a tensor expression and `double` is
 // correctly evaluated
 //
@@ -78,7 +117,8 @@ void test_outer_product_double(const DataType& used_for_size) {
     for (size_t j = 0; j < dim; j++) {
       CHECK(Lij_from_R_Sij.get(i, j) == 5.6 * S.get(i, j));
       CHECK(Lij_from_Sij_R.get(i, j) == S.get(i, j) * -8.1);
-      CHECK(Lij_from_R_Sij_T.get(i, j) == -1.7 * S.get(i, j) * 0.6);
+      CHECK_ITERABLE_APPROX(Lij_from_R_Sij_T.get(i, j),
+                            -1.7 * S.get(i, j) * 0.6);
     }
   }
 }
@@ -1301,6 +1341,7 @@ void test_products(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Product",
                   "[DataStructures][Unit]") {
+  test_tensor_ops_properties();
   test_products(std::numeric_limits<double>::signaling_NaN());
   test_products(DataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }
