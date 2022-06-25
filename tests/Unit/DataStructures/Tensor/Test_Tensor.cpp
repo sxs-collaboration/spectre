@@ -1313,7 +1313,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
   test_serialization(tensor);
 }
 
-// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.out_of_bounds_subscript",
     "[DataStructures][Unit]") {
@@ -1325,7 +1325,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_subscript",
     "[DataStructures][Unit]") {
@@ -1337,7 +1337,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_multiplicity",
     "[DataStructures][Unit]") {
@@ -1349,7 +1349,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-// [[OutputRegex, Expects violated: index >= 0 and index < narrow_cast<Size>]]
+// [[OutputRegex, index >= 0 and index < narrow_cast<Size>]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Tensor.const_out_of_bounds_get_tensor_index_vector",
     "[DataStructures][Unit]") {

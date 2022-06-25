@@ -27,10 +27,10 @@
  * \param cond the expression that is expected to be true
  */
 #if defined(SPECTRE_DEBUG) || defined(EXPECTS_ENSURES)
-#define Expects(cond)                      \
-  if (UNLIKELY(!(cond))) {                 \
-    CERROR("Expects violated: "s + #cond); \
-  } else                                   \
+#define Expects(cond)      \
+  if (UNLIKELY(!(cond))) { \
+    ERROR(#cond);          \
+  } else                   \
     static_cast<void>(0)
 #else
 #define Expects(cond)        \
@@ -49,10 +49,10 @@
  * \param cond the expression that is expected to be true
  */
 #if defined(SPECTRE_DEBUG) || defined(EXPECTS_ENSURES)
-#define Ensures(cond)                      \
-  if (UNLIKELY(!(cond))) {                 \
-    CERROR("Ensures violated: "s + #cond); \
-  } else                                   \
+#define Ensures(cond)      \
+  if (UNLIKELY(!(cond))) { \
+    ERROR(#cond);          \
+  } else                   \
     static_cast<void>(0)
 #else
 #define Ensures(cond)        \
