@@ -110,7 +110,6 @@ struct Metavariables {
   using variables_tag = Tags::Variables<evolved_vars>;
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim, bool UseRollon>

@@ -279,7 +279,6 @@ struct MockMetavariables {
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetC>,
       mock_interpolator<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 // This tests whether all the Actions of Interpolator and InterpolationTarget
@@ -319,7 +318,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::MockRuntimeSystem<metavars> runner{
       std::move(tuple_of_opts), {}, {2, 3, 1}};
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     for (size_t core = 0; core < 6; ++core) {
@@ -342,7 +341,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));

@@ -389,6 +389,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   // helps in identifying that the GlobalCache is a Nodegroup using
   // Parallel::is_nodegroup_v
   using chare_type = Parallel::Algorithms::Nodegroup;
+  using tags_list = get_const_global_cache_tags<Metavariables>;
 
   /// Constructor used only by the ActionTesting framework and other
   /// non-charm++ tests that don't know about proxies.

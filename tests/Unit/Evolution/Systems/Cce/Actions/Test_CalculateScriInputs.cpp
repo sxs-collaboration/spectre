@@ -106,7 +106,6 @@ struct mock_characteristic_evolution {
 struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -195,7 +194,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
       component_volume_variables, component_transform_variables,
       component_real_variables, component_boundary_variables, l_max,
       number_of_radial_points);
-  runner.set_phase(metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
 
   // run the initialization to get the values into the databox
   tmpl::for_each<extra_pre_swsh_derivative_scri_tags>(
@@ -210,7 +209,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.CalculateScriInputs",
         make_not_null(&expected_box));
   });
 
-  runner.set_phase(metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
   // this will execute all of the `MutateApply` actions for the `extra...`
   // typelists
   for (size_t i = 0;

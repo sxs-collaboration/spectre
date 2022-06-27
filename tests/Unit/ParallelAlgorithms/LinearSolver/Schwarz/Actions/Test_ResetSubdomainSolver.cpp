@@ -50,7 +50,6 @@ struct ElementArray {
 struct Metavariables {
   using element_array = ElementArray<Metavariables>;
   using component_list = tmpl::list<element_array>;
-  using Phase = Parallel::Phase;
 };
 
 void test_reset_subdomain_solver(const bool skip_resets) {
@@ -65,8 +64,7 @@ void test_reset_subdomain_solver(const bool skip_resets) {
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
       {std::make_unique<SubdomainSolver>()});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   REQUIRE_FALSE(
       ActionTesting::get_databox_tag<
           element_array,

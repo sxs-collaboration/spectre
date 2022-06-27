@@ -483,9 +483,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     // appropriately when load balancing is triggered by the LoadBalancing phase
     // in Main
     if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
-                                 Parallel::Algorithms::Array> and
-                  Algorithm_detail::has_LoadBalancing_v<
-                      typename metavariables::Phase>) {
+                                 Parallel::Algorithms::Array>) {
       this->usesAtSync = false;
       this->setMigratable(true);
     }
@@ -633,11 +631,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   // checkpointing, though it means the restart must occur on the same
   // hardware configuration (same number of nodes and same procs per node)
   // used when writing the checkpoint.
-  if constexpr (Algorithm_detail::has_LoadBalancing_v<
-                    typename metavariables::Phase>) {
-    if (phase_ == metavariables::Phase::LoadBalancing) {
-      perform_registration_or_deregistration(p, box_);
-    }
+  if (phase_ == Parallel::Phase::LoadBalancing) {
+    perform_registration_or_deregistration(p, box_);
   }
 }
 
@@ -855,9 +850,8 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       ERROR(
           "An algorithm must always be set to terminate at the beginning of a "
           "phase. Since this is not the case the previous phase did not end "
-          "correctly. The integer corresponding to the previous phase is: "
-          << static_cast<int>(phase_)
-          << " and the next phase is: " << static_cast<int>(next_phase)
+          "correctly. The previous phase is: "
+          << phase_ << " and the next phase is: " << next_phase
           << ", The termination flag is: " << get_terminate()
           << ", and the halt flag is: " << halt_algorithm_until_next_phase_);
     }
@@ -1051,7 +1045,7 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     if (not box_found) {
       ERROR(
           "The DataBox type being retrieved at algorithm step: "
-          << algorithm_step_ << " in phase " << phase_index
+          << algorithm_step_ << " in phase " << phase_
           << " corresponding to action " << pretty_type::get_name<this_action>()
           << " is not the correct type but is of variant index " << box_.index()
           << ". If you are using Goto and Label actions then you are using "

@@ -24,7 +24,6 @@ using mock_observer_writer = MockObserverWriter<TestMetavariables>;
 struct TestMetavariables {
   using component_list = tmpl::list<mock_observer_writer>;
 
-  using Phase = Parallel::Phase;
 };
 
 void run_test() {

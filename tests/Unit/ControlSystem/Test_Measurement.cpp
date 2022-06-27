@@ -62,7 +62,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<Event, tmpl::list<MeasureEvent>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -85,8 +84,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Measurement", "[ControlSystem][Unit]") {
       control_system::TestHelpers::ExampleControlSystem::MeasurementQueue::
           type{},
       0.0, 0.0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& cache = ActionTesting::cache<element_component>(runner, 0);
   // Making our own DataBox is easier than using the one in the mock

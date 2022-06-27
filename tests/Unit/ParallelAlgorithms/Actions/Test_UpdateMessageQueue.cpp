@@ -68,7 +68,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -79,8 +78,7 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
   ActionTesting::emplace_component<component>(
       &runner, 0, LinkedMessageQueueTag::type{}, ProcessorCalls::type{});
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const auto processed_by_call = [&runner](auto queue_v,
                                            const LinkedMessageId<int>& id,

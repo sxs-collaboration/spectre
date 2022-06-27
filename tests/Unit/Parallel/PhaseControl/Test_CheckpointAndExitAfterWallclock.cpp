@@ -30,7 +30,6 @@ struct Metavariables {
         tmpl::pair<Trigger, tmpl::list<Triggers::Always>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.CheckpointAndExitAfterWallclock",

@@ -63,7 +63,6 @@ struct ElementArray {
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -99,8 +98,7 @@ SPECTRE_TEST_CASE(
         make_not_null(&runner), 0, value);
   };
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in

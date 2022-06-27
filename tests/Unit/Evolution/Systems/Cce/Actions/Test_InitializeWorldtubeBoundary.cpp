@@ -68,7 +68,6 @@ struct H5Metavariables {
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<H5Metavariables>>;
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-  using Phase = Parallel::Phase;
 };
 
 struct GhMetavariables {
@@ -77,7 +76,6 @@ struct GhMetavariables {
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-  using Phase = Parallel::Phase;
 };
 
 struct AnalyticMetavariables {
@@ -86,7 +84,6 @@ struct AnalyticMetavariables {
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
   using component_list =
       tmpl::list<mock_analytic_worldtube_boundary<AnalyticMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename Generator>
@@ -122,7 +119,7 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
                                extraction_radius, frequency, amplitude, l_max);
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           H5Metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       Tags::H5WorldtubeBoundaryDataManager::create_from_options(
@@ -134,8 +131,7 @@ void test_h5_initialization(const gsl::not_null<Generator*> gen) {
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           H5Metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
   // check that the h5 data manager copied out of the databox has the correct
   // properties that we can examine without running the other actions
   const auto& data_manager =
@@ -173,7 +169,7 @@ void test_gh_initialization() {
           l_max, extraction_radius, std::numeric_limits<double>::infinity(),
           0.0}};
 
-  runner.set_phase(GhMetavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       InterfaceManagers::GhLocalTimeStepping{
@@ -184,7 +180,7 @@ void test_gh_initialization() {
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(GhMetavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
 
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)
@@ -204,7 +200,7 @@ void test_analytic_initialization() {
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
       {l_max, 100.0, 0.0}};
 
-  runner.set_phase(AnalyticMetavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{
@@ -215,7 +211,7 @@ void test_analytic_initialization() {
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(AnalyticMetavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
 
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)
@@ -247,7 +243,7 @@ SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
   const size_t l_max = 8;
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
       {l_max, 100.0, 0.0}};
-  runner.set_phase(AnalyticMetavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       AnalyticBoundaryDataManager{

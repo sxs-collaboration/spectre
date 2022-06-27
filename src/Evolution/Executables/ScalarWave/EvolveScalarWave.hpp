@@ -127,18 +127,6 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
 
-  using Phase = Parallel::Phase;
-
-  static std::string phase_name(Phase phase) {
-    if (phase == Phase::LoadBalancing) {
-      return "LoadBalancing";
-    }
-    ERROR(
-        "Passed phase that should not be used in input file. Integer "
-        "corresponding to phase is: "
-        << static_cast<int>(phase));
-  }
-
   using analytic_solution_fields = typename system::variables_tag::tags_list;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag,
@@ -187,7 +175,7 @@ struct EvolutionMetavars {
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
-                                  EvolutionMetavars, Phase::LoadBalancing>,
+                                  Parallel::Phase::LoadBalancing>,
                               PhaseControl::CheckpointAndExitAfterWallclock>>,
         tmpl::pair<
             ScalarWave::BoundaryConditions::BoundaryCondition<volume_dim>,
@@ -299,37 +287,11 @@ struct EvolutionMetavars {
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<EvolutionMetavars>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change(
-        phase_change_decision_data, current_phase,
-        *Parallel::local_branch(cache_proxy));
-    if (next_phase.has_value()) {
-      return next_phase.value();
-    }
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::InitializeTimeStepperHistory;
-      case Phase::InitializeTimeStepperHistory:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Exit;
-      case Phase::Exit:
-        ERROR(
-            "Should never call determine_next_phase with the current phase "
-            "being 'Exit'");
-      default:
-        ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> an integral "
-            "value?");
-    }
-  }
+  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
+      {Parallel::Phase::Initialization,
+       Parallel::Phase::InitializeTimeStepperHistory,
+       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

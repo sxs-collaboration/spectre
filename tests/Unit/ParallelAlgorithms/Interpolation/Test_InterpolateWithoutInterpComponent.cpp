@@ -60,7 +60,7 @@ struct initialize_elements_and_queue_simple_actions {
       ActionTesting::next_action<elem_component>(make_not_null(&runner),
                                                  element_id);
     }
-    ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
     // Create event.
     typename metavars::event event{};
@@ -155,7 +155,6 @@ struct MockMetavariables {
     using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 template <typename MockMetavariables>

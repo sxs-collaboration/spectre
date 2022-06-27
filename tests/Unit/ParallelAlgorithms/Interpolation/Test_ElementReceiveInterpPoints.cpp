@@ -116,7 +116,6 @@ struct MockMetavariables {
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
       mock_element<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
@@ -151,7 +150,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   // Initialization
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component<target_component_a>(&runner, 0);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component_a>(make_not_null(&runner), 0);
@@ -164,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   using point_info_type = tnsr::I<
       DataVector, metavars::volume_dim,
@@ -191,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ElementReceivePoints",
   runner.invoke_queued_simple_action<elem_component>(0);
   runner.invoke_queued_simple_action<elem_component>(0);
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // After registration, element should contain an
   // intrp::Tags::InterpPointInfo<Metavariables> that has a

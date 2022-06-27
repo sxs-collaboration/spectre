@@ -45,7 +45,6 @@ struct test_metavariables {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<helpers::reduction_data_from_doubles>>;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -64,7 +63,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.WriteSimpleData", "[Unit][Observers]") {
   for(size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
   }
-  runner.set_phase(test_metavariables::Phase::Testing);
+  runner.set_phase(Parallel::Phase::Testing);
 
   const std::string h5_file_name = output_file_prefix + "0.h5";
   if (file_system::check_if_file_exists(h5_file_name)) {

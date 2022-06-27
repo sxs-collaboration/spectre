@@ -198,7 +198,6 @@ struct MockMetavariables {
     using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
@@ -213,7 +212,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   using elem_component = mock_element<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<interp_target_component>(&runner, 0);
@@ -222,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   ActionTesting::emplace_component<elem_component>(&runner, array_index);
   ActionTesting::next_action<elem_component>(make_not_null(&runner),
                                              array_index);
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto);

@@ -123,7 +123,6 @@ struct Metavariables {
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
-  using Phase = Parallel::Phase;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 

@@ -137,7 +137,6 @@ struct Metavariables {
     using factory_classes =
         tmpl::map<tmpl::pair<Event, tmpl::list<typename system::ObserveEvent>>>;
   };
-  using Phase = Parallel::Phase;
 };
 
 // Helper tags

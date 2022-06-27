@@ -97,7 +97,6 @@ struct metavariables {
   using component_list = tmpl::list<mock_observer_writer<metavariables>,
                                     mock_boundary<metavariables>>;
   using observed_reduction_data_tags = tmpl::list<>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
@@ -155,7 +154,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
 
   // test writing news
   ActionTesting::MockRuntimeSystem<metavariables> runner{{l_max}};
-  runner.set_phase(metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<mock_observer_writer<metavariables>>(&runner,
                                                                         0_st);
   ActionTesting::emplace_component_and_initialize<mock_boundary<metavariables>>(

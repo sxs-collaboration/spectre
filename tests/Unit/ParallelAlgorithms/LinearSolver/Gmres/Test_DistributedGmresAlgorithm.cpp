@@ -53,20 +53,11 @@ struct Metavariables {
         tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
   };
 
-  using Phase = helpers::Phase;
   using component_list = helpers_distributed::component_list<Metavariables>;
   using observed_reduction_data_tags =
       helpers::observed_reduction_data_tags<Metavariables>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
-
-  template <typename Metavariables, typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const helpers::Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
-    return helpers::determine_next_phase(current_phase);
-  }
+  static constexpr auto default_phase_order = helpers::default_phase_order;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

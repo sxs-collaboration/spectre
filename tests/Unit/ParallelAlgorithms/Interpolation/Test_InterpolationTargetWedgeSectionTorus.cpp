@@ -50,7 +50,6 @@ struct MockMetavariables {
       tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 void test_r_theta_lgl() {

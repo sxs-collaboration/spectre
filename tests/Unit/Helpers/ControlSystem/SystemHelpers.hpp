@@ -132,7 +132,6 @@ template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
-  using Phase = Parallel::Phase;
 
   using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
                                 ExpansionDerivOrder>;

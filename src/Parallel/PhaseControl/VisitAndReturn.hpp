@@ -12,10 +12,12 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Main.hpp"
+#include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Functional.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -26,14 +28,14 @@ namespace Tags {
 ///
 /// \note This tag is not intended to participate in any of the reduction
 /// procedures, so will error if the combine method is called.
-template <auto Phase>
+template <Parallel::Phase Phase>
 struct ReturnPhase {
-  using type = std::optional<decltype(Phase)>;
+  using type = std::optional<Parallel::Phase>;
 
   struct combine_method {
-    std::optional<decltype(Phase)> operator()(
-        const std::optional<decltype(Phase)> /*first_phase*/,
-        const std::optional<decltype(Phase)>& /*second_phase*/) {
+    std::optional<Parallel::Phase> operator()(
+        const std::optional<Parallel::Phase> /*first_phase*/,
+        const std::optional<Parallel::Phase>& /*second_phase*/) {
       ERROR(
           "The return phase should only be altered by the phase change "
           "arbitration in the Main chare, so no reduction data should be "
@@ -48,7 +50,7 @@ struct ReturnPhase {
 ///
 /// Combinations are performed via `funcl::Or`, as the phase in question should
 /// be chosen if any component requests the jump.
-template <auto Phase>
+template <Parallel::Phase Phase>
 struct TemporaryPhaseRequested {
   using type = bool;
 
@@ -72,11 +74,6 @@ struct TemporaryPhaseRequested {
  * reduction data contribution, and if any component requests the temporary
  * phase, it will execute.
  *
- * To determine which specialization of this template is requested from the
- * input file, the `Metavariables` must define a `phase_name(Phase)` static
- * member function that returns a string for each phase that will be used in
- * `VisitAndReturn`s.
- *
  * \note  If multiple such methods are specified (with different
  * `TargetPhase`s), then the order of phase jumps depends on their order in the
  * list.
@@ -90,7 +87,7 @@ struct TemporaryPhaseRequested {
  *   following completion, control will return to the original phase from before
  *   the first `VisitAndReturn`.
  */
-template <typename Metavariables, typename Metavariables::Phase TargetPhase>
+template <Parallel::Phase TargetPhase>
 struct VisitAndReturn : public PhaseChange {
   /// \cond
   VisitAndReturn() = default;
@@ -100,8 +97,7 @@ struct VisitAndReturn : public PhaseChange {
   /// \endcond
 
   static std::string name() {
-    return "VisitAndReturn(" + Metavariables::phase_name(TargetPhase) +
-           ")";
+    return MakeString{} << "VisitAndReturn(" << TargetPhase << ")";
   }
   using options = tmpl::list<>;
   static constexpr Options::String help{
@@ -115,8 +111,8 @@ struct VisitAndReturn : public PhaseChange {
       tmpl::list<Tags::ReturnPhase<TargetPhase>,
                  Tags::TemporaryPhaseRequested<TargetPhase>>;
 
-  template <typename LocalMetavariables>
-  using participating_components = typename LocalMetavariables::component_list;
+  template <typename Metavariables>
+  using participating_components = typename Metavariables::component_list;
 
   template <typename... DecisionTags>
   void initialize_phase_data_impl(
@@ -129,10 +125,9 @@ struct VisitAndReturn : public PhaseChange {
   }
 
   template <typename ParallelComponent, typename ArrayIndex,
-            typename LocalMetavariables>
-  void contribute_phase_data_impl(
-      Parallel::GlobalCache<LocalMetavariables>& cache,
-      const ArrayIndex& array_index) const {
+            typename Metavariables>
+  void contribute_phase_data_impl(Parallel::GlobalCache<Metavariables>& cache,
+                                  const ArrayIndex& array_index) const {
     if constexpr (std::is_same_v<typename ParallelComponent::chare_type,
                                  Parallel::Algorithms::Array>) {
       Parallel::contribute_to_phase_change_reduction<ParallelComponent>(
@@ -145,14 +140,13 @@ struct VisitAndReturn : public PhaseChange {
     }
   }
 
-  template <typename... DecisionTags, typename LocalMetavariables>
-  typename std::optional<
-      std::pair<typename Metavariables::Phase, ArbitrationStrategy>>
+  template <typename... DecisionTags, typename Metavariables>
+  typename std::optional<std::pair<Parallel::Phase, ArbitrationStrategy>>
   arbitrate_phase_change_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
-      const typename LocalMetavariables::Phase current_phase,
-      const Parallel::GlobalCache<LocalMetavariables>& /*cache*/) const {
+      const Parallel::Phase current_phase,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     auto& return_phase = tuples::get<Tags::ReturnPhase<TargetPhase>>(
         *phase_change_decision_data);
     if (return_phase.has_value()) {
@@ -178,7 +172,6 @@ struct VisitAndReturn : public PhaseChange {
 }  // namespace PhaseControl
 
 /// \cond
-template <typename Metavariables, typename Metavariables::Phase TargetPhase>
-PUP::able::PUP_ID
-    PhaseControl::VisitAndReturn<Metavariables, TargetPhase>::my_PUP_ID = 0;
+template <Parallel::Phase TargetPhase>
+PUP::able::PUP_ID PhaseControl::VisitAndReturn<TargetPhase>::my_PUP_ID = 0;
 /// \endcond

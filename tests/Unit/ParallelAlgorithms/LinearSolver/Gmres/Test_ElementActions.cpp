@@ -83,7 +83,6 @@ template <bool Preconditioned>
 struct Metavariables {
   using element_array = ElementArray<Metavariables, Preconditioned>;
   using component_list = tmpl::list<element_array>;
-  using Phase = Parallel::Phase;
 };
 
 template <bool Preconditioned>
@@ -117,8 +116,7 @@ void test_element_actions() {
         make_not_null(&runner), 0, value);
   };
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in

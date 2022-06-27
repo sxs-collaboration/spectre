@@ -184,7 +184,6 @@ struct test_metavariables {
 
   static constexpr bool uses_partially_flat_cartesian_coordinates = false;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -224,7 +223,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   // to get basic data out of the file
   const size_t scri_plus_interpolation_order = 3;
 
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
@@ -246,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
 
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

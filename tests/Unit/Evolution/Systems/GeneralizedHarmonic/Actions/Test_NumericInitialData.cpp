@@ -142,7 +142,6 @@ struct MockVolumeDataReader {
 struct Metavariables {
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -191,8 +190,7 @@ void test_numeric_initial_data(
                                                               element_id);
   };
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // ReadNumericInitialData
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);

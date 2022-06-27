@@ -75,7 +75,6 @@ struct Metavariables {
                  ElementArray<Metavariables>>;
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<LinearSolver::async_solvers::reduction_data>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -140,8 +139,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
     ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
   }
   // Register with observers
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::invoke_queued_simple_action<obs_component>(
       make_not_null(&runner), 0);
@@ -150,8 +148,7 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   {
     INFO("InitializeElement");

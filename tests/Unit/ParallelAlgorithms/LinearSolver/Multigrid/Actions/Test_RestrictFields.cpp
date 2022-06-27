@@ -83,7 +83,6 @@ struct Metavariables {
   using const_global_cache_tags =
       tmpl::conditional_t<std::is_same_v<FieldsAreMassiveTag, void>,
                           tmpl::list<>, tmpl::list<FieldsAreMassiveTag>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename FieldsAreMassiveTag>
@@ -141,8 +140,7 @@ void test_restrict_fields(const Mesh<1>& fine_mesh, const Mesh<1>& coarse_mesh,
               {left_element_id, right_element_id}, coarse_mesh, std::nullopt,
               std::nullopt);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Skip over sending on coarse element
   ActionTesting::next_action<element_array>(make_not_null(&runner),

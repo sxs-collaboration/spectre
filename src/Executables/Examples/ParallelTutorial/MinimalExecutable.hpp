@@ -20,16 +20,8 @@ class CProxy_GlobalCache;
 struct Metavariables {
   using component_list = tmpl::list<>;
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& /*current_phase*/,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 2> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Exit}};
 
   static constexpr Options::String help{"A minimal executable"};
 };

@@ -76,7 +76,7 @@ struct Metavariables {
         tmpl::pair<DomainCreator<1>, tmpl::list<domain::creators::Interval>>>;
   };
 
-  using Phase = helpers::Phase;
+  static constexpr auto default_phase_order = helpers::default_phase_order;
 
   using initialization_actions =
       tmpl::list<::Actions::SetupDataBox, helpers_mg::InitializeElement,
@@ -128,15 +128,6 @@ struct Metavariables {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::list<multigrid, smoother>>;
   static constexpr bool ignore_unrecognized_command_line_options = false;
-
-  template <typename Metavariables, typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const helpers::Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*cache_proxy*/) {
-    return helpers::determine_next_phase(current_phase);
-  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

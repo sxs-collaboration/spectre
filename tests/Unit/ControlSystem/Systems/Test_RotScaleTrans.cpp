@@ -21,6 +21,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
 #include "Helpers/PointwiseFunctions/PostNewtonian/BinaryTrajectories.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -138,7 +139,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // PN orbits
   const std::array<double, 3> initial_velocity{0.1, -0.2, 0.3};

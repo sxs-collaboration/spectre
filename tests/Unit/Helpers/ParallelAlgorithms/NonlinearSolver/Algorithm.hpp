@@ -29,7 +29,6 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
-#include "Parallel/Main.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -174,7 +173,7 @@ struct ElementArray {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *Parallel::local_branch(global_cache));
@@ -186,22 +185,11 @@ template <typename Metavariables>
 using OutputCleaner =
     LinearSolverAlgorithmTestHelpers::OutputCleaner<Metavariables>;
 
-using Phase = Parallel::Phase;
 
-inline Phase determine_next_phase(const Phase& current_phase) {
-  switch (current_phase) {
-    case Phase::Initialization:
-      return Phase::RegisterWithObserver;
-    case Phase::RegisterWithObserver:
-      return Phase::Solve;
-    case Phase::Solve:
-      return Phase::Testing;
-    case Phase::Testing:
-      return Phase::Cleanup;
-    default:
-      return Phase::Exit;
-  }
-}
+static constexpr std::array<Parallel::Phase, 6> default_phase_order = {
+    {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+     Parallel::Phase::Solve, Parallel::Phase::Testing, Parallel::Phase::Cleanup,
+     Parallel::Phase::Exit}};
 
 template <typename Metavariables>
 using component_list = tmpl::flatten<tmpl::list<

@@ -49,7 +49,7 @@ struct ControlComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<

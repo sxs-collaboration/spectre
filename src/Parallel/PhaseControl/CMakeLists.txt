@@ -16,6 +16,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   CheckpointAndExitAfterWallclock.hpp
+  ContributeToPhaseChangeReduction.hpp
   ExecutePhaseChange.hpp
   InitializePhaseChangeDecisionData.hpp
   PhaseChange.hpp
@@ -33,4 +34,9 @@ target_link_libraries(
   Options
   Parallel
   Utilities
+  )
+
+add_dependencies(
+  ${LIBRARY}
+  module_Main
   )

@@ -150,7 +150,6 @@ struct MockMetavariables {
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
@@ -189,7 +188,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
        // Default-constructed Variables cause problems, so below
        // we construct the Variables with a single point.
        vars_type{1}});
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Now set up the vars and global offsets
   std::vector<::Variables<

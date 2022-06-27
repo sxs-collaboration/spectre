@@ -179,7 +179,6 @@ struct Metavariables {
     using factory_classes =
         tmpl::map<tmpl::pair<Event, tmpl::list<ObserveEvent>>>;
   };
-  using Phase = Parallel::Phase;
 };
 
 template <size_t SpatialDim>

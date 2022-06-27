@@ -243,15 +243,15 @@ struct MutateCacheComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<MutateCacheComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::Solve) {
+    if (next_phase == Parallel::Phase::Solve) {
       Parallel::simple_action<mutate_cache::Actions::add_new_stored_double>(
           Parallel::get_parallel_component<MutateCacheComponent>(local_cache));
-    } else if (next_phase == Metavariables::Phase::Evolve) {
+    } else if (next_phase == Parallel::Phase::Evolve) {
       Parallel::simple_action<mutate_cache::Actions::finalize>(
           Parallel::get_parallel_component<MutateCacheComponent>(local_cache));
     }
@@ -274,7 +274,7 @@ struct UseMutatedCacheComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<UseMutatedCacheComponent>(local_cache)
@@ -295,13 +295,13 @@ struct CheckAndUseMutatedCacheComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
         local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::Register) {
+    if (next_phase == Parallel::Phase::Register) {
       Parallel::simple_action<
           mutate_cache::Actions::simple_action_check_and_use_stored_double>(
           Parallel::get_parallel_component<CheckAndUseMutatedCacheComponent>(
@@ -320,12 +320,12 @@ struct CheckParallelInfo {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<CheckParallelInfo>(cache).start_phase(
         next_phase);
-    if (next_phase == Metavariables::Phase::Execute) {
+    if (next_phase == Parallel::Phase::Execute) {
       // Check parallel info
       SPECTRE_PARALLEL_REQUIRE(cache.number_of_procs() ==
                                sys::number_of_procs());
@@ -339,7 +339,6 @@ struct CheckParallelInfo {
       SPECTRE_PARALLEL_REQUIRE(cache.my_proc() == sys::my_proc());
       SPECTRE_PARALLEL_REQUIRE(cache.my_node() == sys::my_node());
       SPECTRE_PARALLEL_REQUIRE(cache.my_local_rank() == sys::my_local_rank());
-      // const auto& const_cache = *Parallel::local_branch(global_cache_proxy_);
       SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_procs<int>(cache) ==
                                sys::number_of_procs());
       SPECTRE_PARALLEL_REQUIRE(Parallel::number_of_nodes<int>(cache) ==
@@ -376,7 +375,7 @@ struct CheckMemoryMonitorRelatedMethods {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<CheckMemoryMonitorRelatedMethods>(
@@ -384,7 +383,7 @@ struct CheckMemoryMonitorRelatedMethods {
         .start_phase(next_phase);
 
     const double time = 1.0;
-    if (next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Testing) {
       // Remove the file from a previous test run if it exists
       if (file_system::check_if_file_exists(filename_)) {
         file_system::rm(filename_, true);
@@ -413,7 +412,7 @@ struct CheckMemoryMonitorRelatedMethods {
       mutable_cache_size_ = size_of_object_in_bytes(*Parallel::local_branch(
                                 local_cache.mutable_global_cache_proxy())) /
                             1.0e6;
-    } else if (next_phase == Metavariables::Phase::Cleanup) {
+    } else if (next_phase == Parallel::Phase::Cleanup) {
       auto hdf5_lock =
           Parallel::local_branch(
               Parallel::get_parallel_component<
@@ -495,37 +494,11 @@ struct TestMetavariables {
   static constexpr Options::String help =
       "An executable for testing mutable items in the GlobalCache.";
 
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::Register;
-      case Phase::Register:
-        return Phase::Solve;
-      case Phase::Solve:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Execute;
-      case Phase::Execute:
-        return Phase::Testing;
-      case Phase::Testing:
-        return Phase::Cleanup;
-      case Phase::Cleanup:
-        [[fallthrough]];
-      case Phase::Exit:
-        return Phase::Exit;
-      default:
-        ERROR("Unknown Phase...");
-    }
-
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 18> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Register,
+       Parallel::Phase::Solve, Parallel::Phase::Evolve,
+       Parallel::Phase::Execute, Parallel::Phase::Testing,
+       Parallel::Phase::Cleanup, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

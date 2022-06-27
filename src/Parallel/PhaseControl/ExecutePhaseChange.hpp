@@ -10,10 +10,12 @@
 
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "Parallel/Main.hpp"
+#include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -101,7 +103,7 @@ struct ExecutePhaseChange {
  *
  * \details This function will iterate through each of the option-created pairs
  * of `PhaseChange`s, and obtain from each a
- * `std::optional<std::pair<Metavariables::Phase,
+ * `std::optional<std::pair<Parallel::Phase,
  * PhaseControl::ArbitrationStrategy>`. Any `std::nullopt` is skipped. If all
  * `PhaseChange`s provide `std::nullopt`, the phase will either keep its
  * current value (if the halt was caused by one of the triggers associated with
@@ -122,41 +124,50 @@ struct ExecutePhaseChange {
  * `ArbitrationStrategy` must be chosen carefully.
  */
 template <typename... DecisionTags, typename Metavariables>
-typename std::optional<typename Metavariables::Phase> arbitrate_phase_change(
+typename std::optional<Parallel::Phase> arbitrate_phase_change(
     const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
         phase_change_decision_data,
-    typename Metavariables::Phase current_phase,
+    Parallel::Phase current_phase,
     const Parallel::GlobalCache<Metavariables>& cache) {
-  const auto& phase_change_and_triggers =
-      Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
-  bool phase_chosen = false;
-  for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
-    // avoid unused variable warning
-    (void)trigger;
-    for (const auto& phase_change : phase_changes) {
-      const auto phase_result = phase_change->arbitrate_phase_change(
-          phase_change_decision_data, current_phase, cache);
-      if (phase_result.has_value()) {
-        if (phase_result.value().second ==
-            ArbitrationStrategy::RunPhaseImmediately) {
-          tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-              *phase_change_decision_data) = false;
-          return phase_result.value().first;
+  if constexpr (tmpl::list_contains_v<
+                    typename Parallel::GlobalCache<Metavariables>::tags_list,
+                    Tags::PhaseChangeAndTriggers>) {
+    const auto& phase_change_and_triggers =
+        Parallel::get<Tags::PhaseChangeAndTriggers>(cache);
+    bool phase_chosen = false;
+    for (const auto& [trigger, phase_changes] : phase_change_and_triggers) {
+      // avoid unused variable warning
+      (void)trigger;
+      for (const auto& phase_change : phase_changes) {
+        const auto phase_result = phase_change->arbitrate_phase_change(
+            phase_change_decision_data, current_phase, cache);
+        if (phase_result.has_value()) {
+          if (phase_result.value().second ==
+              ArbitrationStrategy::RunPhaseImmediately) {
+            tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+                *phase_change_decision_data) = false;
+            return phase_result.value().first;
+          }
+          current_phase = phase_result.value().first;
+          phase_chosen = true;
         }
-        current_phase = phase_result.value().first;
-        phase_chosen = true;
       }
     }
-  }
-  if (tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-          *phase_change_decision_data) == false and
-      not phase_chosen) {
+    if (tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+            *phase_change_decision_data) == false and
+        not phase_chosen) {
+      return std::nullopt;
+    }
+    // if no phase change object suggests a specific phase, return to execution
+    // in the current phase.
+    tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
+        *phase_change_decision_data) = false;
+    return current_phase;
+  } else {
+    (void)phase_change_decision_data;
+    (void)current_phase;
+    (void)cache;
     return std::nullopt;
   }
-  // if no phase change object suggests a specific phase, return to execution
-  // in the current phase.
-  tuples::get<TagsAndCombines::UsePhaseChangeArbitration>(
-      *phase_change_decision_data) = false;
-  return current_phase;
 }
 }  // namespace PhaseControl

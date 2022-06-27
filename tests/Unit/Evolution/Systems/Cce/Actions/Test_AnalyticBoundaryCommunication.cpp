@@ -162,7 +162,6 @@ struct test_metavariables {
   using component_list =
       tmpl::list<mock_analytic_worldtube_boundary<test_metavariables>,
                  mock_characteristic_evolution<test_metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -197,7 +196,7 @@ SPECTRE_TEST_CASE(
       l_max, extraction_radius,
       std::make_unique<Cce::Solutions::RotatingSchwarzschild>(extraction_radius,
                                                               1.0, frequency)};
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size, false,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
@@ -221,7 +220,7 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  runner.set_phase(Parallel::Phase::Evolve);
 
   // Execute the first request for boundary data
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

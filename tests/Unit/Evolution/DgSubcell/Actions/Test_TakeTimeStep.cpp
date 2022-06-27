@@ -79,7 +79,6 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
-  using Phase = Parallel::Phase;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool time_derivative_invoked;

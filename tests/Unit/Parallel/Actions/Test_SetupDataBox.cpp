@@ -94,7 +94,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 

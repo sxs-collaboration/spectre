@@ -77,7 +77,6 @@ struct Metavariables {
   using system = System<Dim, HasPrimitives>;
   using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<SystemAnalyticSolution>>;
-  using Phase = Parallel::Phase;
 
   struct equation_of_state_tag : db::SimpleTag {
     using type = int;

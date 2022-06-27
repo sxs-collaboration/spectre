@@ -46,7 +46,6 @@ struct Component;
 
 struct Metavariables {
   using component_list = tmpl::list<Component>;
-  using Phase = Parallel::Phase;
 };
 
 struct Component {
@@ -75,8 +74,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       {std::make_unique<TimeSteppers::RungeKutta3>()}};
 
   ActionTesting::emplace_component_and_initialize<Component>(&runner, 0, {});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<Component, Component::simple_tags>(
       make_not_null(&runner), 0);

@@ -78,7 +78,6 @@ struct MockMetavariables {
       tmpl::list<InterpolationTagA, InterpolationTagB, InterpolationTagC>;
 
   using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename interp_component, typename InterpolationTargetTag,
@@ -125,7 +124,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::Time>::type{
            std::move(volume_vars_info_a)},
        typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{}});
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // There should be one temporal_id in VolumeVarsInfo.
   CHECK(

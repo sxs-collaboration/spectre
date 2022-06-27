@@ -10,7 +10,8 @@ is useful for expensive simulations that would run longer than the wallclock
 limits on a supercomputer system.
 
 Executables can checkpoint when:
-1. The `Phase` enumeration in the `Metavariables` has a `WriteCheckpoint` phase.
+1. The `default_phase_order` member variable in the `Metavariables` includes a
+   `WriteCheckpoint` phase.
 2. The `WriteCheckpoint` phase is run by a `PhaseControl` specified in the
    `Metavariables` and the input file. The two supported ways of running the
    checkpoint phase are:
@@ -52,4 +53,3 @@ and restarting:
    up to the user to find the balance between too-frequent synchronizations
    (that slow the code) and too-infrequent synchronizations (that won't allow
    checkpoints to be written).
-

@@ -73,7 +73,6 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags =
       tmpl::list<elliptic::Tags::Background<Background>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -97,8 +96,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeBackgroundFields",
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   const auto get_tag = [&runner, &element_id ](auto tag_v) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;

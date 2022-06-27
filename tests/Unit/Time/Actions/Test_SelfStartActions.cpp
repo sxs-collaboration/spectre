@@ -130,7 +130,6 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
-  using Phase = Parallel::Phase;
 };
 
 template <typename Metavariables>
@@ -303,8 +302,7 @@ void test_actions(const size_t order, const int step_denominator) {
   ActionTesting::next_action<Component<Metavariables<>>>(make_not_null(&runner),
                                                          0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables<>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   {
     INFO("Initialize");
@@ -417,9 +415,7 @@ double error_in_step(const size_t order, const double step) {
       Component<Metavariables<TestPrimitives, MultipleHistories>>>(
       make_not_null(&runner), 0);
 
-  ActionTesting::set_phase(
-      make_not_null(&runner),
-      Metavariables<TestPrimitives, MultipleHistories>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>, MultipleHistories>(make_not_null(&runner));

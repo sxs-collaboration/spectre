@@ -5,6 +5,7 @@ module AlgorithmNodegroup {
 
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
+  include "Parallel/Phase.hpp";
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
   nodegroup [migratable] AlgorithmNodegroup {
@@ -27,7 +28,7 @@ module AlgorithmNodegroup {
 
     entry void perform_algorithm(bool);
 
-    entry void start_phase(typename ParallelComponent::metavariables::Phase);
+    entry void start_phase(Parallel::Phase);
 
     template <typename Action, typename... Args>
     entry void threaded_action(std::tuple<Args...> & args);

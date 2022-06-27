@@ -180,7 +180,6 @@ struct metavariables {
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>,
                  mock_observer_writer<metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 struct TestSendToEvolution {
@@ -238,7 +237,7 @@ SPECTRE_TEST_CASE(
        number_of_radial_points}};
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<
       mock_observer_writer<metavariables>>(&runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<component>(
@@ -337,8 +336,7 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 8; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Evolve);
 
   // this should run the computation actions
   ActionTesting::next_action<component>(make_not_null(&runner), 0);

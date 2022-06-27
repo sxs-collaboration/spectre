@@ -150,10 +150,10 @@ struct ComponentAlpha {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Testing) {
       Parallel::simple_action<Actions::Testing>(
           Parallel::get_parallel_component<ComponentAlpha>(local_cache));
     } else {
@@ -194,10 +194,10 @@ struct ComponentBeta {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Testing) {
       Parallel::simple_action<Actions::Testing>(
           Parallel::get_parallel_component<ComponentBeta>(local_cache));
     } else {
@@ -244,7 +244,7 @@ struct RecordPhaseIteration {
         make_not_null(&box), [](const gsl::not_null<std::string*> phase_log) {
           *phase_log += MakeString{} << "Running phase: " << Phase << "\n";
         });
-    if (Phase == Metavariables::Phase::Evolve) {
+    if (Phase == Parallel::Phase::Evolve) {
       db::mutate<Tags::Step>(
           make_not_null(&box),
           [](const gsl::not_null<size_t*> step) { ++(*step); });
@@ -345,40 +345,18 @@ struct TestMetavariables {
   using component_list = tmpl::list<ComponentAlpha<TestMetavariables>,
                                     ComponentBeta<TestMetavariables>>;
 
-  using Phase = Parallel::Phase;
-
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<PhaseChange,
-                   tmpl::list<PhaseControl::VisitAndReturn<TestMetavariables,
-                                                           Phase::Register>,
-                              PhaseControl::VisitAndReturn<TestMetavariables,
-                                                           Phase::Solve>>>,
+        tmpl::pair<
+            PhaseChange,
+            tmpl::list<PhaseControl::VisitAndReturn<Parallel::Phase::Register>,
+                       PhaseControl::VisitAndReturn<Parallel::Phase::Solve>>>,
         tmpl::pair<Trigger, tmpl::list<RegisterTrigger, SolveTrigger>>>;
   };
 
   using const_global_cache_tags =
       tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
-
-  static std::string phase_name(const Phase phase) {
-    switch (phase) {
-      case Phase::Initialization:
-        return "Initialization";
-      case Phase::Register:
-        return "Register";
-      case Phase::Solve:
-        return "Solve";
-      case Phase::Evolve:
-        return "Evolve";
-      case Phase::Testing:
-        return "Testing";
-      case Phase::Exit:
-        return "Exit";
-      default:
-        ERROR("phase_name: Unknown phase " << phase);
-    }
-  }
 
   static constexpr Options::String help =
       "An executable for testing basic phase control flow.";
@@ -450,32 +428,9 @@ struct TestMetavariables {
            "Terminate Completion\n";
   }
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& cache_proxy) {
-    const auto next_phase = PhaseControl::arbitrate_phase_change(
-        phase_change_decision_data, current_phase,
-        *Parallel::local_branch(cache_proxy));
-    if (next_phase.has_value()) {
-      return next_phase.value();
-    }
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::Testing;
-      case Phase::Testing:
-      case Phase::Exit:
-        return Phase::Exit;
-      default:
-        ERROR("Unknown Phase...");
-    }
-
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 4> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Evolve,
+       Parallel::Phase::Testing, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

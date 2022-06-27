@@ -47,10 +47,10 @@ struct WorldtubeComponentBase {
       Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Metavariables::Phase::Evolve) {
+    if (next_phase == Parallel::Phase::Evolve) {
       Parallel::get_parallel_component<WorldtubeComponent>(local_cache)
           .start_phase(next_phase);
     }

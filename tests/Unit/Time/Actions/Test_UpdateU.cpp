@@ -97,7 +97,6 @@ struct Metavariables {
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -123,8 +122,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   ActionTesting::emplace_component_and_initialize<
       component_with_template_specified_variables>(
       &runner, 0, {time_step, 1., alternative_history_tag::type{3}, false});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};

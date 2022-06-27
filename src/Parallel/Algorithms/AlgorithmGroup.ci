@@ -5,6 +5,7 @@ module AlgorithmGroup {
 
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
+  include "Parallel/Phase.hpp";
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
   group [migratable] AlgorithmGroup {
@@ -27,7 +28,7 @@ module AlgorithmGroup {
 
     entry void perform_algorithm(bool);
 
-    entry void start_phase(typename ParallelComponent::metavariables::Phase);
+    entry void start_phase(Parallel::Phase);
 
     template <typename ReceiveTag, typename ReceiveData_t>
     entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,

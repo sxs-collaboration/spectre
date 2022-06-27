@@ -53,7 +53,6 @@ struct ElementArray {
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags = tmpl::list<>;
-  using Phase = Parallel::Phase;
 };
 
 void test_randomize_variables(
@@ -75,8 +74,7 @@ void test_randomize_variables(
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{params}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id, {fields});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   const auto get_tag = [&runner, &element_id ](auto tag_v) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;

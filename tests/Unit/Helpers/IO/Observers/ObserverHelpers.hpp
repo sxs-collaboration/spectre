@@ -129,6 +129,5 @@ struct Metavariables {
                  reduction_data_from_ds_and_vs>>;
   /// [make_reduction_data_tags]
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace TestObservers_detail

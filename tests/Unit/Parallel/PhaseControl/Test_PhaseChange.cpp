@@ -16,6 +16,7 @@
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/PhaseChange.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Utilities/Functional.hpp"
@@ -109,17 +110,17 @@ struct TestPhaseChange : public PhaseChange {
   }
 
   template <typename... DecisionTags, typename Metavariables>
-  typename std::optional<std::pair<typename Metavariables::Phase,
-                                   PhaseControl::ArbitrationStrategy>>
+  typename std::optional<
+      std::pair<Parallel::Phase, PhaseControl::ArbitrationStrategy>>
   arbitrate_phase_change_impl(
       const gsl::not_null<tuples::TaggedTuple<DecisionTags...>*>
           phase_change_decision_data,
-      const typename Metavariables::Phase /*current_phase*/,
+      const Parallel::Phase /*current_phase*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     if (tuples::get<Tags::Request>(*phase_change_decision_data)) {
       tuples::get<Tags::Request>(*phase_change_decision_data) = false;
       return std::make_pair(
-          Metavariables::Phase::PhaseA,
+          Parallel::Phase::Solve,
           PhaseControl::ArbitrationStrategy::RunPhaseImmediately);
     } else {
       return std::nullopt;
@@ -143,7 +144,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<PhaseChange, tmpl::list<TestPhaseChange>>>;
   };
 
-  enum class Phase { PhaseA, PhaseB };
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseChange",
@@ -175,16 +175,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.PhaseChange",
   CHECK(db::get<Tags::MutatedValue>(box) == 75);
 
   const auto first_decision = phase_change->arbitrate_phase_change(
-      make_not_null(&phase_change_decision_data), Metavariables::Phase::PhaseB,
+      make_not_null(&phase_change_decision_data), Parallel::Phase::Evolve,
       cache);
   CHECK_FALSE(first_decision.has_value());
 
   tuples::get<Tags::Request>(phase_change_decision_data) = true;
   const auto second_decision = phase_change->arbitrate_phase_change(
-      make_not_null(&phase_change_decision_data), Metavariables::Phase::PhaseB,
+      make_not_null(&phase_change_decision_data), Parallel::Phase::Evolve,
       cache);
   CHECK(second_decision.value() ==
-        std::make_pair(Metavariables::Phase::PhaseA,
+        std::make_pair(Parallel::Phase::Solve,
                        PhaseControl::ArbitrationStrategy::RunPhaseImmediately));
   CHECK_FALSE(tuples::get<Tags::Request>(phase_change_decision_data));
 }

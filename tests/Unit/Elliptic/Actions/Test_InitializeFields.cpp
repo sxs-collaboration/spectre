@@ -94,7 +94,6 @@ struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tags = tmpl::list<
       elliptic::Tags::InitialGuess<elliptic::analytic_data::InitialGuess>>;
-  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes =
@@ -125,8 +124,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeFields",
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   const auto get_tag = [&runner, &element_id ](auto tag_v) -> const auto& {
     using tag = std::decay_t<decltype(tag_v)>;

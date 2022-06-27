@@ -194,7 +194,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::RegisterWithObserver);
+                           Parallel::Phase::RegisterWithObserver);
 
   // Register elements
   for (const auto& id : element_ids) {
@@ -207,8 +207,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Invoke the simple_action RegisterVolumeContributorWithObserverWriter.
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const std::string h5_file_name = output_file_prefix + "0.h5";
   if (file_system::check_if_file_exists(h5_file_name)) {

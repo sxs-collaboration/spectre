@@ -115,7 +115,6 @@ struct TestMetavariables {
                  FakeDgElementArray<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
 
-  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -142,7 +141,6 @@ struct TestMetavarsActions {
       ArrayParallelComponent<TestMetavarsActions>,
       NodegroupParallelComponent<TestMetavarsActions>>;
 
-  using Phase = Parallel::Phase;
 
   void pup(PUP::er& /*p*/) {}
 };
@@ -198,7 +196,7 @@ void setup_runner(
                                      ActionTesting::LocalCoreId{0}, {element});
   }
 
-  runner->set_phase(Metavariables::Phase::Testing);
+  runner->set_phase(Parallel::Phase::Testing);
 }
 
 template <typename Component, typename Metavariables>
@@ -493,7 +491,6 @@ struct BadArrayChareMetavariables {
   using component_list =
       tmpl::list<ArrayParallelComponent<BadArrayChareMetavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 void test_event_construction() {

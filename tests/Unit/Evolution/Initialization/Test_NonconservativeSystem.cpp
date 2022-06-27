@@ -54,7 +54,6 @@ struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using Phase = Parallel::Phase;
 };
 
 template <size_t Dim>

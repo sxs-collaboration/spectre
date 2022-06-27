@@ -22,6 +22,7 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/ControlSystem/SystemHelpers.hpp"
+#include "Parallel/Phase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -106,7 +107,7 @@ void test_translation_control_system() {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Create coordinate map for mapping the translation to the "grid" frame
   // where the control system does its calculations

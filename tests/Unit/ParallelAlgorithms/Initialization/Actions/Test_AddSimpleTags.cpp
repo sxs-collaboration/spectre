@@ -65,7 +65,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -78,8 +77,7 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.Initialization.AddSimpleTags",
   ActionTesting::emplace_array_component<component>(make_not_null(&runner), {0},
                                                     {0}, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   for (size_t i = 0; i < 2; ++i) {
     runner.template next_action<component>(0);
   }

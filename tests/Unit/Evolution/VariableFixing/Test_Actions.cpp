@@ -48,7 +48,6 @@ struct mock_component {
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 struct SomeType {};
@@ -73,8 +72,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
       {Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
        Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);
   runner.next_action<component>(0);

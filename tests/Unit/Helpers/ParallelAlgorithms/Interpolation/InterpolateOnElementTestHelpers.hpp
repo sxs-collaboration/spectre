@@ -300,7 +300,7 @@ void test_interpolate_on_element(
   }();
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0, {target_points});
 

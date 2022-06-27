@@ -297,7 +297,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<TestTrigger>>,
                   tmpl::pair<Event, tmpl::list<TestEvent>>>;
   };
-  using Phase = Parallel::Phase;
 };
 
 template <typename Metavariables>
@@ -387,7 +386,7 @@ void test(const bool time_runs_forward) {
             initial_vars, unset_primitives, std::move(history),
             evolution::EventsAndDenseTriggers(
                 std::move(events_and_dense_triggers)));
-        ActionTesting::set_phase(runner, metavars::Phase::Testing);
+        ActionTesting::set_phase(runner, Parallel::Phase::Testing);
       };
 
   // Tests start here
@@ -611,7 +610,7 @@ void test_lts(const bool time_runs_forward) {
             std::move(mortar_history),
             evolution::dg::Tags::MortarNextTemporalId<1>::type{
                 {neighbor, quarter_time_step_id}});
-        ActionTesting::set_phase(runner, metavars::Phase::Testing);
+        ActionTesting::set_phase(runner, Parallel::Phase::Testing);
       };
 
   // Tests start here

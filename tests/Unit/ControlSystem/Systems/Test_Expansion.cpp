@@ -101,7 +101,7 @@ void test_expansion_control_system() {
   ActionTesting::emplace_nodegroup_component<observer_component>(
       make_not_null(&runner));
 
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   const BinaryTrajectories binary_trajectories{initial_separation};
 

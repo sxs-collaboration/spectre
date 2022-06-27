@@ -74,7 +74,6 @@ struct MockMetavariables {
 
   using component_list = tmpl::list<mock_interpolator<MockMetavariables>,
                                     mock_element<MockMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
@@ -84,14 +83,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   using elem_component = mock_element<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavars::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   }
   ActionTesting::emplace_component<elem_component>(&runner, 0);
   // There is no next_action on elem_component, so we don't call it here.
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Register);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(
@@ -112,7 +111,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   // Call RegisterElementWithInterpolator from element, check if
   // it gets registered.
   ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   runner.invoke_queued_simple_action<interp_component>(0);
 

@@ -206,7 +206,6 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace

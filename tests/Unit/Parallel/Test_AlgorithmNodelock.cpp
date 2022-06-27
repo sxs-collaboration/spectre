@@ -281,15 +281,15 @@ struct ArrayParallelComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
-    if (next_phase == Metavariables::Phase::Register) {
+    if (next_phase == Parallel::Phase::Register) {
       Parallel::simple_action<reduce_to_nodegroup>(array_proxy);
     }
-    if (next_phase == Metavariables::Phase::Execute) {
+    if (next_phase == Parallel::Phase::Execute) {
       Parallel::simple_action<reduce_threaded_method>(array_proxy);
     }
   }
@@ -310,16 +310,16 @@ struct NodegroupParallelComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(
             local_cache);
-    if (next_phase == Metavariables::Phase::Solve) {
+    if (next_phase == Parallel::Phase::Solve) {
       Parallel::simple_action<nodegroup_check_first_result>(nodegroup_proxy);
     }
-    if (next_phase == Metavariables::Phase::Testing) {
+    if (next_phase == Parallel::Phase::Testing) {
       Parallel::simple_action<nodegroup_check_threaded_result>(nodegroup_proxy);
     }
   }
@@ -333,30 +333,10 @@ struct TestMetavariables {
   static constexpr const char* const help{"Test nodelocks in Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  using Phase = Parallel::Phase;
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    Parallel::printf("Determining next phase\n");
-
-    if (current_phase == Phase::Initialization) {
-      return Phase::Register;
-    }
-    if (current_phase == Phase::Register) {
-      return Phase::Solve;
-    }
-    if (current_phase == Phase::Solve) {
-      return Phase::Execute;
-    }
-    if (current_phase == Phase::Execute) {
-      return Phase::Testing;
-    }
-
-    return Phase::Exit;
-  }
+  static constexpr std::array<Parallel::Phase, 6> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Register,
+       Parallel::Phase::Solve, Parallel::Phase::Execute,
+       Parallel::Phase::Testing, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

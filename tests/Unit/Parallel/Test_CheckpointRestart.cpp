@@ -140,7 +140,7 @@ struct ArrayComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ArrayComponent>(local_cache)
@@ -162,7 +162,7 @@ struct GroupComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<GroupComponent>(local_cache)
@@ -184,7 +184,7 @@ struct NodegroupComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<NodegroupComponent>(local_cache)
@@ -206,7 +206,7 @@ struct SingletonComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<SingletonComponent>(local_cache)
@@ -224,28 +224,11 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  using Phase = Parallel::Phase;
+  static constexpr std::array<Parallel::Phase, 5> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Execute,
+       Parallel::Phase::WriteCheckpoint, Parallel::Phase::Testing,
+       Parallel::Phase::Exit}};
 
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-      /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::Execute;
-      case Phase::Execute:
-        return Phase::WriteCheckpoint;
-      case Phase::WriteCheckpoint:
-        return Phase::Testing;
-      case Phase::Testing:
-        return Phase::Exit;
-      default:
-        ERROR("Unknown Phase...");
-    }
-    return Phase::Exit;
-  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

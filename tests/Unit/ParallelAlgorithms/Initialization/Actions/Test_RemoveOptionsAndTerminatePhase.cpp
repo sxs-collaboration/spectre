@@ -124,7 +124,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -140,7 +139,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component<component>(&runner, 0, initial_time,
                                               initial_mass);
   ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Initialization);
+                           Parallel::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));

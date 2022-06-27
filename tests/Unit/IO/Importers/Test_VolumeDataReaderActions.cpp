@@ -89,7 +89,6 @@ struct MockVolumeDataReader {
 struct Metavariables {
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 }  // namespace
@@ -200,8 +199,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     volume_data.write_volume_data(0, 0., all_element_data[i]);
   }
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   bool first_invocation = true;
   for (const auto& id : element_ids) {

@@ -67,7 +67,6 @@ struct Metavariables {
         tmpl::map<tmpl::pair<DenseTrigger, tmpl::list<MeasureTrigger>>>;
   };
 
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -89,8 +88,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Trigger", "[Domain][Unit]") {
   ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0, {0.0});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<
       component,

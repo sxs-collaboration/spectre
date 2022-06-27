@@ -24,6 +24,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -148,7 +149,7 @@ struct GroupComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<GroupComponent>(local_cache)
@@ -187,7 +188,7 @@ struct ArrayComponent {
   }
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ArrayComponent>(local_cache)
@@ -212,7 +213,9 @@ struct TestMetavariables {
 
   static constexpr Options::String help = "";
 
-  using Phase = Parallel::Phase;
+  static constexpr std::array<Parallel::Phase, 3> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Evolve,
+       Parallel::Phase::Exit}};
 
   struct DummyPhaseChange : public PhaseChange {
     using phase_change_tags_and_combines =
@@ -225,42 +228,6 @@ struct TestMetavariables {
     using factory_classes = tmpl::map<
         tmpl::pair<PhaseChange, tmpl::list<DummyPhaseChange>>>;
   };
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<tuples::TaggedTuple<Tags...>*>
-          phase_change_decision_data,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        // confirm that the reduction is being performed consistently each step
-        SPECTRE_PARALLEL_REQUIRE(
-            tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) ==
-            (tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
-                 *phase_change_decision_data) %
-                 6 ==
-             0));
-        if (tuples::get<PhaseChangeTest::IsDone>(
-                *phase_change_decision_data) and
-            tuples::get<PhaseChangeTest::PhaseChangeStepNumber>(
-                *phase_change_decision_data) > 25) {
-          return Phase::Exit;
-        } else {
-          tuples::get<PhaseChangeTest::IsDone>(*phase_change_decision_data) =
-              false;
-          return Phase::Evolve;
-        }
-      case Phase::Exit:
-        return Phase::Exit;
-      default:
-        ERROR("Unknown Phase...");
-    }
-
-    return Phase::Exit;
-  }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

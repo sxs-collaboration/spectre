@@ -272,7 +272,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
@@ -282,8 +281,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.InboxInserters", "[Parallel][Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0, {0_st, 0_st, 0_st, 0_st});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   // Check map insertion
   CHECK(ActionTesting::get_next_action_index<component>(runner, 0) == 0);

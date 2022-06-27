@@ -421,7 +421,6 @@ struct Metavariables {
       ElementArray<Metavariables, System, SubdomainOperator, ExtraInitActions>;
   using component_list = tmpl::list<element_array>;
   using const_global_cache_tags = tmpl::list<>;
-  using Phase = Parallel::Phase;
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
@@ -505,8 +504,7 @@ void test_subdomain_operator(
                                                   element_id);
       }
     }
-    ActionTesting::set_phase(make_not_null(&runner),
-                             metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
     // DataBox shortcuts
     const auto get_tag = [&runner](const ElementId<Dim>& local_element_id,
                                    auto tag_v) -> decltype(auto) {

@@ -86,7 +86,6 @@ struct MockObserverWriterComponent {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>,
                                     MockObserverWriterComponent<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterSingleton", "[Unit][Observers]") {
@@ -96,8 +95,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterSingleton", "[Unit][Observers]") {
   ActionTesting::emplace_component<my_component>(&runner, 0);
   ActionTesting::emplace_component<my_component>(&runner, 1);
   ActionTesting::emplace_component<obs_component>(&runner, 0);
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   ActionTesting::next_action<my_component>(make_not_null(&runner), 0);
   REQUIRE(not ActionTesting::is_simple_action_queue_empty<obs_component>(runner,

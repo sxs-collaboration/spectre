@@ -859,7 +859,6 @@ struct Metavariables {
   };
 
   using component_list = tmpl::list<component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 template <typename BoundaryCorrection, typename... PackagedFieldTags,
@@ -1304,7 +1303,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       get_tag(variables_tag{});
   // Start testing the actual dg::ComputeTimeDerivative action
   Outflow<Dim>::number_of_times_called = 0;
-  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
   CHECK(Outflow<Dim>::number_of_times_called ==

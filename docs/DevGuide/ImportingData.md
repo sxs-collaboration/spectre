@@ -14,7 +14,7 @@ The `importers::ElementDataReader` parallel component is responsible for loading
 volume data and distributing it to elements of one or multiple array parallel
 components. As a first step, make sure you have added the
 `importers::ElementDataReader` to your `Metavariables::component_list`. Also
-make sure you have a `Metavariables::Phase` in which you will perform
+make sure you have a `Parallel::Phase` in which you will perform
 registration with the importer, and another in which you want to load the data.
 Here's an example for such `Metavariables`:
 

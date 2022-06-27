@@ -23,7 +23,6 @@ struct Component {
 // [metavariables]
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 // [metavariables]
 }  // namespace
@@ -36,8 +35,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.Actions.TerminatePhase",
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
 
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   ActionTesting::next_action<component>(make_not_null(&runner), 0);

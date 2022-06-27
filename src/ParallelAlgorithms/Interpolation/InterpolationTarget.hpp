@@ -300,7 +300,7 @@ struct InterpolationTarget {
                        Metavariables, InterpolationTargetTag>>>>;
 
   static void execute_next_phase(
-      typename metavariables::Phase next_phase,
+      Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<

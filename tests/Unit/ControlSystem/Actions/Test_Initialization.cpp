@@ -78,7 +78,6 @@ struct MockControlComponent {
 
 struct MockMetavars {
   using component_list = tmpl::list<MockControlComponent<MockMetavars>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 

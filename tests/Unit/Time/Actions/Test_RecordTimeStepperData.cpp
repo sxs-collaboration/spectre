@@ -90,7 +90,6 @@ struct Metavariables {
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;
-  using Phase = Parallel::Phase;
 };
 }  // namespace
 
@@ -122,8 +121,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
       &runner, 0,
       {TimeStepId(true, 0, slab.start()), 4., 5.,
        std::move(alternative_history)});
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.next_action<component>(0);
   runner.next_action<component_with_template_specified_variables>(0);
   auto& box =

@@ -137,7 +137,6 @@ struct metavariables {
   static constexpr bool uses_partially_flat_cartesian_coordinates =
       EvolvePartiallyFlatCartesianCoordinates;
 
-  using Phase = Parallel::Phase;
 };
 
 template <bool EvolvePartiallyFlatCartesianCoordinates>
@@ -207,8 +206,7 @@ void test_InitializeFirstHypersurface() {
           std::move(swsh_volume_variables), time_step_id, l_max,
           number_of_radial_points);
 
-  runner.set_phase(
-      metavariables<EvolvePartiallyFlatCartesianCoordinates>::Phase::Testing);
+  runner.set_phase(Parallel::Phase::Testing);
   // apply the `InitializeFirstHypersurface` action
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);

@@ -211,14 +211,14 @@ struct NoOpsComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     // [start_phase]
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
         .start_phase(next_phase);
     // [start_phase]
-    if (next_phase == Metavariables::Phase::RegisterWithObserver) {
+    if (next_phase == Parallel::Phase::RegisterWithObserver) {
       Parallel::simple_action<no_op_test::finalize>(
           Parallel::get_parallel_component<NoOpsComponent>(local_cache));
     }
@@ -373,14 +373,13 @@ struct MutateComponent {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
-
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<MutateComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::Evolve) {
+    if (next_phase == Parallel::Phase::Evolve) {
       // [simple_action_call]
       Parallel::simple_action<add_remove_test::test_args>(
           Parallel::get_parallel_component<MutateComponent>(local_cache),
@@ -547,12 +546,12 @@ struct ReceiveComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<ReceiveComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::ImportInitialData) {
+    if (next_phase == Parallel::Phase::ImportInitialData) {
       for (TestAlgorithmArrayInstance instance{0};
            not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
         int dummy_int = 10;
@@ -561,7 +560,7 @@ struct ReceiveComponent {
             instance, dummy_int);
       }
     } else if (next_phase ==
-               Metavariables::Phase::InitializeInitialDataDependentQuantities) {
+               Parallel::Phase::InitializeInitialDataDependentQuantities) {
       Parallel::simple_action<receive_data_test::finalize>(
           Parallel::get_parallel_component<ReceiveComponent>(local_cache));
     }
@@ -656,12 +655,12 @@ struct AnyOrderComponent {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
+      const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
     Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
         .start_phase(next_phase);
-    if (next_phase == Metavariables::Phase::Cleanup) {
+    if (next_phase == Parallel::Phase::Cleanup) {
       Parallel::simple_action<any_order::finalize>(
           Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
     }
@@ -687,43 +686,13 @@ struct TestMetavariables {
       "are required";
   // [help_string_example]
 
-  // [determine_next_phase_example]
-  using Phase = Parallel::Phase;
-
-  template <typename... Tags>
-  static Phase determine_next_phase(
-      const gsl::not_null<
-          tuples::TaggedTuple<Tags...>*> /*phase_change_decision_data*/,
-      const Phase& current_phase,
-      const Parallel::CProxy_GlobalCache<TestMetavariables>& /*cache_proxy*/) {
-    switch (current_phase) {
-      case Phase::Initialization:
-        return Phase::Register;
-      case Phase::Register:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
-        return Phase::Solve;
-      case Phase::Solve:
-        return Phase::Evolve;
-      case Phase::Evolve:
-        return Phase::ImportInitialData;
-      case Phase::ImportInitialData:
-        return Phase::InitializeInitialDataDependentQuantities;
-      case Phase::InitializeInitialDataDependentQuantities:
-        return Phase::Execute;
-      case Phase::Execute:
-        return Phase::Cleanup;
-      case Phase::Cleanup:
-        [[fallthrough]];
-      case Phase::Exit:
-        return Phase::Exit;
-      default:
-        ERROR("Unknown Phase...");
-    }
-
-    return Phase::Exit;
-  }
-  // [determine_next_phase_example]
+  static constexpr std::array<Parallel::Phase, 10> default_phase_order{
+      {Parallel::Phase::Initialization, Parallel::Phase::Register,
+       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Solve,
+       Parallel::Phase::Evolve, Parallel::Phase::ImportInitialData,
+       Parallel::Phase::InitializeInitialDataDependentQuantities,
+       Parallel::Phase::Execute, Parallel::Phase::Cleanup,
+       Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

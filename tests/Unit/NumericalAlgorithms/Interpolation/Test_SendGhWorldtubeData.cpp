@@ -97,7 +97,6 @@ struct test_metavariables {
   using component_list =
       tmpl::list<mock_gh_worldtube_boundary<test_metavariables>,
                  mock_interpolation_target<test_metavariables>>;
-  using Phase = Parallel::Phase;
 };
 
 SPECTRE_TEST_CASE(
@@ -121,13 +120,13 @@ SPECTRE_TEST_CASE(
                                 make_not_null(&value_distribution));
       });
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{{}};
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  runner.set_phase(Parallel::Phase::Initialization);
   ActionTesting::emplace_component_and_initialize<
       mock_interpolation_target<test_metavariables>>(
       &runner, 0_st, {spacetime_variables, 0.05});
   ActionTesting::emplace_component<
       mock_gh_worldtube_boundary<test_metavariables>>(&runner, 0_st);
-  runner.set_phase(test_metavariables::Phase::Testing);
+  runner.set_phase(Parallel::Phase::Testing);
   ActionTesting::simple_action<mock_interpolation_target<test_metavariables>,
                                dispatch_to_send_gh_worldtube_data>(
       make_not_null(&runner), 0_st);
