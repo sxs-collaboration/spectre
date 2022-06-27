@@ -41,6 +41,7 @@ void EventsAndDenseTriggers::pup(PUP::er& p) {
   p | events_and_triggers_;
   p | heap_size_;
   p | processing_position_;
+  p | event_to_check_;
   p | next_check_;
   p | next_check_after_;
 }

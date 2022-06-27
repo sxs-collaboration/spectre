@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -158,6 +160,9 @@ class EventsAndDenseTriggers {
   typename Storage::difference_type heap_size_ = -1;
   // Index of the next trigger to process.
   typename Storage::difference_type processing_position_{};
+  // Index of the current event that we are waiting for to be ready,
+  // or none if we are waiting for the trigger.
+  std::optional<size_t> event_to_check_{};
   double next_check_ = std::numeric_limits<double>::signaling_NaN();
   TriggerTimeAfter next_check_after_{false};
 };
@@ -188,35 +193,36 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
   const evolution_greater<double> after{
       db::get<::Tags::TimeStepId>(box).time_runs_forward()};
 
-  while (current_trigger() != events_and_triggers_.end()) {
-    if (not current_trigger()->trigger->is_ready(box, cache, array_index,
+  for (; current_trigger() != events_and_triggers_.end();
+       ++processing_position_) {
+    if (not event_to_check_.has_value()) {
+      if (not current_trigger()->trigger->is_ready(box, cache, array_index,
+                                                   component)) {
+        return TriggeringState::NotReady;
+      }
+
+      const auto is_triggered = current_trigger()->trigger->is_triggered(box);
+      if (not after(is_triggered.next_check, current_trigger()->next_check)) {
+        ERROR("Trigger at time " << current_trigger()->next_check
+              << " rescheduled itself for earlier time "
+              << is_triggered.next_check);
+      }
+      current_trigger()->next_check = is_triggered.next_check;
+      if (not is_triggered.is_triggered) {
+        finish_processing_trigger_at_current_time(current_trigger());
+        continue;
+      }
+      event_to_check_.emplace(0);
+    }
+
+    const auto& events = current_trigger()->events;
+    for (; *event_to_check_ < events.size(); ++*event_to_check_) {
+      if (not events[*event_to_check_]->is_ready(box, cache, array_index,
                                                  component)) {
-      return TriggeringState::NotReady;
-    }
-
-    const auto is_triggered = current_trigger()->trigger->is_triggered(box);
-    if (not after(is_triggered.next_check, current_trigger()->next_check)) {
-      ERROR("Trigger at time " << current_trigger()->next_check
-            << " rescheduled itself for earlier time "
-            << is_triggered.next_check);
-    }
-    current_trigger()->next_check = is_triggered.next_check;
-    if (not is_triggered.is_triggered) {
-      finish_processing_trigger_at_current_time(current_trigger());
-    }
-    ++processing_position_;
-  }
-
-  // The triggers we are processing are not in the heap, but are
-  // stored after it in the data array.
-  for (auto trigger = heap_end();
-       trigger != events_and_triggers_.end();
-       ++trigger) {
-    for (const auto& event : trigger->events) {
-      if (not event->is_ready(box, cache, array_index, component)) {
         return TriggeringState::NotReady;
       }
     }
+    event_to_check_.reset();
   }
 
   for (auto trigger = heap_end();
