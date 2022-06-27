@@ -41,6 +41,7 @@ void test_rotation_control_system(const bool newtonian) {
   using metavars = TestHelpers::MockMetavars<0, DerivOrder, 0>;
   using rotation_component = typename metavars::rotation_component;
   using element_component = typename metavars::element_component;
+  using rotation_system = typename metavars::rotation_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -86,7 +87,8 @@ void test_rotation_control_system(const bool newtonian) {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_rot_tuple = system_helper.init_rot_tuple();
+  const auto& init_rot_tuple =
+      system_helper.template init_tuple<rotation_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -105,7 +107,8 @@ void test_rotation_control_system(const bool newtonian) {
   const BinaryTrajectories binary_trajectories{
       initial_separation, {0.0, 0.0, 0.0}, newtonian};
 
-  const std::string& rotation_name = system_helper.rotation_name();
+  const std::string rotation_name =
+      system_helper.template name<rotation_system>();
 
   // Create coordinate map for mapping the PN rotation to the "grid" frame
   // where the control system does its calculations

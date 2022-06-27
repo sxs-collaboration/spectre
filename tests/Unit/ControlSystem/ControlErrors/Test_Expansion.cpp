@@ -22,6 +22,7 @@ void test_expansion_control_error() {
   constexpr size_t deriv_order = 2;
   using metavars = TestHelpers::MockMetavars<0, 0, deriv_order>;
   using element_component = typename metavars::element_component;
+  using expansion_system = typename metavars::expansion_system;
 
   // Global things
   domain::FunctionsOfTime::register_derived_with_charm();
@@ -63,7 +64,8 @@ void test_expansion_control_error() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const std::string& expansion_name = system_helper.expansion_name();
+  const std::string expansion_name =
+      system_helper.template name<expansion_system>();
 
   // Setup runner and element component because it's the easiest way to get the
   // global cache
@@ -90,7 +92,6 @@ void test_expansion_control_error() {
   QueueTuple fake_measurement_tuple{DataVector{pos_A_x, 0.0, 0.0},
                                     DataVector{pos_B_x, 0.0, 0.0}};
 
-  using expansion_system = typename metavars::expansion_system;
   using ControlError = expansion_system::control_error;
 
   // This is before the first expiration time

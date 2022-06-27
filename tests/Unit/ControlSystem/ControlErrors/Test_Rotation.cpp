@@ -26,6 +26,7 @@ void test_rotation_control_error() {
   constexpr size_t deriv_order = 2;
   using metavars = TestHelpers::MockMetavars<0, deriv_order, 0>;
   using element_component = typename metavars::element_component;
+  using rotation_system = typename metavars::rotation_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -68,7 +69,8 @@ void test_rotation_control_error() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const std::string& rotation_name = system_helper.rotation_name();
+  const std::string rotation_name =
+      system_helper.template name<rotation_system>();
 
   // Setup runner and element component because it's the easiest way to get the
   // global cache
@@ -90,7 +92,6 @@ void test_rotation_control_error() {
   const DataVector pos_B{{2.0, 3.0, 6.0}};
   QueueTuple fake_measurement_tuple{pos_A, pos_B};
 
-  using rotation_system = typename metavars::rotation_system;
   using ControlError = rotation_system::control_error;
 
   // This is before the first expiration time

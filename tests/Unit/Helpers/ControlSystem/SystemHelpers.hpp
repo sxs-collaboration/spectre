@@ -132,7 +132,6 @@ template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
-
   using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
                                 ExpansionDerivOrder>;
 
@@ -159,6 +158,12 @@ struct MockMetavars {
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
   using translation_system =
       control_system::Systems::Translation<trans_deriv_order>;
+
+  using control_systems = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
+      tmpl::conditional_t<using_rotation, rotation_system, tmpl::list<>>,
+      tmpl::conditional_t<using_translation, translation_system,
+                          tmpl::list<>>>>;
 
   using expansion_component = MockControlComponent<metavars, expansion_system>;
   using rotation_component = MockControlComponent<metavars, rotation_system>;
@@ -195,6 +200,15 @@ struct MockMetavars {
  */
 template <typename Metavars>
 struct SystemHelper {
+ private:
+  template <typename System>
+  struct LocalTag {
+    using type = tuples::tagged_tuple_from_typelist<init_simple_tags<System>>;
+  };
+  using AllTags = tuples::tagged_tuple_from_typelist<tmpl::transform<
+      typename Metavars::control_systems, tmpl::bind<LocalTag, tmpl::_1>>>;
+
+ public:
   static constexpr size_t exp_deriv_order = Metavars::exp_deriv_order;
   static constexpr size_t rot_deriv_order = Metavars::rot_deriv_order;
   static constexpr size_t trans_deriv_order = Metavars::trans_deriv_order;
@@ -206,6 +220,7 @@ struct SystemHelper {
   using expansion_system = typename Metavars::expansion_system;
   using rotation_system = typename Metavars::rotation_system;
   using translation_system = typename Metavars::translation_system;
+  using control_systems = typename Metavars::control_systems;
 
   using element_component = typename Metavars::element_component;
   using control_components = typename Metavars::control_components;
@@ -223,14 +238,16 @@ struct SystemHelper {
   }
 
   // Members that won't be moved out of this struct
-  const auto& init_exp_tuple() { return init_exp_tuple_; }
-  const auto& init_rot_tuple() { return init_rot_tuple_; }
-  const auto& init_trans_tuple() { return init_trans_tuple_; }
+  template <typename System>
+  const auto& init_tuple() {
+    return get<LocalTag<System>>(all_init_tags_);
+  }
   const auto& grid_position_of_a() { return grid_position_of_a_; }
   const auto& grid_position_of_b() { return grid_position_of_b_; }
-  const auto& expansion_name() { return expansion_name_; }
-  const auto& rotation_name() { return rotation_name_; }
-  const auto& translation_name() { return translation_name_; }
+  template <typename System>
+  std::string name() {
+    return System::name();
+  }
 
   void setup_control_system_test(const double initial_time,
                                  const double initial_separation,
@@ -264,20 +281,20 @@ struct SystemHelper {
                                        {4, Direction<3>::lower_zeta()},
                                        {5, Direction<3>::lower_zeta()}}}}}};
 
+    parse_options(option_string);
     // Initial parameters needed. Expiration times would normally be set during
     // option parsing, and measurement timescales during initialization so we
     // have to do them manually here instead.
     if constexpr (using_expansion) {
-      init_exp_tuple_ = parse_options<expansion_system>(option_string);
+      auto& init_exp_tuple = get<LocalTag<expansion_system>>(all_init_tags_);
       auto& exp_averager =
-          get<control_system::Tags::Averager<expansion_system>>(
-              init_exp_tuple_);
+          get<control_system::Tags::Averager<expansion_system>>(init_exp_tuple);
       const auto& exp_controller =
           get<control_system::Tags::Controller<expansion_system>>(
-              init_exp_tuple_);
+              init_exp_tuple);
       const auto& exp_tuner =
           get<control_system::Tags::TimescaleTuner<expansion_system>>(
-              init_exp_tuple_);
+              init_exp_tuple);
 
       const std::array<DataVector, 1> expansion_measurement_timescale{
           {control_system::calculate_measurement_timescales(exp_controller,
@@ -295,30 +312,31 @@ struct SystemHelper {
           make_array<exp_deriv_order + 1, DataVector>(DataVector{1, 0.0});
       init_func_expansion[0][0] = initial_expansion;
 
-      initial_functions_of_time_[expansion_name_] = std::make_unique<
+      const std::string expansion_name = name<expansion_system>();
+      initial_functions_of_time_[expansion_name] = std::make_unique<
           domain::FunctionsOfTime::PiecewisePolynomial<exp_deriv_order>>(
           initial_time_, init_func_expansion,
           initial_expansion_expiration_time);
-      initial_functions_of_time_[expansion_name_ + "OuterBoundary"s] =
+      initial_functions_of_time_[expansion_name + "OuterBoundary"s] =
           std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
               initial_expansion, initial_time_,
               expansion_velocity_outer_boundary,
               decay_timescale_outer_boundary);
-      initial_measurement_timescales_[expansion_name_] =
+      initial_measurement_timescales_[expansion_name] =
           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
               initial_time_, expansion_measurement_timescale,
               initial_expansion_expiration_time);
     }
     if constexpr (using_rotation) {
-      init_rot_tuple_ = parse_options<rotation_system>(option_string);
+      auto& init_rot_tuple = get<LocalTag<rotation_system>>(all_init_tags_);
       auto& rot_averager =
-          get<control_system::Tags::Averager<rotation_system>>(init_rot_tuple_);
+          get<control_system::Tags::Averager<rotation_system>>(init_rot_tuple);
       const auto& rot_controller =
           get<control_system::Tags::Controller<rotation_system>>(
-              init_rot_tuple_);
+              init_rot_tuple);
       const auto& rot_tuner =
           get<control_system::Tags::TimescaleTuner<rotation_system>>(
-              init_rot_tuple_);
+              init_rot_tuple);
 
       const std::array<DataVector, 1> rotation_measurement_timescale{
           {control_system::calculate_measurement_timescales(rot_controller,
@@ -336,26 +354,28 @@ struct SystemHelper {
       auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
       init_quaternion[0][0] = 1.0;
 
-      initial_functions_of_time_[rotation_name_] = std::make_unique<
+      const std::string rotation_name = name<rotation_system>();
+      initial_functions_of_time_[rotation_name] = std::make_unique<
           domain::FunctionsOfTime::QuaternionFunctionOfTime<rot_deriv_order>>(
           initial_time_, init_quaternion, init_func_rotation,
           initial_rotation_rotation_time);
-      initial_measurement_timescales_[rotation_name_] =
+      initial_measurement_timescales_[rotation_name] =
           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
               initial_time_, rotation_measurement_timescale,
               initial_rotation_rotation_time);
     }
     if constexpr (using_translation) {
-      init_trans_tuple_ = parse_options<translation_system>(option_string);
+      auto& init_trans_tuple =
+          get<LocalTag<translation_system>>(all_init_tags_);
       auto& trans_averager =
           get<control_system::Tags::Averager<translation_system>>(
-              init_trans_tuple_);
+              init_trans_tuple);
       const auto& trans_controller =
           get<control_system::Tags::Controller<translation_system>>(
-              init_trans_tuple_);
+              init_trans_tuple);
       const auto& trans_tuner =
           get<control_system::Tags::TimescaleTuner<translation_system>>(
-              init_trans_tuple_);
+              init_trans_tuple);
 
       const std::array<DataVector, 1> translation_measurement_timescale{
           {control_system::calculate_measurement_timescales(trans_controller,
@@ -370,11 +390,12 @@ struct SystemHelper {
       auto init_func_translation =
           make_array<trans_deriv_order + 1, DataVector>(DataVector{3, 0.0});
 
-      initial_functions_of_time_[translation_name_] = std::make_unique<
+      const std::string translation_name = name<translation_system>();
+      initial_functions_of_time_[translation_name] = std::make_unique<
           domain::FunctionsOfTime::PiecewisePolynomial<trans_deriv_order>>(
           initial_time_, init_func_translation,
           initial_translation_expiration_time);
-      initial_measurement_timescales_[translation_name_] =
+      initial_measurement_timescales_[translation_name] =
           std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
               initial_time_, translation_measurement_timescale,
               initial_translation_expiration_time);
@@ -388,7 +409,7 @@ struct SystemHelper {
         auto local_init_func_rotation =
             make_array<1, DataVector>(DataVector{4, 0.0});
         local_init_func_rotation[0][0] = 1.0;
-        initial_functions_of_time_[rotation_name_] =
+        initial_functions_of_time_["Rotation"] =
             std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
                 initial_time, local_init_func_rotation,
                 std::numeric_limits<double>::infinity());
@@ -397,7 +418,7 @@ struct SystemHelper {
         auto local_init_func_expansion =
             make_array<1, DataVector>(DataVector{1, 0.0});
         local_init_func_expansion[0][0] = 1.0;
-        initial_functions_of_time_[expansion_name_] =
+        initial_functions_of_time_["Expansion"] =
             std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
                 initial_time, local_init_func_expansion,
                 std::numeric_limits<double>::infinity());
@@ -535,9 +556,7 @@ struct SystemHelper {
       tmpl::list_difference<init_simple_tags<System>,
                             tmpl::list<typename System::MeasurementQueue>>;
 
-  template <typename System>
-  tuples::tagged_tuple_from_typelist<init_simple_tags<System>> parse_options(
-      const std::string& option_string) {
+  void parse_options(const std::string& option_string) {
     Options::Parser<option_list> parser{"Peter Parker the option parser."};
     parser.parse(option_string);
     const tuples::tagged_tuple_from_typelist<option_list> options =
@@ -546,21 +565,27 @@ struct SystemHelper {
               std::move(args)...);
         });
 
-    tuples::tagged_tuple_from_typelist<creatable_tags<System>> created_tags =
-        Parallel::create_from_options<Metavars>(options,
-                                                creatable_tags<System>{});
+    tmpl::for_each<control_systems>([this, options](auto system_v) {
+      using system = tmpl::type_from<decltype(system_v)>;
 
-    return tuples::tagged_tuple_from_typelist<init_simple_tags<System>>{
-        get<control_system::Tags::Averager<System>>(created_tags),
-        get<control_system::Tags::TimescaleTuner<System>>(created_tags),
-        get<control_system::Tags::Controller<System>>(created_tags),
-        get<control_system::Tags::ControlError<System>>(created_tags),
-        get<control_system::Tags::WriteDataToDisk>(created_tags), true,
-        // Just need an empty queue. It will get filled in as the control
-        // system is updated
-        LinkedMessageQueue<
-            double, tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                               QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+      tuples::tagged_tuple_from_typelist<creatable_tags<system>> created_tags =
+          Parallel::create_from_options<Metavars>(options,
+                                                  creatable_tags<system>{});
+
+      get<LocalTag<system>>(all_init_tags_) =
+          tuples::tagged_tuple_from_typelist<init_simple_tags<system>>{
+              get<control_system::Tags::Averager<system>>(created_tags),
+              get<control_system::Tags::TimescaleTuner<system>>(created_tags),
+              get<control_system::Tags::Controller<system>>(created_tags),
+              get<control_system::Tags::ControlError<system>>(created_tags),
+              get<control_system::Tags::WriteDataToDisk>(created_tags), true,
+              // Just need an empty queue. It will get filled in as the control
+              // system is updated
+              LinkedMessageQueue<
+                  double,
+                  tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
+                             QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+    });
   }
 
   // Members that may be moved out of this struct once they are
@@ -574,16 +599,9 @@ struct SystemHelper {
       initial_measurement_timescales_{};
 
   // Members that won't be moved out of this struct
-  tuples::tagged_tuple_from_typelist<expansion_init_simple_tags>
-      init_exp_tuple_;
-  tuples::tagged_tuple_from_typelist<rotation_init_simple_tags> init_rot_tuple_;
-  tuples::tagged_tuple_from_typelist<translation_init_simple_tags>
-      init_trans_tuple_;
+  AllTags all_init_tags_{};
   std::array<double, 3> grid_position_of_a_{};
   std::array<double, 3> grid_position_of_b_{};
-  const std::string expansion_name_{expansion_system::name()};
-  const std::string translation_name_{translation_system::name()};
-  const std::string rotation_name_{rotation_system::name()};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 }  // namespace control_system::TestHelpers

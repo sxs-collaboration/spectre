@@ -28,6 +28,7 @@ void test_translation_control_error() {
   constexpr size_t deriv_order = 2;
   using metavars = TestHelpers::MockMetavars<deriv_order, 0, 0>;
   using element_component = typename metavars::element_component;
+  using translation_system = typename metavars::translation_system;
 
   // Global things
   domain::FunctionsOfTime::register_derived_with_charm();
@@ -69,7 +70,8 @@ void test_translation_control_error() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const std::string& translation_name = system_helper.translation_name();
+  const std::string translation_name =
+      system_helper.template name<translation_system>();
 
   // Setup runner and element component because it's the easiest way to get the
   // global cache
@@ -92,7 +94,6 @@ void test_translation_control_error() {
   const DataVector grid_B{{initial_separation / 2.0, 0.0, 0.0}};
   QueueTuple fake_measurement_tuple{pos_A, pos_B};
 
-  using translation_system = typename metavars::translation_system;
   using ControlError = translation_system::control_error;
 
   // This is before the first expiration time

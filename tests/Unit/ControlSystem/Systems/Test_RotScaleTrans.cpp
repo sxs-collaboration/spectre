@@ -80,6 +80,9 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   using translation_component = typename metavars::translation_component;
   using rotation_component = typename metavars::rotation_component;
   using expansion_component = typename metavars::expansion_component;
+  using translation_system = typename metavars::translation_system;
+  using rotation_system = typename metavars::rotation_system;
+  using expansion_system = typename metavars::expansion_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -93,9 +96,12 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   // Set up the system helper
   control_system::TestHelpers::SystemHelper<metavars> system_helper{};
 
-  const std::string& translation_name = system_helper.translation_name();
-  const std::string& rotation_name = system_helper.rotation_name();
-  const std::string& expansion_name = system_helper.expansion_name();
+  const std::string translation_name =
+      system_helper.template name<translation_system>();
+  const std::string rotation_name =
+      system_helper.template name<rotation_system>();
+  const std::string expansion_name =
+      system_helper.template name<expansion_system>();
 
   std::string input_options =
       "Evolution:\n"
@@ -117,9 +123,12 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_trans_tuple = system_helper.init_trans_tuple();
-  const auto& init_rot_tuple = system_helper.init_rot_tuple();
-  const auto& init_exp_tuple = system_helper.init_exp_tuple();
+  const auto& init_trans_tuple =
+      system_helper.template init_tuple<translation_system>();
+  const auto& init_rot_tuple =
+      system_helper.template init_tuple<rotation_system>();
+  const auto& init_exp_tuple =
+      system_helper.template init_tuple<expansion_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

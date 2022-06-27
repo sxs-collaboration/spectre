@@ -47,6 +47,7 @@ void test_translation_control_system() {
   using metavars = TestHelpers::MockMetavars<DerivOrder, 0, 0>;
   using translation_component = typename metavars::translation_component;
   using element_component = typename metavars::element_component;
+  using translation_system = typename metavars::translation_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -92,8 +93,10 @@ void test_translation_control_system() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_trans_tuple = system_helper.init_trans_tuple();
-  const std::string& translation_name = system_helper.translation_name();
+  const auto& init_trans_tuple =
+      system_helper.template init_tuple<translation_system>();
+  const std::string translation_name =
+      system_helper.template name<translation_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;

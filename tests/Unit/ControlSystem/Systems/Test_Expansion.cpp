@@ -40,6 +40,7 @@ void test_expansion_control_system() {
   using expansion_component = typename metavars::expansion_component;
   using element_component = typename metavars::element_component;
   using observer_component = typename metavars::observer_component;
+  using expansion_system = typename metavars::expansion_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -85,7 +86,8 @@ void test_expansion_control_system() {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_exp_tuple = system_helper.init_exp_tuple();
+  const auto& init_exp_tuple =
+      system_helper.template init_tuple<expansion_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -105,7 +107,8 @@ void test_expansion_control_system() {
 
   const BinaryTrajectories binary_trajectories{initial_separation};
 
-  const std::string& expansion_name = system_helper.expansion_name();
+  const std::string expansion_name =
+      system_helper.template name<expansion_system>();
 
   // Create coordinate maps for mapping the PN expansion to the "grid" frame
   // where the control system does its calculations
