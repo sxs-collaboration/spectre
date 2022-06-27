@@ -10,6 +10,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 #include "ApparentHorizons/ObjectLabel.hpp"
@@ -52,7 +53,9 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -182,6 +185,99 @@ struct MockMetavars {
       tmpl::list<observer_component, element_component, control_components>>;
 };
 
+template <typename ExpansionSystem>
+double initialize_expansion_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = ExpansionSystem::deriv_order;
+  const double initial_expansion = 1.0;
+  const double expansion_velocity_outer_boundary = 0.0;
+  const double decay_timescale_outer_boundary = 0.05;
+  auto init_func_expansion =
+      make_array<deriv_order + 1, DataVector>(DataVector{1, 0.0});
+  init_func_expansion[0][0] = initial_expansion;
+
+  const std::string expansion_name = ExpansionSystem::name();
+  (*functions_of_time)[expansion_name] = std::make_unique<
+      domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+      initial_time, init_func_expansion,
+      initial_expiration_times.at(expansion_name));
+  (*functions_of_time)[expansion_name + "OuterBoundary"s] =
+      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+          initial_expansion, initial_time, expansion_velocity_outer_boundary,
+          decay_timescale_outer_boundary);
+
+  return 1.0;
+}
+
+template <typename RotationSystem>
+double initialize_rotation_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = RotationSystem::deriv_order;
+
+  const double initial_omega_z = 0.01;
+  auto init_func_rotation =
+      make_array<deriv_order + 1, DataVector>(DataVector{3, 0.0});
+  init_func_rotation[1][2] = initial_omega_z;
+  auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
+  init_quaternion[0][0] = 1.0;
+
+  const std::string rotation_name = RotationSystem::name();
+  (*functions_of_time)[rotation_name] = std::make_unique<
+      domain::FunctionsOfTime::QuaternionFunctionOfTime<deriv_order>>(
+      initial_time, init_quaternion, init_func_rotation,
+      initial_expiration_times.at(rotation_name));
+
+  return 1.0;
+}
+
+template <typename TranslationSystem>
+double initialize_translation_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = TranslationSystem::deriv_order;
+
+  auto init_func_translation =
+      make_array<deriv_order + 1, DataVector>(DataVector{3, 0.0});
+
+  const std::string translation_name = TranslationSystem::name();
+  (*functions_of_time)[translation_name] = std::make_unique<
+      domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+      initial_time, init_func_translation,
+      initial_expiration_times.at(translation_name));
+
+  if (initial_expiration_times.count("Rotation") == 0) {
+    auto local_init_func_rotation =
+        make_array<1, DataVector>(DataVector{4, 0.0});
+    local_init_func_rotation[0][0] = 1.0;
+    (*functions_of_time)["Rotation"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            initial_time, local_init_func_rotation,
+            std::numeric_limits<double>::infinity());
+  }
+  if (initial_expiration_times.count("Expansion") == 0) {
+    auto local_init_func_expansion =
+        make_array<1, DataVector>(DataVector{1, 0.0});
+    local_init_func_expansion[0][0] = 1.0;
+    (*functions_of_time)["Expansion"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            initial_time, local_init_func_expansion,
+            std::numeric_limits<double>::infinity());
+  }
+
+  return 1.0;
+}
+
 /*!
  * \brief Helper struct for testing basic control systems
  *
@@ -249,10 +345,59 @@ struct SystemHelper {
     return System::name();
   }
 
+  /*!
+   * \brief Setup the test.
+   *
+   * The function `initialize_functions_of_time` must take a
+   * `const gsl::not_null<std::unordered_map<std::string,
+   * std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>` for the
+   * function of time map, a `const double` for the initial time, and a `const
+   * std::unordered_map<std::string, double>&` for the expiration times. This
+   * function will initialize the functions of time and must return a double
+   * that represents the radius of the excision spheres. Some existing functions
+   * are given in the `control_system::TestHelpers` namespace for Expansion,
+   * Rotation, and Translation.
+   */
+  template <typename F>
   void setup_control_system_test(const double initial_time,
                                  const double initial_separation,
-                                 const std::string& option_string) {
+                                 const std::string& option_string,
+                                 const F initialize_functions_of_time) {
     initial_time_ = initial_time;
+
+    parse_options(option_string);
+    // Initial parameters needed. Expiration times would normally be set during
+    // option parsing, and measurement timescales during initialization so we
+    // have to do them manually here instead.
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    tmpl::for_each<control_systems>([this,
+                                     &initial_expiration_times](auto system_v) {
+      using system = tmpl::type_from<decltype(system_v)>;
+
+      auto& init_tuple = get<LocalTag<system>>(all_init_tags_);
+      auto& averager = get<control_system::Tags::Averager<system>>(init_tuple);
+      const auto& controller =
+          get<control_system::Tags::Controller<system>>(init_tuple);
+      const auto& tuner =
+          get<control_system::Tags::TimescaleTuner<system>>(init_tuple);
+
+      const std::array<DataVector, 1> measurement_timescale{
+          {control_system::calculate_measurement_timescales(controller,
+                                                            tuner)}};
+      averager.assign_time_between_measurements(min(measurement_timescale[0]));
+
+      const double initial_expiration_time =
+          controller.get_update_fraction() * min(tuner.current_timescale());
+
+      initial_measurement_timescales_[name<system>()] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+              initial_time_, measurement_timescale, initial_expiration_time);
+      initial_expiration_times[name<system>()] = initial_expiration_time;
+    });
+
+    const double excision_radius =
+        initialize_functions_of_time(make_not_null(&initial_functions_of_time_),
+                                     initial_time_, initial_expiration_times);
 
     // We don't need a real domain, just one that has the correct excision
     // sphere centers because the control errors use the `excision_spheres()`
@@ -263,7 +408,7 @@ struct SystemHelper {
         Domain<3>{{},
                   {},
                   {{"ObjectAExcisionSphere",
-                    ExcisionSphere<3>{1.0,
+                    ExcisionSphere<3>{excision_radius,
                                       {{-0.5 * initial_separation, 0.0, 0.0}},
                                       {{0, Direction<3>::lower_zeta()},
                                        {1, Direction<3>::lower_zeta()},
@@ -272,7 +417,7 @@ struct SystemHelper {
                                        {4, Direction<3>::lower_zeta()},
                                        {5, Direction<3>::lower_zeta()}}}},
                    {"ObjectBExcisionSphere",
-                    ExcisionSphere<3>{1.0,
+                    ExcisionSphere<3>{excision_radius,
                                       {{+0.5 * initial_separation, 0.0, 0.0}},
                                       {{0, Direction<3>::lower_zeta()},
                                        {1, Direction<3>::lower_zeta()},
@@ -280,150 +425,6 @@ struct SystemHelper {
                                        {3, Direction<3>::lower_zeta()},
                                        {4, Direction<3>::lower_zeta()},
                                        {5, Direction<3>::lower_zeta()}}}}}};
-
-    parse_options(option_string);
-    // Initial parameters needed. Expiration times would normally be set during
-    // option parsing, and measurement timescales during initialization so we
-    // have to do them manually here instead.
-    if constexpr (using_expansion) {
-      auto& init_exp_tuple = get<LocalTag<expansion_system>>(all_init_tags_);
-      auto& exp_averager =
-          get<control_system::Tags::Averager<expansion_system>>(init_exp_tuple);
-      const auto& exp_controller =
-          get<control_system::Tags::Controller<expansion_system>>(
-              init_exp_tuple);
-      const auto& exp_tuner =
-          get<control_system::Tags::TimescaleTuner<expansion_system>>(
-              init_exp_tuple);
-
-      const std::array<DataVector, 1> expansion_measurement_timescale{
-          {control_system::calculate_measurement_timescales(exp_controller,
-                                                            exp_tuner)}};
-      exp_averager.assign_time_between_measurements(
-          min(expansion_measurement_timescale[0]));
-
-      const double initial_expansion_expiration_time =
-          exp_controller.get_update_fraction() *
-          min(exp_tuner.current_timescale());
-      const double initial_expansion = 1.0;
-      const double expansion_velocity_outer_boundary = 0.0;
-      const double decay_timescale_outer_boundary = 0.05;
-      auto init_func_expansion =
-          make_array<exp_deriv_order + 1, DataVector>(DataVector{1, 0.0});
-      init_func_expansion[0][0] = initial_expansion;
-
-      const std::string expansion_name = name<expansion_system>();
-      initial_functions_of_time_[expansion_name] = std::make_unique<
-          domain::FunctionsOfTime::PiecewisePolynomial<exp_deriv_order>>(
-          initial_time_, init_func_expansion,
-          initial_expansion_expiration_time);
-      initial_functions_of_time_[expansion_name + "OuterBoundary"s] =
-          std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-              initial_expansion, initial_time_,
-              expansion_velocity_outer_boundary,
-              decay_timescale_outer_boundary);
-      initial_measurement_timescales_[expansion_name] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, expansion_measurement_timescale,
-              initial_expansion_expiration_time);
-    }
-    if constexpr (using_rotation) {
-      auto& init_rot_tuple = get<LocalTag<rotation_system>>(all_init_tags_);
-      auto& rot_averager =
-          get<control_system::Tags::Averager<rotation_system>>(init_rot_tuple);
-      const auto& rot_controller =
-          get<control_system::Tags::Controller<rotation_system>>(
-              init_rot_tuple);
-      const auto& rot_tuner =
-          get<control_system::Tags::TimescaleTuner<rotation_system>>(
-              init_rot_tuple);
-
-      const std::array<DataVector, 1> rotation_measurement_timescale{
-          {control_system::calculate_measurement_timescales(rot_controller,
-                                                            rot_tuner)}};
-      rot_averager.assign_time_between_measurements(
-          min(rotation_measurement_timescale[0]));
-
-      const double initial_rotation_rotation_time =
-          rot_controller.get_update_fraction() *
-          min(rot_tuner.current_timescale());
-      const double initial_omega_z = 0.01;
-      auto init_func_rotation =
-          make_array<rot_deriv_order + 1, DataVector>(DataVector{3, 0.0});
-      init_func_rotation[1][2] = initial_omega_z;
-      auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
-      init_quaternion[0][0] = 1.0;
-
-      const std::string rotation_name = name<rotation_system>();
-      initial_functions_of_time_[rotation_name] = std::make_unique<
-          domain::FunctionsOfTime::QuaternionFunctionOfTime<rot_deriv_order>>(
-          initial_time_, init_quaternion, init_func_rotation,
-          initial_rotation_rotation_time);
-      initial_measurement_timescales_[rotation_name] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, rotation_measurement_timescale,
-              initial_rotation_rotation_time);
-    }
-    if constexpr (using_translation) {
-      auto& init_trans_tuple =
-          get<LocalTag<translation_system>>(all_init_tags_);
-      auto& trans_averager =
-          get<control_system::Tags::Averager<translation_system>>(
-              init_trans_tuple);
-      const auto& trans_controller =
-          get<control_system::Tags::Controller<translation_system>>(
-              init_trans_tuple);
-      const auto& trans_tuner =
-          get<control_system::Tags::TimescaleTuner<translation_system>>(
-              init_trans_tuple);
-
-      const std::array<DataVector, 1> translation_measurement_timescale{
-          {control_system::calculate_measurement_timescales(trans_controller,
-                                                            trans_tuner)}};
-      trans_averager.assign_time_between_measurements(
-          min(translation_measurement_timescale[0]));
-
-      const double initial_translation_expiration_time =
-          trans_controller.get_update_fraction() *
-          min(trans_tuner.current_timescale());
-
-      auto init_func_translation =
-          make_array<trans_deriv_order + 1, DataVector>(DataVector{3, 0.0});
-
-      const std::string translation_name = name<translation_system>();
-      initial_functions_of_time_[translation_name] = std::make_unique<
-          domain::FunctionsOfTime::PiecewisePolynomial<trans_deriv_order>>(
-          initial_time_, init_func_translation,
-          initial_translation_expiration_time);
-      initial_measurement_timescales_[translation_name] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, translation_measurement_timescale,
-              initial_translation_expiration_time);
-
-      // Translation control error requires a quaternion and expansion. Thus, if
-      // we aren't already controlling rotation or expansion we have to add
-      // these in. To avoid solving an ODE, we use a constant
-      // PiecewisePolynomial representing the unit quaternion to signify there
-      // isn't any rotation
-      if constexpr (not using_rotation) {
-        auto local_init_func_rotation =
-            make_array<1, DataVector>(DataVector{4, 0.0});
-        local_init_func_rotation[0][0] = 1.0;
-        initial_functions_of_time_["Rotation"] =
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-                initial_time, local_init_func_rotation,
-                std::numeric_limits<double>::infinity());
-      }
-      if constexpr (not using_expansion) {
-        auto local_init_func_expansion =
-            make_array<1, DataVector>(DataVector{1, 0.0});
-        local_init_func_expansion[0][0] = 1.0;
-        initial_functions_of_time_["Expansion"] =
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-                initial_time, local_init_func_expansion,
-                std::numeric_limits<double>::infinity());
-      }
-    }
   }
 
   template <typename Generator, typename F, typename CoordMap>

@@ -5,7 +5,9 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "ControlSystem/Tags.hpp"
@@ -112,9 +114,27 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   input_options += create_input_string(rotation_name);
   input_options += create_input_string(expansion_name);
 
+  const auto initialize_functions_of_time =
+      [](const gsl::not_null<std::unordered_map<
+             std::string,
+             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+             functions_of_time,
+         const double local_initial_time,
+         const std::unordered_map<std::string, double>&
+             initial_expiration_times) {
+        TestHelpers::initialize_expansion_functions_of_time<expansion_system>(
+            functions_of_time, local_initial_time, initial_expiration_times);
+        TestHelpers::initialize_rotation_functions_of_time<rotation_system>(
+            functions_of_time, local_initial_time, initial_expiration_times);
+        return TestHelpers::initialize_translation_functions_of_time<
+            translation_system>(functions_of_time, local_initial_time,
+                                initial_expiration_times);
+      };
+
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(initial_time, initial_separation,
-                                          input_options);
+                                          input_options,
+                                          initialize_functions_of_time);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need

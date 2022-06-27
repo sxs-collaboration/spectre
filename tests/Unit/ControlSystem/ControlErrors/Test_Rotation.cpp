@@ -59,8 +59,9 @@ void test_rotation_control_error() {
       "    ControlError:\n";
 
   // Initialize everything within the system helper
-  system_helper.setup_control_system_test(initial_time, initial_separation,
-                                          input_options);
+  system_helper.setup_control_system_test(
+      initial_time, initial_separation, input_options,
+      TestHelpers::initialize_rotation_functions_of_time<rotation_system>);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need
