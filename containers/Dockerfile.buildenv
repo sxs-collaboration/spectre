@@ -225,6 +225,18 @@ RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/cl
     && cd /work \
     && rm -rf /work/include-what-you-use-clang_10
 
+# Install xsimd https://github.com/xtensor-stack/xsimd
+RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
+    && tar -xzf 8.1.0.tar.gz \
+    && cd ./xsimd-8.1.0  \
+    && mkdir build \
+    && cd ./build \
+    && cmake -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF \
+             -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
+    && make install \
+    && cd /work \
+    && rm -rf /work/8.1.0.tar.gz /work/xsimd-8.1.0
+
 # Download and build the Charm++ version used by SpECTRE
 # We build both Clang and GCC versions of Charm++ so that all our tests can
 # use the same build environment.
