@@ -143,9 +143,9 @@ struct MockMetavars {
   static constexpr bool using_translation = TranslationDerivOrder != 0;
 
   // Even if we aren't using certain control systems, we still need valid deriv
-  // orders becuse everything is constructed by default in the SystemHelper. The
-  // bool above just determines if the functions of time are actually created or
-  // not because that's what matters
+  // orders because everything is constructed by default in the SystemHelper.
+  // The bool above just determines if the functions of time are actually
+  // created or not because that's what matters
   static constexpr size_t exp_deriv_order =
       using_expansion ? ExpansionDerivOrder : 2;
   static constexpr size_t rot_deriv_order =
@@ -187,7 +187,7 @@ struct MockMetavars {
  * Ideally we'd construct the runner here and just pass that to the test to
  * simplify as must of the work as possible, but MockRuntimeSystems aren't
  * copy- or move-able so we have to make the necessary info available. The
- * simplist way to do this was to have functions that return references to the
+ * simplest way to do this was to have functions that return references to the
  * member variables.
  *
  * \note Translation control isn't supported yet. It will be added in the
