@@ -5,19 +5,20 @@
 #include <pybind11/pybind11.h>
 #include <string>
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 
 namespace py = pybind11;
 
-namespace gr::Solutions::py_bindings {
+namespace RelativisticEuler::Solutions::py_bindings {
 
 void bind_tov(py::module& m) {  // NOLINT
   py::enum_<TovCoordinates>(m, "TovCoordinates")
       .value("Schwarzschild", TovCoordinates::Schwarzschild)
       .value("Isotropic", TovCoordinates::Isotropic);
   py::class_<TovSolution>(m, "Tov")
-      .def(py::init<const EquationsOfState::EquationOfState<true, 1>&, double,
+      .def(py::init<const EquationsOfState::EquationOfState<true, 1>&,
+      double,
                     TovCoordinates, double, double, double>(),
            py::arg("equation_of_state"), py::arg("central_mass_density"),
            py::arg("coordinate_system") = TovCoordinates::Schwarzschild,
@@ -35,4 +36,4 @@ void bind_tov(py::module& m) {  // NOLINT
            py::vectorize(&TovSolution::conformal_factor<double>));
 }
 
-}  // namespace gr::Solutions::py_bindings
+}  // namespace RelativisticEuler::Solutions::py_bindings

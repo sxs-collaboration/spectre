@@ -10,7 +10,7 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -46,9 +46,10 @@ void test_tov(
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
   const double final_log_enthalpy =
       initial_log_enthalpy + (current_iteration + 1.0) * step;
-  const gr::Solutions::TovSolution tov_out_full(
+  const RelativisticEuler::Solutions::TovSolution tov_out_full(
       equation_of_state, central_mass_density,
-      gr::Solutions::TovCoordinates::Schwarzschild, surface_log_enthalpy);
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild,
+      surface_log_enthalpy);
 
   if (newtonian_limit) {
     const double final_radius{tov_out_full.outer_radius()};
@@ -76,9 +77,10 @@ void test_tov(
 
   // Integrate only to some intermediate value, not the surface. Then compare to
   // interpolated values.
-  const gr::Solutions::TovSolution tov_out_intermediate(
+  const RelativisticEuler::Solutions::TovSolution tov_out_intermediate(
       equation_of_state, central_mass_density,
-      gr::Solutions::TovCoordinates::Schwarzschild, final_log_enthalpy);
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild,
+      final_log_enthalpy);
   const double intermediate_radius{tov_out_intermediate.outer_radius()};
   const double intermediate_mass{tov_out_intermediate.total_mass()};
   CHECK(intermediate_mass ==
@@ -116,7 +118,7 @@ void test_tov(
 
 void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
   const double central_rest_mass_density = 1.0e-3;
-  const gr::Solutions::TovSolution radial_tov_solution{
+  const RelativisticEuler::Solutions::TovSolution radial_tov_solution{
       eos, central_rest_mass_density};
 
   // Evaluate the radial solution at equally spaced points
@@ -181,7 +183,8 @@ void test_baumgarte_shapiro() {
   // For polytropic_exponent = 2
   const double central_rest_mass_density =
       0.5 * (sqrt(1. + 4. * central_energy_density) - 1.);
-  const gr::Solutions::TovSolution tov{eos, central_rest_mass_density};
+  const RelativisticEuler::Solutions::TovSolution tov{
+      eos, central_rest_mass_density};
   // The values in BaumgarteShapiro are given to this precision
   Approx custom_approx = Approx::custom().epsilon(1.e-03).scale(1.0);
   CHECK(tov.total_mass() == custom_approx(0.164));
@@ -190,10 +193,12 @@ void test_baumgarte_shapiro() {
 
 void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,
                         const double central_mass_density) {
-  const gr::Solutions::TovSolution tov_areal{
-      eos, central_mass_density, gr::Solutions::TovCoordinates::Schwarzschild};
-  const gr::Solutions::TovSolution tov_isotropic{
-      eos, central_mass_density, gr::Solutions::TovCoordinates::Isotropic};
+  const RelativisticEuler::Solutions::TovSolution tov_areal{
+      eos, central_mass_density,
+      RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
+  const RelativisticEuler::Solutions::TovSolution tov_isotropic{
+      eos, central_mass_density,
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic};
   const double outer_isotropic_radius = tov_isotropic.outer_radius();
   CHECK(tov_areal.total_mass() == approx(tov_isotropic.total_mass()));
   const double outer_areal_radius =
@@ -216,10 +221,10 @@ void test_rueter() {
   // Reproduces the values in Sec. V.C and Fig. 8 in
   // https://arxiv.org/abs/1708.07358
   const EquationsOfState::PolytropicFluid<true> eos{123.6489, 2};
-  gr::Solutions::TovSolution solution{
+  RelativisticEuler::Solutions::TovSolution solution{
       eos,
       0.0008087415253997405,  // Central enthalpy h=1.2
-      gr::Solutions::TovCoordinates::Isotropic};
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic};
   const double outer_radius = solution.outer_radius();
   // The values in the paper are given to this precision
   Approx custom_approx = Approx::custom().epsilon(1e-4).scale(1.);

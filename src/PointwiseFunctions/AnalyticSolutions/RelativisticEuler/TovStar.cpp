@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -19,10 +19,10 @@ namespace RelativisticEuler::Solutions {
 
 TovStar::TovStar(CkMigrateMessage* msg) : InitialData(msg) {}
 
-TovStar::TovStar(const double central_rest_mass_density,
-                 const double polytropic_constant,
-                 const double polytropic_exponent,
-                 const gr::Solutions::TovCoordinates coordinate_system)
+TovStar::TovStar(
+    const double central_rest_mass_density, const double polytropic_constant,
+    const double polytropic_exponent,
+    const RelativisticEuler::Solutions::TovCoordinates coordinate_system)
     : central_rest_mass_density_(central_rest_mass_density),
       polytropic_constant_(polytropic_constant),
       polytropic_exponent_(polytropic_exponent),
@@ -96,7 +96,7 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Cache*> /*cache*/,
     Tags::ConformalFactor<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     if constexpr (Region == StarRegion::Exterior) {
       get(*conformal_factor) = 1. + 0.5 * radial_solution.total_mass() / radius;
     } else {
@@ -115,7 +115,7 @@ void TovVariables<DataType, Region>::operator()(
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::DrConformalFactor<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     if constexpr (Region == StarRegion::Exterior) {
       get(*dr_conformal_factor) =
           -0.5 * radial_solution.total_mass() / square(radius);
@@ -142,7 +142,7 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::ArealRadius<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     const auto& conformal_factor =
         get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
     get(*areal_radius) = square(conformal_factor) * radius;
@@ -159,7 +159,7 @@ void TovVariables<DataType, Region>::operator()(
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::DrArealRadius<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     if constexpr (Region == StarRegion::Exterior) {
       const auto& areal_radius =
           get(cache->get_var(*this, Tags::ArealRadius<DataType>{}));
@@ -237,7 +237,7 @@ void TovVariables<DataType, Region>::operator()(
   if constexpr (Region == StarRegion::Exterior) {
     const auto& areal_radius =
         radial_solution.coordinate_system() ==
-                gr::Solutions::TovCoordinates::Isotropic
+                RelativisticEuler::Solutions::TovCoordinates::Isotropic
             ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
             : radius;
     get(*metric_time_potential) =
@@ -260,14 +260,14 @@ void TovVariables<DataType, Region>::operator()(
   if constexpr (Region == StarRegion::Exterior) {
     const auto& areal_radius =
         radial_solution.coordinate_system() ==
-                gr::Solutions::TovCoordinates::Isotropic
+                RelativisticEuler::Solutions::TovCoordinates::Isotropic
             ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
             : radius;
     get(*dr_metric_time_potential) =
         radial_solution.total_mass() / square(areal_radius) /
         (1. - 2. * radial_solution.total_mass() / areal_radius);
     if (radial_solution.coordinate_system() ==
-        gr::Solutions::TovCoordinates::Isotropic) {
+        RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
       const auto& dr_areal_radius =
           get(cache->get_var(*this, Tags::DrArealRadius<DataType>{}));
       get(*dr_metric_time_potential) *= dr_areal_radius;
@@ -283,14 +283,14 @@ void TovVariables<DataType, Region>::operator()(
         get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
     const auto& areal_radius =
         radial_solution.coordinate_system() ==
-                gr::Solutions::TovCoordinates::Isotropic
+                RelativisticEuler::Solutions::TovCoordinates::Isotropic
             ? get(cache->get_var(*this, Tags::ArealRadius<DataType>{}))
             : radius;
     get(*dr_metric_time_potential) = (mass_over_radius / areal_radius +
                                       4. * M_PI * pressure * areal_radius) /
                                      (1. - 2. * mass_over_radius);
     if (radial_solution.coordinate_system() ==
-        gr::Solutions::TovCoordinates::Isotropic) {
+        RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
       const auto& dr_areal_radius =
           get(cache->get_var(*this, Tags::DrArealRadius<DataType>{}));
       get(*dr_metric_time_potential) *= dr_areal_radius;
@@ -305,7 +305,7 @@ void TovVariables<DataType, Region>::operator()(
     Tags::MetricRadialPotential<DataType> /*meta*/) const {
   // Compute lambda in Eq. (1.73) in BaumgarteShapiro
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     const auto& conformal_factor =
         get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
     get(*metric_radial_potential) = 2. * log(conformal_factor);
@@ -329,7 +329,7 @@ void TovVariables<DataType, Region>::operator()(
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     Tags::DrMetricRadialPotential<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     const auto& conformal_factor =
         get(cache->get_var(*this, Tags::ConformalFactor<DataType>{}));
     const auto& dr_conformal_factor =
@@ -369,7 +369,7 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::MetricAngularPotential<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     const auto& metric_radial_potential =
         cache->get_var(*this, Tags::MetricRadialPotential<DataType>{});
     *metric_angular_potential = metric_radial_potential;
@@ -384,7 +384,7 @@ void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Cache*> cache,
     Tags::DrMetricAngularPotential<DataType> /*meta*/) const {
   if (radial_solution.coordinate_system() ==
-      gr::Solutions::TovCoordinates::Isotropic) {
+      RelativisticEuler::Solutions::TovCoordinates::Isotropic) {
     const auto& dr_metric_radial_potential =
         cache->get_var(*this, Tags::DrMetricRadialPotential<DataType>{});
     *dr_metric_angular_potential = dr_metric_radial_potential;

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 
 // Need Boost MultiArray because it is used internally by ODEINT
 #include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
@@ -29,7 +29,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-namespace gr::Solutions {
+namespace RelativisticEuler::Solutions {
 std::ostream& operator<<(std::ostream& os, const TovCoordinates coords) {
   switch (coords) {
     case TovCoordinates::Schwarzschild:
@@ -40,26 +40,27 @@ std::ostream& operator<<(std::ostream& os, const TovCoordinates coords) {
       ERROR("Unknown TovCoordinates");
   }
 }
-}  // namespace gr::Solutions
+}  // namespace RelativisticEuler::Solutions
 
 template <>
-gr::Solutions::TovCoordinates
-Options::create_from_yaml<gr::Solutions::TovCoordinates>::create<void>(
-    const Options::Option& options) {
+RelativisticEuler::Solutions::TovCoordinates
+Options::create_from_yaml<RelativisticEuler::Solutions::TovCoordinates>::create<
+    void>(const Options::Option& options) {
   const auto type_read = options.parse_as<std::string>();
   if ("Schwarzschild" == type_read) {
-    return gr::Solutions::TovCoordinates::Schwarzschild;
+    return RelativisticEuler::Solutions::TovCoordinates::Schwarzschild;
   } else if ("Isotropic" == type_read) {
-    return gr::Solutions::TovCoordinates::Isotropic;
+    return RelativisticEuler::Solutions::TovCoordinates::Isotropic;
   }
-  PARSE_ERROR(options.context(),
-              "Failed to convert '"
-                  << type_read
-                  << "' to gr::Solutions::TovCoordinates. Must be "
-                     "'Schwarzschild' or 'Isotropic'.");
+  PARSE_ERROR(
+      options.context(),
+      "Failed to convert '"
+          << type_read
+          << "' to RelativisticEuler::Solutions::TovCoordinates. Must be "
+             "'Schwarzschild' or 'Isotropic'.");
 }
 
-namespace gr::Solutions {
+namespace RelativisticEuler::Solutions {
 namespace {
 
 // In Schwarzschild coords we integrate u=r^2 and v=m/r (2 vars), and in
@@ -292,4 +293,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 
 #undef DTYPE
 
-}  // namespace gr::Solutions
+}  // namespace RelativisticEuler::Solutions

@@ -26,7 +26,7 @@ namespace grmhd::AnalyticData {
 MagnetizedTovStar::MagnetizedTovStar(
     const double central_rest_mass_density, const double polytropic_constant,
     const double polytropic_exponent,
-    const gr::Solutions::TovCoordinates coordinate_system,
+    const RelativisticEuler::Solutions::TovCoordinates coordinate_system,
     const size_t pressure_exponent, const double cutoff_pressure_fraction,
     const double vector_potential_amplitude)
     : tov_star(central_rest_mass_density, polytropic_constant,

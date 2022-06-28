@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
-  "Unit.AnalyticSolutions.GeneralRelativity.Python.Tov"
+  "Unit.AnalyticSolutions.RelativisticEuler.Python.Tov"
   "Test_Tov.py"
   "Unit;PointwiseFunctions;Python"
-  PyGeneralRelativitySolutions)
+  PyRelativisticEulerSolutions)
