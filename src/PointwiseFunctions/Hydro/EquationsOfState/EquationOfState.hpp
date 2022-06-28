@@ -20,6 +20,8 @@ class DataVector;
 namespace EquationsOfState {
 template <bool IsRelativistic>
 class DarkEnergyFluid;
+template <typename ColdEquationOfState>
+class HybridEos;
 template <bool IsRelativistic>
 class IdealFluid;
 template <bool IsRelativistic>
@@ -49,12 +51,13 @@ struct DerivedClasses<false, 1> {
 
 template <>
 struct DerivedClasses<true, 2> {
-  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>>;
+  using type = tmpl::list<DarkEnergyFluid<true>, IdealFluid<true>,
+                          HybridEos<PolytropicFluid<true>>>;
 };
 
 template <>
 struct DerivedClasses<false, 2> {
-  using type = tmpl::list<IdealFluid<false>>;
+  using type = tmpl::list<IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
 };
 
 }  // namespace detail
@@ -93,6 +96,8 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
+
+  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -208,6 +213,8 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   EquationOfState(EquationOfState&&) = default;
   EquationOfState& operator=(EquationOfState&&) = default;
   ~EquationOfState() override = default;
+
+  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
@@ -359,7 +366,7 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /* clang-tidy: do not use non-const references */                           \
   void pup(PUP::er& p) override; /* NOLINT */                                 \
                                                                               \
-  explicit DERIVED(CkMigrateMessage* /*unused*/);
+  explicit DERIVED(CkMigrateMessage* msg);
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_ARGUMENTS(z, n, unused) \

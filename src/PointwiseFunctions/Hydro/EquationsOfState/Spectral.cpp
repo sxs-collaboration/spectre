@@ -72,7 +72,8 @@ Spectral::Spectral(const double reference_density,
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(, Spectral, double, 1)
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(, Spectral, DataVector, 1)
 
-Spectral::Spectral(CkMigrateMessage* /*unused*/) {}
+Spectral::Spectral(CkMigrateMessage* msg) : EquationOfState<true, 1>(msg) {}
+
 
 void Spectral::pup(PUP::er& p) {
   EquationOfState<true, 1>::pup(p);
