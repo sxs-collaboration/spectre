@@ -49,7 +49,7 @@ namespace h5 {
  *
  * \example
  * To open a file for read-write access:
- * \snippet Test_H5.cpp h5file_readwrite_file
+ * \snippet Test_H5File.cpp h5file_readwrite_file
  *
  * \note The dangling reference issue could be fixed by having a function in
  * addition to `get` that takes a lambda. The lambda takes exactly one parameter

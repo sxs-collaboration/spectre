@@ -23,7 +23,7 @@ namespace h5 {
  *
  * \example
  * You can read the header info out of an H5 file as shown in the example:
- * \snippet Test_H5.cpp h5file_readwrite_get_header
+ * \snippet Test_H5File.cpp h5file_readwrite_get_header
  */
 class Header : public h5::Object {
  public:

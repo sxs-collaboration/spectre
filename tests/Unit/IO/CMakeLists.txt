@@ -7,21 +7,26 @@ add_subdirectory(Logging)
 set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES
+  H5/Test_Dat.cpp
   H5/Test_H5.cpp
+  H5/Test_H5File.cpp
+  H5/Test_OpenGroup.cpp
   H5/Test_StellarCollapseEos.cpp
+  H5/Test_Version.cpp
   H5/Test_VolumeData.cpp
   Observers/Test_ArrayComponentId.cpp
   Observers/Test_GetLockPointer.cpp
   Observers/Test_Initialize.cpp
+  Observers/Test_ObservationId.cpp
+  Observers/Test_ReductionObserver.cpp
   Observers/Test_RegisterElements.cpp
   Observers/Test_RegisterEvents.cpp
   Observers/Test_RegisterSingleton.cpp
   Observers/Test_Tags.cpp
-  Observers/Test_ObservationId.cpp
-  Observers/Test_ReductionObserver.cpp
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
   Observers/Test_WriteSimpleData.cpp
+  Test_Connectivity.cpp
   )
 
 add_test_library(
