@@ -14,6 +14,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 
 namespace {
 template <bool IsRelativistic>
@@ -47,7 +48,9 @@ void check_exact_polytrope() {
   CHECK(get(p_c) == 48.0);
   const auto eps_c = cold_eos.specific_internal_energy_from_density(rho);
   CHECK(get(eps_c) == 12.0);
-  const auto h_c = cold_eos.specific_enthalpy_from_density(rho);
+  const auto h_c = IsRelativistic
+                       ? hydro::relativistic_specific_enthalpy(rho, eps_c, p_c)
+                       : Scalar<double>{get(eps_c) + get(p_c) / get(rho)};
   CHECK(get(h_c) == (IsRelativistic ? 25.0 : 24.0));
   const auto chi_c = cold_eos.chi_from_density(rho);
   CHECK(get(chi_c) == 24.0);
@@ -61,7 +64,9 @@ void check_exact_polytrope() {
   const Scalar<double> eps{5.0};
   const auto p = eos.pressure_from_density_and_energy(rho, eps);
   CHECK(get(p) == 34.0);
-  const auto h = eos.specific_enthalpy_from_density_and_energy(rho, eps);
+  const auto h = IsRelativistic
+                     ? hydro::relativistic_specific_enthalpy(rho, eps, p)
+                     : Scalar<double>{get(eps) + get(p) / get(rho)};
   CHECK(get(h) == (IsRelativistic ? 14.5 : 13.5));
   CHECK(get(eos.pressure_from_density_and_enthalpy(rho, h)) == 34.0);
   CHECK(get(eos.specific_internal_energy_from_density_and_pressure(rho, p)) ==

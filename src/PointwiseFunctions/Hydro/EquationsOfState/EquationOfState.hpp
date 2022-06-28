@@ -124,17 +124,6 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   /// @{
   /*!
-   * Computes the specific enthalpy \f$h\f$ from the rest mass density
-   * \f$\rho\f$.
-   */
-  virtual Scalar<double> specific_enthalpy_from_density(
-      const Scalar<double>& /*rest_mass_density*/) const = 0;
-  virtual Scalar<DataVector> specific_enthalpy_from_density(
-      const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
-  /// @}
-
-  /// @{
-  /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
    * density \f$\rho\f$.
    */
@@ -246,19 +235,6 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   /// @{
   /*!
-   * Computes the specific enthalpy \f$h\f$ from the rest mass density
-   * \f$\rho\f$ and the specific internal energy \f$\epsilon\f$.
-   */
-  virtual Scalar<double> specific_enthalpy_from_density_and_energy(
-      const Scalar<double>& /*rest_mass_density*/,
-      const Scalar<double>& /*specific_internal_energy*/) const = 0;
-  virtual Scalar<DataVector> specific_enthalpy_from_density_and_energy(
-      const Scalar<DataVector>& /*rest_mass_density*/,
-      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
-  /// @}
-
-  /// @{
-  /*!
    * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
    * density \f$\rho\f$ and the pressure \f$p\f$.
    */
@@ -327,14 +303,13 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 }  // namespace EquationsOfState
 
 /// \cond
-#define EQUATION_OF_STATE_FUNCTIONS_1D                                    \
-  (pressure_from_density, rest_mass_density_from_enthalpy,                \
-   specific_enthalpy_from_density, specific_internal_energy_from_density, \
-   chi_from_density, kappa_times_p_over_rho_squared_from_density)
+#define EQUATION_OF_STATE_FUNCTIONS_1D                      \
+  (pressure_from_density, rest_mass_density_from_enthalpy,  \
+   specific_internal_energy_from_density, chi_from_density, \
+   kappa_times_p_over_rho_squared_from_density)
 
 #define EQUATION_OF_STATE_FUNCTIONS_2D                                   \
   (pressure_from_density_and_energy, pressure_from_density_and_enthalpy, \
-   specific_enthalpy_from_density_and_energy,                            \
    specific_internal_energy_from_density_and_pressure,                   \
    chi_from_density_and_energy,                                          \
    kappa_times_p_over_rho_squared_from_density_and_energy)

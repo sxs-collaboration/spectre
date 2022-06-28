@@ -55,16 +55,6 @@ DarkEnergyFluid<IsRelativistic>::pressure_from_density_and_enthalpy_impl(
                           get(rest_mass_density) * get(specific_enthalpy)};
 }
 
-template <>
-template <class DataType>
-Scalar<DataType>
-DarkEnergyFluid<true>::specific_enthalpy_from_density_and_energy_impl(
-    const Scalar<DataType>& /*rest_mass_density*/,
-    const Scalar<DataType>& specific_internal_energy) const {
-  return Scalar<DataType>{(1.0 + parameter_w_) *
-                          (1.0 + get(specific_internal_energy))};
-}
-
 template <bool IsRelativistic>
 template <class DataType>
 Scalar<DataType> DarkEnergyFluid<IsRelativistic>::

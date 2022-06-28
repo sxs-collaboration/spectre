@@ -64,26 +64,6 @@ Scalar<DataType> PolytropicFluid<false>::rest_mass_density_from_enthalpy_impl(
                               1.0 / (polytropic_exponent_ - 1.0))};
 }
 
-template <>
-template <class DataType>
-Scalar<DataType> PolytropicFluid<true>::specific_enthalpy_from_density_impl(
-    const Scalar<DataType>& rest_mass_density) const {
-  return Scalar<DataType>{
-      1.0 + polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
-                polytropic_constant_ *
-                pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
-}
-
-template <>
-template <class DataType>
-Scalar<DataType> PolytropicFluid<false>::specific_enthalpy_from_density_impl(
-    const Scalar<DataType>& rest_mass_density) const {
-  return Scalar<DataType>{
-      polytropic_exponent_ / (polytropic_exponent_ - 1.0) *
-      polytropic_constant_ *
-      pow(get(rest_mass_density), polytropic_exponent_ - 1.0)};
-}
-
 template <bool IsRelativistic>
 template <class DataType>
 Scalar<DataType>
