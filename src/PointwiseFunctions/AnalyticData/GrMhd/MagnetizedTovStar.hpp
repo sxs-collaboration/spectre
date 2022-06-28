@@ -11,7 +11,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"

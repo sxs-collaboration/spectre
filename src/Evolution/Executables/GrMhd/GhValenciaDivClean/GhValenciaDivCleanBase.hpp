@@ -117,7 +117,6 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/AlfvenWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
