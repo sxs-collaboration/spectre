@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <pup.h>
 
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
@@ -44,21 +45,21 @@ class Times : public DenseTrigger {
 
   using is_triggered_argument_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
 
-  Result is_triggered(const TimeStepId& time_step_id, const double time) const;
-
-  using is_ready_argument_tags = tmpl::list<>;
-
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  static bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                       const ArrayIndex& /*array_index*/,
-                       const Component* const /*meta*/) {
-    return true;
+  std::optional<Result> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const TimeStepId& time_step_id, const double time) const {
+    return is_triggered_impl(time_step_id, time);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
  private:
+  std::optional<Result> is_triggered_impl(const TimeStepId& time_step_id,
+                                          const double time) const;
+
   std::unique_ptr<TimeSequence<double>> times_{};
 };
 }  // namespace DenseTriggers

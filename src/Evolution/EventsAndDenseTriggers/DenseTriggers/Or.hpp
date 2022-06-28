@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <vector>
 
@@ -51,37 +52,30 @@ class Or : public DenseTrigger {
   using is_triggered_argument_tags =
       tmpl::list<Tags::TimeStepId, Tags::DataBox>;
 
-  template <typename DbTags>
-  Result is_triggered(const TimeStepId& time_step_id,
-                      const db::DataBox<DbTags>& box) const {
+  template <typename Metavariables, typename ArrayIndex, typename Component,
+            typename DbTags>
+  std::optional<Result> is_triggered(
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component,
+      const TimeStepId& time_step_id, const db::DataBox<DbTags>& box) const {
     const evolution_less<double> before{time_step_id.time_runs_forward()};
     Result result{false, before.infinity()};
     for (const auto& trigger : triggers_) {
-      const auto sub_result = trigger->is_triggered(box);
-      if (sub_result.is_triggered) {
+      const auto sub_result =
+          trigger->is_triggered(box, cache, array_index, component);
+      if (not sub_result.has_value()) {
+        return std::nullopt;
+      }
+      if (sub_result->is_triggered) {
         // We can't short-circuit because we need to make sure we
         // report the next time that any of the triggers wants to be
         // checked, whether they triggered now or not.
         result.is_triggered = true;
       }
       result.next_check =
-          std::min(sub_result.next_check, result.next_check, before);
+          std::min(sub_result->next_check, result.next_check, before);
     }
     return result;
-  }
-
-  using is_ready_argument_tags = tmpl::list<Tags::DataBox>;
-
-  template <typename Metavariables, typename ArrayIndex, typename Component,
-            typename DbTags>
-  bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
-                const ArrayIndex& array_index, const Component* const component,
-                const db::DataBox<DbTags>& box) const {
-    return alg::all_of(
-        triggers_, [&array_index, &box, &cache,
-                    &component](const std::unique_ptr<DenseTrigger>& trigger) {
-          return trigger->is_ready(box, cache, array_index, component);
-        });
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

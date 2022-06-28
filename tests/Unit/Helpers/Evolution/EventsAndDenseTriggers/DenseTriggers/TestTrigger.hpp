@@ -5,6 +5,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <optional>
 #include <pup.h>
 #include <string>
 
@@ -57,17 +58,12 @@ class TestTrigger : public DenseTrigger {
         next_check_(next_check) {}
 
   using is_triggered_argument_tags = tmpl::list<>;
-  Result is_triggered() const {
-    CHECK(is_ready_);
-    return {is_triggered_, next_check_};
-  }
-
-  using is_ready_argument_tags = tmpl::list<>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/) const {
-    return is_ready_;
+  std::optional<Result> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/) const {
+    return is_ready_ ? std::optional<Result>{{is_triggered_, next_check_}}
+                     : std::nullopt;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -115,20 +111,16 @@ class BoxTrigger : public DenseTrigger {
 
   using is_triggered_argument_tags =
       tmpl::list<IsReady, IsTriggered, NextCheck>;
-  Result is_triggered(const bool is_ready_arg, const bool is_triggered,
-                      const double next_check) const {
-    CHECK(is_ready_arg);
-    return {is_triggered, next_check};
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<Result> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const bool is_ready_arg, const bool is_triggered,
+      const double next_check) const {
+    return is_ready_arg ? std::optional<Result>{{is_triggered, next_check}}
+                        : std::nullopt;
   }
 
-  using is_ready_argument_tags = tmpl::list<IsReady>;
-  template <typename Metavariables, typename ArrayIndex, typename Component>
-  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/,
-                const bool is_ready_arg) const {
-    return is_ready_arg;
-  }
   void pup(PUP::er& p) { DenseTrigger::pup(p); }
 };
 

@@ -55,14 +55,13 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
 
-  CHECK(trigger->is_ready(box, cache, array_index, component) ==
-        expected_is_ready);
+  const auto result = trigger->is_triggered(box, cache, array_index, component);
+  CHECK(result.has_value() == expected_is_ready);
   if (not expected_is_ready) {
     return;
   }
-  const auto result = trigger->is_triggered(box);
-  CHECK(result.is_triggered == expected_is_triggered);
-  CHECK(result.next_check == expected_next_check);
+  CHECK(result->is_triggered == expected_is_triggered);
+  CHECK(result->next_check == expected_next_check);
 }
 
 void check_permutations(

@@ -101,14 +101,13 @@ void check(const bool expected_is_ready, const bool expected_is_triggered,
   const auto trigger = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string.str()));
-  CHECK(trigger->is_ready(box, cache, array_index, component) ==
-        expected_is_ready);
+  const auto result = trigger->is_triggered(box, cache, array_index, component);
+  CHECK(result.has_value() == expected_is_ready);
   if (not expected_is_ready) {
     return;
   }
-  const auto result = trigger->is_triggered(box);
-  CHECK(result.is_triggered == expected_is_triggered);
-  CHECK(result.next_check == expected_next_check);
+  CHECK(result->is_triggered == expected_is_triggered);
+  CHECK(result->next_check == expected_next_check);
 }
 
 struct ExampleMetavariables {
@@ -145,7 +144,11 @@ Filter:
         Parallel::Tags::MetavariablesImpl<ExampleMetavariables>, ::Tags::Time,
         ::Tags::TimeStepId>>(ExampleMetavariables{}, time,
                              TimeStepId(true, 0, Slab(0., 1.).start()));
-    return trigger->is_triggered(box).is_triggered;
+    Parallel::GlobalCache<Metavariables> cache{};
+    const int array_index = 0;
+    const void* component = nullptr;
+    return trigger->is_triggered(box, cache, array_index, component)
+        ->is_triggered;
   };
   CHECK(not run_trigger(90.));
   CHECK(not run_trigger(95.));

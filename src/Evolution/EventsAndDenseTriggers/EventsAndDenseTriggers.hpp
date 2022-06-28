@@ -196,19 +196,18 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
   for (; current_trigger() != events_and_triggers_.end();
        ++processing_position_) {
     if (not event_to_check_.has_value()) {
-      if (not current_trigger()->trigger->is_ready(box, cache, array_index,
-                                                   component)) {
+      const auto is_triggered = current_trigger()->trigger->is_triggered(
+          box, cache, array_index, component);
+      if (not is_triggered.has_value()) {
         return TriggeringState::NotReady;
       }
-
-      const auto is_triggered = current_trigger()->trigger->is_triggered(box);
-      if (not after(is_triggered.next_check, current_trigger()->next_check)) {
+      if (not after(is_triggered->next_check, current_trigger()->next_check)) {
         ERROR("Trigger at time " << current_trigger()->next_check
               << " rescheduled itself for earlier time "
-              << is_triggered.next_check);
+              << is_triggered->next_check);
       }
-      current_trigger()->next_check = is_triggered.next_check;
-      if (not is_triggered.is_triggered) {
+      current_trigger()->next_check = is_triggered->next_check;
+      if (not is_triggered->is_triggered) {
         finish_processing_trigger_at_current_time(current_trigger());
         continue;
       }

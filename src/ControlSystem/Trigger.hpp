@@ -75,12 +75,27 @@ class Trigger : public DenseTrigger {
   using is_triggered_argument_tags =
       tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
 
-  Result is_triggered(
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<Result> is_triggered(
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component,
       const double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
+    const bool is_ready = tmpl::as_pack<ControlSystems>(
+        [&array_index, &cache, &component, &time](auto... control_systems) {
+          return domain::functions_of_time_are_ready<
+              control_system::Tags::MeasurementTimescales>(
+              cache, array_index, component, time,
+              std::array{
+                  tmpl::type_from<decltype(control_systems)>::name()...});
+        });
+    if (not is_ready) {
+      return std::nullopt;
+    }
+
     const double next_measurement = tmpl::as_pack<ControlSystems>(
         [&measurement_timescales, &time](auto... control_systems) {
           return std::min(
@@ -94,7 +109,7 @@ class Trigger : public DenseTrigger {
     // to trigger control systems
     if (next_measurement == std::numeric_limits<double>::infinity()) {
       next_trigger_ = next_measurement;
-      return {false, *next_trigger_};
+      return {{false, *next_trigger_}};
     }
 
     // At least one control system is active
@@ -102,26 +117,12 @@ class Trigger : public DenseTrigger {
       // First call
       next_trigger_ = time;
     }
+
     const bool triggered = time == *next_trigger_;
     if (triggered) {
       *next_trigger_ += next_measurement;
     }
-    return {triggered, *next_trigger_};
-  }
-
-  using is_ready_argument_tags = tmpl::list<::Tags::Time>;
-
-  template <typename Metavariables, typename ArrayIndex, typename Component>
-  static bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
-                       const ArrayIndex& array_index,
-                       const Component* component, const double time) {
-    return tmpl::as_pack<ControlSystems>([&array_index, &cache, &component,
-                                          &time](auto... control_systems) {
-      return domain::functions_of_time_are_ready<
-          control_system::Tags::MeasurementTimescales>(
-          cache, array_index, component, time,
-          std::array{tmpl::type_from<decltype(control_systems)>::name()...});
-    });
+    return {{triggered, *next_trigger_}};
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
