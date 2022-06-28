@@ -49,7 +49,7 @@ void test_rotation_control_system(const bool newtonian) {
   const double initial_separation = 15.0;
   // This final time is chosen so that the damping timescales have adequate time
   // to reach the maximum damping timescale
-  const double final_time = 500.0;
+  const double final_time = 300.0;
 
   // Set up the system helper.
   control_system::TestHelpers::SystemHelper<metavars> system_helper{};
