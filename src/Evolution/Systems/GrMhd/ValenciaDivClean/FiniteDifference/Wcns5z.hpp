@@ -17,6 +17,7 @@
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
+#include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -61,6 +62,9 @@ class Wcns5zPrim : public Reconstructor {
                  hydro::Tags::MagneticField<DataVector, 3>,
                  hydro::Tags::DivergenceCleaningField<DataVector>>;
 
+  using FallbackReconstructorType =
+      ::fd::reconstruction::FallbackReconstructorType;
+
  public:
   static constexpr size_t dim = 3;
 
@@ -75,8 +79,24 @@ class Wcns5zPrim : public Reconstructor {
         "The parameter added to the oscillation indicators to avoid division "
         "by zero"};
   };
+  struct FallbackReconstructor {
+    using type = FallbackReconstructorType;
+    static constexpr Options::String help = {
+        "A reconstruction scheme to fallback to adaptively. Finite difference "
+        "will switch to this reconstruction scheme if there are more extrema "
+        "in a FD stencil than a specified number. See also the option "
+        "'MaxNumberOfExtrema' below. Adaptive fallback is disabled if 'None'."};
+  };
+  struct MaxNumberOfExtrema {
+    using type = size_t;
+    static constexpr Options::String help = {
+        "The maximum allowed number of extrema in FD stencil for using Wcns5z "
+        "reconstruction before switching to a low-order reconstruction. If "
+        "FallbackReconstructor=None, this option is ignored"};
+  };
 
-  using options = tmpl::list<NonlinearWeightExponent, Epsilon>;
+  using options = tmpl::list<NonlinearWeightExponent, Epsilon,
+                             FallbackReconstructor, MaxNumberOfExtrema>;
 
   static constexpr Options::String help{
       "WCNS 5Z reconstruction scheme using primitive variables."};
@@ -88,7 +108,9 @@ class Wcns5zPrim : public Reconstructor {
   Wcns5zPrim& operator=(const Wcns5zPrim&) = default;
   ~Wcns5zPrim() override = default;
 
-  Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon);
+  Wcns5zPrim(size_t nonlinear_weight_exponent, double epsilon,
+             FallbackReconstructorType fallback_reconstructor,
+             size_t max_number_of_extrema);
 
   explicit Wcns5zPrim(CkMigrateMessage* msg);
 
@@ -141,22 +163,25 @@ class Wcns5zPrim : public Reconstructor {
 
   size_t nonlinear_weight_exponent_ = 0;
   double epsilon_ = std::numeric_limits<double>::signaling_NaN();
+  FallbackReconstructorType fallback_reconstructor_ =
+      FallbackReconstructorType::None;
+  size_t max_number_of_extrema_ = 0;
 
   void (*reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        const gsl::span<const double>&,
                        const DirectionMap<dim, gsl::span<const double>>&,
-                       const Index<dim>&, size_t, double) = nullptr;
+                       const Index<dim>&, size_t, double, size_t) = nullptr;
   void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const size_t&) = nullptr;
   void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const size_t&) = nullptr;
 };
 
 }  // namespace grmhd::ValenciaDivClean::fd

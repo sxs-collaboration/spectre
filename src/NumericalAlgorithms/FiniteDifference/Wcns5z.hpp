@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <tuple>
 
+#include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -27,8 +28,10 @@ class Index;
 namespace fd::reconstruction {
 namespace detail {
 
+namespace {
+// pointwise reconstruction routine for the original Wcns5z scheme
 template <size_t NonlinearWeightExponent>
-struct Wcns5zReconstructor {
+struct Wcns5zWork {
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
       const double* const q, const int stride, const double epsilon) {
     ASSERT(epsilon > 0.0,
@@ -89,7 +92,45 @@ struct Wcns5zReconstructor {
               alpha_upper[2] * recons_stencils_upper[2]) /
                  alpha_norm_upper}};
   }
+};
+}  // namespace
 
+template <size_t NonlinearWeightExponent, class FallbackReconstructor>
+struct Wcns5zReconstructor {
+  SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
+      const double* const q, const int stride, const double epsilon,
+      const size_t max_number_of_extrema) {
+    // count the number of extrema in the given FD stencil
+    size_t n_extrema{0};
+    for (int i = -1; i < 2; ++i) {
+      // check if q[i * stride] is local maximum
+      n_extrema += (q[i * stride] > q[(i - 1) * stride]) and
+                   (q[i * stride] > q[(i + 1) * stride]);
+      // check if q[i * stride] is local minimum
+      n_extrema += (q[i * stride] < q[(i - 1) * stride]) and
+                   (q[i * stride] < q[(i + 1) * stride]);
+    }
+
+    // if `n_extrema` is equal or smaller than a specified number, use the
+    // original Wcns5z reconstruction
+    if (n_extrema < max_number_of_extrema + 1) {
+      return Wcns5zWork<NonlinearWeightExponent>::pointwise(q, stride, epsilon);
+    } else {
+      // otherwise use a fallback reconstruction method
+      return FallbackReconstructor::pointwise(q, stride);
+    }
+  }
+
+  SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() { return 5; }
+};
+
+template <size_t NonlinearWeightExponent>
+struct Wcns5zReconstructor<NonlinearWeightExponent, void> {
+  SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
+      const double* const q, const int stride, const double epsilon,
+      const size_t /*max_number_of_extrema*/) {
+    return Wcns5zWork<NonlinearWeightExponent>::pointwise(q, stride, epsilon);
+  }
   SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() { return 5; }
 };
 
@@ -98,7 +139,9 @@ struct Wcns5zReconstructor {
 /*!
  * \ingroup FiniteDifferenceGroup
  * \brief Performs fifth order weighted compact nonlinear scheme reconstruction
- * based on the WENO-Z method.
+ * based on the WENO-Z method (WCNS-5Z). Adaptive fallback combined with
+ * an auxiliary reconstruction method (e.g. monotonised central) is also
+ * supported.
  *
  * Using the WENO oscillation indicators given by \cite Jiang1996
  *
@@ -154,8 +197,20 @@ struct Wcns5zReconstructor {
  * The nonlinear weights exponent \f$q (=1 \text{ or } 2)\f$ and the small
  * factor \f$\varepsilon\f$ can be chosen via an input file.
  *
+ * If the template parameter `FallbackReconstructor` is set to one of
+ * the FD reconstructor structs of which names are listed in
+ * `fd::reconstruction::FallbackReconstructorType`, adaptive reconstruction
+ * is performed as follows. For each finite difference stencils, first check how
+ * many extrema are in the stencil. If the number of local extrema is less than
+ * or equal to a non-negative integer `max_number_of_extrema` which is given as
+ * an input parameter, perform the WCNS-5Z reconstruction; otherwise switch to
+ * the given `FallbackReconstructor` for performing reconstruction. If
+ * `FallbackReconstructor` is set to `void`, the adaptive method is disabled and
+ * WCNS-5Z is always used.
+ *
  */
-template <size_t NonlinearWeightExponent, size_t Dim>
+template <size_t NonlinearWeightExponent, class FallbackReconstructor,
+          size_t Dim>
 void wcns5z(const gsl::not_null<std::array<gsl::span<double>, Dim>*>
                 reconstructed_upper_side_of_face_vars,
             const gsl::not_null<std::array<gsl::span<double>, Dim>*>
@@ -163,35 +218,33 @@ void wcns5z(const gsl::not_null<std::array<gsl::span<double>, Dim>*>
             const gsl::span<const double>& volume_vars,
             const DirectionMap<Dim, gsl::span<const double>>& ghost_cell_vars,
             const Index<Dim>& volume_extents, const size_t number_of_variables,
-            const double epsilon) {
-  detail::reconstruct<detail::Wcns5zReconstructor<NonlinearWeightExponent>>(
+            const double epsilon, const size_t max_number_of_extrema) {
+  detail::reconstruct<detail::Wcns5zReconstructor<NonlinearWeightExponent,
+                                                  FallbackReconstructor>>(
       reconstructed_upper_side_of_face_vars,
       reconstructed_lower_side_of_face_vars, volume_vars, ghost_cell_vars,
-      volume_extents, number_of_variables, epsilon);
+      volume_extents, number_of_variables, epsilon, max_number_of_extrema);
 }
 
 /*!
  * \brief Returns function pointers to the `wcns5z` function, lower neighbor
  * reconstruction, and upper neighbor reconstruction.
  *
- * This is useful for controlling template parameters like the
- * `NonlinearWeightExponent` from an input file by setting a function pointer.
- * Note that the reason the reconstruction functions instead of say the
- * `pointwise` member function is returned is to avoid function pointers inside
- * tight loops.
  */
 template <size_t Dim>
-auto wcns5z_function_pointers(size_t nonlinear_weight_exponent) -> std::tuple<
-    void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             gsl::not_null<std::array<gsl::span<double>, Dim>*>,
-             const gsl::span<const double>&,
-             const DirectionMap<Dim, gsl::span<const double>>&,
-             const Index<Dim>&, size_t, double),
-    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
-             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&),
-    void (*)(gsl::not_null<DataVector*>, const DataVector&, const DataVector&,
-             const Index<Dim>&, const Index<Dim>&, const Direction<Dim>&,
-             const double&)>;
+auto wcns5z_function_pointers(size_t nonlinear_weight_exponent,
+                              FallbackReconstructorType fallback_recons)
+    -> std::tuple<
+        void (*)(gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                 gsl::not_null<std::array<gsl::span<double>, Dim>*>,
+                 const gsl::span<const double>&,
+                 const DirectionMap<Dim, gsl::span<const double>>&,
+                 const Index<Dim>&, size_t, double, size_t),
+        void (*)(gsl::not_null<DataVector*>, const DataVector&,
+                 const DataVector&, const Index<Dim>&, const Index<Dim>&,
+                 const Direction<Dim>&, const double&, const size_t&),
+        void (*)(gsl::not_null<DataVector*>, const DataVector&,
+                 const DataVector&, const Index<Dim>&, const Index<Dim>&,
+                 const Direction<Dim>&, const double&, const size_t&)>;
 
 }  // namespace fd::reconstruction

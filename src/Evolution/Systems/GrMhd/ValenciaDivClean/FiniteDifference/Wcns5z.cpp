@@ -26,6 +26,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Reconstruct.tpp"
 #include "NumericalAlgorithms/FiniteDifference/Wcns5z.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -37,12 +38,18 @@
 namespace grmhd::ValenciaDivClean::fd {
 
 Wcns5zPrim::Wcns5zPrim(const size_t nonlinear_weight_exponent,
-                       const double epsilon)
-    : nonlinear_weight_exponent_(nonlinear_weight_exponent), epsilon_(epsilon) {
+                       const double epsilon,
+                       const ::fd::reconstruction::FallbackReconstructorType
+                           fallback_reconstructor,
+                       const size_t max_number_of_extrema)
+    : nonlinear_weight_exponent_(nonlinear_weight_exponent),
+      epsilon_(epsilon),
+      fallback_reconstructor_(fallback_reconstructor),
+      max_number_of_extrema_(max_number_of_extrema) {
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
            reconstruct_upper_neighbor_) =
       ::fd::reconstruction::wcns5z_function_pointers<3>(
-          nonlinear_weight_exponent_);
+          nonlinear_weight_exponent_, fallback_reconstructor_);
 }
 
 Wcns5zPrim::Wcns5zPrim(CkMigrateMessage* const msg) : Reconstructor(msg) {}
@@ -55,11 +62,13 @@ void Wcns5zPrim::pup(PUP::er& p) {
   Reconstructor::pup(p);
   p | nonlinear_weight_exponent_;
   p | epsilon_;
+  p | fallback_reconstructor_;
+  p | max_number_of_extrema_;
   if (p.isUnpacking()) {
     std::tie(reconstruct_, reconstruct_lower_neighbor_,
              reconstruct_upper_neighbor_) =
         ::fd::reconstruction::wcns5z_function_pointers<3>(
-            nonlinear_weight_exponent_);
+            nonlinear_weight_exponent_, fallback_reconstructor_);
   }
 }
 
@@ -85,7 +94,7 @@ void Wcns5zPrim::reconstruct(
              const auto& subcell_extents, const size_t number_of_variables) {
         reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
                      ghost_cell_vars, subcell_extents, number_of_variables,
-                     epsilon_);
+                     epsilon_, max_number_of_extrema_);
       },
       volume_prims, eos, element, neighbor_data, subcell_mesh,
       ghost_zone_size());
@@ -114,7 +123,7 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
         reconstruct_lower_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, epsilon_);
+            local_direction_to_reconstruct, epsilon_, max_number_of_extrema_);
       },
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
@@ -125,7 +134,7 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
         reconstruct_upper_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, epsilon_);
+            local_direction_to_reconstruct, epsilon_, max_number_of_extrema_);
       },
       subcell_volume_prims, eos, element, neighbor_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size());
@@ -133,9 +142,11 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
 
 bool operator==(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
   // Don't check function pointers since they are set from
-  // nonlinear_weight_exponent_
+  // nonlinear_weight_exponent_ and fallback_reconstructor_
   return lhs.nonlinear_weight_exponent_ == rhs.nonlinear_weight_exponent_ and
-         lhs.epsilon_ == rhs.epsilon_;
+         lhs.epsilon_ == rhs.epsilon_ and
+         lhs.fallback_reconstructor_ == rhs.fallback_reconstructor_ and
+         lhs.max_number_of_extrema_ == rhs.max_number_of_extrema_;
 }
 
 bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {

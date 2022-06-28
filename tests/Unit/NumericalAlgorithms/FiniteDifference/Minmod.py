@@ -4,14 +4,15 @@
 import Reconstruction
 
 
-def test_minmod(u, extents, dim):
-    def minmod(a, b):
-        if a * b <= 0.0:
-            return 0.0
-        if abs(a) < abs(b):
-            return a
-        return b
+def minmod(a, b):
+    if a * b <= 0.0:
+        return 0.0
+    if abs(a) < abs(b):
+        return a
+    return b
 
+
+def test_minmod(u, extents, dim):
     def compute_face_values(recons_upper_of_cell, recons_lower_of_cell, v, i,
                             j, k, dim_to_recons):
         if dim_to_recons == 0:

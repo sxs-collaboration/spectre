@@ -26,7 +26,7 @@ DomainCreator:
     LowerBound: [-6.0, -6.0, -6.0]
     UpperBound: [6.0, 6.0, 6.0]
     InitialRefinement: [2, 2, 0]
-    InitialGridPoints: [2, 2, 2]
+    InitialGridPoints: [3, 3, 3]
     TimeDependence: None
     BoundaryCondition: Periodic
 
@@ -54,7 +54,11 @@ SpatialDiscretization:
       SafetyFactorForB: 1.0e-12
   SubcellSolver:
     Reconstructor:
-      MonotonisedCentralPrim:
+      Wcns5zPrim:
+        NonlinearWeightExponent: 2
+        Epsilon: 1.0e-15
+        FallbackReconstructor: MonotonisedCentral
+        MaxNumberOfExtrema: 0
 
 AnalyticData:
   BlastWave:
