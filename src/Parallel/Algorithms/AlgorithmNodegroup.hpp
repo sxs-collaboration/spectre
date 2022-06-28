@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Parallel/Algorithm.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroupDeclarations.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/DistributedObject.hpp"
 
 /*!
  * \ingroup ParallelGroup
@@ -30,26 +30,27 @@
  * inheritance layer. The documentation suggests the inheritance path `A ->
  * CBase_A`, where we have the inheritance path:
  * ```
- * AlgorithmNodegroup -> AlgorithmImpl -> CBase_AlgorithmNodegroup
+ * AlgorithmNodegroup -> DistributedObject -> CBase_AlgorithmNodegroup
  * ```
  * That allows us to introduce the template class
- * <code><a href="classParallel_1_1AlgorithmImpl_3_01ParallelComponent_00_01tmpl_1_1list_3_01PhaseDepActionListsPack_8_8_8_01_4_01_4.html">
- * Parallel::AlgorithmImpl</a></code>
+ * <code><a href="classParallel_1_1DistributedObject_3_01ParallelComponent_00_01tmpl_1_1list_3_01PhaseDepActionListsPack_8_8_8_01_4_01_4.html">
+ * Parallel::DistributedObject</a></code>
  * that handles all generalizable control-flow.
  */
 // Note that the above manual link is needed because doxygen can't properly link
-// template specializations, but we'd really like to link to the AlgorithmImpl
+// template specializations, but we'd really like to link to the
+// DistributedObject
 template <typename ParallelComponent, typename SpectreArrayIndex>
 class AlgorithmNodegroup
-    : public Parallel::AlgorithmImpl<
+    : public Parallel::DistributedObject<
           ParallelComponent,
           typename ParallelComponent::phase_dependent_action_list> {
   using algorithm = Parallel::Algorithms::Nodegroup;
 
  public:
-  using Parallel::AlgorithmImpl<
-      ParallelComponent,
-      typename ParallelComponent::phase_dependent_action_list>::AlgorithmImpl;
+  using Parallel::DistributedObject<
+      ParallelComponent, typename ParallelComponent::
+                             phase_dependent_action_list>::DistributedObject;
 };
 
 #define CK_TEMPLATES_ONLY

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "Parallel/Algorithm.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/ArrayIndex.hpp"
+#include "Parallel/DistributedObject.hpp"
 
 /*!
  * \ingroup ParallelGroup
@@ -30,15 +30,15 @@
  */
 template <typename ParallelComponent, typename SpectreArrayIndex>
 class AlgorithmSingleton
-    : public Parallel::AlgorithmImpl<
+    : public Parallel::DistributedObject<
           ParallelComponent,
           typename ParallelComponent::phase_dependent_action_list> {
   using algorithm = Parallel::Algorithms::Singleton;
 
  public:
-  using Parallel::AlgorithmImpl<
-      ParallelComponent,
-      typename ParallelComponent::phase_dependent_action_list>::AlgorithmImpl;
+  using Parallel::DistributedObject<
+      ParallelComponent, typename ParallelComponent::
+                             phase_dependent_action_list>::DistributedObject;
 };
 
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
