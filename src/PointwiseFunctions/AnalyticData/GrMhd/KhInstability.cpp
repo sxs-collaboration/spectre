@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -175,11 +176,13 @@ tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 KhInstability::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
-  return equation_of_state_.specific_enthalpy_from_density_and_energy(
+  return hydro::relativistic_specific_enthalpy(
       get<hydro::Tags::RestMassDensity<DataType>>(
           variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
       get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
-          x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
+          x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})),
+      get<hydro::Tags::Pressure<DataType>>(
+          variables(x, tmpl::list<hydro::Tags::Pressure<DataType>>{})));
 }
 
 PUP::able::PUP_ID KhInstability::my_PUP_ID = 0;

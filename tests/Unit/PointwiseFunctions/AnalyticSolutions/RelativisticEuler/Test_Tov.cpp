@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
@@ -40,8 +41,12 @@ void test_tov(
     const size_t current_iteration, const bool newtonian_limit) {
   Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
   const double initial_log_enthalpy =
-      std::log(get(equation_of_state.specific_enthalpy_from_density(
-          Scalar<double>{central_mass_density})));
+      std::log(get(hydro::relativistic_specific_enthalpy(
+          Scalar<double>{central_mass_density},
+          equation_of_state.specific_internal_energy_from_density(
+              Scalar<double>{central_mass_density}),
+          equation_of_state.pressure_from_density(
+              Scalar<double>{central_mass_density}))));
   const double surface_log_enthalpy = 0.0;
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
   const double final_log_enthalpy =
@@ -208,9 +213,13 @@ void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,
   CHECK(tov_isotropic.mass_over_radius(0.) == approx(0.));
   CHECK(tov_isotropic.mass_over_radius(outer_isotropic_radius) ==
         approx(tov_isotropic.total_mass() / outer_areal_radius));
-  CHECK(tov_isotropic.log_specific_enthalpy(0.) ==
-        approx(log(get(eos.specific_enthalpy_from_density(
-            Scalar<double>{central_mass_density})))));
+  CHECK(
+      tov_isotropic.log_specific_enthalpy(0.) ==
+      approx(log(get(hydro::relativistic_specific_enthalpy(
+          Scalar<double>{central_mass_density},
+          eos.specific_internal_energy_from_density(
+              Scalar<double>{central_mass_density}),
+          eos.pressure_from_density(Scalar<double>{central_mass_density}))))));
   CHECK(tov_isotropic.log_specific_enthalpy(outer_isotropic_radius) ==
         approx(0.));
   CHECK(tov_isotropic.conformal_factor(outer_isotropic_radius) ==

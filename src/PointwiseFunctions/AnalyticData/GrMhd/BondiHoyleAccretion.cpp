@@ -6,8 +6,9 @@
 #include <cmath>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -183,9 +184,13 @@ tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
-  return equation_of_state_.specific_enthalpy_from_density(
-      get<hydro::Tags::RestMassDensity<DataType>>(
-          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})));
+  using density_tag = hydro::Tags::RestMassDensity<DataType>;
+  using energy_tag = hydro::Tags::SpecificInternalEnergy<DataType>;
+  using pressure_tag = hydro::Tags::Pressure<DataType>;
+  const auto data =
+      variables(x, tmpl::list<density_tag, energy_tag, pressure_tag>{});
+  return hydro::relativistic_specific_enthalpy(
+      get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
 PUP::able::PUP_ID BondiHoyleAccretion::my_PUP_ID = 0;

@@ -11,6 +11,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -30,10 +31,10 @@ void test_variable_fixer(
   // 4.e-12 -> density unchanged, velocity restricted
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11, 4.e-12}};
   auto pressure = equation_of_state.pressure_from_density(density);
-  auto specific_enthalpy =
-      equation_of_state.specific_enthalpy_from_density(density);
   auto specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(density);
+  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      density, specific_internal_energy, pressure);
 
   Scalar<DataVector> lorentz_factor{
       DataVector{5.0 / 3.0, 1.25, 1.8898223650461359}};
@@ -52,10 +53,10 @@ void test_variable_fixer(
   Scalar<DataVector> expected_density{DataVector{1.e-12, 2.e-11, 4.e-12}};
   auto expected_pressure =
       equation_of_state.pressure_from_density(expected_density);
-  auto expected_specific_enthalpy =
-      equation_of_state.specific_enthalpy_from_density(expected_density);
   auto expected_specific_internal_energy =
       equation_of_state.specific_internal_energy_from_density(expected_density);
+  auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{
       DataVector{1.0, 1.25, 1.0000000001020408}};
   auto expected_spatial_velocity =
@@ -85,9 +86,8 @@ void test_variable_fixer(
   Scalar<DataVector> specific_internal_energy{DataVector{2.0, 3.0, 3.0}};
   auto pressure = equation_of_state.pressure_from_density_and_energy(
       density, specific_internal_energy);
-  auto specific_enthalpy =
-      equation_of_state.specific_enthalpy_from_density_and_energy(
-          density, specific_internal_energy);
+  auto specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      density, specific_internal_energy, pressure);
 
   Scalar<DataVector> lorentz_factor{
       DataVector{5.0 / 3.0, 1.25, 1.8898223650461359}};
@@ -108,9 +108,8 @@ void test_variable_fixer(
       DataVector{0.0, 3.0, 3.0}};
   auto expected_pressure = equation_of_state.pressure_from_density_and_energy(
       expected_density, expected_specific_internal_energy);
-  auto expected_specific_enthalpy =
-      equation_of_state.specific_enthalpy_from_density_and_energy(
-          expected_density, expected_specific_internal_energy);
+  auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      expected_density, expected_specific_internal_energy, expected_pressure);
   Scalar<DataVector> expected_lorentz_factor{
       DataVector{1.0, 1.25, 1.0000000001020408}};
   auto expected_spatial_velocity =

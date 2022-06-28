@@ -21,6 +21,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -150,9 +151,16 @@ void TovSolution::integrate(
     vars[2] = 0.;  // w = ln(psi) = 0 (rescaled later)
   }
   Vars dvars{};
+  const Scalar<double> central_specific_internal_energy =
+      equation_of_state.specific_internal_energy_from_density(
+          Scalar<double>{central_mass_density});
+  const Scalar<double> central_pressure =
+      equation_of_state.pressure_from_density(
+          Scalar<double>{central_mass_density});
   const double central_log_enthalpy =
-      std::log(get(equation_of_state.specific_enthalpy_from_density(
-          Scalar<double>{central_mass_density})));
+      std::log(get(hydro::relativistic_specific_enthalpy(
+          Scalar<double>{central_mass_density},
+          central_specific_internal_energy, central_pressure)));
   lindblom_rhs<CoordSystem>(make_not_null(&dvars), vars, central_log_enthalpy,
                             equation_of_state);
   double initial_step =

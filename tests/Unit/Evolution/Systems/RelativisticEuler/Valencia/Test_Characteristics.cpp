@@ -92,7 +92,10 @@ void test_characteristic_speeds(const DataVector& used_for_size) {
       (get(eos.chi_from_density(rest_mass_density)) +
        get(eos.kappa_times_p_over_rho_squared_from_density(
            rest_mass_density))) /
-      get(eos.specific_enthalpy_from_density(rest_mass_density))};
+      get(hydro::relativistic_specific_enthalpy(
+          rest_mass_density,
+          eos.specific_internal_energy_from_density(rest_mass_density),
+          eos.pressure_from_density(rest_mass_density)))};
 
   // test with normal along coordinate axes
   for (const auto& direction : Direction<Dim>::all_directions()) {

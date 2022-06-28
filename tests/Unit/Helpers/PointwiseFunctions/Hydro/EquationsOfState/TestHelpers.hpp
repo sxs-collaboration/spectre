@@ -68,14 +68,6 @@ void check_impl(
                        : std::string(python_function_prefix +
                                      "_newt_rest_mass_density_from_enthalpy"),
         {{{1, 1.0e4}}}, member_args_tuple, used_for_size);
-    INFO("Done\nTesting specific_enthalpy_from_density...")
-    pypp::check_with_random_values<1>(
-        func = &EoS::specific_enthalpy_from_density, *eos, python_file_name,
-        IsRelativistic ? std::string(python_function_prefix +
-                                     "_rel_specific_enthalpy_from_density")
-                       : std::string(python_function_prefix +
-                                     "_newt_specific_enthalpy_from_density"),
-        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::specific_internal_energy_from_density, *eos,
@@ -93,17 +85,6 @@ void check_impl(
         python_file_name,
         python_function_prefix + "_kappa_times_p_over_rho_squared_from_density",
         random_value_bounds, member_args_tuple, used_for_size);
-    INFO(
-        "Done\nTesting that rest_mass_density_from_enthalpy and "
-        "specific_enthalpy_from_density are inverses of each other...")
-    MAKE_GENERATOR(generator);
-    std::uniform_real_distribution<> distribution(1.0, 1.0e+04);
-    const auto specific_enthalpy = make_with_random_values<Scalar<T>>(
-        make_not_null(&generator), make_not_null(&distribution), used_for_size);
-    CHECK_ITERABLE_APPROX(
-        specific_enthalpy,
-        eos->specific_enthalpy_from_density(
-            eos->rest_mass_density_from_enthalpy(specific_enthalpy)));
     INFO("Done\n\n")
   };
   helper(in_eos);
@@ -142,16 +123,6 @@ void check_impl(
             : std::string(python_function_prefix +
                           "_newt_pressure_from_density_and_enthalpy"),
         {{{1.0e-4, 4.0}, {1.0, 1.0e4}}}, member_args_tuple, used_for_size);
-    INFO("Done\nTesting specific_enthalpy_from_density_and_energy...")
-    pypp::check_with_random_values<2>(
-        func = &EoS::specific_enthalpy_from_density_and_energy, *eos,
-        python_file_name,
-        IsRelativistic
-            ? std::string(python_function_prefix +
-                          "_rel_specific_enthalpy_from_density_and_energy")
-            : std::string(python_function_prefix +
-                          "_newt_specific_enthalpy_from_density_and_energy"),
-        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density_and_pressure...")
     pypp::check_with_random_values<2>(
         func = &EoS::specific_internal_energy_from_density_and_pressure, *eos,
