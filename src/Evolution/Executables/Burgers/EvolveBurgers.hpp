@@ -297,8 +297,10 @@ struct EvolutionMetavars {
 
       tmpl::conditional_t<
           use_dg_subcell,
-          tmpl::list<evolution::dg::subcell::Actions::Initialize<
-              volume_dim, system, Burgers::subcell::DgInitialDataTci>>,
+          tmpl::list<
+              evolution::dg::subcell::Actions::Initialize<
+                  volume_dim, system, Burgers::subcell::DgInitialDataTci>,
+              Actions::MutateApply<Burgers::subcell::SetInitialRdmpData>>,
           tmpl::list<>>,
 
       Initialization::Actions::AddComputeTags<

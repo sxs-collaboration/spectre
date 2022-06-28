@@ -261,7 +261,9 @@ struct EvolutionMetavars {
           tmpl::list<evolution::dg::subcell::Actions::Initialize<
                          volume_dim, system,
                          NewtonianEuler::subcell::DgInitialDataTci<volume_dim>>,
-                     Actions::UpdateConservatives>,
+                     Actions::UpdateConservatives,
+                     Actions::MutateApply<NewtonianEuler::subcell::
+                                              SetInitialRdmpData<volume_dim>>>,
           tmpl::list<>>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,

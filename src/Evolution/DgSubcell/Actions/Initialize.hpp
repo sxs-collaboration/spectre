@@ -18,7 +18,6 @@
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
@@ -48,12 +47,11 @@ namespace evolution::dg::subcell::Actions {
  * If the cell is troubled then `Tags::ActiveGrid` is set to
  * `subcell::ActiveGrid::Subcell`, the `System::variables_tag` become the
  * variables on the subcell grid set by calling
- * `evolution::Initialization::Actions::SetVariables`,
- * ` Tags::Inactive<System::variables_tag>` become the (inadmissible) DG
- * solution, and the `db::add_tag_prefix<Tags::dt, System::variables_tag>` are
- * resized to the subcell grid with an `ASSERT` requiring that they were
- * previously set to the size of the DG grid (this is to reduce the likelihood
- * of them being resized back to the DG grid later).
+ * `evolution::Initialization::Actions::SetVariables`, and the
+ * `db::add_tag_prefix<Tags::dt, System::variables_tag>` are resized to the
+ * subcell grid with an `ASSERT` requiring that they were previously set to the
+ * size of the DG grid (this is to reduce the likelihood of them being resized
+ * back to the DG grid later).
  *
  * \details `Metavariables::SubcellOptions::DgInitialDataTci::apply` is called
  * with the evolved variables on the DG grid, the projected evolved variables,
@@ -74,7 +72,6 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::Mesh<Dim>`
  *   - `subcell::Tags::ActiveGrid`
  *   - `subcell::Tags::DidRollback`
- *   - `subcell::Tags::Inactive<System::variables_tag>`
  *   - `subcell::Tags::TciGridHistory`
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
  *   - `subcell::Tags::DataForRdmpTci`
@@ -95,7 +92,6 @@ struct Initialize {
 
   using simple_tags =
       tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
-                 Tags::Inactive<typename System::variables_tag>,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
                  Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
@@ -136,18 +132,18 @@ struct Initialize {
                             (cell_is_not_on_external_boundary or
                              subcell_enabled_at_external_boundary);
 
-    db::mutate_apply<tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
-                                Tags::DidRollback,
-                                Tags::Inactive<typename System::variables_tag>,
-                                typename System::variables_tag>,
-                     typename TciMutator::argument_tags>(
+    db::mutate_apply<
+        tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
+                   Tags::DidRollback, typename System::variables_tag,
+                   subcell::Tags::DataForRdmpTci>,
+        typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
-         &subcell_mesh, &subcell_options](
-            const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
-            const gsl::not_null<ActiveGrid*> active_grid_ptr,
-            const gsl::not_null<bool*> did_rollback_ptr,
-            const auto inactive_vars_ptr, const auto active_vars_ptr,
-            const auto&... args_for_tci) {
+         &subcell_mesh,
+         &subcell_options](const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
+                           const gsl::not_null<ActiveGrid*> active_grid_ptr,
+                           const gsl::not_null<bool*> did_rollback_ptr,
+                           const auto active_vars_ptr, const auto rdmp_data_ptr,
+                           const auto&... args_for_tci) {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
           // subcells as a normal solve.
@@ -155,27 +151,22 @@ struct Initialize {
 
           *subcell_mesh_ptr = subcell_mesh;
           *active_grid_ptr = ActiveGrid::Dg;
-          fd::project(inactive_vars_ptr, *active_vars_ptr, dg_mesh,
-                      subcell_mesh.extents());
-          // Now check if the DG solution is admissible
-          // No need to check if
-          //  - always using subcell, or
-          //  - the element is at external boundary and
-          //  `subcell_enabled_at_external_boundary` is set to `false`.
-          if (not cell_is_troubled and (cell_is_not_on_external_boundary or
-                                        subcell_enabled_at_external_boundary)) {
-            cell_is_troubled |= TciMutator::apply(
-                *active_vars_ptr, *inactive_vars_ptr,
-                subcell_options.initial_data_rdmp_delta0(),
-                subcell_options.initial_data_rdmp_epsilon(),
-                subcell_options.initial_data_persson_exponent(),
-                args_for_tci...);
-          }
-          if (cell_is_troubled) {
-            // Swap grid
+          // Now check if the DG solution is admissible. We call the TCI even if
+          // the cell is at the boundary since the TCI must also set the past
+          // RDMP data.
+          std::tuple<bool, RdmpTciData> tci_result = TciMutator::apply(
+              *active_vars_ptr, subcell_options.initial_data_rdmp_delta0(),
+              subcell_options.initial_data_rdmp_epsilon(),
+              subcell_options.initial_data_persson_exponent(), args_for_tci...);
+          *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+          if ((cell_is_not_on_external_boundary or
+               subcell_enabled_at_external_boundary) and
+              (cell_is_troubled or std::get<0>(tci_result))) {
+            cell_is_troubled |= std::get<0>(tci_result);
+            // Swap to subcell grid
             *active_grid_ptr = ActiveGrid::Subcell;
-            using std::swap;
-            swap(*active_vars_ptr, *inactive_vars_ptr);
+            *active_vars_ptr =
+                fd::project(*active_vars_ptr, dg_mesh, subcell_mesh.extents());
           }
         },
         make_not_null(&box));

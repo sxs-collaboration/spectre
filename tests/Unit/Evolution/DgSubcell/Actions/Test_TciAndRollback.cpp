@@ -33,7 +33,6 @@
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -88,8 +87,6 @@ struct component {
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           Tags::Variables<tmpl::list<Var1>>,
-          evolution::dg::subcell::Tags::Inactive<
-              Tags::Variables<tmpl::list<Var1>>>,
           Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>>,
       tmpl::conditional_t<
@@ -134,24 +131,39 @@ struct Metavariables {
   struct TciOnDgGrid {
     using return_tags = tmpl::list<>;
     using argument_tags =
-        tmpl::list<evolution::dg::subcell::Tags::Inactive<
-                       Tags::Variables<tmpl::list<Var1>>>,
-                   Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>>;
+        tmpl::list<Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
+                   evolution::dg::subcell::Tags::Mesh<Dim>,
+                   evolution::dg::subcell::Tags::DataForRdmpTci,
+                   evolution::dg::subcell::Tags::SubcellOptions>;
 
-    static bool apply(
-        const Variables<tmpl::list<
-            evolution::dg::subcell::Tags::Inactive<Var1>>>& subcell_vars,
+    static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
         const Variables<tmpl::list<Var1>>& dg_vars, const Mesh<Dim>& dg_mesh,
+        const Mesh<Dim>& subcell_mesh,
+        const evolution::dg::subcell::RdmpTciData& past_rdmp_data,
+        const evolution::dg::subcell::SubcellOptions& subcell_options,
         const double persson_exponent) {
-      Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
-          projected_vars{subcell_vars.number_of_grid_points()};
+      Variables<tmpl::list<Var1>> projected_vars{
+          subcell_mesh.number_of_grid_points()};
       evolution::dg::subcell::fd::project(
           make_not_null(&projected_vars), dg_vars, dg_mesh,
           evolution::dg::subcell::fd::mesh(dg_mesh).extents());
-      CHECK(projected_vars == subcell_vars);
+      // Set RDMP TCI data
+      using std::max;
+      using std::min;
+      evolution::dg::subcell::RdmpTciData rdmp_data{};
+      rdmp_data.max_variables_values = std::vector{max(
+          max(get(get<Var1>(dg_vars))), max(get(get<Var1>(projected_vars))))};
+      rdmp_data.min_variables_values = std::vector{min(
+          min(get(get<Var1>(dg_vars))), min(get(get<Var1>(projected_vars))))};
+
       CHECK(approx(persson_exponent) == 4.0);
       tci_invoked = true;
-      return tci_fails;
+      const bool rdmp_result = evolution::dg::subcell::rdmp_tci(
+          rdmp_data.max_variables_values, rdmp_data.min_variables_values,
+          past_rdmp_data.max_variables_values,
+          past_rdmp_data.min_variables_values, subcell_options.rdmp_delta0(),
+          subcell_options.rdmp_epsilon());
+      return {tci_fails or rdmp_result, std::move(rdmp_data)};
     }
   };
 };
@@ -218,6 +230,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   // limit
   rdmp_tci_data.max_variables_values.push_back(2.0);
   rdmp_tci_data.min_variables_values.push_back(-2.0);
+  // Make a copy of the RDMP data because in the case where the TCI fails the
+  // RDMP TCI data in the DataBox shouldn't have changed.
+  const evolution::dg::subcell::RdmpTciData initial_rdmp_tci_data =
+      rdmp_tci_data;
 
   using evolved_vars_tags = tmpl::list<Var1>;
   Variables<evolved_vars_tags> evolved_vars{dg_mesh.number_of_grid_points()};
@@ -230,8 +246,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   Variables<prim_vars_tags> prim_vars{dg_mesh.number_of_grid_points()};
   get(get<PrimVar1>(prim_vars)) = get<0>(logical_coordinates(dg_mesh)) + 1000.0;
 
-  const Variables<tmpl::list<evolution::dg::subcell::Tags::Inactive<Var1>>>
-      inactive_evolved_vars{subcell_mesh.number_of_grid_points(), 1.0};
   constexpr size_t history_size = 5;
   TimeSteppers::History<Variables<evolved_vars_tags>>
       time_stepper_history{history_size};
@@ -260,8 +274,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
-         inactive_evolved_vars, time_stepper_history,
-         initial_value_evolved_vars, prim_vars, initial_value_prim_vars});
+         time_stepper_history, initial_value_evolved_vars, prim_vars,
+         initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
@@ -269,8 +283,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
-         inactive_evolved_vars, time_stepper_history,
-         initial_value_evolved_vars});
+         time_stepper_history, initial_value_evolved_vars});
   }
 
   // Invoke the TciAndSwitchToDg action on the runner
@@ -279,11 +292,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   const auto active_grid_from_box =
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::ActiveGrid>(
-          runner, 0);
-  const auto& inactive_vars_from_box =
-      ActionTesting::get_databox_tag<comp,
-                                     evolution::dg::subcell::Tags::Inactive<
-                                         Tags::Variables<evolved_vars_tags>>>(
           runner, 0);
   const auto& active_vars_from_box =
       ActionTesting::get_databox_tag<comp, Tags::Variables<evolved_vars_tags>>(
@@ -305,9 +313,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       with_neighbors and (always_use_subcell or rdmp_fails or tci_fails);
 
   if (expected_rollback) {
-    CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 4);
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
     CHECK(did_rollback_from_box);
+    CHECK(ActionTesting::get_next_action_index<comp>(runner, 0) == 4);
+
+    CHECK(ActionTesting::get_databox_tag<
+              comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
+          initial_rdmp_tci_data);
 
     CHECK(time_stepper_history_from_box.size() == history_size - 1);
     CHECK(time_stepper_history_from_box.integration_order() ==
@@ -336,9 +348,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       CHECK(*it == *expected_it);
     }
 
-    CHECK(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
-              inactive_vars_from_box) ==
-          get<Var1>(time_stepper_history.most_recent_value()));
     CHECK(active_vars_from_box ==
           evolution::dg::subcell::fd::project(
               time_stepper_history.most_recent_value(), dg_mesh,
@@ -364,6 +373,19 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
     CHECK_FALSE(did_rollback_from_box);
 
+    const auto subcell_vars = evolution::dg::subcell::fd::project(
+        evolved_vars, dg_mesh,
+        evolution::dg::subcell::fd::mesh(dg_mesh).extents());
+    const evolution::dg::subcell::RdmpTciData expected_rdmp_data{
+        {std::max(max(get(get<Var1>(evolved_vars))),
+                  max(get(get<Var1>(subcell_vars))))},
+        {std::min(min(get(get<Var1>(evolved_vars))),
+                  min(get(get<Var1>(subcell_vars))))}};
+
+    CHECK(ActionTesting::get_databox_tag<
+              comp, evolution::dg::subcell::Tags::DataForRdmpTci>(runner, 0) ==
+          expected_rdmp_data);
+
     CHECK(time_stepper_history_from_box.size() == history_size);
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
@@ -375,13 +397,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
          ++it, ++expected_it) {
       CHECK(it.time_step_id() == expected_it.time_step_id());
       CHECK(*it == *expected_it);
-    }
-
-    if (with_neighbors) {
-      CHECK(get(get<evolution::dg::subcell::Tags::Inactive<Var1>>(
-                inactive_vars_from_box)) ==
-            evolution::dg::subcell::fd::project(
-                get(get<Var1>(evolved_vars)), dg_mesh, subcell_mesh.extents()));
     }
 
     CHECK(active_vars_from_box == evolved_vars);

@@ -4,10 +4,14 @@
 #pragma once
 
 #include <cstddef>
+#include <tuple>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
+#include "Evolution/DgSubcell/RdmpTciData.hpp"
+#include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
+#include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
@@ -15,6 +19,9 @@
 
 /// \cond
 class DataVector;
+namespace evolution::dg::subcell {
+class SubcellOptions;
+}  // namespace evolution::dg::subcell
 template <size_t Dim>
 class Mesh;
 /// \endcond
@@ -35,22 +42,29 @@ namespace grmhd::ValenciaDivClean::subcell {
  *   `min(tilde_tau)` is less than `tci_options.minimum_tilde_tau` then the we
  *   remain on FD.
  * - apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$
+ * - apply the RDMP TCI to `TildeD`, `TildeTau` and `magnitude(TildeB)`.
+ * - apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if its
+ *   magnitude is greater than `tci_options.magnetic_field_cutoff`.
  */
 struct TciOnFdGrid {
   using return_tags = tmpl::list<>;
   using argument_tags =
-      tmpl::list<evolution::dg::subcell::Tags::Inactive<
-                     grmhd::ValenciaDivClean::Tags::TildeD>,
-                 evolution::dg::subcell::Tags::Inactive<
-                     grmhd::ValenciaDivClean::Tags::TildeTau>,
-                 evolution::dg::subcell::Tags::Inactive<
-                     grmhd::ValenciaDivClean::Tags::TildeB<>>,
+      tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeTau,
+                 grmhd::ValenciaDivClean::Tags::TildeB<>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
-                 domain::Tags::Mesh<3>, Tags::TciOptions>;
-  static bool apply(const Scalar<DataVector>& tilde_d,
-                    const Scalar<DataVector>& tilde_tau,
-                    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-                    bool vars_needed_fixing, const Mesh<3>& dg_mesh,
-                    const TciOptions& tci_options, double persson_exponent);
+                 domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
+                 evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
+                 evolution::dg::subcell::Tags::SubcellOptions>;
+  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+      const Scalar<DataVector>& subcell_tilde_d,
+      const Scalar<DataVector>& subcell_tilde_tau,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
+      bool vars_needed_fixing, const Mesh<3>& dg_mesh,
+      const Mesh<3>& subcell_mesh,
+      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
+      const TciOptions& tci_options,
+      const evolution::dg::subcell::SubcellOptions& subcell_options,
+      double persson_exponent);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

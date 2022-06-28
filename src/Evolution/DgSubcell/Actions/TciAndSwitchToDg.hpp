@@ -26,7 +26,6 @@
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/DidRollback.hpp"
-#include "Evolution/DgSubcell/Tags/Inactive.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
@@ -84,9 +83,9 @@ namespace evolution::dg::subcell::Actions {
  * 5. If the cell is not troubled, and the time integrator type is substep or
  *    the TCI history indicates the entire history for the multistep method is
  *    free of discontinuities, then we can switch back to DG. Switching back to
- *    DG requires swapping the active and inactive evolved variables,
- *    reconstructing the time stepper history, marking the active grid as
- *    `ActiveGrid::Dg`, and clearing the subcell neighbor data.
+ *    DG requires reconstructing dg variables, reconstructing the time stepper
+ *    history, marking the active grid as `ActiveGrid::Dg`, and clearing the
+ *    subcell neighbor data.
  * 6. If we are not using a substep method, then record the TCI decision in the
  *    `subcell::Tags::TciGridHistory`.
  *
@@ -113,7 +112,6 @@ namespace evolution::dg::subcell::Actions {
  * - Adds: nothing
  * - Removes: nothing
  * - Modifies:
- *   - `subcell::Tags::Inactive<System::variables_tag>`
  *   - `System::variables_tag` if the cell is not troubled
  *   - `Tags::HistoryEvolvedVariables` if the cell is not troubled
  *   - `subcell::Tags::ActiveGrid` if the cell is not troubled
@@ -171,40 +169,14 @@ struct TciAndSwitchToDg {
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
 
-    db::mutate<Tags::Inactive<variables_tag>>(
-        make_not_null(&box),
-        [&dg_mesh, &subcell_mesh, &subcell_options](
-            const auto inactive_vars_ptr, const auto& active_vars) {
-          // Note: strictly speaking, to be conservative this should reconstruct
-          // uJ instead of u.
-          fd::reconstruct(inactive_vars_ptr, active_vars, dg_mesh,
-                          subcell_mesh.extents(),
-                          subcell_options.reconstruction_method());
-        },
-        db::get<variables_tag>(box));
-
-    // Run RDMP TCI since no user info beyond the input file options are needed
-    // for that.
-    const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
-
-    // Note: we assume the max/min over all neighbors and ourselves at the past
-    // time step has been collected into
-    // `rdmp_tci_data.max/min_variables_values`
-    bool cell_is_troubled = rdmp_tci(
-        db::get<variables_tag>(box),
-        db::get<Tags::Inactive<variables_tag>>(box),
-        rdmp_tci_data.max_variables_values, rdmp_tci_data.min_variables_values,
-        subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon());
-
-    // If the RDMP TCI marked the candidate as acceptable, check with the
-    // user-specified TCI, since that could be stricter. We pass in the Persson
-    // exponent with one added in order to avoid flip-flopping between DG and
-    // subcell. That is, `persson_exponent+1.0` is stricter than
-    // `persson_exponent`.
-    if (not cell_is_troubled) {
-      cell_is_troubled = db::mutate_apply<TciMutator>(
-          make_not_null(&box), subcell_options.persson_exponent() + 1.0);
-    }
+    std::tuple<bool, evolution::dg::subcell::RdmpTciData> tci_result =
+        db::mutate_apply<TciMutator>(make_not_null(&box),
+                                     subcell_options.persson_exponent() + 1.0);
+    const bool cell_is_troubled = std::get<0>(tci_result);
+    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
+        make_not_null(&box), [&tci_result](const auto rdmp_data_ptr) {
+          *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+        });
 
     // If the cell is not troubled, then we _might_ be able to switch back to
     // DG. This depends on the type of time stepper we are using:
@@ -228,22 +200,23 @@ struct TciAndSwitchToDg {
           alg::all_of(tci_history, [](const ActiveGrid tci_decision) {
             return tci_decision == ActiveGrid::Dg;
           })))) {
-      db::mutate<variables_tag, Tags::Inactive<variables_tag>,
-                 ::Tags::HistoryEvolvedVariables<variables_tag>,
+      db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
                  Tags::ActiveGrid,
                  subcell::Tags::NeighborDataForReconstruction<Dim>,
                  evolution::dg::subcell::Tags::TciGridHistory>(
           make_not_null(&box),
           [&dg_mesh, &subcell_mesh, &subcell_options](
-              const auto active_vars_ptr, const auto inactive_vars_ptr,
-              const auto active_history_ptr,
+              const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
               const auto subcell_neighbor_data_ptr,
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
                   tci_grid_history_ptr) {
-            using std::swap;
-            swap(*active_vars_ptr, *inactive_vars_ptr);
+            // Note: strictly speaking, to be conservative this should
+            // reconstruct uJ instead of u.
+            *active_vars_ptr = fd::reconstruct(
+                *active_vars_ptr, dg_mesh, subcell_mesh.extents(),
+                subcell_options.reconstruction_method());
 
             // Reconstruct the DG solution for each time in the time stepper
             // history
