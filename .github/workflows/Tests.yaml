@@ -312,6 +312,7 @@ jobs:
           - gcc-11
         build_type: [Debug, Release]
         use_pch: [ON]
+        use_xsimd: [ON]
         charm_name: ["Charm 7.0.0"]
         include:
           # Configure ccache sizes. The cache becomes ineffective if it can't
@@ -369,6 +370,7 @@ jobs:
             use_pch: ON
             build_type: Release
             BUILD_SHARED_LIBS: OFF
+            use_xsimd: OFF
             MEMORY_ALLOCATOR: JEMALLOC
           # Test compatibility with oldest supported CMake version
           - compiler: clang-13
@@ -467,6 +469,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
           USE_PCH=${{ matrix.use_pch }}
+          USE_XSIMD=${{ matrix.use_xsimd }}
           COVERAGE=${{ matrix.COVERAGE }}
           TEST_TIMEOUT_FACTOR=${{ matrix.TEST_TIMEOUT_FACTOR }}
 
@@ -484,6 +487,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D STUB_EXECUTABLE_OBJECT_FILES=ON
           -D STUB_LIBRARY_OBJECT_FILES=ON
           -D USE_PCH=${USE_PCH}
+          -D USE_XSIMD=${USE_XSIMD}
           -D USE_CCACHE=ON
           -D COVERAGE=${COVERAGE:-'OFF'}
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
