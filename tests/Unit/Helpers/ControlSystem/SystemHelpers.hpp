@@ -9,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -278,6 +279,65 @@ double initialize_translation_functions_of_time(
   return 1.0;
 }
 
+template <typename ElementComponent, typename Metavars, typename F,
+          typename CoordMap>
+std::pair<std::array<double, 3>, std::array<double, 3>>
+grid_frame_horizon_centers_for_basic_control_systems(
+    const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
+    const F position_function, const CoordMap& coord_map) {
+  auto& cache = ActionTesting::cache<ElementComponent>(runner, 0);
+  const auto& functions_of_time =
+      Parallel::get<domain::Tags::FunctionsOfTime>(cache);
+
+  // This whole switching between tensors and arrays is annoying and
+  // clunky, but it's the best that could be done at the moment without
+  // changing BinaryTrajectories to return tensors, which doesn't seem like
+  // a good idea.
+
+  std::pair<std::array<double, 3>, std::array<double, 3>> positions =
+      position_function(time);
+
+  // Covert arrays to tensor so we can pass them into the coordinate map
+  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
+      positions.first);
+  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
+      positions.second);
+
+  // Convert to "grid coordinates"
+  const auto grid_position_of_a_tnsr =
+      *coord_map.inverse(inertial_position_of_a, time, functions_of_time);
+  const auto grid_position_of_b_tnsr =
+      *coord_map.inverse(inertial_position_of_b, time, functions_of_time);
+
+  // Convert tensors back to arrays so we can pass them to the control
+  // systems. Just reuse `positions`
+  for (size_t i = 0; i < 3; i++) {
+    gsl::at(positions.first, i) = grid_position_of_a_tnsr.get(i);
+    gsl::at(positions.second, i) = grid_position_of_b_tnsr.get(i);
+  }
+
+  return positions;
+}
+
+template <typename ElementComponent, typename Metavars, typename F,
+          typename CoordMap>
+std::pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>
+build_horizons_for_basic_control_systems(
+    const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
+    const F position_function, const CoordMap& coord_map) {
+  const auto positions =
+      grid_frame_horizon_centers_for_basic_control_systems<ElementComponent>(
+          time, runner, position_function, coord_map);
+
+  // Construct strahlkorpers to pass to control systems. Only the centers
+  // matter.
+  Strahlkorper<Frame::Grid> horizon_a{2, 2, 1.0, positions.first};
+  Strahlkorper<Frame::Grid> horizon_b{2, 2, 1.0, positions.second};
+
+  return std::make_pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>(
+      std::move(horizon_a), std::move(horizon_b));
+}
+
 /*!
  * \brief Helper struct for testing basic control systems
  *
@@ -305,25 +365,9 @@ struct SystemHelper {
       typename Metavars::control_systems, tmpl::bind<LocalTag, tmpl::_1>>>;
 
  public:
-  static constexpr size_t exp_deriv_order = Metavars::exp_deriv_order;
-  static constexpr size_t rot_deriv_order = Metavars::rot_deriv_order;
-  static constexpr size_t trans_deriv_order = Metavars::trans_deriv_order;
-
-  static constexpr bool using_expansion = Metavars::using_expansion;
-  static constexpr bool using_rotation = Metavars::using_rotation;
-  static constexpr bool using_translation = Metavars::using_translation;
-
-  using expansion_system = typename Metavars::expansion_system;
-  using rotation_system = typename Metavars::rotation_system;
-  using translation_system = typename Metavars::translation_system;
   using control_systems = typename Metavars::control_systems;
-
   using element_component = typename Metavars::element_component;
   using control_components = typename Metavars::control_components;
-
-  using expansion_init_simple_tags = init_simple_tags<expansion_system>;
-  using rotation_init_simple_tags = init_simple_tags<rotation_system>;
-  using translation_init_simple_tags = init_simple_tags<translation_system>;
 
   // Members that may be moved out of this struct once they are
   // constructed
@@ -338,8 +382,8 @@ struct SystemHelper {
   const auto& init_tuple() {
     return get<LocalTag<System>>(all_init_tags_);
   }
-  const auto& grid_position_of_a() { return grid_position_of_a_; }
-  const auto& grid_position_of_b() { return grid_position_of_b_; }
+  const auto& horizon_a() { return horizon_a_; }
+  const auto& horizon_b() { return horizon_b_; }
   template <typename System>
   std::string name() {
     return System::name();
@@ -427,20 +471,31 @@ struct SystemHelper {
                                        {5, Direction<3>::lower_zeta()}}}}}};
   }
 
-  template <typename Generator, typename F, typename CoordMap>
+  /*!
+   * \brief Actually run the control system test
+   *
+   * The `horizon_function` should return a
+   * `std::pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>`
+   * representing the two horizons in the grid frame. This means the user is
+   * responsible for doing any coordinate transformations inside
+   * `horizon_function` as this function won't do any. The `number_of_horizons`
+   * is used to determine if we actually use both horizon "measurements" as some
+   * control systems may only need one. If only one horizon is used, the default
+   * is to use AhA.
+   *
+   * For the basic control systems, a common function is defined for you:
+   * `control_system::TestHelpers::build_horizons_for_basic_control_systems()`.
+   */
+  template <typename Generator, typename F>
   void run_control_system_test(
       ActionTesting::MockRuntimeSystem<Metavars>& runner,
       const double final_time, gsl::not_null<Generator*> generator,
-      const F position_function, const CoordMap& coord_map) {
-    // Allocate now because we need these variables outside the loop
-    std::pair<std::array<double, 3>, std::array<double, 3>> positions{};
+      const F horizon_function, const size_t number_of_horizons) {
     double time = initial_time_;
     std::optional<double> prev_time{};
     double dt = 0.0;
 
     auto& cache = ActionTesting::cache<element_component>(runner, 0);
-    const auto& functions_of_time =
-        Parallel::get<domain::Tags::FunctionsOfTime>(cache);
     const auto& measurement_timescales =
         Parallel::get<control_system::Tags::MeasurementTimescales>(cache);
 
@@ -450,61 +505,37 @@ struct SystemHelper {
       // system event.
       const LinkedMessageId<double> measurement_id{time, prev_time};
 
-      // This whole switching between tensors and arrays is annoying and
-      // clunky, but it's the best that could be done at the moment without
-      // changing BinaryTrajectories to return tensors, which doesn't seem like
-      // a good idea.
-
-      // Get trajectory in "inertial coordinates" as arrays
-      positions = position_function(time);
-
-      // Covert arrays to tensor so we can pass them into the coordinate map
-      const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
-          positions.first);
-      const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
-          positions.second);
-
-      // Convert to "grid coordinates"
-      const auto grid_position_of_a_tnsr =
-          *coord_map.inverse(inertial_position_of_a, time, functions_of_time);
-      const auto grid_position_of_b_tnsr =
-          *coord_map.inverse(inertial_position_of_b, time, functions_of_time);
-
-      // Convert tensors back to arrays so we can pass them to the control
-      // systems
-      for (size_t i = 0; i < 3; i++) {
-        gsl::at(grid_position_of_a_, i) = grid_position_of_a_tnsr.get(i);
-        gsl::at(grid_position_of_b_, i) = grid_position_of_b_tnsr.get(i);
-      }
-
-      // Construct strahlkorpers to pass to control systems. Only the centers
-      // matter.
-      const Strahlkorper<Frame::Grid> horizon_a{2, 2, 1.0, grid_position_of_a_};
-      const Strahlkorper<Frame::Grid> horizon_b{2, 2, 1.0, grid_position_of_b_};
+      // Get horizons in grid frame
+      std::tie(horizon_a_, horizon_b_) = horizon_function(time);
 
       // Apply measurements
-      tmpl::for_each<control_components>([&runner, &generator, &measurement_id,
-                                          &horizon_a, &cache,
-                                          &horizon_b](auto control_component) {
+      tmpl::for_each<control_components>([this, &runner, &generator,
+                                          &measurement_id, &cache,
+                                          &number_of_horizons](
+                                             auto control_component) {
         using component = tmpl::type_from<decltype(control_component)>;
         using system = typename component::system;
+        // Even if we only have 1 horizon, we still apply both measurements
+        // because the BothHorizons measurement will always send both regardless
+        // of if both are needed.
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>{}, horizon_a,
+            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>{}, horizon_a_,
+            cache, measurement_id);
+        system::process_measurement::apply(
+            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::B>{}, horizon_b_,
             cache, measurement_id);
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
-                  runner, 0) == 1);
-        system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::B>{}, horizon_b,
-            cache, measurement_id);
-        CHECK(ActionTesting::number_of_queued_simple_actions<component>(
-                  runner, 0) == 2);
-        // We invoke a random measurement because during a normal simulation
-        // we don't know which measurement will reach the control system
-        // first because of charm++ communication
-        ActionTesting::invoke_random_queued_simple_action<control_components>(
-            make_not_null(&runner), generator,
-            ActionTesting::array_indices_with_queued_simple_actions<
-                control_components>(make_not_null(&runner)));
+                  runner, 0) == number_of_horizons);
+
+        if (number_of_horizons > 1) {
+          // We invoke a random measurement because during a normal simulation
+          // we don't know which measurement will reach the control system
+          // first because of charm++ communication
+          ActionTesting::invoke_random_queued_simple_action<control_components>(
+              make_not_null(&runner), generator,
+              ActionTesting::array_indices_with_queued_simple_actions<
+                  control_components>(make_not_null(&runner)));
+        }
         ActionTesting::invoke_queued_simple_action<component>(
             make_not_null(&runner), 0);
       });
@@ -525,23 +556,8 @@ struct SystemHelper {
       time += dt;
     }
 
-    // Get analytic position in inertial coordinates
-    positions = position_function(final_time);
-
-    // Get position of objects in grid coordinates using the coordinate map that
-    // has had its functions of time updated by the control system
-    const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
-        positions.first);
-    const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
-        positions.second);
-    const auto grid_position_of_a_tnsr = *coord_map.inverse(
-        inertial_position_of_a, final_time, functions_of_time);
-    const auto grid_position_of_b_tnsr = *coord_map.inverse(
-        inertial_position_of_b, final_time, functions_of_time);
-    for (size_t i = 0; i < 3; i++) {
-      gsl::at(grid_position_of_a_, i) = grid_position_of_a_tnsr.get(i);
-      gsl::at(grid_position_of_b_, i) = grid_position_of_b_tnsr.get(i);
-    }
+    // Get horizons at final time in grid frame
+    std::tie(horizon_a_, horizon_b_) = horizon_function(time);
   }
 
  private:
@@ -601,8 +617,8 @@ struct SystemHelper {
 
   // Members that won't be moved out of this struct
   AllTags all_init_tags_{};
-  std::array<double, 3> grid_position_of_a_{};
-  std::array<double, 3> grid_position_of_b_{};
+  Strahlkorper<Frame::Grid> horizon_a_{};
+  Strahlkorper<Frame::Grid> horizon_b_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 }  // namespace control_system::TestHelpers
