@@ -151,9 +151,9 @@ struct RunEventsAndDenseTriggers {
         case TriggeringState::NeedsEvolvedVariables:
           if (not already_at_correct_time) {
             if constexpr (Metavariables::local_time_stepping) {
-              if (not dg::receive_boundary_data_local_time_stepping<
-                      Metavariables, true>(make_not_null(&box),
-                                           make_not_null(&inboxes))) {
+              if (not dg::ApplyBoundaryCorrections<
+                      Metavariables, true>::is_ready(make_not_null(&box),
+                                                     make_not_null(&inboxes))) {
                 return {Parallel::AlgorithmExecution::Retry, std::nullopt};
               }
             }
@@ -178,7 +178,7 @@ struct RunEventsAndDenseTriggers {
 
             if constexpr (Metavariables::local_time_stepping) {
               db::mutate_apply<
-                  dg::ApplyBoundaryCorrections<system, true, true>>(
+                  dg::ApplyBoundaryCorrections<Metavariables, true>>(
                   make_not_null(&box));
             }
 

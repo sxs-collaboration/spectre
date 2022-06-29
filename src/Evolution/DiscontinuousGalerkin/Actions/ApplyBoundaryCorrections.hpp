@@ -286,31 +286,35 @@ bool receive_boundary_data_local_time_stepping(
 
 /// Apply corrections from boundary communication.
 ///
-/// If \p LocalTimeStepping is false, updates the derivative of the
-/// variables, which should be done before taking a time step.  If \p
-/// LocalTimeStepping is true, updates the variables themselves, which
-/// should be done after the volume update.
+/// If `Metavariables::local_time_stepping` is false, updates the
+/// derivative of the variables, which should be done before taking a
+/// time step.  If `Metavariables::local_time_stepping` is true,
+/// updates the variables themselves, which should be done after the
+/// volume update.
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
-template <typename System, bool LocalTimeStepping, bool DenseOutput = false>
+template <typename Metavariables, bool DenseOutput = false>
 struct ApplyBoundaryCorrections {
-  static_assert(LocalTimeStepping or not DenseOutput,
+  static constexpr bool local_time_stepping =
+      Metavariables::local_time_stepping;
+  static_assert(local_time_stepping or not DenseOutput,
                 "GTS does not use ApplyBoundaryCorrections for dense output.");
 
-  static constexpr size_t volume_dim = System::volume_dim;
-  using variables_tag = typename System::variables_tag;
+  using system = typename Metavariables::system;
+  static constexpr size_t volume_dim = system::volume_dim;
+  using variables_tag = typename system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
 
   using TimeStepperType =
-      tmpl::conditional_t<LocalTimeStepping, LtsTimeStepper, TimeStepper>;
+      tmpl::conditional_t<local_time_stepping, LtsTimeStepper, TimeStepper>;
 
   using tag_to_update =
-      tmpl::conditional_t<LocalTimeStepping, variables_tag, dt_variables_tag>;
+      tmpl::conditional_t<local_time_stepping, variables_tag, dt_variables_tag>;
   using mortar_data_tag = tmpl::conditional_t<
-      LocalTimeStepping,
+      local_time_stepping,
       evolution::dg::Tags::MortarDataHistory<volume_dim, DtVariables>,
       evolution::dg::Tags::MortarData<volume_dim>>;
   using MortarDataType =
@@ -325,9 +329,9 @@ struct ApplyBoundaryCorrections {
       domain::Tags::Mesh<volume_dim>, Tags::MortarMesh<volume_dim>,
       Tags::MortarSize<volume_dim>, ::dg::Tags::Formulation,
       evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>,
-      ::Tags::TimeStepper<>, evolution::Tags::BoundaryCorrection<System>,
+      ::Tags::TimeStepper<>, evolution::Tags::BoundaryCorrection<system>,
       tmpl::conditional_t<DenseOutput, ::Tags::Time, ::Tags::TimeStep>,
-      tmpl::conditional_t<LocalTimeStepping, tmpl::list<>,
+      tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           domain::Tags::DetInvJacobian<Frame::ElementLogical,
                                                        Frame::Inertial>>>>;
 
@@ -345,7 +349,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
-      const typename System::boundary_correction_base& boundary_correction,
+      const typename system::boundary_correction_base& boundary_correction,
       const TimeDelta& time_step,
       const Scalar<DataVector>& gts_det_inv_jacobian = {}) {
     apply_impl(vars_to_update, mortar_data, volume_mesh, mortar_meshes,
@@ -368,12 +372,26 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const LtsTimeStepper& time_stepper,
-      const typename System::boundary_correction_base& boundary_correction,
+      const typename system::boundary_correction_base& boundary_correction,
       const double dense_output_time) {
     apply_impl(vars_to_update, &mortar_data, volume_mesh, mortar_meshes,
                mortar_sizes, dg_formulation, face_normal_covector_and_magnitude,
                time_stepper, boundary_correction, TimeDelta{},
                dense_output_time, {});
+  }
+
+  template <typename DbTagsList, typename... InboxTags>
+  static bool is_ready(
+      const gsl::not_null<db::DataBox<DbTagsList>*> box,
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
+    if constexpr (local_time_stepping) {
+      return receive_boundary_data_local_time_stepping<Metavariables,
+                                                       DenseOutput>(box,
+                                                                    inboxes);
+    } else {
+      return receive_boundary_data_global_time_stepping<Metavariables>(box,
+                                                                       inboxes);
+    }
   }
 
  private:
@@ -390,7 +408,7 @@ struct ApplyBoundaryCorrections {
                           evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
           face_normal_covector_and_magnitude,
       const TimeStepperType& time_stepper,
-      const typename System::boundary_correction_base& boundary_correction,
+      const typename system::boundary_correction_base& boundary_correction,
       const TimeDelta& time_step, const double dense_output_time,
       const Scalar<DataVector>& gts_det_inv_jacobian) {
     // Set up helper lambda that will compute and lift the boundary corrections
@@ -403,7 +421,7 @@ struct ApplyBoundaryCorrections {
 
     Scalar<DataVector> volume_det_inv_jacobian{};
     Scalar<DataVector> volume_det_jacobian{};
-    if constexpr (not LocalTimeStepping) {
+    if constexpr (not local_time_stepping) {
       if (not using_gauss_lobatto_points) {
         get(volume_det_inv_jacobian)
             .set_data_ref(make_not_null(
@@ -474,7 +492,7 @@ struct ApplyBoundaryCorrections {
                     const MortarData<volume_dim>& local_mortar_data,
                     const MortarData<volume_dim>& neighbor_mortar_data)
                 -> DtVariables {
-              if (LocalTimeStepping and not using_gauss_lobatto_points) {
+              if (local_time_stepping and not using_gauss_lobatto_points) {
                 // This needs to be updated every call because the Jacobian
                 // may be time-dependent. In the case of time-independent maps
                 // and local time stepping we could first perform the integral
@@ -542,7 +560,7 @@ struct ApplyBoundaryCorrections {
 
               // Both paths initialize this to be non-owning.
               Scalar<DataVector> magnitude_of_face_normal{};
-              if constexpr (LocalTimeStepping) {
+              if constexpr (local_time_stepping) {
                 (void)face_normal_covector_and_magnitude;
                 local_mortar_data.get_local_face_normal_magnitude(
                     &magnitude_of_face_normal);
@@ -581,7 +599,7 @@ struct ApplyBoundaryCorrections {
                 //   deal with projecting from mortars to the face, then lift
                 //   off the faces. With non-owning Variables memory
                 //   allocations could be significantly reduced in this code.
-                if constexpr (LocalTimeStepping) {
+                if constexpr (local_time_stepping) {
                   ASSERT(get(volume_det_inv_jacobian).size() > 0,
                          "For local time stepping the volume determinant of "
                          "the inverse Jacobian has not been set.");
@@ -619,7 +637,7 @@ struct ApplyBoundaryCorrections {
               }
             };
 
-            if constexpr (LocalTimeStepping) {
+            if constexpr (local_time_stepping) {
               typename variables_tag::type lgl_lifted_data{};
               auto& lifted_data = using_gauss_lobatto_points ? lgl_lifted_data
                                                              : *vars_to_update;
@@ -740,8 +758,7 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    db::mutate_apply<ApplyBoundaryCorrections<
-        typename Metavariables::system, Metavariables::local_time_stepping>>(
+    db::mutate_apply<ApplyBoundaryCorrections<Metavariables>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -792,8 +809,7 @@ struct ApplyLtsBoundaryCorrections {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    db::mutate_apply<ApplyBoundaryCorrections<
-        typename Metavariables::system, Metavariables::local_time_stepping>>(
+    db::mutate_apply<ApplyBoundaryCorrections<Metavariables>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
