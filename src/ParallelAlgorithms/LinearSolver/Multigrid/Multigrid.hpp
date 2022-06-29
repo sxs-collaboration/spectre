@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
 #include "IO/Observer/Helpers.hpp"
-#include "Parallel/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ObserveVolumeData.hpp"
