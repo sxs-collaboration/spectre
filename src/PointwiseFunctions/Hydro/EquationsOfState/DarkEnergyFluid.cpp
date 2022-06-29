@@ -68,6 +68,24 @@ Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
 template <bool IsRelativistic>
 template <class DataType>
 Scalar<DataType>
+DarkEnergyFluid<IsRelativistic>::temperature_from_density_and_energy_impl(
+    const Scalar<DataType>& /*rest_mass_density*/,
+    const Scalar<DataType>& specific_internal_energy) const {
+  return Scalar<DataType>{parameter_w_ * get(specific_internal_energy)};
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType> DarkEnergyFluid<IsRelativistic>::
+    specific_internal_energy_from_density_and_temperature_impl(
+        const Scalar<DataType>& /*rest_mass_density*/,
+        const Scalar<DataType>& temperature) const {
+  return Scalar<DataType>{get(temperature) / parameter_w_};
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType>
 DarkEnergyFluid<IsRelativistic>::chi_from_density_and_energy_impl(
     const Scalar<DataType>& /*rest_mass_density*/,
     const Scalar<DataType>& specific_internal_energy) const {

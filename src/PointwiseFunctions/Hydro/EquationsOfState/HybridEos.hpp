@@ -32,14 +32,22 @@ namespace EquationsOfState {
  * (zero-temperature) part with a simple thermal part
  *
  * The hybrid equation of state:
+ *
  * \f[
  * p = p_{cold}(\rho) + \rho (\Gamma_{th}-1) (\epsilon - \epsilon_{cold}(\rho))
  * \f]
+ *
  * where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass density,
  * \f$\epsilon\f$ is the specific internal energy, \f$p_{cold}\f$ and
  * \f$\epsilon_{cold}\f$ are the pressure and specific internal energy evaluated
  * using the cold EOS, and \f$\Gamma_{th}\f$ is the adiabatic index for the
  * thermal part.
+ *
+ * The temperature \f$T\f$ is defined as
+ *
+ * \f[
+ * T = (\Gamma_{th} - 1) (\epsilon - \epsilon_{cold})
+ * \f]
  */
 template <typename ColdEquationOfState>
 class HybridEos

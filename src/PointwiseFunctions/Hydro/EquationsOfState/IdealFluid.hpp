@@ -29,11 +29,19 @@ namespace EquationsOfState {
  * \brief Equation of state for an ideal fluid
  *
  * An ideal fluid equation of state:
+ *
  * \f[
  * p = \rho \epsilon(\gamma-1)
  * \f]
+ *
  * where \f$\rho\f$ is the rest mass density, \f$\epsilon\f$ is the specific
  * internal energy, and \f$\gamma\f$ is the adiabatic index.
+ *
+ * The temperature \f$T\f$ is defined as
+ *
+ * \f[
+ * T = (\gamma - 1) \epsilon
+ * \f]
  */
 template <bool IsRelativistic>
 class IdealFluid : public EquationOfState<IsRelativistic, 2> {
@@ -51,7 +59,8 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
       "The pressure is related to the rest mass density by p = rho * epsilon * "
       "(gamma - 1), where p is the pressure, rho is the rest mass density, "
       "epsilon is the specific internal energy, and gamma is the adiabatic "
-      "index."};
+      "index.\n"
+      "The temperature T is defined as T=epsilon."};
 
   using options = tmpl::list<AdiabaticIndex>;
 

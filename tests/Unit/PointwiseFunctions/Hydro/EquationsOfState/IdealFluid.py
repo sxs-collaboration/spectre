@@ -9,6 +9,12 @@ def ideal_fluid_pressure_from_density_and_energy(rest_mass_density,
                                                            1.0)
 
 
+def ideal_fluid_temperature_from_density_and_energy(rest_mass_density,
+                                                    specific_internal_energy,
+                                                    adiabatic_index):
+    return (adiabatic_index - 1.0) * specific_internal_energy
+
+
 def ideal_fluid_rel_pressure_from_density_and_enthalpy(rest_mass_density,
                                                        specific_enthalpy,
                                                        adiabatic_index):

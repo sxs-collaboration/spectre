@@ -10,13 +10,13 @@
 #include <boost/preprocessor/tuple/enum.hpp>
 #include <boost/preprocessor/tuple/to_list.hpp>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
-class DataVector;
 namespace EquationsOfState {
 template <bool IsRelativistic>
 class DarkEnergyFluid;
@@ -135,6 +135,37 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the temperature \f$T\f$ from the rest mass
+   * density \f$\rho\f$.
+   */
+  virtual Scalar<double> temperature_from_density(
+      const Scalar<double>& /*rest_mass_density*/) const {
+    return Scalar<double>{0.0};
+  }
+  virtual Scalar<DataVector> temperature_from_density(
+      const Scalar<DataVector>& rest_mass_density) const {
+    return Scalar<DataVector>{DataVector{get(rest_mass_density).size(), 0.0}};
+  }
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the temperature \f$\T\f$ from the specific internal energy
+   * \f$\epsilon\f$.
+   */
+  virtual Scalar<double> temperature_from_specific_internal_energy(
+      const Scalar<double>& /*specific_internal_energy*/) const {
+    return Scalar<double>{0.0};
+  }
+  virtual Scalar<DataVector> temperature_from_specific_internal_energy(
+      const Scalar<DataVector>& specific_internal_energy) const {
+    return Scalar<DataVector>{
+        DataVector{get(specific_internal_energy).size(), 0.0}};
+  }
+  /// @}
+
+  /// @{
+  /*!
    * Computes \f$\chi=\partial p / \partial \rho\f$ from \f$\rho\f$, where
    * \f$p\f$ is the pressure and \f$\rho\f$ is the rest mass density.
    */
@@ -248,6 +279,33 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the temperature \f$T\f$ from the rest mass
+   * density \f$\rho\f$ and the specific internal energy \f$\epsilon\f$.
+   */
+  virtual Scalar<double> temperature_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/) const = 0;
+  virtual Scalar<DataVector> temperature_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
+   * density \f$\rho\f$ and the temperature \f$T\f$.
+   */
+  virtual Scalar<double> specific_internal_energy_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/) const = 0;
+  virtual Scalar<DataVector>
+  specific_internal_energy_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
    * Computes \f$\chi=\partial p / \partial \rho\f$ from the \f$\rho\f$ and
    * \f$\epsilon\f$, where \f$p\f$ is the pressure, \f$\rho\f$ is the rest mass
    * density, and \f$\epsilon\f$ is the specific internal energy.
@@ -311,6 +369,8 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 #define EQUATION_OF_STATE_FUNCTIONS_2D                                   \
   (pressure_from_density_and_energy, pressure_from_density_and_enthalpy, \
    specific_internal_energy_from_density_and_pressure,                   \
+   temperature_from_density_and_energy,                                  \
+   specific_internal_energy_from_density_and_temperature,                \
    chi_from_density_and_energy,                                          \
    kappa_times_p_over_rho_squared_from_density_and_energy)
 
