@@ -26,6 +26,7 @@ target_link_libraries(
 
 add_subdirectory(Burgers)
 add_subdirectory(CurvedWaveEquation)
+add_subdirectory(GeneralRelativity)
 add_subdirectory(GrMhd)
 add_subdirectory(NewtonianEuler)
 add_subdirectory(Xcts)
