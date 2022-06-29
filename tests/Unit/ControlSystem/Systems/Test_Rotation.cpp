@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <string>
+#include <tuple>
 
 #include "ControlSystem/Systems/Rotation.hpp"
 #include "ControlSystem/Tags.hpp"
@@ -41,6 +42,7 @@ void test_rotation_control_system(const bool newtonian) {
   using metavars = TestHelpers::MockMetavars<0, DerivOrder, 0>;
   using rotation_component = typename metavars::rotation_component;
   using element_component = typename metavars::element_component;
+  using rotation_system = typename metavars::rotation_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -76,8 +78,9 @@ void test_rotation_control_system(const bool newtonian) {
       "    ControlError:\n";
 
   // Initialize everything within the system helper
-  system_helper.setup_control_system_test(initial_time, initial_separation,
-                                          input_options);
+  system_helper.setup_control_system_test(
+      initial_time, initial_separation, input_options,
+      TestHelpers::initialize_rotation_functions_of_time<rotation_system>);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need
@@ -86,7 +89,8 @@ void test_rotation_control_system(const bool newtonian) {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_rot_tuple = system_helper.init_rot_tuple();
+  const auto& init_rot_tuple =
+      system_helper.template init_tuple<rotation_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -105,7 +109,8 @@ void test_rotation_control_system(const bool newtonian) {
   const BinaryTrajectories binary_trajectories{
       initial_separation, {0.0, 0.0, 0.0}, newtonian};
 
-  const std::string& rotation_name = system_helper.rotation_name();
+  const std::string rotation_name =
+      system_helper.template name<rotation_system>();
 
   // Create coordinate map for mapping the PN rotation to the "grid" frame
   // where the control system does its calculations
@@ -122,15 +127,22 @@ void test_rotation_control_system(const bool newtonian) {
     return binary_trajectories.positions_no_expansion(time);
   };
 
+  const auto horizon_function = [&position_function, &runner,
+                                 &coord_map](const double time) {
+    return TestHelpers::build_horizons_for_basic_control_systems<
+        element_component>(time, runner, position_function, coord_map);
+  };
+
   // Run the actual control system test.
   system_helper.run_control_system_test(runner, final_time, make_not_null(&gen),
-                                        position_function, coord_map);
+                                        horizon_function, 2);
 
   // Grab results
-  const std::array<double, 3> grid_position_of_a =
-      system_helper.grid_position_of_a();
-  const std::array<double, 3> grid_position_of_b =
-      system_helper.grid_position_of_b();
+  std::array<double, 3> grid_position_of_a;
+  std::array<double, 3> grid_position_of_b;
+  std::tie(grid_position_of_a, grid_position_of_b) =
+      TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
+          element_component>(final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
   const std::array<double, 3> expected_grid_position_of_a{

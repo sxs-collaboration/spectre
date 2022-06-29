@@ -9,7 +9,9 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 #include "ApparentHorizons/ObjectLabel.hpp"
@@ -52,7 +54,9 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -132,7 +136,6 @@ template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
-
   using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
                                 ExpansionDerivOrder>;
 
@@ -143,9 +146,9 @@ struct MockMetavars {
   static constexpr bool using_translation = TranslationDerivOrder != 0;
 
   // Even if we aren't using certain control systems, we still need valid deriv
-  // orders becuse everything is constructed by default in the SystemHelper. The
-  // bool above just determines if the functions of time are actually created or
-  // not because that's what matters
+  // orders because everything is constructed by default in the SystemHelper.
+  // The bool above just determines if the functions of time are actually
+  // created or not because that's what matters
   static constexpr size_t exp_deriv_order =
       using_expansion ? ExpansionDerivOrder : 2;
   static constexpr size_t rot_deriv_order =
@@ -159,6 +162,12 @@ struct MockMetavars {
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
   using translation_system =
       control_system::Systems::Translation<trans_deriv_order>;
+
+  using control_systems = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
+      tmpl::conditional_t<using_rotation, rotation_system, tmpl::list<>>,
+      tmpl::conditional_t<using_translation, translation_system,
+                          tmpl::list<>>>>;
 
   using expansion_component = MockControlComponent<metavars, expansion_system>;
   using rotation_component = MockControlComponent<metavars, rotation_system>;
@@ -177,6 +186,158 @@ struct MockMetavars {
       tmpl::list<observer_component, element_component, control_components>>;
 };
 
+template <typename ExpansionSystem>
+double initialize_expansion_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = ExpansionSystem::deriv_order;
+  const double initial_expansion = 1.0;
+  const double expansion_velocity_outer_boundary = 0.0;
+  const double decay_timescale_outer_boundary = 0.05;
+  auto init_func_expansion =
+      make_array<deriv_order + 1, DataVector>(DataVector{1, 0.0});
+  init_func_expansion[0][0] = initial_expansion;
+
+  const std::string expansion_name = ExpansionSystem::name();
+  (*functions_of_time)[expansion_name] = std::make_unique<
+      domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+      initial_time, init_func_expansion,
+      initial_expiration_times.at(expansion_name));
+  (*functions_of_time)[expansion_name + "OuterBoundary"s] =
+      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+          initial_expansion, initial_time, expansion_velocity_outer_boundary,
+          decay_timescale_outer_boundary);
+
+  return 1.0;
+}
+
+template <typename RotationSystem>
+double initialize_rotation_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = RotationSystem::deriv_order;
+
+  const double initial_omega_z = 0.01;
+  auto init_func_rotation =
+      make_array<deriv_order + 1, DataVector>(DataVector{3, 0.0});
+  init_func_rotation[1][2] = initial_omega_z;
+  auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
+  init_quaternion[0][0] = 1.0;
+
+  const std::string rotation_name = RotationSystem::name();
+  (*functions_of_time)[rotation_name] = std::make_unique<
+      domain::FunctionsOfTime::QuaternionFunctionOfTime<deriv_order>>(
+      initial_time, init_quaternion, init_func_rotation,
+      initial_expiration_times.at(rotation_name));
+
+  return 1.0;
+}
+
+template <typename TranslationSystem>
+double initialize_translation_functions_of_time(
+    const gsl::not_null<std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+        functions_of_time,
+    const double initial_time,
+    const std::unordered_map<std::string, double>& initial_expiration_times) {
+  constexpr size_t deriv_order = TranslationSystem::deriv_order;
+
+  auto init_func_translation =
+      make_array<deriv_order + 1, DataVector>(DataVector{3, 0.0});
+
+  const std::string translation_name = TranslationSystem::name();
+  (*functions_of_time)[translation_name] = std::make_unique<
+      domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+      initial_time, init_func_translation,
+      initial_expiration_times.at(translation_name));
+
+  if (initial_expiration_times.count("Rotation") == 0) {
+    auto local_init_func_rotation =
+        make_array<1, DataVector>(DataVector{4, 0.0});
+    local_init_func_rotation[0][0] = 1.0;
+    (*functions_of_time)["Rotation"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            initial_time, local_init_func_rotation,
+            std::numeric_limits<double>::infinity());
+  }
+  if (initial_expiration_times.count("Expansion") == 0) {
+    auto local_init_func_expansion =
+        make_array<1, DataVector>(DataVector{1, 0.0});
+    local_init_func_expansion[0][0] = 1.0;
+    (*functions_of_time)["Expansion"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+            initial_time, local_init_func_expansion,
+            std::numeric_limits<double>::infinity());
+  }
+
+  return 1.0;
+}
+
+template <typename ElementComponent, typename Metavars, typename F,
+          typename CoordMap>
+std::pair<std::array<double, 3>, std::array<double, 3>>
+grid_frame_horizon_centers_for_basic_control_systems(
+    const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
+    const F position_function, const CoordMap& coord_map) {
+  auto& cache = ActionTesting::cache<ElementComponent>(runner, 0);
+  const auto& functions_of_time =
+      Parallel::get<domain::Tags::FunctionsOfTime>(cache);
+
+  // This whole switching between tensors and arrays is annoying and
+  // clunky, but it's the best that could be done at the moment without
+  // changing BinaryTrajectories to return tensors, which doesn't seem like
+  // a good idea.
+
+  std::pair<std::array<double, 3>, std::array<double, 3>> positions =
+      position_function(time);
+
+  // Covert arrays to tensor so we can pass them into the coordinate map
+  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
+      positions.first);
+  const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
+      positions.second);
+
+  // Convert to "grid coordinates"
+  const auto grid_position_of_a_tnsr =
+      *coord_map.inverse(inertial_position_of_a, time, functions_of_time);
+  const auto grid_position_of_b_tnsr =
+      *coord_map.inverse(inertial_position_of_b, time, functions_of_time);
+
+  // Convert tensors back to arrays so we can pass them to the control
+  // systems. Just reuse `positions`
+  for (size_t i = 0; i < 3; i++) {
+    gsl::at(positions.first, i) = grid_position_of_a_tnsr.get(i);
+    gsl::at(positions.second, i) = grid_position_of_b_tnsr.get(i);
+  }
+
+  return positions;
+}
+
+template <typename ElementComponent, typename Metavars, typename F,
+          typename CoordMap>
+std::pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>
+build_horizons_for_basic_control_systems(
+    const double time, ActionTesting::MockRuntimeSystem<Metavars>& runner,
+    const F position_function, const CoordMap& coord_map) {
+  const auto positions =
+      grid_frame_horizon_centers_for_basic_control_systems<ElementComponent>(
+          time, runner, position_function, coord_map);
+
+  // Construct strahlkorpers to pass to control systems. Only the centers
+  // matter.
+  Strahlkorper<Frame::Grid> horizon_a{2, 2, 1.0, positions.first};
+  Strahlkorper<Frame::Grid> horizon_b{2, 2, 1.0, positions.second};
+
+  return std::make_pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>(
+      std::move(horizon_a), std::move(horizon_b));
+}
+
 /*!
  * \brief Helper struct for testing basic control systems
  *
@@ -187,7 +348,7 @@ struct MockMetavars {
  * Ideally we'd construct the runner here and just pass that to the test to
  * simplify as must of the work as possible, but MockRuntimeSystems aren't
  * copy- or move-able so we have to make the necessary info available. The
- * simplist way to do this was to have functions that return references to the
+ * simplest way to do this was to have functions that return references to the
  * member variables.
  *
  * \note Translation control isn't supported yet. It will be added in the
@@ -195,24 +356,18 @@ struct MockMetavars {
  */
 template <typename Metavars>
 struct SystemHelper {
-  static constexpr size_t exp_deriv_order = Metavars::exp_deriv_order;
-  static constexpr size_t rot_deriv_order = Metavars::rot_deriv_order;
-  static constexpr size_t trans_deriv_order = Metavars::trans_deriv_order;
+ private:
+  template <typename System>
+  struct LocalTag {
+    using type = tuples::tagged_tuple_from_typelist<init_simple_tags<System>>;
+  };
+  using AllTags = tuples::tagged_tuple_from_typelist<tmpl::transform<
+      typename Metavars::control_systems, tmpl::bind<LocalTag, tmpl::_1>>>;
 
-  static constexpr bool using_expansion = Metavars::using_expansion;
-  static constexpr bool using_rotation = Metavars::using_rotation;
-  static constexpr bool using_translation = Metavars::using_translation;
-
-  using expansion_system = typename Metavars::expansion_system;
-  using rotation_system = typename Metavars::rotation_system;
-  using translation_system = typename Metavars::translation_system;
-
+ public:
+  using control_systems = typename Metavars::control_systems;
   using element_component = typename Metavars::element_component;
   using control_components = typename Metavars::control_components;
-
-  using expansion_init_simple_tags = init_simple_tags<expansion_system>;
-  using rotation_init_simple_tags = init_simple_tags<rotation_system>;
-  using translation_init_simple_tags = init_simple_tags<translation_system>;
 
   // Members that may be moved out of this struct once they are
   // constructed
@@ -223,19 +378,70 @@ struct SystemHelper {
   }
 
   // Members that won't be moved out of this struct
-  const auto& init_exp_tuple() { return init_exp_tuple_; }
-  const auto& init_rot_tuple() { return init_rot_tuple_; }
-  const auto& init_trans_tuple() { return init_trans_tuple_; }
-  const auto& grid_position_of_a() { return grid_position_of_a_; }
-  const auto& grid_position_of_b() { return grid_position_of_b_; }
-  const auto& expansion_name() { return expansion_name_; }
-  const auto& rotation_name() { return rotation_name_; }
-  const auto& translation_name() { return translation_name_; }
+  template <typename System>
+  const auto& init_tuple() {
+    return get<LocalTag<System>>(all_init_tags_);
+  }
+  const auto& horizon_a() { return horizon_a_; }
+  const auto& horizon_b() { return horizon_b_; }
+  template <typename System>
+  std::string name() {
+    return System::name();
+  }
 
+  /*!
+   * \brief Setup the test.
+   *
+   * The function `initialize_functions_of_time` must take a
+   * `const gsl::not_null<std::unordered_map<std::string,
+   * std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>` for the
+   * function of time map, a `const double` for the initial time, and a `const
+   * std::unordered_map<std::string, double>&` for the expiration times. This
+   * function will initialize the functions of time and must return a double
+   * that represents the radius of the excision spheres. Some existing functions
+   * are given in the `control_system::TestHelpers` namespace for Expansion,
+   * Rotation, and Translation.
+   */
+  template <typename F>
   void setup_control_system_test(const double initial_time,
                                  const double initial_separation,
-                                 const std::string& option_string) {
+                                 const std::string& option_string,
+                                 const F initialize_functions_of_time) {
     initial_time_ = initial_time;
+
+    parse_options(option_string);
+    // Initial parameters needed. Expiration times would normally be set during
+    // option parsing, and measurement timescales during initialization so we
+    // have to do them manually here instead.
+    std::unordered_map<std::string, double> initial_expiration_times{};
+    tmpl::for_each<control_systems>([this,
+                                     &initial_expiration_times](auto system_v) {
+      using system = tmpl::type_from<decltype(system_v)>;
+
+      auto& init_tuple = get<LocalTag<system>>(all_init_tags_);
+      auto& averager = get<control_system::Tags::Averager<system>>(init_tuple);
+      const auto& controller =
+          get<control_system::Tags::Controller<system>>(init_tuple);
+      const auto& tuner =
+          get<control_system::Tags::TimescaleTuner<system>>(init_tuple);
+
+      const std::array<DataVector, 1> measurement_timescale{
+          {control_system::calculate_measurement_timescales(controller,
+                                                            tuner)}};
+      averager.assign_time_between_measurements(min(measurement_timescale[0]));
+
+      const double initial_expiration_time =
+          controller.get_update_fraction() * min(tuner.current_timescale());
+
+      initial_measurement_timescales_[name<system>()] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+              initial_time_, measurement_timescale, initial_expiration_time);
+      initial_expiration_times[name<system>()] = initial_expiration_time;
+    });
+
+    const double excision_radius =
+        initialize_functions_of_time(make_not_null(&initial_functions_of_time_),
+                                     initial_time_, initial_expiration_times);
 
     // We don't need a real domain, just one that has the correct excision
     // sphere centers because the control errors use the `excision_spheres()`
@@ -246,7 +452,7 @@ struct SystemHelper {
         Domain<3>{{},
                   {},
                   {{"ObjectAExcisionSphere",
-                    ExcisionSphere<3>{1.0,
+                    ExcisionSphere<3>{excision_radius,
                                       {{-0.5 * initial_separation, 0.0, 0.0}},
                                       {{0, Direction<3>::lower_zeta()},
                                        {1, Direction<3>::lower_zeta()},
@@ -255,7 +461,7 @@ struct SystemHelper {
                                        {4, Direction<3>::lower_zeta()},
                                        {5, Direction<3>::lower_zeta()}}}},
                    {"ObjectBExcisionSphere",
-                    ExcisionSphere<3>{1.0,
+                    ExcisionSphere<3>{excision_radius,
                                       {{+0.5 * initial_separation, 0.0, 0.0}},
                                       {{0, Direction<3>::lower_zeta()},
                                        {1, Direction<3>::lower_zeta()},
@@ -263,162 +469,33 @@ struct SystemHelper {
                                        {3, Direction<3>::lower_zeta()},
                                        {4, Direction<3>::lower_zeta()},
                                        {5, Direction<3>::lower_zeta()}}}}}};
-
-    // Initial parameters needed. Expiration times would normally be set during
-    // option parsing, and measurement timescales during initialization so we
-    // have to do them manually here instead.
-    if constexpr (using_expansion) {
-      init_exp_tuple_ = parse_options<expansion_system>(option_string);
-      auto& exp_averager =
-          get<control_system::Tags::Averager<expansion_system>>(
-              init_exp_tuple_);
-      const auto& exp_controller =
-          get<control_system::Tags::Controller<expansion_system>>(
-              init_exp_tuple_);
-      const auto& exp_tuner =
-          get<control_system::Tags::TimescaleTuner<expansion_system>>(
-              init_exp_tuple_);
-
-      const std::array<DataVector, 1> expansion_measurement_timescale{
-          {control_system::calculate_measurement_timescales(exp_controller,
-                                                            exp_tuner)}};
-      exp_averager.assign_time_between_measurements(
-          min(expansion_measurement_timescale[0]));
-
-      const double initial_expansion_expiration_time =
-          exp_controller.get_update_fraction() *
-          min(exp_tuner.current_timescale());
-      const double initial_expansion = 1.0;
-      const double expansion_velocity_outer_boundary = 0.0;
-      const double decay_timescale_outer_boundary = 0.05;
-      auto init_func_expansion =
-          make_array<exp_deriv_order + 1, DataVector>(DataVector{1, 0.0});
-      init_func_expansion[0][0] = initial_expansion;
-
-      initial_functions_of_time_[expansion_name_] = std::make_unique<
-          domain::FunctionsOfTime::PiecewisePolynomial<exp_deriv_order>>(
-          initial_time_, init_func_expansion,
-          initial_expansion_expiration_time);
-      initial_functions_of_time_[expansion_name_ + "OuterBoundary"s] =
-          std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-              initial_expansion, initial_time_,
-              expansion_velocity_outer_boundary,
-              decay_timescale_outer_boundary);
-      initial_measurement_timescales_[expansion_name_] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, expansion_measurement_timescale,
-              initial_expansion_expiration_time);
-    }
-    if constexpr (using_rotation) {
-      init_rot_tuple_ = parse_options<rotation_system>(option_string);
-      auto& rot_averager =
-          get<control_system::Tags::Averager<rotation_system>>(init_rot_tuple_);
-      const auto& rot_controller =
-          get<control_system::Tags::Controller<rotation_system>>(
-              init_rot_tuple_);
-      const auto& rot_tuner =
-          get<control_system::Tags::TimescaleTuner<rotation_system>>(
-              init_rot_tuple_);
-
-      const std::array<DataVector, 1> rotation_measurement_timescale{
-          {control_system::calculate_measurement_timescales(rot_controller,
-                                                            rot_tuner)}};
-      rot_averager.assign_time_between_measurements(
-          min(rotation_measurement_timescale[0]));
-
-      const double initial_rotation_rotation_time =
-          rot_controller.get_update_fraction() *
-          min(rot_tuner.current_timescale());
-      const double initial_omega_z = 0.01;
-      auto init_func_rotation =
-          make_array<rot_deriv_order + 1, DataVector>(DataVector{3, 0.0});
-      init_func_rotation[1][2] = initial_omega_z;
-      auto init_quaternion = make_array<1, DataVector>(DataVector{4, 0.0});
-      init_quaternion[0][0] = 1.0;
-
-      initial_functions_of_time_[rotation_name_] = std::make_unique<
-          domain::FunctionsOfTime::QuaternionFunctionOfTime<rot_deriv_order>>(
-          initial_time_, init_quaternion, init_func_rotation,
-          initial_rotation_rotation_time);
-      initial_measurement_timescales_[rotation_name_] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, rotation_measurement_timescale,
-              initial_rotation_rotation_time);
-    }
-    if constexpr (using_translation) {
-      init_trans_tuple_ = parse_options<translation_system>(option_string);
-      auto& trans_averager =
-          get<control_system::Tags::Averager<translation_system>>(
-              init_trans_tuple_);
-      const auto& trans_controller =
-          get<control_system::Tags::Controller<translation_system>>(
-              init_trans_tuple_);
-      const auto& trans_tuner =
-          get<control_system::Tags::TimescaleTuner<translation_system>>(
-              init_trans_tuple_);
-
-      const std::array<DataVector, 1> translation_measurement_timescale{
-          {control_system::calculate_measurement_timescales(trans_controller,
-                                                            trans_tuner)}};
-      trans_averager.assign_time_between_measurements(
-          min(translation_measurement_timescale[0]));
-
-      const double initial_translation_expiration_time =
-          trans_controller.get_update_fraction() *
-          min(trans_tuner.current_timescale());
-
-      auto init_func_translation =
-          make_array<trans_deriv_order + 1, DataVector>(DataVector{3, 0.0});
-
-      initial_functions_of_time_[translation_name_] = std::make_unique<
-          domain::FunctionsOfTime::PiecewisePolynomial<trans_deriv_order>>(
-          initial_time_, init_func_translation,
-          initial_translation_expiration_time);
-      initial_measurement_timescales_[translation_name_] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              initial_time_, translation_measurement_timescale,
-              initial_translation_expiration_time);
-
-      // Translation control error requires a quaternion and expansion. Thus, if
-      // we aren't already controlling rotation or expansion we have to add
-      // these in. To avoid solving an ODE, we use a constant
-      // PiecewisePolynomial representing the unit quaternion to signify there
-      // isn't any rotation
-      if constexpr (not using_rotation) {
-        auto local_init_func_rotation =
-            make_array<1, DataVector>(DataVector{4, 0.0});
-        local_init_func_rotation[0][0] = 1.0;
-        initial_functions_of_time_[rotation_name_] =
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-                initial_time, local_init_func_rotation,
-                std::numeric_limits<double>::infinity());
-      }
-      if constexpr (not using_expansion) {
-        auto local_init_func_expansion =
-            make_array<1, DataVector>(DataVector{1, 0.0});
-        local_init_func_expansion[0][0] = 1.0;
-        initial_functions_of_time_[expansion_name_] =
-            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-                initial_time, local_init_func_expansion,
-                std::numeric_limits<double>::infinity());
-      }
-    }
   }
 
-  template <typename Generator, typename F, typename CoordMap>
+  /*!
+   * \brief Actually run the control system test
+   *
+   * The `horizon_function` should return a
+   * `std::pair<Strahlkorper<Frame::Grid>, Strahlkorper<Frame::Grid>>`
+   * representing the two horizons in the grid frame. This means the user is
+   * responsible for doing any coordinate transformations inside
+   * `horizon_function` as this function won't do any. The `number_of_horizons`
+   * is used to determine if we actually use both horizon "measurements" as some
+   * control systems may only need one. If only one horizon is used, the default
+   * is to use AhA.
+   *
+   * For the basic control systems, a common function is defined for you:
+   * `control_system::TestHelpers::build_horizons_for_basic_control_systems()`.
+   */
+  template <typename Generator, typename F>
   void run_control_system_test(
       ActionTesting::MockRuntimeSystem<Metavars>& runner,
       const double final_time, gsl::not_null<Generator*> generator,
-      const F position_function, const CoordMap& coord_map) {
-    // Allocate now because we need these variables outside the loop
-    std::pair<std::array<double, 3>, std::array<double, 3>> positions{};
+      const F horizon_function, const size_t number_of_horizons) {
     double time = initial_time_;
     std::optional<double> prev_time{};
     double dt = 0.0;
 
     auto& cache = ActionTesting::cache<element_component>(runner, 0);
-    const auto& functions_of_time =
-        Parallel::get<domain::Tags::FunctionsOfTime>(cache);
     const auto& measurement_timescales =
         Parallel::get<control_system::Tags::MeasurementTimescales>(cache);
 
@@ -428,61 +505,37 @@ struct SystemHelper {
       // system event.
       const LinkedMessageId<double> measurement_id{time, prev_time};
 
-      // This whole switching between tensors and arrays is annoying and
-      // clunky, but it's the best that could be done at the moment without
-      // changing BinaryTrajectories to return tensors, which doesn't seem like
-      // a good idea.
-
-      // Get trajectory in "inertial coordinates" as arrays
-      positions = position_function(time);
-
-      // Covert arrays to tensor so we can pass them into the coordinate map
-      const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
-          positions.first);
-      const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
-          positions.second);
-
-      // Convert to "grid coordinates"
-      const auto grid_position_of_a_tnsr =
-          *coord_map.inverse(inertial_position_of_a, time, functions_of_time);
-      const auto grid_position_of_b_tnsr =
-          *coord_map.inverse(inertial_position_of_b, time, functions_of_time);
-
-      // Convert tensors back to arrays so we can pass them to the control
-      // systems
-      for (size_t i = 0; i < 3; i++) {
-        gsl::at(grid_position_of_a_, i) = grid_position_of_a_tnsr.get(i);
-        gsl::at(grid_position_of_b_, i) = grid_position_of_b_tnsr.get(i);
-      }
-
-      // Construct strahlkorpers to pass to control systems. Only the centers
-      // matter.
-      const Strahlkorper<Frame::Grid> horizon_a{2, 2, 1.0, grid_position_of_a_};
-      const Strahlkorper<Frame::Grid> horizon_b{2, 2, 1.0, grid_position_of_b_};
+      // Get horizons in grid frame
+      std::tie(horizon_a_, horizon_b_) = horizon_function(time);
 
       // Apply measurements
-      tmpl::for_each<control_components>([&runner, &generator, &measurement_id,
-                                          &horizon_a, &cache,
-                                          &horizon_b](auto control_component) {
+      tmpl::for_each<control_components>([this, &runner, &generator,
+                                          &measurement_id, &cache,
+                                          &number_of_horizons](
+                                             auto control_component) {
         using component = tmpl::type_from<decltype(control_component)>;
         using system = typename component::system;
+        // Even if we only have 1 horizon, we still apply both measurements
+        // because the BothHorizons measurement will always send both regardless
+        // of if both are needed.
         system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>{}, horizon_a,
+            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::A>{}, horizon_a_,
+            cache, measurement_id);
+        system::process_measurement::apply(
+            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::B>{}, horizon_b_,
             cache, measurement_id);
         CHECK(ActionTesting::number_of_queued_simple_actions<component>(
-                  runner, 0) == 1);
-        system::process_measurement::apply(
-            ah::BothHorizons::FindHorizon<::ah::ObjectLabel::B>{}, horizon_b,
-            cache, measurement_id);
-        CHECK(ActionTesting::number_of_queued_simple_actions<component>(
-                  runner, 0) == 2);
-        // We invoke a random measurement because during a normal simulation
-        // we don't know which measurement will reach the control system
-        // first because of charm++ communication
-        ActionTesting::invoke_random_queued_simple_action<control_components>(
-            make_not_null(&runner), generator,
-            ActionTesting::array_indices_with_queued_simple_actions<
-                control_components>(make_not_null(&runner)));
+                  runner, 0) == number_of_horizons);
+
+        if (number_of_horizons > 1) {
+          // We invoke a random measurement because during a normal simulation
+          // we don't know which measurement will reach the control system
+          // first because of charm++ communication
+          ActionTesting::invoke_random_queued_simple_action<control_components>(
+              make_not_null(&runner), generator,
+              ActionTesting::array_indices_with_queued_simple_actions<
+                  control_components>(make_not_null(&runner)));
+        }
         ActionTesting::invoke_queued_simple_action<component>(
             make_not_null(&runner), 0);
       });
@@ -503,23 +556,8 @@ struct SystemHelper {
       time += dt;
     }
 
-    // Get analytic position in inertial coordinates
-    positions = position_function(final_time);
-
-    // Get position of objects in grid coordinates using the coordinate map that
-    // has had its functions of time updated by the control system
-    const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_a(
-        positions.first);
-    const tnsr::I<double, 3, Frame::Inertial> inertial_position_of_b(
-        positions.second);
-    const auto grid_position_of_a_tnsr = *coord_map.inverse(
-        inertial_position_of_a, final_time, functions_of_time);
-    const auto grid_position_of_b_tnsr = *coord_map.inverse(
-        inertial_position_of_b, final_time, functions_of_time);
-    for (size_t i = 0; i < 3; i++) {
-      gsl::at(grid_position_of_a_, i) = grid_position_of_a_tnsr.get(i);
-      gsl::at(grid_position_of_b_, i) = grid_position_of_b_tnsr.get(i);
-    }
+    // Get horizons at final time in grid frame
+    std::tie(horizon_a_, horizon_b_) = horizon_function(time);
   }
 
  private:
@@ -535,9 +573,7 @@ struct SystemHelper {
       tmpl::list_difference<init_simple_tags<System>,
                             tmpl::list<typename System::MeasurementQueue>>;
 
-  template <typename System>
-  tuples::tagged_tuple_from_typelist<init_simple_tags<System>> parse_options(
-      const std::string& option_string) {
+  void parse_options(const std::string& option_string) {
     Options::Parser<option_list> parser{"Peter Parker the option parser."};
     parser.parse(option_string);
     const tuples::tagged_tuple_from_typelist<option_list> options =
@@ -546,21 +582,27 @@ struct SystemHelper {
               std::move(args)...);
         });
 
-    tuples::tagged_tuple_from_typelist<creatable_tags<System>> created_tags =
-        Parallel::create_from_options<Metavars>(options,
-                                                creatable_tags<System>{});
+    tmpl::for_each<control_systems>([this, options](auto system_v) {
+      using system = tmpl::type_from<decltype(system_v)>;
 
-    return tuples::tagged_tuple_from_typelist<init_simple_tags<System>>{
-        get<control_system::Tags::Averager<System>>(created_tags),
-        get<control_system::Tags::TimescaleTuner<System>>(created_tags),
-        get<control_system::Tags::Controller<System>>(created_tags),
-        get<control_system::Tags::ControlError<System>>(created_tags),
-        get<control_system::Tags::WriteDataToDisk>(created_tags), true,
-        // Just need an empty queue. It will get filled in as the control
-        // system is updated
-        LinkedMessageQueue<
-            double, tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                               QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+      tuples::tagged_tuple_from_typelist<creatable_tags<system>> created_tags =
+          Parallel::create_from_options<Metavars>(options,
+                                                  creatable_tags<system>{});
+
+      get<LocalTag<system>>(all_init_tags_) =
+          tuples::tagged_tuple_from_typelist<init_simple_tags<system>>{
+              get<control_system::Tags::Averager<system>>(created_tags),
+              get<control_system::Tags::TimescaleTuner<system>>(created_tags),
+              get<control_system::Tags::Controller<system>>(created_tags),
+              get<control_system::Tags::ControlError<system>>(created_tags),
+              get<control_system::Tags::WriteDataToDisk>(created_tags), true,
+              // Just need an empty queue. It will get filled in as the control
+              // system is updated
+              LinkedMessageQueue<
+                  double,
+                  tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
+                             QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+    });
   }
 
   // Members that may be moved out of this struct once they are
@@ -574,16 +616,9 @@ struct SystemHelper {
       initial_measurement_timescales_{};
 
   // Members that won't be moved out of this struct
-  tuples::tagged_tuple_from_typelist<expansion_init_simple_tags>
-      init_exp_tuple_;
-  tuples::tagged_tuple_from_typelist<rotation_init_simple_tags> init_rot_tuple_;
-  tuples::tagged_tuple_from_typelist<translation_init_simple_tags>
-      init_trans_tuple_;
-  std::array<double, 3> grid_position_of_a_{};
-  std::array<double, 3> grid_position_of_b_{};
-  const std::string expansion_name_{expansion_system::name()};
-  const std::string translation_name_{translation_system::name()};
-  const std::string rotation_name_{rotation_system::name()};
+  AllTags all_init_tags_{};
+  Strahlkorper<Frame::Grid> horizon_a_{};
+  Strahlkorper<Frame::Grid> horizon_b_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 }  // namespace control_system::TestHelpers

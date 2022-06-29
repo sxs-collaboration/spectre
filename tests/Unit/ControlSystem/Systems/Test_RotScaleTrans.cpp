@@ -5,7 +5,10 @@
 
 #include <array>
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <tuple>
+#include <unordered_map>
 #include <utility>
 
 #include "ControlSystem/Tags.hpp"
@@ -80,6 +83,9 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   using translation_component = typename metavars::translation_component;
   using rotation_component = typename metavars::rotation_component;
   using expansion_component = typename metavars::expansion_component;
+  using translation_system = typename metavars::translation_system;
+  using rotation_system = typename metavars::rotation_system;
+  using expansion_system = typename metavars::expansion_system;
   MAKE_GENERATOR(gen);
 
   // Global things
@@ -93,9 +99,12 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   // Set up the system helper
   control_system::TestHelpers::SystemHelper<metavars> system_helper{};
 
-  const std::string& translation_name = system_helper.translation_name();
-  const std::string& rotation_name = system_helper.rotation_name();
-  const std::string& expansion_name = system_helper.expansion_name();
+  const std::string translation_name =
+      system_helper.template name<translation_system>();
+  const std::string rotation_name =
+      system_helper.template name<rotation_system>();
+  const std::string expansion_name =
+      system_helper.template name<expansion_system>();
 
   std::string input_options =
       "Evolution:\n"
@@ -106,9 +115,27 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   input_options += create_input_string(rotation_name);
   input_options += create_input_string(expansion_name);
 
+  const auto initialize_functions_of_time =
+      [](const gsl::not_null<std::unordered_map<
+             std::string,
+             std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>*>
+             functions_of_time,
+         const double local_initial_time,
+         const std::unordered_map<std::string, double>&
+             initial_expiration_times) {
+        TestHelpers::initialize_expansion_functions_of_time<expansion_system>(
+            functions_of_time, local_initial_time, initial_expiration_times);
+        TestHelpers::initialize_rotation_functions_of_time<rotation_system>(
+            functions_of_time, local_initial_time, initial_expiration_times);
+        return TestHelpers::initialize_translation_functions_of_time<
+            translation_system>(functions_of_time, local_initial_time,
+                                initial_expiration_times);
+      };
+
   // Initialize everything within the system helper
   system_helper.setup_control_system_test(initial_time, initial_separation,
-                                          input_options);
+                                          input_options,
+                                          initialize_functions_of_time);
 
   // Get references to everything that was set up inside the system helper. The
   // domain and two functions of time are not const references because they need
@@ -117,9 +144,12 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   auto& initial_functions_of_time = system_helper.initial_functions_of_time();
   auto& initial_measurement_timescales =
       system_helper.initial_measurement_timescales();
-  const auto& init_trans_tuple = system_helper.init_trans_tuple();
-  const auto& init_rot_tuple = system_helper.init_rot_tuple();
-  const auto& init_exp_tuple = system_helper.init_exp_tuple();
+  const auto& init_trans_tuple =
+      system_helper.template init_tuple<translation_system>();
+  const auto& init_rot_tuple =
+      system_helper.template init_tuple<rotation_system>();
+  const auto& init_exp_tuple =
+      system_helper.template init_tuple<expansion_system>();
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -165,15 +195,22 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
     return binary_trajectories.positions(time);
   };
 
+  const auto horizon_function = [&position_function, &runner,
+                                 &coord_map](const double time) {
+    return TestHelpers::build_horizons_for_basic_control_systems<
+        element_component>(time, runner, position_function, coord_map);
+  };
+
   // Run the actual control system test.
   system_helper.run_control_system_test(runner, final_time, make_not_null(&gen),
-                                        position_function, coord_map);
+                                        horizon_function, 2);
 
   // Grab results
-  const std::array<double, 3> grid_position_of_a =
-      system_helper.grid_position_of_a();
-  const std::array<double, 3> grid_position_of_b =
-      system_helper.grid_position_of_b();
+  std::array<double, 3> grid_position_of_a;
+  std::array<double, 3> grid_position_of_b;
+  std::tie(grid_position_of_a, grid_position_of_b) =
+      TestHelpers::grid_frame_horizon_centers_for_basic_control_systems<
+          element_component>(final_time, runner, position_function, coord_map);
 
   // Our expected positions are just the initial positions
   const std::array<double, 3> expected_grid_position_of_a{
