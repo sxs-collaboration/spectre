@@ -10,6 +10,8 @@ spectre_target_headers(
   Divide.hpp
   Evaluate.hpp
   IndexPropertyCheck.hpp
+  KroneckerDelta.hpp
+  KroneckerDeltaAsExpression.hpp
   LhsTensorSymmAndIndices.hpp
   Negate.hpp
   NumberAsExpression.hpp
