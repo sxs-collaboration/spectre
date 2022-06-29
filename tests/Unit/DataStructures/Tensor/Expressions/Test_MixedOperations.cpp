@@ -23,9 +23,10 @@ namespace {
 // Computes \f$L_{a} = R_{ab} S^{b} + G_{a} - H_{ba}{}^{b} T\f$
 template <typename R_t, typename S_t, typename G_t, typename H_t, typename T_t,
           typename DataType>
-G_t compute_expected_result1(const R_t& R, const S_t& S, const G_t& G,
-                             const H_t& H, const T_t& T,
-                             const DataType& used_for_size) {
+G_t compute_expected_mixed_arithmetic_ops(const R_t& R, const S_t& S,
+                                          const G_t& G, const H_t& H,
+                                          const T_t& T,
+                                          const DataType& used_for_size) {
   using result_tensor_type = G_t;
   result_tensor_type expected_result{};
   const size_t dim = tmpl::front<typename R_t::index_list>::dim;
@@ -50,7 +51,7 @@ G_t compute_expected_result1(const R_t& R, const S_t& S, const G_t& G,
 // The lapse is calulated using the following equation:
 // \f$\alpha = \sqrt{\gamma^{ij} g_{jt} g_{it} - g_{tt}}\f$
 template <typename DataType>
-Scalar<DataType> compute_expected_result2(
+Scalar<DataType> compute_expected_rhs_spacetime_index_subsets(
     const tnsr::II<DataType, 3, Frame::Inertial>& spatial_metric,
     const tnsr::aa<DataType, 3, Frame::Inertial>& spacetime_metric,
     const DataType& used_for_size) {
@@ -76,7 +77,8 @@ Scalar<DataType> compute_expected_result2(
 // (1) \f$\partial_t g_{ab} = -\alpha \Pi_{ab} + \beta^i \Phi_{iab}\f$
 // (2) \f$\partial_i g_{ab} = \Phi_{iab}\f$
 template <typename DataType>
-tnsr::abb<DataType, 3, Frame::Inertial> compute_expected_result3(
+tnsr::abb<DataType, 3, Frame::Inertial>
+compute_expected_lhs_spacetime_index_subsets(
     const Scalar<DataType>& alpha,
     const tnsr::I<DataType, 3, Frame::Inertial>& beta,
     const tnsr::aa<DataType, 3, Frame::Inertial>& pi,
@@ -100,7 +102,7 @@ tnsr::abb<DataType, 3, Frame::Inertial> compute_expected_result3(
   return expected_result;
 }
 
-// Aliases used for test_case4()
+// Aliases used for test_large_equation()
 template <typename DataType, size_t Dim>
 using result_tensor_type = tnsr::aa<DataType, Dim>;
 template <typename DataType, size_t Dim>
@@ -152,7 +154,7 @@ using d_pi_type = tnsr::iaa<DataType, Dim>;
 // \f$\partial_t \Pi_{ab} \f$ (eq 36 of \cite Lindblom2005qh). This is taken
 // from the implementation of `GeneralizedHarmonic::TimeDerivative`.
 template <typename DataType, size_t Dim>
-result_tensor_type<DataType, Dim> compute_expected_result4(
+result_tensor_type<DataType, Dim> compute_expected_large_equation(
     const spacetime_deriv_gauge_function_type<DataType, Dim>&
         spacetime_deriv_gauge_function,
     const pi_two_normals_type<DataType>& pi_two_normals,
@@ -237,9 +239,9 @@ result_tensor_type<DataType, Dim> compute_expected_result4(
 
 // Includes an expression with addition, subtraction, an inner product, an outer
 // product, a contraction, and a scalar
-template <typename DataType, typename Generator>
-void test_case1(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) {
+template <typename Generator, typename DataType>
+void test_mixed_arithmetic_ops(const gsl::not_null<Generator*> generator,
+                               const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
 
   const auto R = make_with_random_values<tnsr::ab<DataType, 3, Frame::Grid>>(
@@ -259,7 +261,7 @@ void test_case1(const DataType& used_for_size,
 
   using result_tensor_type = tnsr::a<DataType, 3, Frame::Grid>;
   result_tensor_type expected_result_tensor =
-      compute_expected_result1(R, S, G, H, T, used_for_size);
+      compute_expected_mixed_arithmetic_ops(R, S, G, H, T, used_for_size);
   // \f$L_{a} = R_{ab} S^{b} + G_{a} - H_{ba}{}^{b} T\f$
   // [use_evaluate_to_return_result]
   result_tensor_type actual_result_tensor_returned = tenex::evaluate<ti::a>(
@@ -305,9 +307,9 @@ void test_case1(const DataType& used_for_size,
 // Note: This is an expanded calculation of the lapse from the shift and
 // spacetime metric, where the shift is calculated from the inverse spatial
 // metric and spacetime metric.
-template <typename DataType, typename Generator>
-void test_case2(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) {
+template <typename Generator, typename DataType>
+void test_rhs_spacetime_index_subsets(const gsl::not_null<Generator*> generator,
+                                      const DataType& used_for_size) {
   // Use a higher distribution for sptial metric than spacetime metric to ensure
   // we do not take the square root of a negative number
   std::uniform_real_distribution<> spatial_metric_distribution(3.0, 4.0);
@@ -324,7 +326,8 @@ void test_case2(const DataType& used_for_size,
           used_for_size);
 
   const Scalar<DataType> expected_result_tensor =
-      compute_expected_result2(spatial_metric, spacetime_metric, used_for_size);
+      compute_expected_rhs_spacetime_index_subsets(
+          spatial_metric, spacetime_metric, used_for_size);
   // \f$\alpha = \sqrt{\gamma^{ij} g_{jt} g_{it} - g_{tt}}\f$
   const Scalar<DataType> actual_result_tensor_returned = tenex::evaluate(
       sqrt(spatial_metric(ti::I, ti::J) * spacetime_metric(ti::j, ti::t) *
@@ -366,9 +369,9 @@ void test_case2(const DataType& used_for_size,
 //
 // Note: This is the calculation of the spacetime derivative of the spacetime
 // metric, \f$\partial_c g_{ab}\f$
-template <typename DataType, typename Generator>
-void test_case3(const DataType& used_for_size,
-                const gsl::not_null<Generator*> generator) {
+template <typename Generator, typename DataType>
+void test_lhs_spacetime_index_subsets(const gsl::not_null<Generator*> generator,
+                                      const DataType& used_for_size) {
   std::uniform_real_distribution<> distribution(0.1, 1.0);
 
   const auto alpha = make_with_random_values<Scalar<DataType>>(
@@ -388,7 +391,8 @@ void test_case3(const DataType& used_for_size,
 
   using result_tensor_type = tnsr::abb<DataType, 3, Frame::Inertial>;
   result_tensor_type expected_result_tensor =
-      compute_expected_result3(alpha, beta, pi, phi, used_for_size);
+      compute_expected_lhs_spacetime_index_subsets(alpha, beta, pi, phi,
+                                                   used_for_size);
   result_tensor_type actual_result_tensor_filled{};
   // \f$\partial_t g_{ab} = -\alpha \Pi_{ab} + \beta^i \Phi_{iab}\f$
   tenex::evaluate<ti::t, ti::a, ti::b>(
@@ -439,8 +443,8 @@ void test_case3(const DataType& used_for_size,
 // This test case is distinct in that it is a large equation and tests calls to
 // `tenex::update`.
 template <typename Generator, typename DataType>
-void test_case4(const gsl::not_null<Generator*> generator,
-                const DataType& used_for_size) {
+void test_large_equation(const gsl::not_null<Generator*> generator,
+                         const DataType& used_for_size) {
   constexpr size_t Dim = 3;
 
   using result_tensor_type = result_tensor_type<DataType, Dim>;
@@ -619,13 +623,14 @@ void test_case4(const gsl::not_null<Generator*> generator,
       generator, distribution, used_for_size);
 
   // LHS: dt_pi
-  const result_tensor_type expected_result_tensor = compute_expected_result4(
-      spacetime_deriv_gauge_function, pi_two_normals, pi, gamma0,
-      normal_spacetime_one_form, gauge_constraint, spacetime_metric,
-      normal_dot_gauge_constraint, christoffel_second_kind, gauge_function,
-      pi_2_up, phi_1_up, phi_3_up, christoffel_first_kind_3_up, pi_one_normal,
-      inverse_spatial_metric, d_phi, lapse, gamma1gamma2,
-      shift_dot_three_index_constraint, shift, d_pi);
+  const result_tensor_type expected_result_tensor =
+      compute_expected_large_equation(
+          spacetime_deriv_gauge_function, pi_two_normals, pi, gamma0,
+          normal_spacetime_one_form, gauge_constraint, spacetime_metric,
+          normal_dot_gauge_constraint, christoffel_second_kind, gauge_function,
+          pi_2_up, phi_1_up, phi_3_up, christoffel_first_kind_3_up,
+          pi_one_normal, inverse_spatial_metric, d_phi, lapse, gamma1gamma2,
+          shift_dot_three_index_constraint, shift, d_pi);
 
   // LHS: dt_pi
   // [use_update]
@@ -849,13 +854,101 @@ void test_case4(const gsl::not_null<Generator*> generator,
   }
 }
 
-template <typename DataType, typename Generator>
-void test_mixed_operations(const DataType& used_for_size,
-                           const gsl::not_null<Generator*> generator) {
-  test_case1(used_for_size, generator);
-  test_case2(used_for_size, generator);
-  test_case3(used_for_size, generator);
-  test_case4(generator, used_for_size);
+// Tests the assignment of a RHS `double` to a LHS tensor. Includes testing
+// multiple calls to `evaluate` that fill the time and spatial components of the
+// result tensor, respectively.
+template <typename DataType>
+void test_assign_double(const DataType& used_for_size) {
+  // [assign_double_to_index_subsets]
+  tnsr::iab<DataType, 3, Frame::Inertial> L_tensor(used_for_size);
+  const gsl::not_null<tnsr::iab<DataType, 3, Frame::Inertial>*> L =
+      make_not_null(&L_tensor);
+
+  // \f$L_{itt} = 8.2\f$
+  tenex::evaluate<ti::i, ti::t, ti::t>(L, 8.2);
+  // \f$L_{itj} = 2.2\f$
+  tenex::evaluate<ti::i, ti::t, ti::j>(L, 2.2);
+  // \f$L_{ijt} = -1.9\f$
+  tenex::evaluate<ti::i, ti::j, ti::t>(L, -1.9);
+  // \f$L_{ijk} = -0.5\f$
+  tenex::evaluate<ti::i, ti::j, ti::k>(L, -0.5);
+  // [assign_double_to_index_subsets]
+
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t a = 0; a < 4; a++) {
+      for (size_t b = 0; b < 4; b++) {
+        DataType expected_result =
+            make_with_value<DataType>(used_for_size, 0.0);
+
+        if (a == 0 and b == 0) {
+          expected_result = 8.2;
+        } else if (a == 0) {
+          expected_result = 2.2;
+        } else if (b == 0) {
+          expected_result = -1.9;
+        } else {
+          expected_result = -0.5;
+        }
+
+        CHECK(L->get(i, a, b) == expected_result);
+      }
+    }
+  }
+
+  // Test with TempTensor for LHS tensor
+  if constexpr (not std::is_same_v<DataType, double>) {
+    Variables<tmpl::list<
+        ::Tags::TempTensor<1, tnsr::iab<DataType, 3, Frame::Inertial>>>>
+        L_temp_var{used_for_size.size()};
+    tnsr::iab<DataType, 3, Frame::Inertial>& L_temp_tensor =
+        get<::Tags::TempTensor<1, tnsr::iab<DataType, 3, Frame::Inertial>>>(
+            L_temp_var);
+    const gsl::not_null<tnsr::iab<DataType, 3, Frame::Inertial>*> L_temp =
+        make_not_null(&L_temp_tensor);
+
+    // \f$L_{itt} = 8.2\f$
+    tenex::evaluate<ti::i, ti::t, ti::t>(L_temp, 8.2);
+    // \f$L_{itj} = 2.2\f$
+    tenex::evaluate<ti::i, ti::t, ti::j>(L_temp, 2.2);
+    // \f$L_{ijt} = -1.9\f$
+    tenex::evaluate<ti::i, ti::j, ti::t>(L_temp, -1.9);
+    // \f$L_{ijk} = -0.5\f$
+    tenex::evaluate<ti::i, ti::j, ti::k>(L_temp, -0.5);
+
+    for (size_t i = 0; i < 3; i++) {
+      for (size_t a = 0; a < 4; a++) {
+        for (size_t b = 0; b < 4; b++) {
+          DataType expected_result =
+              make_with_value<DataType>(used_for_size, 0.0);
+
+          if (a == 0 and b == 0) {
+            expected_result = 8.2;
+          } else if (a == 0) {
+            expected_result = 2.2;
+          } else if (b == 0) {
+            expected_result = -1.9;
+          } else {
+            expected_result = -0.5;
+          }
+
+          CHECK(L_temp->get(i, a, b) == expected_result);
+        }
+      }
+    }
+  }
+}
+
+// Test cases include equations with a mixture of arithmetic operations or more
+// that one assignment of the LHS tensor (more than one call to
+// `tenex::evaluate` or `tenex::update`)
+template <typename Generator, typename DataType>
+void test_mixed_operations(const gsl::not_null<Generator*> generator,
+                           const DataType& used_for_size) {
+  test_mixed_arithmetic_ops(generator, used_for_size);
+  test_rhs_spacetime_index_subsets(generator, used_for_size);
+  test_lhs_spacetime_index_subsets(generator, used_for_size);
+  test_large_equation(generator, used_for_size);
+  test_assign_double(used_for_size);
 }
 }  // namespace
 
@@ -863,9 +956,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.MixedOperations",
                   "[DataStructures][Unit]") {
   MAKE_GENERATOR(generator);
 
-  test_mixed_operations(std::numeric_limits<double>::signaling_NaN(),
-                        make_not_null(&generator));
+  test_mixed_operations(make_not_null(&generator),
+                        std::numeric_limits<double>::signaling_NaN());
   test_mixed_operations(
-      DataVector(5, std::numeric_limits<double>::signaling_NaN()),
-      make_not_null(&generator));
+      make_not_null(&generator),
+      DataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }
