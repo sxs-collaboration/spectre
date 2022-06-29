@@ -61,25 +61,6 @@ Scalar<DataType> IdealFluid<false>::pressure_from_density_and_enthalpy_impl(
                           (adiabatic_index_ - 1.0) / adiabatic_index_};
 }
 
-template <>
-template <class DataType>
-Scalar<DataType>
-IdealFluid<true>::specific_enthalpy_from_density_and_energy_impl(
-    const Scalar<DataType>& /*rest_mass_density*/,
-    const Scalar<DataType>& specific_internal_energy) const {
-  return Scalar<DataType>{1.0 +
-                          adiabatic_index_ * get(specific_internal_energy)};
-}
-
-template <>
-template <class DataType>
-Scalar<DataType>
-IdealFluid<false>::specific_enthalpy_from_density_and_energy_impl(
-    const Scalar<DataType>& /*rest_mass_density*/,
-    const Scalar<DataType>& specific_internal_energy) const {
-  return Scalar<DataType>{adiabatic_index_ * get(specific_internal_energy)};
-}
-
 template <bool IsRelativistic>
 template <class DataType>
 Scalar<DataType> IdealFluid<IsRelativistic>::

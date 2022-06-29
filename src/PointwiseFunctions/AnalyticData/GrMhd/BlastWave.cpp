@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Options/ParseOptions.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
@@ -165,11 +166,13 @@ tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BlastWave::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const {
-  return equation_of_state_.specific_enthalpy_from_density_and_energy(
-      get<hydro::Tags::RestMassDensity<DataType>>(
-          variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{})),
-      get<hydro::Tags::SpecificInternalEnergy<DataType>>(variables(
-          x, tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>>{})));
+  using density_tag = hydro::Tags::RestMassDensity<DataType>;
+  using energy_tag = hydro::Tags::SpecificInternalEnergy<DataType>;
+  using pressure_tag = hydro::Tags::Pressure<DataType>;
+  const auto data =
+      variables(x, tmpl::list<density_tag, energy_tag, pressure_tag>{});
+  return hydro::relativistic_specific_enthalpy(
+      get<density_tag>(data), get<energy_tag>(data), get<pressure_tag>(data));
 }
 
 PUP::able::PUP_ID BlastWave::my_PUP_ID = 0;

@@ -1,8 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-import spectre.PointwiseFunctions.AnalyticSolutions.GeneralRelativity \
-    as spectre_gr_solutions
+import spectre.PointwiseFunctions.AnalyticSolutions.RelativisticEuler \
+    as spectre_re_solutions
 import spectre.PointwiseFunctions.Hydro.EquationsOfState as spectre_eos
 
 import unittest
@@ -14,7 +14,7 @@ class TestTov(unittest.TestCase):
     def test_creation(self):
         eos = spectre_eos.RelativisticPolytropicFluid(polytropic_constant=8,
                                                       polytropic_exponent=2)
-        tov = spectre_gr_solutions.Tov(equation_of_state=eos,
+        tov = spectre_re_solutions.Tov(equation_of_state=eos,
                                        central_mass_density=1e-3)
         # Just making sure we can call the member functions
         outer_radius = tov.outer_radius()

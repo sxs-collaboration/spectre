@@ -11,6 +11,7 @@ spectre_target_sources(
   FishboneMoncriefDisk.cpp
   RotatingStar.cpp
   SmoothFlow.cpp
+  Tov.cpp
   TovStar.cpp
   )
 
@@ -22,6 +23,7 @@ spectre_target_headers(
   RotatingStar.hpp
   SmoothFlow.hpp
   Solutions.hpp
+  Tov.hpp
   TovStar.hpp
   )
 
@@ -36,3 +38,5 @@ target_link_libraries(
   HydroSolutions
   Options
   )
+
+add_subdirectory(Python)

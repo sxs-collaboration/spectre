@@ -14,8 +14,8 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Tov.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -133,10 +133,10 @@ struct TovVariables {
   TovVariables& operator=(TovVariables&&) = default;
   virtual ~TovVariables() = default;
 
-  TovVariables(const tnsr::I<DataType, 3>& local_coords,
-               const DataType& local_radius,
-               const gr::Solutions::TovSolution& local_radial_solution,
-               const EquationsOfState::PolytropicFluid<true>& local_eos)
+  TovVariables(
+      const tnsr::I<DataType, 3>& local_coords, const DataType& local_radius,
+      const RelativisticEuler::Solutions::TovSolution& local_radial_solution,
+      const EquationsOfState::PolytropicFluid<true>& local_eos)
       : coords(local_coords),
         radius(local_radius),
         radial_solution(local_radial_solution),
@@ -144,7 +144,7 @@ struct TovVariables {
 
   const tnsr::I<DataType, 3>& coords;
   const DataType& radius;
-  const gr::Solutions::TovSolution& radial_solution;
+  const RelativisticEuler::Solutions::TovSolution& radial_solution;
   const EquationsOfState::PolytropicFluid<true>& eos;
 
   void operator()(gsl::not_null<Scalar<DataType>*> mass_over_radius,
@@ -287,9 +287,10 @@ struct TovVariables {
  * \f}
  *
  * We solve the TOV equations with the method implemented in
- * `gr::Solutions::TovSolution`. It provides the areal mass-over-radius
- * \f$m(r)/r\f$ and the log of the specific enthalpy \f$\log{h}\f$. In areal
- * (Schwarzschild) coordinates the spatial metric potentials are
+ * `RelativisticEuler::Solutions::TovSolution`. It provides the areal
+ * mass-over-radius \f$m(r)/r\f$ and the log of the specific enthalpy
+ * \f$\log{h}\f$. In areal (Schwarzschild) coordinates the spatial metric
+ * potentials are
  *
  * \f{align}
  * e^{\Phi_r} &= \left(1 - \frac{2m}{r}\right)^{-1} \\
@@ -305,7 +306,7 @@ struct TovVariables {
  *
  * where $\psi = \sqrt{r / \bar{r}}$ is the conformal factor, $r$ is the areal
  * (Schwarzschild) radius and $\bar{r}$ is the isotropic radius. See
- * `gr::Solutions::TovSolution` for details.
+ * `RelativisticEuler::Solutions::TovSolution` for details.
  */
 class TovStar : public virtual evolution::initial_data::InitialData,
                 public MarkAsAnalyticSolution,
@@ -339,7 +340,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
 
   /// Areal (Schwarzschild) or isotropic coordinates
   struct Coordinates {
-    using type = gr::Solutions::TovCoordinates;
+    using type = RelativisticEuler::Solutions::TovCoordinates;
     static constexpr Options::String help = {
         "Areal ('Schwarzschild') or 'Isotropic' coordinates."};
   };
@@ -363,8 +364,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
 
   TovStar(double central_rest_mass_density, double polytropic_constant,
           double polytropic_exponent,
-          const gr::Solutions::TovCoordinates coordinate_system =
-              gr::Solutions::TovCoordinates::Schwarzschild);
+          const RelativisticEuler::Solutions::TovCoordinates coordinate_system =
+              RelativisticEuler::Solutions::TovCoordinates::Schwarzschild);
 
   /// \cond
   explicit TovStar(CkMigrateMessage* msg);
@@ -388,7 +389,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   }
 
   /// The radial profile of the star
-  const gr::Solutions::TovSolution& radial_solution() const {
+  const RelativisticEuler::Solutions::TovSolution& radial_solution() const {
     return radial_solution_;
   }
 
@@ -516,8 +517,8 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
-  gr::Solutions::TovCoordinates coordinate_system_{};
-  gr::Solutions::TovSolution radial_solution_{};
+  RelativisticEuler::Solutions::TovCoordinates coordinate_system_{};
+  RelativisticEuler::Solutions::TovSolution radial_solution_{};
 };
 
 bool operator!=(const TovStar& lhs, const TovStar& rhs);

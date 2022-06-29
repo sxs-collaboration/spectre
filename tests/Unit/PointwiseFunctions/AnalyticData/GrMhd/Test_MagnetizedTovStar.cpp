@@ -31,7 +31,7 @@ static_assert(
     is_analytic_data_v<MagnetizedTovStar>,
     "MagnetizedTovStar should be analytic_data, and not an analytic_solution");
 
-using TovCoordinates = gr::Solutions::TovCoordinates;
+using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
 
 void test_equality() {
   const MagnetizedTovStar mag_tov_original{

@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -57,7 +58,9 @@ void test_sound_speed_squared(const DataType& used_for_size) {
   const EquationsOfState::PolytropicFluid<true> eos_1d(0.003, 4.0 / 3.0);
   specific_internal_energy =
       eos_1d.specific_internal_energy_from_density(rest_mass_density);
-  specific_enthalpy = eos_1d.specific_enthalpy_from_density(rest_mass_density);
+  specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      rest_mass_density, specific_internal_energy,
+      eos_1d.pressure_from_density(rest_mass_density));
   CHECK(
       Scalar<DataType>{(get(eos_1d.chi_from_density(rest_mass_density)) +
                         get(eos_1d.kappa_times_p_over_rho_squared_from_density(
@@ -73,8 +76,10 @@ void test_sound_speed_squared(const DataType& used_for_size) {
   specific_internal_energy =
       TestHelpers::hydro::random_specific_internal_energy(
           make_not_null(&generator), used_for_size);
-  specific_enthalpy = eos_2d.specific_enthalpy_from_density_and_energy(
-      rest_mass_density, specific_internal_energy);
+  specific_enthalpy = hydro::relativistic_specific_enthalpy(
+      rest_mass_density, specific_internal_energy,
+      eos_2d.pressure_from_density_and_energy(rest_mass_density,
+                                              specific_internal_energy));
   CHECK(Scalar<DataType>{
             (get(eos_2d.chi_from_density_and_energy(rest_mass_density,
                                                     specific_internal_energy)) +

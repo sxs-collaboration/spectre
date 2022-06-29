@@ -17,7 +17,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-namespace gr::Solutions {
+namespace RelativisticEuler::Solutions {
 
 /// Radial coordinate of a TOV solution.
 enum class TovCoordinates {
@@ -31,22 +31,23 @@ enum class TovCoordinates {
 
 std::ostream& operator<<(std::ostream& os, TovCoordinates coords);
 
-}  // namespace gr::Solutions
+}  // namespace RelativisticEuler::Solutions
 
 template <>
-struct Options::create_from_yaml<gr::Solutions::TovCoordinates> {
+struct Options::create_from_yaml<RelativisticEuler::Solutions::TovCoordinates> {
   template <typename Metavariables>
-  static gr::Solutions::TovCoordinates create(const Options::Option& options) {
+  static RelativisticEuler::Solutions::TovCoordinates create(
+      const Options::Option& options) {
     return create<void>(options);
   }
 };
 
 template <>
-gr::Solutions::TovCoordinates
-Options::create_from_yaml<gr::Solutions::TovCoordinates>::create<void>(
-    const Options::Option& options);
+RelativisticEuler::Solutions::TovCoordinates
+Options::create_from_yaml<RelativisticEuler::Solutions::TovCoordinates>::create<
+    void>(const Options::Option& options);
 
-namespace gr::Solutions {
+namespace RelativisticEuler::Solutions {
 
 /*!
  * \brief TOV solver based on Lindblom's method
@@ -96,9 +97,9 @@ namespace gr::Solutions {
  *
  * \par Isotropic radial coordinate
  * This class also supports transforming to an isotropic radial coordinate. When
- * you pass `gr::Solutions::TovCoordinates::Isotropic` to the constructor, an
- * additional ODE is integrated alongside the TOV equations to determine the
- * conformal factor
+ * you pass `RelativisticEuler::Solutions::TovCoordinates::Isotropic` to the
+ * constructor, an additional ODE is integrated alongside the TOV equations to
+ * determine the conformal factor
  *
  * \f{equation}
  * \psi^2 = \frac{r}{\bar{r}}
@@ -143,7 +144,7 @@ class TovSolution {
 
   /// The type of radial coordinate.
   ///
-  /// \see gr::Solutions::TovCoordinates
+  /// \see RelativisticEuler::Solutions::TovCoordinates
   TovCoordinates coordinate_system() const { return coordinate_system_; }
 
   /// \brief The outer radius of the solution.
@@ -225,8 +226,8 @@ class TovSolution {
   /// \brief The conformal factor \f$\psi=\sqrt{r / \bar{r}}\f$.
   ///
   /// The conformal factor is computed only when the `coordinate_system()` is
-  /// `gr::Solution::TovCoordinates::Isotropic`. Otherwise, it is an error to
-  /// call this function.
+  /// `RelativisticEuler::Solution::TovCoordinates::Isotropic`. Otherwise, it is
+  /// an error to call this function.
   ///
   /// \note `r` should be non-negative and not greater than `outer_radius()`
   template <typename DataType>
@@ -252,4 +253,4 @@ class TovSolution {
   intrp::BarycentricRational conformal_factor_interpolant_;
 };
 
-}  // namespace gr::Solutions
+}  // namespace RelativisticEuler::Solutions

@@ -11,7 +11,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
@@ -49,7 +48,7 @@ struct MagnetizedTovVariables
 
   MagnetizedTovVariables(
       const tnsr::I<DataType, 3>& local_x, const DataType& local_radius,
-      const gr::Solutions::TovSolution& local_radial_solution,
+      const RelativisticEuler::Solutions::TovSolution& local_radial_solution,
       const EquationsOfState::PolytropicFluid<true>& local_eos,
       size_t local_pressure_exponent, double local_cutoff_pressure,
       double local_vector_potential_amplitude)
@@ -236,11 +235,12 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   MagnetizedTovStar& operator=(MagnetizedTovStar&& /*rhs*/) = default;
   ~MagnetizedTovStar() = default;
 
-  MagnetizedTovStar(double central_rest_mass_density,
-                    double polytropic_constant, double polytropic_exponent,
-                    gr::Solutions::TovCoordinates coordinate_system,
-                    size_t pressure_exponent, double cutoff_pressure_fraction,
-                    double vector_potential_amplitude);
+  MagnetizedTovStar(
+      double central_rest_mass_density, double polytropic_constant,
+      double polytropic_exponent,
+      RelativisticEuler::Solutions::TovCoordinates coordinate_system,
+      size_t pressure_exponent, double cutoff_pressure_fraction,
+      double vector_potential_amplitude);
 
   /// \cond
   explicit MagnetizedTovStar(CkMigrateMessage* msg);

@@ -1,10 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PyGeneralRelativitySolutions")
+set(LIBRARY "PyRelativisticEulerSolutions")
 
 spectre_python_add_module(
-  GeneralRelativity
+  RelativisticEuler
   LIBRARY_NAME ${LIBRARY}
   MODULE_PATH "PointwiseFunctions/AnalyticSolutions"
   SOURCES
@@ -15,7 +15,7 @@ spectre_python_add_module(
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
-  GeneralRelativitySolutions
+  RelativisticEulerSolutions
   Hydro
   pybind11::module
   )

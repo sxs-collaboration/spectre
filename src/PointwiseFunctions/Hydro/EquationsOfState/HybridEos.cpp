@@ -75,20 +75,6 @@ HybridEos<ColdEquationOfState>::pressure_from_density_and_enthalpy_impl(
 
 template <typename ColdEquationOfState>
 template <class DataType>
-Scalar<DataType>
-HybridEos<ColdEquationOfState>::specific_enthalpy_from_density_and_energy_impl(
-    const Scalar<DataType>& rest_mass_density,
-    const Scalar<DataType>& specific_internal_energy) const {
-  return Scalar<DataType>{
-      get(cold_eos_.specific_enthalpy_from_density(rest_mass_density)) +
-      thermal_adiabatic_index_ *
-          (get(specific_internal_energy) -
-           get(cold_eos_.specific_internal_energy_from_density(
-               rest_mass_density)))};
-}
-
-template <typename ColdEquationOfState>
-template <class DataType>
 Scalar<DataType> HybridEos<ColdEquationOfState>::
     specific_internal_energy_from_density_and_pressure_impl(
         const Scalar<DataType>& rest_mass_density,

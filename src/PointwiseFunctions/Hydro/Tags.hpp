@@ -170,6 +170,12 @@ struct SpecificInternalEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The temperature \f$T\f$ of the fluid.
+template <typename DataType>
+struct Temperature : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 /// The spatial components of the four-velocity one-form \f$u_i\f$.
 template <typename DataType, size_t Dim, typename Fr>
 struct LowerSpatialFourVelocity : db::SimpleTag {

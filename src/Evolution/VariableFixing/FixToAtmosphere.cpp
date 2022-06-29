@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 // IWYU pragma: no_include <array>
@@ -105,18 +106,18 @@ void FixToAtmosphere<Dim>::set_density_to_atmosphere(
     specific_internal_energy->get()[grid_index] =
         get(equation_of_state.specific_internal_energy_from_density(
             atmosphere_density));
-    specific_enthalpy->get()[grid_index] = get(
-        equation_of_state.specific_enthalpy_from_density(atmosphere_density));
   } else if constexpr (ThermodynamicDim == 2) {
     Scalar<double> atmosphere_energy{0.0};
     pressure->get()[grid_index] =
         get(equation_of_state.pressure_from_density_and_energy(
             atmosphere_density, atmosphere_energy));
     specific_internal_energy->get()[grid_index] = get(atmosphere_energy);
-    specific_enthalpy->get()[grid_index] =
-        get(equation_of_state.specific_enthalpy_from_density_and_energy(
-            atmosphere_density, atmosphere_energy));
   }
+  specific_enthalpy->get()[grid_index] =
+      get(hydro::relativistic_specific_enthalpy(
+          Scalar<double>{atmosphere_density},
+          Scalar<double>{specific_internal_energy->get()[grid_index]},
+          Scalar<double>{pressure->get()[grid_index]}));
 }
 
 template <size_t Dim>

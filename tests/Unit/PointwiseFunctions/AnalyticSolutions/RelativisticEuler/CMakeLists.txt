@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_FishboneMoncriefDisk.cpp
   Test_RotatingStar.cpp
   Test_SmoothFlow.cpp
+  Test_Tov.cpp
   Test_TovStar.cpp
   )
 
@@ -40,3 +41,5 @@ target_link_libraries(
   Utilities
   ValenciaDivClean
 )
+
+add_subdirectory(Python)

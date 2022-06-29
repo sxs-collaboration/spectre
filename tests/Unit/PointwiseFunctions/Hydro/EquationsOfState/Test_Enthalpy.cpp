@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/Enthalpy.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 
 namespace EquationsOfState {
 namespace {
@@ -58,10 +59,6 @@ void check_exact() {
         DataVector{0.09425055282366418, 0.19998963900481931,
                    0.36012641619526214, 0.55066416955025821}};
     CHECK_ITERABLE_APPROX(eps_c, eps_expected);
-    const auto h_c = eos.specific_enthalpy_from_density(rho);
-    const auto h_expected =
-        get(eps_expected) + 1.0 + get(p_expected) / get(rho);
-    CHECK_ITERABLE_APPROX(get(h_c), h_expected);
     const auto chi_c = eos.chi_from_density(rho);
     const Scalar<DataVector> chi_expected{
         DataVector{0.18207356789438428, 0.1923165022214991, 0.19908149093638267,
@@ -73,7 +70,8 @@ void check_exact() {
         eos.kappa_times_p_over_rho_squared_from_density(rho);
     CHECK_ITERABLE_APPROX(p_c_kappa_c_over_rho_sq_expected,
                           p_c_kappa_c_over_rho_sq);
-    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(h_c);
+    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(
+        hydro::relativistic_specific_enthalpy(rho, eps_c, p));
     CHECK_ITERABLE_APPROX(rho, rho_from_enthalpy);
   }
   // Test low density stitched EoS
@@ -87,10 +85,6 @@ void check_exact() {
     const Scalar<DataVector> eps_expected{
         DataVector{0.03967833020738167, 0.05919690661251007}};
     CHECK_ITERABLE_APPROX(eps_c, eps_expected);
-    const auto h_c = eos.specific_enthalpy_from_density(rho);
-    const auto h_expected =
-        get(eps_expected) + 1.0 + get(p_expected) / get(rho);
-    CHECK_ITERABLE_APPROX(get(h_c), h_expected);
     const auto chi_c = eos.chi_from_density(rho);
     const Scalar<DataVector> chi_expected{
         DataVector{0.02221986491613373, 0.03389855168318545}};
@@ -101,7 +95,8 @@ void check_exact() {
         eos.kappa_times_p_over_rho_squared_from_density(rho);
     CHECK_ITERABLE_APPROX(p_c_kappa_c_over_rho_sq_expected,
                           p_c_kappa_c_over_rho_sq);
-    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(h_c);
+    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(
+        hydro::relativistic_specific_enthalpy(rho, eps_c, p));
     CHECK_ITERABLE_APPROX(rho, rho_from_enthalpy);
   }
   // Test double functions
@@ -113,9 +108,6 @@ void check_exact() {
     const auto eps = eos.specific_internal_energy_from_density(rho);
     const double eps_expected = 0.09425055282366418;
     CHECK(get(eps) == approx(eps_expected));
-    const auto h = eos.specific_enthalpy_from_density(rho);
-    const double h_expected = eps_expected + 1.0 + p_expected / get(rho);
-    CHECK(get(h) == approx(h_expected));
     const auto chi = eos.chi_from_density(rho);
     const double chi_expected = 0.18207356789438428;
     CHECK(get(chi) == approx(chi_expected));
@@ -124,7 +116,8 @@ void check_exact() {
     const double p_c_kappa_c_over_rho_sq_expected = 0.0;
     CHECK(get(p_c_kappa_c_over_rho_sq) ==
           approx(p_c_kappa_c_over_rho_sq_expected));
-    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(h);
+    const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(
+        hydro::relativistic_specific_enthalpy(rho, eps, p));
     CHECK(get(rho) == approx(get(rho_from_enthalpy)));
   }
   // Test bounds

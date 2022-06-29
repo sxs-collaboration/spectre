@@ -30,7 +30,7 @@
 namespace RelativisticEuler::Solutions {
 namespace {
 
-using TovCoordinates = gr::Solutions::TovCoordinates;
+using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
 
 void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
   const std::array<double, 3> dx{{1.e-4, 1.e-4, 1.e-4}};
