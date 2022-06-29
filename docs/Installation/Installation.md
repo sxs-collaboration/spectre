@@ -108,6 +108,7 @@ all of these dependencies.
 * [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
   graph partition based load balancer in charm++.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with matplotlib
+* [xsimd](https://github.com/xtensor-stack/xsimd) - for manual vectorization
 
 ## Clone the SpECTRE repository
 
