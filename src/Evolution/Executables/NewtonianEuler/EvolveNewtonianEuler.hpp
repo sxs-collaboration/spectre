@@ -277,8 +277,10 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
-                         typename system::primitive_from_conservative>,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
+                         evolution::dg::ApplyBoundaryCorrections<
+                             EvolutionMetavars, true>,
+                         typename system::primitive_from_conservative>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
           tmpl::list<
@@ -286,7 +288,7 @@ struct EvolutionMetavars {
                   EvolutionMetavars>,
               Actions::RecordTimeStepperData<>,
               evolution::Actions::RunEventsAndDenseTriggers<
-                  typename system::primitive_from_conservative>,
+                  tmpl::list<typename system::primitive_from_conservative>>,
               Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,

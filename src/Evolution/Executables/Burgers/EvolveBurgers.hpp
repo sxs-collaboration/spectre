@@ -233,14 +233,16 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
+                         tmpl::list<evolution::dg::ApplyBoundaryCorrections<
+                             EvolutionMetavars, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   EvolutionMetavars>,
               Actions::RecordTimeStepperData<>,
-              evolution::Actions::RunEventsAndDenseTriggers<>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
@@ -253,9 +255,10 @@ struct EvolutionMetavars {
           EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              Actions::UpdateU<>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           Burgers::subcell::TciOnDgGrid>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
@@ -268,7 +271,8 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           Burgers::subcell::TimeDerivative>,
       Actions::RecordTimeStepperData<>,
-      evolution::Actions::RunEventsAndDenseTriggers<>, Actions::UpdateU<>,
+      evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+      Actions::UpdateU<>,
       evolution::dg::subcell::Actions::TciAndSwitchToDg<
           Burgers::subcell::TciOnFdGrid>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::EndOfSolvers>>>;

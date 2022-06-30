@@ -320,14 +320,16 @@ struct GeneralizedHarmonicTemplateBase<
       evolution::dg::Actions::ComputeTimeDerivative<derived_metavars>,
       tmpl::conditional_t<
           local_time_stepping,
-          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<>,
+          tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<
+                         tmpl::list<evolution::dg::ApplyBoundaryCorrections<
+                             derived_metavars, true>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          derived_metavars>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
                   derived_metavars>,
               Actions::RecordTimeStepperData<>,
-              evolution::Actions::RunEventsAndDenseTriggers<>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
               Actions::UpdateU<>,
               dg::Actions::Filter<
                   Filters::Exponential<0>,
