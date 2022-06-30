@@ -164,7 +164,7 @@ void test_trigger_with_replace() {
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0, {0.0});
   ActionTesting::set_phase(make_not_null(&runner),
-                           Metavariables::Phase::Testing);
+                           Parallel::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<
       component,
