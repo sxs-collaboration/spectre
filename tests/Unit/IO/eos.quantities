@@ -1,0 +1,18 @@
+ # number of regular, additional and derivative quantities (see table 7.1)
+           7           0           1
+ # indices of regular, additional and derivative quantities
+          1 2 3 4 5 7 12 1
+ # number of pairs and quadruples for composition data (see table 3.2/3.3)
+          0           0
+ # indices for pairs and quadruples for composition data
+
+ # number of microscopic quantities (see section 4.2.4)
+           0
+ # indices of microscopic quantities
+
+ # number of error quantities
+           0
+ # indices of error quantities
+
+ # format of output file, ASCII (1) or HDF5 (else)
+           1

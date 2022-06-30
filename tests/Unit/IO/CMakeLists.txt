@@ -28,6 +28,7 @@ set(LIBRARY_SOURCES
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
   Observers/Test_WriteSimpleData.cpp
+  Test_ComposeTable.cpp
   Test_Connectivity.cpp
   )
 

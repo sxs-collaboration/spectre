@@ -273,6 +273,7 @@ long_lines() {
               'docs/MainSite/Main.md' \
               'docs/Tutorials/ParallelExecutable/Tutorials.md' \
               'docs/config/MathJax.js' \
+              'eos.*' \
               'RotatingStarId.dat$' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
@@ -365,7 +366,7 @@ standard_checks+=(tabs)
 
 # Check for end-of-line spaces
 trailing_space() {
-    whitelist "$1" '.h5' '.png' '.patch' &&
+    whitelist "$1" '.h5' '.png' '.patch' 'eos.*' &&
     staged_grep -q -E ' +$' "$1"
 }
 trailing_space_report() {
@@ -426,6 +427,7 @@ license() {
               'docs/config/layout.xml' \
               'docs/config/MathJax.js$' \
               'external/*' \
+              'eos.*' \
               'RotatingStarId.dat$' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' && \
