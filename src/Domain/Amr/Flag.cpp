@@ -6,7 +6,7 @@
 
 #include <ostream>
 
-namespace amr {
+namespace amr::domain {
 
 std::ostream& operator<<(std::ostream& os, const Flag& flag) {
   switch (flag) {
@@ -33,4 +33,4 @@ std::ostream& operator<<(std::ostream& os, const Flag& flag) {
   }
   return os;
 }
-}  // namespace amr
+}  // namespace amr::domain

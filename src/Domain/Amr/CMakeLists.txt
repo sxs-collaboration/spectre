@@ -17,6 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Amr.hpp
   Flag.hpp
   Helpers.hpp
   UpdateAmrDecision.hpp
@@ -30,3 +31,5 @@ target_link_libraries(
   ErrorHandling
   Utilities
   )
+
+add_subdirectory(Tags)
