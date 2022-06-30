@@ -4,9 +4,15 @@
 set(LIBRARY "Test_ParallelAlgorithmsActions")
 
 set(LIBRARY_SOURCES
+  Test_AddComputeTags.cpp
+  Test_AddSimpleTags.cpp
+  Test_Goto.cpp
   Test_MutateApply.cpp
-  Test_SetData.cpp
   Test_RandomizeVariables.cpp
+  Test_RemoveOptionsAndTerminatePhase.cpp
+  Test_SetData.cpp
+  Test_SetupDataBox.cpp
+  Test_TerminatePhase.cpp
   Test_UpdateMessageQueue.cpp
   )
 
