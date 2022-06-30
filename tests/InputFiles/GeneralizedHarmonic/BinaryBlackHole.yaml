@@ -217,7 +217,7 @@ Observers:
   SurfaceFileName: "GhBinaryBlackHoleSurfacesData"
 
 ApparentHorizons:
-  AhA:
+  AhA: &AhA
     InitialGuess:
       Lmax: 10
       Radius: 2.2
@@ -232,13 +232,48 @@ ApparentHorizons:
       DivergenceIter: 5
       MaxIts: 100
     Verbosity: Verbose
-  AhB:
+  AhB: &AhB
     InitialGuess:
       Lmax: 10
       Radius: 2.2
       Center: [*XCoordB, 0.0, 0.0]
     FastFlow: *DefaultFastFlow
     Verbosity: Verbose
+  ControlSystemAhA: *AhA
+  ControlSystemAhB: *AhB
+
+ControlSystems:
+  WriteDataToDisk: true
+  Expansion:
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
+  Rotation:
+    Averager:
+      AverageTimescaleFraction: 0.25
+      Average0thDeriv: false
+    Controller:
+      UpdateFraction: 0.03
+    TimescaleTuner:
+      InitialTimescales: [0.2, 0.2, 0.2]
+      MinTimescale: 1.0e-2
+      MaxTimescale: 10.0
+      IncreaseThreshold: 2.5e-4
+      DecreaseThreshold: 1.0e-3
+      IncreaseFactor: 1.01
+      DecreaseFactor: 0.98
+    ControlError:
 
 # initial_data.h5 should contain numerical initial data
 # on the same grid as specified by the domain given above
@@ -262,8 +297,12 @@ Importers:
       SpatialMetric: SpatialMetric
       ExtrinsicCurvature: ExtrinsicCurvature
 
-# control.h5 should contain data for FunctionsOfTime that can be
-# read by ReadSpecPiecewisePolynomial.
+# control.h5 should contain data for FunctionsOfTime that can be read by
+# ReadSpecPiecewisePolynomial. By default, this will override the spectre
+# control systems. To not replace any FunctionsOfTime, replace
+# "/path/to/control.h5" with None. To use spectre control systems, remove
+# Expansion or Rotation from the NameMap. Currently only Expansion and
+# Rotation control systems are supported in spectre.
 CubicFunctionOfTimeOverride:
   FunctionOfTimeFile: "/path/to/control.h5"
   # Note: SpEC calls the hole on the right hole A, but spectre calls hole A

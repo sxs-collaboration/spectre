@@ -15,6 +15,7 @@
 #include "ControlSystem/RunCallbacks.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/LinkedMessageId.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ErrorOnFailedApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
@@ -78,18 +79,21 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
     using argument_tags =
         tmpl::push_front<::ah::source_vars<3>, domain::Tags::Mesh<3>>;
 
-    template <typename... InterpolatorSourceVars, typename Metavariables,
-              typename ParallelComponent, typename ControlSystems>
-    static void apply(const Mesh<3>& mesh,
-                      const InterpolatorSourceVars&... interpolator_source_vars,
-                      const LinkedMessageId<double>& measurement_id,
-                      Parallel::GlobalCache<Metavariables>& cache,
-                      const ElementId<3>& array_index,
-                      const ParallelComponent* const /*meta*/,
-                      ControlSystems /*meta*/) {
+    template <typename Metavariables, typename ParallelComponent,
+              typename ControlSystems>
+    static void apply(
+        const Mesh<3>& mesh,
+        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
+        const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi,
+        const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
+        const tnsr::ijaa<DataVector, 3, ::Frame::Inertial>& deriv_phi,
+        const LinkedMessageId<double>& measurement_id,
+        Parallel::GlobalCache<Metavariables>& cache,
+        const ElementId<3>& array_index,
+        const ParallelComponent* const /*meta*/, ControlSystems /*meta*/) {
       intrp::interpolate<interpolation_target_tag<ControlSystems>>(
-          measurement_id, mesh, cache, array_index,
-          interpolator_source_vars...);
+          measurement_id, mesh, cache, array_index, spacetime_metric, pi, phi,
+          deriv_phi);
     }
   };
 
