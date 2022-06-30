@@ -345,8 +345,8 @@ struct EvolutionMetavars {
        Parallel::Phase::RegisterWithElementDataReader,
        Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
-       Parallel::Phase::InitializeTimeStepperHistory,
-       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Evolve,
+       Parallel::Phase::RegisterWithObserver,
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
        Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
@@ -409,12 +409,12 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
+          Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+                                 tmpl::list<dg_registration_list,
+                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
-          Parallel::PhaseActions<Parallel::Phase::Register,
-                                 tmpl::list<dg_registration_list,
-                                            Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Evolve,
               tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
