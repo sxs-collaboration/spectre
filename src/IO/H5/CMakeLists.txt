@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   AccessType.cpp
   Dat.cpp
+  EosTable.cpp
   File.cpp
   Header.cpp
   Helpers.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   AccessType.hpp
   CheckH5.hpp
   Dat.hpp
+  EosTable.hpp
   File.hpp
   Header.hpp
   Helpers.hpp
