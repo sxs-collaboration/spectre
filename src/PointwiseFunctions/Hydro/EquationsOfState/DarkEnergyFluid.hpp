@@ -29,12 +29,20 @@ namespace EquationsOfState {
  * \brief Equation of state for a dark energy fluid
  *
  * A dark energy fluid equation of state:
+ *
  * \f[
  * p = w(z) \rho ( 1.0 + \epsilon)
  * \f]
+ *
  * where \f$\rho\f$ is the rest mass density, \f$\epsilon\f$ is the specific
  * internal energy, and \f$w(z) > 0\f$ is a parameter depending on the redshift
  * \f$z\f$.
+ *
+ * The temperature \f$T\f$ is defined as
+ *
+ * \f[
+ * T = w(z) \epsilon
+ * \f]
  */
 template <bool IsRelativistic>
 class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
@@ -57,7 +65,8 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
       "The pressure is related to the rest mass density by "
       "p = w(z) * rho * (1 + epsilon), where p is the pressure, rho is the "
       "rest mass density, epsilon is the specific internal energy, and w(z) is "
-      "a parameter."};
+      "a parameter.\n"
+      "The temperature T is defined as T=w(z) epsilon."};
 
   using options = tmpl::list<ParameterW>;
 

@@ -73,6 +73,25 @@ Scalar<DataType> IdealFluid<IsRelativistic>::
 
 template <bool IsRelativistic>
 template <class DataType>
+Scalar<DataType>
+IdealFluid<IsRelativistic>::temperature_from_density_and_energy_impl(
+    const Scalar<DataType>& /*rest_mass_density*/,
+    const Scalar<DataType>& specific_internal_energy) const {
+  return Scalar<DataType>{(adiabatic_index_ - 1.0) *
+                          get(specific_internal_energy)};
+}
+
+template <bool IsRelativistic>
+template <class DataType>
+Scalar<DataType> IdealFluid<IsRelativistic>::
+    specific_internal_energy_from_density_and_temperature_impl(
+        const Scalar<DataType>& /*rest_mass_density*/,
+        const Scalar<DataType>& temperature) const {
+  return Scalar<DataType>{get(temperature) / (adiabatic_index_ - 1.0)};
+}
+
+template <bool IsRelativistic>
+template <class DataType>
 Scalar<DataType> IdealFluid<IsRelativistic>::chi_from_density_and_energy_impl(
     const Scalar<DataType>& /*rest_mass_density*/,
     const Scalar<DataType>& specific_internal_energy) const {

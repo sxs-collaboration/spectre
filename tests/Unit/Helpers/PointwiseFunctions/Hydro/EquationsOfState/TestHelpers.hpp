@@ -47,6 +47,13 @@ void check_impl(
   // Bounds for: density
   const std::array<std::pair<double, double>, 1> random_value_bounds{
       {{1.0e-4, 4.0}}};
+  MAKE_GENERATOR(generator, std::random_device{}());
+  std::uniform_real_distribution<> distribution(random_value_bounds[0].first,
+                                                random_value_bounds[0].second);
+  const auto rest_mass_density = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+  const auto specific_internal_energy = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
   using EoS = ::EquationsOfState::EquationOfState<IsRelativistic, 1>;
   using Function = typename CreateMemberFunctionPointer<1>::template f<T, EoS>;
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
@@ -74,6 +81,13 @@ void check_impl(
         python_file_name,
         python_function_prefix + "_specific_internal_energy_from_density",
         random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting temperature_from_density...")
+    CHECK(make_with_value<Scalar<T>>(used_for_size, 0.0) ==
+          eos->temperature_from_density(rest_mass_density));
+    INFO("Done\nTesting temperature_from_specific_internal_energy...")
+    CHECK(make_with_value<Scalar<T>>(used_for_size, 0.0) ==
+          eos->temperature_from_specific_internal_energy(
+              specific_internal_energy));
     INFO("Done\nTesting chi_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::chi_from_density, *eos, python_file_name,
@@ -101,6 +115,13 @@ void check_impl(
   // Bounds for: density, specific internal energy
   const std::array<std::pair<double, double>, 2> random_value_bounds{
       {{1.0e-4, 4.0}, {0.0, 1.0e4}}};
+  MAKE_GENERATOR(generator, std::random_device{}());
+  std::uniform_real_distribution<> distribution(random_value_bounds[0].first,
+                                                random_value_bounds[0].second);
+  const auto rest_mass_density = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+  const auto specific_internal_energy = make_with_random_values<Scalar<T>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
   using EoS = ::EquationsOfState::EquationOfState<IsRelativistic, 2>;
   using Function = typename CreateMemberFunctionPointer<2>::template f<T, EoS>;
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
@@ -129,6 +150,24 @@ void check_impl(
         python_file_name,
         python_function_prefix +
             "_specific_internal_energy_from_density_and_pressure",
+        random_value_bounds, member_args_tuple, used_for_size);
+    INFO("Done\nTesting temperature_from_density_and_specific_int_energy...")
+    pypp::check_with_random_values<2>(
+        func = &EoS::temperature_from_density_and_energy, *eos,
+        python_file_name,
+        python_function_prefix + "_temperature_from_density_and_energy",
+        random_value_bounds, member_args_tuple, used_for_size);
+    Approx custom_approx = Approx::custom().epsilon(1.e-11);
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        specific_internal_energy,
+        eos->specific_internal_energy_from_density_and_temperature(
+            rest_mass_density,
+            eos->temperature_from_density_and_energy(rest_mass_density,
+                                                     specific_internal_energy)),
+        custom_approx);
+    pypp::check_with_random_values<2>(
+        func = &EoS::chi_from_density_and_energy, *eos, python_file_name,
+        python_function_prefix + "_chi_from_density_and_energy",
         random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting chi_from_density_and_energy...")
     pypp::check_with_random_values<2>(
