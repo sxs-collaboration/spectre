@@ -10,7 +10,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
-#include "Parallel/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond

@@ -8,8 +8,6 @@ set(LIBRARY_SOURCES
   Test_MutateAssign.cpp
   )
 
-add_subdirectory(Actions)
-
 add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/Initialization/"

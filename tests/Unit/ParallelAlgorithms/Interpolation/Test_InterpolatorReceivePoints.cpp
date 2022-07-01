@@ -21,9 +21,9 @@
 #include "Domain/Structure/BlockId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep

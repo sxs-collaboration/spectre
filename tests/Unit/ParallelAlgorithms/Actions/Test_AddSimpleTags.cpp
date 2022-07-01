@@ -8,11 +8,11 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
+#include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
+#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

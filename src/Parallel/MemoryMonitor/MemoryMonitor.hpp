@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "Parallel/Actions/SetupDataBox.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/MemoryMonitor/Tags.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
+#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

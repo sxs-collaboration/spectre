@@ -12,10 +12,10 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"

@@ -9,9 +9,15 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AddComputeTags.hpp
+  AddSimpleTags.hpp
+  Goto.hpp
   MutateApply.hpp
   RandomizeVariables.hpp
+  RemoveOptionsAndTerminatePhase.hpp
   SetData.hpp
+  SetupDataBox.hpp
+  TerminatePhase.hpp
   UpdateMessageQueue.hpp
   )
 

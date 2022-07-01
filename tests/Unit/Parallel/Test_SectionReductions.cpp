@@ -15,7 +15,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -26,6 +25,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/Section.hpp"
 #include "Parallel/Tags/Section.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"

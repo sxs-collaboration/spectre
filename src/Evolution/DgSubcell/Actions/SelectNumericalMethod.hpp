@@ -11,7 +11,7 @@
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
-#include "Parallel/Actions/Goto.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
 

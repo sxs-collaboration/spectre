@@ -77,7 +77,6 @@ add_dependencies(
   module_Main          # GlobalCache module depends on Main module
   )
 
-add_subdirectory(Actions)
 add_subdirectory(Algorithms)
 add_subdirectory(MemoryMonitor)
 add_subdirectory(PhaseControl)

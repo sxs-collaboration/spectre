@@ -10,8 +10,8 @@
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/Actions/Goto.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

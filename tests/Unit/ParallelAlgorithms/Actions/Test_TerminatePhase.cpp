@@ -4,8 +4,8 @@
 #include "Framework/TestingFramework.hpp"
 
 #include "Framework/ActionTesting.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {

@@ -5,14 +5,14 @@
 
 #include "Evolution/Systems/Cce/Actions/InitializeWorldtubeBoundary.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
-#include "Parallel/Actions/SetupDataBox.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 
 namespace Cce {
 

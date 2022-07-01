@@ -27,7 +27,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Schwarz.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/SubdomainOperator.hpp"
