@@ -45,6 +45,7 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
@@ -58,6 +59,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -455,6 +457,17 @@ struct SystemHelper {
     return System::name();
   }
 
+  void reset() {
+    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+    initial_functions_of_time_ =
+        clone_unique_ptrs(stored_initial_functions_of_time_);
+    initial_measurement_timescales_ =
+        clone_unique_ptrs(stored_initial_measurement_timescales_);
+    all_init_tags_ = stored_all_init_tags_;
+    horizon_a_ = {};
+    horizon_b_ = {};
+  }
+
   /*!
    * \brief Setup the test.
    *
@@ -514,27 +527,33 @@ struct SystemHelper {
     // member of a domain to get the centers. The names are chosen to match the
     // BinaryCompactObject domain, which the control errors were based on and
     // have these specific names hard-coded into them.
-    domain_ =
-        Domain<3>{{},
-                  {},
-                  {{"ObjectAExcisionSphere",
-                    ExcisionSphere<3>{excision_radius,
-                                      {{-0.5 * initial_separation, 0.0, 0.0}},
-                                      {{0, Direction<3>::lower_zeta()},
-                                       {1, Direction<3>::lower_zeta()},
-                                       {2, Direction<3>::lower_zeta()},
-                                       {3, Direction<3>::lower_zeta()},
-                                       {4, Direction<3>::lower_zeta()},
-                                       {5, Direction<3>::lower_zeta()}}}},
-                   {"ObjectBExcisionSphere",
-                    ExcisionSphere<3>{excision_radius,
-                                      {{+0.5 * initial_separation, 0.0, 0.0}},
-                                      {{0, Direction<3>::lower_zeta()},
-                                       {1, Direction<3>::lower_zeta()},
-                                       {2, Direction<3>::lower_zeta()},
-                                       {3, Direction<3>::lower_zeta()},
-                                       {4, Direction<3>::lower_zeta()},
-                                       {5, Direction<3>::lower_zeta()}}}}}};
+    stored_excision_spheres_ =
+        std::unordered_map<std::string, ExcisionSphere<3>>{
+            {"ObjectAExcisionSphere",
+             ExcisionSphere<3>{excision_radius,
+                               {{-0.5 * initial_separation, 0.0, 0.0}},
+                               {{0, Direction<3>::lower_zeta()},
+                                {1, Direction<3>::lower_zeta()},
+                                {2, Direction<3>::lower_zeta()},
+                                {3, Direction<3>::lower_zeta()},
+                                {4, Direction<3>::lower_zeta()},
+                                {5, Direction<3>::lower_zeta()}}}},
+            {"ObjectBExcisionSphere",
+             ExcisionSphere<3>{excision_radius,
+                               {{+0.5 * initial_separation, 0.0, 0.0}},
+                               {{0, Direction<3>::lower_zeta()},
+                                {1, Direction<3>::lower_zeta()},
+                                {2, Direction<3>::lower_zeta()},
+                                {3, Direction<3>::lower_zeta()},
+                                {4, Direction<3>::lower_zeta()},
+                                {5, Direction<3>::lower_zeta()}}}}};
+    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+
+    stored_initial_functions_of_time_ =
+        clone_unique_ptrs(initial_functions_of_time_);
+    stored_initial_measurement_timescales_ =
+        clone_unique_ptrs(initial_measurement_timescales_);
+    stored_all_init_tags_ = all_init_tags_;
   }
 
   /*!
@@ -687,5 +706,20 @@ struct SystemHelper {
   Strahlkorper<Frame::Grid> horizon_a_{};
   Strahlkorper<Frame::Grid> horizon_b_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+
+  // Initialization members. These are the values that will be used when the
+  // reset() function is called. We don't need the horizons because those are
+  // only used when the test is run, and we don't need initial time because
+  // that's never changed.
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      stored_initial_functions_of_time_{};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      stored_initial_measurement_timescales_{};
+  AllTags stored_all_init_tags_{};
+  // Can't copy Domain or Block so just create a duplicate using the excision
+  // spheres which are the only important part
+  std::unordered_map<std::string, ExcisionSphere<3>> stored_excision_spheres_{};
 };
 }  // namespace control_system::TestHelpers
