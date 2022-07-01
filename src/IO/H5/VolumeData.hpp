@@ -129,8 +129,8 @@ class VolumeData : public h5::Object {
 
   /// Read a tensor component with name `tensor_component` at observation id
   /// `observation_id` from all grids in the file
-  DataVector get_tensor_component(size_t observation_id,
-                                  const std::string& tensor_component) const;
+  TensorComponent get_tensor_component(
+      size_t observation_id, const std::string& tensor_component) const;
 
   /// Read the extents of all the grids stored in the file at the observation id
   /// `observation_id`

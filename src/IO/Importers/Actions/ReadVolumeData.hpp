@@ -253,10 +253,13 @@ struct ReadAllVolumeDataAndDistribute {
         }
         auto& tensor_data = get<field_tag>(all_tensor_data);
         for (size_t i = 0; i < tensor_data.size(); i++) {
-          tensor_data[i] = volume_file.get_tensor_component(
-              observation_id,
-              selection.value() + tensor_data.component_suffix(
-                                      tensor_data.get_tensor_index(i)));
+          tensor_data[i] = std::get<DataVector>(
+              volume_file
+                  .get_tensor_component(
+                      observation_id,
+                      selection.value() + tensor_data.component_suffix(
+                                              tensor_data.get_tensor_index(i)))
+                  .data);
         }
       });
       // Retrieve the information needed to reconstruct which element the data

@@ -21,6 +21,12 @@ class DataVector;
 namespace h5 {
 /*!
  * \ingroup HDF5Group
+ * \brief Check if `dtype1` and `dtype2` are the same HDF5 data type.
+ */
+bool types_equal(hid_t dtype1, hid_t dtype2);
+
+/*!
+ * \ingroup HDF5Group
  * \brief Write a std::vector named `name` to the group `group_id`
  */
 template <typename T>

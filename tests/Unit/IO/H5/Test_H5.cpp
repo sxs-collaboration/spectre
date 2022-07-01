@@ -26,6 +26,7 @@
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/SourceArchive.hpp"
+#include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
@@ -37,6 +38,13 @@
 
 // Test that we can read scalar, rank-1, rank-2, and rank-3 datasets
 namespace {
+void test_types_equal() {
+  CHECK(h5::types_equal(h5::h5_type<double>(), h5::h5_type<double>()));
+  CHECK_FALSE(h5::types_equal(h5::h5_type<double>(), h5::h5_type<float>()));
+  CHECK_FALSE(h5::types_equal(h5::h5_type<char>(), h5::h5_type<float>()));
+  CHECK_FALSE(h5::types_equal(h5::h5_type<int>(), h5::h5_type<float>()));
+}
+
 void test_read_data() {
   const std::string h5_file_name("Unit.IO.H5.ReadData.h5");
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -200,6 +208,7 @@ void test_errors() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.H5", "[Unit][IO][H5]") {
+  test_types_equal();
   test_read_data();
   test_check_if_object_exists();
   test_contains_attribute_false();

@@ -10,7 +10,7 @@
 #include <ostream>
 #include <string>
 
-#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
@@ -22,14 +22,10 @@
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "Utilities/TypeTraits/GetFundamentalType.hpp"
-
-// IWYU pragma: no_include <boost/multi_array.hpp>
-// IWYU pragma: no_include <boost/multi_array/base.hpp>
-// IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
 
 namespace {
 // Converts input data (either a std::vector or DataVector) to a T. Depending
@@ -63,6 +59,14 @@ struct VectorTo<2, DataVector> {
   }
 };
 
+template <>
+struct VectorTo<2, std::vector<float>> {
+  static std::vector<float> apply(std::vector<float> raw_data,
+                                  const std::array<hsize_t, 2>& /*size*/) {
+    return raw_data;
+  }
+};
+
 template <typename T>
 struct VectorTo<2, boost::multi_array<T, 2>> {
   static boost::multi_array<T, 2> apply(const std::vector<T>& raw_data,
@@ -88,6 +92,14 @@ struct VectorTo<3, DataVector> {
   }
 };
 
+template <>
+struct VectorTo<3, std::vector<float>> {
+  static std::vector<float> apply(std::vector<float> raw_data,
+                                  const std::array<hsize_t, 3>& /*size*/) {
+    return raw_data;
+  }
+};
+
 template <typename T>
 struct VectorTo<3, boost::multi_array<T, 3>> {
   static boost::multi_array<T, 3> apply(const std::vector<T>& raw_data,
@@ -109,6 +121,12 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
 }  // namespace
 
 namespace h5 {
+bool types_equal(const hid_t dtype1, const hid_t dtype2) {
+  const htri_t equal = H5Tequal(dtype1, dtype2);
+  CHECK_H5(equal, "Unable to compare H5 data types.");
+  return equal > 0;
+}
+
 template <typename T>
 void write_data(const hid_t group_id, const std::vector<T>& data,
                 const std::vector<size_t>& extents, const std::string& name) {
@@ -607,6 +625,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
                         (float, double, int, unsigned int, long, unsigned long,
                          long long, unsigned long long, char),
                         (1))
+
+#undef INSTANTIATE_READ_VECTOR
+
+#define INSTANTIATE_READ_VECTOR(_, DATA)          \
+  template std::vector<TYPE(DATA)>                \
+  read_data<RANK(DATA), std::vector<TYPE(DATA)>>( \
+      const hid_t group_id, const std::string& dataset_name);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR, (float), (2, 3))
 
 #define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
   template boost::multi_array<TYPE(DATA), RANK(DATA)>                \

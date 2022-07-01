@@ -143,8 +143,8 @@ def interpolate_h5_file(source_file_path,
 
         # pre-load all tensors to avoid loading the full tensor for each element
         tensors = [
-            np.array(source_vol.get_tensor_component(obs, name), copy=False)
-            for name in tensor_names
+            np.array(source_vol.get_tensor_component(obs, name).data,
+                     copy=False) for name in tensor_names
         ]
 
         source_file.close()
