@@ -173,26 +173,37 @@ struct TensorAsExpressionSymm<SymmList<Symm...>, TensorIndexTypeList,
 template <typename T, typename ArgsList>
 struct TensorAsExpression;
 
-template <typename X, typename Symm, template <typename...> class IndexList,
-          typename... Indices, template <typename...> class ArgsList,
-          typename... Args>
-struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
+template <typename X, template <typename...> class Symm, typename... SymmValues,
+          template <typename...> class IndexList, typename... Indices,
+          template <typename...> class ArgsList, typename... Args>
+struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
                           ArgsList<Args...>>
-    : public TensorExpression<
-          TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
-                             ArgsList<Args...>>,
-          X,
-          typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
-                                                  ArgsList<Args...>>::type,
-          IndexList<Indices...>, ArgsList<Args...>> {
+    : public TensorExpression<TensorAsExpression<Tensor<X, Symm<SymmValues...>,
+                                                        IndexList<Indices...>>,
+                                                 ArgsList<Args...>>,
+                              X,
+                              typename detail::TensorAsExpressionSymm<
+                                  Symm<SymmValues...>, IndexList<Indices...>,
+                                  ArgsList<Args...>>::type,
+                              IndexList<Indices...>, ArgsList<Args...>> {
+  // `Symmetry` currently prevents this because antisymmetries are not currently
+  // supported for `Tensor`s. This check is repeated here because if
+  // antisymmetries are later supported for `Tensor`, using antisymmetries in
+  // `TensorExpression`s will not automatically work. The implementations of the
+  // derived `TensorExpression` types assume no antisymmetries (assume positive
+  // `Symmetry` values), so support for antisymmetries in `TensorExpression`s
+  // will still need to be implemented.
+  static_assert((... and (SymmValues::value > 0)),
+                "Anti-symmetric Tensors are currently not supported by "
+                "TensorExpressions.");
+
   // === Index properties ===
   /// The type of the data being stored in the result of the expression
   using type = X;
   /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
   /// expression
-  using symmetry =
-      typename detail::TensorAsExpressionSymm<Symm, IndexList<Indices...>,
-                                              ArgsList<Args...>>::type;
+  using symmetry = typename detail::TensorAsExpressionSymm<
+      Symm<SymmValues...>, IndexList<Indices...>, ArgsList<Args...>>::type;
   /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
   /// expression
   using index_list = IndexList<Indices...>;
@@ -247,7 +258,8 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
       is_primary_start;
 
   /// Construct an expression from a Tensor
-  explicit TensorAsExpression(const Tensor<X, Symm, IndexList<Indices...>>& t)
+  explicit TensorAsExpression(
+      const Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>& t)
       : t_(&t) {}
   ~TensorAsExpression() override = default;
 
@@ -322,6 +334,6 @@ struct TensorAsExpression<Tensor<X, Symm, IndexList<Indices...>>,
 
  private:
   /// `Tensor` represented by this expression
-  const Tensor<X, Symm, IndexList<Indices...>>* t_ = nullptr;
+  const Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>* t_ = nullptr;
 };
 }  // namespace tenex
