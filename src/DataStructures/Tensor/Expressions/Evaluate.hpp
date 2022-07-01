@@ -18,6 +18,8 @@
 #include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 #include "DataStructures/Tensor/Structure.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -124,9 +126,9 @@ constexpr bool is_evaluated_lhs_multi_index(
  *
  * @tparam EvaluateSubtrees whether or not to evaluate subtrees of RHS
  * expression
- * @tparam LhsTensorIndices the TensorIndexs of the Tensor on the LHS of the
+ * @tparam LhsTensorIndices the `TensorIndex`s of the `Tensor` on the LHS of the
  * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
- * @param lhs_tensor pointer to the resultant LHS Tensor to fill
+ * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
  * @param rhs_tensorexpression the RHS TensorExpression to be evaluated
  */
 template <bool EvaluateSubtrees, auto&... LhsTensorIndices, typename X,
@@ -256,6 +258,65 @@ void evaluate_impl(
     }
   }
 }
+
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Assign a `double` value to components of the LHS tensor
+ *
+ * \details This is for internal use only and should never be directly called.
+ * See `tenex::evaluate` and use it, instead.
+ *
+ * \note `LhsTensorIndices` must be passed by reference because non-type
+ * template parameters cannot be class types until C++20.
+ *
+ * @tparam LhsTensorIndices the `TensorIndex`s of the `Tensor` on the LHS of the
+ * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
+ * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
+ * @param rhs_value the RHS value to assigned
+ */
+template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
+          typename LhsIndexList>
+void evaluate_impl(
+    const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
+    const double rhs_value) {
+  constexpr size_t num_lhs_indices = sizeof...(LhsTensorIndices);
+
+  using lhs_tensorindex_list =
+      tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
+
+  static_assert(
+      tensorindex_list_is_valid<lhs_tensorindex_list>::value,
+      "Cannot assign a tensor expression to a LHS tensor with a repeated "
+      "generic index, e.g. evaluate<ti::a, ti::a>. (Note that the concrete "
+      "time indices (ti::T and ti::t) can be repeated.)");
+  static_assert(
+      not contains_indices_to_contract<num_lhs_indices>(
+          {{std::decay_t<decltype(LhsTensorIndices)>::value...}}),
+      "Cannot assign a tensor expression to a LHS tensor with generic "
+      "indices that would be contracted, e.g. evaluate<ti::A, ti::a>.");
+
+  // positions of indices in LHS tensor where generic spatial indices are used
+  // for spacetime indices
+  constexpr auto lhs_spatial_spacetime_index_positions =
+      get_spatial_spacetime_index_positions<LhsIndexList,
+                                            lhs_tensorindex_list>();
+
+  // positions of indices in LHS tensor where concrete time indices are used
+  constexpr auto lhs_time_index_positions =
+      get_time_index_positions<lhs_tensorindex_list>();
+
+  using lhs_tensor_type = typename std::decay_t<decltype(*lhs_tensor)>;
+
+  for (size_t i = 0; i < lhs_tensor_type::size(); i++) {
+    auto lhs_multi_index =
+        lhs_tensor_type::structure::get_canonical_tensor_index(i);
+    if (is_evaluated_lhs_multi_index(lhs_multi_index,
+                                     lhs_spatial_spacetime_index_positions,
+                                     lhs_time_index_positions)) {
+      (*lhs_tensor)[i] = rhs_value;
+    }
+  }
+}
 }  // namespace detail
 
 /*!
@@ -294,9 +355,9 @@ void evaluate_impl(
  * \note `LhsTensorIndices` must be passed by reference because non-type
  * template parameters cannot be class types until C++20.
  *
- * @tparam LhsTensorIndices the TensorIndexs of the Tensor on the LHS of the
- * tensor expression, e.g. `ti_a`, `ti_b`, `ti_c`
- * @param lhs_tensor pointer to the resultant LHS Tensor to fill
+ * @tparam LhsTensorIndices the `TensorIndex`s of the `Tensor` on the LHS of the
+ * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
+ * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
  * @param rhs_tensorexpression the RHS TensorExpression to be evaluated
  */
 template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
@@ -313,6 +374,41 @@ void evaluate(
       rhs_expression_type::primary_subtree_contains_primary_start;
   detail::evaluate_impl<evaluate_subtrees, LhsTensorIndices...>(
       lhs_tensor, rhs_tensorexpression);
+}
+
+/*!
+ * \ingroup TensorExpressionsGroup
+ * \brief Assign a `double` to components of a tensor with the LHS index order
+ * set in the template parameters
+ *
+ * \details
+ * Example usage:
+ * \snippet Test_MixedOperations.cpp assign_double_to_index_subsets
+ *
+ * \note The components of the LHS `Tensor` passed in must already be sized
+ * because there is no way to infer component size from the RHS
+ *
+ * \note `LhsTensorIndices` must be passed by reference because non-type
+ * template parameters cannot be class types until C++20.
+ *
+ * @tparam LhsTensorIndices the `TensorIndex`s of the `Tensor` on the LHS of the
+ * tensor expression, e.g. `ti::a`, `ti::b`, `ti::c`
+ * @param lhs_tensor pointer to the resultant LHS `Tensor` to fill
+ * @param rhs_value the RHS value to assign
+ */
+template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
+          typename LhsIndexList>
+void evaluate(
+    const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
+    const double rhs_value) {
+  if constexpr (std::is_same_v<X, DataVector>) {
+    ASSERT(get_size((*lhs_tensor)[0]) > 0,
+           "Tensors with DataVector components must be sized before calling "
+           "tenex::evaluate<...>("
+           "\tgsl::not_null<Tensor<DataVector, ...>*>, double).");
+  }
+
+  detail::evaluate_impl<LhsTensorIndices...>(lhs_tensor, rhs_value);
 }
 
 /*!
