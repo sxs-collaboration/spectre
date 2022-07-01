@@ -30,14 +30,12 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-
-// IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
 using Affine = domain::CoordinateMaps::Affine;
@@ -66,7 +64,7 @@ void test_schwarzschild(const DataType& used_for_size) {
   // d_k g_ij = -6M x_i x_j x_k/r^5 + 2 M x_i delta_{kj}/r^3
   //                                + 2 M x_j delta_{ki}/r^3
 
-  // Parameters for KerrSchild solution
+  // Parameters for SphericalKerrSchild solution
   const double mass = 1.01;
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
@@ -74,27 +72,28 @@ void test_schwarzschild(const DataType& used_for_size) {
   const double t = 1.3;
 
   // Evaluate solution
-  gr::Solutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::SphericalKerrSchild solution(mass, spin, center);
 
   const auto vars = solution.variables(
-      x, t, typename gr::Solutions::KerrSchild::tags<DataType, Frame>{});
+      x, t,
+      typename gr::Solutions::SphericalKerrSchild::tags<DataType, Frame>{});
   const auto& lapse = get<gr::Tags::Lapse<DataType>>(vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
-  const auto& d_lapse =
-      get<typename gr::Solutions::KerrSchild::DerivLapse<DataType, Frame>>(
-          vars);
+  const auto& d_lapse = get<
+      typename gr::Solutions::SphericalKerrSchild::DerivLapse<DataType, Frame>>(
+      vars);
   const auto& shift = get<gr::Tags::Shift<3, Frame, DataType>>(vars);
-  const auto& d_shift =
-      get<typename gr::Solutions::KerrSchild::DerivShift<DataType, Frame>>(
-          vars);
+  const auto& d_shift = get<
+      typename gr::Solutions::SphericalKerrSchild::DerivShift<DataType, Frame>>(
+      vars);
   const auto& dt_shift =
       get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
   const auto& g = get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
   const auto& dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
-  const auto& d_g = get<
-      typename gr::Solutions::KerrSchild::DerivSpatialMetric<DataType, Frame>>(
-      vars);
+  const auto& d_g =
+      get<typename gr::Solutions::SphericalKerrSchild::DerivSpatialMetric<
+          DataType, Frame>>(vars);
 
   // Check those quantities that should be zero.
   const auto zero = make_with_value<DataType>(x, 0.);
@@ -170,16 +169,16 @@ void test_schwarzschild(const DataType& used_for_size) {
 
 template <typename FrameType>
 void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
-  // Parameters for KerrSchild solution
+  // Parameters for SphericalKerrSchild solution
   const double mass = 1.01;
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
-  gr::Solutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::SphericalKerrSchild solution(mass, spin, center);
 
   // Setup grid
   const size_t num_points_1d = 8;
-  const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
-  const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
   const size_t SpatialDim = 3;
   Mesh<SpatialDim> mesh{num_points_1d, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
@@ -206,15 +205,17 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
 
   // Compute expected numerical derivative of the determinant
   const double null_vector_0 = -1.0;
-  gr::Solutions::KerrSchild::IntermediateComputer<DataVector, FrameType>
-      ks_computer(solution, x);
-  gr::Solutions::KerrSchild::IntermediateVars<DataVector, FrameType> ks_cache(
-      num_points_3d);
+  gr::Solutions::SphericalKerrSchild::IntermediateComputer<DataVector,
+                                                           FrameType>
+      sks_computer(solution, x);
+  gr::Solutions::SphericalKerrSchild::IntermediateVars<DataVector, FrameType>
+      sks_cache(num_points_3d);
 
   auto H = make_with_value<Scalar<DataVector>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
-  using H_tag = gr::Solutions::KerrSchild::internal_tags::H<DataVector>;
-  ks_computer(make_not_null(&H), make_not_null(&ks_cache), H_tag{});
+  using H_tag =
+      gr::Solutions::SphericalKerrSchild::internal_tags::H<DataVector>;
+  sks_computer(make_not_null(&H), make_not_null(&sks_cache), H_tag{});
 
   Variables<tmpl::list<H_tag>> H_var(num_points_3d);
   get<H_tag>(H_var) = H;
@@ -241,7 +242,7 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
 
 template <typename Frame, typename DataType>
 void test_tag_retrieval(const DataType& used_for_size) {
-  // Parameters for KerrSchild solution
+  // Parameters for SphericalKerrSchild solution
   const double mass = 1.234;
   const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 2.0, 3.0}};
@@ -249,16 +250,17 @@ void test_tag_retrieval(const DataType& used_for_size) {
   const double t = 1.3;
 
   // Evaluate solution
-  const gr::Solutions::KerrSchild solution(mass, spin, center);
+  const gr::Solutions::SphericalKerrSchild solution(mass, spin, center);
   TestHelpers::AnalyticSolutions::test_tag_retrieval(
       solution, x, t,
-      typename gr::Solutions::KerrSchild::template tags<DataType, Frame>{});
+      typename gr::Solutions::SphericalKerrSchild::template tags<DataType,
+                                                                 Frame>{});
 }
 
 template <typename Frame>
 void test_einstein_solution() {
   // Parameters
-  //   ...for KerrSchild solution
+  //   ...for SphericalKerrSchild solution
   const double mass = 1.7;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{0.3, 0.2, 0.4}};
@@ -266,7 +268,7 @@ void test_einstein_solution() {
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
   const double time = -2.8;
 
-  gr::Solutions::KerrSchild solution(mass, spin, center);
+  gr::Solutions::SphericalKerrSchild solution(mass, spin, center);
   TestHelpers::VerifyGrSolution::verify_consistency(
       solution, time, tnsr::I<double, 3, Frame>{lower_bound}, 0.01, 1.0e-10);
   if constexpr (std::is_same_v<Frame, ::Frame::Inertial>) {
@@ -281,12 +283,14 @@ void test_einstein_solution() {
 }
 
 void test_serialize() {
-  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
+  gr::Solutions::SphericalKerrSchild solution(3.0, {{0.2, 0.3, 0.2}},
+                                              {{0.0, 3.0, 4.0}});
   test_serialization(solution);
 }
 
 void test_copy_and_move() {
-  gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
+  gr::Solutions::SphericalKerrSchild solution(3.0, {{0.2, 0.3, 0.2}},
+                                              {{0.0, 3.0, 4.0}});
   test_copy_semantics(solution);
   auto solution_copy = solution;
   // clang-tidy: std::move of trivially copyable type
@@ -294,18 +298,20 @@ void test_copy_and_move() {
 }
 
 void test_construct_from_options() {
-  const auto created = TestHelpers::test_creation<gr::Solutions::KerrSchild>(
-      "Mass: 0.5\n"
-      "Spin: [0.1,0.2,0.3]\n"
-      "Center: [1.0,3.0,2.0]");
-  CHECK(created ==
-        gr::Solutions::KerrSchild(0.5, {{0.1, 0.2, 0.3}}, {{1.0, 3.0, 2.0}}));
+  const auto created =
+      TestHelpers::test_creation<gr::Solutions::SphericalKerrSchild>(
+          "Mass: 0.5\n"
+          "Spin: [0.1,0.2,0.3]\n"
+          "Center: [1.0,3.0,2.0]");
+  CHECK(created == gr::Solutions::SphericalKerrSchild(0.5, {{0.1, 0.2, 0.3}},
+                                                      {{1.0, 3.0, 2.0}}));
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
-                  "[PointwiseFunctions][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.PointwiseFunctions.AnalyticSolutions.Gr.SphericalKerrSchild",
+    "[PointwiseFunctions][Unit]") {
   test_copy_and_move();
   test_serialize();
   test_construct_from_options();
@@ -326,25 +332,32 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
 
   CHECK_THROWS_WITH(
       []() {
-        gr::Solutions::KerrSchild solution(1.0, {{1.0, 1.0, 1.0}},
-                                           {{0.0, 0.0, 0.0}});
+        gr::Solutions::SphericalKerrSchild solution(1.0, {{1.0, 1.0, 1.0}},
+                                                    {{0.0, 0.0, 0.0}});
       }(),
       Catch::Contains("Spin magnitude must be < 1"));
   CHECK_THROWS_WITH(
       []() {
-        gr::Solutions::KerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
-                                           {{0.0, 0.0, 0.0}});
+        gr::Solutions::SphericalKerrSchild solution(0.0, {{0.0, 0.0, 0.0}},
+                                                    {{0.0, 0.0, 0.0}});
       }(),
-      Catch::Contains("Mass must be non-negative"));
+      Catch::Contains("Mass must be > 0"));
   CHECK_THROWS_WITH(
-      TestHelpers::test_creation<gr::Solutions::KerrSchild>(
+      []() {
+        gr::Solutions::SphericalKerrSchild solution(-1.0, {{0.0, 0.0, 0.0}},
+                                                    {{0.0, 0.0, 0.0}});
+      }(),
+      Catch::Contains("Mass must be > 0"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::SphericalKerrSchild>(
           "Mass: -0.5\n"
           "Spin: [0.1,0.2,0.3]\n"
           "Center: [1.0,3.0,2.0]"),
       Catch::Contains("Value -0.5 is below the lower bound of 0"));
-  CHECK_THROWS_WITH(TestHelpers::test_creation<gr::Solutions::KerrSchild>(
-                        "Mass: 0.5\n"
-                        "Spin: [1.1,0.9,0.3]\n"
-                        "Center: [1.0,3.0,2.0]"),
-                    Catch::Contains("Spin magnitude must be < 1"));
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<gr::Solutions::SphericalKerrSchild>(
+          "Mass: 0.5\n"
+          "Spin: [1.1,0.9,0.3]\n"
+          "Center: [1.0,3.0,2.0]"),
+      Catch::Contains("Spin magnitude must be < 1"));
 }
