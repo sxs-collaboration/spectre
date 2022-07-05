@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Pi.hpp"
@@ -27,14 +28,15 @@
 // IWYU pragma: no_forward_declare Tags::deriv
 
 namespace {
+template <typename SolutionType>
 void compare_different_wrapped_solutions(const double mass,
                                          const std::array<double, 3>& spin,
                                          const std::array<double, 3>& center,
                                          const double mass2,
                                          const std::array<double, 3>& spin2,
                                          const std::array<double, 3>& center2) {
-  const gr::Solutions::KerrSchild& solution{mass, spin, center};
-  const gr::Solutions::KerrSchild& solution2{mass2, spin2, center2};
+  const SolutionType& solution{mass, spin, center};
+  const SolutionType& solution2{mass2, spin2, center2};
   CHECK_FALSE(solution == solution2);
   CHECK(solution != solution2);
 }
@@ -133,18 +135,18 @@ void test_generalized_harmonic_solution(const Args&... args) {
   test_copy_and_move(wrapped_solution);
 }
 
+template <typename SolutionType>
 void test_construct_from_options() {
   const auto created = TestHelpers::test_creation<
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>>(
+      GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>>(
       "Mass: 0.5\n"
       "Spin: [0.1,0.2,0.3]\n"
       "Center: [1.0,3.0,2.0]");
   const double mass = 0.5;
   const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
   const std::array<double, 3> center{{1.0, 3.0, 2.0}};
-  CHECK(created ==
-        GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>(
-            mass, spin, center));
+  CHECK(created == GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>(
+                       mass, spin, center));
 }
 }  // namespace
 
@@ -168,14 +170,25 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.WrappedGr",
   test_generalized_harmonic_solution<gr::Solutions::KerrSchild>(mass, spin,
                                                                 center);
 
+  test_generalized_harmonic_solution<gr::Solutions::SphericalKerrSchild>(
+      mass, spin, center);
+
   const double mass2 = 0.4;
   const std::array<double, 3> spin2{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center2{{4.0, 1.0, 3.0}};
   test_generalized_harmonic_solution<gr::Solutions::KerrSchild>(mass2, spin2,
                                                                 center2);
 
-  compare_different_wrapped_solutions(mass, spin, center, mass2, spin2,
-                                      center2);
+  test_generalized_harmonic_solution<gr::Solutions::SphericalKerrSchild>(
+      mass2, spin2, center2);
 
-  test_construct_from_options();
+  compare_different_wrapped_solutions<gr::Solutions::KerrSchild>(
+      mass, spin, center, mass2, spin2, center2);
+
+  compare_different_wrapped_solutions<gr::Solutions::SphericalKerrSchild>(
+      mass, spin, center, mass2, spin2, center2);
+
+  test_construct_from_options<gr::Solutions::KerrSchild>();
+
+  test_construct_from_options<gr::Solutions::SphericalKerrSchild>();
 }
