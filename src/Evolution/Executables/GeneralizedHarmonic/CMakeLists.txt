@@ -62,6 +62,13 @@ add_generalized_harmonic_executable_with_horizon(
   "${LIBS_TO_LINK};ApparentHorizons;GeneralRelativitySolutions;Importers"
 )
 
+add_generalized_harmonic_executable_with_horizon(
+  SphericalKerrSchild
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::SphericalKerrSchild>
+  GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::SphericalKerrSchild>
+  "${LIBS_TO_LINK};ApparentHorizons;GeneralRelativitySolutions"
+)
+
 add_generalized_harmonic_executable_without_horizon(
   GaugeWave
   1

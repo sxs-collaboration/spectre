@@ -90,6 +90,7 @@
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -188,10 +189,10 @@ struct GeneralizedHarmonicTemplateBase<
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
 
-  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-          volume_dim, use_damped_harmonic_rollon>,
-      Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions =
+      tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
+                     volume_dim, use_damped_harmonic_rollon>,
+                 Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
