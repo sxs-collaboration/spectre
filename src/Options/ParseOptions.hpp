@@ -27,6 +27,7 @@
 
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
+#include "Options/Tags.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -43,13 +44,6 @@
 #include "Utilities/TypeTraits/IsStdArrayOfSize.hpp"
 
 namespace Options {
-/// Option parser tag to retrieve the YAML source and all applied
-/// overlays.  This tag can be requested without providing it as a
-/// template parameter to the Parser.
-struct InputSource {
-  using type = std::vector<std::string>;
-};
-
 // Defining methods as inline in a different header from the class
 // definition is somewhat strange.  It is done here to minimize the
 // amount of code in the frequently-included Options.hpp file.  The
@@ -584,9 +578,9 @@ struct get_impl<Tag, Metavariables, Tag> {
 };
 
 template <typename Metavariables>
-struct get_impl<InputSource, Metavariables, InputSource> {
+struct get_impl<Tags::InputSource, Metavariables, Tags::InputSource> {
   template <typename OptionList, typename Group>
-  static InputSource::type apply(const Parser<OptionList, Group>& opts) {
+  static Tags::InputSource::type apply(const Parser<OptionList, Group>& opts) {
     return opts.input_source_;
   }
 };

@@ -17,6 +17,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Tags.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
@@ -1009,7 +1010,8 @@ void test_options_input_source() {
   const std::string overlay = "Simple: 4";
   parser.parse(source);
   parser.overlay<tmpl::list<Simple>>(overlay);
-  CHECK(parser.get<Options::InputSource>() == std::vector{source, overlay});
+  CHECK(parser.get<Options::Tags::InputSource>() ==
+        std::vector{source, overlay});
 }
 
 void check_for_lines(const std::string& text,
@@ -1352,12 +1354,12 @@ void test_options_serialization() {
     // Test serialization of an unparsed parser.
     Options::Parser<tmpl::list<Simple>> parser("passed help");
     auto parser2 = serialize_and_deserialize(parser);
-    CHECK(parser2.get<Options::InputSource>().empty());
+    CHECK(parser2.get<Options::Tags::InputSource>().empty());
     CHECK(parser2.help() == parser.help());
     const std::string source = "Simple: 4";
     parser2.parse(source);
     const auto parser3 = serialize_and_deserialize(parser2);
-    CHECK(parser3.get<Options::InputSource>() == std::vector{source});
+    CHECK(parser3.get<Options::Tags::InputSource>() == std::vector{source});
     CHECK(parser3.get<Simple>() == 4);
   }
 
@@ -1381,7 +1383,8 @@ void test_options_serialization() {
         "Simple: 2\n";
     parser.parse(source);
     check_repeated(parser, [&source](const decltype(parser)& local_parser) {
-      CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
+      CHECK(local_parser.get<Options::Tags::InputSource>() ==
+            std::vector{source});
       CHECK(local_parser.get<InnerGroupedTag>() == 3);
       CHECK(local_parser.get<OuterGroupedTag>() == 1);
       CHECK(local_parser.get<Simple>() == 2);
@@ -1394,12 +1397,12 @@ void test_options_serialization() {
     const std::string overlay = "Simple: 4";
     parser.parse(source);
     parser.overlay<tmpl::list<Simple>>(overlay);
-    check_repeated(parser, [&source,
-                            &overlay](const decltype(parser)& local_parser) {
-      CHECK(local_parser.get<Options::InputSource>() ==
-            std::vector{source, overlay});
-      CHECK(local_parser.get<Simple>() == 4);
-    });
+    check_repeated(parser,
+                   [&source, &overlay](const decltype(parser)& local_parser) {
+                     CHECK(local_parser.get<Options::Tags::InputSource>() ==
+                           std::vector{source, overlay});
+                     CHECK(local_parser.get<Simple>() == 4);
+                   });
   }
   {
     // Groups + Overlays
@@ -1417,14 +1420,14 @@ void test_options_serialization() {
         "    InnerGroupedTag: 5\n";
     parser.parse(source);
     parser.overlay<tmpl::list<InnerGroupedTag>>(overlay);
-    check_repeated(parser, [&source,
-                            &overlay](const decltype(parser)& local_parser) {
-      CHECK(local_parser.get<Options::InputSource>() ==
-            std::vector{source, overlay});
-      CHECK(local_parser.get<Simple>() == 1);
-      CHECK(local_parser.get<OuterGroupedTag>() == 2);
-      CHECK(local_parser.get<InnerGroupedTag>() == 5);
-    });
+    check_repeated(parser,
+                   [&source, &overlay](const decltype(parser)& local_parser) {
+                     CHECK(local_parser.get<Options::Tags::InputSource>() ==
+                           std::vector{source, overlay});
+                     CHECK(local_parser.get<Simple>() == 1);
+                     CHECK(local_parser.get<OuterGroupedTag>() == 2);
+                     CHECK(local_parser.get<InnerGroupedTag>() == 5);
+                   });
   }
   {
     // Alternatives
@@ -1436,7 +1439,8 @@ void test_options_serialization() {
         "  F: required\n";
     parser.parse(source);
     check_repeated(parser, [&source](const decltype(parser)& local_parser) {
-      CHECK(local_parser.get<Options::InputSource>() == std::vector{source});
+      CHECK(local_parser.get<Options::Tags::InputSource>() ==
+            std::vector{source});
       const auto result = local_parser.get<AlternativesTag>();
       CHECK(result.a_ == 1.2);
       CHECK(result.b_ == -1);
