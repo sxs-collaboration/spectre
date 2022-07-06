@@ -375,7 +375,8 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(const T& rhs) {
 
 template <typename T, typename VectorType>
 void VectorImpl<T, VectorType>::pup(PUP::er& p) {  // NOLINT
-  ASSERT(owning_, "Cannot pup a non-owning vector!");
+  ASSERT(owning_ or p.isSizing(),
+         "Cannot pup a non-owning vector unless you are sizing!");
   auto my_size = size();
   p | my_size;
   if (my_size > 0) {

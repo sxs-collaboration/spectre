@@ -194,6 +194,12 @@ void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
   CHECK(serialized_vector_test.is_owning());
   CHECK(serialized_vector_test.data() != vector_test.data());
   CHECK(vector_test.is_owning());
+
+  // check that the pup function doesn't error while sizing
+  const size_t size_in_bytes = size_of_object_in_bytes(vector_test);
+  const size_t serialized_size_in_bytes =
+      size_of_object_in_bytes(serialized_vector_test);
+  CHECK(size_in_bytes == serialized_size_in_bytes);
 }
 
 /// \ingroup TestingFrameworkGroup
