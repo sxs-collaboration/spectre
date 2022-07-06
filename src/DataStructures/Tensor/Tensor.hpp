@@ -132,6 +132,8 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// Typelist of the \ref SpacetimeIndex "TensorIndexType"'s that the
   /// Tensor has
   using index_list = tmpl::list<Indices...>;
+  /// The number of indices that the Tensor has
+  static constexpr size_t num_tensor_indices = sizeof...(Indices);
   /// The Tensor_detail::Structure for the particular tensor index structure
   ///
   /// Each tensor index structure, e.g. \f$T_{ab}\f$, \f$T_a{}^b\f$ or
