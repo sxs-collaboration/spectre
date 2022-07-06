@@ -16,6 +16,7 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/Protocols/ReductionDataFormatter.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -239,6 +240,7 @@ void append_to_reduction_data(
 
 template <typename... Ts, size_t... Is>
 void write_data(const std::string& subfile_name,
+                const std::string& input_source,
                 std::vector<std::string> legend, const std::tuple<Ts...>& data,
                 const std::string& file_prefix,
                 std::index_sequence<Is...> /*meta*/) {
@@ -256,7 +258,8 @@ void write_data(const std::string& subfile_name,
         << " pieces of data being reduced");
   }
 
-  h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
+  h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true,
+                                               input_source);
   constexpr size_t version_number = 0;
   auto& time_series_file = h5file.try_insert<h5::Dat>(
       subfile_name, std::move(legend), version_number);
@@ -390,6 +393,7 @@ struct CollectReductionDataOnNode {
         ReductionActions_detail::write_data(
             "/Core" + std::to_string(observe_with_core_id.value()) +
                 subfile_name,
+            observers::input_source_from_cache(cache),
             std::move(reduction_names_this_core),
             std::move(reduction_data_this_core.data()),
             Parallel::get<Tags::ReductionFileName>(cache) +
@@ -657,7 +661,7 @@ struct WriteReductionData {
           }
         }
         ReductionActions_detail::write_data(
-            subfile_name,
+            subfile_name, observers::input_source_from_cache(cache),
             // NOLINTNEXTLINE(bugprone-use-after-move)
             std::move(reduction_names),
             std::move(received_reduction_data.data()),
@@ -720,7 +724,8 @@ struct WriteReductionDataRow {
         db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
     reduction_file_lock.lock();
     ThreadedActions::ReductionActions_detail::write_data(
-        subfile_name, std::move(legend), std::move(reduction_data),
+        subfile_name, observers::input_source_from_cache(cache),
+        std::move(legend), std::move(reduction_data),
         Parallel::get<Tags::ReductionFileName>(cache),
         std::make_index_sequence<sizeof...(Ts)>{});
     reduction_file_lock.unlock();
