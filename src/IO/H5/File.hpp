@@ -73,8 +73,13 @@ class H5File {
    * @param file_name the path to the file to open or create
    * @param append_to_file if true allow appending to the file, otherwise abort
    * the simulation if the file exists
+   * @param input_source a string containing the input source options (yaml
+   * formatted). Defaults to an empty string; when writing, specify the provided
+   * yaml input options (if any) to write them to the output file's
+   * `InputSource.yaml` attribute.
    */
-  explicit H5File(std::string file_name, bool append_to_file = false);
+  explicit H5File(std::string file_name, bool append_to_file = false,
+                  const std::string& input_source = ""s);
 
   /// \cond HIDDEN_SYMBOLS
   ~H5File();
@@ -101,6 +106,9 @@ class H5File {
   const std::vector<std::string> groups() const {
     return h5::get_group_names(file_id_, "/");
   }
+
+  /// Get the InputSource.yaml string embedded in the file
+  std::string input_source() const;
 
   /// @{
   /*!
