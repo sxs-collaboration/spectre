@@ -39,5 +39,7 @@ target_link_libraries(
   EventsAndDenseTriggers
   FunctionsOfTime
   ObserverHelpers
+  Parallel
+  SizeControlErrors
   Utilities
 )
