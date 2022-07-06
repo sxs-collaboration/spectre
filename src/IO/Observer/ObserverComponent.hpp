@@ -12,6 +12,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/InputSource.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/TMPL.hpp"
@@ -51,7 +52,8 @@ template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using const_global_cache_tags =
-      tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName>;
+      tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName,
+                 ::Parallel::Tags::InputSource>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
