@@ -282,6 +282,7 @@ bool contains_dataset_or_group(const hid_t id, const std::string& group_name,
 }
 
 template <typename Type>
+// NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
 void write_to_attribute(const hid_t location_id, const std::string& name,
                         const Type& value) {
   const hid_t space_id = H5Screate(H5S_SCALAR);
@@ -462,6 +463,21 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   return result;
 }
 
+template <>
+void write_to_attribute<bool>(const hid_t group_id, const std::string& name,
+                              const std::vector<bool>& data) {
+  std::vector<unsigned short> temp(data.begin(), data.end());
+  write_to_attribute(group_id, name, temp);
+}
+
+template <>
+std::vector<bool> read_rank1_attribute<bool>(const hid_t group_id,
+                                             const std::string& name) {
+  const std::vector<unsigned short> temp =
+      read_rank1_attribute<unsigned short>(group_id, name);
+  return std::vector<bool>(temp.begin(), temp.end());
+}
+
 std::vector<std::string> get_attribute_names(const hid_t file_id,
                                              const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the
@@ -618,6 +634,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
 
 template std::string read_value_attribute<std::string>(const hid_t location_id,
                                                        const std::string& name);
+// std::vector<bool> is annoying, so we instantiate single bools separately
+template void write_to_attribute(const hid_t location_id,
+                                 const std::string& name, const bool& value);
+template bool read_value_attribute<bool>(const hid_t location_id,
+                                         const std::string& name);
 
 #define INSTANTIATE_READ_SCALAR(_, DATA)                 \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
