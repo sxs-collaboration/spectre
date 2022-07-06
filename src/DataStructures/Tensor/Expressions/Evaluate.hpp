@@ -91,6 +91,14 @@ constexpr bool is_evaluated_lhs_multi_index(
   return true;
 }
 
+template <typename SymmList>
+struct CheckNoLhsAntiSymmetries;
+
+template <template <typename...> class SymmList, typename... Symm>
+struct CheckNoLhsAntiSymmetries<SymmList<Symm...>> {
+  static constexpr bool value = (... and (Symm::value > 0));
+};
+
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Evaluate subtrees of the RHS expression or the RHS expression as a
@@ -147,6 +155,16 @@ void evaluate_impl(
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
   using rhs_tensorindex_list = tmpl::list<RhsTensorIndices...>;
 
+  // `Symmetry` currently prevents this because antisymmetries are not currently
+  // supported for `Tensor`s. This check is repeated here because if
+  // antisymmetries are later supported for `Tensor`, using antisymmetries in
+  // `TensorExpression`s will not automatically work. The implementations of the
+  // derived `TensorExpression` types assume no antisymmetries (assume positive
+  // `Symmetry` values), so support for antisymmetries in `TensorExpression`s
+  // will still need to be implemented.
+  static_assert(CheckNoLhsAntiSymmetries<LhsSymmetry>::value,
+                "Anti-symmetric Tensors are not currently supported by "
+                "TensorExpressions.");
   static_assert(
       tmpl::equal_members<
           typename remove_time_indices<lhs_tensorindex_list>::type,
@@ -284,6 +302,16 @@ void evaluate_impl(
   using lhs_tensorindex_list =
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
 
+  // `Symmetry` currently prevents this because antisymmetries are not currently
+  // supported for `Tensor`s. This check is repeated here because if
+  // antisymmetries are later supported for `Tensor`, using antisymmetries in
+  // `TensorExpression`s will not automatically work. The implementations of the
+  // derived `TensorExpression` types assume no antisymmetries (assume positive
+  // `Symmetry` values), so support for antisymmetries in `TensorExpression`s
+  // will still need to be implemented.
+  static_assert(CheckNoLhsAntiSymmetries<LhsSymmetry>::value,
+                "Anti-symmetric Tensors are not currently supported by "
+                "TensorExpressions.");
   static_assert(
       tensorindex_list_is_valid<lhs_tensorindex_list>::value,
       "Cannot assign a tensor expression to a LHS tensor with a repeated "
