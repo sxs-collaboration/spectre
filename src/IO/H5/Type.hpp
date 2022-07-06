@@ -36,6 +36,14 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<double>() {
   return H5T_NATIVE_DOUBLE;  // LCOV_EXCL_LINE
 }
 template <>
+SPECTRE_ALWAYS_INLINE hid_t h5_type<short>() {
+  return H5T_NATIVE_SHORT;  // LCOV_EXCL_LINE
+}
+template <>
+SPECTRE_ALWAYS_INLINE hid_t h5_type<unsigned short>() {
+  return H5T_NATIVE_USHORT;  // LCOV_EXCL_LINE
+}
+template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<int>() {
   return H5T_NATIVE_INT;  // LCOV_EXCL_LINE
 }
@@ -62,6 +70,10 @@ SPECTRE_ALWAYS_INLINE hid_t h5_type<unsigned long long>() {
 template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<char>() {
   return H5T_NATIVE_CHAR;  // LCOV_EXCL_LINE
+}
+template <>
+SPECTRE_ALWAYS_INLINE hid_t h5_type<bool>() {
+  return H5T_NATIVE_HBOOL;  // LCOV_EXCL_LINE
 }
 template <>
 SPECTRE_ALWAYS_INLINE hid_t h5_type<std::string>() {
