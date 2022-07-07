@@ -72,7 +72,7 @@ struct hash<TestAlgorithmArrayInstance> {
 };
 }  // namespace std
 
-struct ElementId {};
+struct ElementIndex {};
 
 struct CountActionsCalled : db::SimpleTag {
   static std::string name() { return "CountActionsCalled"; }
@@ -362,7 +362,7 @@ template <class Metavariables>
 struct MutateComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using array_index = ElementId;  // Just to test nothing breaks
+  using array_index = ElementIndex;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<add_remove_test::initialize>>,
@@ -531,7 +531,7 @@ template <class Metavariables>
 struct ReceiveComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using array_index = ElementId;  // Just to test nothing breaks
+  using array_index = ElementIndex;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<receive_data_test::initialize>>,
@@ -640,7 +640,7 @@ template <class Metavariables>
 struct AnyOrderComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using array_index = ElementId;  // Just to test nothing breaks
+  using array_index = ElementIndex;  // Just to test nothing breaks
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,

@@ -182,6 +182,7 @@ bool operator>=(const ElementId<VolumeDim>& lhs,
   return !(lhs < rhs);
 }
 
+/// @{
 /// \brief Returns a bool if the element is the zeroth element in the domain.
 ///
 /// \details An element is considered to be the zeroth element if its ElementId
@@ -213,8 +214,14 @@ bool operator>=(const ElementId<VolumeDim>& lhs,
 /// \endparblock
 template <size_t Dim>
 bool is_zeroth_element(const ElementId<Dim>& id,
-                       const std::optional<size_t>& grid_index = std::nullopt);
+                       const std::optional<size_t>& grid_index);
 
+// This overload is added (instead of adding a default value for grid_index)
+// in order to avoid adding DomainStructures as a dependency of Parallel
+// by using a forward declaration in Parallel/DistributedObject.hpp
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>& id);
+/// @}
 // ######################################################################
 // INLINE DEFINITIONS
 // ######################################################################
