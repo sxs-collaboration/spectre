@@ -122,7 +122,7 @@ by starting to type a few letters of this command and then hitting `Enter`.
 Visual Studio Code will download and run the container and drop you into a fully
 configured environment where you can proceed to compile and run SpECTRE.
 
-If you are interested to learn more about this feature works you can
+If you are interested to learn more about how this feature works you can
 read through the [VS Code documentation on remote containers](https://code.visualstudio.com/docs/remote/containers)
 and inspect the `.devcontainer/devcontainer.json` file that's included in the
 SpECTRE repository.
