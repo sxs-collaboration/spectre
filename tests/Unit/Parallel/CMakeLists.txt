@@ -42,17 +42,20 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
     "${ALGORITHM_TEST_LINK_LIBRARIES}")
   # Executable writes checkpoint file into the dir where it runs:
   set(CHECKPOINT
-    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/SpectreCheckpoint000000")
+    "${CMAKE_BINARY_DIR}/tests/Unit/Parallel/${TEST_NAME}/SpectreCheckpoint000000")
   add_test(
     NAME "Unit.Parallel.${TEST_NAME}"
     COMMAND
     ${SHELL_EXECUTABLE}
     -c
-    "rm -rf ${CHECKPOINT} \
+    "mkdir -p ${TEST_NAME} \
+    && cd ${TEST_NAME} \
+    && rm -rf ${CHECKPOINT} \
     && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} 2>&1 \
     && ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} \
        +restart ${CHECKPOINT} 2>&1 \
-    && rm -rf ${CHECKPOINT}"
+    && rm -rf ${CHECKPOINT} \
+    && cd .."
     )
   set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
 endfunction()
