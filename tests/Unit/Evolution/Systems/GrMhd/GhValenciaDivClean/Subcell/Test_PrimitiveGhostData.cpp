@@ -29,6 +29,7 @@
 namespace {
 using tags_for_reconstruction =
     tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+               hydro::Tags::ElectronFraction<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                hydro::Tags::MagneticField<DataVector, 3>,
@@ -37,6 +38,7 @@ using tags_for_reconstruction =
                GeneralizedHarmonic::Tags::Pi<3>>;
 using copied_tags =
     tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+               hydro::Tags::ElectronFraction<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::MagneticField<DataVector, 3>,
                hydro::Tags::DivergenceCleaningField<DataVector>>;

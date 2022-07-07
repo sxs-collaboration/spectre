@@ -147,9 +147,10 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAGS_LIST(data)                                                      \
-  tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Frame::Inertial>,    \
-             Tags::TildeB<Frame::Inertial>, Tags::TildePhi,                  \
-             hydro::Tags::RestMassDensity<DataVector>,                       \
+  tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau,                    \
+             Tags::TildeS<Frame::Inertial>, Tags::TildeB<Frame::Inertial>,   \
+             Tags::TildePhi, hydro::Tags::RestMassDensity<DataVector>,       \
+             hydro::Tags::ElectronFraction<DataVector>,                      \
              hydro::Tags::SpecificInternalEnergy<DataVector>,                \
              hydro::Tags::SpatialVelocity<DataVector, 3>,                    \
              hydro::Tags::MagneticField<DataVector, 3>,                      \
@@ -159,6 +160,7 @@ bool operator!=(const MonotonicityPreserving5Prim& lhs,
              hydro::Tags::SpecificEnthalpy<DataVector>,                      \
              hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,  \
              ::Tags::Flux<Tags::TildeD, tmpl::size_t<3>, Frame::Inertial>,   \
+             ::Tags::Flux<Tags::TildeYe, tmpl::size_t<3>, Frame::Inertial>,  \
              ::Tags::Flux<Tags::TildeTau, tmpl::size_t<3>, Frame::Inertial>, \
              ::Tags::Flux<Tags::TildeS<Frame::Inertial>, tmpl::size_t<3>,    \
                           Frame::Inertial>,                                  \

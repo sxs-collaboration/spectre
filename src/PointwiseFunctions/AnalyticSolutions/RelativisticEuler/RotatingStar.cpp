@@ -629,6 +629,20 @@ RotatingStar::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+RotatingStar::variables(
+    const gsl::not_null<IntermediateVariables<DataType>*> /* vars */,
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  // FIXME need to replace this with actual electron fraction
+  // consistent with the EoS used to construct the star.
+
+  auto ye = make_with_value<Scalar<DataType>>(x, 0.1);
+
+  return {std::move(ye)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> vars,
@@ -893,30 +907,29 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE_SCALARS(_, data)                                     \
-  template tuples::TaggedTuple < TAG(data) < DTYPE(data) >>              \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                 \
       RotatingStar::variables(                                           \
           const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
           const tnsr::I<DTYPE(data), 3>& x,                              \
-          tmpl::list < TAG(data) < DTYPE(data) >>                        \
-          /*meta*/) const;
+          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
-     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
+    (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
+     hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
+     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
+     hydro::Tags::SpecificEnthalpy, gr::Tags::Lapse,
      gr::Tags::SqrtDetSpatialMetric))
 
 #undef INSTANTIATE_SCALARS
 
 #define INSTANTIATE_MHD_VECTORS(_, data)                                     \
-  template tuples::TaggedTuple < TAG(data) < DTYPE(data), 3,                 \
-      Frame::Inertial >>                                                     \
-          RotatingStar::variables(                                           \
-              const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
-              const tnsr::I<DTYPE(data), 3>& x,                              \
-              tmpl::list < TAG(data) < DTYPE(data), 3, Frame::Inertial >>    \
-              /*meta*/) const;
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
+      RotatingStar::variables(                                               \
+          const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,     \
+          const tnsr::I<DTYPE(data), 3>& x,                                  \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_MHD_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,
@@ -925,13 +938,12 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_MHD_VECTORS, (double, DataVector),
 #undef INSTANTIATE_MHD_VECTORS
 
 #define INSTANTIATE_METRIC_TENSORS(_, data)                                  \
-  template tuples::TaggedTuple < TAG(data) < 3, Frame::Inertial,             \
-      DTYPE(data) >>                                                         \
-          RotatingStar::variables(                                           \
-              const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars, \
-              const tnsr::I<DTYPE(data), 3>& x, tmpl::list < TAG(data) < 3,  \
-              Frame::Inertial, DTYPE(data) >>                                \
-              /*meta*/) const;
+  template tuples::TaggedTuple<TAG(data) < 3, Frame::Inertial, DTYPE(data)>> \
+      RotatingStar::variables(                                               \
+          const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,     \
+          const tnsr::I<DTYPE(data), 3>& x,                                  \
+          tmpl::list<TAG(data) < 3, Frame::Inertial, DTYPE(data)>> /*meta*/) \
+          const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TENSORS, (double, DataVector),
                         (gr::Tags::Shift, gr::Tags::SpatialMetric,
@@ -940,13 +952,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_TENSORS, (double, DataVector),
 
 #undef INSTANTIATE_METRIC_TENSORS
 
-#define INSTANTIATE_METRIC_DERIVS(_, data)                              \
-  template auto RotatingStar::variables(                                \
-      const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,    \
-      const tnsr::I<DTYPE(data), 3>& x,                                 \
-      tmpl::list < TAG(data) < DTYPE(data) >>                           \
-      /*meta*/) const->tuples::TaggedTuple < TAG(data) < DTYPE(data) >> \
-      ;
+#define INSTANTIATE_METRIC_DERIVS(_, data)                                   \
+  template auto RotatingStar::variables(                                     \
+      const gsl::not_null<IntermediateVariables<DTYPE(data)>*> vars,         \
+      const tnsr::I<DTYPE(data), 3>& x, tmpl::list<TAG(data) < DTYPE(data)>> \
+      /*meta*/) const->tuples::TaggedTuple<TAG(data) < DTYPE(data)>> ;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_METRIC_DERIVS, (double, DataVector),
                         (DerivLapse, DerivShift, DerivSpatialMetric))

@@ -58,6 +58,7 @@ void reconstruct_prims_work(
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -240,6 +241,7 @@ void reconstruct_fd_neighbor_work(
     const size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,

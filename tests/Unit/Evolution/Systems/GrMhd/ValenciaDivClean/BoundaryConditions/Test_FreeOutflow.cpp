@@ -57,6 +57,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeD>,
           helpers::Tags::PythonFunctionName<
+              grmhd::ValenciaDivClean::Tags::TildeYe>,
+          helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeTau>,
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>,
@@ -67,6 +69,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
 
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                           tmpl::size_t<3>, Frame::Inertial>>,
+          helpers::Tags::PythonFunctionName<
+              ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
                            tmpl::size_t<3>, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
@@ -86,9 +91,10 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
               gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
           helpers::Tags::PythonFunctionName<
               gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>>{
-          "error", "tilde_d", "tilde_tau", "tilde_s", "tilde_b", "tilde_phi",
-          "flux_tilde_d", "flux_tilde_tau", "flux_tilde_s", "flux_tilde_b",
-          "flux_tilde_phi", "lapse", "shift", "inv_spatial_metric"},
+          "error", "tilde_d", "tilde_ye", "tilde_tau", "tilde_s", "tilde_b",
+          "tilde_phi", "flux_tilde_d", "flux_tilde_ye", "flux_tilde_tau",
+          "flux_tilde_s", "flux_tilde_b", "flux_tilde_phi", "lapse", "shift",
+          "inv_spatial_metric"},
       "FreeOutflow:\n", face_mesh_index, box_with_gridless_tags,
       tuples::TaggedTuple<>{});
 }

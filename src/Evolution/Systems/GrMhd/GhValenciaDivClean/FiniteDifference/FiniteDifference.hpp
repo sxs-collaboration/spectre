@@ -7,4 +7,4 @@ namespace grmhd::GhValenciaDivClean {
 /// Finite difference functionality for the coupled
 /// Generalized Harmonic and ValenciaDivClean equations
 namespace fd {}
-}  // namespace grmhd::ValenciaDivClean
+}  // namespace grmhd::GhValenciaDivClean

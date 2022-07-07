@@ -50,6 +50,8 @@ void test_primitive_from_conservative_random(
   // generate random primitives with interesting astrophysical values
   const auto expected_rest_mass_density =
       TestHelpers::hydro::random_density(generator, used_for_size);
+  const auto expected_electron_fraction =
+      TestHelpers::hydro::random_electron_fraction(generator, used_for_size);
   const auto expected_lorentz_factor =
       TestHelpers::hydro::random_lorentz_factor(generator, used_for_size);
   const auto spatial_metric =
@@ -71,6 +73,8 @@ void test_primitive_from_conservative_random(
                                                             used_for_size);
     expected_pressure = equation_of_state.pressure_from_density_and_energy(
         expected_rest_mass_density, expected_specific_internal_energy);
+  } else if constexpr (ThermodynamicDim == 3) {
+    static_assert("3D EoS call not implemented");
   }
 
   const auto expected_specific_enthalpy = hydro::relativistic_specific_enthalpy(
@@ -90,21 +94,24 @@ void test_primitive_from_conservative_random(
 
   const size_t number_of_points = used_for_size.size();
   Scalar<DataVector> tilde_d(number_of_points);
+  Scalar<DataVector> tilde_ye(number_of_points);
   Scalar<DataVector> tilde_tau(number_of_points);
   tnsr::i<DataVector, 3> tilde_s(number_of_points);
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
-      make_not_null(&tilde_d), make_not_null(&tilde_tau),
-      make_not_null(&tilde_s), make_not_null(&tilde_b),
-      make_not_null(&tilde_phi), expected_rest_mass_density,
+      make_not_null(&tilde_d), make_not_null(&tilde_ye),
+      make_not_null(&tilde_tau), make_not_null(&tilde_s),
+      make_not_null(&tilde_b), make_not_null(&tilde_phi),
+      expected_rest_mass_density, expected_electron_fraction,
       expected_specific_internal_energy, expected_specific_enthalpy,
       expected_pressure, expected_spatial_velocity, expected_lorentz_factor,
       expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
       expected_divergence_cleaning_field);
 
   Scalar<DataVector> rest_mass_density(number_of_points);
+  Scalar<DataVector> electron_fraction(number_of_points);
   Scalar<DataVector> specific_internal_energy(number_of_points);
   tnsr::I<DataVector, 3> spatial_velocity(number_of_points);
   tnsr::I<DataVector, 3> magnetic_field(number_of_points);
@@ -116,18 +123,20 @@ void test_primitive_from_conservative_random(
   Scalar<DataVector> specific_enthalpy(number_of_points);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
-          make_not_null(&rest_mass_density),
+          make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
           make_not_null(&specific_internal_energy),
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
-          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
+          tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
           sqrt_det_spatial_metric, equation_of_state);
 
   Approx larger_approx =
       Approx::custom().epsilon(std::numeric_limits<double>::epsilon() * 1.e8);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_rest_mass_density, rest_mass_density,
+                               larger_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_electron_fraction, electron_fraction,
                                larger_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_specific_internal_energy,
                                specific_internal_energy, larger_approx);
@@ -148,6 +157,8 @@ template <typename OrderedListOfPrimitiveRecoverySchemes>
 void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   const auto expected_rest_mass_density =
       make_with_value<Scalar<DataVector>>(used_for_size, 2.0);
+  const auto expected_electron_fraction =
+      make_with_value<Scalar<DataVector>>(used_for_size, 0.1);
   const auto expected_lorentz_factor =
       make_with_value<Scalar<DataVector>>(used_for_size, 1.25);
   auto spatial_metric =
@@ -181,21 +192,24 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
 
   const size_t number_of_points = used_for_size.size();
   Scalar<DataVector> tilde_d(number_of_points);
+  Scalar<DataVector> tilde_ye(number_of_points);
   Scalar<DataVector> tilde_tau(number_of_points);
   tnsr::i<DataVector, 3> tilde_s(number_of_points);
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
-      make_not_null(&tilde_d), make_not_null(&tilde_tau),
-      make_not_null(&tilde_s), make_not_null(&tilde_b),
-      make_not_null(&tilde_phi), expected_rest_mass_density,
+      make_not_null(&tilde_d), make_not_null(&tilde_ye),
+      make_not_null(&tilde_tau), make_not_null(&tilde_s),
+      make_not_null(&tilde_b), make_not_null(&tilde_phi),
+      expected_rest_mass_density, expected_electron_fraction,
       expected_specific_internal_energy, expected_specific_enthalpy,
       expected_pressure, expected_spatial_velocity, expected_lorentz_factor,
       expected_magnetic_field, sqrt_det_spatial_metric, spatial_metric,
       expected_divergence_cleaning_field);
 
   Scalar<DataVector> rest_mass_density(number_of_points);
+  Scalar<DataVector> electron_fraction(number_of_points);
   Scalar<DataVector> specific_internal_energy(number_of_points);
   tnsr::I<DataVector, 3> spatial_velocity(number_of_points);
   tnsr::I<DataVector, 3> magnetic_field(number_of_points);
@@ -208,16 +222,17 @@ void test_primitive_from_conservative_known(const DataVector& used_for_size) {
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes>::apply(
-          make_not_null(&rest_mass_density),
+          make_not_null(&rest_mass_density), make_not_null(&electron_fraction),
           make_not_null(&specific_internal_energy),
           make_not_null(&spatial_velocity), make_not_null(&magnetic_field),
           make_not_null(&divergence_cleaning_field),
           make_not_null(&lorentz_factor), make_not_null(&pressure),
-          make_not_null(&specific_enthalpy), tilde_d, tilde_tau, tilde_s,
-          tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
+          make_not_null(&specific_enthalpy), tilde_d, tilde_ye, tilde_tau,
+          tilde_s, tilde_b, tilde_phi, spatial_metric, inv_spatial_metric,
           sqrt_det_spatial_metric, ideal_fluid);
 
   CHECK_ITERABLE_APPROX(expected_rest_mass_density, rest_mass_density);
+  CHECK_ITERABLE_APPROX(expected_electron_fraction, electron_fraction);
   CHECK_ITERABLE_APPROX(expected_specific_internal_energy,
                         specific_internal_energy);
   CHECK_ITERABLE_APPROX(expected_lorentz_factor, lorentz_factor);

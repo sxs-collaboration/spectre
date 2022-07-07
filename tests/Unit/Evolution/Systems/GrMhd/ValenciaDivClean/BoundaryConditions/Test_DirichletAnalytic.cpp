@@ -121,6 +121,8 @@ void test_soln() {
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeD>,
           helpers::Tags::PythonFunctionName<
+              grmhd::ValenciaDivClean::Tags::TildeYe>,
+          helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeTau>,
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>,
@@ -131,6 +133,9 @@ void test_soln() {
 
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                           tmpl::size_t<3>, Frame::Inertial>>,
+          helpers::Tags::PythonFunctionName<
+              ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
                            tmpl::size_t<3>, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
@@ -148,10 +153,11 @@ void test_soln() {
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<
               gr::Tags::Shift<3, Frame::Inertial, DataVector>>>{
-          "soln_error", "soln_tilde_d", "soln_tilde_tau", "soln_tilde_s",
-          "soln_tilde_b", "soln_tilde_phi", "soln_flux_tilde_d",
-          "soln_flux_tilde_tau", "soln_flux_tilde_s", "soln_flux_tilde_b",
-          "soln_flux_tilde_phi", "soln_lapse", "soln_shift"},
+          "soln_error", "soln_tilde_d", "soln_tilde_ye", "soln_tilde_tau",
+          "soln_tilde_s", "soln_tilde_b", "soln_tilde_phi", "soln_flux_tilde_d",
+          "soln_flux_tilde_ye", "soln_flux_tilde_tau", "soln_flux_tilde_s",
+          "soln_flux_tilde_b", "soln_flux_tilde_phi", "soln_lapse",
+          "soln_shift"},
       "DirichletAnalytic:\n", Index<2>{5}, box_analytic_soln,
       tuples::TaggedTuple<>{});
 }
@@ -176,6 +182,8 @@ void test_data() {
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeD>,
           helpers::Tags::PythonFunctionName<
+              grmhd::ValenciaDivClean::Tags::TildeYe>,
+          helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeTau>,
           helpers::Tags::PythonFunctionName<
               grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>,
@@ -186,6 +194,9 @@ void test_data() {
 
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                           tmpl::size_t<3>, Frame::Inertial>>,
+          helpers::Tags::PythonFunctionName<
+              ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
                            tmpl::size_t<3>, Frame::Inertial>>,
           helpers::Tags::PythonFunctionName<
               ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
@@ -203,10 +214,11 @@ void test_data() {
           helpers::Tags::PythonFunctionName<gr::Tags::Lapse<DataVector>>,
           helpers::Tags::PythonFunctionName<
               gr::Tags::Shift<3, Frame::Inertial, DataVector>>>{
-          "soln_error", "data_tilde_d", "data_tilde_tau", "data_tilde_s",
-          "data_tilde_b", "data_tilde_phi", "data_flux_tilde_d",
-          "data_flux_tilde_tau", "data_flux_tilde_s", "data_flux_tilde_b",
-          "data_flux_tilde_phi", "soln_lapse", "soln_shift"},
+          "soln_error", "data_tilde_d", "data_tilde_ye", "data_tilde_tau",
+          "data_tilde_s", "data_tilde_b", "data_tilde_phi", "data_flux_tilde_d",
+          "data_flux_tilde_ye", "data_flux_tilde_tau", "data_flux_tilde_s",
+          "data_flux_tilde_b", "data_flux_tilde_phi", "soln_lapse",
+          "soln_shift"},
       "DirichletAnalytic:\n", Index<2>{5}, box_analytic_data,
       tuples::TaggedTuple<>{});
 }

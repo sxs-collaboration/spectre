@@ -59,6 +59,9 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
       rest_mass_density, specific_internal_energy,
       eos.pressure_from_density(rest_mass_density));
 
+  const auto electron_fraction =
+      helper::random_electron_fraction(nn_gen, used_for_size);
+
   const auto lapse = gr_helper::random_lapse(nn_gen, used_for_size);
   const auto shift = gr_helper::random_shift<3>(nn_gen, used_for_size);
   const auto spatial_metric =
@@ -98,13 +101,14 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
     Approx custom_approx = Approx::custom().epsilon(1.0e-10);
     CHECK_ITERABLE_CUSTOM_APPROX(
         grmhd::ValenciaDivClean::characteristic_speeds(
-            rest_mass_density, specific_internal_energy, specific_enthalpy,
-            spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
-            spatial_metric, normal, eos_base),
+            rest_mass_density, electron_fraction, specific_internal_energy,
+            specific_enthalpy, spatial_velocity, lorentz_factor, magnetic_field,
+            lapse, shift, spatial_metric, normal, eos_base),
         (pypp::call<std::array<DataVector, 9>>(
             "TestFunctions", "characteristic_speeds", lapse, shift,
             spatial_velocity, spatial_velocity_squared, sound_speed_squared,
-            alfven_speed_squared, normal)), custom_approx);
+            alfven_speed_squared, normal)),
+        custom_approx);
   }
 }
 

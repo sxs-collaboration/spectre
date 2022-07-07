@@ -29,6 +29,7 @@
 namespace VerifyGrMhdSolution_detail {
 
 using valencia_tags = tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                 grmhd::ValenciaDivClean::Tags::TildeYe,
                                  grmhd::ValenciaDivClean::Tags::TildeTau,
                                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                                  grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -48,6 +49,7 @@ Variables<valencia_tags> numerical_dt(
 
   using solution_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -64,6 +66,8 @@ Variables<valencia_tags> numerical_dt(
 
     const auto& rest_mass_density =
         get<hydro::Tags::RestMassDensity<DataVector>>(vars);
+    const auto& electron_fraction =
+        get<hydro::Tags::ElectronFraction<DataVector>>(vars);
     const auto& specific_internal_energy =
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vars);
     const auto& spatial_velocity =
@@ -85,6 +89,8 @@ Variables<valencia_tags> numerical_dt(
     grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
         make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildeD>(
             gsl::at(solution_at_six_times, i))),
+        make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildeYe>(
+            gsl::at(solution_at_six_times, i))),
         make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildeTau>(
             gsl::at(solution_at_six_times, i))),
         make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildeS<>>(
@@ -93,9 +99,10 @@ Variables<valencia_tags> numerical_dt(
             gsl::at(solution_at_six_times, i))),
         make_not_null(&get<grmhd::ValenciaDivClean::Tags::TildePhi>(
             gsl::at(solution_at_six_times, i))),
-        rest_mass_density, specific_internal_energy, specific_enthalpy,
-        pressure, spatial_velocity, lorentz_factor, magnetic_field,
-        sqrt_det_spatial_metric, spatial_metric, divergence_cleaning_field);
+        rest_mass_density, electron_fraction, specific_internal_energy,
+        specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
+        magnetic_field, sqrt_det_spatial_metric, spatial_metric,
+        divergence_cleaning_field);
   }
 
   return (-1.0 / (60.0 * delta_time)) * solution_at_six_times[0] +
@@ -133,6 +140,7 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   // Evaluate analytic solution
   using solution_tags = tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::ElectronFraction<DataVector>,
       hydro::Tags::SpecificInternalEnergy<DataVector>,
       hydro::Tags::SpatialVelocity<DataVector, 3>,
       hydro::Tags::MagneticField<DataVector, 3>,
@@ -154,6 +162,8 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
 
   const auto& rest_mass_density =
       get<hydro::Tags::RestMassDensity<DataVector>>(vars);
+  const auto& electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataVector>>(vars);
   const auto& specific_internal_energy =
       get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vars);
   const auto& spatial_velocity =
@@ -190,21 +200,24 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
 
   const size_t number_of_points = mesh.number_of_grid_points();
   Scalar<DataVector> tilde_d(number_of_points);
+  Scalar<DataVector> tilde_ye(number_of_points);
   Scalar<DataVector> tilde_tau(number_of_points);
   tnsr::i<DataVector, 3> tilde_s(number_of_points);
   tnsr::I<DataVector, 3> tilde_b(number_of_points);
   Scalar<DataVector> tilde_phi(number_of_points);
 
   grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply(
-      make_not_null(&tilde_d), make_not_null(&tilde_tau),
-      make_not_null(&tilde_s), make_not_null(&tilde_b),
-      make_not_null(&tilde_phi), rest_mass_density, specific_internal_energy,
-      specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
-      magnetic_field, sqrt_det_spatial_metric, spatial_metric,
-      divergence_cleaning_field);
+      make_not_null(&tilde_d), make_not_null(&tilde_ye),
+      make_not_null(&tilde_tau), make_not_null(&tilde_s),
+      make_not_null(&tilde_b), make_not_null(&tilde_phi), rest_mass_density,
+      electron_fraction, specific_internal_energy, specific_enthalpy, pressure,
+      spatial_velocity, lorentz_factor, magnetic_field, sqrt_det_spatial_metric,
+      spatial_metric, divergence_cleaning_field);
 
   using flux_tags =
       tmpl::list<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                            tmpl::size_t<3>, Frame::Inertial>,
+                 Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
                             tmpl::size_t<3>, Frame::Inertial>,
                  Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
                             tmpl::size_t<3>, Frame::Inertial>,
@@ -217,6 +230,9 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   Variables<flux_tags> fluxes(number_of_points);
   auto& flux_tilde_d =
       get<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD, tmpl::size_t<3>,
+                     Frame::Inertial>>(fluxes);
+  auto& flux_tilde_ye =
+      get<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe, tmpl::size_t<3>,
                      Frame::Inertial>>(fluxes);
   auto& flux_tilde_tau =
       get<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau, tmpl::size_t<3>,
@@ -232,12 +248,12 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
                      Frame::Inertial>>(fluxes);
 
   grmhd::ValenciaDivClean::ComputeFluxes::apply(
-      make_not_null(&flux_tilde_d), make_not_null(&flux_tilde_tau),
-      make_not_null(&flux_tilde_s), make_not_null(&flux_tilde_b),
-      make_not_null(&flux_tilde_phi), tilde_d, tilde_tau, tilde_s, tilde_b,
-      tilde_phi, lapse, shift, sqrt_det_spatial_metric, spatial_metric,
-      inv_spatial_metric, pressure, spatial_velocity, lorentz_factor,
-      magnetic_field);
+      make_not_null(&flux_tilde_d), make_not_null(&flux_tilde_ye),
+      make_not_null(&flux_tilde_tau), make_not_null(&flux_tilde_s),
+      make_not_null(&flux_tilde_b), make_not_null(&flux_tilde_phi), tilde_d,
+      tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
+      sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, pressure,
+      spatial_velocity, lorentz_factor, magnetic_field);
 
   if (block.is_time_dependent()) {
     ERROR("The block must be time-independent");
@@ -247,6 +263,10 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
 
   const auto& div_flux_tilde_d =
       get<Tags::div<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
+                               tmpl::size_t<3>, Frame::Inertial>>>(
+          div_of_fluxes);
+  const auto& div_flux_tilde_ye =
+      get<Tags::div<Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
                                tmpl::size_t<3>, Frame::Inertial>>>(
           div_of_fluxes);
   const auto& div_flux_tilde_tau =
@@ -273,12 +293,15 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   grmhd::ValenciaDivClean::ComputeSources::apply(
       make_not_null(&source_tilde_tau), make_not_null(&source_tilde_s),
       make_not_null(&source_tilde_b), make_not_null(&source_tilde_phi), tilde_d,
+      tilde_ye,
       tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_velocity, magnetic_field,
-      rest_mass_density, specific_enthalpy, lorentz_factor, pressure, lapse,
+      rest_mass_density, electron_fraction,
+      specific_enthalpy, lorentz_factor, pressure, lapse,
       d_lapse, d_shift, spatial_metric, d_spatial_metric, inv_spatial_metric,
       sqrt_det_spatial_metric, extrinsic_curvature, 0.0);
 
   Scalar<DataVector> residual_tilde_d(number_of_points, 0.);
+  Scalar<DataVector> residual_tilde_ye(number_of_points, 0.);
   Scalar<DataVector> residual_tilde_tau(number_of_points, 0.);
   tnsr::i<DataVector, 3> residual_tilde_s(number_of_points, 0.);
   tnsr::I<DataVector, 3> residual_tilde_b(number_of_points, 0.);
@@ -290,6 +313,9 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   get(residual_tilde_d) =
       get(get<grmhd::ValenciaDivClean::Tags::TildeD>(dt_solution)) +
       get(div_flux_tilde_d);
+  get(residual_tilde_ye) =
+      get(get<grmhd::ValenciaDivClean::Tags::TildeYe>(dt_solution)) +
+      get(div_flux_tilde_ye);
   get(residual_tilde_tau) =
       get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(dt_solution)) +
       get(div_flux_tilde_tau) - get(source_tilde_tau);
@@ -318,6 +344,7 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
   CHECK(max(abs(get(residual_tilde_d))) == numerical_approx(0.0));
+  CHECK(max(abs(get(residual_tilde_ye))) == numerical_approx(0.0));
   CHECK(max(abs(get(residual_tilde_tau))) == numerical_approx(0.0));
   CHECK(max(abs(get<0>(residual_tilde_s))) == numerical_approx(0.0));
   CHECK(max(abs(get<1>(residual_tilde_s))) == numerical_approx(0.0));

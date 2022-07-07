@@ -64,6 +64,15 @@ class Flattener {
         "simulation."};
   };
 
+  /// \brief Require that the mean of TildeYe is positive, otherwise terminate
+  /// the simulation.
+  struct RequirePositiveMeanTildeYe {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Require that the mean of TildeYe is positive, otherwise terminate the "
+        "simulation."};
+  };
+
   /// \brief Require that the mean of TildeTau is physical, otherwise terminate
   /// the simulation.
   struct RequirePhysicalMeanTildeTau {
@@ -85,13 +94,15 @@ class Flattener {
         "function."};
   };
 
-  using options = tmpl::list<RequirePositiveMeanTildeD,
-                             RequirePhysicalMeanTildeTau, RecoverPrimitives>;
+  using options =
+      tmpl::list<RequirePositiveMeanTildeD, RequirePositiveMeanTildeYe,
+                 RequirePhysicalMeanTildeTau, RecoverPrimitives>;
   static constexpr Options::String help = {
       "Reduces oscillations (flattens) the conserved variables according to "
       "the variable fixing procedure described in Foucart's thesis.\n"};
 
   Flattener(bool require_positive_mean_tilde_d,
+            bool require_positive_mean_tilde_ye,
             bool require_physical_mean_tilde_tau, bool recover_primitives);
 
   Flattener() = default;
@@ -105,7 +116,8 @@ class Flattener {
   void pup(PUP::er& p);
 
   using return_tags =
-      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Frame::Inertial>,
+      tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau,
+                 Tags::TildeS<Frame::Inertial>,
                  ::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
   using argument_tags = tmpl::list<
       Tags::TildeB<>, Tags::TildePhi,
@@ -119,6 +131,7 @@ class Flattener {
   template <size_t ThermodynamicDim>
   void operator()(
       gsl::not_null<Scalar<DataVector>*> tilde_d,
+      gsl::not_null<Scalar<DataVector>*> tilde_ye,
       gsl::not_null<Scalar<DataVector>*> tilde_tau,
       gsl::not_null<tnsr::i<DataVector, 3>*> tilde_s,
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> primitives,
@@ -139,6 +152,7 @@ class Flattener {
                          const Flattener<LocalRecoverySchemesList>& rhs);
 
   bool require_positive_mean_tilde_d_ = false;
+  bool require_positive_mean_tilde_ye_ = false;
   bool require_physical_mean_tilde_tau_ = false;
   bool recover_primitives_ = false;
 };

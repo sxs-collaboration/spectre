@@ -7,14 +7,14 @@ import scipy.optimize as opt
 
 # Functions for testing AlfvenWave.cpp
 def alfven_rest_mass_density(x, t, wavenumber, pressure, rest_mass_density,
-                             adiabatic_index, bkgd_magnetic_field,
-                             wave_magnetic_field):
+                             electron_fraction, adiabatic_index,
+                             bkgd_magnetic_field, wave_magnetic_field):
     return rest_mass_density
 
 
 def alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
-                            adiabatic_index, bkgd_magnetic_field,
-                            wave_magnetic_field):
+                            electron_fraction, adiabatic_index,
+                            bkgd_magnetic_field, wave_magnetic_field):
     magnitude_B0 = np.linalg.norm(bkgd_magnetic_field)
     magnitude_B1 = np.linalg.norm(wave_magnetic_field)
     unit_B0 = np.array(bkgd_magnetic_field) / magnitude_B0
@@ -36,36 +36,38 @@ def alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
 
 
 def alfven_specific_internal_energy(x, t, wavenumber, pressure,
-                                    rest_mass_density, adiabatic_index,
-                                    bkgd_magnetic_field, wave_magnetic_field):
+                                    rest_mass_density, electron_fraction,
+                                    adiabatic_index, bkgd_magnetic_field,
+                                    wave_magnetic_field):
     return pressure / (rest_mass_density * (adiabatic_index - 1.0))
 
 
 def alfven_pressure(x, t, wavenumber, pressure, rest_mass_density,
-                    adiabatic_index, bkgd_magnetic_field, wave_magnetic_field):
+                    electron_fraction, adiabatic_index, bkgd_magnetic_field,
+                    wave_magnetic_field):
     return pressure
 
 
 def alfven_specific_enthalpy(x, t, wavenumber, pressure, rest_mass_density,
-                             adiabatic_index, bkgd_magnetic_field,
-                             wave_magnetic_field):
+                             electron_fraction, adiabatic_index,
+                             bkgd_magnetic_field, wave_magnetic_field):
     return 1.0 + adiabatic_index * alfven_specific_internal_energy(
-        x, t, wavenumber, pressure, rest_mass_density, adiabatic_index,
-        bkgd_magnetic_field, wave_magnetic_field)
+        x, t, wavenumber, pressure, rest_mass_density, electron_fraction,
+        adiabatic_index, bkgd_magnetic_field, wave_magnetic_field)
 
 
 def alfven_lorentz_factor(x, t, wavenumber, pressure, rest_mass_density,
-                          adiabatic_index, bkgd_magnetic_field,
-                          wave_magnetic_field):
+                          electron_fraction, adiabatic_index,
+                          bkgd_magnetic_field, wave_magnetic_field):
     return 1.0 / np.sqrt(1.0 - np.linalg.norm(
         alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
-                                adiabatic_index, bkgd_magnetic_field,
-                                wave_magnetic_field))**2)
+                                electron_fraction, adiabatic_index,
+                                bkgd_magnetic_field, wave_magnetic_field))**2)
 
 
 def alfven_magnetic_field(x, t, wavenumber, pressure, rest_mass_density,
-                          adiabatic_index, bkgd_magnetic_field,
-                          wave_magnetic_field):
+                          electron_fraction, adiabatic_index,
+                          bkgd_magnetic_field, wave_magnetic_field):
     magnitude_B0 = np.linalg.norm(bkgd_magnetic_field)
     magnitude_B1 = np.linalg.norm(wave_magnetic_field)
     unit_B0 = np.array(bkgd_magnetic_field) / magnitude_B0
@@ -87,9 +89,16 @@ def alfven_magnetic_field(x, t, wavenumber, pressure, rest_mass_density,
 
 
 def alfven_divergence_cleaning_field(x, t, wavenumber, pressure,
-                                     rest_mass_density, adiabatic_index,
-                                     bkgd_magnetic_field, wave_magnetic_field):
+                                     rest_mass_density, electron_fraction,
+                                     adiabatic_index, bkgd_magnetic_field,
+                                     wave_magnetic_field):
     return 0.0
+
+
+def alfven_electron_fraction(x, t, wavenumber, pressure, rest_mass_density,
+                             electron_fraction, adiabatic_index,
+                             bkgd_magnetic_field, wave_magnetic_field):
+    return electron_fraction
 
 
 # End functions for testing AlfvenWave.cpp
@@ -225,6 +234,11 @@ def bondi_michel_rest_mass_density(x, mass, sonic_radius, sonic_density,
         variables["sonic_newtonian_sound_speed_squared"], \
         variables["sonic_fluid_speed_squared"], \
         mass))
+
+
+def bondi_michel_electron_fraction(x, mass, sonic_radius, sonic_density,
+                                   adiabatic_exponent, magnetic_field):
+    return 0.4
 
 
 def bondi_michel_lorentz_factor(x, mass, sonic_radius, sonic_density,

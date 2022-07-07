@@ -46,7 +46,8 @@ template void volume_terms<::grmhd::ValenciaDivClean::TimeDerivativeTerms>(
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>& mesh_velocity,
     const std::optional<Scalar<DataVector>>& div_mesh_velocity,
 
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
@@ -63,6 +64,7 @@ template void volume_terms<::grmhd::ValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
 
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double& constraint_damping_parameter);

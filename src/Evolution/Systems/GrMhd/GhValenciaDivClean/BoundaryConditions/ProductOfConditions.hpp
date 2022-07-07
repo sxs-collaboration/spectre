@@ -88,6 +88,7 @@ struct ValenciaDoNothingGhostCondition {
 
   std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> tilde_d,
+      const gsl::not_null<Scalar<DataVector>*> tilde_ye,
       const gsl::not_null<Scalar<DataVector>*> tilde_tau,
       const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
@@ -95,6 +96,8 @@ struct ValenciaDoNothingGhostCondition {
 
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           tilde_d_flux,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_ye_flux,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           tilde_tau_flux,
       const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*>
@@ -115,12 +118,14 @@ struct ValenciaDoNothingGhostCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
 
       const Scalar<DataVector>& interior_tilde_d,
+      const Scalar<DataVector>& interior_tilde_ye,
       const Scalar<DataVector>& interior_tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& interior_tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_b,
       const Scalar<DataVector>& interior_tilde_phi,
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_d_flux,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_ye_flux,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_tilde_tau_flux,
       const tnsr::Ij<DataVector, 3, Frame::Inertial>& interior_tilde_s_flux,
       const tnsr::IJ<DataVector, 3, Frame::Inertial>& interior_tilde_b_flux,
@@ -129,12 +134,14 @@ struct ValenciaDoNothingGhostCondition {
       const tnsr::aa<DataVector, 3, Frame::Inertial>&
           interior_spacetime_metric) {
     *tilde_d = interior_tilde_d;
+    *tilde_ye = interior_tilde_ye;
     *tilde_tau = interior_tilde_tau;
     *tilde_s = interior_tilde_s;
     *tilde_b = interior_tilde_b;
     *tilde_phi = interior_tilde_phi;
 
     *tilde_d_flux = interior_tilde_d_flux;
+    *tilde_ye_flux = interior_tilde_ye_flux;
     *tilde_tau_flux = interior_tilde_tau_flux;
     *tilde_s_flux = interior_tilde_s_flux;
     *tilde_b_flux = interior_tilde_b_flux;

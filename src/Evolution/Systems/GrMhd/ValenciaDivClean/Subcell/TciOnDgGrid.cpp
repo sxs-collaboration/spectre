@@ -33,7 +33,8 @@ template <size_t ThermodynamicDim>
 std::tuple<int, evolution::dg::subcell::RdmpTciData>
 TciOnDgGrid<RecoveryScheme>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
@@ -52,7 +53,7 @@ TciOnDgGrid<RecoveryScheme>::apply(
   using std::min;
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
   const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
-  DataVector temp_buffer{3 * num_subcell_pts + num_dg_pts};
+  DataVector temp_buffer{4 * num_subcell_pts + num_dg_pts};
   size_t offset_into_temp_buffer = 0;
   const auto assign_data =
       [&temp_buffer, &offset_into_temp_buffer](
@@ -67,6 +68,13 @@ TciOnDgGrid<RecoveryScheme>::apply(
   evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_d)),
                                       get(tilde_d), dg_mesh,
                                       subcell_mesh.extents());
+
+  Scalar<DataVector> subcell_tilde_ye{};
+  assign_data(make_not_null(&subcell_tilde_ye), num_subcell_pts);
+  evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_ye)),
+                                      get(tilde_ye), dg_mesh,
+                                      subcell_mesh.extents());
+
   Scalar<DataVector> subcell_tilde_tau{};
   assign_data(make_not_null(&subcell_tilde_tau), num_subcell_pts);
   evolution::dg::subcell::fd::project(make_not_null(&get(subcell_tilde_tau)),
@@ -85,10 +93,12 @@ TciOnDgGrid<RecoveryScheme>::apply(
 
   rdmp_tci_data.max_variables_values =
       std::vector{max(max(get(subcell_tilde_d)), max(get(tilde_d))),
+                  max(max(get(subcell_tilde_ye)), max(get(tilde_ye))),
                   max(max(get(subcell_tilde_tau)), max(get(tilde_tau))),
                   max(max(get(subcell_mag_tilde_b)), max_mag_tilde_b)};
   rdmp_tci_data.min_variables_values =
       std::vector{min(min(get(subcell_tilde_d)), min(get(tilde_d))),
+                  min(min(get(subcell_tilde_ye)), min(get(tilde_ye))),
                   min(min(get(subcell_tilde_tau)), min(get(tilde_tau))),
                   min(min(get(subcell_mag_tilde_b)), min(get(mag_tilde_b)))};
 
@@ -100,7 +110,13 @@ TciOnDgGrid<RecoveryScheme>::apply(
   if (min(get(tilde_d)) / average_sqrt_det_spatial_metric <
           tci_options.minimum_rest_mass_density_times_lorentz_factor or
       min(get(subcell_tilde_d)) / average_sqrt_det_spatial_metric <
-          tci_options.minimum_rest_mass_density_times_lorentz_factor) {
+          tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(tilde_ye)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor *
+              tci_options.minimum_ye or
+      min(get(subcell_tilde_ye)) / average_sqrt_det_spatial_metric <
+          tci_options.minimum_rest_mass_density_times_lorentz_factor *
+              tci_options.minimum_ye) {
     return {-1, std::move(rdmp_tci_data)};
   }
 
@@ -155,10 +171,13 @@ TciOnDgGrid<RecoveryScheme>::apply(
   // recovery schemes.
   get<hydro::Tags::Pressure<DataVector>>(temp_prims) =
       get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars);
+
   if (not grmhd::ValenciaDivClean::
           PrimitiveFromConservative<tmpl::list<RecoveryScheme>, false>::apply(
               make_not_null(
                   &get<hydro::Tags::RestMassDensity<DataVector>>(temp_prims)),
+              make_not_null(
+                  &get<hydro::Tags::ElectronFraction<DataVector>>(temp_prims)),
               make_not_null(
                   &get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
                       temp_prims)),
@@ -175,8 +194,9 @@ TciOnDgGrid<RecoveryScheme>::apply(
                   &get<hydro::Tags::Pressure<DataVector>>(temp_prims)),
               make_not_null(
                   &get<hydro::Tags::SpecificEnthalpy<DataVector>>(temp_prims)),
-              tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_metric,
-              inv_spatial_metric, sqrt_det_spatial_metric, eos)) {
+              tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+              spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric,
+              eos)) {
     return {-4, std::move(rdmp_tci_data)};
   }
 
@@ -190,6 +210,8 @@ TciOnDgGrid<RecoveryScheme>::apply(
 
   // Check that tilde_d and tilde_tau satisfy the Persson TCI
   if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent) or
+      evolution::dg::subcell::persson_tci(tilde_ye, dg_mesh,
+                                          persson_exponent) or
       evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh,
                                           persson_exponent)) {
     return {-5, std::move(rdmp_tci_data)};
@@ -225,24 +247,26 @@ GENERATE_INSTANTIATIONS(
 #undef INSTANTIATION
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                                \
-  template std::tuple<int, evolution::dg::subcell::RdmpTciData>               \
-  TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(                       \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>          \
-          dg_prim_vars,                                                       \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                 \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                 \
-      const Scalar<DataVector>& tilde_phi,                                    \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,     \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                    \
-      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,          \
-      const TciOptions& tci_options,                                          \
-      const evolution::dg::subcell::SubcellOptions& subcell_options,          \
+#define INSTANTIATION(r, data)                                               \
+  template std::tuple<int, evolution::dg::subcell::RdmpTciData>             \
+  TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(                      \
+      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>         \
+          dg_prim_vars,                                                      \
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
+      const Scalar<DataVector>& tilde_tau,                                   \
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
+      const Scalar<DataVector>& tilde_phi,                                   \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,  \
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                   \
+      const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,         \
+      const TciOptions& tci_options,                                         \
+      const evolution::dg::subcell::SubcellOptions& subcell_options,         \
       const double persson_exponent);
+
 GENERATE_INSTANTIATIONS(
     INSTANTIATION,
     (grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl,

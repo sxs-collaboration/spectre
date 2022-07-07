@@ -51,6 +51,7 @@ struct PrimsAfterRollback {
       tmpl::list<evolution::dg::subcell::Tags::DidRollback,
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeYe,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -63,7 +64,8 @@ struct PrimsAfterRollback {
   static void apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
       bool did_rollback, const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+      const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_phi,

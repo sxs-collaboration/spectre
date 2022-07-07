@@ -53,7 +53,8 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::a<DataVector, 3>& gauge_function,
     const tnsr::ab<DataVector, 3>& spacetime_deriv_gauge_function,
     // GRMHD argument tags
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
@@ -67,6 +68,7 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
 
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double& constraint_damping_parameter);

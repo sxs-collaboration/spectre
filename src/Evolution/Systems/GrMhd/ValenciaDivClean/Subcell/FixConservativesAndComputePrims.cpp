@@ -35,6 +35,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric) {
   *needed_fixing = fix_conservatives(
       make_not_null(&get<Tags::TildeD>(*conserved_vars_ptr)),
+      make_not_null(&get<Tags::TildeYe>(*conserved_vars_ptr)),
       make_not_null(&get<Tags::TildeTau>(*conserved_vars_ptr)),
       make_not_null(&get<Tags::TildeS<Frame::Inertial>>(*conserved_vars_ptr)),
       get<Tags::TildeB<Frame::Inertial>>(*conserved_vars_ptr), spatial_metric,
@@ -42,6 +43,8 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfRecoverySchemes, true>::apply(
           make_not_null(&get<hydro::Tags::RestMassDensity<DataVector>>(
+              *primitive_vars_ptr)),
+          make_not_null(&get<hydro::Tags::ElectronFraction<DataVector>>(
               *primitive_vars_ptr)),
           make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
               *primitive_vars_ptr)),
@@ -58,6 +61,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
           make_not_null(&get<hydro::Tags::SpecificEnthalpy<DataVector>>(
               *primitive_vars_ptr)),
           get<Tags::TildeD>(*conserved_vars_ptr),
+          get<Tags::TildeYe>(*conserved_vars_ptr),
           get<Tags::TildeTau>(*conserved_vars_ptr),
           get<Tags::TildeS<Frame::Inertial>>(*conserved_vars_ptr),
           get<Tags::TildeB<Frame::Inertial>>(*conserved_vars_ptr),

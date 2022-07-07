@@ -14,6 +14,14 @@ def rest_mass_density(x, adiabatic_index, strip_bimedian_height,
         strip_bimedian_height) < 0.5 * strip_thickness else background_density
 
 
+def electron_fraction(x, adiabatic_index, strip_bimedian_height,
+                      strip_thickness, strip_density, strip_velocity,
+                      background_density, background_velocity, pressure,
+                      perturbation_amplitude, perturbation_width,
+                      magnetic_field):
+    return 0.1
+
+
 def velocity(x, adiabatic_index, strip_bimedian_height, strip_thickness,
              strip_density, strip_velocity, background_density,
              background_velocity, pressure, perturbation_amplitude,

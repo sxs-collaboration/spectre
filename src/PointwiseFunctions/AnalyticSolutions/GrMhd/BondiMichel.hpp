@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <limits>
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -290,6 +289,12 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
       -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+                 const IntermediateVars<DataType>& vars) const
+      -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/,
@@ -354,6 +359,7 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
                      const gr::Solutions::KerrSchild& background_spacetime);
     DataType radius{};
     DataType rest_mass_density{};
+    DataType electron_fraction{};
     double mass_accretion_rate_over_four_pi{};
     double mass{};
     double polytropic_constant{};

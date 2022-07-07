@@ -58,6 +58,7 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
 class FreeOutflow final : public BoundaryCondition {
  private:
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using LorentzFactorTimesSpatialVelocity =
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
@@ -66,8 +67,9 @@ class FreeOutflow final : public BoundaryCondition {
       hydro::Tags::DivergenceCleaningField<DataVector>;
 
   using prim_tags_for_reconstruction =
-      tmpl::list<RestMassDensity, Pressure, LorentzFactorTimesSpatialVelocity,
-                 MagneticField, DivergenceCleaningField>;
+      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                 LorentzFactorTimesSpatialVelocity, MagneticField,
+                 DivergenceCleaningField>;
 
  public:
   using options = tmpl::list<>;
@@ -98,6 +100,7 @@ class FreeOutflow final : public BoundaryCondition {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -112,6 +115,7 @@ class FreeOutflow final : public BoundaryCondition {
 
   static std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> tilde_d,
+      const gsl::not_null<Scalar<DataVector>*> tilde_ye,
       const gsl::not_null<Scalar<DataVector>*> tilde_tau,
       const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
@@ -119,6 +123,8 @@ class FreeOutflow final : public BoundaryCondition {
 
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           tilde_d_flux,
+      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_ye_flux,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           tilde_tau_flux,
       const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*>
@@ -141,6 +147,7 @@ class FreeOutflow final : public BoundaryCondition {
           outward_directed_normal_vector,
 
       const Scalar<DataVector>& interior_rest_mass_density,
+      const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_specific_internal_energy,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
@@ -157,13 +164,14 @@ class FreeOutflow final : public BoundaryCondition {
   using fd_interior_temporary_tags =
       tmpl::list<evolution::dg::subcell::Tags::Mesh<3>>;
   using fd_interior_primitive_variables_tags =
-      tmpl::list<RestMassDensity, Pressure,
+      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>, MagneticField>;
   using fd_gridless_tags = tmpl::list<fd::Tags::Reconstructor>;
 
   static void fd_ghost(
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      const gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
@@ -178,6 +186,7 @@ class FreeOutflow final : public BoundaryCondition {
 
       // interior prim vars tags
       const Scalar<DataVector>& interior_rest_mass_density,
+      const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,

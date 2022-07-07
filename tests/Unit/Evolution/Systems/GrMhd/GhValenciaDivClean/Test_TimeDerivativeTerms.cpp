@@ -110,6 +110,14 @@ SPECTRE_TEST_CASE(
       get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeD>>(
           expected_dt_variables);
 
+  fill_with_random_values(
+      make_not_null(&get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeYe>>(
+          expected_dt_variables)),
+      make_not_null(&gen), make_not_null(&dist));
+  get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeYe>>(dt_variables) =
+      get<::Tags::dt<grmhd::ValenciaDivClean::Tags::TildeYe>>(
+          expected_dt_variables);
+
   flux_variables_type expected_flux_variables{element_size};
   flux_variables_type flux_variables{element_size};
 

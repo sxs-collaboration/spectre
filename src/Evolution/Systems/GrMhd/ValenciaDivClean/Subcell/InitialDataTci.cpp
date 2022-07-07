@@ -18,10 +18,11 @@
 namespace grmhd::ValenciaDivClean::subcell {
 namespace detail {
 std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
-    const Scalar<DataVector>& dg_tilde_d,
+    const Scalar<DataVector>& dg_tilde_d, const Scalar<DataVector>& dg_tilde_ye,
     const Scalar<DataVector>& dg_tilde_tau,
     const Scalar<DataVector>& dg_tilde_b_magnitude,
     const Scalar<DataVector>& subcell_tilde_d,
+    const Scalar<DataVector>& subcell_tilde_ye,
     const Scalar<DataVector>& subcell_tilde_tau,
     const Scalar<DataVector>& subcell_tilde_b_magnitude,
     const double persson_exponent, const Mesh<3>& dg_mesh,
@@ -31,15 +32,23 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
   using std::min;
   rdmp_tci_data.max_variables_values = std::vector<double>{
       max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
+      max(max(get(dg_tilde_ye)), max(get(subcell_tilde_ye))),
       max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
       max(max(get(dg_tilde_b_magnitude)), max(get(subcell_tilde_b_magnitude)))};
   rdmp_tci_data.min_variables_values = std::vector<double>{
       min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
+      min(min(get(dg_tilde_ye)), min(get(subcell_tilde_ye))),
       min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
       min(min(get(dg_tilde_b_magnitude)), min(get(subcell_tilde_b_magnitude)))};
 
   if (min(get(dg_tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(dg_tilde_ye)) <
+          tci_options.minimum_ye *
+              tci_options.minimum_rest_mass_density_times_lorentz_factor or
+      min(get(subcell_tilde_ye)) <
+          tci_options.minimum_ye *
+              tci_options.minimum_rest_mass_density_times_lorentz_factor or
       min(get(subcell_tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor) {
     return {-1, std::move(rdmp_tci_data)};
@@ -67,9 +76,10 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
 
 std::tuple<int, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
     const Variables<tmpl::list<
-        ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
-        ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
-        ValenciaDivClean::Tags::TildePhi>>& dg_vars,
+        ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
+        ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeS<>,
+        ValenciaDivClean::Tags::TildeB<>, ValenciaDivClean::Tags::TildePhi>>&
+        dg_vars,
     const double rdmp_delta0, const double rdmp_epsilon,
     const double persson_exponent, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh, const TciOptions& tci_options) {
@@ -82,8 +92,10 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
 
   auto result = detail::initial_data_tci_work(
       get<ValenciaDivClean::Tags::TildeD>(dg_vars),
+      get<ValenciaDivClean::Tags::TildeYe>(dg_vars),
       get<ValenciaDivClean::Tags::TildeTau>(dg_vars), dg_tilde_b_magnitude,
       get<ValenciaDivClean::Tags::TildeD>(subcell_vars),
+      get<ValenciaDivClean::Tags::TildeYe>(subcell_vars),
       get<ValenciaDivClean::Tags::TildeTau>(subcell_vars),
       subcell_tilde_b_magnitude, persson_exponent, dg_mesh, tci_options);
 
@@ -102,6 +114,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
 void SetInitialRdmpData::apply(
     const gsl::not_null<evolution::dg::subcell::RdmpTciData*> rdmp_tci_data,
     const Scalar<DataVector>& subcell_tilde_d,
+    const Scalar<DataVector>& subcell_tilde_ye,
     const Scalar<DataVector>& subcell_tilde_tau,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
     const evolution::dg::subcell::ActiveGrid active_grid) {
@@ -110,11 +123,11 @@ void SetInitialRdmpData::apply(
         magnitude(subcell_tilde_b);
 
     rdmp_tci_data->max_variables_values = std::vector<double>{
-        max(get(subcell_tilde_d)), max(get(subcell_tilde_tau)),
-        max(get(subcell_tilde_b_magnitude))};
+        max(get(subcell_tilde_d)), max(get(subcell_tilde_ye)),
+        max(get(subcell_tilde_tau)), max(get(subcell_tilde_b_magnitude))};
     rdmp_tci_data->min_variables_values = std::vector<double>{
-        min(get(subcell_tilde_d)), min(get(subcell_tilde_tau)),
-        min(get(subcell_tilde_b_magnitude))};
+        min(get(subcell_tilde_d)), min(get(subcell_tilde_ye)),
+        min(get(subcell_tilde_tau)), min(get(subcell_tilde_b_magnitude))};
   }
 }
 }  // namespace grmhd::ValenciaDivClean::subcell

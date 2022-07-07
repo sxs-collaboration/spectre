@@ -102,11 +102,13 @@ void test(const gsl::not_null<std::mt19937*> gen,
     }
     ConservativeFromPrimitive::apply(
         make_not_null(&get<Tags::TildeD>(subcell_cons)),
+        make_not_null(&get<Tags::TildeYe>(subcell_cons)),
         make_not_null(&get<Tags::TildeTau>(subcell_cons)),
         make_not_null(&get<Tags::TildeS<Frame::Inertial>>(subcell_cons)),
         make_not_null(&get<Tags::TildeB<Frame::Inertial>>(subcell_cons)),
         make_not_null(&get<Tags::TildePhi>(subcell_cons)),
         get<hydro::Tags::RestMassDensity<DataVector>>(subcell_prims),
+        get<hydro::Tags::ElectronFraction<DataVector>>(subcell_prims),
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(subcell_prims),
         get<hydro::Tags::SpecificEnthalpy<DataVector>>(subcell_prims),
         get<hydro::Tags::Pressure<DataVector>>(subcell_prims),
@@ -153,6 +155,8 @@ void test(const gsl::not_null<std::mt19937*> gen,
     PrimitiveFromConservative<recovery_schemes>::apply(
         make_not_null(&get<hydro::Tags::RestMassDensity<DataVector>>(
             expected_subcell_prims)),
+        make_not_null(&get<hydro::Tags::ElectronFraction<DataVector>>(
+            expected_subcell_prims)),
         make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
             expected_subcell_prims)),
         make_not_null(&get<hydro::Tags::SpatialVelocity<DataVector, 3>>(
@@ -168,6 +172,7 @@ void test(const gsl::not_null<std::mt19937*> gen,
         make_not_null(&get<hydro::Tags::SpecificEnthalpy<DataVector>>(
             expected_subcell_prims)),
         get<grmhd::ValenciaDivClean::Tags::TildeD>(box),
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(box),
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(box),
         get<grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(box),
         get<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(box),

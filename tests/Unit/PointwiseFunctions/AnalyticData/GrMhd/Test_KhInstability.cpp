@@ -22,6 +22,7 @@ struct KhInstabilityProxy : public ::grmhd::AnalyticData::KhInstability {
   template <typename DataType>
   using variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
@@ -99,9 +100,9 @@ void test(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &KhInstabilityProxy::template primitive_variables<DataType>,
       serialize_and_deserialize(kh_inst), "KhInstability",
-      {"rest_mass_density", "velocity", "specific_internal_energy", "pressure",
-       "lorentz_factor", "specific_enthalpy", "magnetic_field",
-       "divergence_cleaning_field"},
+      {"rest_mass_density", "electron_fraction", "velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy", "magnetic_field", "divergence_cleaning_field"},
       {{{0.0, 1.0}}}, members, used_for_size);
 }
 }  // namespace

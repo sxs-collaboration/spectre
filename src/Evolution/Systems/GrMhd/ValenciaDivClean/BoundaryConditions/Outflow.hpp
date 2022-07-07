@@ -80,6 +80,7 @@ class Outflow final : public BoundaryCondition {
                  gr::Tags::Lapse<DataVector>>;
   using fd_interior_primitive_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
@@ -89,6 +90,7 @@ class Outflow final : public BoundaryCondition {
 
   static void fd_outflow(
       const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      const gsl::not_null<Scalar<DataVector>*> electron_fraction,
       const gsl::not_null<Scalar<DataVector>*> pressure,
       const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
@@ -110,6 +112,7 @@ class Outflow final : public BoundaryCondition {
 
       // fd_interior_primitive_variables_tags
       const Scalar<DataVector>& interior_rest_mass_density,
+      const Scalar<DataVector>& interior_electron_fraction,
       const Scalar<DataVector>& interior_pressure,
       const Scalar<DataVector>& interior_lorentz_factor,
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,

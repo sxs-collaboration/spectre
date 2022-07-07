@@ -132,10 +132,10 @@ ShuOsherTube::variables(
 #define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATE_SCALARS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                    \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                     \
       ShuOsherTube::variables(                                               \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
-          tmpl::list<TAG(data) < DTYPE(data)> >) const;
+          tmpl::list<TAG(data) < DTYPE(data)>>) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
                         (Tags::MassDensity, Tags::Pressure,
@@ -143,10 +143,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1), (double, DataVector),
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
-                               Frame::Inertial> >                            \
+                               Frame::Inertial>>                             \
       ShuOsherTube::variables(                                               \
           const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial> >) \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>)  \
           const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1), (double, DataVector),

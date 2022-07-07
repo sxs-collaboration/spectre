@@ -31,7 +31,7 @@ SPECTRE_TEST_CASE(
   const double epsilon = 1.0e-3;
   const double exponent = 4.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12, std::optional<double>{1.0e-2}};
+      1.0e-20, 0.001, 1.0e-40, 1.1e-12, 1.0e-12, std::optional<double>{1.0e-2}};
 
   const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
                                                &subcell_mesh]() {
@@ -40,6 +40,8 @@ SPECTRE_TEST_CASE(
     using std::min;
     const auto& dg_tilde_d =
         get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars);
+    const auto& dg_tilde_ye =
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars);
     const auto& dg_tilde_tau =
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars);
     const auto dg_tilde_b_magnitude =
@@ -48,17 +50,21 @@ SPECTRE_TEST_CASE(
         dg_vars, dg_mesh, subcell_mesh.extents());
     const auto& subcell_tilde_d =
         get<grmhd::ValenciaDivClean::Tags::TildeD>(subcell_vars);
+    const auto& subcell_tilde_ye =
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(subcell_vars);
     const auto& subcell_tilde_tau =
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(subcell_vars);
     const auto subcell_tilde_b_magnitude =
         magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(subcell_vars));
     rdmp_tci_data.max_variables_values = std::vector<double>{
         max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
+        max(max(get(dg_tilde_ye)), max(get(subcell_tilde_ye))),
         max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
         max(max(get(dg_tilde_b_magnitude)),
             max(get(subcell_tilde_b_magnitude)))};
     rdmp_tci_data.min_variables_values = std::vector<double>{
         min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
+        min(min(get(dg_tilde_ye)), min(get(subcell_tilde_ye))),
         min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
         min(min(get(dg_tilde_b_magnitude)),
             min(get(subcell_tilde_b_magnitude)))};
@@ -189,6 +195,7 @@ SPECTRE_TEST_CASE(
     grmhd::ValenciaDivClean::subcell::SetInitialRdmpData::apply(
         make_not_null(&rdmp_data),
         get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars),
         evolution::dg::subcell::ActiveGrid::Dg);
@@ -196,22 +203,25 @@ SPECTRE_TEST_CASE(
     grmhd::ValenciaDivClean::subcell::SetInitialRdmpData::apply(
         make_not_null(&rdmp_data),
         get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars),
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars),
         get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars),
         evolution::dg::subcell::ActiveGrid::Subcell);
     evolution::dg::subcell::RdmpTciData expected_rdmp_data{};
     const auto& dg_tilde_d =
         get<grmhd::ValenciaDivClean::Tags::TildeD>(dg_vars);
+    const auto& dg_tilde_ye =
+        get<grmhd::ValenciaDivClean::Tags::TildeYe>(dg_vars);
     const auto& dg_tilde_tau =
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(dg_vars);
     const auto dg_tilde_b_magnitude =
         magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars));
-    expected_rdmp_data.max_variables_values =
-        std::vector<double>{max(get(dg_tilde_d)), max(get(dg_tilde_tau)),
-                            max(get(dg_tilde_b_magnitude))};
-    expected_rdmp_data.min_variables_values =
-        std::vector<double>{min(get(dg_tilde_d)), min(get(dg_tilde_tau)),
-                            min(get(dg_tilde_b_magnitude))};
+    expected_rdmp_data.max_variables_values = std::vector<double>{
+        max(get(dg_tilde_d)), max(get(dg_tilde_ye)), max(get(dg_tilde_tau)),
+        max(get(dg_tilde_b_magnitude))};
+    expected_rdmp_data.min_variables_values = std::vector<double>{
+        min(get(dg_tilde_d)), min(get(dg_tilde_ye)), min(get(dg_tilde_tau)),
+        min(get(dg_tilde_b_magnitude))};
     CHECK(rdmp_data == expected_rdmp_data);
   }
 }

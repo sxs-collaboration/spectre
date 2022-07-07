@@ -94,12 +94,12 @@ tnsr::I<DataType, 3, Frame::NoFrame> BondiHoyleAccretion::magnetic_field(
                     sigma * two_m_r * (square(r_squared) - square(a_squared))) *
                    cos_theta;
 
-  get<1>(result) = -prefactor *
-                   (sqrt(r_squared) +
-                    bh_mass_ * a_squared * sigma *
-                        (r_squared - a_squared * cos_theta_squared) *
-                        (1.0 + cos_theta_squared)) *
-                   sin_theta;
+  get<1>(result) =
+      -prefactor *
+      (sqrt(r_squared) + bh_mass_ * a_squared * sigma *
+                             (r_squared - a_squared * cos_theta_squared) *
+                             (1.0 + cos_theta_squared)) *
+      sin_theta;
 
   get<2>(result) = bh_spin_a_ * prefactor *
                    (1.0 + sigma * two_m_r * (r_squared - a_squared)) *
@@ -114,6 +114,16 @@ BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, rest_mass_density_)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+BondiHoyleAccretion::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  // FIXME Add proper EoS call to get Ye
+
+  return {make_with_value<Scalar<DataType>>(x, 0.1)};
 }
 
 template <typename DataType>
@@ -217,23 +227,24 @@ bool operator!=(const BondiHoyleAccretion& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                      \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> > \
-      BondiHoyleAccretion::variables(                     \
-          const tnsr::I<DTYPE(data), 3>& x,               \
-          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const;
+#define INSTANTIATE_SCALARS(_, data)                     \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
+      BondiHoyleAccretion::variables(                    \
+          const tnsr::I<DTYPE(data), 3>& x,              \
+          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
-     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+    (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
+     hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
+     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
+     hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> > \
-      BondiHoyleAccretion::variables(                        \
-          const tnsr::I<DTYPE(data), 3>& x,                  \
-          tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) const;
+#define INSTANTIATE_VECTORS(_, data)                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
+      BondiHoyleAccretion::variables(                       \
+          const tnsr::I<DTYPE(data), 3>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

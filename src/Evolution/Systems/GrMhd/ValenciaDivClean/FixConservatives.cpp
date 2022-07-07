@@ -140,6 +140,7 @@ void FixConservatives::pup(PUP::er& p) {
 // \gamma_{mn}       g_{mn}
 bool FixConservatives::operator()(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
+    const gsl::not_null<Scalar<DataVector>*> tilde_ye,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
@@ -149,13 +150,18 @@ bool FixConservatives::operator()(
   bool needed_fixing = false;
   const size_t size = get<0>(tilde_b).size();
   Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
-                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                       ::Tags::TempScalar<4>>>
       temp_buffer(size);
 
   DataVector& rest_mass_density_times_lorentz_factor =
       get(get<::Tags::TempScalar<0>>(temp_buffer));
   rest_mass_density_times_lorentz_factor =
       get(*tilde_d) / get(sqrt_det_spatial_metric);
+
+  DataVector& local_ye = get(get<::Tags::TempScalar<4>>(temp_buffer));
+
+  local_ye = get(*tilde_ye) / get(*tilde_d);
 
   Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
   dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
@@ -170,13 +176,22 @@ bool FixConservatives::operator()(
   dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
 
   for (size_t s = 0; s < size; s++) {
-    // Increase density if necessary
+    double& ye_tilde = get(*tilde_ye)[s];
     double& d_tilde = get(*tilde_d)[s];
+    double ye_cutoff_ = 0.;  // FIXME: Should this be a proper parameter?
+    if (local_ye[s] < ye_cutoff_) {
+      needed_fixing = true;
+      local_ye[s] = ye_cutoff_;
+      ye_tilde = local_ye[s] * d_tilde;
+    }
+
+    // Increase density if necessary
     const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
     if (rest_mass_density_times_lorentz_factor[s] <
         rest_mass_density_times_lorentz_factor_cutoff_) {
       needed_fixing = true;
       d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
+      ye_tilde = d_tilde * local_ye[s];
     }
 
     // Increase internal energy if necessary

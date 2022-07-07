@@ -96,6 +96,7 @@ void test_prim_reconstructor_impl(
           typename ghmhd::fd::Reconstructor::creatable_classes, Reconstructor>);
 
   using Rho = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using Velocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
   using MagField = hydro::Tags::MagneticField<DataVector, 3>;
@@ -119,7 +120,7 @@ void test_prim_reconstructor_impl(
       db::wrap_tags_in<::Tags::Flux, typename ghmhd::System::flux_variables,
                        tmpl::size_t<3>, Frame::Inertial>;
   using prim_tags_for_reconstruction =
-      tmpl::list<Rho, Pressure, VelocityW, MagField, Phi>;
+      tmpl::list<Rho, ElectronFraction, Pressure, VelocityW, MagField, Phi>;
   using spacetime_tags = tmpl::list<gr::Tags::SpacetimeMetric<3>,
                                     GeneralizedHarmonic::Tags::Phi<3>,
                                     GeneralizedHarmonic::Tags::Pi<3>>;
@@ -144,6 +145,7 @@ void test_prim_reconstructor_impl(
         get<0>(coords).size(), 0.0};
     for (size_t i = 0; i < 3; ++i) {
       get(get<Rho>(vars)) += coords.get(i);
+      get(get<ElectronFraction>(vars)) += coords.get(i);
       get(get<Pressure>(vars)) += coords.get(i);
       get(get<Phi>(vars)) += coords.get(i);
       for (size_t j = 0; j < 3; ++j) {
@@ -152,6 +154,7 @@ void test_prim_reconstructor_impl(
       }
     }
     get(get<Rho>(vars)) += 2.0;
+    get(get<ElectronFraction>(vars)) += 15.0;
     get(get<Pressure>(vars)) += 30.0;
     get(get<Phi>(vars)) += 50.0;
     for (size_t j = 0; j < 3; ++j) {
@@ -225,7 +228,7 @@ void test_prim_reconstructor_impl(
       subcell_mesh.number_of_grid_points()};
   {
     const auto volume_prims_for_recons = compute_solution(logical_coords);
-    tmpl::for_each<tmpl::list<Rho, Pressure, MagField, Phi>>(
+    tmpl::for_each<tmpl::list<Rho, ElectronFraction, Pressure, MagField, Phi>>(
         [&volume_prims, &volume_prims_for_recons](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           get<tag>(volume_prims) = get<tag>(volume_prims_for_recons);
@@ -347,11 +350,13 @@ void test_prim_reconstructor_impl(
     namespace mhd = ::grmhd::ValenciaDivClean;
     mhd::ConservativeFromPrimitive::apply(
         make_not_null(&get<mhd::Tags::TildeD>(expected_lower_face_values)),
+        make_not_null(&get<mhd::Tags::TildeYe>(expected_lower_face_values)),
         make_not_null(&get<mhd::Tags::TildeTau>(expected_lower_face_values)),
         make_not_null(&get<mhd::Tags::TildeS<>>(expected_lower_face_values)),
         make_not_null(&get<mhd::Tags::TildeB<>>(expected_lower_face_values)),
         make_not_null(&get<mhd::Tags::TildePhi>(expected_lower_face_values)),
         get<Rho>(expected_lower_face_values),
+        get<ElectronFraction>(expected_lower_face_values),
         get<SpecificInternalEnergy>(expected_lower_face_values),
         get<SpecificEnthalpy>(expected_lower_face_values),
         get<Pressure>(expected_lower_face_values),
@@ -364,11 +369,13 @@ void test_prim_reconstructor_impl(
         get<Phi>(expected_lower_face_values));
     mhd::ConservativeFromPrimitive::apply(
         make_not_null(&get<mhd::Tags::TildeD>(expected_upper_face_values)),
+        make_not_null(&get<mhd::Tags::TildeYe>(expected_upper_face_values)),
         make_not_null(&get<mhd::Tags::TildeTau>(expected_upper_face_values)),
         make_not_null(&get<mhd::Tags::TildeS<>>(expected_upper_face_values)),
         make_not_null(&get<mhd::Tags::TildeB<>>(expected_upper_face_values)),
         make_not_null(&get<mhd::Tags::TildePhi>(expected_upper_face_values)),
         get<Rho>(expected_upper_face_values),
+        get<ElectronFraction>(expected_upper_face_values),
         get<SpecificInternalEnergy>(expected_upper_face_values),
         get<SpecificEnthalpy>(expected_upper_face_values),
         get<Pressure>(expected_upper_face_values),

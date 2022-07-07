@@ -70,6 +70,8 @@ void compute_conservatives_for_reconstruction(
   }
   const auto& rest_mass_density =
       get<hydro::Tags::RestMassDensity<DataVector>>(*vars_on_face);
+  const auto& electron_fraction =
+      get<hydro::Tags::ElectronFraction<DataVector>>(*vars_on_face);
   const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(*vars_on_face);
   auto& specific_internal_energy =
       get<hydro::Tags::SpecificInternalEnergy<DataVector>>(*vars_on_face);
@@ -88,14 +90,15 @@ void compute_conservatives_for_reconstruction(
                                         specific_internal_energy, pressure);
   ConservativeFromPrimitive::apply(
       make_not_null(&get<ValenciaDivClean::Tags::TildeD>(*vars_on_face)),
+      make_not_null(&get<ValenciaDivClean::Tags::TildeYe>(*vars_on_face)),
       make_not_null(&get<ValenciaDivClean::Tags::TildeTau>(*vars_on_face)),
       make_not_null(
           &get<ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(*vars_on_face)),
       make_not_null(
           &get<ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(*vars_on_face)),
       make_not_null(&get<ValenciaDivClean::Tags::TildePhi>(*vars_on_face)),
-      rest_mass_density, specific_internal_energy, specific_enthalpy, pressure,
-      spatial_velocity, lorentz_factor,
+      rest_mass_density, electron_fraction, specific_internal_energy,
+      specific_enthalpy, pressure, spatial_velocity, lorentz_factor,
       get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(
           *vars_on_face),
       get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(*vars_on_face),

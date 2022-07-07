@@ -84,6 +84,7 @@ struct TciOnFdGrid {
   using return_tags = tmpl::list<>;
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeYe,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
                  gr::Tags::SqrtDetSpatialMetric<>,
@@ -93,6 +94,7 @@ struct TciOnFdGrid {
                  evolution::dg::subcell::Tags::SubcellOptions>;
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       const Scalar<DataVector>& subcell_tilde_d,
+      const Scalar<DataVector>& subcell_tilde_ye,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
       const Scalar<DataVector>& sqrt_det_spatial_metric,

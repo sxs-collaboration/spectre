@@ -169,10 +169,10 @@ bool operator!=(const SmoothFlow<Dim, IsRelativistic>& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3), (true, false))
 
 #define INSTANTIATE_SCALARS(_, data)                           \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >      \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>       \
       SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables( \
           const tnsr::I<DTYPE(data), DIM(data)>& x, double t,  \
-          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const;
+          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (true, false),
                         (double, DataVector),
@@ -191,10 +191,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_LORENTZ_FACTOR, (1, 2, 3), (true),
 
 #define INSTANTIATE_VECTORS(_, data)                               \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data), \
-                               Frame::Inertial> >                  \
+                               Frame::Inertial>>                   \
       SmoothFlow<DIM(data), IS_RELATIVISTIC(data)>::variables(     \
           const tnsr::I<DTYPE(data), DIM(data)>& x, double t,      \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data)> > /*meta*/) const;
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (1, 2, 3), (true, false),
                         (double, DataVector), (hydro::Tags::SpatialVelocity))

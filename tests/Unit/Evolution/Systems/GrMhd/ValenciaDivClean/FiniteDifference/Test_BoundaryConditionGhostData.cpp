@@ -146,6 +146,7 @@ void test(const BoundaryConditionType& boundary_condition,
       logical_to_grid_map(subcell_logical_coords), time, functions_of_time);
 
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using LorentzFactor = hydro::Tags::LorentzFactor<DataVector>;
   using SpatialVelocity = hydro::Tags::SpatialVelocity<DataVector, 3>;
@@ -170,6 +171,7 @@ void test(const BoundaryConditionType& boundary_condition,
       volume_prim_vars{subcell_mesh.number_of_grid_points()};
 
   get(get<RestMassDensity>(volume_prim_vars)) = 1.0;
+  get(get<ElectronFraction>(volume_prim_vars)) = 0.1;
   get(get<Pressure>(volume_prim_vars)) = 1.0;
   get(get<LorentzFactor>(volume_prim_vars)) = 2.0;
   for (size_t i = 0; i < 3; ++i) {
@@ -288,8 +290,9 @@ void test(const BoundaryConditionType& boundary_condition,
     using LorentzFactorTimesSpatialVelocity =
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
     using prims_to_reconstruct =
-        tmpl::list<RestMassDensity, Pressure, LorentzFactorTimesSpatialVelocity,
-                   MagneticField, DivergenceCleaningField>;
+        tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                   LorentzFactorTimesSpatialVelocity, MagneticField,
+                   DivergenceCleaningField>;
     const size_t num_face_pts{
         subcell_mesh.extents().slice_away(direction.dimension()).product()};
     Variables<prims_to_reconstruct> fd_ghost_vars{ghost_zone_size *
@@ -309,6 +312,10 @@ void test(const BoundaryConditionType& boundary_condition,
 
       const auto rest_mass_density_py = pypp::call<Scalar<DataVector>>(
           "GrMhd.SmoothFlow", "rest_mass_density", ghost_inertial_coords, time,
+          mean_velocity, wave_vector, pressure, adiabatic_index,
+          perturbation_size);
+      const auto electron_fraction_py = pypp::call<Scalar<DataVector>>(
+          "GrMhd.SmoothFlow", "electron_fraction", ghost_inertial_coords, time,
           mean_velocity, wave_vector, pressure, adiabatic_index,
           perturbation_size);
       const auto pressure_py = pypp::call<Scalar<DataVector>>(
@@ -335,6 +342,8 @@ void test(const BoundaryConditionType& boundary_condition,
       // check values
       CHECK_ITERABLE_APPROX(get<RestMassDensity>(fd_ghost_vars),
                             rest_mass_density_py);
+      CHECK_ITERABLE_APPROX(get<ElectronFraction>(fd_ghost_vars),
+                            electron_fraction_py);
       CHECK_ITERABLE_APPROX(get<Pressure>(fd_ghost_vars), pressure_py);
       {
         tnsr::I<DataVector, 3> lorentz_factor_times_spatial_velocity_py{
@@ -362,6 +371,7 @@ void test(const BoundaryConditionType& boundary_condition,
                                                           num_face_pts};
       get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
       get(get<Pressure>(expected_ghost_vars)) = 1.0;
+      get(get<ElectronFraction>(expected_ghost_vars)) = 0.1;
       for (size_t i = 0; i < 3; ++i) {
         get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
             0.2;
@@ -418,6 +428,7 @@ void test(const BoundaryConditionType& boundary_condition,
       // cf) See line 172-179 for values of prim variables in volume.
       get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
       get(get<Pressure>(expected_ghost_vars)) = 1.0;
+      get(get<ElectronFraction>(expected_ghost_vars)) = 0.1;
       for (size_t i = 0; i < 3; ++i) {
         get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
             0.2;

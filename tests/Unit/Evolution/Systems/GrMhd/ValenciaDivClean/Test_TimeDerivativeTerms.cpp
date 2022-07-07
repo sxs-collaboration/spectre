@@ -16,6 +16,7 @@
 namespace {
 void forward_to_time_deriv(
     const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_d,
+    const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_ye,
     const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
         non_flux_terms_dt_tilde_s,
@@ -24,6 +25,7 @@ void forward_to_time_deriv(
     const gsl::not_null<Scalar<DataVector>*> non_flux_terms_dt_tilde_phi,
 
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
@@ -31,7 +33,8 @@ void forward_to_time_deriv(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_phi_flux,
 
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
@@ -48,21 +51,24 @@ void forward_to_time_deriv(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
 
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) {
   get(*non_flux_terms_dt_tilde_d) = 0.0;
+  get(*non_flux_terms_dt_tilde_ye) = 0.0;
 
   Variables<
       typename grmhd::ValenciaDivClean::TimeDerivativeTerms::temporary_tags>
       temp{get(lapse).size(), 0.0};
 
   grmhd::ValenciaDivClean::TimeDerivativeTerms::apply(
-      non_flux_terms_dt_tilde_d, non_flux_terms_dt_tilde_tau,
-      non_flux_terms_dt_tilde_s, non_flux_terms_dt_tilde_b,
-      non_flux_terms_dt_tilde_phi,
+      non_flux_terms_dt_tilde_d, non_flux_terms_dt_tilde_ye,
+      non_flux_terms_dt_tilde_tau, non_flux_terms_dt_tilde_s,
+      non_flux_terms_dt_tilde_b, non_flux_terms_dt_tilde_phi,
 
-      tilde_d_flux, tilde_tau_flux, tilde_s_flux, tilde_b_flux, tilde_phi_flux,
+      tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux, tilde_b_flux,
+      tilde_phi_flux,
 
       make_not_null(
           &get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
@@ -106,13 +112,13 @@ void forward_to_time_deriv(
       make_not_null(&get<gr::Tags::Shift<3>>(temp)),
       make_not_null(&get<gr::Tags::InverseSpatialMetric<3>>(temp)),
 
-      tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
+      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
       sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric, d_lapse,
       d_shift, d_spatial_metric, pressure, spatial_velocity, lorentz_factor,
       magnetic_field,
 
-      rest_mass_density, specific_enthalpy, extrinsic_curvature,
-      constraint_damping_parameter);
+      rest_mass_density, electron_fraction, specific_enthalpy,
+      extrinsic_curvature, constraint_damping_parameter);
 
   CHECK(get<gr::Tags::Lapse<>>(temp) == lapse);
   CHECK(get<gr::Tags::Shift<3>>(temp) == shift);
@@ -127,8 +133,9 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.TimeDerivativeTerms",
 
   pypp::check_with_random_values<1>(
       &forward_to_time_deriv, "TimeDerivative",
-      {"source_tilde_d", "source_tilde_tau", "source_tilde_s", "source_tilde_b",
-       "source_tilde_phi", "tilde_d_flux", "tilde_tau_flux", "tilde_s_flux",
-       "tilde_b_flux", "tilde_phi_flux"},
+      {"source_tilde_d", "source_tilde_ye", "source_tilde_tau",
+       "source_tilde_s", "source_tilde_b", "source_tilde_phi", "tilde_d_flux",
+       "tilde_ye_flux", "tilde_tau_flux", "tilde_s_flux", "tilde_b_flux",
+       "tilde_phi_flux"},
       {{{0.0, 1.0}}}, DataVector{5});
 }

@@ -32,6 +32,7 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
@@ -115,16 +116,17 @@ void test_variables(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &BondiHoyleAccretionProxy::hydro_variables<DataType>, accretion,
       "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
-      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy"},
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy"},
       {{{-10., 10.}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<1>(
       &BondiHoyleAccretionProxy::grmhd_variables<DataType>, accretion,
       "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
-      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
-       "divergence_cleaning_field"},
+      {"rest_mass_density", "electron_fraction", "spatial_velocity",
+       "specific_internal_energy", "pressure", "lorentz_factor",
+       "specific_enthalpy", "magnetic_field", "divergence_cleaning_field"},
       {{{-10., 10.}}}, member_variables, used_for_size);
 }
 

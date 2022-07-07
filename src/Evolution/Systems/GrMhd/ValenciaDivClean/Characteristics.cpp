@@ -86,6 +86,7 @@ template <size_t ThermodynamicDim>
 void characteristic_speeds(
     const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& /* electron_fraction */,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -172,6 +173,8 @@ void characteristic_speeds(
         get(equation_of_state
                 .kappa_times_p_over_rho_squared_from_density_and_energy(
                     rest_mass_density, specific_internal_energy));
+  } else if constexpr (ThermodynamicDim == 3) {
+      ERROR("3d EOS not implemented");
   }
   get(sound_speed_squared) /= get(specific_enthalpy);
 
@@ -183,6 +186,7 @@ void characteristic_speeds(
 template <size_t ThermodynamicDim>
 std::array<DataVector, 9> characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -195,9 +199,10 @@ std::array<DataVector, 9> characteristic_speeds(
         equation_of_state) {
   std::array<DataVector, 9> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), rest_mass_density,
-                        specific_internal_energy, specific_enthalpy,
-                        spatial_velocity, lorentz_factor, magnetic_field, lapse,
-                        shift, spatial_metric, unit_normal, equation_of_state);
+                        electron_fraction, specific_internal_energy,
+                        specific_enthalpy, spatial_velocity, lorentz_factor,
+                        magnetic_field, lapse, shift, spatial_metric,
+                        unit_normal, equation_of_state);
   return char_speeds;
 }
 
@@ -206,6 +211,7 @@ std::array<DataVector, 9> characteristic_speeds(
 #define INSTANTIATION(r, data)                                              \
   template std::array<DataVector, 9> characteristic_speeds<GET_DIM(data)>(  \
       const Scalar<DataVector>& rest_mass_density,                          \
+      const Scalar<DataVector>& electron_fraction,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \
       const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
@@ -219,6 +225,7 @@ std::array<DataVector, 9> characteristic_speeds(
   template void characteristic_speeds<GET_DIM(data)>(                       \
       const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
       const Scalar<DataVector>& rest_mass_density,                          \
+      const Scalar<DataVector>& electron_fraction,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \
       const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \

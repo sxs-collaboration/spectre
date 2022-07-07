@@ -14,6 +14,7 @@ def soln_error(face_mesh_velocity, outward_directed_normal_covector,
     return None
 
 
+_soln_electron_fraction = 0.1
 _soln_pressure = 1.0
 _soln_adiabatic_index = 5.0 / 3.0
 _soln_perturbation_size = 0.2
@@ -40,6 +41,10 @@ def soln_velocity(coords, time):
                                   _soln_wave_vector(), _soln_pressure,
                                   _soln_adiabatic_index,
                                   _soln_perturbation_size)
+
+
+def soln_electron_fraction(coords, time):
+    return _soln_electron_fraction
 
 
 def soln_lorentz_factor(coords, time):
@@ -100,9 +105,16 @@ def soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
     return soln_lorentz_factor(coords, time) * soln_mass_density(coords, time)
 
 
+def soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                  outward_directed_normal_vector, coords, time, dim):
+    return soln_lorentz_factor(coords, time) * soln_mass_density(
+        coords, time) * soln_electron_fraction(coords, time)
+
+
 def soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                    outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_tau(soln_mass_density(coords, time),
+                          soln_electron_fraction(coords, time),
                           soln_specific_internal_energy(coords, time),
                           soln_specific_enthalpy(coords, time),
                           soln_pressure(coords, time),
@@ -117,6 +129,7 @@ def soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
 def soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_s(soln_mass_density(coords, time),
+                        soln_electron_fraction(coords, time),
                         soln_specific_internal_energy(coords, time),
                         soln_specific_enthalpy(coords, time),
                         soln_pressure(coords, time),
@@ -131,6 +144,7 @@ def soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
 def soln_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_b(soln_mass_density(coords, time),
+                        soln_electron_fraction(coords, time),
                         soln_specific_internal_energy(coords, time),
                         soln_specific_enthalpy(coords, time),
                         soln_pressure(coords, time),
@@ -145,6 +159,7 @@ def soln_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
 def soln_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
                    outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_phi(soln_mass_density(coords, time),
+                          soln_electron_fraction(coords, time),
                           soln_specific_internal_energy(coords, time),
                           soln_specific_enthalpy(coords, time),
                           soln_pressure(coords, time),
@@ -171,6 +186,34 @@ def soln_flux_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_d_flux(
         soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim),
+        soln_lapse(face_mesh_velocity, outward_directed_normal_covector,
+                   outward_directed_normal_vector, coords, time, dim),
+        soln_shift(face_mesh_velocity, outward_directed_normal_covector,
+                   outward_directed_normal_vector, coords, time, dim),
+        soln_sqrt_det_spatial_metric(coords, time),
+        soln_spatial_metric(coords, time),
+        soln_inverse_spatial_metric(coords, time), soln_pressure(coords, time),
+        soln_velocity(coords, time), soln_lorentz_factor(coords, time),
+        soln_magnetic_field(coords, time))
+
+
+def soln_flux_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim):
+    return fluxes.tilde_ye_flux(
+        soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -195,6 +238,8 @@ def soln_flux_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_tau_flux(
         soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -219,6 +264,8 @@ def soln_flux_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_s_flux(
         soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -243,6 +290,8 @@ def soln_flux_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_b_flux(
         soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -267,6 +316,8 @@ def soln_flux_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_phi_flux(
         soln_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        soln_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         soln_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         soln_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -293,6 +344,8 @@ _data_pressure = 1.0
 _data_angular_velocity = 9.95
 _data_adiabatic_index = 5.0 / 3.0
 _data_magnetic_field = np.asarray([3.54490770181103205, 0.0, 0.0])
+
+_data_electron_fraction = 0.1
 
 
 def data_velocity(coords):
@@ -329,6 +382,10 @@ def data_pressure(coords):
     return _data_pressure
 
 
+def data_electron_fraction(coords):
+    return _data_electron_fraction
+
+
 def data_mass_density(coords):
     return rotor.rest_mass_density(coords, _data_rotor_radius,
                                    _data_rotor_density,
@@ -349,9 +406,16 @@ def data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
     return data_lorentz_factor(coords) * data_mass_density(coords)
 
 
+def data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                  outward_directed_normal_vector, coords, time, dim):
+    return data_lorentz_factor(coords) * data_mass_density(
+        coords) * data_electron_fraction(coords)
+
+
 def data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                    outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_tau(data_mass_density(coords),
+                          data_electron_fraction(coords),
                           data_specific_internal_energy(coords),
                           data_specific_enthalpy(coords),
                           data_pressure(coords), data_velocity(coords),
@@ -365,6 +429,7 @@ def data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
 def data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_s(data_mass_density(coords),
+                        data_electron_fraction(coords),
                         data_specific_internal_energy(coords),
                         data_specific_enthalpy(coords), data_pressure(coords),
                         data_velocity(coords), data_lorentz_factor(coords),
@@ -377,6 +442,7 @@ def data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
 def data_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
                  outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_b(data_mass_density(coords),
+                        data_electron_fraction(coords),
                         data_specific_internal_energy(coords),
                         data_specific_enthalpy(coords), data_pressure(coords),
                         data_velocity(coords), data_lorentz_factor(coords),
@@ -389,6 +455,7 @@ def data_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
 def data_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
                    outward_directed_normal_vector, coords, time, dim):
     return cons.tilde_phi(data_mass_density(coords),
+                          data_electron_fraction(coords),
                           data_specific_internal_energy(coords),
                           data_specific_enthalpy(coords),
                           data_pressure(coords), data_velocity(coords),
@@ -404,6 +471,34 @@ def data_flux_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_d_flux(
         data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim),
+        data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        data_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        data_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim),
+        soln_lapse(face_mesh_velocity, outward_directed_normal_covector,
+                   outward_directed_normal_vector, coords, time, dim),
+        soln_shift(face_mesh_velocity, outward_directed_normal_covector,
+                   outward_directed_normal_vector, coords, time, dim),
+        soln_sqrt_det_spatial_metric(coords, time),
+        soln_spatial_metric(coords, time),
+        soln_inverse_spatial_metric(coords, time), data_pressure(coords),
+        data_velocity(coords), data_lorentz_factor(coords),
+        data_magnetic_field(coords))
+
+
+def data_flux_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                       outward_directed_normal_vector, coords, time, dim):
+    return fluxes.tilde_ye_flux(
+        data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
+                     outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -428,6 +523,8 @@ def data_flux_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_tau_flux(
         data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -452,6 +549,8 @@ def data_flux_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_s_flux(
         data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -476,6 +575,8 @@ def data_flux_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_b_flux(
         data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
@@ -500,6 +601,8 @@ def data_flux_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
     return fluxes.tilde_phi_flux(
         data_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
                      outward_directed_normal_vector, coords, time, dim),
+        data_tilde_ye(face_mesh_velocity, outward_directed_normal_covector,
+                      outward_directed_normal_vector, coords, time, dim),
         data_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
                        outward_directed_normal_vector, coords, time, dim),
         data_tilde_s(face_mesh_velocity, outward_directed_normal_covector,

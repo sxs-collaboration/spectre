@@ -39,12 +39,12 @@ struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
 
-  using variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
-                                   Tags::TildeB<>, Tags::TildePhi>>;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau, Tags::TildeS<>,
+                 Tags::TildeB<>, Tags::TildePhi>>;
   using flux_variables =
-      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>, Tags::TildeB<>,
-                 Tags::TildePhi>;
+      tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau, Tags::TildeS<>,
+                 Tags::TildeB<>, Tags::TildePhi>;
   using non_conservative_variables = tmpl::list<>;
   using gradient_variables = tmpl::list<>;
   using primitive_variables_tag =

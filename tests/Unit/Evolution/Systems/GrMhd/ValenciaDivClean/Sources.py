@@ -33,12 +33,13 @@ def stress_tensor(spatial_velocity, magnetic_field, rest_mass_density,
              np.outer(magnetic_field, magnetic_field) / lorentz_factor**2))
 
 
-def source_tilde_tau(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
+def source_tilde_tau(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
                      spatial_velocity, magnetic_field, rest_mass_density,
-                     specific_enthalpy, lorentz_factor, pressure, lapse,
-                     d_lapse, d_shift, spatial_metric, d_spatial_metric,
-                     inv_spatial_metric, sqrt_det_spatial_metric,
-                     extrinsic_curvature, constraint_damping_parameter):
+                     electron_fraction, specific_enthalpy, lorentz_factor,
+                     pressure, lapse, d_lapse, d_shift, spatial_metric,
+                     d_spatial_metric, inv_spatial_metric,
+                     sqrt_det_spatial_metric, extrinsic_curvature,
+                     constraint_damping_parameter):
     stress_tensor_ = stress_tensor(spatial_velocity, magnetic_field,
                                    rest_mass_density, specific_enthalpy,
                                    lorentz_factor, pressure, spatial_metric,
@@ -48,12 +49,13 @@ def source_tilde_tau(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
         np.einsum("ab, ab", inv_spatial_metric, np.outer(tilde_s, d_lapse)))
 
 
-def source_tilde_s(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
+def source_tilde_s(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
                    spatial_velocity, magnetic_field, rest_mass_density,
-                   specific_enthalpy, lorentz_factor, pressure, lapse, d_lapse,
-                   d_shift, spatial_metric, d_spatial_metric,
-                   inv_spatial_metric, sqrt_det_spatial_metric,
-                   extrinsic_curvature, constraint_damping_parameter):
+                   electron_fraction, specific_enthalpy, lorentz_factor,
+                   pressure, lapse, d_lapse, d_shift, spatial_metric,
+                   d_spatial_metric, inv_spatial_metric,
+                   sqrt_det_spatial_metric, extrinsic_curvature,
+                   constraint_damping_parameter):
     stress_tensor_ = stress_tensor(spatial_velocity, magnetic_field,
                                    rest_mass_density, specific_enthalpy,
                                    lorentz_factor, pressure, spatial_metric,
@@ -63,12 +65,13 @@ def source_tilde_s(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
         np.einsum("a, ia", tilde_s, d_shift) - (tilde_d + tilde_tau) * d_lapse)
 
 
-def source_tilde_b(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
+def source_tilde_b(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
                    spatial_velocity, magnetic_field, rest_mass_density,
-                   specific_enthalpy, lorentz_factor, pressure, lapse, d_lapse,
-                   d_shift, spatial_metric, d_spatial_metric,
-                   inv_spatial_metric, sqrt_det_spatial_metric,
-                   extrinsic_curvature, constraint_damping_parameter):
+                   electron_fraction, specific_enthalpy, lorentz_factor,
+                   pressure, lapse, d_lapse, d_shift, spatial_metric,
+                   d_spatial_metric, inv_spatial_metric,
+                   sqrt_det_spatial_metric, extrinsic_curvature,
+                   constraint_damping_parameter):
     term_one = np.einsum("ab, iab", inv_spatial_metric, d_spatial_metric)
     term_two = np.einsum("ab, aib", inv_spatial_metric, d_spatial_metric)
     return (tilde_phi * np.einsum("a, ia", d_lapse, inv_spatial_metric) -
@@ -77,12 +80,13 @@ def source_tilde_b(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
              np.einsum("ia, a", inv_spatial_metric, term_two)))
 
 
-def source_tilde_phi(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
+def source_tilde_phi(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
                      spatial_velocity, magnetic_field, rest_mass_density,
-                     specific_enthalpy, lorentz_factor, pressure, lapse,
-                     d_lapse, d_shift, spatial_metric, d_spatial_metric,
-                     inv_spatial_metric, sqrt_det_spatial_metric,
-                     extrinsic_curvature, constraint_damping_parameter):
+                     electron_fraction, specific_enthalpy, lorentz_factor,
+                     pressure, lapse, d_lapse, d_shift, spatial_metric,
+                     d_spatial_metric, inv_spatial_metric,
+                     sqrt_det_spatial_metric, extrinsic_curvature,
+                     constraint_damping_parameter):
     return (lapse * tilde_phi *
             (-np.einsum("ab, ab", inv_spatial_metric, extrinsic_curvature) -
              constraint_damping_parameter) +

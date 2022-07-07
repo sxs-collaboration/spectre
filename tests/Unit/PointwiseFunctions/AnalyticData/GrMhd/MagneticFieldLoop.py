@@ -16,6 +16,12 @@ def compute_pressure(x, pressure, rest_mass_density, adiabatic_index,
     return pressure
 
 
+def electron_fraction(x, pressure, rest_mass_density, adiabatic_index,
+                      advection_velocity, magnetic_field_strength,
+                      inner_radius, outer_radius):
+    return 0.1
+
+
 def specific_internal_energy(x, pressure, rest_mass_density, adiabatic_index,
                              advection_velocity, magnetic_field_strength,
                              inner_radius, outer_radius):
