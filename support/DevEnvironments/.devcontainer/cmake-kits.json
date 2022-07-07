@@ -7,7 +7,7 @@
             "Fortran": "/usr/bin/gfortran-8"
         },
         "cmakeSettings": {
-            "CHARM_ROOT": "/work/charm_6_10_2/multicore-linux-x86_64-clang",
+            "CHARM_ROOT": "/work/charm_7_0_0/multicore-linux-x86_64-clang",
             "BUILD_SHARED_LIBS": "ON",
             "BUILD_PYTHON_BINDINGS": "ON",
             "MEMORY_ALLOCATOR": "SYSTEM",
