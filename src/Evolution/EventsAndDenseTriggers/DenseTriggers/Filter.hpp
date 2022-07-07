@@ -66,17 +66,26 @@ class Filter : public DenseTrigger {
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(Parallel::GlobalCache<Metavariables>& cache,
+                                   const ArrayIndex& array_index,
+                                   const Component* component,
+                                   const db::DataBox<DbTags>& box) const {
+    auto result = trigger_->is_triggered(box, cache, array_index, component);
+    if (result == std::optional{true}) {
+      return filter_->is_triggered(box);
+    }
+    return result;
+  }
+
+  using next_check_time_argument_tags = tmpl::list<Tags::DataBox>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component,
+            typename DbTags>
+  std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component,
       const db::DataBox<DbTags>& box) const {
-    auto result = trigger_->is_triggered(box, cache, array_index, component);
-    if (result.has_value()) {
-      if (not filter_->is_triggered(box)) {
-        result->is_triggered = false;
-      }
-    }
-    return result;
+    return trigger_->next_check_time(box, cache, array_index, component);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

@@ -103,45 +103,37 @@ void test_trigger_no_replace() {
   MeasureTrigger typed_trigger{};
   DenseTrigger& trigger = typed_trigger;
 
-  {
-    const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
-    CHECK(is_triggered.has_value());
-    CHECK(is_triggered->is_triggered);
-    CHECK(is_triggered->next_check == 1.0);
-  }
+  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+        std::optional{true});
+  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+        std::optional{1.0});
 
   set_time(0.25);
 
-  {
-    const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
-    CHECK(is_triggered.has_value());
-    CHECK(not is_triggered->is_triggered);
-    CHECK(is_triggered->next_check == 1.0);
-  }
+  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+        std::optional{false});
+  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+        std::optional{1.0});
 
   set_time(0.75);
 
-  CHECK(not trigger.is_triggered(box, cache, 0, component_p).has_value());
+  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+        std::optional{false});
+  CHECK(not trigger.next_check_time(box, cache, 0, component_p).has_value());
 
   Parallel::mutate<control_system::Tags::MeasurementTimescales,
                    control_system::UpdateFunctionOfTime>(cache, "LabelB"s, 0.5,
                                                          DataVector{4.0}, 4.0);
 
-  {
-    const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
-    CHECK(is_triggered.has_value());
-    CHECK(not is_triggered->is_triggered);
-    CHECK(is_triggered->next_check == 1.0);
-  }
+  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+        std::optional{1.0});
 
   set_time(1.0);
 
-  {
-    const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
-    CHECK(is_triggered.has_value());
-    CHECK(is_triggered->is_triggered);
-    CHECK(is_triggered->next_check == 4.0);
-  }
+  CHECK(trigger.is_triggered(box, cache, 0, component_p) ==
+        std::optional{true});
+  CHECK(trigger.next_check_time(box, cache, 0, component_p) ==
+        std::optional{4.0});
 }
 
 void test_trigger_with_replace() {
@@ -170,9 +162,9 @@ void test_trigger_with_replace() {
   DenseTrigger& trigger = typed_trigger;
 
   const auto is_triggered = trigger.is_triggered(box, cache, 0, component_p);
-  REQUIRE(is_triggered.has_value());
-  CHECK_FALSE(is_triggered->is_triggered);
-  CHECK(is_triggered->next_check == std::numeric_limits<double>::infinity());
+  CHECK(is_triggered == std::optional{false});
+  const auto next_check = trigger.next_check_time(box, cache, 0, component_p);
+  CHECK(next_check == std::optional{std::numeric_limits<double>::infinity()});
 }
 }  // namespace
 

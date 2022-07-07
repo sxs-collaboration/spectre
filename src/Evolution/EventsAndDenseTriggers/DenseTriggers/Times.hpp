@@ -43,22 +43,35 @@ class Times : public DenseTrigger {
 
   explicit Times(std::unique_ptr<TimeSequence<double>> times);
 
-  using is_triggered_argument_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
+  using is_triggered_argument_tags = tmpl::list<Tags::Time>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const double time) const {
+    return is_triggered_impl(time);
+  }
+
+  using next_check_time_argument_tags =
+      tmpl::list<Tags::TimeStepId, Tags::Time>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/,
       const TimeStepId& time_step_id, const double time) const {
-    return is_triggered_impl(time_step_id, time);
+    return next_check_time_impl(time_step_id, time);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
  private:
-  std::optional<Result> is_triggered_impl(const TimeStepId& time_step_id,
-                                          const double time) const;
+  std::optional<bool> is_triggered_impl(const double time) const;
+
+  std::optional<double> next_check_time_impl(const TimeStepId& time_step_id,
+                                             const double time) const;
 
   std::unique_ptr<TimeSequence<double>> times_{};
 };

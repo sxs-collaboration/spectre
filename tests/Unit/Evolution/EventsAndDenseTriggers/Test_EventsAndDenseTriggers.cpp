@@ -173,13 +173,13 @@ void do_test(const bool time_runs_forward, const bool add_event) {
 
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
-      Tags::Time, evolution::Tags::PreviousTriggerTime, TriggerA::IsReady,
-      TriggerA::IsTriggered, TriggerA::NextCheck, TriggerB::IsReady,
-      TriggerB::IsTriggered, TriggerB::NextCheck, EventA::IsReady,
-      EventB::IsReady, EventC::IsReady>>(
+      Tags::Time, evolution::Tags::PreviousTriggerTime, TriggerA::IsTriggered,
+      TriggerA::NextCheck, TriggerB::IsTriggered, TriggerB::NextCheck,
+      EventA::IsReady, EventB::IsReady, EventC::IsReady>>(
       Metavariables{}, TimeStepId(time_runs_forward, 0, Slab(0.0, 1.0).start()),
-      -1.0 * time_sign, std::optional<double>{}, false, false, 2.0 * time_sign,
-      false, false, 3.0 * time_sign, false, false, false);
+      -1.0 * time_sign, std::optional<double>{}, std::optional<bool>{},
+      std::optional<double>{}, std::optional<bool>{}, std::optional<double>{},
+      false, false, false);
 
   const auto set_tag = [&box](auto tag_v, const auto value) {
     using Tag = decltype(tag_v);
@@ -203,25 +203,34 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
-  set_tag(TriggerA::IsReady{}, true);
+  set_tag(TriggerA::IsTriggered{}, false);
   CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
-  set_tag(TriggerB::IsReady{}, true);
+  set_tag(TriggerB::IsTriggered{}, false);
   CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::Ready);
   events_and_dense_triggers.run_events(box, cache, array_index, component);
   check_events(false, false, false);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
 
+  CHECK(not events_and_dense_triggers.reschedule(box, cache, array_index,
+                                                 component));
+  set_tag(TriggerA::NextCheck{}, 2.0 * time_sign);
+  CHECK(not events_and_dense_triggers.reschedule(box, cache, array_index,
+                                                 component));
+  set_tag(TriggerB::NextCheck{}, 3.0 * time_sign);
+  CHECK(
+      events_and_dense_triggers.reschedule(box, cache, array_index, component));
   CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
   set_tag(Tags::Time{}, 2.0 * time_sign);
-  set_tag(TriggerA::IsReady{}, false);
-  set_tag(TriggerB::IsReady{}, false);
+  set_tag(TriggerA::IsTriggered{}, std::nullopt);
+  set_tag(TriggerB::IsTriggered{}, std::nullopt);
   CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
-  set_tag(TriggerA::IsReady{}, true);
   set_tag(TriggerA::IsTriggered{}, true);
   set_tag(TriggerA::NextCheck{}, 3.0 * time_sign);
   CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
@@ -233,11 +242,14 @@ void do_test(const bool time_runs_forward, const bool add_event) {
             box, cache, array_index, component) == TriggeringState::Ready);
   events_and_dense_triggers.run_events(box, cache, array_index, component);
   check_events(true, false, false);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
   CHECK(EventA::time_during_event == 2.0 * time_sign);
   CHECK(EventA::previous_time_during_event == std::nullopt);
 
+  CHECK(
+      events_and_dense_triggers.reschedule(box, cache, array_index, component));
   set_tag(TriggerA::NextCheck{}, 4.0 * time_sign);
-  set_tag(TriggerB::IsReady{}, true);
   set_tag(TriggerB::IsTriggered{}, true);
   set_tag(TriggerB::NextCheck{}, 4.0 * time_sign);
   CHECK(events_and_dense_triggers.next_trigger(box) == 3.0 * time_sign);
@@ -266,6 +278,8 @@ void do_test(const bool time_runs_forward, const bool add_event) {
               TriggeringState::NeedsEvolvedVariables);
         eadt.run_events(box, cache, array_index, component);
         check_events(true, true, true);
+        eadt.run_events(box, cache, array_index, component);
+        check_events(false, false, false);
         CHECK(EventA::time_during_event == 3.0 * time_sign);
         CHECK(EventA::previous_time_during_event.value() == 2.0 * time_sign);
       };

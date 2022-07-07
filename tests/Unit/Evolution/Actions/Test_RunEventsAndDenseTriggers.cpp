@@ -93,20 +93,29 @@ class TestTrigger : public DenseTrigger {
 
   using is_triggered_argument_tags = tmpl::list<Tags::Time>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/,
       const double time) const {
     if (time == init_time_) {
-      return {{false, trigger_time_}};
+      return false;
     }
     CHECK(time == trigger_time_);
-    return is_ready_
-               ? std::optional<
-                     Result>{{is_triggered_,
-                              (trigger_time_ > init_time_ ? 1.0 : -1.0) *
-                                  std::numeric_limits<double>::infinity()}}
-               : std::nullopt;
+    return is_ready_ ? std::optional{is_triggered_} : std::nullopt;
+  }
+
+  using next_check_time_argument_tags = tmpl::list<Tags::Time>;
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<double> next_check_time(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const double time) const {
+    if (time == init_time_) {
+      return trigger_time_;
+    }
+    CHECK(time == trigger_time_);
+    return (trigger_time_ > init_time_ ? 1.0 : -1.0) *
+           std::numeric_limits<double>::infinity();
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

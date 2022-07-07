@@ -76,7 +76,39 @@ class Trigger : public DenseTrigger {
       tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          measurement_timescales) {
+    if (UNLIKELY(not next_trigger_.has_value())) {
+      // First call
+
+      // This will happen if an executable has control systems, but
+      // all functions of time were overriden by ones read in from a
+      // file. So there is no need to trigger control systems.  Since
+      // we only enter this branch on the first call to the trigger,
+      // this is the initial time so we can assume the
+      // measurement_timescales are ready.
+      if (next_measurement(time, measurement_timescales) ==
+          std::numeric_limits<double>::infinity()) {
+        next_trigger_ = std::numeric_limits<double>::infinity();
+      } else {
+        next_trigger_ = time;
+      }
+    }
+
+    return time == *next_trigger_;
+  }
+
+  using next_check_time_argument_tags =
+      tmpl::list<::Tags::Time, control_system::Tags::MeasurementTimescales>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component,
       const double time,
@@ -84,6 +116,7 @@ class Trigger : public DenseTrigger {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
+    // At least one control system is active
     const bool is_ready = tmpl::as_pack<ControlSystems>(
         [&array_index, &cache, &component, &time](auto... control_systems) {
           return domain::functions_of_time_are_ready<
@@ -96,33 +129,11 @@ class Trigger : public DenseTrigger {
       return std::nullopt;
     }
 
-    const double next_measurement = tmpl::as_pack<ControlSystems>(
-        [&measurement_timescales, &time](auto... control_systems) {
-          return std::min(
-              {min(measurement_timescales
-                       .at(tmpl::type_from<decltype(control_systems)>::name())
-                       ->func(time)[0])...});
-        });
-
-    // This will happen if an executable has control systems, but all functions
-    // of time were overriden by ones read in from a file. So there is no need
-    // to trigger control systems
-    if (next_measurement == std::numeric_limits<double>::infinity()) {
-      next_trigger_ = next_measurement;
-      return {{false, *next_trigger_}};
-    }
-
-    // At least one control system is active
-    if (UNLIKELY(not next_trigger_.has_value())) {
-      // First call
-      next_trigger_ = time;
-    }
-
     const bool triggered = time == *next_trigger_;
     if (triggered) {
-      *next_trigger_ += next_measurement;
+      *next_trigger_ = next_measurement(time, measurement_timescales);
     }
-    return {{triggered, *next_trigger_}};
+    return *next_trigger_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -132,6 +143,22 @@ class Trigger : public DenseTrigger {
   }
 
  private:
+  static double next_measurement(
+      const double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          measurement_timescales) {
+    return time +
+           tmpl::as_pack<ControlSystems>(
+               [&measurement_timescales, &time](auto... control_systems) {
+                 return std::min({min(
+                     measurement_timescales
+                         .at(tmpl::type_from<decltype(control_systems)>::name())
+                         ->func(time)[0])...});
+               });
+  }
+
   std::optional<double> next_trigger_{};
 };
 

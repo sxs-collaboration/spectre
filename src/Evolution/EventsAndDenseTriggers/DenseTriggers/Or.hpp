@@ -49,31 +49,48 @@ class Or : public DenseTrigger {
 
   explicit Or(std::vector<std::unique_ptr<DenseTrigger>> triggers);
 
-  using is_triggered_argument_tags =
+  using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
+
+  template <typename Metavariables, typename ArrayIndex, typename Component,
+            typename DbTags>
+  std::optional<bool> is_triggered(Parallel::GlobalCache<Metavariables>& cache,
+                                   const ArrayIndex& array_index,
+                                   const Component* component,
+                                   const db::DataBox<DbTags>& box) const {
+    bool is_ready = true;
+    for (const auto& trigger : triggers_) {
+      const auto sub_result =
+          trigger->is_triggered(box, cache, array_index, component);
+      if (sub_result.has_value()) {
+        if (*sub_result) {
+          // No need to wait for all the other triggers to be ready.
+          return true;
+        }
+      } else {
+        is_ready = false;
+      }
+    }
+    return is_ready ? std::optional{false} : std::nullopt;
+  }
+
+  using next_check_time_argument_tags =
       tmpl::list<Tags::TimeStepId, Tags::DataBox>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
-  std::optional<Result> is_triggered(
+  std::optional<double> next_check_time(
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const Component* component,
       const TimeStepId& time_step_id, const db::DataBox<DbTags>& box) const {
     const evolution_less<double> before{time_step_id.time_runs_forward()};
-    Result result{false, before.infinity()};
+    double result = before.infinity();
     for (const auto& trigger : triggers_) {
       const auto sub_result =
-          trigger->is_triggered(box, cache, array_index, component);
+          trigger->next_check_time(box, cache, array_index, component);
       if (not sub_result.has_value()) {
         return std::nullopt;
       }
-      if (sub_result->is_triggered) {
-        // We can't short-circuit because we need to make sure we
-        // report the next time that any of the triggers wants to be
-        // checked, whether they triggered now or not.
-        result.is_triggered = true;
-      }
-      result.next_check =
-          std::min(sub_result->next_check, result.next_check, before);
+      result = std::min(*sub_result, result, before);
     }
     return result;
   }

@@ -5,14 +5,17 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <ios>
 #include <optional>
 #include <pup.h>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -33,51 +36,60 @@ class TestTrigger : public DenseTrigger {
   WRAPPED_PUPable_decl_template(TestTrigger);  // NOLINT
   /// \endcond
 
-  struct IsReady {
-    using type = bool;
-    constexpr static Options::String help = "IsReady";
+  struct NotReady {
+    template <typename T>
+    static std::string format(const std::optional<T>& arg) {
+      if (arg.has_value()) {
+        return MakeString{} << std::boolalpha << arg;
+      } else {
+        return "NotReady";
+      }
+    }
   };
 
   struct IsTriggered {
-    using type = bool;
+    using type = Options::Auto<bool, NotReady>;
     constexpr static Options::String help = "IsTriggered";
   };
 
   struct NextCheck {
-    using type = double;
+    using type = Options::Auto<double, NotReady>;
     constexpr static Options::String help = "NextCheck";
   };
 
-  using options = tmpl::list<IsReady, IsTriggered, NextCheck>;
+  using options = tmpl::list<IsTriggered, NextCheck>;
   constexpr static Options::String help = "help";
 
-  TestTrigger(const bool is_ready_arg, const bool is_triggered,
-              const double next_check)
-      : is_ready_(is_ready_arg),
-        is_triggered_(is_triggered),
-        next_check_(next_check) {}
+  TestTrigger(const std::optional<bool>& is_triggered,
+              const std::optional<double>& next_check)
+      : is_triggered_(is_triggered), next_check_(next_check) {}
 
   using is_triggered_argument_tags = tmpl::list<>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/) const {
-    return is_ready_ ? std::optional<Result>{{is_triggered_, next_check_}}
-                     : std::nullopt;
+    return is_triggered_;
+  }
+
+  using next_check_time_argument_tags = tmpl::list<>;
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<double> next_check_time(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/) const {
+    return next_check_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     DenseTrigger::pup(p);
-    p | is_ready_;
     p | is_triggered_;
     p | next_check_;
   }
 
  private:
-  bool is_ready_;
-  bool is_triggered_;
-  double next_check_;
+  std::optional<bool> is_triggered_;
+  std::optional<double> next_check_;
 };
 
 template <typename Label>
@@ -98,27 +110,29 @@ class BoxTrigger : public DenseTrigger {
   constexpr static Options::String help = "help";
 
   struct IsTriggered : db::SimpleTag {
-    using type = bool;
+    using type = std::optional<bool>;
   };
 
   struct NextCheck : db::SimpleTag {
-    using type = double;
+    using type = std::optional<double>;
   };
 
-  struct IsReady : db::SimpleTag {
-    using type = bool;
-  };
-
-  using is_triggered_argument_tags =
-      tmpl::list<IsReady, IsTriggered, NextCheck>;
+  using is_triggered_argument_tags = tmpl::list<IsTriggered>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  std::optional<Result> is_triggered(
+  std::optional<bool> is_triggered(
       Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const Component* /*component*/,
-      const bool is_ready_arg, const bool is_triggered,
-      const double next_check) const {
-    return is_ready_arg ? std::optional<Result>{{is_triggered, next_check}}
-                        : std::nullopt;
+      const std::optional<bool>& is_triggered) const {
+    return is_triggered;
+  }
+
+  using next_check_time_argument_tags = tmpl::list<NextCheck>;
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<double> next_check_time(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const std::optional<double>& next_check) const {
+    return next_check;
   }
 
   void pup(PUP::er& p) { DenseTrigger::pup(p); }
