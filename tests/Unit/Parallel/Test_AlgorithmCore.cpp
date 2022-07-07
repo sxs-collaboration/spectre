@@ -218,7 +218,7 @@ struct NoOpsComponent {
     Parallel::get_parallel_component<NoOpsComponent>(local_cache)
         .start_phase(next_phase);
     // [start_phase]
-    if (next_phase == Parallel::Phase::RegisterWithObserver) {
+    if (next_phase == Parallel::Phase::Testing) {
       Parallel::simple_action<no_op_test::finalize>(
           Parallel::get_parallel_component<NoOpsComponent>(local_cache));
     }
@@ -688,7 +688,7 @@ struct TestMetavariables {
 
   static constexpr std::array<Parallel::Phase, 10> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,
-       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Solve,
+       Parallel::Phase::Testing, Parallel::Phase::Solve,
        Parallel::Phase::Evolve, Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
        Parallel::Phase::Execute, Parallel::Phase::Cleanup,

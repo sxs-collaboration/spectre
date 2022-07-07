@@ -50,7 +50,7 @@ struct element_component {
   using array_index = ElementIdType;
 
   using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Register,
                                         RegistrationActionsList>>;
 };
 

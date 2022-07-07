@@ -364,9 +364,8 @@ struct EvolutionMetavars {
        Parallel::Phase::RegisterWithElementDataReader,
        Parallel::Phase::ImportInitialData,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
-       Parallel::Phase::RegisterWithObserver,
-       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Evolve,
-       Parallel::Phase::Exit}};
+       Parallel::Phase::Register, Parallel::Phase::InitializeTimeStepperHistory,
+       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
@@ -429,7 +428,7 @@ struct EvolutionMetavars {
           Parallel::PhaseActions<
               Parallel::Phase::InitializeInitialDataDependentQuantities,
               initialize_initial_data_dependent_quantities_actions>,
-          Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+          Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<

@@ -318,11 +318,11 @@ struct Metavariables {
 
   using dg_element_array = elliptic::DgElementArray<
       Metavariables,
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
-                                        initialization_actions>,
-                 Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
-                                        register_actions>,
-                 Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
+      tmpl::list<
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                 initialization_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Register, register_actions>,
+          Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>>,
       LinearSolver::multigrid::ElementsAllocator<
           volume_dim, typename multigrid::options_group>>;
 
@@ -336,7 +336,7 @@ struct Metavariables {
                  observers::ObserverWriter<Metavariables>>>;
 
   static constexpr std::array<Parallel::Phase, 4> default_phase_order{
-      {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+      {Parallel::Phase::Initialization, Parallel::Phase::Register,
        Parallel::Phase::Solve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)

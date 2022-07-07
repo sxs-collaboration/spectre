@@ -136,7 +136,7 @@ struct ElementArray {
                      typename linear_solver::initialize_element,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          Parallel::Phase::RegisterWithObserver,
+          Parallel::Phase::Register,
           tmpl::list<typename nonlinear_solver::register_element,
                      typename linear_solver::register_element,
                      Parallel::Actions::TerminatePhase>>,
@@ -185,9 +185,8 @@ template <typename Metavariables>
 using OutputCleaner =
     LinearSolverAlgorithmTestHelpers::OutputCleaner<Metavariables>;
 
-
 static constexpr std::array<Parallel::Phase, 6> default_phase_order = {
-    {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+    {Parallel::Phase::Initialization, Parallel::Phase::Register,
      Parallel::Phase::Solve, Parallel::Phase::Testing, Parallel::Phase::Cleanup,
      Parallel::Phase::Exit}};
 

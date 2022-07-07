@@ -257,7 +257,7 @@ struct EvolutionMetavars {
               Parallel::Phase::InitializeTimeStepperHistory,
               SelfStart::self_start_procedure<step_actions, system>>,
 
-          Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+          Parallel::PhaseActions<Parallel::Phase::Register,
                                  tmpl::list<dg_registration_list,
                                             Parallel::Actions::TerminatePhase>>,
 
@@ -289,9 +289,8 @@ struct EvolutionMetavars {
 
   static constexpr std::array<Parallel::Phase, 5> default_phase_order{
       {Parallel::Phase::Initialization,
-       Parallel::Phase::InitializeTimeStepperHistory,
-       Parallel::Phase::RegisterWithObserver, Parallel::Phase::Evolve,
-       Parallel::Phase::Exit}};
+       Parallel::Phase::InitializeTimeStepperHistory, Parallel::Phase::Register,
+       Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}

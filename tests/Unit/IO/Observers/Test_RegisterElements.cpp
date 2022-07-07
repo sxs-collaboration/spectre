@@ -57,8 +57,7 @@ void check_observer_registration() {
   for (const auto& id : element_ids) {
     ActionTesting::emplace_component<element_comp>(&runner, id);
   }
-  ActionTesting::set_phase(make_not_null(&runner),
-                           Parallel::Phase::RegisterWithObserver);
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   // Check observer component
   CHECK(

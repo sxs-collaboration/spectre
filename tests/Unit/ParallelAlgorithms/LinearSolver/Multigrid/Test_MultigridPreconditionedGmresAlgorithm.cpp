@@ -150,7 +150,7 @@ struct Metavariables {
           tmpl::list<
               Parallel::PhaseActions<Parallel::Phase::Initialization,
                                      initialization_actions>,
-              Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+              Parallel::PhaseActions<Parallel::Phase::Register,
                                      register_actions>,
               Parallel::PhaseActions<Parallel::Phase::Solve, solve_actions>,
               Parallel::PhaseActions<Parallel::Phase::Testing, test_actions>>,
