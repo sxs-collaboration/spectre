@@ -29,7 +29,7 @@ endfunction()
 
 find_path(
   CATCH_INCLUDE_DIR
-  PATH_SUFFIXES single_include include catch catch2
+  PATH_SUFFIXES single_include include catch catch2 include/catch2
   NAMES catch.hpp
   HINTS ${CATCH_ROOT}
   DOC "catch include dir"
