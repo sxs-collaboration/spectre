@@ -11,7 +11,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// why is it diffrent than weyl electric?
 //
 
 namespace gr {
@@ -24,9 +23,9 @@ void weyl_type_D1_tensor(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
   // compute a
-  Scalar<DataType> a = weyl_electric_scalar(
-      weyl_electric, inverse_spatial_metric);  // E_ij * E^ij
-  get(a) *= 16.0;                              // multiply by 16
+  Scalar<DataType> a =
+      weyl_electric_scalar(weyl_electric, inverse_spatial_metric);
+  get(a) *= 16.0;
 
   tnsr::Ij<DataType, SpatialDim, Frame> weyl_electric_up_down =
       make_with_value<tnsr::Ij<DataType, SpatialDim, Frame>>(
@@ -40,19 +39,18 @@ void weyl_type_D1_tensor(
     }
   }
 
-  // first component:
   auto upper_weyl_electric =
       make_with_value<tnsr::II<DataType, SpatialDim, Frame>>(
           get<0, 0>(inverse_spatial_metric), 0.0);
   for (size_t i = 0; i < SpatialDim; ++i) {
-    for (size_t l = 0; l < SpatialDim; ++l) {
+    for (size_t l = i; l < SpatialDim; ++l) {
       for (size_t j = 0; j < SpatialDim; ++j) {
         upper_weyl_electric.get(i, l) +=
             weyl_electric_up_down.get(i, j) * inverse_spatial_metric.get(j, l);
       }
     }
   }
-  // compute b
+
   auto b =
       make_with_value<Scalar<DataType>>(get<0, 0>(inverse_spatial_metric), 0.0);
 
@@ -64,10 +62,9 @@ void weyl_type_D1_tensor(
       }
     }
   }
-  get(b) *= -64.0;  // multiply by -64
+  get(b) *= -64.0;
 
-  // compute type D1
-
+  // compute type D1:
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       weyl_type_D1_tensor->get(i, j) =
@@ -75,7 +72,7 @@ void weyl_type_D1_tensor(
           (get(b) / get(a) * weyl_electric.get(i, j));
       for (size_t k = 0; k < SpatialDim; ++k) {
         weyl_type_D1_tensor->get(i, j) -=
-            4 * (weyl_electric_up_down.get(k, i) * weyl_electric.get(j, k));
+            4.0 * (weyl_electric_up_down.get(k, i) * weyl_electric.get(j, k));
       }
     }
   }
@@ -86,13 +83,10 @@ tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D1_tensor(
     const tnsr::ii<DataType, SpatialDim, Frame>& weyl_electric,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric) {
-  // creat result function: TODO: update with my D1 stuff
   tnsr::ii<DataType, SpatialDim, Frame> weyl_type_D_tensor_result{};
-  // call void function
   weyl_type_D1_tensor<SpatialDim, Frame, DataType>(
       make_not_null(&weyl_type_D_tensor_result), weyl_electric, spatial_metric,
       inverse_spatial_metric);
-  // return result function
   return weyl_type_D_tensor_result;
 }
 
