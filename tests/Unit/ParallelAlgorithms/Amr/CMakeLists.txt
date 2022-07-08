@@ -5,6 +5,7 @@ set(LIBRARY "Test_ParallelAmr")
 
 set(LIBRARY_SOURCES
   Actions/Test_Initialize.cpp
+  Criteria/Test_Random.cpp
   )
 
 add_test_library(
@@ -18,6 +19,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   Amr
+  AmrCriteria
   DomainStructure
   Utilities
   )
