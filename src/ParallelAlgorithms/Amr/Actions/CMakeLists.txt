@@ -6,6 +6,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Actions.hpp
+  EvaluateRefinementCriteria.hpp
   Initialization.hpp
   Initialize.hpp
+  UpdateAmrDecision.hpp
   )
