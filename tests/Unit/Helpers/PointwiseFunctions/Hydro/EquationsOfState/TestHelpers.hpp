@@ -157,7 +157,8 @@ void check_impl(
         python_file_name,
         python_function_prefix + "_temperature_from_density_and_energy",
         random_value_bounds, member_args_tuple, used_for_size);
-    Approx custom_approx = Approx::custom().epsilon(1.e-11);
+    INFO("Done\nTesting specific_int_energy_from_density_and_temperature...");
+    Approx custom_approx = Approx::custom().epsilon(1.e-9);
     CHECK_ITERABLE_CUSTOM_APPROX(
         specific_internal_energy,
         eos->specific_internal_energy_from_density_and_temperature(
@@ -165,10 +166,6 @@ void check_impl(
             eos->temperature_from_density_and_energy(rest_mass_density,
                                                      specific_internal_energy)),
         custom_approx);
-    pypp::check_with_random_values<2>(
-        func = &EoS::chi_from_density_and_energy, *eos, python_file_name,
-        python_function_prefix + "_chi_from_density_and_energy",
-        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting chi_from_density_and_energy...")
     pypp::check_with_random_values<2>(
         func = &EoS::chi_from_density_and_energy, *eos, python_file_name,
