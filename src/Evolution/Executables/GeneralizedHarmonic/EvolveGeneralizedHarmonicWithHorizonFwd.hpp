@@ -17,6 +17,7 @@ struct WrappedGr;
 namespace gr {
 namespace Solutions {
 struct KerrSchild;
+struct SphericalKerrSchild;
 }  // namespace Solutions
 }  // namespace gr
 namespace evolution {
