@@ -111,7 +111,7 @@ void test() {
       {-7.9, 7.6, 1.9, -8.1, -6.3, 2.7, 6.8, -0.2},
       {17.9, 27.6, 21.9, -28.1, -26.3, 32.7, 26.8, -30.2}};
   const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
-  const std::vector<double> observation_values{8.0, 2.3};
+  const std::vector<double> observation_values{8.0, -2.3};
   const std::vector<std::string> grid_names{"[[2,3,4]]", "[[5,6,7]]"};
   const std::vector<std::vector<Spectral::Basis>> bases{
       {3, Spectral::Basis::Chebyshev}, {3, Spectral::Basis::Legendre}};
