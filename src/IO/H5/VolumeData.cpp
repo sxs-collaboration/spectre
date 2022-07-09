@@ -519,8 +519,8 @@ auto VolumeData::get_data_by_element(
   // [`start_observation_value`, `end_observation_value`]
   for (const auto& observation_id : obs_ids) {
     const double observation_value = get_observation_value(observation_id);
-    if (start_observation_value.value_or(std::numeric_limits<double>::min()) <=
-            observation_value and
+    if (start_observation_value.value_or(
+            std::numeric_limits<double>::lowest()) <= observation_value and
         observation_value <= end_observation_value.value_or(
                                  std::numeric_limits<double>::max())) {
       result.emplace_back(observation_id, observation_value,

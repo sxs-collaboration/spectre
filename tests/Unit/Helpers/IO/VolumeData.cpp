@@ -161,10 +161,12 @@ void check_volume_data(
   // we can just use those now.
   const auto volume_data =
       volume_file.get_data_by_element(std::nullopt, std::nullopt, std::nullopt);
+  size_t observations_found = 0;
   for (const auto& single_time_data : volume_data) {
     if (std::get<0>(single_time_data) != observation_id) {
       continue;
     }
+    ++observations_found;
     CHECK(std::get<1>(single_time_data) == approx(observation_value));
 
     for (size_t j = 0; j < grid_names.size(); j++) {
@@ -193,6 +195,7 @@ void check_volume_data(
       }
     }
   }
+  CHECK(observations_found == 1);
   // Test that the data is sorted by copying it, sorting it, and verifying
   // everything is the same. First sort outer vector by observation value, then
   // sort the vector of ElementVolumeData on each time slice.
