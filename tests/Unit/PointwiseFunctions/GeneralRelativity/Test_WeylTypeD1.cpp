@@ -24,6 +24,52 @@
 
 namespace {
 template <size_t SpatialDim, typename DataType>
+void test_compute_item_in_databox(const DataType& used_for_size) {
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::WeylTypeD1Compute<SpatialDim, Frame::Inertial, DataType>>(
+      "WeylTypeD1");
+  TestHelpers::db::test_compute_tag<gr::Tags::WeylElectricScalarCompute<
+      SpatialDim, Frame::Inertial, DataType>>("WeylTypeD1Scalar");
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-3.0, 3.0);
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_distribution = make_not_null(&distribution);
+
+  const auto weyl_electric =
+      make_with_random_values<tnsr::ii<DataType, SpatialDim>>(
+          nn_generator, nn_distribution, used_for_size);
+  const auto spatial_metric=
+      make_with_random_values<tnsr::ii<DataType, SpatialDim>>(
+          nn_generator, nn_distribution, used_for_size);
+  const auto inv_spatial_metric =
+      make_with_random_values<tnsr::II<DataType, SpatialDim>>(
+          nn_generator, nn_distribution, used_for_size);
+
+  const auto box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::WeylElectric<SpatialDim, Frame::Inertial, DataType>,
+          gr::Tags::SpatialMetric<SpatialDim, Frame::Inertial, DataType>,
+          gr::Tags::InverseSpatialMetric<SpatialDim, Frame::Inertial,
+                                         DataType>>,
+      db::AddComputeTags<
+          gr::Tags::WeylTypeD1Compute<SpatialDim, Frame::Inertial, DataType>,
+          gr::Tags::WeylTypeD1ScalarCompute<SpatialDim, Frame::Inertial,
+                                              DataType>>>(
+      weyl_electric, spatial_metric, inv_spatial_metric);
+
+  const auto expected =
+      gr::weyl_type_D1(weyl_electric, spatial_metric, inv_spatial_metric);
+  const auto expected_scalar =
+      gr::weyl_type_D1_scalar(expected, inv_spatial_metric);
+  CHECK_ITERABLE_APPROX(
+      (db::get<gr::Tags::WeylTypeD1<SpatialDim, Frame::Inertial, DataType>>(
+          box)),
+      expected);
+  CHECK_ITERABLE_APPROX((db::get<gr::Tags::WeylTypeD1Scalar<DataType>>(box)),
+                        expected_scalar);
+}
+template <size_t SpatialDim, typename DataType>
 void test_weyl_type_D1(const DataType& used_for_size) {
   tnsr::ii<DataType, SpatialDim, Frame::Inertial> (*f)(
       const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
@@ -55,6 +101,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.WeylTypeD1",
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_weyl_type_D1, (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_weyl_type_D1_scalar, (1, 2, 3));
-  //test_compute_item_in_databox<3>(d);
-  //test_compute_item_in_databox<3>(dv);
+  test_compute_item_in_databox<3>(d);
+  test_compute_item_in_databox<3>(dv);
 }

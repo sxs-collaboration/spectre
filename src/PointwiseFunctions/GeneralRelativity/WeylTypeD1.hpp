@@ -5,7 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 /// \cond
 namespace gsl {
@@ -72,4 +74,47 @@ Scalar<DataType> weyl_type_D1_scalar(
 
 /// @}
 
+namespace Tags {
+/// Compute item for the electric part of the weyl tensor in vacuum
+/// Computed from the SpatialRicci, ExtrinsicCurvature, and InverseSpatialMetric
+///
+/// Can be retrieved using gr::Tags::WeylElectric
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct WeylTypeD1Compute : WeylTypeD1<SpatialDim, Frame, DataType>,
+                           db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::WeylElectric<SpatialDim, Frame, DataType>,
+                 gr::Tags::SpatialMetric<SpatialDim, Frame, DataType>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+
+  using return_type = tnsr::ii<DataType, SpatialDim, Frame>;
+
+  static constexpr auto function = static_cast<void (*)(
+      gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*>,
+      const tnsr::ii<DataType, SpatialDim, Frame>&,
+      const tnsr::ii<DataType, SpatialDim, Frame>&,
+      const tnsr::II<DataType, SpatialDim, Frame>&)>(
+      &weyl_type_D1_tensor<SpatialDim, Frame, DataType>);
+
+  using base = WeylTypeD1<SpatialDim, Frame, DataType>;
+};
+
+/// Can be retrieved using gr::Tags::WeylTypeD1Scalar
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct WeylTypeD1ScalarCompute : WeylTypeD1Scalar<DataType>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::WeylTypeD1Compute<SpatialDim, Frame, DataType>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+
+  using return_type = Scalar<DataType>;
+
+  static constexpr auto function =
+      static_cast<void (*)(gsl::not_null<Scalar<DataType>*>,
+                           const tnsr::ii<DataType, SpatialDim, Frame>&,
+                           const tnsr::II<DataType, SpatialDim, Frame>&)>(
+          &gr::weyl_type_D1_scalar<SpatialDim, Frame, DataType>);
+
+  using base = WeylTypeD1Scalar<DataType>;
+};
+}  // namespace Tags
 }  // namespace gr

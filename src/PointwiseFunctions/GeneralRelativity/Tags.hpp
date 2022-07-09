@@ -220,6 +220,15 @@ struct WeylMagnetic : db::SimpleTag {
 };
 
 /*!
+ * \brief computes a quantity measuring how far from type D spacetime is, using
+ * measure D1. Implements equation 8 of \cite Bhagwat2017tkm.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct WeylTypeD1 : db::SimpleTag {
+  using type = tnsr::ii<DataType, 3, Frame>;
+};
+
+/*!
  * \brief Computes the scalar \f$E_{ij} E^{ij}\f$ from the electric part of the
  * Weyl tensor \f$E_{ij}\f$ and the inverse spatial metric \f$\gamma^{ij}\f$,
  * i.e. \f$E_{ij} E^{ij} = \gamma^{ik}\gamma^{jl}E_{ij}E_{kl}\f$.
@@ -237,6 +246,17 @@ template <typename DataType>
 struct WeylMagneticScalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
+
+/*!
+ * \brief Computes the scalar \f$D_{ij} D^{ij}\f$ (from equation 8 of
+ * \cite Bhagwat2017tkm) from \f$D_{ij}\f$ and the inverse spatial metric
+ * \f$\gamma^{ij}\f$, i.e. \f$D_{ij} = \gamma^{ik}\gamma^{jl}E_{ij}D_{kl}\f$.
+ */
+template <typename DataType>
+struct WeylTYpeD1Scalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 }  // namespace Tags
 
 /// GR Tags commonly needed for the evolution of hydro systems
