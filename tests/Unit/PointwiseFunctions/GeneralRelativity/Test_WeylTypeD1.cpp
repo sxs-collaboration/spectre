@@ -39,7 +39,7 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
   const auto weyl_electric =
       make_with_random_values<tnsr::ii<DataType, SpatialDim>>(
           nn_generator, nn_distribution, used_for_size);
-  const auto spatial_metric=
+  const auto spatial_metric =
       make_with_random_values<tnsr::ii<DataType, SpatialDim>>(
           nn_generator, nn_distribution, used_for_size);
   const auto inv_spatial_metric =
@@ -55,7 +55,7 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
       db::AddComputeTags<
           gr::Tags::WeylTypeD1Compute<SpatialDim, Frame::Inertial, DataType>,
           gr::Tags::WeylTypeD1ScalarCompute<SpatialDim, Frame::Inertial,
-                                              DataType>>>(
+                                            DataType>>>(
       weyl_electric, spatial_metric, inv_spatial_metric);
 
   const auto expected =
