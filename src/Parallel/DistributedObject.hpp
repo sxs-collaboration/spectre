@@ -34,11 +34,13 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Printf.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -52,6 +54,14 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+template <size_t Dim>
+class ElementId;
+
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>&, const std::optional<size_t>&);
+/// \cond
 
 namespace Parallel {
 /// \cond
@@ -179,6 +189,7 @@ class DistributedObject<ParallelComponent,
       typename chare_type::template cbase<parallel_component, array_index>;
 
   using phase_dependent_action_lists = tmpl::list<PhaseDepActionListsPack...>;
+  using phases = phase_dependent_action_lists;
 
   /// \cond
   // Needed for serialization
@@ -463,6 +474,17 @@ DistributedObject<ParallelComponent,
   set_array_index();
 }
 
+namespace detail {
+inline bool is_zeroth_element(const int array_index) {
+  return 0 == array_index;
+}
+
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>& array_index) {
+  return ::is_zeroth_element(array_index, std::nullopt);
+}
+}  // namespace detail
+
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 template <class... InitializationTags>
 DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
@@ -471,6 +493,21 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         tuples::TaggedTuple<InitializationTags...> initialization_items)
     : DistributedObject() {
   try {
+    if (detail::is_zeroth_element(array_index_)) {
+      const auto check_for_phase = [](auto phase_dep_v) {
+        using PhaseDep = decltype(phase_dep_v);
+        constexpr Parallel::Phase phase = PhaseDep::phase;
+        if (alg::count(metavariables::default_phase_order, phase) == 0) {
+          Parallel::printf(
+              "NOTE: Phase::%s is in the phase dependent action list of\n"
+              "component %s,\nbut not in the default_phase_order specified by "
+              "the metavariables.\nThis means that phase will not be executed "
+              "unless chosen by PhaseControl.\n\n",
+              phase, pretty_type::name<parallel_component>());
+        }
+      };
+      EXPAND_PACK_LEFT_TO_RIGHT(check_for_phase(PhaseDepActionListsPack{}));
+    }
     (void)initialization_items;  // avoid potential compiler warnings if unused
     // When we are using the LoadBalancing phase, we want the Main component to
     // handle the synchronization, so the components do not participate in the

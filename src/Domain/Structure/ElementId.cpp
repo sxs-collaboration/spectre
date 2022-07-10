@@ -157,6 +157,11 @@ bool is_zeroth_element(const ElementId<Dim>& id,
              : base_checks;
 }
 
+template <size_t Dim>
+bool is_zeroth_element(const ElementId<Dim>& id) {
+  return is_zeroth_element(id, std::nullopt);
+}
+
 // LCOV_EXCL_START
 template <size_t VolumeDim>
 size_t hash_value(const ElementId<VolumeDim>& id) {
@@ -188,6 +193,7 @@ size_t hash<ElementId<VolumeDim>>::operator()(
                           const ElementId<GET_DIM(data)>& rhs);             \
   template bool is_zeroth_element(const ElementId<GET_DIM(data)>& id,       \
                                   const std::optional<size_t>& grid_index); \
+  template bool is_zeroth_element(const ElementId<GET_DIM(data)>& id);      \
   template size_t hash_value(const ElementId<GET_DIM(data)>&);              \
   namespace std { /* NOLINT */                                              \
   template struct hash<ElementId<GET_DIM(data)>>;                           \

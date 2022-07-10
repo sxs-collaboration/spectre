@@ -277,7 +277,7 @@ struct ElementArray {
                      detail::init_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
-          Parallel::Phase::RegisterWithObserver,
+          Parallel::Phase::Register,
           tmpl::list<typename linear_solver::register_element,
                      detail::register_preconditioner<preconditioner>,
                      Parallel::Actions::TerminatePhase>>,
@@ -371,7 +371,7 @@ struct OutputCleaner {
 
 // [default_phase_order_array]
 static constexpr std::array<Parallel::Phase, 6> default_phase_order{
-    {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+    {Parallel::Phase::Initialization, Parallel::Phase::Register,
      Parallel::Phase::Solve, Parallel::Phase::Testing, Parallel::Phase::Cleanup,
      Parallel::Phase::Exit}};
 // [default_phase_order_array]

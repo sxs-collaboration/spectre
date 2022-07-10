@@ -355,7 +355,7 @@ using ElementArray = elliptic::DgElementArray<
     Metavariables,
     tmpl::list<Parallel::PhaseActions<Parallel::Phase::Initialization,
                                       initialization_actions<Metavariables>>,
-               Parallel::PhaseActions<Parallel::Phase::RegisterWithObserver,
+               Parallel::PhaseActions<Parallel::Phase::Register,
                                       register_actions<Metavariables>>,
                Parallel::PhaseActions<Parallel::Phase::Solve,
                                       solve_actions<Metavariables>>,

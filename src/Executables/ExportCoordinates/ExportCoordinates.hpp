@@ -246,7 +246,7 @@ struct Metavariables {
                       ::Initialization::Actions::
                           RemoveOptionsAndTerminatePhase>>,
               Parallel::PhaseActions<
-                  Parallel::Phase::RegisterWithObserver,
+                  Parallel::Phase::Register,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  Actions::ExportCoordinates<Dim>>,
                              observers::Actions::RegisterWithObservers<
@@ -265,7 +265,7 @@ struct Metavariables {
       tmpl::list<MinGridSpacingReductionData>>;
 
   static constexpr std::array<Parallel::Phase, 4> default_phase_order{
-      {Parallel::Phase::Initialization, Parallel::Phase::RegisterWithObserver,
+      {Parallel::Phase::Initialization, Parallel::Phase::Register,
        Parallel::Phase::Execute, Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)

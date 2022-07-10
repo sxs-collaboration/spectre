@@ -133,7 +133,7 @@ struct Metavariables {
       tmpl::list<PhaseControl::Tags::PhaseChangeAndTriggers>;
 
   static constexpr std::array<Parallel::Phase, 7> default_phase_order{
-      {Parallel::Phase::Register, Parallel::Phase::RegisterWithObserver,
+      {Parallel::Phase::Register, Parallel::Phase::Testing,
        Parallel::Phase::Solve, Parallel::Phase::ImportInitialData,
        Parallel::Phase::Evolve, Parallel::Phase::Execute,
        Parallel::Phase::Cleanup}};
@@ -206,7 +206,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
   {
     INFO("Arbitrate based on phase change decision data");
     // if used, the phase change objects correspond to phases:
-    // RegisterWithObserver, Solve, ImportInitialData, Evolve, Cleanup  (in that
+    // Testing, Solve, ImportInitialData, Evolve, Cleanup  (in that
     // order)
     phase_change_data = phase_change_decision_data_type{false, false, false,
                                                         false, false, false};
@@ -230,14 +230,14 @@ SPECTRE_TEST_CASE("Unit.Parallel.PhaseControl.ExecutePhaseChange",
     // those phases without evaluating the other phase change objects
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Parallel::Phase::Register,
-              global_cache)) == Parallel::Phase::RegisterWithObserver);
+              global_cache)) == Parallel::Phase::Testing);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
     phase_change_data =
         phase_change_decision_data_type{true, false, true, true, false, true};
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
               make_not_null(&phase_change_data), Parallel::Phase::Register,
-              global_cache)) == Parallel::Phase::RegisterWithObserver);
+              global_cache)) == Parallel::Phase::Testing);
     CHECK(phase_change_data == SINGLE_ARG(phase_change_decision_data_type{
                                    false, false, true, true, false, false}));
     CHECK(SINGLE_ARG(PhaseControl::arbitrate_phase_change(
