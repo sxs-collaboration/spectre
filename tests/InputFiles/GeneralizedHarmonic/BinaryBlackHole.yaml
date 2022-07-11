@@ -22,8 +22,23 @@ ResourceInfo:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.01
-  TimeStepper: DormandPrince5
+  InitialTimeStep: 0.0002
+  InitialSlabSize: 0.25
+  StepController: BinaryFraction
+  StepChoosers:
+    - Increase:
+        Factor: 2
+    - ElementSizeCfl:
+        SafetyFactor: 0.5
+    - ErrorControl:
+        AbsoluteTolerance: 1e-8
+        RelativeTolerance: 1e-6
+        MaxFactor: 2
+        MinFactor: 0.25
+        SafetyFactor: 0.95
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 5
 
 DomainCreator:
   BinaryCompactObject:
@@ -142,31 +157,7 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
-Filtering:
-  ExpFilter0:
-    Alpha: 36.0
-    HalfPower: 210
-    DisableForDebugging: true
-
 EventsAndTriggers:
-  ? And:
-      - Slabs:
-          EvenlySpaced:
-            Interval: 200
-            Offset: 0
-      # Note: do not adjust step size until a bit of time has passed, because
-      # empirically starting in damped harmonic gauge requires very rapid
-      # grid motion at first.
-      - TimeCompares:
-          Comparison: GreaterThan
-          Value: 0.1
-  : - ChangeSlabSize:
-        DelayChange: 0
-        StepChoosers:
-          - Cfl:
-              SafetyFactor: 0.8
-          - Increase:
-              Factor: 1.2
   ? Slabs:
       EvenlySpaced:
         Interval: 1
