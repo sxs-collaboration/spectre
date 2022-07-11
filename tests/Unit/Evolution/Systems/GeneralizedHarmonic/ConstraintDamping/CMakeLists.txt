@@ -4,6 +4,7 @@
 set(LIBRARY "Test_GhConstraintDamping")
 
 set(LIBRARY_SOURCES
+  Test_Constant.cpp
   Test_GaussianPlusConstant.cpp
   Test_TimeDependentTripleGaussian.cpp
   )
