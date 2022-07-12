@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def weyl_TypeD1_tensor(weyl_electric, spatial_metric, inverse_spatial_metric):
+def weyl_type_D1(weyl_electric, spatial_metric, inverse_spatial_metric):
     inverse_weyl_electric = np.einsum("lk,ik,lj", weyl_electric,
                                       inverse_spatial_metric,
                                       inverse_spatial_metric)

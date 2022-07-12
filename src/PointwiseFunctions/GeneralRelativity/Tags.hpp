@@ -220,8 +220,8 @@ struct WeylMagnetic : db::SimpleTag {
 };
 
 /*!
- * \brief computes a quantity measuring how far from type D spacetime is, using
- * measure D1. Implements equation 8 of \cite Bhagwat2017tkm.
+ * \brief Computes a quantity measuring how far from type D spacetime is,
+ * using measure D1 [Eq. (8)] of \cite Bhagwat2017tkm.
  */
 template <size_t Dim, typename Frame, typename DataType>
 struct WeylTypeD1 : db::SimpleTag {
@@ -253,7 +253,7 @@ struct WeylMagneticScalar : db::SimpleTag {
  * \f$\gamma^{ij}\f$, i.e. \f$D_{ij} = \gamma^{ik}\gamma^{jl}E_{ij}D_{kl}\f$.
  */
 template <typename DataType>
-struct WeylTYpeD1Scalar : db::SimpleTag {
+struct WeylTypeD1Scalar : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 

@@ -18,9 +18,6 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 
-// IWYU pragma: no_include <boost/preprocessor/arithmetic/dec.hpp>
-// IWYU pragma: no_include <boost/preprocessor/repetition/enum.hpp>
-// IWYU pragma: no_include <boost/preprocessor/tuple/reverse.hpp>
 
 namespace {
 template <size_t SpatialDim, typename DataType>
@@ -28,7 +25,7 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
   TestHelpers::db::test_compute_tag<
       gr::Tags::WeylTypeD1Compute<SpatialDim, Frame::Inertial, DataType>>(
       "WeylTypeD1");
-  TestHelpers::db::test_compute_tag<gr::Tags::WeylElectricScalarCompute<
+  TestHelpers::db::test_compute_tag<gr::Tags::WeylTypeD1ScalarCompute<
       SpatialDim, Frame::Inertial, DataType>>("WeylTypeD1Scalar");
 
   MAKE_GENERATOR(generator);
@@ -42,7 +39,7 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
   const auto spatial_metric =
       make_with_random_values<tnsr::ii<DataType, SpatialDim>>(
           nn_generator, nn_distribution, used_for_size);
-  const auto inv_spatial_metric =
+  const auto inverse_spatial_metric =
       make_with_random_values<tnsr::II<DataType, SpatialDim>>(
           nn_generator, nn_distribution, used_for_size);
 
@@ -56,12 +53,12 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
           gr::Tags::WeylTypeD1Compute<SpatialDim, Frame::Inertial, DataType>,
           gr::Tags::WeylTypeD1ScalarCompute<SpatialDim, Frame::Inertial,
                                             DataType>>>(
-      weyl_electric, spatial_metric, inv_spatial_metric);
+      weyl_electric, spatial_metric, inverse_spatial_metric);
 
   const auto expected =
-      gr::weyl_type_D1(weyl_electric, spatial_metric, inv_spatial_metric);
+      gr::weyl_type_D1(weyl_electric, spatial_metric, inverse_spatial_metric);
   const auto expected_scalar =
-      gr::weyl_type_D1_scalar(expected, inv_spatial_metric);
+      gr::weyl_type_D1_scalar(expected, inverse_spatial_metric);
   CHECK_ITERABLE_APPROX(
       (db::get<gr::Tags::WeylTypeD1<SpatialDim, Frame::Inertial, DataType>>(
           box)),
@@ -69,14 +66,15 @@ void test_compute_item_in_databox(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX((db::get<gr::Tags::WeylTypeD1Scalar<DataType>>(box)),
                         expected_scalar);
 }
+
 template <size_t SpatialDim, typename DataType>
 void test_weyl_type_D1(const DataType& used_for_size) {
   tnsr::ii<DataType, SpatialDim, Frame::Inertial> (*f)(
       const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
       const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
       const tnsr::II<DataType, SpatialDim, Frame::Inertial>&) =
-      &gr::weyl_type_D1_tensor<SpatialDim, Frame::Inertial, DataType>;
-  pypp::check_with_random_values<1>(f, "WeylTypeD1", "weyl_TypeD1_tensor",
+      &gr::weyl_type_D1<SpatialDim, Frame::Inertial, DataType>;
+  pypp::check_with_random_values<1>(f, "WeylTypeD1", "weyl_type_D1",
                                     {{{-1., 1.}}}, used_for_size);
 }
 
