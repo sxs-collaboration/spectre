@@ -716,7 +716,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       - name: Install Spack
         run: |
           cd $HOME
-          git clone -c feature.manyFiles=true \
+          git clone -c feature.manyFiles=true --depth=1 \
+            --branch releases/v0.18 --single-branch \
             https://github.com/spack/spack.git
       - name: Configure Spack
         # - To avoid re-building packages that are already installed by Homebrew
