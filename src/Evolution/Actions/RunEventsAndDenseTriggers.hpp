@@ -122,7 +122,9 @@ struct RunEventsAndDenseTriggers {
       }
     }
 
-    ~StateRestorer() {
+    // WARNING: Manually calling this if there are non_tensor_tags
+    // will cause use-after-moves.
+    void restore() {
       if (non_tensors_.has_value()) {
         tmpl::for_each<tensor_tags>([this](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
@@ -140,6 +142,8 @@ struct RunEventsAndDenseTriggers {
         });
       }
     }
+
+    ~StateRestorer() { restore(); }
 
    private:
     gsl::not_null<db::DataBox<DbTags>*> box_ = nullptr;
@@ -247,6 +251,12 @@ struct RunEventsAndDenseTriggers {
 
             using history_tag = ::Tags::HistoryEvolvedVariables<variables_tag>;
             bool dense_output_succeeded = false;
+            // Restore the evolved variables if they have been
+            // previously altered so the time stepper starts in the
+            // correct state, then save them if they have not been
+            // previously altered.  (So one of these two lines is a
+            // no-op.)
+            variables_restorer.restore();
             variables_restorer.save();
             db::mutate<variables_tag>(
                 make_not_null(&box),

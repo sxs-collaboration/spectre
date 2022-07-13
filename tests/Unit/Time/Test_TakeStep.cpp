@@ -38,8 +38,9 @@ struct EvolvedVariable : db::SimpleTag {
   using type = DataVector;
 };
 
+template <bool LocalTimeStepping>
 struct Metavariables {
-  static constexpr bool local_time_stepping = true;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   struct system {
     static constexpr size_t volume_dim = 1;
     using variables_tag = EvolvedVariable;
@@ -71,13 +72,65 @@ struct Metavariables {
 
   using component_list = tmpl::list<>;
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
+void test_gts() {
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
 
-  const Parallel::GlobalCache<Metavariables> cache{};
+  const Parallel::GlobalCache<Metavariables<false>> cache{};
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist{-1.0, 1.0};
+
+  const auto initial_values = make_with_random_values<DataVector>(
+      make_not_null(&generator), make_not_null(&dist), DataVector{5});
+
+  // exponential function
+  const auto update_rhs = [](const gsl::not_null<DataVector*> dt_y,
+                             const DataVector& y) { *dt_y = 1.0e-2 * y; };
+
+  typename ::Tags::HistoryEvolvedVariables<EvolvedVariable>::type history{5};
+  // prepare history so that the Adams-Bashforth is ready to take steps
+  TimeStepperTestUtils::initialize_history(
+      slab.start(), make_not_null(&history),
+      [&initial_values](const auto t) {
+        return initial_values * exp(1.0e-2 * t);
+      },
+      [](const auto y, const auto /*t*/) { return 1.0e-2 * y; }, time_step, 4);
+
+  auto box = db::create<db::AddSimpleTags<
+      Parallel::Tags::MetavariablesImpl<Metavariables<false>>, Tags::TimeStepId,
+      Tags::Next<Tags::TimeStepId>, Tags::TimeStep, Tags::Next<Tags::TimeStep>,
+      EvolvedVariable, Tags::dt<EvolvedVariable>,
+      Tags::HistoryEvolvedVariables<EvolvedVariable>,
+      Tags::TimeStepper<LtsTimeStepper>,
+      ::Tags::IsUsingTimeSteppingErrorControl<>>>(
+      Metavariables<false>{}, TimeStepId{true, 0_st, slab.start()},
+      TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
+      initial_values, DataVector{5, 0.0}, std::move(history),
+      static_cast<std::unique_ptr<LtsTimeStepper>>(
+          std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+      false);
+  // update the rhs
+  db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
+                                        db::get<EvolvedVariable>(box));
+  take_step(make_not_null(&box), cache);
+  // check that the state is as expected
+  CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
+        approx(0.25));
+  CHECK(db::get<Tags::Next<Tags::TimeStep>>(box) == TimeDelta{slab, {1, 4}});
+  CHECK_ITERABLE_APPROX(db::get<EvolvedVariable>(box),
+                        initial_values * exp(0.0025));
+  CHECK_ITERABLE_APPROX(db::get<Tags::dt<EvolvedVariable>>(box),
+                        1.0e-2 * initial_values);
+}
+
+void test_lts() {
+  const Slab slab{0.0, 1.00};
+  const TimeDelta time_step = slab.duration() / 4;
+
+  const Parallel::GlobalCache<Metavariables<true>> cache{};
   std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
       step_choosers;
   step_choosers.emplace_back(
@@ -85,7 +138,7 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
   step_choosers.emplace_back(
       std::make_unique<
           StepChoosers::Cfl<StepChooserUse::LtsStep, Frame::Inertial,
-                            typename Metavariables::system>>(1.0));
+                            typename Metavariables<true>::system>>(1.0));
 
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};
@@ -108,20 +161,21 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
 
   auto box = db::create<
       db::AddSimpleTags<
-          Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
-          Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
+          Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
+          Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
           Tags::Next<Tags::TimeStep>, EvolvedVariable,
-          Tags::dt<EvolvedVariable>, Tags::StepperError<EvolvedVariable>,
+          Tags::RollbackValue<EvolvedVariable>, Tags::dt<EvolvedVariable>,
+          Tags::StepperError<EvolvedVariable>,
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
           Tags::StepController, ::Tags::IsUsingTimeSteppingErrorControl<>,
           Tags::StepperErrorUpdated>,
-      db::AddComputeTags<typename Metavariables::system::
-                             compute_largest_characteristic_speed>>(
-      Metavariables{}, TimeStepId{true, 0_st, slab.start()},
+      db::AddComputeTags<typename Metavariables<
+          true>::system::compute_largest_characteristic_speed>>(
+      Metavariables<true>{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
-      initial_values, DataVector{5, 0.0}, DataVector{5, 0.0},
+      initial_values, initial_values, DataVector{5, 0.0}, DataVector{5, 0.0},
       std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
@@ -181,4 +235,10 @@ SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
                         initial_values * exp(0.00375));
   CHECK_ITERABLE_APPROX(db::get<Tags::dt<EvolvedVariable>>(box),
                         1.0e-2 * initial_values * exp(0.0025));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Time.TakeStep", "[Unit][Time]") {
+  test_gts();
+  test_lts();
 }

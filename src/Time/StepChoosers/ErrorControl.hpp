@@ -29,9 +29,8 @@ namespace Tags {
 /// `StepChooser::ErrorControl` step chooser.
 ///
 /// \details This tag is templated on `EvolvedVariableTag`, as a separate error
-/// measure should be stored for each evolved variables and corresponding
-/// `TimeSteppers::History` in the system, because the stepper is separately
-/// applied to each `TimeSteppers::History` object.
+/// measure should be stored for each evolved variables, because the stepper is
+/// separately applied to each object.
 template <typename EvolvedVariableTag>
 struct PreviousStepError : db::SimpleTag {
   using type = std::optional<double>;
@@ -174,7 +173,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
         safety_factor_{safety_factor} {}
 
   using argument_tags =
-      tmpl::list<::Tags::HistoryEvolvedVariables<EvolvedVariableTag>,
+      tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
                  db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
@@ -182,20 +181,19 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
 
   using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
 
-  template <typename Metavariables, typename History, typename TimeStepper>
+  template <typename Metavariables, typename TimeStepper>
   std::pair<double, bool> operator()(
       const gsl::not_null<std::optional<double>*> previous_step_error,
-      const History& history, const error_variable_type& error,
-      const bool& stepper_error_updated, const TimeStepper& stepper,
-      const double previous_step,
+      const evolved_variable_type& rollback_value,
+      const error_variable_type& error, const bool& stepper_error_updated,
+      const TimeStepper& stepper, const double previous_step,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
     if (not stepper_error_updated) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
-    const double l_inf_error =
-        error_calc_impl(history.most_recent_value(), error);
+    const double l_inf_error = error_calc_impl(rollback_value, error);
     double new_step;
     if (not previous_step_error->has_value()) {
       new_step = previous_step *

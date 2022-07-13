@@ -81,6 +81,8 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
+      ::Tags::RollbackValue<EvolvedCoordinatesVariablesTag>,
+      ::Tags::RollbackValue<evolved_swsh_variables_tag>,
       ::Tags::StepperErrorUpdated>;
   using compute_tags = tmpl::list<>;
 
@@ -123,7 +125,12 @@ struct InitializeCharacteristicEvolutionTime {
 
     typename ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>::type
         swsh_history(starting_order);
-    Initialization::mutate_assign<simple_tags>(
+    Initialization::mutate_assign<tmpl::list<
+        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+        ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
+        ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
+        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
+        ::Tags::StepperErrorUpdated>>(
         make_not_null(&box), TimeStepId{},
         TimeStepId{true,
                    -static_cast<int64_t>(time_stepper.number_of_past_steps()),

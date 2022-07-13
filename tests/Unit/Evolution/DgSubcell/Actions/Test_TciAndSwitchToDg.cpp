@@ -227,6 +227,7 @@ void test_impl(
   }
 
   using evolved_vars_tags = tmpl::list<Var1>;
+  using dt_evolved_vars_tags = db::wrap_tags_in<Tags::dt, evolved_vars_tags>;
   Variables<evolved_vars_tags> evolved_vars{
       subcell_mesh.number_of_grid_points()};
   // Set Var1 to the logical coords, since those are linear
@@ -234,10 +235,9 @@ void test_impl(
   if (rdmp_fails) {
     get(get<Var1>(evolved_vars))[0] = 100.0;
   }
-
-  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{};
+  TimeSteppers::History<Variables<dt_evolved_vars_tags>> time_stepper_history{};
   for (size_t i = 0; i < time_stepper->order(); ++i) {
-    Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
+    Variables<dt_evolved_vars_tags> dt_vars{
         subcell_mesh.number_of_grid_points()};
     get(get<Tags::dt<Var1>>(dt_vars)) =
         (i + 20.0) * get<0>(logical_coordinates(subcell_mesh));
@@ -248,7 +248,6 @@ void test_impl(
   Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};
   get(get<Var1>(vars)) =
       (time_stepper->order() + 1.0) * get<0>(logical_coordinates(subcell_mesh));
-  time_stepper_history.most_recent_value() = vars;
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
@@ -306,10 +305,6 @@ void test_impl(
   }
 
   if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg) {
-    CHECK(evolution::dg::subcell::fd::reconstruct(
-              time_stepper_history.most_recent_value(), dg_mesh,
-              subcell_mesh.extents(), recons_method) ==
-          time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.derivatives_begin(),
               box_it = time_stepper_history_from_box.derivatives_begin();
          expected_it != time_stepper_history.derivatives_end();
@@ -322,8 +317,6 @@ void test_impl(
     CHECK(tci_grid_history_from_box.empty());
   } else {
     // TCI failed
-    CHECK(time_stepper_history.most_recent_value() ==
-          time_stepper_history_from_box.most_recent_value());
     for (auto expected_it = time_stepper_history.derivatives_begin(),
               box_it = time_stepper_history_from_box.derivatives_begin();
          expected_it != time_stepper_history.derivatives_end();

@@ -142,7 +142,6 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
   ASSERT(number_of_substeps > 1,
          "Implementing Euler's method is not supported by RungeKutta.");
 
-  *u = *history->untyped_most_recent_value();
   if (substep == 0) {
     ASSERT(tableau.substep_coefficients[0].size() == 1,
            "First substep should use one derivative.");
@@ -199,8 +198,6 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   // would require more extensive changes to the action loop.
   if (substep < number_of_substeps) {
     update_u_impl_with_tableau(u, history, time_step, tableau);
-  } else {
-    *u = *history->untyped_most_recent_value();
   }
 
   if (substep < number_of_substeps_for_error - 1) {
@@ -242,7 +239,6 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
-    *u = *history.untyped_most_recent_value();
     return true;
   }
   const evolution_less<double> before{step_end > step_start};
@@ -279,7 +275,6 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
   ASSERT(tableau.dense_coefficients.size() <= history.size(),
          "Insufficient history for dense output.  Most likely there are too "
          "many coefficient polynomials in the tableau.");
-  *u = *history.untyped_most_recent_value();
   for (size_t i = 0; i < std::max(tableau.dense_coefficients.size(),
                                   tableau.result_coefficients.size());
        ++i) {

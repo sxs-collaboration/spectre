@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -94,6 +95,7 @@ struct Initialize {
 
   using simple_tags =
       tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
+                 ::Tags::RollbackValue<typename System::variables_tag>,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
                  Tags::TciStatus, Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,

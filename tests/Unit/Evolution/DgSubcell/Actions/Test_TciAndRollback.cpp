@@ -89,6 +89,7 @@ struct component {
           evolution::dg::subcell::Tags::TciStatus,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           Tags::Variables<tmpl::list<Var1>>,
+          Tags::RollbackValue<Tags::Variables<tmpl::list<Var1>>>,
           Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>>,
       tmpl::conditional_t<
@@ -242,6 +243,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       rdmp_tci_data;
 
   using evolved_vars_tags = tmpl::list<Var1>;
+  using dt_evolved_vars_tags = db::wrap_tags_in<Tags::dt, evolved_vars_tags>;
   Variables<evolved_vars_tags> evolved_vars{dg_mesh.number_of_grid_points()};
   // Set Var1 to the logical coords, since those are linear
   get(get<Var1>(evolved_vars)) = get<0>(logical_coordinates(dg_mesh));
@@ -253,11 +255,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   get(get<PrimVar1>(prim_vars)) = get<0>(logical_coordinates(dg_mesh)) + 1000.0;
 
   constexpr size_t history_size = 5;
-  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{
+  TimeSteppers::History<Variables<dt_evolved_vars_tags>> time_stepper_history{
       history_size};
   for (size_t i = 0; i < history_size; ++i) {
-    Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
-        dg_mesh.number_of_grid_points()};
+    Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
     get(get<Tags::dt<Var1>>(dt_vars)) =
         (i + 20.0) * get<0>(logical_coordinates(dg_mesh));
     time_stepper_history.insert(
@@ -267,7 +268,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   Variables<evolved_vars_tags> vars{dg_mesh.number_of_grid_points()};
   get(get<Var1>(vars)) =
       (history_size + 1.0) * get<0>(logical_coordinates(dg_mesh));
-  time_stepper_history.most_recent_value() = vars;
 
   const bool did_rollback = false;
   Variables<evolved_vars_tags> initial_value_evolved_vars{
@@ -280,7 +280,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_status, rdmp_tci_data, evolved_vars,
-         time_stepper_history, initial_value_evolved_vars, prim_vars,
+         vars, time_stepper_history, initial_value_evolved_vars, prim_vars,
          initial_value_prim_vars});
   } else {
     (void)prim_vars;
@@ -289,7 +289,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_status, rdmp_tci_data, evolved_vars,
-         time_stepper_history, initial_value_evolved_vars});
+         vars, time_stepper_history, initial_value_evolved_vars});
   }
 
   // Invoke the TciAndSwitchToDg action on the runner
@@ -330,12 +330,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     CHECK(time_stepper_history_from_box.size() == history_size - 1);
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
-    TimeSteppers::History<Variables<evolved_vars_tags>>
+    TimeSteppers::History<Variables<dt_evolved_vars_tags>>
         time_stepper_history_subcells{time_stepper_history.integration_order()};
-    time_stepper_history_subcells.most_recent_value() =
-        evolution::dg::subcell::fd::project(
-            time_stepper_history.most_recent_value(), dg_mesh,
-            subcell_mesh.extents());
     const auto end_it = std::prev(time_stepper_history.derivatives_end());
     for (auto it = time_stepper_history.derivatives_begin(); it != end_it;
          ++it) {
@@ -354,8 +350,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     }
 
     CHECK(active_vars_from_box == evolution::dg::subcell::fd::project(
-                                      time_stepper_history.most_recent_value(),
-                                      dg_mesh, subcell_mesh.extents()));
+                                      vars, dg_mesh, subcell_mesh.extents()));
 
     if (self_starting) {
       CHECK(initial_value_evolved_vars_from_box ==
@@ -393,8 +388,6 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     CHECK(time_stepper_history_from_box.size() == history_size);
     CHECK(time_stepper_history_from_box.integration_order() ==
           time_stepper_history.integration_order());
-    CHECK(time_stepper_history_from_box.most_recent_value() ==
-          time_stepper_history.most_recent_value());
     for (auto expected_it = time_stepper_history.derivatives_begin(),
               it = time_stepper_history_from_box.derivatives_begin();
          expected_it != time_stepper_history.derivatives_end();

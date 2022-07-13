@@ -172,10 +172,11 @@ struct TimeStepperHistory {
   using error_variables_tag =
       db::add_tag_prefix<::Tags::StepperError, variables_tag>;
 
-  using simple_tags =
-      tmpl::list<dt_variables_tag,
-                 ::Tags::HistoryEvolvedVariables<variables_tag>,
-                 error_variables_tag, ::Tags::StepperErrorUpdated>;
+  using simple_tags = tmpl::flatten<tmpl::list<
+      dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
+      tmpl::conditional_t<Metavariables::local_time_stepping,
+                          ::Tags::RollbackValue<variables_tag>, tmpl::list<>>,
+      error_variables_tag, ::Tags::StepperErrorUpdated>>;
 
   using compute_tags = db::AddComputeTags<>;
 
@@ -206,7 +207,9 @@ struct TimeStepperHistory {
       error_vars = ErrorVars{num_grid_points};
     }
 
-    Initialization::mutate_assign<simple_tags>(
+    Initialization::mutate_assign<tmpl::list<
+        dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
+        error_variables_tag, ::Tags::StepperErrorUpdated>>(
         make_not_null(&box), std::move(dt_vars), std::move(history),
         std::move(error_vars), false);
 

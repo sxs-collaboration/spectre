@@ -26,7 +26,7 @@ class er;
 namespace TimeSteppers {
 
 /// \cond
-template <typename DerivVars>
+template <typename Vars>
 class DerivIterator;
 template <typename T>
 class HistoryIterator;
@@ -56,9 +56,6 @@ class UntypedHistory {
   using difference_type =
       typename std::iterator_traits<const_iterator>::difference_type;
   using size_type = size_t;
-
-  /// The most recent value of the integrated variables.
-  virtual MathWrapper<const T> untyped_most_recent_value() const = 0;
 
   /// Mark all data before the passed point in history as unneeded so
   /// it can be removed.  Calling this directly should not often be
@@ -100,10 +97,10 @@ class UntypedHistory {
 
 /// \ingroup TimeSteppersGroup
 /// History data used by a TimeStepper.
-/// \tparam Vars type of variables being integrated
-template <typename Vars>
-class History final : public UntypedHistory<math_wrapper_type<Vars>> {
-  using Base = UntypedHistory<math_wrapper_type<Vars>>;
+/// \tparam DerivVars type of the derivatives
+template <typename DerivVars>
+class History final : public UntypedHistory<math_wrapper_type<DerivVars>> {
+  using Base = UntypedHistory<math_wrapper_type<DerivVars>>;
 
  public:
   using value_type = typename Base::value_type;
@@ -111,8 +108,6 @@ class History final : public UntypedHistory<math_wrapper_type<Vars>> {
   using const_iterator = typename Base::const_iterator;
   using difference_type = typename Base::difference_type;
   using size_type = typename Base::size_type;
-
-  using DerivVars = db::prefix_variables<::Tags::dt, Vars>;
 
   History() = default;
   History(const History&) = default;
@@ -128,20 +123,8 @@ class History final : public UntypedHistory<math_wrapper_type<Vars>> {
   void insert(const TimeStepId& time_step_id, const DerivVars& deriv);
 
   /// Add a new derivative to the front of the history.  This is often
-  /// convenient for setting initial data.  The function value must be
-  /// set separately before this object is used, using `most_recent_value()`.
+  /// convenient for setting initial data.
   void insert_initial(TimeStepId time_step_id, DerivVars deriv);
-
-  /// The most recent value of the integrated variables.
-  /// @{
-  Vars& most_recent_value() { return most_recent_value_; }
-  const Vars& most_recent_value() const { return most_recent_value_; }
-  /// @}
-
-  MathWrapper<math_wrapper_type<const Vars>> untyped_most_recent_value()
-      const override {
-    return make_math_wrapper(most_recent_value());
-  }
 
   void mark_unneeded(const const_iterator& first_needed) override;
 
@@ -197,7 +180,6 @@ class History final : public UntypedHistory<math_wrapper_type<Vars>> {
     // to be thrown away after serialization, so we take the easy
     // route of just throwing them away.
     shrink_to_fit();
-    p | most_recent_value_;
     p | data_;
     p | integration_order_;
   }
@@ -208,12 +190,11 @@ class History final : public UntypedHistory<math_wrapper_type<Vars>> {
     return std::get<0>(*(data_.begin() + offset));
   }
 
-  MathWrapper<math_wrapper_type<const Vars>> derivative_for_iterator(
+  MathWrapper<math_wrapper_type<const DerivVars>> derivative_for_iterator(
       const difference_type offset) const override {
     return make_math_wrapper(std::get<1>(*(data_.begin() + offset)));
   }
 
-  Vars most_recent_value_{};
   std::deque<std::tuple<TimeStepId, DerivVars>> data_;
   size_t first_needed_entry_{0};
   size_t integration_order_{0};
@@ -252,7 +233,7 @@ class HistoryIterator {
   MathWrapper<const T> derivative() const;
 
  private:
-  template <typename Vars>
+  template <typename DerivVars>
   friend class History;
 
   friend difference_type operator-(const HistoryIterator& a,
@@ -319,8 +300,7 @@ class DerivIterator {
   const TimeStepId& time_step_id() const { return std::get<0>(*base_); }
 
  private:
-  template <typename>
-  friend class History;
+  friend class History<DerivVars>;
 
   friend difference_type operator-(const DerivIterator& a,
                                    const DerivIterator& b) {
@@ -346,9 +326,9 @@ class DerivIterator {
 
 // ================================================================
 
-template <typename Vars>
-void History<Vars>::insert(const TimeStepId& time_step_id,
-                           const DerivVars& deriv) {
+template <typename DerivVars>
+void History<DerivVars>::insert(const TimeStepId& time_step_id,
+                                const DerivVars& deriv) {
   if (first_needed_entry_ == 0) {
     data_.emplace_back(time_step_id, deriv);
   } else {
@@ -363,20 +343,21 @@ void History<Vars>::insert(const TimeStepId& time_step_id,
   }
 }
 
-template <typename Vars>
-inline void History<Vars>::insert_initial(TimeStepId time_step_id,
-                                          DerivVars deriv) {
+template <typename DerivVars>
+inline void History<DerivVars>::insert_initial(TimeStepId time_step_id,
+                                               DerivVars deriv) {
   // NOLINTNEXTLINE(hicpp-move-const-arg,performance-move-const-arg)
   data_.emplace_front(std::move(time_step_id), std::move(deriv));
 }
 
-template <typename Vars>
-inline void History<Vars>::mark_unneeded(const const_iterator& first_needed) {
+template <typename DerivVars>
+inline void History<DerivVars>::mark_unneeded(
+    const const_iterator& first_needed) {
   first_needed_entry_ = static_cast<size_t>(first_needed.offset_);
 }
 
-template <typename Vars>
-inline void History<Vars>::shrink_to_fit() {
+template <typename DerivVars>
+inline void History<DerivVars>::shrink_to_fit() {
   data_.erase(
       data_.begin(),
       data_.begin() +
@@ -400,14 +381,14 @@ HistoryIterator<T> operator-(HistoryIterator<T> it,
 template <typename DerivVars>
 DerivIterator<DerivVars> operator+(
     DerivIterator<DerivVars> it,
-    typename DerivIterator<DerivVars>::difference_type n) {
+    const typename DerivIterator<DerivVars>::difference_type n) {
   it += n;
   return it;
 }
 
 template <typename DerivVars>
 DerivIterator<DerivVars> operator+(
-    typename DerivIterator<DerivVars>::difference_type n,
+    const typename DerivIterator<DerivVars>::difference_type n,
     DerivIterator<DerivVars> it) {
   return std::move(it) + n;
 }
@@ -415,7 +396,7 @@ DerivIterator<DerivVars> operator+(
 template <typename DerivVars>
 DerivIterator<DerivVars> operator-(
     DerivIterator<DerivVars> it,
-    typename DerivIterator<DerivVars>::difference_type n) {
+    const typename DerivIterator<DerivVars>::difference_type n) {
   return std::move(it) + (-n);
 }
 }  // namespace TimeSteppers

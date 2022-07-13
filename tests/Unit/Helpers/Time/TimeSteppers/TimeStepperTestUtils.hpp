@@ -25,7 +25,7 @@ void check_substep_properties(const TimeStepper& stepper);
 
 void integrate_test(const TimeStepper& stepper, size_t order,
                     size_t number_of_past_steps, double integration_time,
-                    double epsilon, bool test_apply_twice = false);
+                    double epsilon);
 
 void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
                                              size_t order,
@@ -38,8 +38,8 @@ void integrate_variable_test(const TimeStepper& stepper, size_t order,
 
 void integrate_error_test(const TimeStepper& stepper, size_t order,
                           size_t number_of_past_steps, double integration_time,
-                          double epsilon, size_t num_steps, double error_factor,
-                          bool test_apply_twice = false);
+                          double epsilon, size_t num_steps,
+                          double error_factor);
 
 template <typename F1, typename F2, typename EvolvedType>
 void initialize_history(
@@ -61,9 +61,6 @@ void initialize_history(
     history->insert_initial(
         TimeStepId(step_size.is_positive(), slab_number, time),
         rhs(analytic(time.value()), time.value()));
-    if (j == 0) {
-      history->most_recent_value() = analytic(time.value());
-    }
   }
 }
 
