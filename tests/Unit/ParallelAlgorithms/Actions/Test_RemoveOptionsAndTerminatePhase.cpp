@@ -178,12 +178,13 @@ SPECTRE_TEST_CASE(
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   // Runs RemoveOptionsFromDataBox
   runner.next_action<component>(0);
-  CHECK(
-      not ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
       runner, 0));
+  CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
+        0.0);
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==
