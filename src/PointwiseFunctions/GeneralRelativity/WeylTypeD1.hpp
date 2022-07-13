@@ -24,7 +24,7 @@ namespace gr {
  * \brief Computes a quantity measuring how far from type D spacetime is.
  *
  * \details Computes a quantity measuring how far from type D spacetime is,
- * using measure D1 [Eq. (8)] of \cite Bhagwat2017tkm:
+ * using measure D1 [Eq. (8) of \cite Bhagwat2017tkm]:
  *
  * \f{align}{
  * \frac{a}{12} \gamma_{ij} - \frac{b}{a} E_{ij} - 4
