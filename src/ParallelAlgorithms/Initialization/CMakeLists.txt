@@ -9,7 +9,6 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  MergeIntoDataBox.hpp
   MutateAssign.hpp
   )
 
@@ -17,7 +16,5 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE
   DataStructures
-  Domain
-  ErrorHandling
   Utilities
   )

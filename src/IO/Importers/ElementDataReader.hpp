@@ -14,7 +14,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 
 namespace importers {
 

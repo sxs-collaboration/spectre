@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond

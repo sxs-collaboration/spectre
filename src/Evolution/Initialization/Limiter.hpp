@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/SizeOfElement.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond

@@ -38,8 +38,8 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
+#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -277,6 +277,7 @@ struct TestDataWriter {
 
 template <size_t Dim>
 struct InitializeElement {
+  using simple_tags = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -285,12 +286,7 @@ struct InitializeElement {
                     const ElementId<Dim>& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeElement,
-            db::AddSimpleTags<ScalarFieldTag, VectorFieldTag<Dim>>>(
-            std::move(box), Scalar<DataVector>{}, tnsr::I<DataVector, Dim>{}),
-        true);
+    return std::make_tuple(std::move(box), true);
   }
 };
 
@@ -343,8 +339,9 @@ struct ElementArray {
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<InitializeElement<Dim>>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::Initialization,
+          tmpl::list<Actions::SetupDataBox, InitializeElement<Dim>>>,
       /// [import_actions]
       Parallel::PhaseActions<
           Parallel::Phase::Register,

@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/GlobalCache.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
