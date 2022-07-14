@@ -14,6 +14,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/HarmonicSchwarzschild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
 #include "PointwiseFunctions/Elasticity/Strain.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -323,6 +324,7 @@ template class Xcts::AnalyticData::CommonVariables<
   template class Xcts::Solutions::WrappedGr<STYPE(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::KerrSchild,
+                                      gr::Solutions::SphericalKerrSchild,
                                       gr::Solutions::HarmonicSchwarzschild))
 
 #undef STYPE
