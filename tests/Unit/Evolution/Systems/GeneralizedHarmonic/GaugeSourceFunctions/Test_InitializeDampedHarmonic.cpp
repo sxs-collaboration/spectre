@@ -44,7 +44,6 @@
 #include "Options/ParseOptions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -94,7 +93,6 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags, initial_compute_tags>,
-          Actions::SetupDataBox,
           GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<Dim>,
           GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
               Dim, metavariables::use_rollon>>>>;
@@ -270,8 +268,6 @@ void test(const gsl::not_null<std::mt19937*> generator) {
          inv_jac, evolved_vars});
   }
 
-  // Invoke the SetupDataBox action
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
   // Invoke the InitializeGhAnd3Plus1Variables action
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
   // Invoke the InitializeDampedHarmonic action

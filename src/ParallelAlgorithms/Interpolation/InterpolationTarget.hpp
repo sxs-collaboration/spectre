@@ -13,7 +13,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -276,8 +275,7 @@ struct InterpolationTarget {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
                          Metavariables, InterpolationTargetTag>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<

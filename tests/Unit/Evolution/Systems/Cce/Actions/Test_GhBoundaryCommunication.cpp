@@ -40,7 +40,6 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Slab.hpp"
@@ -68,7 +67,6 @@ struct mock_gh_worldtube_boundary : GhWorldtubeBoundary<Metavariables> {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
@@ -93,7 +91,6 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,

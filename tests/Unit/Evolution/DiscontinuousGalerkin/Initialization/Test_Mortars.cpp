@@ -32,7 +32,6 @@
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -62,11 +61,10 @@ struct component {
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
                                  simple_tags, compute_tags>>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::SetupDataBox,
-                                        evolution::dg::Initialization::Mortars<
-                                            Metavariables::volume_dim,
-                                            typename Metavariables::system>>>>;
+      Parallel::PhaseActions<
+          Parallel::Phase::Testing,
+          tmpl::list<evolution::dg::Initialization::Mortars<
+              Metavariables::volume_dim, typename Metavariables::system>>>>;
 };
 
 struct Var1 : db::SimpleTag {
@@ -119,9 +117,6 @@ void test_impl(
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  // Run the SetupDataBox action
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  element.id());
   // Run the Mortars initialization action
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   element.id());

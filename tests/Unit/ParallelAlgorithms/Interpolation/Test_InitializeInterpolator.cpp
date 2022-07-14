@@ -10,7 +10,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
@@ -33,13 +32,11 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 intrp::Actions::InitializeInterpolator<
-                     tmpl::list<intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                            ::Tags::Time>,
-                                intrp::Tags::VolumeVarsInfo<
-                                    Metavariables, ::Tags::TimeStepId>>,
-                     intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
+      tmpl::list<intrp::Actions::InitializeInterpolator<
+          tmpl::list<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>>,
+          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
 };
 
 struct Metavariables {

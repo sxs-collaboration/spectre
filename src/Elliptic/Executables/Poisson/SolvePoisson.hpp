@@ -38,7 +38,6 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/RandomizeVariables.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
@@ -198,7 +197,6 @@ struct Metavariables {
   struct RandomizeInitialGuess {};
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
       typename linear_solver::initialize_element,
       typename multigrid::initialize_element,

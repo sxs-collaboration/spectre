@@ -13,7 +13,6 @@
 #include "IO/Observer/Tags.hpp"                   // IWYU pragma: keep
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -33,8 +32,7 @@ struct observer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 observers::Actions::Initialize<Metavariables>>>>;
+      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
 };
 
 struct Metavariables {

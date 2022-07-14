@@ -15,7 +15,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -108,7 +107,7 @@ struct Component {
 
   // [actions]
   using initialization_actions =
-      tmpl::list<Actions::SetupDataBox, Action0, Action1,
+      tmpl::list<Action0, Action1,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   // [actions]
 
@@ -139,15 +138,12 @@ SPECTRE_TEST_CASE(
                            Parallel::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component,
-                                              MultiplyByTwo<DummyTime>>(runner,
-                                                                        0));
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
+      runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
-  // Runs Setup DataBox
-  runner.next_action<component>(0);
   // Runs Action0
   runner.next_action<component>(0);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));

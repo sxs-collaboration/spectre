@@ -44,7 +44,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -175,8 +174,7 @@ struct MockObserverWriter {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     observers::Actions::InitializeWriter<Metavariables>>>,
+          tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
@@ -196,9 +194,8 @@ struct MockInterpolationTarget {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
-                         Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -212,13 +209,12 @@ struct MockInterpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     ::intrp::Actions::InitializeInterpolator<
-                         tmpl::list<intrp::Tags::VolumeVarsInfo<
-                                        Metavariables, ::Tags::TimeStepId>,
-                                    intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                                ::Tags::Time>>,
-                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<::intrp::Actions::InitializeInterpolator<
+              tmpl::list<
+                  intrp::Tags::VolumeVarsInfo<Metavariables,
+                                              ::Tags::TimeStepId>,
+                  intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked = intrp::Interpolator<Metavariables>;

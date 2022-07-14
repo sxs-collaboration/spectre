@@ -37,10 +37,6 @@ namespace Actions {
 ///   - `intrp::Tags::InterpPointInfo<Metavariables>`
 /// - Removes: nothing
 /// - Modifies: nothing
-///
-/// \note This action relies on the `SetupDataBox` aggregated initialization
-/// mechanism, so `Actions::SetupDataBox` must be present in the
-/// `Initialization` phase action list prior to this action.
 template <typename InterpPointInfoTag>
 struct ElementInitInterpPoints {
   using simple_tags = tmpl::list<InterpPointInfoTag>;
@@ -53,8 +49,7 @@ struct ElementInitInterpPoints {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    // Here we only want the `InterpPointInfoTag` default constructed, which was
-    // done in `SetupDataBox`
+    // Here we only want the `InterpPointInfoTag` default constructed
     return std::make_tuple(std::move(box));
   }
 };

@@ -35,7 +35,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
@@ -271,7 +270,7 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox, InitializeElement,
+          tmpl::list<InitializeElement,
                      typename linear_solver::initialize_element,
                      ComputeOperatorAction<fields_tag>,
                      detail::init_preconditioner<preconditioner>,

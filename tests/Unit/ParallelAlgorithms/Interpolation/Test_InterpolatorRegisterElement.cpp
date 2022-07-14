@@ -8,7 +8,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
@@ -34,11 +33,9 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                     ::Tags::TimeStepId>,
-                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<::intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<

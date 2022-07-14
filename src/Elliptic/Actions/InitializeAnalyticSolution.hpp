@@ -46,10 +46,6 @@ namespace elliptic::Actions {
  * DataBox:
  * - Adds:
  *   - `::Tags::AnalyticSolutionsBase`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename BackgroundTag, typename AnalyticSolutionFields,
           typename AnalyticSolutionType>

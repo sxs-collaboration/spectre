@@ -43,7 +43,6 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -237,7 +236,6 @@ struct Metavariables {
               Parallel::PhaseActions<
                   Parallel::Phase::Initialization,
                   tmpl::list<
-                      Actions::SetupDataBox,
                       Initialization::Actions::TimeAndTimeStep<Metavariables>,
                       evolution::dg::Initialization::Domain<Dim>,
                       Initialization::Actions::AddComputeTags<

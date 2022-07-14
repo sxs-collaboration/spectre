@@ -36,7 +36,6 @@
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -113,12 +112,11 @@ struct ComponentAlpha {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<
-              Actions::SetupDataBox, Actions::InitializePhaseRecord,
-              Actions::RecordPhaseIteration<Parallel::Phase::Initialization>,
-              Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<Actions::InitializePhaseRecord,
+                                        Actions::RecordPhaseIteration<
+                                            Parallel::Phase::Initialization>,
+                                        Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
           tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Register>,
@@ -171,12 +169,11 @@ struct ComponentBeta {
   using array_index = size_t;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<
-              Actions::SetupDataBox, Actions::InitializePhaseRecord,
-              Actions::RecordPhaseIteration<Parallel::Phase::Initialization>,
-              Parallel::Actions::TerminatePhase>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<Actions::InitializePhaseRecord,
+                                        Actions::RecordPhaseIteration<
+                                            Parallel::Phase::Initialization>,
+                                        Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
           tmpl::list<Actions::RecordPhaseIteration<Parallel::Phase::Register>,

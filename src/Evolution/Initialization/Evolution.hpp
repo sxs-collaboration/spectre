@@ -77,10 +77,6 @@ namespace Actions {
 /// - Modifies: nothing
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
-///
-/// \note This action relies on the `SetupDataBox` aggregated initialization
-/// mechanism, so `Actions::SetupDataBox` must be present in the
-/// `Initialization` phase action list prior to this action.
 template <typename Metavariables>
 struct TimeAndTimeStep {
   using initialization_tags = tmpl::flatten<
@@ -207,10 +203,6 @@ struct TimeAndTimeStep {
 /// - Modifies: nothing
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
-///
-/// \note This action relies on the `SetupDataBox` aggregated initialization
-/// mechanism, so `Actions::SetupDataBox` must be present in the
-/// `Initialization` phase action list prior to this action.
 template <typename Metavariables>
 struct TimeStepperHistory {
   static constexpr size_t dim = Metavariables::volume_dim;

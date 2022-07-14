@@ -11,7 +11,6 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

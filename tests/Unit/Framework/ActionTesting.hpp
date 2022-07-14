@@ -19,6 +19,7 @@
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Serialize.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -400,17 +401,13 @@ struct MockSingletonChare;
 // `emplace_component_and_initialize` function.
 template <typename... SimpleTags, typename ComputeTagsList>
 struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
-  // these type aliases must be different from those used by `SetupDataBox` to
-  // avoid a clash.
-  using action_testing_simple_tags = tmpl::list<SimpleTags...>;
-  using action_testing_compute_tags = ComputeTagsList;
+  using simple_tags = tmpl::list<SimpleTags...>;
+  using compute_tags = ComputeTagsList;
   using InitialValues = tuples::TaggedTuple<SimpleTags...>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
-            typename ArrayIndex,
-            Requires<not tmpl2::flat_any_v<
-                tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
+            typename ArrayIndex>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -423,28 +420,10 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
           "been set.");
     }
     initial_values_valid_ = false;
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>, db::AddSimpleTags<SimpleTags...>,
-                        ComputeTagsList>(
-            std::move(box),
-            std::move(tuples::get<SimpleTags>(initial_values_))...));
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<
-                tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    ERROR(
-        "Tried to apply ActionTesting::InitializeDataBox even though one or "
-        "more of its tags are already in the DataBox. Did you call next_action "
-        "too many times in the initialization phase?");
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box),
+        std::move(tuples::get<SimpleTags>(initial_values_))...);
+    return std::make_tuple(std::move(box));
   }
 
   /// Sets the initial values of simple tags in the DataBox.

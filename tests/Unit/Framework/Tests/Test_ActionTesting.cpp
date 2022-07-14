@@ -197,18 +197,26 @@ struct SimpleActionMockMetavariables {
 
 };
 
+template <typename Metavariables>
+struct component_for_global_cache_tags {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
+};
+
 struct MockMetavariablesWithGlobalCacheTags {
   using component_list = tmpl::list<
-      component_for_simple_action_mock<MockMetavariablesWithGlobalCacheTags>>;
+      component_for_global_cache_tags<MockMetavariablesWithGlobalCacheTags>>;
   // [const global cache metavars]
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
   // [const global cache metavars]
-
 };
 
 void test_mock_runtime_system_constructors() {
   using metavars = MockMetavariablesWithGlobalCacheTags;
-  using component = component_for_simple_action_mock<metavars>;
+  using component = component_for_global_cache_tags<metavars>;
   // Test whether we can construct with tagged tuples in different orders.
   // [constructor const global cache tags known]
   ActionTesting::MockRuntimeSystem<metavars> runner1{{3, 7.0}};
@@ -237,8 +245,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   // [get databox]
   const auto& box =
       ActionTesting::get_databox<component_for_simple_action_mock<metavars>,
-                                 db::AddSimpleTags<ValueTag, PassedToB>>(runner,
-                                                                         0);
+                                 tmpl::list<>>(runner, 0);
   // [get databox]
   CHECK(db::get<PassedToB>(box) == -1);
   runner.simple_action<component_for_simple_action_mock<metavars>,

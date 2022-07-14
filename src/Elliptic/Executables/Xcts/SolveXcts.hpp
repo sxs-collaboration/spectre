@@ -40,7 +40,6 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
@@ -245,7 +244,6 @@ struct Metavariables {
           linear_solver, multigrid, schwarz_smoother>>>;
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
       elliptic::dg::Actions::InitializeDomain<volume_dim>,
       typename nonlinear_solver::initialize_element,
       typename linear_solver::initialize_element,

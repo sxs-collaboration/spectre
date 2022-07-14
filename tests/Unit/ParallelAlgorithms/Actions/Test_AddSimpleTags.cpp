@@ -12,7 +12,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -57,9 +56,8 @@ struct Component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Testing,
-      tmpl::list<Actions::SetupDataBox,
-                 Initialization::Actions::AddSimpleTags<
-                     tmpl::list<AddSomeAndOtherNumber, AddSquareNumber>>>>>;
+      tmpl::list<Initialization::Actions::AddSimpleTags<
+          tmpl::list<AddSomeAndOtherNumber, AddSquareNumber>>>>>;
 };
 
 struct Metavariables {

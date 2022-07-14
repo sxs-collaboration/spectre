@@ -33,7 +33,6 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
@@ -103,7 +102,6 @@ struct CharacteristicEvolution {
   using metavariables = Metavariables;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,

@@ -62,10 +62,6 @@ CREATE_IS_CALLABLE_V(initialize)
 /// - Modifies: nothing
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-///
-/// \note This action relies on the `SetupDataBox` aggregated initialization
-/// mechanism, so `Actions::SetupDataBox` must be present in the
-/// `Initialization` phase action list prior to this action.
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
   using TemporalId = typename InterpolationTargetTag::temporal_id::type;

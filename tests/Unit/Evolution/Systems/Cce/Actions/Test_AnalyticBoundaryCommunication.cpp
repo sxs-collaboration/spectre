@@ -29,7 +29,6 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -54,8 +53,7 @@ struct mock_analytic_worldtube_boundary {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 Actions::InitializeWorldtubeBoundary<
+      tmpl::list<Actions::InitializeWorldtubeBoundary<
                      AnalyticWorldtubeBoundary<Metavariables>>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
@@ -77,7 +75,6 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,

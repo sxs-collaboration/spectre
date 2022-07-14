@@ -73,10 +73,6 @@ namespace subcell {
  *
  * - Removes: nothing
  * - Modifies: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the
- * `Initialization` phase action list prior to this action.
  */
 template <typename System, size_t Dim>
 struct GrTagsForHydro {

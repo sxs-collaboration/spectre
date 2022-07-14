@@ -36,10 +36,6 @@ namespace Actions {
  *   - nothing
  * - Modifies:
  *   - Each simple tag in the list `Mutators::return_tags`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename... Mutators>
 struct AddSimpleTags {

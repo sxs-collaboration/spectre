@@ -76,8 +76,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.TimeManagement",
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
 
-  auto& box = ActionTesting::get_databox<
-      component, tmpl::list<::Tags::TimeStepId, Tags::EndTimeFromFile>>(
+  auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
       make_not_null(&runner), 0);
   db::mutate<::Tags::TimeStepId>(
       make_not_null(&box), [](const gsl::not_null<TimeStepId*> time_step_id) {

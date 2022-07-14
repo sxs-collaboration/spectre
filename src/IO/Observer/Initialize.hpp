@@ -24,10 +24,6 @@ using reduction_data_to_reduction_names = typename Tag::names_tag;
  * Uses:
  * - Metavariables:
  *   - `observed_reduction_data_tags` (see ContributeReductionData)
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <class Metavariables>
 struct Initialize {
@@ -63,9 +59,6 @@ struct Initialize {
  * - Metavariables:
  *   - `observed_reduction_data_tags` (see ContributeReductionData)
  *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <class Metavariables>
 struct InitializeWriter {

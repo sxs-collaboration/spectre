@@ -37,7 +37,6 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
@@ -241,9 +240,8 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
-                         Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 

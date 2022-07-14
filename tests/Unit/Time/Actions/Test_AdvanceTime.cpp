@@ -73,9 +73,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
       const auto& box =
-          ActionTesting::get_databox<component,
-                                     typename component::simple_tags>(runner,
-                                                                      0);
+          ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
       const Time substep_time = step_start + gsl::at(substep_offsets, substep);
       CHECK(db::get<Tags::TimeStepId>(box) ==
             TimeStepId(time_step.is_positive(), 8, step_start, substep,
@@ -88,8 +86,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   }
 
   const auto& box =
-      ActionTesting::get_databox<component, typename component::simple_tags>(
-          runner, 0);
+      ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
   const auto& final_time_id = db::get<Tags::TimeStepId>(box);
   const auto expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.step_time().slab() == expected_slab);
@@ -113,8 +110,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
 
   for (const auto& step_start : {start, start + time_step}) {
     const auto& box =
-        ActionTesting::get_databox<component, typename component::simple_tags>(
-            runner, 0);
+        ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
     CHECK(db::get<Tags::TimeStepId>(box) ==
           TimeStepId(time_step.is_positive(), 8, step_start));
     CHECK(db::get<Tags::TimeStep>(box) == time_step);
@@ -124,8 +120,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
   }
 
   const auto& box =
-      ActionTesting::get_databox<component, typename component::simple_tags>(
-          runner, 0);
+      ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
   const auto& final_time_id = db::get<Tags::TimeStepId>(box);
   const auto expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.step_time().slab() == expected_slab);

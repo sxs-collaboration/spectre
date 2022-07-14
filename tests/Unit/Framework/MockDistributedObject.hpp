@@ -351,7 +351,9 @@ class MockDistributedObject {
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       Parallel::Tags::GlobalCacheImpl<metavariables>, initialization_tags,
-      db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>;
+      db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>,
+      Parallel::Algorithm_detail::action_list_simple_tags<Component>,
+      Parallel::Algorithm_detail::action_list_compute_tags<Component>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
 
   // The types held by the std::variant, box_
@@ -390,14 +392,18 @@ class MockDistributedObject {
         array_index_(index),
         global_cache_(cache),
         inboxes_(inboxes) {
-    box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
-        db::create<
-            db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                              Parallel::Tags::GlobalCacheImpl<metavariables>>,
-            db::AddComputeTags<db::wrap_tags_in<Parallel::Tags::FromGlobalCache,
-                                                all_cache_tags>>>(
-            metavariables{}, global_cache_),
-        std::forward<Options>(opts)...);
+    auto temp_box = db::create<
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                          Parallel::Tags::GlobalCacheImpl<metavariables>,
+                          initialization_tags>,
+        db::AddComputeTags<
+            db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>(
+        metavariables{}, global_cache_, std::forward<Options>(opts)...);
+    box_ = db::create_from<
+        tmpl::list<>,
+        Parallel::Algorithm_detail::action_list_simple_tags<Component>,
+        Parallel::Algorithm_detail::action_list_compute_tags<Component>>(
+        std::move(temp_box));
   }
 
   void set_phase(Parallel::Phase phase) {

@@ -438,7 +438,9 @@ class DistributedObject<ParallelComponent,
       Tags::GlobalCacheProxy<metavariables>,
       typename ParallelComponent::initialization_tags,
       Tags::GlobalCacheImplCompute<metavariables>,
-      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>>;
+      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>,
+      Algorithm_detail::action_list_simple_tags<ParallelComponent>,
+      Algorithm_detail::action_list_compute_tags<ParallelComponent>>>>;
   // The types held by the std::variant, box_
   using databox_phase_types = typename Algorithm_detail::build_databox_types<
       tmpl::list<>, phase_dependent_action_lists, initial_databox,
@@ -521,7 +523,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       this->setMigratable(true);
     }
     global_cache_proxy_ = global_cache_proxy;
-    box_ = db::create<
+    auto temp_box = db::create<
         db::AddSimpleTags<tmpl::flatten<
             tmpl::list<Tags::MetavariablesImpl<metavariables>,
                        Tags::GlobalCacheProxy<metavariables>,
@@ -531,6 +533,11 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
             db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
         metavariables{}, global_cache_proxy_,
         std::move(get<InitializationTags>(initialization_items))...);
+    box_ = db::create_from<
+        tmpl::list<>,
+        Algorithm_detail::action_list_simple_tags<ParallelComponent>,
+        Algorithm_detail::action_list_compute_tags<ParallelComponent>>(
+        std::move(temp_box));
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }

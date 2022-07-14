@@ -166,7 +166,7 @@ struct PrepareAndSendMortarData<
   using BoundaryConditionsBase = typename System::boundary_conditions_base;
 
  public:
-  // Request these tags be added to the DataBox by the `SetupDataBox` action. We
+  // Request these tags be added to the DataBox. We
   // don't actually need to initialize them, because the `TemporalIdTag` and the
   // `PrimalFieldsTag` will be set by other actions before applying the operator
   // and the remaining tags hold output of the operator.
@@ -445,10 +445,6 @@ struct ReceiveMortarDataAndApplyOperator<
  *   - `::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>`
  *   - `::Tags::Magnitude<domain::Tags::UnnormalizedFaceNormal<Dim>>`
  *   - `::Tags::Variables<background_fields>`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  *
  * \see elliptic::dg::Actions::apply_operator
  */

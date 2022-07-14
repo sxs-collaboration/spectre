@@ -17,7 +17,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementInitInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -45,9 +44,8 @@ struct mock_element {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 intrp::Actions::ElementInitInterpPoints<
-                     intrp::Tags::InterpPointInfo<Metavariables>>>>>;
+      tmpl::list<intrp::Actions::ElementInitInterpPoints<
+          intrp::Tags::InterpPointInfo<Metavariables>>>>>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<intrp::Tags::InterpPointInfo<Metavariables>>>;
   using component_being_mocked =
@@ -69,9 +67,8 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
-                         Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Register,
           tmpl::list<

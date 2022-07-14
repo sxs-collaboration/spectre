@@ -16,7 +16,6 @@ spectre_target_headers(
   RandomizeVariables.hpp
   RemoveOptionsAndTerminatePhase.hpp
   SetData.hpp
-  SetupDataBox.hpp
   TerminatePhase.hpp
   UpdateMessageQueue.hpp
   )

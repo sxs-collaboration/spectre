@@ -45,10 +45,6 @@ namespace elliptic::dg::Actions {
  *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
  *      Frame::Inertial>`
  *   - `domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <size_t Dim>
 struct InitializeDomain {

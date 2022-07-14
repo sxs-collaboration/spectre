@@ -46,10 +46,6 @@ namespace elliptic::Actions {
  * DataBox:
  * - Adds:
  *   - `db::wrap_tags_in<::Tags::FixedSource, primal_fields>`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename System, typename BackgroundTag>
 struct InitializeFixedSources {

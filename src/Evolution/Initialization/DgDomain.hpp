@@ -79,9 +79,6 @@ namespace Initialization {
  * - Removes: nothing
  * - Modifies: nothing
  *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  * \note If OverrideCubicFunctionsOfTime == true, then cubic functions
  * of time are overriden via `read_spec_piecewise_polynomial()`
  */

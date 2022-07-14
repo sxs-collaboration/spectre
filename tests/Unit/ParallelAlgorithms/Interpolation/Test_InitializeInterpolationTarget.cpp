@@ -19,7 +19,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -46,9 +45,8 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::list<domain::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 intrp::Actions::InitializeInterpolationTarget<
-                     Metavariables, InterpolationTargetTag>>>>;
+      tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+          Metavariables, InterpolationTargetTag>>>>;
 };
 
 struct Metavariables {

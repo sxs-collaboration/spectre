@@ -13,7 +13,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -48,9 +47,8 @@ struct Component {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<SomeNumber>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing,
-                             tmpl::list<Actions::SetupDataBox,
-                                        Initialization::Actions::AddComputeTags<
-                                            SquareNumberCompute>>>>;
+                             tmpl::list<Initialization::Actions::AddComputeTags<
+                                 SquareNumberCompute>>>>;
 };
 
 struct Metavariables {

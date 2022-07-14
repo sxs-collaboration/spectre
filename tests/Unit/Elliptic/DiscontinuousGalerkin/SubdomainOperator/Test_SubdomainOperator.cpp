@@ -56,7 +56,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/ElementCenteredSubdomainData.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
@@ -389,7 +388,6 @@ struct ElementArray {
                              SubdomainOperatorTag<SubdomainOperator>,
                              subdomain_operator_applied_to_fields_tag,
                              OverrideBoundaryConditionsTag>>,
-              Actions::SetupDataBox,
               ::elliptic::dg::Actions::InitializeDomain<Dim>,
               ::elliptic::dg::Actions::initialize_operator<System,
                                                            background_tag>,

@@ -38,7 +38,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
@@ -339,9 +338,8 @@ struct ElementArray {
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox, InitializeElement<Dim>>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<InitializeElement<Dim>>>,
       /// [import_actions]
       Parallel::PhaseActions<
           Parallel::Phase::Register,

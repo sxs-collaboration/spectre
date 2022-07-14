@@ -82,7 +82,6 @@
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -391,7 +390,6 @@ struct EvolutionMetavars {
                                  volume_dim, Frame::Inertial>>>>>>;
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<
           volume_dim, override_functions_of_time, use_control_systems>,
