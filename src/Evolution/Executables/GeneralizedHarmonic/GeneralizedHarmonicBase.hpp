@@ -96,9 +96,12 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -232,6 +235,16 @@ struct GeneralizedHarmonicTemplateBase<
                                         DataVector>,
           gr::Tags::SpatialRicciScalarCompute<volume_dim, ::Frame::Inertial,
                                               DataVector>,
+          GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
+              3, ::Frame::Inertial>,
+          gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
+                                        DataVector>,
+          gr::Tags::WeylElectricScalarCompute<volume_dim, ::Frame::Inertial,
+                                              DataVector>,
+          gr::Tags::WeylTypeD1Compute<volume_dim, ::Frame::Inertial,
+                                      DataVector>,
+          gr::Tags::WeylTypeD1ScalarCompute<volume_dim, ::Frame::Inertial,
+                                            DataVector>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
