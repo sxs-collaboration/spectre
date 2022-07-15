@@ -455,6 +455,7 @@ class DistributedObject<ParallelComponent,
  public:
   using databox_types = tmpl::remove_duplicates<tmpl::flatten<
       tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>>;
+  static_assert(1 == tmpl::size<databox_types>::value);
 
  private:
   // Create a std::variant that can hold any of the DataBox's

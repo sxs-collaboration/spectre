@@ -81,25 +81,6 @@ struct get_initialization_tags_from_component<
   using type = typename Component::initialization_tags;
 };
 
-// Given the tags `SimpleTags`, forwards them into the `DataBox`.
-template <typename SimpleTagsList>
-struct ForwardAllOptionsToDataBox;
-
-template <typename... SimpleTags>
-struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
-  using simple_tags = tmpl::list<SimpleTags...>;
-
-  template <typename DbTagsList, typename... Args>
-  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) {
-    static_assert(
-        sizeof...(SimpleTags) == sizeof...(Args),
-        "The number of arguments passed to ForwardAllOptionsToDataBox must "
-        "match the number of SimpleTags passed.");
-    return db::create_from<db::RemoveTags<>, simple_tags>(
-        std::move(box), std::forward<Args>(args)...);
-  }
-};
-
 // Returns the type of `Tag` (including const and reference-ness as would be
 // returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
 // `DataBoxType`, otherwise returns `NoSuchType`.
@@ -367,8 +348,9 @@ class MockDistributedObject {
     using type = typename T::databox_types;
   };
 
-  using databox_types = tmpl::flatten<
-      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>;
+  using databox_types = tmpl::remove_duplicates<tmpl::flatten<
+      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>>;
+  static_assert(1 == tmpl::size<databox_types>::value);
   using variant_boxes = tmpl::remove_duplicates<
       tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>;
 

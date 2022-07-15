@@ -95,9 +95,7 @@ struct initialize {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const  // NOLINT const
                     /*meta*/) {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>, db::AddSimpleTags<>>(std::move(box)),
-        true);
+    return std::make_tuple(std::move(box), true);
   }
 };
 

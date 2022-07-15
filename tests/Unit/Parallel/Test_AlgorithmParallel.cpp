@@ -28,12 +28,11 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
-#include "Utilities/Requires.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -192,11 +191,10 @@ struct CountReceives {
 
 namespace ArrayActions {
 struct Initialize {
+  using simple_tags = tmpl::list<Tags::CountActionsCalled, Tags::UnpackCounter>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::CountActionsCalled>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -206,35 +204,15 @@ struct Initialize {
     static_assert(std::is_same_v<ParallelComponent,
                                  ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(
-        db::create_from<
-            db::RemoveTags<>,
-            db::AddSimpleTags<Tags::CountActionsCalled, Tags::UnpackCounter>>(
-            std::move(box), 0, AlgorithmParallel_detail::UnpackCounter{}),
-        true);
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::CountActionsCalled>> =
-          nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(std::is_same_v<ParallelComponent,
-                                 ArrayParallelComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
-    return {std::move(box), true};
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), 0, AlgorithmParallel_detail::UnpackCounter{});
+    return std::make_tuple(std::move(box), true);
   }
 };
 
 struct AddIntValue10 {
   using inbox_tags = tmpl::list<Tags::IntReceiveTag>;
-
+  using simple_tags = tmpl::list<Tags::Int0>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -263,9 +241,8 @@ struct AddIntValue10 {
         [](const gsl::not_null<int*> count_actions_called) {
           ++*count_actions_called;
         });
-    return std::make_tuple(
-        db::create_from<tmpl::list<>, tmpl::list<Tags::Int0>>(std::move(box),
-                                                              10));
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 10);
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -353,8 +330,10 @@ struct RemoveInt0 {
               SingletonParallelComponent<Metavariables>>(cache),
           array_index);
     }
-    return std::make_tuple(
-        db::create_from<tmpl::list<Tags::Int0>>(std::move(box)), true);
+    // default assign Int0 to "remove" it
+    Initialization::mutate_assign<tmpl::list<Tags::Int0>>(make_not_null(&box),
+                                                          0);
+    return std::make_tuple(std::move(box), true);
   }
 };
 
@@ -389,12 +368,10 @@ struct SendToSingleton {
 namespace GroupActions {
 struct Initialize {
   using inbox_tags = tmpl::list<Tags::IntReceiveTag>;
-
+  using simple_tags = tmpl::list<Tags::CountActionsCalled>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::CountActionsCalled>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -404,28 +381,8 @@ struct Initialize {
     static_assert(std::is_same_v<ParallelComponent,
                                  GroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<Tags::CountActionsCalled>>(
-            std::move(box), 0),
-        true);
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::CountActionsCalled>> =
-          nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(std::is_same_v<ParallelComponent,
-                                 GroupParallelComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
-    return {std::move(box), true};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0);
+    return std::make_tuple(std::move(box), true);
   }
 };
 
@@ -474,11 +431,10 @@ struct ReduceInt {
 
 namespace NodegroupActions {
 struct Initialize {
+  using simple_tags = tmpl::list<Tags::CountActionsCalled>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::CountActionsCalled>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -488,28 +444,8 @@ struct Initialize {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<Tags::CountActionsCalled>>(
-            std::move(box), 0),
-        true);
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::CountActionsCalled>> =
-          nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(std::is_same_v<ParallelComponent,
-                                 NodegroupParallelComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
-    return {std::move(box), true};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0);
+    return std::make_tuple(std::move(box), true);
   }
 };
 

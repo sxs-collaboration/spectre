@@ -26,7 +26,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -66,11 +66,12 @@ struct total_receives_on_node : db::SimpleTag {
 }  // namespace Tags
 
 struct nodegroup_initialize {
+  using simple_tags =
+      tmpl::list<Tags::vector_of_array_indexs, Tags::total_receives_on_node>;
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTagsList, Tags::vector_of_array_indexs>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -80,33 +81,13 @@ struct nodegroup_initialize {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<Tags::vector_of_array_indexs,
-                                          Tags::total_receives_on_node>>(
-            std::move(box),
-            std::vector<int>(
-                static_cast<size_t>(number_of_1d_array_elements_per_core *
-                                    sys::procs_on_node(sys::my_node()))),
-            0),
-        true);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTagsList, Tags::vector_of_array_indexs>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    static_assert(std::is_same_v<ParallelComponent,
-                                 NodegroupParallelComponent<TestMetavariables>>,
-                  "The ParallelComponent is not deduced to be the right type");
-    return {std::move(box), true};
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box),
+        std::vector<int>(
+            static_cast<size_t>(number_of_1d_array_elements_per_core *
+                                sys::procs_on_node(sys::my_node()))),
+        0);
+    return std::make_tuple(std::move(box), true);
   }
 };
 

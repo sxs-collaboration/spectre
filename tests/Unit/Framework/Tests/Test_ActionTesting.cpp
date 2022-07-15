@@ -317,31 +317,17 @@ struct DummyTimeTag : db::SimpleTag {
 };
 
 struct Action0 {
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
+  using simple_tags = tmpl::list<DummyTimeTag>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>, db::AddSimpleTags<DummyTimeTag>>(
-            std::move(box), 6));
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    return {std::move(box)};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 6);
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -367,8 +353,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
-                                                                       0));
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
   // Runs Action0
   runner.next_action<component>(0);
   CHECK(
