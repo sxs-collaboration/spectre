@@ -25,5 +25,10 @@ std::string info_from_build() {
   os << "Compiled on git branch:       " << git_branch() << "\n";
   os << "Compiled on git revision:     " << git_description() << "\n";
   os << "Linked on:                    " << link_date() << "\n";
+#ifdef SPECTRE_DEBUG
+  os << "Build type:                   Debug\n";
+#else
+  os << "Build type:                   Release\n";
+#endif
   return os.str();
 }

@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <ios>
 #include <optional>
 #include <pup.h>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -877,8 +879,10 @@ break_auto_nonexclusive_loops:
              << remaining_auto_nonexclusive_singletons << ".");
 
   // Actually allocate the auto nonexclusive singletons
+  std::stringstream ss;
+  ss << "\nAllocating Singletons:\n";
   size_t current_proc = 0;
-  tmpl::for_each<singletons>([this, &current_proc,
+  tmpl::for_each<singletons>([this, &current_proc, &cache, &ss,
                               &auto_nonexclusive_singletons_on_each_proc](
                                  const auto component_v) {
     using component = tmpl::type_from<decltype(component_v)>;
@@ -903,10 +907,14 @@ break_auto_nonexclusive_loops:
 
     // Print some diagnostic info to stdout for each singleton. This can aid in
     // debugging.
-    Parallel::printf("Allocating %s on proc %d, exclusive = %s\n",
-                     pretty_type::name<component>(), *singleton_map.second,
-                     singleton_map.first ? "true" : "false");
+    ss << pretty_type::name<component>();
+    ss << " on node " << Parallel::node_of<int>(*singleton_map.second, cache);
+    ss << ", global proc " << *singleton_map.second;
+    ss << ", exclusive = " << std::boolalpha << singleton_map.first << "\n";
   });
+
+  ss << "\n";
+  Parallel::printf("%s", ss.str());
 
   // Now that everything has been set, signal that we don't have to do
   // this again.
