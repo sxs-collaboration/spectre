@@ -3,24 +3,11 @@
 
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 
-#include <cmath>
-#include <limits>
-
-#include "Time/TimeStepId.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/Gsl.hpp"
-
 namespace TimeSteppers {
 
 size_t DormandPrince5::order() const { return 5; }
 
 size_t DormandPrince5::error_estimate_order() const { return 4; }
-
-uint64_t DormandPrince5::number_of_substeps() const { return 6; }
-
-uint64_t DormandPrince5::number_of_substeps_for_error() const { return 7; }
-
-size_t DormandPrince5::number_of_past_steps() const { return 0; }
 
 // The growth function for DP5 is
 //
@@ -33,200 +20,41 @@ size_t DormandPrince5::number_of_past_steps() const { return 0; }
 // solutions with a numerical root find yields a stable step of about 1.653.
 double DormandPrince5::stable_step() const { return 1.6532839463174733; }
 
-TimeStepId DormandPrince5::next_time_id(const TimeStepId& current_id,
-                                        const TimeDelta& time_step) const {
-  const auto& step = current_id.substep();
-  const auto& t0 = current_id.step_time();
-  const auto& t = current_id.substep_time();
-  if (step < 6) {
-    if (step == 0) {
-      ASSERT(t == t0, "In DP5 substep 0, the substep time ("
-                          << t << ") should equal t0 (" << t0 << ")");
-    } else {
-      ASSERT(t == t0 + gsl::at(c_, step - 1) * time_step,
-             "In DP5 substep " << step << ", the substep time (" << t
-                               << ") should equal t0+c[" << step - 1 << "]*dt ("
-                               << t0 + gsl::at(c_, step - 1) * time_step
-                               << ")");
-    }
-    if (step < 5) {
-      return {current_id.time_runs_forward(), current_id.slab_number(), t0,
-              step + 1, t0 + gsl::at(c_, step) * time_step};
-    } else {
-      return {current_id.time_runs_forward(), current_id.slab_number(),
-              t0 + time_step};
-    }
-  } else {
-    ERROR("In DP5 substep should be one of 0,1,2,3,4,5, not "
-          << current_id.substep());
-  }
+const RungeKutta::ButcherTableau& DormandPrince5::butcher_tableau() const {
+  // Coefficients from the Dormand-Prince 5 Butcher tableau
+  // (e.g. Sec. 7.2 of \cite NumericalRecipes).
+  static const ButcherTableau tableau{
+      // Substep times
+      {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1}},
+      // Substep coefficients
+      {{1.0 / 5.0},
+       {3.0 / 40.0, 9.0 / 40.0},
+       {44.0 / 45.0, -56.0 / 15.0, 32.0 / 9.0},
+       {19372.0 / 6561.0, -25360.0 / 2187.0, 64448.0 / 6561.0, -212.0 / 729.0},
+       {9017.0 / 3168.0, -355.0 / 33.0, 46732.0 / 5247.0, 49.0 / 176.0,
+        -5103.0 / 18656.0}},
+      // Result coefficients
+      {35.0 / 384.0, 0.0, 500.0 / 1113.0, 125.0 / 192.0, -2187.0 / 6784.0,
+       11.0 / 84.0},
+      // Coefficients for the embedded method for generating an error measure.
+      {5179.0 / 57600.0, 0.0, 7571.0 / 16695.0, 393.0 / 640.0,
+       -92097.0 / 339200.0, 187.0 / 2100.0, 1.0 / 40.0},
+      // Dense output coefficient polynomials
+      {{0.0, 1.0, -8048581381.0 / 2820520608.0, 8663915743.0 / 2820520608.0,
+        -12715105075.0 / 11282082432.0},
+       {},
+       {0.0, 0.0, 131558114200.0 / 32700410799.0,
+        -68118460800.0 / 10900136933.0, 87487479700.0 / 32700410799.0},
+       {0.0, 0.0, -1754552775.0 / 470086768.0, 14199869525.0 / 1410260304.0,
+        -10690763975.0 / 1880347072.0},
+       {0.0, 0.0, 127303824393.0 / 49829197408.0,
+        -318862633887.0 / 49829197408.0, 701980252875.0 / 199316789632.0},
+       {0.0, 0.0, -282668133.0 / 205662961.0, 2019193451.0 / 616988883.0,
+        -1453857185.0 / 822651844.0},
+       {0.0, 0.0, 40617522.0 / 29380423.0, -110615467.0 / 29380423.0,
+        69997945.0 / 29380423.0}}};
+  return tableau;
 }
-
-TimeStepId DormandPrince5::next_time_id_for_error(
-    const TimeStepId& current_id, const TimeDelta& time_step) const {
-  const auto& step = current_id.substep();
-  if (step < 5) {
-    return next_time_id(current_id, time_step);
-  } else {
-    const auto& t0 = current_id.step_time();
-    const auto& t = current_id.substep_time();
-    ASSERT(t == t0 + gsl::at(c_, step - 1) * time_step,
-           "In adaptive DP5 substep "
-               << step << ", the substep time (" << t << ") should equal t0+c["
-               << step - 1 << "]*dt (" << t0 + gsl::at(c_, step - 1) * time_step
-               << ")");
-    switch(step) {
-      case 5:
-        return {current_id.time_runs_forward(), current_id.slab_number(), t0,
-                step + 1, t0 + gsl::at(c_, step) * time_step};
-        break;
-      case 6:
-        return {current_id.time_runs_forward(), current_id.slab_number(),
-                t0 + time_step};
-        break;
-      default:
-        ERROR("In adaptive DP5 substep should be one of 0,1,2,3,4,5,6, not "
-              << current_id.substep());
-    }
-  }
-}
-
-template <typename T>
-void DormandPrince5::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<UntypedHistory<T>*> history,
-    const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 5,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
-
-  const double dt = time_step.value();
-
-  const auto increment_u = [&u, &history, &dt](const auto& coeffs_last,
-                                               const auto& coeffs_this) {
-    static_assert(std::tuple_size_v<std::decay_t<decltype(coeffs_last)>> + 1 ==
-                      std::tuple_size_v<std::decay_t<decltype(coeffs_this)>>,
-                  "Unexpected coefficient vector sizes.");
-    *u = *history->untyped_most_recent_value() +
-         coeffs_this.back() * dt * *(history->end() - 1).derivative();
-    for (size_t i = 0; i < coeffs_last.size(); ++i) {
-      *u += (gsl::at(coeffs_this, i) - gsl::at(coeffs_last, i)) * dt *
-            *(history->begin() + static_cast<int>(i)).derivative();
-    }
-  };
-
-  if (substep == 0) {
-    *u = *history->untyped_most_recent_value() +
-         (a2_[0] * dt) * *history->begin().derivative();
-  } else if (substep == 1) {
-    increment_u(a2_, a3_);
-  } else if (substep == 2) {
-    increment_u(a3_, a4_);
-  } else if (substep == 3) {
-    increment_u(a4_, a5_);
-  } else if (substep == 4) {
-    increment_u(a5_, a6_);
-  } else if (substep == 5) {
-    increment_u(a6_, b_);
-  } else {
-    ERROR("Substep in DP5 should be one of 0,1,2,3,4,5, not " << substep);
-  }
-}
-
-template <typename T>
-bool DormandPrince5::update_u_impl(
-    const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
-    const gsl::not_null<UntypedHistory<T>*> history,
-    const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 5,
-         "Fixed-order stepper cannot run at order "
-         << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  if (substep < 6) {
-    update_u_impl(u, history, time_step);
-  } else if (substep == 6) {
-    // u is the same as for the previous substep.
-    *u = *history->untyped_most_recent_value();
-
-    const double dt = time_step.value();
-
-    *u_error = -b_alt_.back() * dt * *(history->end() - 1).derivative();
-    for (size_t i = 0; i < b_.size(); ++i) {
-      *u_error -= (gsl::at(b_alt_, i) - gsl::at(b_, i)) * dt *
-                  *(history->begin() + static_cast<int>(i)).derivative();
-    }
-  } else {
-    ERROR("Substep in adaptive DP5 should be one of 0,1,2,3,4,5,6, not "
-          << substep);
-  }
-  return substep == 6;
-}
-
-template <typename T>
-bool DormandPrince5::dense_update_u_impl(const gsl::not_null<T*> u,
-                                         const UntypedHistory<T>& history,
-                                         const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
-    return false;
-  }
-  const double t0 = history.front().value();
-  const double t_end = history.back().value();
-  if (time == t_end) {
-    // Special case necessary for dense output at the initial time,
-    // before taking a step.
-    *u = *history.untyped_most_recent_value();
-    return true;
-  }
-  const evolution_less<double> before{t_end > t0};
-  if (history.size() == 1 or before(t_end, time)) {
-    return false;
-  }
-  const double dt = t_end - t0;
-  const double output_fraction = (time - t0) / dt;
-  ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
-                                     << time << ", but already progressed past "
-                                     << t0);
-  ASSERT(output_fraction <= 1.0, "Requested time ("
-                                     << time << ") not within step [" << t0
-                                     << ", " << t0 + dt << "]");
-
-  // The formula for dense output is given in Numerical Recipes Sec. 17.2.3.
-  // This version is modified to eliminate all the values of the function
-  // except the most recent.
-  const auto common = [&output_fraction](const size_t n) {
-    return square(output_fraction) * gsl::at(d_, n) -
-           (1.0 + 2.0 * output_fraction) * gsl::at(b_, n);
-  };
-  *u = *history.untyped_most_recent_value() +
-       dt * (1.0 - output_fraction) *
-           ((1.0 - output_fraction) *
-                ((common(0) + output_fraction) * *history.begin().derivative() +
-                 common(2) * *(history.begin() + 2).derivative() +
-                 common(3) * *(history.begin() + 3).derivative() +
-                 common(4) * *(history.begin() + 4).derivative() +
-                 common(5) * *(history.begin() + 5).derivative()) +
-            square(output_fraction) * ((1.0 - output_fraction) * d_[6] - 1.0) *
-                *(history.begin() + 6).derivative());
-  return true;
-}
-
-template <typename T>
-bool DormandPrince5::can_change_step_size_impl(
-    const TimeStepId& time_id, const UntypedHistory<T>& /*history*/) const {
-  return time_id.substep() == 0;
-}
-
-const std::array<Time::rational_t, 6> DormandPrince5::c_ = {
-    {{1, 5}, {3, 10}, {4, 5}, {8, 9}, {1, 1}, {1, 1}}};
-
-TIME_STEPPER_DEFINE_OVERLOADS(DormandPrince5)
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::DormandPrince5::my_PUP_ID =  // NOLINT
-    0;
+PUP::able::PUP_ID TimeSteppers::DormandPrince5::my_PUP_ID = 0;  // NOLINT

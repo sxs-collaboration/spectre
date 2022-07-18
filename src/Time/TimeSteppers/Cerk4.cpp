@@ -3,27 +3,12 @@
 
 #include "Time/TimeSteppers/Cerk4.hpp"
 
-#include <cmath>
-#include <limits>
-
-#include "Time/EvolutionOrdering.hpp"
-#include "Time/History.hpp"
-#include "Time/TimeStepId.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
-#include "Utilities/Gsl.hpp"
-
 namespace TimeSteppers {
 Cerk4::Cerk4(CkMigrateMessage* /*msg*/) {}
 
 size_t Cerk4::order() const { return 4; }
 
 size_t Cerk4::error_estimate_order() const { return 3; }
-
-uint64_t Cerk4::number_of_substeps() const { return 5; }
-
-uint64_t Cerk4::number_of_substeps_for_error() const { return 5; }
-
-size_t Cerk4::number_of_past_steps() const { return 0; }
 
 // The stability polynomial is
 //
@@ -35,197 +20,34 @@ size_t Cerk4::number_of_past_steps() const { return 0; }
 // the root for |p(-2 z)|-1=0. For forward Euler this is 1.0.
 double Cerk4::stable_step() const { return 1.4367588951002057; }
 
-TimeStepId Cerk4::next_time_id(const TimeStepId& current_id,
-                               const TimeDelta& time_step) const {
-  const auto& step = current_id.substep();
-  const auto& t0 = current_id.step_time();
-  const auto& t = current_id.substep_time();
-  if (step < number_of_substeps()) {
-    if (step == 0) {
-      ASSERT(t == t0, "In Cerk4 substep 0, the substep time ("
-                          << t << ") should equal t0 (" << t0 << ")");
-    } else {
-      ASSERT(t == t0 + gsl::at(c_, step - 1) * time_step,
-             "In Cerk4 substep "
-                 << step << ", the substep time (" << t
-                 << ") should equal t0+c[" << step - 1 << "]*dt ("
-                 << t0 + gsl::at(c_, step - 1) * time_step << ")");
-    }
-    if (step < number_of_substeps() - 1) {
-      return {current_id.time_runs_forward(), current_id.slab_number(), t0,
-              step + 1, t0 + gsl::at(c_, step) * time_step};
-    } else {
-      return {current_id.time_runs_forward(), current_id.slab_number(),
-              t0 + time_step};
-    }
-  } else {
-    ERROR("In Cerk4 substep should be one of 0,1,2,3,4,5, not "
-          << current_id.substep());
-  }
+const RungeKutta::ButcherTableau& Cerk4::butcher_tableau() const {
+  static const ButcherTableau tableau{
+      // Substep times
+      {{1, 6}, {11, 37}, {11, 17}, {13, 15}},
+      // Substep coefficients
+      {{1.0 / 6.0},
+       {44.0 / 1369.0, 363.0 / 1369.0},
+       {3388.0 / 4913.0, -8349.0 / 4913.0, 8140.0 / 4913.0},
+       {-36764.0 / 408375.0, 767.0 / 1125.0, -32708.0 / 136125.0,
+        210392.0 / 408375.0}},
+      // Result coefficients
+      {1697.0 / 18876.0, 0.0, 50653.0 / 116160.0, 299693.0 / 1626240.0,
+       3375.0 / 11648.0},
+      // Coefficients for the embedded method for generating an error measure.
+      {101.0 / 363.0, 0.0, -1369.0 / 14520.0, 11849.0 / 14520.0, 0.0},
+      // Dense output coefficient polynomials
+      {{0.0, 1.0, -104217.0 / 37466.0, 1806901.0 / 618189.0,
+        -866577.0 / 824252.0},
+       {},
+       {0.0, 0.0, 861101.0 / 230560.0, -2178079.0 / 380424.0,
+        12308679.0 / 5072320.0},
+       {0.0, 0.0, -63869.0 / 293440.0, 6244423.0 / 5325936.0,
+        -7816583.0 / 10144640.0},
+       {0.0, 0.0, -1522125.0 / 762944.0, 982125.0 / 190736.0,
+        -624375.0 / 217984.0},
+       {0.0, 0.0, 165.0 / 131.0, -461.0 / 131.0, 296.0 / 131.0}}};
+  return tableau;
 }
-
-TimeStepId Cerk4::next_time_id_for_error(const TimeStepId& current_id,
-                                         const TimeDelta& time_step) const {
-  return next_time_id(current_id, time_step);
-}
-
-template <typename T>
-void Cerk4::update_u_impl(const gsl::not_null<T*> u,
-                          const gsl::not_null<UntypedHistory<T>*> history,
-                          const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-             << history->integration_order());
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
-  // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
-  }
-
-  const auto u0 = history->untyped_most_recent_value();
-  const double dt = time_step.value();
-
-  switch (substep) {
-    case 0: {
-      *u = *u0 + (a2_ * dt) * *history->begin().derivative();
-      break;
-    }
-    case 1: {
-      *u = *u0 + ((a3_[0] - a2_) * dt) * *history->begin().derivative() +
-           (a3_[1] * dt) * *(history->begin() + 1).derivative();
-      break;
-    }
-    case 2: {
-      *u = *u0 + ((a4_[0] - a3_[0]) * dt) * *history->begin().derivative() +
-           ((a4_[1] - a3_[1]) * dt) * *(history->begin() + 1).derivative() +
-           (a4_[2] * dt) * *(history->begin() + 2).derivative();
-      break;
-    }
-    case 3: {
-      *u = *u0 + ((a5_[0] - a4_[0]) * dt) * *history->begin().derivative() +
-           ((a5_[1] - a4_[1]) * dt) * *(history->begin() + 1).derivative() +
-           ((a5_[2] - a4_[2]) * dt) * *(history->begin() + 2).derivative() +
-           (a5_[3] * dt) * *(history->begin() + 3).derivative();
-      break;
-    }
-    case 4: {
-      *u = *u0 + ((a6_[0] - a5_[0]) * dt) * *history->begin().derivative() +
-           ((a6_[1] - a5_[1]) * dt) * *(history->begin() + 1).derivative() +
-           ((a6_[2] - a5_[2]) * dt) * *(history->begin() + 2).derivative() +
-           ((a6_[3] - a5_[3]) * dt) * *(history->begin() + 3).derivative() +
-           (a6_[4] * dt) * *(history->begin() + 4).derivative();
-      break;
-    }
-    default:
-      ERROR("Bad substep value in CERK4: " << substep);
-  }
-}
-
-template <typename T>
-bool Cerk4::update_u_impl(const gsl::not_null<T*> u,
-                          const gsl::not_null<T*> u_error,
-                          const gsl::not_null<UntypedHistory<T>*> history,
-                          const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == 4,
-         "Fixed-order stepper cannot run at order "
-             << history->integration_order());
-  update_u_impl(u, history, time_step);
-  const size_t current_substep = (history->end() - 1).time_step_id().substep();
-  if (current_substep == 4) {
-    const double dt = time_step.value();
-    *u_error = ((e_[0] - a6_[0]) * dt) * *history->begin().derivative() +
-               ((e_[1] - a6_[1]) * dt) * *(history->begin() + 1).derivative() +
-               ((e_[2] - a6_[2]) * dt) * *(history->begin() + 2).derivative() +
-               ((e_[3] - a6_[3]) * dt) * *(history->begin() + 3).derivative() -
-               (a6_[4] * dt) * *(history->begin() + 4).derivative();
-    return true;
-  }
-  return false;
-}
-
-template <typename T>
-bool Cerk4::dense_update_u_impl(const gsl::not_null<T*> u,
-                                const UntypedHistory<T>& history,
-                                const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
-    return false;
-  }
-  const double t0 = history[0].value();
-  const double t_end = history[history.size() - 1].value();
-  if (time == t_end) {
-    // Special case necessary for dense output at the initial time,
-    // before taking a step.
-    *u = *history.untyped_most_recent_value();
-    return true;
-  }
-  const evolution_less<double> before{t_end > t0};
-  if (history.size() == 1 or before(t_end, time)) {
-    return false;
-  }
-  const double dt = t_end - t0;
-  const double output_fraction = (time - t0) / dt;
-  ASSERT(output_fraction >= 0.0, "Attempting dense output at time "
-                                     << time << ", but already progressed past "
-                                     << t0);
-  ASSERT(output_fraction <= 1.0, "Requested time ("
-                                     << time << ") not within step [" << t0
-                                     << ", " << t0 + dt << "]");
-
-  const auto u_n_plus_1 = history.untyped_most_recent_value();
-
-  // We need the following: k1, k2, k3, k4, k5, k6
-  const auto k1 = history.begin().derivative();
-  const auto k2 = (history.begin() + 1).derivative();
-  const auto k3 = (history.begin() + 2).derivative();
-  const auto k4 = (history.begin() + 3).derivative();
-  const auto k5 = (history.begin() + 4).derivative();
-  const auto k6 = (history.begin() + 5).derivative();
-
-  *u = *u_n_plus_1 + (dt * evaluate_polynomial(b1_, output_fraction)) * *k1 +
-       (dt * b2_) * *k2 +  //
-       (dt * evaluate_polynomial(b3_, output_fraction)) * *k3 +
-       (dt * evaluate_polynomial(b4_, output_fraction)) * *k4 +
-       (dt * evaluate_polynomial(b5_, output_fraction)) * *k5 +
-       (dt * evaluate_polynomial(b6_, output_fraction)) * *k6;
-  return true;
-}
-
-template <typename T>
-bool Cerk4::can_change_step_size_impl(
-    const TimeStepId& time_id, const UntypedHistory<T>& /*history*/) const {
-  return time_id.substep() == 0;
-}
-
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr double Cerk4::a2_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 2> Cerk4::a3_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 3> Cerk4::a4_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 4> Cerk4::a5_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::a6_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::b1_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr double Cerk4::b2_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::b3_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::b4_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::b5_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 5> Cerk4::b6_;
-// NOLINTNEXTLINE(readability-redundant-declaration)
-constexpr std::array<double, 6> Cerk4::e_;
-const std::array<Time::rational_t, 4> Cerk4::c_ = {
-    {{1, 6}, {11, 37}, {11, 17}, {13, 15}}};
-
-TIME_STEPPER_DEFINE_OVERLOADS(Cerk4)
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::Cerk4::my_PUP_ID =  // NOLINT
-    0;
+PUP::able::PUP_ID TimeSteppers::Cerk4::my_PUP_ID = 0;  // NOLINT
