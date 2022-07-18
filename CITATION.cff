@@ -177,6 +177,11 @@ authors:
   family-names: Ramirez
   given-names: Teresita
   orcid: https://orcid.org/0000-0003-0994-115X
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  family-names: Ring
+  given-names: Noah
+  orcid: https://orcid.org/0000-0001-6510-4300
 - affiliation: CFisUC, Department of Physics, University of Coimbra, 3004-516 Coimbra,
     Portugal
   family-names: Rüter
@@ -205,9 +210,14 @@ authors:
   family-names: Wlodarczyk
   given-names: Tom
   orcid: https://orcid.org/0000-0003-0005-348X
+- affiliation: Cornell Center for Astrophysics and Planetary Science, Cornell University,
+    Ithaca, New York 14853, USA
+  family-names: Wu
+  given-names: David
+  orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2022-06-14
-doi: 10.5281/zenodo.6643787
+date-released: 2022-07-18
+doi: 10.5281/zenodo.6856873
 keywords:
 - Software
 - Astrophysics
@@ -225,4 +235,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.06.14
+version: 2022.07.18
