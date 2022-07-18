@@ -404,8 +404,8 @@ void test(const bool time_runs_forward) {
     set_up_component(
         &runner, {{invalid_time, trigger_is_ready, trigger_is_ready, false}});
     {
-      auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
-          make_not_null(&runner), 0);
+      auto& box =
+          ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::TimeStepId>(
           make_not_null(&box), [](const gsl::not_null<TimeStepId*> id) {
             *id = TimeStepId(id->time_runs_forward(), -1, id->step_time());
@@ -476,8 +476,8 @@ void test(const bool time_runs_forward) {
     MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
     set_up_component(&runner, {{step_center, true, true, data_needed}});
     {
-      auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
-          make_not_null(&runner), 0);
+      auto& box =
+          ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
           make_not_null(&box), [&initial_vars, &time_step_id](
                                    const gsl::not_null<History*> history) {

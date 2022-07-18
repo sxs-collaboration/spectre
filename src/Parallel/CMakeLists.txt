@@ -53,7 +53,6 @@ spectre_target_headers(
   ResourceInfo.hpp
   Section.hpp
   Serialize.hpp
-  SimpleActionVisitation.hpp
   TypeTraits.hpp
   )
 

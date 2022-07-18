@@ -221,8 +221,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
     for (int i = 0; i < 2; ++i) {
       observers::Actions::RegisterEventsWithObservers::
           template perform_deregistration<my_component>(
-              ActionTesting::get_databox<my_component, tmpl::list<>>(
-                  make_not_null(&runner), i),
+              ActionTesting::get_databox<my_component>(make_not_null(&runner),
+                                                       i),
               ActionTesting::cache<my_component>(runner, i), i);
       ActionTesting::invoke_queued_simple_action<obs_component>(
           make_not_null(&runner), 0);

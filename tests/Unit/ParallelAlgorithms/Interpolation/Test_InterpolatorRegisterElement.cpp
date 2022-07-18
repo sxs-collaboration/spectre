@@ -124,8 +124,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
     INFO("Deregistration");
     intrp::Actions::RegisterElementWithInterpolator::
         template perform_deregistration<elem_component>(
-            ActionTesting::get_databox<elem_component, tmpl::list<>>(
-                make_not_null(&runner), 0_st),
+            ActionTesting::get_databox<elem_component>(make_not_null(&runner),
+                                                       0_st),
             ActionTesting::cache<elem_component>(runner, 0_st), 0_st);
     ActionTesting::invoke_queued_simple_action<interp_component>(
         make_not_null(&runner), 0);

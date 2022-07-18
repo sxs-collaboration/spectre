@@ -76,9 +76,7 @@ size_t num_calls_of_target_receive_vars = 0;
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
+            typename ArrayIndex, typename TemporalId>
   static void apply(
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -86,7 +84,8 @@ struct MockInterpolationTargetReceiveVars {
       const std::vector<::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
       /*vars_src*/,
-      const std::vector<std::vector<size_t>>& /*global_offsets*/) {
+      const std::vector<std::vector<size_t>>& /*global_offsets*/,
+      const TemporalId& /*temporal_id*/) {
     // InterpolationTargetReceiveVars will not be called in this test,
     // because we are not supplying volume data (so try_to_interpolate
     // inside TryToInterpolate.hpp will not actually interpolate). However, the

@@ -122,10 +122,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.next_action<component>(0);
   runner.next_action<component_with_template_specified_variables>(0);
-  auto& box = ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
+  auto& box = ActionTesting::get_databox<component>(runner, 0);
   auto& template_specified_variables_box =
-      ActionTesting::get_databox<component_with_template_specified_variables,
-                                 tmpl::list<>>(runner, 0);
+      ActionTesting::get_databox<component_with_template_specified_variables>(
+          runner, 0);
 
   const auto& new_history = db::get<history_tag>(box);
   CHECK(new_history.size() == 2);

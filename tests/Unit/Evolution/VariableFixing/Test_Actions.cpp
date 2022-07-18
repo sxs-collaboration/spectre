@@ -73,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<component, tmpl::list<>>(runner, 0);
+  auto& box = ActionTesting::get_databox<component>(runner, 0);
   runner.next_action<component>(0);
   const double root_three = sqrt(3.0);
   constexpr double one_third = 1.0 / 3.0;

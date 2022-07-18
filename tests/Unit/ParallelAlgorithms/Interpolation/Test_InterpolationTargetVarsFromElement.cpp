@@ -215,8 +215,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.TargetVarsFromElement",
   // For this test, there are 10 points and all are valid; the call
   // to intrp::InterpolationTarget_detail::block_logical_coords should
   // set up those coordinates appropriately.
-  auto& target_box = ActionTesting::get_databox<target_component, tmpl::list<>>(
-      make_not_null(&runner), 0);
+  auto& target_box =
+      ActionTesting::get_databox<target_component>(make_not_null(&runner), 0);
   const auto block_logical_coords =
       intrp::InterpolationTarget_detail::block_logical_coords<
           typename metavars::InterpolationTargetA>(target_box,

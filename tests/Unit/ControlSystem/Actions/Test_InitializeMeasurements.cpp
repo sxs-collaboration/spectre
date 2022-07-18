@@ -204,8 +204,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   auto& cache = ActionTesting::cache<component>(runner, 0);
-  auto& box = ActionTesting::get_databox<component, tmpl::list<>>(
-      make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
 
   auto& events_and_dense_triggers =
       db::get_mutable_reference<evolution::Tags::EventsAndDenseTriggers>(

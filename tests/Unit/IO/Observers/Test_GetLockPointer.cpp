@@ -106,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observer.GetNodeLockPointer", "[Unit][Cce]") {
       make_not_null(&runner), 0);
 
   db::mutate<observers::Tags::H5FileLock, observers::Tags::VolumeDataLock>(
-      make_not_null(&ActionTesting::get_databox<writer_component, tmpl::list<>>(
+      make_not_null(&ActionTesting::get_databox<writer_component>(
           make_not_null(&runner), 0)),
       [](const gsl::not_null<Parallel::NodeLock*> h5_lock,
          const gsl::not_null<Parallel::NodeLock*> volume_lock) {

@@ -88,8 +88,8 @@ SPECTRE_TEST_CASE("Unit.Actions.UpdateMessageQueue", "[Unit][Actions]") {
                        decltype(queue_v), LinkedMessageQueueTag, Processor>>(
         make_not_null(&runner), 0, id, std::move(data));
     return db::mutate<ProcessorCalls>(
-        make_not_null(&ActionTesting::get_databox<component, tmpl::list<>>(
-            make_not_null(&runner), 0)),
+        make_not_null(
+            &ActionTesting::get_databox<component>(make_not_null(&runner), 0)),
         [](const gsl::not_null<ProcessorCalls::type*> calls) {
           auto ret = std::move(*calls);
           calls->clear();

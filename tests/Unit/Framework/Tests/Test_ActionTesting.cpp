@@ -244,8 +244,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
 
   // [get databox]
   const auto& box =
-      ActionTesting::get_databox<component_for_simple_action_mock<metavars>,
-                                 tmpl::list<>>(runner, 0);
+      ActionTesting::get_databox<component_for_simple_action_mock<metavars>>(
+          runner, 0);
   // [get databox]
   CHECK(db::get<PassedToB>(box) == -1);
   runner.simple_action<component_for_simple_action_mock<metavars>,
