@@ -140,11 +140,16 @@ disable SELinux at the expense of reducing the security of your system.
 
 To build with the Docker image:
 
-1. Retrieve the Docker image (you may need `sudo` in front of this command)
+1. Install [Docker-Desktop](https://docs.docker.com/get-docker/). For Linux, if
+   you want to be able to run the following steps without `sudo`, follow the
+   [post-installation-guide](https://docs.docker.com/engine/install/linux-postinstall/)
+   to add a non-root user.
+
+2. Retrieve the Docker image (you may need `sudo` in front of this command)
    ```
    docker pull sxscollaboration/spectrebuildenv:latest
    ```
-2. Start the Docker container (you may need `sudo`)
+3. Start the Docker container (you may need `sudo`)
    ```
    docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
               -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
@@ -174,7 +179,7 @@ To build with the Docker image:
    Within the container, the files in SPECTRE_ROOT are available and Charm++ is
    installed in `/work/charm_7_0_0`. For the following steps, stay inside the
    docker container as root.
-3. Proceed with [building SpECTRE](#building-spectre).
+4. Proceed with [building SpECTRE](#building-spectre).
 
 **Notes:**
   * Everything in your build directory is owned by root, and is
@@ -200,7 +205,7 @@ To build with the Docker image:
     To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
     (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
-  * In step 3 above, technically docker allows you to say `-v
+  * In step 4 above, technically docker allows you to say `-v
     SPECTRE_ROOT:/my/new/path` to map SPECTRE_ROOT outside the container to any
     path you want inside the container, but **do not do this**.  Compiling
     inside the container sets up git hooks in SPECTRE_ROOT that contain
@@ -208,6 +213,9 @@ To build with the Docker image:
     if your source paths inside and outside the container are different,
     commands like `git commit` run *from outside the container* will die with
     `No such file or directory`.
+  * If you want to use Docker within VSCode, take a look at our
+    [quick start guide](../DevGuide/QuickStartDockerVSCode.md) for using Docker
+    with VSCode.
 
 ## Using Singularity to obtain a SpECTRE environment
 

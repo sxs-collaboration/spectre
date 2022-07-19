@@ -41,6 +41,11 @@ repository to your computer, selecting the SSH option:
 
 - [Cloning a repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository)
 
+\note If you clone the SpECTRE repository using HTTPS instead of SSH, you won't
+be able to push any changes you make to your fork. You'll still be able to make
+local changes on your computer, but you won't be able to share your changes with
+anybody.
+
 ## Enable the development environment in the repository
 
 The development environment is included in the repository, but not enabled by
@@ -106,12 +111,12 @@ Studio Code.
 Now is also time to learn how to use the single most important tool in Visual
 Studio Code, the command palette. Try it now: Hit `Cmd+P` (macOS) or `Ctrl+P`
 (Linux or Windows) and start typing the name of any file, for example
-`QuickStart.md`. Hit `Enter` to open the file. This is how you can quickly open
-any file in the repository. Note that the search is fuzzy, so you can type any
-few letters in the path to the file. In addition to opening files, you can hit
-`Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux or Windows) and type the name of
-any command that Visual Studio Code supports (or parts of it), for example
-`Preferences: Open User Settings`.
+`QuickStartDockerVSCode.md`. Hit `Enter` to open the file. This is how you can
+quickly open any file in the repository. Note that the search is fuzzy, so you
+can type any few letters in the path to the file. In addition to opening files,
+you can hit `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Linux or Windows) and type
+the name of any command that Visual Studio Code supports (or parts of it), for
+example `Preferences: Open User Settings`.
 
 ## Reopen the SpECTRE repository in the development container
 
@@ -120,7 +125,10 @@ Open the command palette by hitting `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P`
 by starting to type a few letters of this command and then hitting `Enter`.
 
 Visual Studio Code will download and run the container and drop you into a fully
-configured environment where you can proceed to compile and run SpECTRE.
+configured environment where you can proceed to compile and run SpECTRE. This
+may take a few minutes so just let VSCode run and do it's thing. There may be a
+`show logs` button somewhere on your screen if you're interested in the details
+of the download.
 
 If you are interested to learn more about how this feature works you can
 read through the [VS Code documentation on remote containers](https://code.visualstudio.com/docs/remote/containers)
@@ -132,7 +140,15 @@ SpECTRE repository.
 With Visual Studio Code running in the development container you can now
 configure, compile and run SpECTRE with no additional setup. Hit `Cmd+Shift+P`
 (macOS) or `Ctrl+Shift+P` (Linux or Windows) to open the command palette and run
-the command `CMake: Configure`. It will set up a build directory. You can open
+the command `CMake: Select a Kit`. You should see a `Default` kit available.
+Then, open the command palette again, run `CMake: Select Variant`, and select
+either `Release` or `Debug`. For this tutorial we recommend using `Release`. If
+you want to actually develop SpECTRE, the `Debug` option would be better. This
+specific kit uses `clang-10` to build SpECTRE along with the Python bindings.
+Finally, open the command palette once more and run `CMake: Configure` which
+will now actually run CMake.
+
+It will set up a build directory. You can open
 Visual Studio Code's [integrated
 terminal](https://code.visualstudio.com/docs/editor/integrated-terminal) with
 the keyboard shortcut ``Ctrl+` `` and navigate to the newly created build
@@ -158,11 +174,12 @@ Once the executable has compiled successfully you can try running it:
   --input-file $SPECTRE_HOME/tests/InputFiles/ExportCoordinates/Input3D.yaml
 ```
 
-This executable produced a volume data file that we can visualize in ParaView.
-Generate an XMF file from the volume data file that ParaView understands:
+This executable produced a volume data file in the `build-Default-Debug`
+directory that we can visualize in ParaView. Generate an XMF file from the
+volume data file that ParaView understands:
 
 ```
-$SPECTRE_HOME/src/Visualization/Python/GenerateXdmf.py \
+./bin/GenerateXdmf \
   --file-prefix ExportCoordinates3DVolume --subfile-name element_data \
   --output ExportCoordinates3DVolume
 ```
@@ -170,6 +187,9 @@ $SPECTRE_HOME/src/Visualization/Python/GenerateXdmf.py \
 Since the build directory is shared with the host file system you can now open
 ParaView on your computer and load the generated XMF file as described in the
 \ref tutorial_visualization "visualization tutorial".
+
+\note If you wanted to run this executable again, you'd have to first remove the
+existing `.h5` files, otherwise an error will occur.
 
 ## Edit and contribute code to SpECTRE with VS Code
 
