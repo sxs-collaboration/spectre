@@ -281,8 +281,13 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
+# - Set CHARM_ROOT so it's easy to find the Charm++ directory. Just use GCC
+#   since clang is GCC-compatible
+# - Symlink gfortran-9 to gfortran so it we can just specify gfortran in CMake
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
+ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-x86_64-gcc"
+RUN ln -s $(which gfortran-9) /usr/local/bin/gfortran
 RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
     && export LANGUAGE=en_US.UTF-8 \
