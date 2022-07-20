@@ -179,8 +179,14 @@ SPECTRE_TEST_CASE(
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
       runner, 0));
-  CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
-        0.0);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(([&runner]() {
+                      ActionTesting::get_databox_tag<component, InitialTime>(
+                          runner, 0);
+                    }()),
+                    Catch::Contains("Unable to retrieve item 'InitialTime' as "
+                                    "it has been removed from the DataBox."));
+#endif
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==

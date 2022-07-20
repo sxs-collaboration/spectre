@@ -2846,6 +2846,64 @@ void test_output() {
   std::string expected_stream = expected_types + "\n" + expected_items+ "\n";
   CHECK(output_stream == expected_stream);
 }
+
+void test_remove_item() {
+  INFO("test mutate apply");
+  auto box = db::create<
+      db::AddSimpleTags<
+          test_databox_tags::Tag0, test_databox_tags::Tag1,
+          test_databox_tags::Tag2,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>,
+          test_databox_tags::Pointer>,
+      db::AddComputeTags<test_databox_tags::Tag4Compute,
+                         test_databox_tags::Tag5Compute,
+                         test_databox_tags::MultiplyScalarByTwoCompute,
+                         test_databox_tags::PointerToCounterCompute,
+                         test_databox_tags::PointerToSumCompute>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.),
+      std::make_unique<int>(3));
+
+  db::remove<test_databox_tags::Tag1>(make_not_null(&box));
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(db::get<test_databox_tags::Tag1>(box),
+                    Catch::Contains("Unable to retrieve item 'Tag1' as "
+                                    "it has been removed from the DataBox."));
+  CHECK_THROWS_WITH(
+      ([&box]() {
+        db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+            make_not_null(&box),
+            [](const gsl::not_null<double*> tag0,
+               const gsl::not_null<std::vector<double>*> tag1) {
+              *tag0 = 10.32;
+              (*tag1)[0] = 837.2;
+            });
+      }()),
+      Catch::Contains(
+          "Cannot mutate 'Tag1' as it has been removed from the DataBox."));
+#endif
+  auto new_box = serialize_and_deserialize(box);
+  CHECK(db::get<test_databox_tags::Tag0>(new_box) == 3.14);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(db::get<test_databox_tags::Tag1>(new_box),
+                    Catch::Contains("Unable to retrieve item 'Tag1' as "
+                                    "it has been removed from the DataBox."));
+  CHECK_THROWS_WITH(
+      ([&new_box]() {
+        db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag1>(
+            make_not_null(&new_box),
+            [](const gsl::not_null<double*> tag0,
+               const gsl::not_null<std::vector<double>*> tag1) {
+              *tag0 = 10.32;
+              (*tag1)[0] = 837.2;
+            });
+      }()),
+      Catch::Contains(
+          "Cannot mutate 'Tag1' as it has been removed from the DataBox."));
+#endif
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -2871,6 +2929,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_reference_item();
   test_get_mutable_reference();
   test_output();
+  test_remove_item();
 }
 
 // Test`tag_is_retrievable_v`
