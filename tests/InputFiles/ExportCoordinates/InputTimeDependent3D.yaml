@@ -17,48 +17,47 @@ DomainCreator:
   # arbitrary time-dependence.
   BinaryCompactObject:
     ObjectA:
-      InnerRadius: 0.4409
+      InnerRadius: 0.45825
       OuterRadius: 6.0
-      XCoord: -10.0
+      XCoord: -7.683
       ExciseInterior: true
-      UseLogarithmicMap: false
+      UseLogarithmicMap: true
     ObjectB:
-      InnerRadius: 0.4409
+      InnerRadius: 0.45825
       OuterRadius: 6.0
-      XCoord: 10.0
+      XCoord: 7.683
       ExciseInterior: true
-      UseLogarithmicMap: false
+      UseLogarithmicMap: true
     EnvelopingCube:
       Radius: 100.0
-      UseProjectiveMap: true
-      Sphericity: 0.0
+      UseProjectiveMap: false
+      Sphericity: 1.0
     OuterShell:
       InnerRadius: Auto
-      OuterRadius: 590.0
+      OuterRadius: 300.0
       RadialDistribution: Linear
     InitialRefinement:
-      ObjectAShell:   [0, 0, 1]
-      ObjectBShell:   [0, 0, 1]
-      ObjectACube:    [0, 0, 0]
-      ObjectBCube:    [0, 0, 0]
-      EnvelopingCube: [0, 0, 0]
-      CubedShell:     [0, 0, 0]
-      OuterShell:     [0, 0, 0]
+      ObjectAShell:   [1, 1, 1]
+      ObjectBShell:   [1, 1, 1]
+      ObjectACube:    [1, 1, 0]
+      ObjectBCube:    [1, 1, 0]
+      EnvelopingCube: [1, 1, 1]
+      OuterShell:     [1, 1, 1]
     InitialGridPoints: 3
     TimeDependentMaps:
       InitialTime: 0.0
       ExpansionMap:
-        OuterBoundary: 590.0
+        OuterBoundary: 300.0
         InitialExpansion: 1.0
-        InitialExpansionVelocity: 0.01
-        AsymptoticVelocityOuterBoundary: -0.1
-        DecayTimescaleOuterBoundaryVelocity: 5.0
+        InitialExpansionVelocity: -4.6148457646200002e-05
+        AsymptoticVelocityOuterBoundary: -1.0e-6
+        DecayTimescaleOuterBoundaryVelocity: 50.0
       RotationMap:
-        InitialAngularVelocity: [0.0, 0.0, 0.0]
+        InitialAngularVelocity: [0.0, 0.0, 1.5264577062000000e-02]
       SizeMap:
         InitialValues: [0.0, 0.0]
-        InitialVelocities: [-0.1, -0.1]
-        InitialAccelerations: [-0.2, -0.2]
+        InitialVelocities: [0.0, 0.0]
+        InitialAccelerations: [0.0, 0.0]
 
 SpatialDiscretization:
   DiscontinuousGalerkin:
@@ -74,7 +73,7 @@ Evolution:
 EventsAndTriggers:
   ? TimeCompares:
       Comparison: GreaterThanOrEqualTo
-      Value: 1.0
+      Value: 0.5
   : - Completion
 
 Observers:
