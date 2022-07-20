@@ -91,11 +91,7 @@ void test_trigger_no_replace() {
       ActionTesting::LocalCoreId{0}, 0, {0.0});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<
-      component,
-      tmpl::list<Tags::Time, Parallel::Tags::FromGlobalCache<
-                                 control_system::Tags::MeasurementTimescales>>>(
-      make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
   auto& cache = ActionTesting::cache<component>(runner, 0);
 
   const auto set_time = [&box](const double time) {
@@ -166,11 +162,7 @@ void test_trigger_with_replace() {
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<
-      component,
-      tmpl::list<Tags::Time, Parallel::Tags::FromGlobalCache<
-                                 control_system::Tags::MeasurementTimescales>>>(
-      make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
 
   MeasureTrigger typed_trigger{};
   DenseTrigger& trigger = typed_trigger;

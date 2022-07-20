@@ -76,8 +76,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
   ActionTesting::emplace_component_and_initialize<Component>(&runner, 0, {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<Component, Component::simple_tags>(
-      make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<Component>(make_not_null(&runner), 0);
 
   for (const bool time_runs_forward : {true, false}) {
     Slab slab(1.5, 2.0);

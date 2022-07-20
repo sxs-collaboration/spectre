@@ -18,7 +18,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -65,7 +64,6 @@ struct component {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
-                 Actions::SetupDataBox,
                  Initialization::Actions::ConservativeSystem<
                      typename Metavariables::system,
                      typename Metavariables::equation_of_state_tag>>>>;
@@ -110,9 +108,7 @@ void test() {
                  Spectral::Quadrature::GaussLobatto};
   ActionTesting::emplace_component_and_initialize<comp>(&runner, 0, {mesh});
   // Invoke the ConservativeSystem action on the runner
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<comp>(make_not_null(&runner), 0);
-  }
+  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
   using vars_tag = Tags::Variables<tmpl::list<Var>>;
   // The numerical value that the vars are set to is undefined, but the number
   // of grid points must be correct.

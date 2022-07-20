@@ -27,7 +27,6 @@
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControlReductionHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -139,9 +138,8 @@ struct GroupComponent {
   using metavariables = Metavariables;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox, InitializeStepTag>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<InitializeStepTag>>,
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<IncrementStep, ReportGroupPhaseControlDataAndTerminate>>>;
@@ -164,9 +162,8 @@ struct ArrayComponent {
   using array_index = int;
 
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox, InitializeStepTag>>,
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<InitializeStepTag>>,
       Parallel::PhaseActions<
           Parallel::Phase::Evolve,
           tmpl::list<IncrementStep, ReportArrayPhaseControlDataAndTerminate>>>;

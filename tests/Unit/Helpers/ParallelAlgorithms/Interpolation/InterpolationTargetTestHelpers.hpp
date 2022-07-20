@@ -16,7 +16,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/SendPointsToInterpolator.hpp"
@@ -82,9 +81,8 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
-                         Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
@@ -134,7 +132,6 @@ struct mock_interpolator {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<
-              Actions::SetupDataBox,
               intrp::Actions::InitializeInterpolator<
                   intrp::Tags::VolumeVarsInfo<
                       Metavariables, typename Metavariables::

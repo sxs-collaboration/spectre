@@ -60,7 +60,6 @@
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
@@ -285,7 +284,6 @@ struct EvolutionMetavars {
                      Dim, Frame::Inertial>>;
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem<system>,

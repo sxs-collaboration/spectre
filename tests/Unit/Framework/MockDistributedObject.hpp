@@ -28,7 +28,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -79,25 +78,6 @@ template <typename Component>
 struct get_initialization_tags_from_component<
     Component, std::void_t<typename Component::initialization_tags>> {
   using type = typename Component::initialization_tags;
-};
-
-// Given the tags `SimpleTags`, forwards them into the `DataBox`.
-template <typename SimpleTagsList>
-struct ForwardAllOptionsToDataBox;
-
-template <typename... SimpleTags>
-struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
-  using simple_tags = tmpl::list<SimpleTags...>;
-
-  template <typename DbTagsList, typename... Args>
-  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) {
-    static_assert(
-        sizeof...(SimpleTags) == sizeof...(Args),
-        "The number of arguments passed to ForwardAllOptionsToDataBox must "
-        "match the number of SimpleTags passed.");
-    return db::create_from<db::RemoveTags<>, simple_tags>(
-        std::move(box), std::forward<Args>(args)...);
-  }
 };
 
 // Returns the type of `Tag` (including const and reference-ness as would be
@@ -351,24 +331,10 @@ class MockDistributedObject {
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
       Parallel::Tags::GlobalCacheImpl<metavariables>, initialization_tags,
-      db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>;
-  using initial_databox = db::compute_databox_type<initial_tags>;
-
-  // The types held by the std::variant, box_
-  using databox_phase_types =
-      typename Parallel::Algorithm_detail::build_databox_types<
-          tmpl::list<>, phase_dependent_action_lists, initial_databox,
-          inbox_tags_list, metavariables, typename Component::array_index,
-          Component>::type;
-  template <typename T>
-  struct get_databox_types {
-    using type = typename T::databox_types;
-  };
-
-  using databox_types = tmpl::flatten<
-      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>;
-  using variant_boxes = tmpl::remove_duplicates<
-      tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>>;
+      db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>,
+      Parallel::Algorithm_detail::action_list_simple_tags<Component>,
+      Parallel::Algorithm_detail::action_list_compute_tags<Component>>>;
+  using databox_type = db::compute_databox_type<initial_tags>;
 
   MockDistributedObject() = default;
 
@@ -390,14 +356,18 @@ class MockDistributedObject {
         array_index_(index),
         global_cache_(cache),
         inboxes_(inboxes) {
-    box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
-        db::create<
-            db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                              Parallel::Tags::GlobalCacheImpl<metavariables>>,
-            db::AddComputeTags<db::wrap_tags_in<Parallel::Tags::FromGlobalCache,
-                                                all_cache_tags>>>(
-            metavariables{}, global_cache_),
-        std::forward<Options>(opts)...);
+    auto temp_box = db::create<
+        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
+                          Parallel::Tags::GlobalCacheImpl<metavariables>,
+                          initialization_tags>,
+        db::AddComputeTags<
+            db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>(
+        metavariables{}, global_cache_, std::forward<Options>(opts)...);
+    box_ = db::create_from<
+        tmpl::list<>,
+        Parallel::Algorithm_detail::action_list_simple_tags<Component>,
+        Parallel::Algorithm_detail::action_list_compute_tags<Component>>(
+        std::move(temp_box));
   }
 
   void set_phase(Parallel::Phase phase) {
@@ -428,48 +398,31 @@ class MockDistributedObject {
   }
 
   /// @{
-  /// Returns the DataBox with the tags set from the GlobalCache and the
-  /// tags in `AdditionalTagsList`. If the DataBox type is incorrect
-  /// `std::terminate` is called.
-  template <typename AdditionalTagsList>
-  auto& get_databox() {
-    using box_type = db::compute_databox_type<
-        tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
-    return std::get<box_type>(box_);
-  }
+  /// Returns the DataBox.
+  databox_type& get_databox() { return box_; }
 
-  template <typename AdditionalTagsList>
-  const auto& get_databox() const {
-    using box_type = db::compute_databox_type<
-        tmpl::flatten<tmpl::list<initial_tags, AdditionalTagsList>>>;
-    return std::get<box_type>(box_);
-  }
+  const databox_type& get_databox() const { return box_; }
   /// @}
 
-  /// Walks through the variant of DataBoxes and retrieves the tag from the
-  /// current one, if the current DataBox has the tag. If the current DataBox
-  /// does not have the requested tag it is an error.
   template <typename Tag>
   const auto& get_databox_tag() const {
-    return get_databox_tag_visitation<Tag>(box_);
+    return db::get<Tag>(box_);
   }
 
+  /// Returns true if Tag was used to insert an item into the DataBox
   template <typename Tag>
   bool box_contains() const {
-    return box_contains_visitation<Tag>(box_);
+    return tmpl::list_contains_v<typename databox_type::tags_list, Tag>;
   }
 
+  /// \brief Returns true if Tag can be retrieved (via db::get) from the DataBox
+  ///
+  /// \note compute and reference tags can be retrieved via the simple tag they
+  /// are derived from.
   template <typename Tag>
   bool tag_is_retrievable() const {
-    return tag_is_retrievable_visitation<Tag>(box_);
+    return db::tag_is_retrievable_v<Tag, databox_type>;
   }
-
-  /// @{
-  /// Returns the `std::variant` of DataBoxes.
-  auto& get_variant_box() { return box_; }
-
-  const auto& get_variant_box() const { return box_; }
-  /// @}
 
   /// Force the next action invoked to be the `next_action_id`th action in the
   /// current phase.
@@ -540,7 +493,7 @@ class MockDistributedObject {
   void NAME(const bool direct_from_action_runner = false) {                   \
     if (direct_from_action_runner) {                                          \
       performing_action_ = true;                                              \
-      Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(   \
+      Action::template apply<Component>(                                      \
           box_, *global_cache_,                                               \
           std::as_const(array_index_)                                         \
               BOOST_PP_COMMA_IF(BOOST_PP_NOT(USE_SIMPLE_ACTION)) BOOST_PP_IF( \
@@ -564,8 +517,7 @@ class MockDistributedObject {
                                   index_of_action::value>;                    \
     if (direct_from_action_runner) {                                          \
       performing_action_ = true;                                              \
-      Parallel::Algorithm_detail::simple_action_visitor<new_action,           \
-                                                        Component>(           \
+      new_action::template apply<Component>(                                  \
           box_, *global_cache_,                                               \
           std::as_const(array_index_)                                         \
               BOOST_PP_COMMA_IF(BOOST_PP_NOT(USE_SIMPLE_ACTION)) BOOST_PP_IF( \
@@ -592,9 +544,8 @@ class MockDistributedObject {
                                  ActionTesting::MockNodeGroupChare>,
                   "Cannot call a local synchronous action on a chare that is "
                   "not a NodeGroup");
-    return Parallel::Algorithm_detail::local_synchronous_action_visitor<
-        Action, Component>(box_, make_not_null(&node_lock_),
-                           std::forward<Args>(args)...);
+    return Action::template apply<Component>(box_, make_not_null(&node_lock_),
+                                             std::forward<Args>(args)...);
   }
 
   bool is_simple_action_queue_empty() const {
@@ -689,7 +640,7 @@ class MockDistributedObject {
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_simple_action(std::tuple<Args...>&& args,
                                       std::index_sequence<Is...> /*meta*/) {
-    Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
+    Action::template apply<Component>(
         box_, *global_cache_, std::as_const(array_index_),
         std::forward<Args>(std::get<Is>(args))...);
   }
@@ -697,7 +648,7 @@ class MockDistributedObject {
   template <typename Action, typename... Args, size_t... Is>
   void forward_tuple_to_threaded_action(std::tuple<Args...>&& args,
                                         std::index_sequence<Is...> /*meta*/) {
-    Parallel::Algorithm_detail::simple_action_visitor<Action, Component>(
+    Action::template apply<Component>(
         box_, *global_cache_, std::as_const(array_index_),
         make_not_null(&node_lock_), std::forward<Args>(std::get<Is>(args))...);
   }
@@ -759,118 +710,9 @@ class MockDistributedObject {
   template <typename PhaseDepActions, size_t... Is>
   bool next_action_impl(std::index_sequence<Is...> /*meta*/);
 
-  template <typename Tag, typename ThisVariantBox, typename Type,
-            typename... Variants,
-            Requires<tmpl::size<tmpl::filter<
-                         typename ThisVariantBox::tags_list,
-                         std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value !=
-                     0> = nullptr>
-  void get_databox_tag_visitation_impl(
-      const Type** result, const gsl::not_null<size_t*> iter,
-      const gsl::not_null<bool*> already_visited,
-      const std::variant<Variants...>& box) const {
-    if (box.index() == *iter and not *already_visited) {
-      *result = &db::get<Tag>(std::get<ThisVariantBox>(box));
-      (void)result;
-      *already_visited = true;
-    }
-    (*iter)++;
-  }
-  template <typename Tag, typename ThisVariantBox, typename Type,
-            typename... Variants,
-            Requires<tmpl::size<tmpl::filter<
-                         typename ThisVariantBox::tags_list,
-                         std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value ==
-                     0> = nullptr>
-  void get_databox_tag_visitation_impl(
-      const Type** /*result*/, const gsl::not_null<size_t*> iter,
-      const gsl::not_null<bool*> already_visited,
-      const std::variant<Variants...>& box) const {
-    if (box.index() == *iter and not *already_visited) {
-      ERROR("Cannot retrieve tag: "
-            << db::tag_name<Tag>()
-            << " from the current DataBox because it is not in it.");
-    }
-    (*iter)++;
-  }
-
-  template <typename Tag, typename... Variants>
-  const auto& get_databox_tag_visitation(
-      const std::variant<Variants...>& box) const {
-    using item_types = tmpl::remove_duplicates<tmpl::remove_if<
-        tmpl::list<cpp20::remove_cvref_t<
-            detail::item_type_if_contained_t<Tag, Variants>>...>,
-        std::is_same<NoSuchType, tmpl::_1>>>;
-    static_assert(tmpl::size<item_types>::value != 0,
-                  "Could not find the tag or the tag as a base tag in any "
-                  "DataBox in the get_databox_tag function.");
-    static_assert(
-        tmpl::size<item_types>::value < 2,
-        "Found the tag in or the tag as a base tag in more than one DataBox in "
-        "the get_databox_tag function. This means you need to explicitly "
-        "retrieve the DataBox type to retrieve the tag or file an issue "
-        "requesting a get_databox_tag function that can also take a type "
-        "explicitly. We have not yet encountered a need for this functionality "
-        "but it could be added.");
-    const tmpl::front<item_types>* result = nullptr;
-    size_t iter = 0;
-    bool already_visited = false;
-    EXPAND_PACK_LEFT_TO_RIGHT(get_databox_tag_visitation_impl<Tag, Variants>(
-        &result, &iter, &already_visited, box));
-    if (result == nullptr) {
-      ERROR("The result pointer is nullptr, which it should never be.\n");
-    }
-    return *result;
-  }
-
-  template <typename Tag, typename ThisVariantBox, typename... Variants,
-            Requires<tmpl::list_contains_v<typename ThisVariantBox::tags_list,
-                                           Tag>> = nullptr>
-  void box_contains_visitation_impl(
-      bool* const contains_tag, const gsl::not_null<size_t*> iter,
-      const std::variant<Variants...>& box) const {
-    if (box.index() == *iter) {
-      *contains_tag =
-          tmpl::list_contains_v<typename ThisVariantBox::tags_list, Tag>;
-    }
-    (*iter)++;
-  }
-  template <typename Tag, typename ThisVariantBox, typename... Variants,
-            Requires<not tmpl::list_contains_v<
-                typename ThisVariantBox::tags_list, Tag>> = nullptr>
-  void box_contains_visitation_impl(
-      bool* const /*contains_tag*/, const gsl::not_null<size_t*> iter,
-      const std::variant<Variants...>& /*box*/) const {
-    (*iter)++;
-  }
-
-  template <typename Tag, typename... Variants>
-  bool box_contains_visitation(const std::variant<Variants...>& box) const {
-    bool contains_tag = false;
-    size_t iter = 0;
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        box_contains_visitation_impl<Tag, Variants>(&contains_tag, &iter, box));
-    return contains_tag;
-  }
-
-  template <typename Tag, typename... Variants>
-  bool tag_is_retrievable_visitation(
-      const std::variant<Variants...>& box) const {
-    bool is_retrievable = false;
-    const auto helper = [&box, &is_retrievable](auto box_type) {
-      using DataBoxType = typename decltype(box_type)::type;
-      if (tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value ==
-          box.index()) {
-        is_retrievable = db::tag_is_retrievable_v<Tag, DataBoxType>;
-      }
-    };
-    EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Variants>{}));
-    return is_retrievable;
-  }
-
   bool terminate_{false};
   bool halt_algorithm_until_next_phase_{false};
-  tmpl::make_std_variant_over<variant_boxes> box_ = db::DataBox<tmpl::list<>>{};
+  databox_type box_;
   // The next action we should execute.
   size_t algorithm_step_ = 0;
   bool performing_action_ = false;
@@ -966,46 +808,12 @@ bool MockDistributedObject<Component>::next_action_impl(
     using actions_list = typename PhaseDepActions::action_list;
     using this_action = tmpl::at_c<actions_list, iter>;
 
-    constexpr size_t phase_index =
-        tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
-    using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
-    using databox_types_this_phase = typename databox_phase_type::databox_types;
-
-    using potential_databox_indices = std::conditional_t<
-        iter == 0_st,
-        tmpl::integral_list<size_t, 0_st,
-                            tmpl::size<databox_types_this_phase>::value - 1_st>,
-        tmpl::integral_list<size_t, iter>>;
-    bool box_found = false;
-    tmpl::for_each<potential_databox_indices>(
-        [this, &box_found, &was_ready](auto potential_databox_index_v) {
-          constexpr size_t potential_databox_index =
-              decltype(potential_databox_index_v)::type::value;
-          using this_databox =
-              tmpl::at_c<databox_types_this_phase, potential_databox_index>;
-          if (not box_found and
-              box_.index() ==
-                  tmpl::index_of<variant_boxes, this_databox>::value) {
-            box_found = true;
-            auto& box = std::get<this_databox>(box_);
-            performing_action_ = true;
-            ++algorithm_step_;
-            if (not invoke_iterable_action<this_action, actions_list>(box)) {
-              was_ready = false;
-              --algorithm_step_;
-            }
-          }
-        });
-    if (not box_found) {
-      ERROR(
-          "The DataBox type being retrieved at algorithm step: "
-          << algorithm_step_ << " in phase " << phase_index
-          << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " is not the correct type but is of variant index " << box_.index()
-          << ". If you are using Goto and Label actions then you are using "
-             "them incorrectly.");
+    performing_action_ = true;
+    ++algorithm_step_;
+    if (not invoke_iterable_action<this_action, actions_list>(box_)) {
+      was_ready = false;
+      --algorithm_step_;
     }
-
     performing_action_ = false;
     already_did_an_action = true;
     // Wrap counter if necessary

@@ -24,7 +24,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Actions/RestrictFields.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Hierarchy.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"

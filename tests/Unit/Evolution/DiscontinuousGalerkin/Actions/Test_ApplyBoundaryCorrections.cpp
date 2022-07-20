@@ -34,7 +34,6 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -407,7 +406,6 @@ struct component {
           Parallel::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
-              ::Actions::SetupDataBox,
               ::evolution::dg::Initialization::Mortars<
                   Metavariables::volume_dim, typename Metavariables::system>,
               SetLocalMortarData>>,
@@ -570,10 +568,6 @@ void test_impl(const Spectral::Quadrature quadrature,
        std::make_unique<TimeSteppers::AdamsBashforthN>(time_stepper),
        dt_evolved_vars, evolved_vars, mesh, element, inertial_coords, inv_jac,
        quadrature});
-
-  // Run SetupDataBox action.
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
 
   // Initialize both the mortars
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),

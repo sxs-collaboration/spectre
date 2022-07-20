@@ -22,7 +22,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -166,8 +165,7 @@ struct Component {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<ActionTesting::InitializeDataBox<
-                                            simple_tags, compute_tags>,
-                                        Actions::SetupDataBox>>,
+                                 simple_tags, compute_tags>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, action_list>>;
 };
 
@@ -299,8 +297,6 @@ void test_actions(const size_t order, const int step_denominator) {
   emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
                                    initial_time, initial_time_step, order,
                                    initial_value);
-  ActionTesting::next_action<Component<Metavariables<>>>(make_not_null(&runner),
-                                                         0);
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
@@ -411,9 +407,6 @@ double error_in_step(const size_t order, const double step) {
   emplace_component_and_initialize<TestPrimitives, MultipleHistories>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
-  ActionTesting::next_action<
-      Component<Metavariables<TestPrimitives, MultipleHistories>>>(
-      make_not_null(&runner), 0);
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 

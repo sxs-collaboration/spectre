@@ -46,7 +46,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Actions/CommunicateOverlapFields.hpp"

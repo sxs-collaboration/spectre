@@ -22,7 +22,6 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Observe.hpp"
@@ -66,9 +65,8 @@ struct MockResidualMonitor {
           Metavariables, fields_tag, TestLinearSolver>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 LinearSolver::cg::detail::InitializeResidualMonitor<
-                     fields_tag, TestLinearSolver>>>>;
+      tmpl::list<LinearSolver::cg::detail::InitializeResidualMonitor<
+          fields_tag, TestLinearSolver>>>>;
 };
 
 // This is used to receive action calls from the residual monitor

@@ -103,7 +103,7 @@ void test_translation_control_system() {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<

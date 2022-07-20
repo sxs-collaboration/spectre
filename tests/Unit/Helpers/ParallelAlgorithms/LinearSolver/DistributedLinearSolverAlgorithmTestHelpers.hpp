@@ -42,7 +42,6 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
@@ -321,8 +320,7 @@ template <typename Metavariables,
           typename LinearSolverType = typename Metavariables::linear_solver,
           typename PreconditionerType = typename Metavariables::preconditioner>
 using initialization_actions =
-    tmpl::list<Actions::SetupDataBox, InitializeElement,
-               typename LinearSolverType::initialize_element,
+    tmpl::list<InitializeElement, typename LinearSolverType::initialize_element,
                ComputeOperatorAction<fields_tag>,
                helpers::detail::init_preconditioner<PreconditionerType>,
                Initialization::Actions::RemoveOptionsAndTerminatePhase>;

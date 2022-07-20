@@ -197,18 +197,26 @@ struct SimpleActionMockMetavariables {
 
 };
 
+template <typename Metavariables>
+struct component_for_global_cache_tags {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
+};
+
 struct MockMetavariablesWithGlobalCacheTags {
   using component_list = tmpl::list<
-      component_for_simple_action_mock<MockMetavariablesWithGlobalCacheTags>>;
+      component_for_global_cache_tags<MockMetavariablesWithGlobalCacheTags>>;
   // [const global cache metavars]
   using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
   // [const global cache metavars]
-
 };
 
 void test_mock_runtime_system_constructors() {
   using metavars = MockMetavariablesWithGlobalCacheTags;
-  using component = component_for_simple_action_mock<metavars>;
+  using component = component_for_global_cache_tags<metavars>;
   // Test whether we can construct with tagged tuples in different orders.
   // [constructor const global cache tags known]
   ActionTesting::MockRuntimeSystem<metavars> runner1{{3, 7.0}};
@@ -236,9 +244,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
 
   // [get databox]
   const auto& box =
-      ActionTesting::get_databox<component_for_simple_action_mock<metavars>,
-                                 db::AddSimpleTags<ValueTag, PassedToB>>(runner,
-                                                                         0);
+      ActionTesting::get_databox<component_for_simple_action_mock<metavars>>(
+          runner, 0);
   // [get databox]
   CHECK(db::get<PassedToB>(box) == -1);
   runner.simple_action<component_for_simple_action_mock<metavars>,
@@ -310,31 +317,17 @@ struct DummyTimeTag : db::SimpleTag {
 };
 
 struct Action0 {
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
+  using simple_tags = tmpl::list<DummyTimeTag>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>, db::AddSimpleTags<DummyTimeTag>>(
-            std::move(box), 6));
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    return {std::move(box)};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 6);
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -360,8 +353,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
-                                                                       0));
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
   // Runs Action0
   runner.next_action<component>(0);
   CHECK(

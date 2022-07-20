@@ -288,7 +288,6 @@ struct EvolutionMetavars {
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
   using initialization_actions = tmpl::list<
-      Actions::SetupDataBox,
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::ConservativeSystem<system>,

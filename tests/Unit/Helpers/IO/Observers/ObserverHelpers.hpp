@@ -15,7 +15,6 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
@@ -68,8 +67,7 @@ struct observer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 observers::Actions::Initialize<Metavariables>>>>;
+      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
 };
 
 template <typename Metavariables>
@@ -88,8 +86,7 @@ struct observer_writer_component {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 observers::Actions::InitializeWriter<Metavariables>>>>;
+      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>>;
 };
 
 using l2_error_datum = Parallel::ReductionDatum<double, funcl::Plus<>,

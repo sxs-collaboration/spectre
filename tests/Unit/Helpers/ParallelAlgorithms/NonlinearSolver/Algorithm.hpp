@@ -29,7 +29,6 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
@@ -131,7 +130,7 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox, InitializeElement,
+          tmpl::list<InitializeElement,
                      typename nonlinear_solver::initialize_element,
                      typename linear_solver::initialize_element,
                      Parallel::Actions::TerminatePhase>>,

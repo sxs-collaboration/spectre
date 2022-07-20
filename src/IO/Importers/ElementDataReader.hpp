@@ -13,8 +13,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 
 namespace importers {
 
@@ -42,8 +40,7 @@ struct ElementDataReader {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<::Actions::SetupDataBox,
-                                        detail::InitializeElementDataReader>>>;
+                             tmpl::list<detail::InitializeElementDataReader>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 

@@ -57,7 +57,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
@@ -827,7 +826,6 @@ struct component {
           Parallel::Phase::Initialization,
           tmpl::flatten<tmpl::list<
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
-              ::Actions::SetupDataBox,
               ::evolution::dg::Initialization::Mortars<
                   Metavariables::volume_dim, typename Metavariables::system>>>>,
       Parallel::PhaseActions<
@@ -1291,10 +1289,6 @@ void test_impl(const Spectral::Quadrature quadrature,
       }
     }
   }
-
-  // Setup the DataBox
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
 
   // Initialize both the "old" and "new" mortars
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),

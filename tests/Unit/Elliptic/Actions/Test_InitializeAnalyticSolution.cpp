@@ -21,7 +21,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
@@ -81,12 +80,10 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<Actions::SetupDataBox,
-                     elliptic::Actions::InitializeOptionalAnalyticSolution<
-                         elliptic::Tags::Background<
-                             elliptic::analytic_data::Background>,
-                         tmpl::list<ScalarFieldTag>,
-                         elliptic::analytic_data::AnalyticSolution>>>>;
+          tmpl::list<elliptic::Actions::InitializeOptionalAnalyticSolution<
+              elliptic::Tags::Background<elliptic::analytic_data::Background>,
+              tmpl::list<ScalarFieldTag>,
+              elliptic::analytic_data::AnalyticSolution>>>>;
 };
 
 struct Metavariables {

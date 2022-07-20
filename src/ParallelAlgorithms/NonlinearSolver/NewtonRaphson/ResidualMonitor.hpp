@@ -13,7 +13,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
@@ -42,8 +41,7 @@ struct ResidualMonitor {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<::Actions::SetupDataBox,
-                 InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
+      tmpl::list<InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

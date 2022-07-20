@@ -178,8 +178,8 @@ void check_observer_registration() {
       observers::Actions::RegisterWithObservers<
           RegisterObservers<TypeOfObservation>>::
           template perform_deregistration<element_comp>(
-              ActionTesting::get_databox<element_comp, tmpl::list<>>(
-                  make_not_null(&runner), id),
+              ActionTesting::get_databox<element_comp>(make_not_null(&runner),
+                                                       id),
               ActionTesting::cache<element_comp>(runner, id), id);
       ActionTesting::invoke_queued_simple_action<obs_component>(
           make_not_null(&runner), 0);

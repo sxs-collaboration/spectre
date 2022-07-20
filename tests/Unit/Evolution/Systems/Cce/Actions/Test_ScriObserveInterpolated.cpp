@@ -38,7 +38,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -100,8 +99,7 @@ struct mock_observer {
   using const_global_cache_tags =
       tmpl::list<observers::Tags::VolumeFileName, Tags::ObservationLMax>;
   using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 observers::Actions::InitializeWriter<Metavariables>>;
+      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -122,7 +120,6 @@ struct mock_characteristic_evolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,

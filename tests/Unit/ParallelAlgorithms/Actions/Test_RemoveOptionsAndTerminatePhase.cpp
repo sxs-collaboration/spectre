@@ -15,7 +15,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -52,6 +52,7 @@ struct MultiplyByTwoCompute : MultiplyByTwo<Tag>, db::ComputeTag {
 
 struct Action0 {
   using initialization_tags = tmpl::list<InitialTime>;
+  using simple_tags = tmpl::list<DummyTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -63,10 +64,9 @@ struct Action0 {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
     const double initial_time_value = db::get<InitialTime>(box);
-    return std::make_tuple(
-        Initialization::merge_into_databox<Action0,
-                                           db::AddSimpleTags<DummyTime>>(
-            std::move(box), 3.0 * initial_time_value));
+    ::Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                                 3.0 * initial_time_value);
+    return std::make_tuple(std::move(box));
   }
 
   template <
@@ -86,6 +86,7 @@ struct Action0 {
 struct Action1 {
   using initialization_tags = tmpl::list<InitialMass>;
   using initialization_tags_to_keep = tmpl::list<InitialMass>;
+  using compute_tags = tmpl::list<MultiplyByTwoCompute<DummyTime>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -94,10 +95,7 @@ struct Action1 {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(Initialization::merge_into_databox<
-                           Action1, db::AddSimpleTags<>,
-                           db::AddComputeTags<MultiplyByTwoCompute<DummyTime>>>(
-        std::move(box)));
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -122,7 +120,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-
 };
 }  // namespace
 
@@ -141,10 +138,9 @@ SPECTRE_TEST_CASE(
                            Parallel::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component,
-                                              MultiplyByTwo<DummyTime>>(runner,
-                                                                        0));
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
+      runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
@@ -153,9 +149,6 @@ SPECTRE_TEST_CASE(
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
-  CHECK(not ActionTesting::tag_is_retrievable<component,
-                                              MultiplyByTwo<DummyTime>>(runner,
-                                                                        0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
@@ -181,12 +174,13 @@ SPECTRE_TEST_CASE(
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   // Runs RemoveOptionsFromDataBox
   runner.next_action<component>(0);
-  CHECK(
-      not ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTime>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, MultiplyByTwo<DummyTime>>(
       runner, 0));
+  CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
+        0.0);
   CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
         initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTime>(runner, 0) ==

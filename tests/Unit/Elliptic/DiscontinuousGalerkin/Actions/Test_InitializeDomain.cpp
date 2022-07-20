@@ -29,7 +29,6 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -49,8 +48,7 @@ struct ElementArray {
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<Actions::SetupDataBox,
-                     ::elliptic::dg::Actions::InitializeDomain<Dim>>>>;
+          tmpl::list<::elliptic::dg::Actions::InitializeDomain<Dim>>>>;
 };
 
 template <size_t Dim>

@@ -42,10 +42,6 @@ namespace Actions {
  * - Removes: Nothing
  * - Modifies:
  *   - `control_system::Tags::Averager<ControlSystem>`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename Metavariables, typename ControlSystem>
 struct Initialize {

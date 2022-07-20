@@ -4,7 +4,6 @@
 set(LIBRARY "Test_Initialization")
 
 set(LIBRARY_SOURCES
-  Test_MergeIntoDataBox.cpp
   Test_MutateAssign.cpp
   )
 

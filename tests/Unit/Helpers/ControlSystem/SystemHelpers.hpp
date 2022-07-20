@@ -48,6 +48,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestingFramework.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/Tags.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -119,16 +120,19 @@ struct MockObserverWriter {
   using replace_these_simple_actions = tmpl::list<>;
   using with_these_simple_actions = tmpl::list<>;
 
-  using const_global_cache_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<observers::Tags::ReductionFileName>;
 
   using initialization_tags = tmpl::list<>;
+  using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
 
   using metavariables = Metavars;
   using chare_type = ActionTesting::MockNodeGroupChare;
   using array_index = int;
 
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>>;
 };
 
 template <size_t TranslationDerivOrder, size_t RotationDerivOrder,

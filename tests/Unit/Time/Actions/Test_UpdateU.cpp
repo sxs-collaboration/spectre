@@ -113,7 +113,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   using component = Component<Metavariables>;
   using component_with_template_specified_variables =
       ComponentWithTemplateSpecifiedVariables<Metavariables>;
-  using simple_tags = typename component::simple_tags;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
   ActionTesting::emplace_component_and_initialize<component>(
@@ -131,8 +130,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const std::array<double, 3> expected_values{{3., 3., 10./3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
-    auto& before_box = ActionTesting::get_databox<component, simple_tags>(
-        make_not_null(&runner), 0);
+    auto& before_box =
+        ActionTesting::get_databox<component>(make_not_null(&runner), 0);
     db::mutate<history_tag>(
         make_not_null(&before_box),
         [&rhs, &substep, &substep_times](
@@ -145,10 +144,9 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
         },
         db::get<variables_tag>(before_box));
 
-    auto& alternative_before_box = ActionTesting::get_databox<
-        component_with_template_specified_variables,
-        typename component_with_template_specified_variables::simple_tags>(
-        make_not_null(&runner), 0);
+    auto& alternative_before_box =
+        ActionTesting::get_databox<component_with_template_specified_variables>(
+            make_not_null(&runner), 0);
     db::mutate<alternative_history_tag>(
         make_not_null(&alternative_before_box),
         [&rhs, &substep, &substep_times](
@@ -165,12 +163,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
 
     runner.next_action<component>(0);
     runner.next_action<component_with_template_specified_variables>(0);
-    const auto& box =
-        ActionTesting::get_databox<component, simple_tags>(runner, 0);
-    auto& alternative_box = ActionTesting::get_databox<
-        component_with_template_specified_variables,
-        typename component_with_template_specified_variables::simple_tags>(
-        make_not_null(&runner), 0);
+    const auto& box = ActionTesting::get_databox<component>(runner, 0);
+    auto& alternative_box =
+        ActionTesting::get_databox<component_with_template_specified_variables>(
+            make_not_null(&runner), 0);
 
     CHECK(db::get<variables_tag>(box) ==
           approx(gsl::at(expected_values, substep)));

@@ -11,7 +11,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 
 namespace Cce {
@@ -25,8 +24,7 @@ struct WorldtubeComponentBase {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 Actions::InitializeWorldtubeBoundary<WorldtubeComponent>,
+      tmpl::list<Actions::InitializeWorldtubeBoundary<WorldtubeComponent>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialization_tags =

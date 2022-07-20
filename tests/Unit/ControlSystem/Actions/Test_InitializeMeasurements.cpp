@@ -35,7 +35,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -154,7 +153,6 @@ struct Component {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<
-          Actions::SetupDataBox,
           evolution::Actions::InitializeRunEventsAndDenseTriggers,
           control_system::Actions::InitializeMeasurements<control_systems>>>>;
 };
@@ -200,19 +198,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
       ActionTesting::LocalCoreId{0}, 0, Tags::TimeStepId::type{true, 0, {}},
       Tags::Time::type{0.0}, evolution::Tags::EventsAndDenseTriggers::type{});
 
-  // SetupDataBox
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
   // InitializeRunEventsAndDenseTriggers
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   // InitializeMeasurements
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
-  using box_tags =
-      tmpl::append<Actions::SetupDataBox::action_list_simple_tags<component>,
-                   Actions::SetupDataBox::action_list_compute_tags<component>>;
   auto& cache = ActionTesting::cache<component>(runner, 0);
-  auto& box = ActionTesting::get_databox<component, box_tags>(
-      make_not_null(&runner), 0);
+  auto& box = ActionTesting::get_databox<component>(make_not_null(&runner), 0);
 
   auto& events_and_dense_triggers =
       db::get_mutable_reference<evolution::Tags::EventsAndDenseTriggers>(

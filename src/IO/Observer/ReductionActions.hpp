@@ -704,11 +704,9 @@ struct WriteReductionData {
  *   values must match the length of the `legend`.
  */
 struct WriteReductionDataRow {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex, typename... Ts,
-      typename DataBox = db::DataBox<DbTagsList>,
-      Requires<db::tag_is_retrievable_v<Tags::H5FileLock, DataBox>> = nullptr>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex, typename... Ts,
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,

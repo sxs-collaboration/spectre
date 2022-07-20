@@ -98,7 +98,7 @@ struct Metavariables {
   static constexpr auto default_phase_order = helpers::default_phase_order;
 
   using initialization_actions =
-      tmpl::list<::Actions::SetupDataBox, helpers_mg::InitializeElement,
+      tmpl::list<helpers_mg::InitializeElement,
                  typename nonlinear_solver::initialize_element,
                  typename linear_solver::initialize_element,
                  typename multigrid::initialize_element,

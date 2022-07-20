@@ -156,9 +156,7 @@ void check(const bool time_runs_forward,
 
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.template next_action<component>(0);
-  const auto& box =
-      ActionTesting::get_databox<component, typename component::simple_tags>(
-          runner, 0);
+  const auto& box = ActionTesting::get_databox<component>(runner, 0);
 
   const size_t index =
       ActionTesting::get_next_action_index<component>(runner, 0);

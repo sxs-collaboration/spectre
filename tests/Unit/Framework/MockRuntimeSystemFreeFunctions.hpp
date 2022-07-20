@@ -181,23 +181,22 @@ void emplace_nodegroup_component_and_initialize(
 }
 
 /// @{
-/// Retrieves the DataBox with tags `TagsList` (omitting the `GlobalCache`
-/// and `add_from_options` tags) from the parallel component `Component` with
+/// Retrieves the DataBox from the parallel component `Component` with
 /// index `array_index`.
-template <typename Component, typename TagsList, typename Metavariables>
+template <typename Component, typename Metavariables>
 const auto& get_databox(const MockRuntimeSystem<Metavariables>& runner,
                         const typename Component::array_index& array_index) {
   return runner.template mock_distributed_objects<Component>()
       .at(array_index)
-      .template get_databox<TagsList>();
+      .get_databox();
 }
 
-template <typename Component, typename TagsList, typename Metavariables>
+template <typename Component, typename Metavariables>
 auto& get_databox(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
                   const typename Component::array_index& array_index) {
   return runner->template mock_distributed_objects<Component>()
       .at(array_index)
-      .template get_databox<TagsList>();
+      .get_databox();
 }
 /// @}
 

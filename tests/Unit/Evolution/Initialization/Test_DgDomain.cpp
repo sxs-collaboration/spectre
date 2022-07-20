@@ -30,7 +30,6 @@
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -144,8 +143,7 @@ struct Component {
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<::Actions::SetupDataBox,
-                     evolution::dg::Initialization::Domain<dim>,
+          tmpl::list<evolution::dg::Initialization::Domain<dim>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };
 
@@ -227,9 +225,7 @@ void test(const Spectral::Quadrature quadrature) {
       {initial_extents, initial_refinement, quadrature, initial_time});
   runner.set_phase(Parallel::Phase::Testing);
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<component>(make_not_null(&runner), self_id);
-  }
+  ActionTesting::next_action<component>(make_not_null(&runner), self_id);
 
   // Set up data to be used for checking correctness
   const auto logical_to_grid_map =

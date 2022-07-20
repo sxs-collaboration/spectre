@@ -19,7 +19,6 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Multigrid.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/Tags.hpp"
@@ -79,7 +78,7 @@ struct Metavariables {
   static constexpr auto default_phase_order = helpers::default_phase_order;
 
   using initialization_actions =
-      tmpl::list<::Actions::SetupDataBox, helpers_mg::InitializeElement,
+      tmpl::list<helpers_mg::InitializeElement,
                  typename multigrid::initialize_element,
                  typename smoother::initialize_element,
                  ::Initialization::Actions::RemoveOptionsAndTerminatePhase>;

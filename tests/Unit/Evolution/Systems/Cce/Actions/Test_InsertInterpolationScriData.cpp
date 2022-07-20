@@ -24,7 +24,6 @@
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/Factory.hpp"
@@ -124,8 +123,7 @@ struct MockObserver {
 
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
   using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 observers::Actions::InitializeWriter<Metavariables>>;
+      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -146,7 +144,6 @@ struct MockCharacteristicEvolution {
   using with_these_simple_actions = tmpl::list<>;
 
   using initialize_action_list = tmpl::list<
-      ::Actions::SetupDataBox,
       Actions::InitializeCharacteristicEvolutionVariables<Metavariables>,
       Actions::InitializeCharacteristicEvolutionTime<
           typename Metavariables::evolved_coordinates_variables_tag,

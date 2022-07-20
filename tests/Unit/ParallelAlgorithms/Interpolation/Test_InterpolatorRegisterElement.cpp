@@ -8,7 +8,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
@@ -34,11 +33,9 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<Actions::SetupDataBox,
-                     ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                     ::Tags::TimeStepId>,
-                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<::intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolator<
@@ -127,8 +124,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
     INFO("Deregistration");
     intrp::Actions::RegisterElementWithInterpolator::
         template perform_deregistration<elem_component>(
-            ActionTesting::get_databox<elem_component, tmpl::list<>>(
-                make_not_null(&runner), 0_st),
+            ActionTesting::get_databox<elem_component>(make_not_null(&runner),
+                                                       0_st),
             ActionTesting::cache<elem_component>(runner, 0_st), 0_st);
     ActionTesting::invoke_queued_simple_action<interp_component>(
         make_not_null(&runner), 0);

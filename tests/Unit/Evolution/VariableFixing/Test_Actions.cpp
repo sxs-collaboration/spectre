@@ -63,7 +63,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
-  using simple_tags = typename component::simple_tags;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       VariableFixing::RadiallyFallingFloor<3>(1.e-4, 1.e-5, -1.5, 1.e-7 / 3.0,
                                               -2.5)};
@@ -74,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
        tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
-  auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);
+  auto& box = ActionTesting::get_databox<component>(runner, 0);
   runner.next_action<component>(0);
   const double root_three = sqrt(3.0);
   constexpr double one_third = 1.0 / 3.0;

@@ -47,7 +47,6 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -106,7 +105,6 @@ struct Component {
       Parallel::Phase::Initialization,
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags>,
-          ::Actions::SetupDataBox,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
           evolution::dg::subcell::Actions::Initialize<
@@ -219,8 +217,6 @@ void test(const bool always_use_subcell, const bool interior_element) {
        std::move(logical_to_grid_map), grid_to_inertial_map->get_clone(), var,
        Variables<tmpl::list<::Tags::dt<Var1>>>{
            dg_mesh.number_of_grid_points()}});
-  // Invoke the SetupDataBox action on the runner
-  ActionTesting::next_action<comp>(make_not_null(&runner), 0);
 
   // Invoke the SetVariables action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);

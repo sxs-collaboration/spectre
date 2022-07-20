@@ -26,7 +26,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetReceiveVars.hpp"
@@ -267,7 +266,6 @@ struct mock_interpolator {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<
-              Actions::SetupDataBox,
               intrp::Actions::InitializeInterpolator<
                   intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
                   intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,

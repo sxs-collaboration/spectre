@@ -17,7 +17,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -47,8 +46,7 @@ struct ResidualMonitor {
   // `ElementActions.hpp`. See `LinearSolver::gmres::Gmres` for details.
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<::Actions::SetupDataBox,
-                 InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
+      tmpl::list<InitializeResidualMonitor<FieldsTag, OptionsGroup>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 

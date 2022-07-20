@@ -117,10 +117,6 @@ struct InitializeWorldtubeBoundary;
  * Metavariables::cce_boundary_communication_tags>`
  * - Removes: nothing
  * - Modifies: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename Metavariables>
 struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
@@ -155,10 +151,6 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
  * Metavariables::cce_boundary_communication_tags>`
  * - Removes: nothing
  * - Modifies: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename Metavariables>
 struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
@@ -197,10 +189,6 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
  *     Metavariables::cce_boundary_communication_tags>`
  * - Removes: nothing
  * - Modifies: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename Metavariables>
 struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>

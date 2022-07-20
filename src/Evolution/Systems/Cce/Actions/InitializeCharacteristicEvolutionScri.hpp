@@ -40,10 +40,6 @@ namespace Actions {
  *  - `Cce::Tags::InterpolationManager<ComplexDataVector, Tag>` for each `Tag`
  * in `scri_values_to_observe`
  * - Removes: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename ScriValuesToObserve, typename BoundaryComponent>
 struct InitializeCharacteristicEvolutionScri {

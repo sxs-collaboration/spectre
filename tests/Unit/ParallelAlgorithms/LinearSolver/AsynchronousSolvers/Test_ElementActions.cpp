@@ -20,7 +20,6 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/AsynchronousSolvers/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -53,7 +52,6 @@ struct ElementArray {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<fields_tag, source_tag>>,
-                     Actions::SetupDataBox,
                      LinearSolver::async_solvers::InitializeElement<
                          fields_tag, TestSolver, source_tag>>>,
       Parallel::PhaseActions<
@@ -107,10 +105,8 @@ SPECTRE_TEST_CASE("Unit.ParallelLinearSolver.Asynchronous.ElementActions",
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), element_id,
       {blaze::DynamicVector<double>{}, blaze::DynamicVector<double>{}});
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<element_array>(make_not_null(&runner),
-                                              element_id);
-  }
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+
   // DataBox shortcuts
   const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;

@@ -23,7 +23,6 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
@@ -77,9 +76,7 @@ size_t num_calls_of_target_receive_vars = 0;
 template <typename InterpolationTargetTag>
 struct MockInterpolationTargetReceiveVars {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
+            typename ArrayIndex, typename TemporalId>
   static void apply(
       db::DataBox<DbTags>& /*box*/,
       Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -87,7 +84,8 @@ struct MockInterpolationTargetReceiveVars {
       const std::vector<::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>&
       /*vars_src*/,
-      const std::vector<std::vector<size_t>>& /*global_offsets*/) {
+      const std::vector<std::vector<size_t>>& /*global_offsets*/,
+      const TemporalId& /*temporal_id*/) {
     // InterpolationTargetReceiveVars will not be called in this test,
     // because we are not supplying volume data (so try_to_interpolate
     // inside TryToInterpolate.hpp will not actually interpolate). However, the
@@ -119,9 +117,8 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox,
-                     intrp::Actions::InitializeInterpolationTarget<
-                         Metavariables, InterpolationTargetTag>>>,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 
   using replace_these_simple_actions =
@@ -141,11 +138,9 @@ struct mock_interpolator {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<::Actions::SetupDataBox,
-                     ::intrp::Actions::InitializeInterpolator<
-                         intrp::Tags::VolumeVarsInfo<Metavariables,
-                                                     ::Tags::TimeStepId>,
-                         intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
+          tmpl::list<::intrp::Actions::InitializeInterpolator<
+              intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
+              intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
   using component_being_mocked = void;  // not needed.
 };

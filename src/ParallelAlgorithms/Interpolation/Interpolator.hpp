@@ -10,7 +10,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "Utilities/TMPL.hpp"
@@ -46,7 +45,6 @@ struct Interpolator {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<
-          ::Actions::SetupDataBox,
           Actions::InitializeInterpolator<
               tmpl::transform<all_temporal_ids,
                               tmpl::bind<Tags::VolumeVarsInfo,

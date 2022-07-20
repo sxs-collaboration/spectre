@@ -35,9 +35,8 @@
 #include "Parallel/PhaseControl/PhaseControlTags.hpp"
 #include "Parallel/PhaseControl/VisitAndReturn.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -210,6 +209,7 @@ struct ComponentBeta {
 namespace Actions {
 
 struct InitializePhaseRecord {
+  using simple_tags = tmpl::list<Tags::PhaseRecord, Tags::Step>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -219,12 +219,7 @@ struct InitializePhaseRecord {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        Initialization::merge_into_databox<
-            InitializePhaseRecord,
-            db::AddSimpleTags<Tags::PhaseRecord, Tags::Step>,
-            db::AddComputeTags<>, Initialization::MergePolicy::Overwrite>(
-            std::move(box), "", 0_st));
+    return std::make_tuple(std::move(box));
   }
 };
 

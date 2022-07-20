@@ -459,25 +459,12 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     using charm_type = Parallel::charm_types_with_parameters<
         parallel_component, typename Parallel::get_array_index<
                                 chare_type>::template f<parallel_component>>;
-    using algorithm = typename charm_type::algorithm;
-    using databox_types = typename algorithm::databox_types;
-    Parallel::printf("  %s (%s) has %u DataBox variants with [",
-                     pretty_type::name<parallel_component>(),
-                     pretty_type::name<chare_type>(),
-                     tmpl::size<databox_types>::value);
-    tmpl::for_each<databox_types>([&parallel_component_v](auto databox_type_v) {
-      // gcc11 and clang12 don't agree on where parallel_component_v is used...
-      (void)(parallel_component_v);
-      using databox_type = tmpl::type_from<decltype(databox_type_v)>;
-      Parallel::printf("%u",
-                       tmpl::size<typename databox_type::tags_list>::value);
-      // gcc11.1.1 couldn't handle inlining the following type alias
-      using last_databox_type = tmpl::back<databox_types>;
-      if constexpr (not std::is_same_v<databox_type, last_databox_type>) {
-        Parallel::printf(", ");
-      }
-    });
-    Parallel::printf("] items.\n");
+    Parallel::printf(
+        "  %s (%s) has a DataBox with %u items.\n",
+        pretty_type::name<parallel_component>(),
+        pretty_type::name<chare_type>(),
+        tmpl::size<
+            typename charm_type::algorithm::databox_type::tags_list>::value);
   });
   Parallel::printf("\n");
 #endif  // SPECTRE_DEBUG

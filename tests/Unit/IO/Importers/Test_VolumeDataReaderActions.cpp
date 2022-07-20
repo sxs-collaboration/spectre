@@ -30,7 +30,6 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -82,8 +81,7 @@ struct MockVolumeDataReader {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 importers::detail::InitializeElementDataReader>>>;
+      tmpl::list<importers::detail::InitializeElementDataReader>>>;
 };
 
 struct Metavariables {

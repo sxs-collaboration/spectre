@@ -108,8 +108,6 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   using component = Component<Metavariables>;
   using component_with_template_specified_variables =
       ComponentWithTemplateSpecifiedVariables<Metavariables>;
-  using simple_tags = typename component::simple_tags;
-  using compute_tags = typename component::compute_tags;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{}};
 
@@ -124,16 +122,10 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   runner.next_action<component>(0);
   runner.next_action<component_with_template_specified_variables>(0);
-  auto& box =
-      ActionTesting::get_databox<component,
-                                 tmpl::append<simple_tags, compute_tags>>(
+  auto& box = ActionTesting::get_databox<component>(runner, 0);
+  auto& template_specified_variables_box =
+      ActionTesting::get_databox<component_with_template_specified_variables>(
           runner, 0);
-  auto& template_specified_variables_box = ActionTesting::get_databox<
-      component_with_template_specified_variables,
-      tmpl::append<
-          typename component_with_template_specified_variables::simple_tags,
-          typename component_with_template_specified_variables::compute_tags>>(
-      runner, 0);
 
   const auto& new_history = db::get<history_tag>(box);
   CHECK(new_history.size() == 2);

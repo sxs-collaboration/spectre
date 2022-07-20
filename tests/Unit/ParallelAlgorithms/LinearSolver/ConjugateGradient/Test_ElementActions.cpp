@@ -14,7 +14,6 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "ParallelAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
@@ -49,7 +48,6 @@ struct ElementArray {
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<VectorTag>>,
-                     Actions::SetupDataBox,
                      LinearSolver::cg::detail::InitializeElement<
                          fields_tag, DummyOptionsGroup>>>,
       Parallel::PhaseActions<
@@ -78,9 +76,7 @@ SPECTRE_TEST_CASE(
 
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0, {blaze::DynamicVector<double>(3, 0.)});
-  for (size_t i = 0; i < 2; ++i) {
-    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-  }
+  ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
 
   // DataBox shortcuts
   const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {

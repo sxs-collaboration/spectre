@@ -46,7 +46,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -232,9 +231,8 @@ struct mock_interpolation_target {
                           tmpl::list<>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 intrp::Actions::InitializeInterpolationTarget<
-                     Metavariables, InterpolationTargetTag>>>>;
+      tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+          Metavariables, InterpolationTargetTag>>>>;
 
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -247,10 +245,9 @@ struct mock_interpolator {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 intrp::Actions::InitializeInterpolator<
-                     intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
-                     intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
+      tmpl::list<intrp::Actions::InitializeInterpolator<
+          intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::Time>,
+          intrp::Tags::InterpolatedVarsHolders<Metavariables>>>>>;
 
   using component_being_mocked = intrp::Interpolator<Metavariables>;
 };

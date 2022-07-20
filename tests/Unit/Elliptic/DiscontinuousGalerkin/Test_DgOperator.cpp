@@ -38,7 +38,6 @@
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/SetData.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -121,7 +120,6 @@ struct ElementArray {
           tmpl::list<ActionTesting::InitializeDataBox<
                          tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
                                     domain::Tags::InitialExtents<Dim>>>,
-                     ::Actions::SetupDataBox,
                      ::elliptic::dg::Actions::InitializeDomain<Dim>,
                      ::elliptic::Actions::InitializeOptionalAnalyticSolution<
                          analytic_solution_tag,

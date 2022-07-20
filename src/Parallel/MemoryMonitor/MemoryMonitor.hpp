@@ -11,7 +11,6 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
 #include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -46,8 +45,7 @@ struct MemoryMonitor {
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<Actions::SetupDataBox,
-                 Initialization::Actions::AddSimpleTags<
+      tmpl::list<Initialization::Actions::AddSimpleTags<
                      mem_monitor::detail::InitializeMutator>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
 

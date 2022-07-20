@@ -29,6 +29,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -143,11 +144,10 @@ struct no_op {
 };
 
 struct initialize {
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
-          nullptr>
+  using simple_tags = tmpl::list<CountActionsCalled, Int0, Int1>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -157,24 +157,8 @@ struct initialize {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<CountActionsCalled, Int0, Int1>>(
-            std::move(box), 0, 1, 100),
-        true);
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    return {std::move(box), true};
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0, 1, 100);
+    return std::make_tuple(std::move(box), true);
   }
 };
 
@@ -231,6 +215,7 @@ struct NoOpsComponent {
 
 namespace add_remove_test {
 struct add_int_value_10 {
+  using simple_tags = tmpl::list<Int0>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -246,9 +231,8 @@ struct add_int_value_10 {
           ++*count_actions_called;
         });
     static int a = 0;
-    return std::make_tuple(
-        db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), 10),
-        ++a >= 5);
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 10);
+    return std::make_tuple(std::move(box), ++a >= 5);
   }
 };
 
@@ -291,7 +275,9 @@ struct remove_int0 {
           ++*count_actions_called;
         },
         db::get<Int0>(box));
-    return std::make_tuple(db::create_from<tmpl::list<Int0>>(std::move(box)));
+    // default assign to "remove"
+    Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -313,6 +299,7 @@ struct test_args {
 };
 
 struct initialize {
+  using simple_tags = tmpl::list<CountActionsCalled, TemporalId>;
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
@@ -324,11 +311,9 @@ struct initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<CountActionsCalled, TemporalId>>(
-            std::move(box), 0, TestAlgorithmArrayInstance{0}),
-        true);
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0,
+                                               TestAlgorithmArrayInstance{0});
+    return std::make_tuple(std::move(box), true);
   }
 
   template <
@@ -405,6 +390,7 @@ struct IntReceiveTag
 // [int receive tag insert]
 
 struct add_int0_to_box {
+  using simple_tags = tmpl::list<Int0>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -414,8 +400,8 @@ struct add_int0_to_box {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        db::create_from<tmpl::list<>, tmpl::list<Int0>>(std::move(box), 0));
+    Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
+    return std::make_tuple(std::move(box));
   }
 };
 
@@ -478,6 +464,7 @@ struct update_instance {
 };
 
 struct initialize {
+  using simple_tags = tmpl::list<CountActionsCalled, Int1, TemporalId>;
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
@@ -489,11 +476,9 @@ struct initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        tmpl::list<CountActionsCalled, Int1, TemporalId>>(
-            std::move(box), 0, 0, TestAlgorithmArrayInstance{0}),
-        true);
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0, 0,
+                                               TestAlgorithmArrayInstance{0});
+    return std::make_tuple(std::move(box));
   }
 
   template <
@@ -679,11 +664,10 @@ struct TestMetavariables {
   static constexpr Options::String help =
       "An executable for testing the core functionality of the Algorithm. "
       "Actions that do not perform any operations (no-ops), invoking simple "
-      "actions, mutating data in the DataBox, adding and removing items from "
-      "the DataBox, receiving data from other parallel components, and "
-      "out-of-order execution of Actions are all tested. All tests are run "
-      "just by running the executable, no input file or command line arguments "
-      "are required";
+      "actions, mutating data in the DataBox, receiving data from other "
+      "parallel components, and out-of-order execution of Actions are all "
+      "tested. All tests are run just by running the executable, no input file "
+      "or command line arguments are required";
   // [help_string_example]
 
   static constexpr std::array<Parallel::Phase, 10> default_phase_order{

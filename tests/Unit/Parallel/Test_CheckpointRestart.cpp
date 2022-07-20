@@ -25,7 +25,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -119,7 +118,7 @@ struct ArrayComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<Actions::SetupDataBox, InitializeLog>>,
+                             tmpl::list<InitializeLog>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -155,7 +154,7 @@ struct GroupComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<Actions::SetupDataBox, InitializeLog>>,
+                             tmpl::list<InitializeLog>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -177,7 +176,7 @@ struct NodegroupComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<Actions::SetupDataBox, InitializeLog>>,
+                             tmpl::list<InitializeLog>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<
@@ -199,7 +198,7 @@ struct SingletonComponent {
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<Actions::SetupDataBox, InitializeLog>>,
+                             tmpl::list<InitializeLog>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<MutateLog>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<CheckLog>>>;
   using initialization_tags = Parallel::get_initialization_tags<

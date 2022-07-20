@@ -63,8 +63,7 @@ namespace ScalarAdvection::subcell {
  * - Modifies: nothing
  *
  * \note This mutator is meant to be used with
- * `Initialization::Actions::AddSimpleTags` (which, in turn, uses
- * `Actions::SetupDataBox` aggregated initialization mechanism).
+ * `Initialization::Actions::AddSimpleTags`.
  */
 template <size_t Dim>
 struct VelocityAtFace {

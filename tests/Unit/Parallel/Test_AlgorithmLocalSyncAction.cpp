@@ -24,9 +24,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "ParallelAlgorithms/Actions/SetupDataBox.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
-#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -47,6 +45,7 @@ struct StepNumber : db::SimpleTag {
 };
 
 struct InitializeNodegroup {
+  using simple_tags = tmpl::list<StepNumber>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -56,14 +55,8 @@ struct InitializeNodegroup {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    if constexpr (not tmpl::list_contains_v<DbTagsList, StepNumber>) {
-      return std::make_tuple(
-          db::create_from<db::RemoveTags<>, db::AddSimpleTags<StepNumber>>(
-              std::move(box), 0_st),
-          true);
-    } else {
-      return std::make_tuple(std::move(box), true);
-    }
+    // default initialization of SimpleTag is fine
+    return std::make_tuple(std::move(box), true);
   }
 };
 

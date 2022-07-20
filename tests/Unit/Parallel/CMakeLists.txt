@@ -82,11 +82,6 @@ add_dependencies(
   module_Test_GlobalCache
   )
 
-add_algorithm_test(
-  "AlgorithmBadBoxApply"
-  REGEX_TO_MATCH
-  "Cannot call apply function of 'error_size_zero' with DataBox \
-type 'db::DataBox<brigand::list<")
 add_algorithm_test("AlgorithmCore")
 add_algorithm_test("AlgorithmLocalSyncAction")
 add_algorithm_test(

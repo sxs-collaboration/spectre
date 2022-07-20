@@ -87,10 +87,6 @@ namespace GeneralizedHarmonic::gauges::Actions {
  * - Removes: nothing
  * - Modifies:
  *   - `GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>`
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <size_t Dim, bool UseRollon>
 struct InitializeDampedHarmonic {

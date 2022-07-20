@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/SizeOfElement.hpp"
-#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -30,10 +29,6 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
-///
-/// \note This action relies on the `SetupDataBox` aggregated initialization
-/// mechanism, so `Actions::SetupDataBox` must be present in the
-/// `Initialization` phase action list prior to this action.
 template <size_t Dim>
 struct Minmod {
   using simple_tags = db::AddSimpleTags<>;

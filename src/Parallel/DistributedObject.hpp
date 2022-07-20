@@ -17,7 +17,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-#include <variant>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -37,7 +36,6 @@
 #include "Parallel/Printf.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/PupStlCpp17.hpp"
-#include "Parallel/SimpleActionVisitation.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -189,7 +187,17 @@ class DistributedObject<ParallelComponent,
       typename chare_type::template cbase<parallel_component, array_index>;
 
   using phase_dependent_action_lists = tmpl::list<PhaseDepActionListsPack...>;
-  using phases = phase_dependent_action_lists;
+
+  using inbox_type = tuples::tagged_tuple_from_typelist<inbox_tags_list>;
+  using all_cache_tags = get_const_global_cache_tags<metavariables>;
+  using databox_type = db::compute_databox_type<tmpl::flatten<tmpl::list<
+      Tags::MetavariablesImpl<metavariables>,
+      Tags::GlobalCacheProxy<metavariables>,
+      typename parallel_component::initialization_tags,
+      Tags::GlobalCacheImplCompute<metavariables>,
+      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>,
+      Algorithm_detail::action_list_simple_tags<parallel_component>,
+      Algorithm_detail::action_list_compute_tags<parallel_component>>>>;
 
   /// \cond
   // Needed for serialization
@@ -237,8 +245,7 @@ class DistributedObject<ParallelComponent,
   template <typename Action, typename Arg>
   void reduction_action(Arg arg);
 
-  /// \brief Explicitly call the action `Action`. If the returned DataBox type
-  /// is not one of the types of the algorithm then a compilation error occurs.
+  /// \brief Explicitly call the action `Action`.
   template <typename Action, typename... Args>
   void simple_action(std::tuple<Args...> args);
 
@@ -378,24 +385,6 @@ class DistributedObject<ParallelComponent,
   bool invoke_iterable_action();
 
  private:
-  template <typename ThisVariant, typename... Variants>
-  void touch_global_cache_proxy_in_databox_impl(
-      std::variant<Variants...>& box, const gsl::not_null<size_t*> iter,
-      const gsl::not_null<bool*> already_visited);
-
-  template <typename... Variants>
-  void touch_global_cache_proxy_in_databox(std::variant<Variants...>& box);
-
-  template <typename ThisVariant, typename... Variants, typename... Args>
-  void perform_registration_or_deregistration_impl(
-      PUP::er& p, const std::variant<Variants...>& box,
-      const gsl::not_null<size_t*> iter,
-      const gsl::not_null<bool*> already_visited);
-
-  template <typename... Variants, typename... Args>
-  void perform_registration_or_deregistration(
-      PUP::er& p, const std::variant<Variants...>& box);
-
   void set_array_index();
 
   template <typename PhaseDepActions, size_t... Is>
@@ -415,7 +404,6 @@ class DistributedObject<ParallelComponent,
   [[noreturn]] void initiate_shutdown(const std::exception& exception);
 
   // Member variables
-
 #ifdef SPECTRE_CHARM_PROJECTIONS
   double non_action_time_start_;
 #endif
@@ -432,34 +420,8 @@ class DistributedObject<ParallelComponent,
   bool terminate_{true};
   bool halt_algorithm_until_next_phase_{false};
 
-  using all_cache_tags = get_const_global_cache_tags<metavariables>;
-  using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
-      Tags::MetavariablesImpl<metavariables>,
-      Tags::GlobalCacheProxy<metavariables>,
-      typename ParallelComponent::initialization_tags,
-      Tags::GlobalCacheImplCompute<metavariables>,
-      db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>>;
-  // The types held by the std::variant, box_
-  using databox_phase_types = typename Algorithm_detail::build_databox_types<
-      tmpl::list<>, phase_dependent_action_lists, initial_databox,
-      inbox_tags_list, metavariables, array_index, ParallelComponent>::type;
-
-  template <typename T>
-  struct get_databox_types {
-    using type = typename T::databox_types;
-  };
-
-  // Make the DataBox types public so `Main` can print some info about it
- public:
-  using databox_types = tmpl::remove_duplicates<tmpl::flatten<
-      tmpl::transform<databox_phase_types, get_databox_types<tmpl::_1>>>>;
-
- private:
-  // Create a std::variant that can hold any of the DataBox's
-  using variant_boxes =
-      tmpl::push_front<databox_types, db::DataBox<tmpl::list<>>>;
-  tmpl::make_std_variant_over<variant_boxes> box_;
-  tuples::tagged_tuple_from_typelist<inbox_tags_list> inboxes_{};
+  databox_type box_;
+  inbox_type inboxes_{};
   array_index array_index_;
 };
 
@@ -521,7 +483,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       this->setMigratable(true);
     }
     global_cache_proxy_ = global_cache_proxy;
-    box_ = db::create<
+    auto temp_box = db::create<
         db::AddSimpleTags<tmpl::flatten<
             tmpl::list<Tags::MetavariablesImpl<metavariables>,
                        Tags::GlobalCacheProxy<metavariables>,
@@ -531,6 +493,11 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
             db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
         metavariables{}, global_cache_proxy_,
         std::move(get<InitializationTags>(initialization_items))...);
+    box_ = db::create_from<
+        tmpl::list<>,
+        Algorithm_detail::action_list_simple_tags<ParallelComponent>,
+        Algorithm_detail::action_list_compute_tags<ParallelComponent>>(
+        std::move(temp_box));
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }
@@ -574,13 +541,7 @@ DistributedObject<ParallelComponent,
      << pretty_type::get_name<phase_dependent_action_lists>() << ";\n";
   os << "using all_cache_tags = " << pretty_type::get_name<all_cache_tags>()
      << ";\n";
-  os << "using initial_databox = " << pretty_type::get_name<initial_databox>()
-     << ";\n";
-  os << "using databox_phase_types = "
-     << pretty_type::get_name<databox_phase_types>() << ";\n";
-  os << "using databox_types = " << pretty_type::get_name<databox_types>()
-     << ";\n";
-  os << "using variant_boxes = " << pretty_type::get_name<variant_boxes>()
+  os << "using databox_type = " << pretty_type::get_name<databox_type>()
      << ";\n";
   return os.str();
 }
@@ -650,7 +611,11 @@ void DistributedObject<
   // this call may not be well-defined until after components are finished
   // unpacking.)
   if (p.isUnpacking()) {
-    touch_global_cache_proxy_in_databox(box_);
+    db::mutate<Tags::GlobalCacheProxy<metavariables>>(
+        make_not_null(&box_),
+        [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
+          (void)proxy;
+        });
   }
   p | inboxes_;
   p | array_index_;
@@ -666,7 +631,28 @@ void DistributedObject<
   // hardware configuration (same number of nodes and same procs per node)
   // used when writing the checkpoint.
   if (phase_ == Parallel::Phase::LoadBalancing) {
-    perform_registration_or_deregistration(p, box_);
+    // The deregistration and registration below does not actually insert
+    // anything into the PUP::er stream, so nothing is done on a sizing pup.
+    if constexpr (Algorithm_detail::has_registration_list_v<
+                      metavariables, ParallelComponent>) {
+      using registration_list =
+          typename metavariables::template registration_list<
+              ParallelComponent>::type;
+      if (p.isPacking()) {
+        tmpl::for_each<registration_list>([this](auto registration_v) {
+          using registration = typename decltype(registration_v)::type;
+          registration::template perform_deregistration<ParallelComponent>(
+              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+        });
+      }
+      if (p.isUnpacking()) {
+        tmpl::for_each<registration_list>([this](auto registration_v) {
+          using registration = typename decltype(registration_v)::type;
+          registration::template perform_registration<ParallelComponent>(
+              box_, *Parallel::local_branch(global_cache_proxy_), array_index_);
+        });
+      }
+    }
   }
 }
 
@@ -752,7 +738,7 @@ void DistributedObject<
           "we do not allow.");
     }
     performing_action_ = true;
-    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+    Action::template apply<ParallelComponent>(
         box_, *Parallel::local_branch(global_cache_proxy_),
         static_cast<const array_index&>(array_index_));
     performing_action_ = false;
@@ -773,8 +759,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
   static_assert(Parallel::is_node_group_proxy<cproxy_type>::value,
                 "Cannot call a (blocking) local synchronous action on a "
                 "chare that is not a NodeGroup");
-  return Algorithm_detail::local_synchronous_action_visitor<Action,
-                                                            ParallelComponent>(
+  return Action::template apply<ParallelComponent>(
       box_, make_not_null(&node_lock_), std::forward<Args>(args)...);
 }
 
@@ -787,7 +772,7 @@ void DistributedObject<
     // NOLINTNEXTLINE(modernize-redundant-void-arg)
     (void)Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
                                                     Action>::registrar;
-    Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+    Action::template apply<ParallelComponent>(
         box_, *Parallel::local_branch(global_cache_proxy_),
         static_cast<const array_index&>(array_index_),
         make_not_null(&node_lock_));
@@ -922,97 +907,6 @@ void DistributedObject<ParallelComponent,
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <typename ThisVariant, typename... Variants>
-void DistributedObject<ParallelComponent,
-                       tmpl::list<PhaseDepActionListsPack...>>::
-    touch_global_cache_proxy_in_databox_impl(
-        std::variant<Variants...>& box, const gsl::not_null<size_t*> iter,
-        const gsl::not_null<bool*> already_visited) {
-  if constexpr (db::tag_is_retrievable_v<Tags::GlobalCacheProxy<metavariables>,
-                                         ThisVariant>) {
-    if (box.index() == *iter and not *already_visited) {
-      db::mutate<Tags::GlobalCacheProxy<metavariables>>(
-          make_not_null(&(std::get<ThisVariant>(box))),
-          [](const gsl::not_null<CProxy_GlobalCache<metavariables>*> proxy) {
-            (void)proxy;
-          });
-      *already_visited = true;
-    }
-  } else {
-    // silence warnings
-    (void)already_visited;
-  }
-  ++(*iter);
-}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <typename... Variants>
-void DistributedObject<ParallelComponent,
-                       tmpl::list<PhaseDepActionListsPack...>>::
-    touch_global_cache_proxy_in_databox(std::variant<Variants...>& box) {
-  size_t iter = 0;
-  bool already_visited = false;
-  EXPAND_PACK_LEFT_TO_RIGHT(touch_global_cache_proxy_in_databox_impl<Variants>(
-      box, &iter, &already_visited));
-}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <typename ThisVariant, typename... Variants, typename... Args>
-void DistributedObject<ParallelComponent,
-                       tmpl::list<PhaseDepActionListsPack...>>::
-    perform_registration_or_deregistration_impl(
-        PUP::er& p, const std::variant<Variants...>& box,
-        const gsl::not_null<size_t*> iter,
-        const gsl::not_null<bool*> already_visited) {
-  // void cast to avoid compiler warnings about the unused variable in the
-  // false branch of the constexpr
-  (void)already_visited;
-  if (box.index() == *iter and not *already_visited) {
-    // The deregistration and registration below does not actually insert
-    // anything into the PUP::er stream, so nothing is done on a sizing pup.
-    if constexpr (Algorithm_detail::has_registration_list_v<
-                      metavariables, ParallelComponent>) {
-      using registration_list =
-          typename metavariables::template registration_list<
-              ParallelComponent>::type;
-      if (p.isPacking()) {
-        tmpl::for_each<registration_list>(
-            [this, &box](auto registration_v) {
-              using registration = typename decltype(registration_v)::type;
-              registration::template perform_deregistration<ParallelComponent>(
-                  std::get<ThisVariant>(box),
-                  *Parallel::local_branch(global_cache_proxy_), array_index_);
-            });
-      }
-      if (p.isUnpacking()) {
-        tmpl::for_each<registration_list>(
-            [this, &box](auto registration_v) {
-              using registration = typename decltype(registration_v)::type;
-              registration::template perform_registration<ParallelComponent>(
-                  std::get<ThisVariant>(box),
-                  *Parallel::local_branch(global_cache_proxy_), array_index_);
-            });
-      }
-      *already_visited = true;
-    }
-  }
-  ++(*iter);
-}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <typename... Variants, typename... Args>
-void DistributedObject<ParallelComponent,
-                       tmpl::list<PhaseDepActionListsPack...>>::
-    perform_registration_or_deregistration(
-        PUP::er& p, const std::variant<Variants...>& box) {
-  size_t iter = 0;
-  bool already_visited = false;
-  EXPAND_PACK_LEFT_TO_RIGHT(
-      perform_registration_or_deregistration_impl<Variants>(p, box, &iter,
-                                                            &already_visited));
-}
-
-template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void DistributedObject<
     ParallelComponent,
     tmpl::list<PhaseDepActionListsPack...>>::set_array_index() {
@@ -1040,65 +934,31 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 
     constexpr size_t phase_index =
         tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
-    using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
-    using databox_types_this_phase = typename databox_phase_type::databox_types;
-
-    using potential_databox_indices = std::conditional_t<
-        iter == 0_st,
-        tmpl::integral_list<size_t, 0_st,
-                            tmpl::size<databox_types_this_phase>::value - 1_st>,
-        tmpl::integral_list<size_t, iter>>;
-    bool box_found = false;
-    tmpl::for_each<potential_databox_indices>(
-        [this, &box_found, &take_next_action](auto potential_databox_index_v) {
-          constexpr size_t potential_databox_index =
-              decltype(potential_databox_index_v)::type::value;
-          using this_databox =
-              tmpl::at_c<databox_types_this_phase, potential_databox_index>;
-          if (not box_found and
-              box_.index() ==
-                  tmpl::index_of<variant_boxes, this_databox>::value) {
-            box_found = true;
-            performing_action_ = true;
-            ++algorithm_step_;
-        // While the overhead from using the local entry method to enable
-        // profiling is fairly small (<2%), we still avoid it when we aren't
-        // tracing.
+    performing_action_ = true;
+    ++algorithm_step_;
+    // While the overhead from using the local entry method to enable
+    // profiling is fairly small (<2%), we still avoid it when we aren't
+    // tracing.
 #ifdef SPECTRE_CHARM_PROJECTIONS
-            if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
-              if (not this->thisProxy[array_index_]
-                          .template invoke_iterable_action<
-                              this_action,
-                              std::integral_constant<size_t, phase_index>,
-                              std::integral_constant<
-                                  size_t, potential_databox_index>>()) {
-                take_next_action = false;
-                --algorithm_step_;
-              }
-            } else {
-#endif  // SPECTRE_CHARM_PROJECTIONS
-              if (not invoke_iterable_action<
+    if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
+      if (not this->thisProxy[array_index_]
+                  .template invoke_iterable_action<
                       this_action, std::integral_constant<size_t, phase_index>,
-                      std::integral_constant<size_t,
-                                             potential_databox_index>>()) {
-                take_next_action = false;
-                --algorithm_step_;
-              }
-#ifdef SPECTRE_CHARM_PROJECTIONS
-            }
+                      std::integral_constant<size_t, iter>>()) {
+        take_next_action = false;
+        --algorithm_step_;
+      }
+    } else {
 #endif  // SPECTRE_CHARM_PROJECTIONS
-          }
-        });
-    if (not box_found) {
-      ERROR(
-          "The DataBox type being retrieved at algorithm step: "
-          << algorithm_step_ << " in phase " << phase_
-          << " corresponding to action " << pretty_type::get_name<this_action>()
-          << " is not the correct type but is of variant index " << box_.index()
-          << ". If you are using Goto and Label actions then you are using "
-             "them incorrectly.");
+      if (not invoke_iterable_action<
+              this_action, std::integral_constant<size_t, phase_index>,
+              std::integral_constant<size_t, iter>>()) {
+        take_next_action = false;
+        --algorithm_step_;
+      }
+#ifdef SPECTRE_CHARM_PROJECTIONS
     }
-
+#endif  // SPECTRE_CHARM_PROJECTIONS
     performing_action_ = false;
     // Wrap counter if necessary
     if (algorithm_step_ >= tmpl::size<actions_list>::value) {
@@ -1118,7 +978,7 @@ void DistributedObject<ParallelComponent,
                        tmpl::list<PhaseDepActionListsPack...>>::
     forward_tuple_to_action(std::tuple<Args...>&& args,
                             std::index_sequence<Is...> /*meta*/) {
-  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+  Action::template apply<ParallelComponent>(
       box_, *Parallel::local_branch(global_cache_proxy_),
       static_cast<const array_index&>(array_index_),
       std::forward<Args>(std::get<Is>(args))...);
@@ -1131,7 +991,7 @@ void DistributedObject<ParallelComponent,
     forward_tuple_to_threaded_action(std::tuple<Args...>&& args,
                                      std::index_sequence<Is...> /*meta*/) {
   const gsl::not_null<Parallel::NodeLock*> node_lock{&node_lock_};
-  Algorithm_detail::simple_action_visitor<Action, ParallelComponent>(
+  Action::template apply<ParallelComponent>(
       box_, *Parallel::local_branch(global_cache_proxy_),
       static_cast<const array_index&>(array_index_), node_lock,
       std::forward<Args>(std::get<Is>(args))...);
@@ -1159,9 +1019,6 @@ bool DistributedObject<
   using phase_dep_action =
       tmpl::at_c<phase_dependent_action_lists, PhaseIndex::value>;
   using actions_list = typename phase_dep_action::action_list;
-  using databox_phase_type = tmpl::at_c<databox_phase_types, PhaseIndex::value>;
-  using databox_types_this_phase = typename databox_phase_type::databox_types;
-  using DataBoxType = tmpl::at_c<databox_types_this_phase, DataBoxIndex::value>;
 
 #ifdef SPECTRE_CHARM_PROJECTIONS
   if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
@@ -1170,16 +1027,14 @@ bool DistributedObject<
   }
 #endif // SPECTRE_CHARM_PROJECTIONS
   static_assert(not Algorithm_detail::is_is_ready_callable_t<
-                    ThisAction, DataBoxType&,
+                    ThisAction, databox_type&,
                     tuples::tagged_tuple_from_typelist<inbox_tags_list>&,
                     Parallel::GlobalCache<metavariables>&, array_index>{},
                 "Actions no longer support is_ready methods.  Instead, "
                 "return AlgorithmExecution::Retry from apply().");
 
-  DataBoxType& my_box = std::get<DataBoxType>(box_);
-
   auto action_return = ThisAction::apply(
-      my_box, inboxes_, *Parallel::local_branch(global_cache_proxy_),
+      box_, inboxes_, *Parallel::local_branch(global_cache_proxy_),
       std::as_const(array_index_), actions_list{},
       std::add_pointer_t<ParallelComponent>{});
 

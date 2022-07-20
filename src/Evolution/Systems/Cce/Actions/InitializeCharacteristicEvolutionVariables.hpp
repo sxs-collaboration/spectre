@@ -64,10 +64,6 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
  *  - `Spectral::Swsh::Tags::SwshInterpolator< Tags::CauchyAngularCoords>`
  *  - `Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>`
  * - Removes: nothing
- *
- * \note This action relies on the `SetupDataBox` aggregated initialization
- * mechanism, so `Actions::SetupDataBox` must be present in the `Initialization`
- * phase action list prior to this action.
  */
 template <typename Metavariables>
 struct InitializeCharacteristicEvolutionVariables {

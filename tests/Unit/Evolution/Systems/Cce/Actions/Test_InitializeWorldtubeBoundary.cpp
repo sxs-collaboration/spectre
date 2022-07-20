@@ -41,8 +41,7 @@ namespace {
 template <typename Metavariables>
 struct mock_analytic_worldtube_boundary {
   using initialize_action_list =
-      tmpl::list<::Actions::SetupDataBox,
-                 Actions::InitializeWorldtubeBoundary<
+      tmpl::list<Actions::InitializeWorldtubeBoundary<
                      AnalyticWorldtubeBoundary<Metavariables>>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
