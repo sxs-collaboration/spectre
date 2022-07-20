@@ -34,6 +34,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeSignalingNan.hpp"
 #include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -300,6 +301,68 @@ class Variables<tmpl::list<Tags...>> {
       get<tag>(sub_vars) = get<tag>(*this);
     });
     return sub_vars;
+  }
+
+  /// Create a non-owning Variables referencing a subset of the
+  /// `Tensor`s in this Variables.  The referenced tensors must be
+  /// consecutive in this Variables's tags list.
+  ///
+  /// \warning As with other appearances of non-owning variables, this
+  /// method can cast away constness.
+  template <typename SubsetOfTags>
+  Variables<SubsetOfTags> reference_subset() const {
+    if constexpr (std::is_same_v<SubsetOfTags, tmpl::list<>>) {
+      return {};
+    } else {
+      using subset_from_tags_list = tmpl::reverse_find<
+          tmpl::find<
+              tags_list,
+              std::is_same<tmpl::_1, tmpl::pin<tmpl::front<SubsetOfTags>>>>,
+          std::is_same<tmpl::_1, tmpl::pin<tmpl::back<SubsetOfTags>>>>;
+      static_assert(std::is_same_v<subset_from_tags_list, SubsetOfTags>,
+                    "Tags passed to reference_subset must be consecutive tags "
+                    "in the original tags_list.");
+
+      using preceeding_tags = tmpl::pop_back<tmpl::reverse_find<
+          tags_list,
+          std::is_same<tmpl::_1, tmpl::pin<tmpl::front<SubsetOfTags>>>>>;
+
+      static constexpr auto count_components = [](auto... tags) {
+        return (0_st + ... + tmpl::type_from<decltype(tags)>::type::size());
+      };
+      static constexpr size_t number_of_preceeding_components =
+          tmpl::as_pack<preceeding_tags>(count_components);
+      static constexpr size_t number_of_components_in_subset =
+          tmpl::as_pack<SubsetOfTags>(count_components);
+
+      return {const_cast<value_type*>(data()) +
+                  number_of_grid_points() * number_of_preceeding_components,
+              number_of_grid_points() * number_of_components_in_subset};
+    }
+  }
+
+  /// Create a non-owning version of this Variables with different
+  /// prefixes on the tensors.  Both sets of prefixes must have the
+  /// same tensor types.
+  ///
+  /// \warning As with other appearances of non-owning variables, this
+  /// method can cast away constness.
+  template <typename WrappedVariables>
+  WrappedVariables reference_with_different_prefixes() const {
+    static_assert(
+        tmpl::all<tmpl::transform<
+            typename WrappedVariables::tags_list, tmpl::list<Tags...>,
+            std::is_same<tmpl::bind<db::remove_all_prefixes, tmpl::_1>,
+                         tmpl::bind<db::remove_all_prefixes, tmpl::_2>>>>::
+            value,
+        "Unprefixed tags do not match!");
+    static_assert(
+        tmpl::all<tmpl::transform<
+            typename WrappedVariables::tags_list, tmpl::list<Tags...>,
+            std::is_same<tmpl::bind<tmpl::type_from, tmpl::_1>,
+                         tmpl::bind<tmpl::type_from, tmpl::_2>>>>::value,
+        "Tensor types do not match!");
+    return {const_cast<value_type*>(data()), size()};
   }
 
   /// Converting constructor for an expression to a Variables class
