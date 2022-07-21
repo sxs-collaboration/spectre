@@ -302,18 +302,6 @@ void run_group_actions(
   check_output<Component>(*runner, time, static_cast<size_t>(num_nodes), sizes);
 }
 
-void test_wrong_box() {
-  CHECK_THROWS_WITH(
-      ([]() {
-        db::DataBox<tmpl::list<>> empty_box{};
-        Parallel::GlobalCache<metavars> cache{};
-
-        mem_monitor::ContributeMemoryData<group_comp<metavars>>::template apply<
-            mem_mon_comp<metavars>>(empty_box, cache, 0, 0.0, 0_st, 0.0);
-      }()),
-      Catch::Contains("Expected the DataBox for the MemoryMonitor"));
-}
-
 // Contribute memory data can only be used with groups or nodegroups
 template <typename Gen>
 void test_contribute_memory_data(const gsl::not_null<Gen*> gen,
@@ -669,7 +657,6 @@ void test_monitor_memory_event() {
 SPECTRE_TEST_CASE("Unit.Parallel.MemoryMonitor", "[Unit][Parallel]") {
   MAKE_GENERATOR(gen);
   test_tags();
-  test_wrong_box();
   // First only test the ContributeMemoryData action (second arg false)
   test_contribute_memory_data(make_not_null(&gen), false);
   // Then test the Process(Node)Group actions (second arg true)

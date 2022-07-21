@@ -33,11 +33,8 @@ struct SetData;
 /// \cond
 template <typename... Tags>
 struct SetData<tmpl::list<Tags...>> {
-  template <
-      typename ParallelComponent, typename DataBox, typename Metavariables,
-      typename ArrayIndex,
-      Requires<std::conjunction_v<db::tag_is_retrievable<Tags, DataBox>...>> =
-          nullptr>
+  template <typename ParallelComponent, typename DataBox,
+            typename Metavariables, typename ArrayIndex>
   static void apply(DataBox& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,

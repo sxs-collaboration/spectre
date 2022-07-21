@@ -41,10 +41,8 @@ namespace Actions {
 ///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 template <typename TemporalId>
 struct InterpolatorReceiveVolumeData {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, size_t VolumeDim,
-      Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, size_t VolumeDim>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,

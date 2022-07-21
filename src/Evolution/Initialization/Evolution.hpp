@@ -106,21 +106,8 @@ struct TimeAndTimeStep {
                       ::Tags::Next<::Tags::TimeStep>>;
   using compute_tags = tmpl::list<>;
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::mutable_item_tags,
-                   Initialization::Tags::InitialTime> and
-
-               tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::mutable_item_tags,
-                   Initialization::Tags::InitialTimeDelta> and
-
-               tmpl::list_contains_v<
-                   typename db::DataBox<DbTagsList>::mutable_item_tags,
-                   Tags::InitialSlabSize<Metavariables::local_time_stepping>>> =
-          nullptr>
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -160,35 +147,6 @@ struct TimeAndTimeStep {
         initial_dt, initial_dt);
     return std::make_tuple(std::move(box));
   }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<
-          not(tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::mutable_item_tags,
-                  Initialization::Tags::InitialTime> and
-
-              tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::mutable_item_tags,
-                  Initialization::Tags::InitialTimeDelta> and
-
-              tmpl::list_contains_v<
-                  typename db::DataBox<DbTagsList>::mutable_item_tags,
-                  Tags::InitialSlabSize<Metavariables::local_time_stepping>>)> =
-          nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialTime', "
-        "'Initialization::Tags::InitialTimeDelta', or "
-        "'Tags::InitialSlabSize<Metavariables::local_time_stepping>' in "
-        "DataBox.");
-  }
 };
 
 /// \ingroup InitializationGroup
@@ -219,14 +177,7 @@ struct TimeStepperHistory {
   using compute_tags = db::AddComputeTags<>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                         typename db::DataBox<DbTagsList>::mutable_item_tags,
-                         domain::Tags::Mesh<dim>> and
-
-                     tmpl::list_contains_v<
-                         typename db::DataBox<DbTagsList>::mutable_item_tags,
-                         variables_tag>> = nullptr>
+            typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -256,27 +207,6 @@ struct TimeStepperHistory {
         std::move(error_vars), false);
 
     return std::make_tuple(std::move(box));
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<not(tmpl::list_contains_v<
-                       typename db::DataBox<DbTagsList>::mutable_item_tags,
-                       domain::Tags::Mesh<dim>> and
-
-                   tmpl::list_contains_v<
-                       typename db::DataBox<DbTagsList>::mutable_item_tags,
-                       variables_tag>)> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    ERROR(
-        "Could not find dependency '::Tags::Mesh<dim>' or "
-        "'Metavariables::system::variables_tag' in DataBox.");
   }
 };
 }  // namespace Actions

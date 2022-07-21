@@ -59,10 +59,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct CleanUpInterpolator {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
   static void apply(
       db::DataBox<DbTags>& box,  // HorizonManager's box
       const Parallel::GlobalCache<Metavariables>& /*cache*/,

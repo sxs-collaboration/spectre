@@ -63,11 +63,8 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetVarsFromElement {
   /// For requirements on Metavariables, see InterpolationTarget
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, typename TemporalId,
-      Requires<tmpl::list_contains_v<DbTags, Tags::TemporalIds<TemporalId>>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, typename TemporalId>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,

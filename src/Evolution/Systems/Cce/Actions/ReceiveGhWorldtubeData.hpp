@@ -59,35 +59,26 @@ struct ReceiveGhWorldtubeData {
                     const tnsr::aa<DataVector, 3>& spacetime_metric,
                     const tnsr::iaa<DataVector, 3>& phi,
                     const tnsr::aa<DataVector, 3>& pi) {
-    if constexpr (not tmpl::list_contains_v<tmpl::list<DbTags...>,
-                                            Tags::GhInterfaceManager>) {
-      (void)time;
-      (void)spacetime_metric;
-      (void)phi;
-      (void)pi;
-      ERROR("Required tag: Tags::GhInterfaceManager is missing.");
+    auto insert_gh_data_to_interface_manager =
+        [&spacetime_metric, &phi, &pi, &time,
+         &cache](const auto interface_manager) {
+          interface_manager->insert_gh_data(time, spacetime_metric, phi, pi);
+          const auto gh_data =
+              interface_manager->retrieve_and_remove_first_ready_gh_data();
+          if (static_cast<bool>(gh_data)) {
+            Parallel::simple_action<Actions::SendToEvolution<
+                GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
+                Parallel::get_parallel_component<
+                    GhWorldtubeBoundary<Metavariables>>(cache),
+                get<0>(*gh_data), get<1>(*gh_data));
+          }
+        };
+    if constexpr (DuringSelfStart) {
+      db::mutate<Tags::SelfStartGhInterfaceManager>(
+          make_not_null(&box), insert_gh_data_to_interface_manager);
     } else {
-      auto insert_gh_data_to_interface_manager =
-          [&spacetime_metric, &phi, &pi, &time,
-           &cache](const auto interface_manager) {
-            interface_manager->insert_gh_data(time, spacetime_metric, phi, pi);
-            const auto gh_data =
-                interface_manager->retrieve_and_remove_first_ready_gh_data();
-            if (static_cast<bool>(gh_data)) {
-              Parallel::simple_action<Actions::SendToEvolution<
-                  GhWorldtubeBoundary<Metavariables>, EvolutionComponent>>(
-                  Parallel::get_parallel_component<
-                      GhWorldtubeBoundary<Metavariables>>(cache),
-                  get<0>(*gh_data), get<1>(*gh_data));
-            }
-          };
-      if constexpr (DuringSelfStart) {
-        db::mutate<Tags::SelfStartGhInterfaceManager>(
-            make_not_null(&box), insert_gh_data_to_interface_manager);
-      } else {
-        db::mutate<Tags::GhInterfaceManager>(
-            make_not_null(&box), insert_gh_data_to_interface_manager);
-      }
+      db::mutate<Tags::GhInterfaceManager>(make_not_null(&box),
+                                           insert_gh_data_to_interface_manager);
     }
   }
 };

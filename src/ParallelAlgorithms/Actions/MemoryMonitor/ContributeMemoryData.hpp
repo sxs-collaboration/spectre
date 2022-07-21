@@ -65,119 +65,105 @@ struct ContributeMemoryData {
                   Parallel::is_nodegroup_v<ContributingComponent>);
 
     using tag = Tags::MemoryHolder;
-    if constexpr (db::tag_is_retrievable_v<tag, db::DataBox<DbTags>>) {
-      db::mutate<tag>(
-          make_not_null(&box),
-          [&cache, &time, &node_or_proc, &size_in_megabytes](
-              const gsl::not_null<std::unordered_map<
-                  std::string,
-                  std::unordered_map<double, std::unordered_map<int, double>>>*>
-                  memory_holder_all) {
-            auto memory_holder_pair = memory_holder_all->try_emplace(
-                pretty_type::name<ContributingComponent>());
-            auto& memory_holder = (*memory_holder_pair.first).second;
+    db::mutate<tag>(
+        make_not_null(&box),
+        [&cache, &time, &node_or_proc, &size_in_megabytes](
+            const gsl::not_null<std::unordered_map<
+                std::string,
+                std::unordered_map<double, std::unordered_map<int, double>>>*>
+                memory_holder_all) {
+          auto memory_holder_pair = memory_holder_all->try_emplace(
+              pretty_type::name<ContributingComponent>());
+          auto& memory_holder = (*memory_holder_pair.first).second;
 
-            memory_holder.try_emplace(time);
-            memory_holder.at(time)[node_or_proc] = size_in_megabytes;
+          memory_holder.try_emplace(time);
+          memory_holder.at(time)[node_or_proc] = size_in_megabytes;
 
-            // If we have received data for every node/proc at a given
-            // time, get all the data, write it to disk, then remove the current
-            // time from the stored times as it's no longer needed
+          // If we have received data for every node/proc at a given
+          // time, get all the data, write it to disk, then remove the current
+          // time from the stored times as it's no longer needed
 
-            auto& mem_monitor_proxy =
-                Parallel::get_parallel_component<MemoryMonitor<Metavariables>>(
-                    cache);
+          auto& mem_monitor_proxy =
+              Parallel::get_parallel_component<MemoryMonitor<Metavariables>>(
+                  cache);
 
-            constexpr bool is_group =
-                Parallel::is_group_v<ContributingComponent>;
+          constexpr bool is_group = Parallel::is_group_v<ContributingComponent>;
 
-            const size_t num_nodes = Parallel::number_of_nodes<size_t>(
-                *Parallel::local(mem_monitor_proxy));
-            const size_t num_procs = Parallel::number_of_procs<size_t>(
-                *Parallel::local(mem_monitor_proxy));
-            const size_t expected_number = is_group ? num_procs : num_nodes;
-            ASSERT(memory_holder.at(time).size() <= expected_number,
-                   "ContributeMemoryData received more data than it was "
-                   "expecting. Was expecting "
-                       << expected_number << " calls but instead got "
-                       << memory_holder.at(time).size());
-            if (memory_holder.at(time).size() == expected_number) {
-              // First column is always time
-              std::vector<double> data_to_append{time};
-              std::vector<std::string> legend{{"Time"}};
+          const size_t num_nodes = Parallel::number_of_nodes<size_t>(
+              *Parallel::local(mem_monitor_proxy));
+          const size_t num_procs = Parallel::number_of_procs<size_t>(
+              *Parallel::local(mem_monitor_proxy));
+          const size_t expected_number = is_group ? num_procs : num_nodes;
+          ASSERT(memory_holder.at(time).size() <= expected_number,
+                 "ContributeMemoryData received more data than it was "
+                 "expecting. Was expecting "
+                     << expected_number << " calls but instead got "
+                     << memory_holder.at(time).size());
+          if (memory_holder.at(time).size() == expected_number) {
+            // First column is always time
+            std::vector<double> data_to_append{time};
+            std::vector<std::string> legend{{"Time"}};
 
-              // Append a column for each node, and keep track of cumulative
-              // total. If we have proc data (from groups) do an additional loop
-              // over the procs to get the total on that node and get the proc
-              // of the maximum memory usage
-              double avg_size_per_node = 0.0;
-              double max_usage_on_proc = -std::numeric_limits<double>::max();
-              int proc_of_max = 0;
-              for (size_t node = 0; node < num_nodes; node++) {
-                double size_on_node = 0.0;
-                if (not is_group) {
-                  size_on_node = memory_holder.at(time).at(node);
-                } else {
-                  const int first_proc = Parallel::first_proc_on_node<int>(
-                      node, *Parallel::local(mem_monitor_proxy));
-                  const int procs_on_node = Parallel::procs_on_node<int>(
-                      node, *Parallel::local(mem_monitor_proxy));
-                  const int last_proc = first_proc + procs_on_node;
-                  for (int proc = first_proc; proc < last_proc; proc++) {
-                    size_on_node += memory_holder.at(time).at(proc);
-                    if (memory_holder.at(time).at(proc) > max_usage_on_proc) {
-                      max_usage_on_proc = memory_holder.at(time).at(proc);
-                      proc_of_max = proc;
-                    }
+            // Append a column for each node, and keep track of cumulative
+            // total. If we have proc data (from groups) do an additional loop
+            // over the procs to get the total on that node and get the proc
+            // of the maximum memory usage
+            double avg_size_per_node = 0.0;
+            double max_usage_on_proc = -std::numeric_limits<double>::max();
+            int proc_of_max = 0;
+            for (size_t node = 0; node < num_nodes; node++) {
+              double size_on_node = 0.0;
+              if (not is_group) {
+                size_on_node = memory_holder.at(time).at(node);
+              } else {
+                const int first_proc = Parallel::first_proc_on_node<int>(
+                    node, *Parallel::local(mem_monitor_proxy));
+                const int procs_on_node = Parallel::procs_on_node<int>(
+                    node, *Parallel::local(mem_monitor_proxy));
+                const int last_proc = first_proc + procs_on_node;
+                for (int proc = first_proc; proc < last_proc; proc++) {
+                  size_on_node += memory_holder.at(time).at(proc);
+                  if (memory_holder.at(time).at(proc) > max_usage_on_proc) {
+                    max_usage_on_proc = memory_holder.at(time).at(proc);
+                    proc_of_max = proc;
                   }
                 }
-
-                data_to_append.push_back(size_on_node);
-                avg_size_per_node += size_on_node;
-                legend.emplace_back("Size on node " + get_output(node) +
-                                    " (MB)");
               }
 
-              // If we have proc data, write the proc with the maximum usage to
-              // disk along with how much memory it's using
-              if (is_group) {
-                data_to_append.push_back(static_cast<double>(proc_of_max));
-                data_to_append.push_back(max_usage_on_proc);
-                legend.emplace_back("Proc of max size");
-                legend.emplace_back("Size on proc of max size (MB)");
-              }
-
-              avg_size_per_node /= static_cast<double>(num_nodes);
-
-              // Last column is average over all nodes
-              data_to_append.push_back(avg_size_per_node);
-              legend.emplace_back("Average size per node (MB)");
-
-              auto& observer_writer_proxy = Parallel::get_parallel_component<
-                  observers::ObserverWriter<Metavariables>>(cache);
-
-              Parallel::threaded_action<
-                  observers::ThreadedActions::WriteReductionDataRow>(
-                  // Node 0 is always the writer
-                  observer_writer_proxy[0],
-                  subfile_name<ContributingComponent>(), legend,
-                  std::make_tuple(data_to_append));
-
-              // Clean up finished time
-              auto finished_time_iter = memory_holder.find(time);
-              memory_holder.erase(finished_time_iter);
+              data_to_append.push_back(size_on_node);
+              avg_size_per_node += size_on_node;
+              legend.emplace_back("Size on node " + get_output(node) + " (MB)");
             }
-          });
-    } else {
-      (void)box;
-      (void)cache;
-      (void)time;
-      (void)node_or_proc;
-      (void)size_in_megabytes;
-      ERROR(
-          "Wrong DataBox. Expected the DataBox for the MemoryMonitor which has "
-          "the mem_monitor::Tags::MemoryHolder tag.");
-    }
+
+            // If we have proc data, write the proc with the maximum usage to
+            // disk along with how much memory it's using
+            if (is_group) {
+              data_to_append.push_back(static_cast<double>(proc_of_max));
+              data_to_append.push_back(max_usage_on_proc);
+              legend.emplace_back("Proc of max size");
+              legend.emplace_back("Size on proc of max size (MB)");
+            }
+
+            avg_size_per_node /= static_cast<double>(num_nodes);
+
+            // Last column is average over all nodes
+            data_to_append.push_back(avg_size_per_node);
+            legend.emplace_back("Average size per node (MB)");
+
+            auto& observer_writer_proxy = Parallel::get_parallel_component<
+                observers::ObserverWriter<Metavariables>>(cache);
+
+            Parallel::threaded_action<
+                observers::ThreadedActions::WriteReductionDataRow>(
+                // Node 0 is always the writer
+                observer_writer_proxy[0], subfile_name<ContributingComponent>(),
+                legend, std::make_tuple(data_to_append));
+
+            // Clean up finished time
+            auto finished_time_iter = memory_holder.find(time);
+            memory_holder.erase(finished_time_iter);
+          }
+        });
   }
 };
 }  // namespace mem_monitor

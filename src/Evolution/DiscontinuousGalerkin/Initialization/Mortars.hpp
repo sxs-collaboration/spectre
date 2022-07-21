@@ -113,39 +113,30 @@ struct Mortars {
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) {
-    if constexpr (db::tag_is_retrievable_v<::domain::Tags::InitialExtents<Dim>,
-                                           db::DataBox<DbTagsList>>) {
-      auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,
-            normal_covector_quantities] =
-          detail::mortars_apply_impl(
-              db::get<::domain::Tags::InitialExtents<Dim>>(box),
-              db::get<evolution::dg::Tags::Quadrature>(box),
-              db::get<::domain::Tags::Element<Dim>>(box),
-              db::get<::Tags::Next<::Tags::TimeStepId>>(box),
-              db::get<::domain::Tags::Mesh<Dim>>(box));
-      typename Tags::MortarDataHistory<
-          Dim, typename db::add_tag_prefix<
-                   ::Tags::dt, typename System::variables_tag>::type>::type
-          boundary_data_history{};
-      if (Metavariables::local_time_stepping) {
-        for (const auto& mortar_id_and_data : mortar_data) {
-          // default initialize data
-          boundary_data_history[mortar_id_and_data.first];
-        }
+    auto [mortar_data, mortar_meshes, mortar_sizes, mortar_next_temporal_ids,
+          normal_covector_quantities] =
+        detail::mortars_apply_impl(
+            db::get<::domain::Tags::InitialExtents<Dim>>(box),
+            db::get<evolution::dg::Tags::Quadrature>(box),
+            db::get<::domain::Tags::Element<Dim>>(box),
+            db::get<::Tags::Next<::Tags::TimeStepId>>(box),
+            db::get<::domain::Tags::Mesh<Dim>>(box));
+    typename Tags::MortarDataHistory<
+        Dim, typename db::add_tag_prefix<
+                 ::Tags::dt, typename System::variables_tag>::type>::type
+        boundary_data_history{};
+    if (Metavariables::local_time_stepping) {
+      for (const auto& mortar_id_and_data : mortar_data) {
+        // default initialize data
+        boundary_data_history[mortar_id_and_data.first];
       }
-      ::Initialization::mutate_assign<simple_tags>(
-          make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
-          std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
-          std::move(normal_covector_quantities),
-          std::move(boundary_data_history));
-      return std::make_tuple(std::move(box));
-    } else {
-      ERROR(
-          "Missing a tag in the DataBox. Did you forget to terminate the "
-          "phase after removing options? The missing tag is "
-          "'domain::Tags::InitialExtents<Dim>'.");
-      return std::forward_as_tuple(std::move(box));
     }
+    ::Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), std::move(mortar_data), std::move(mortar_meshes),
+        std::move(mortar_sizes), std::move(mortar_next_temporal_ids),
+        std::move(normal_covector_quantities),
+        std::move(boundary_data_history));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace evolution::dg::Initialization

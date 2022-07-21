@@ -31,10 +31,8 @@ namespace ThreadedActions {
  * appending `data_row` to the end of the dat.
  */
 struct WriteSimpleData {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>> = nullptr>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,

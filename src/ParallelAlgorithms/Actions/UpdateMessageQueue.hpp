@@ -40,22 +40,12 @@ struct UpdateMessageQueue {
       const LinkedMessageId<typename LinkedMessageQueueTag::type::IdType>&
           id_and_previous,
       typename QueueTag::type message) {
-    if constexpr (db::tag_is_retrievable_v<LinkedMessageQueueTag,
-                                           db::DataBox<DbTags>>) {
-      auto& queue =
-          db::get_mutable_reference<LinkedMessageQueueTag>(make_not_null(&box));
-      queue.template insert<QueueTag>(id_and_previous, std::move(message));
-      while (auto id = queue.next_ready_id()) {
-        Processor::apply(make_not_null(&box), cache, array_index, *id,
-                         queue.extract());
-      }
-    } else {
-      (void)box;
-      (void)cache;
-      (void)array_index;
-      (void)id_and_previous;
-      (void)message;
-      ERROR("LinkedMessageQueueTag not found in DataBox");  // LCOV_EXCL_LINE
+    auto& queue =
+        db::get_mutable_reference<LinkedMessageQueueTag>(make_not_null(&box));
+    queue.template insert<QueueTag>(id_and_previous, std::move(message));
+    while (auto id = queue.next_ready_id()) {
+      Processor::apply(make_not_null(&box), cache, array_index, *id,
+                       queue.extract());
     }
   }
 };

@@ -74,19 +74,13 @@ struct InitializeWorldtubeBoundaryBase {
         }
       }
     }
-    if constexpr (tmpl::list_contains_v<DataBoxTagsList,
-                                        tmpl::front<ManagerTags>>) {
-      const size_t l_max = db::get<Tags::LMax>(box);
-      Variables<BoundaryCommunicationTagsList> boundary_variables{
-          Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+    const size_t l_max = db::get<Tags::LMax>(box);
+    Variables<BoundaryCommunicationTagsList> boundary_variables{
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
 
-      Initialization::mutate_assign<simple_tags>(make_not_null(&box),
-                                                 std::move(boundary_variables));
-      return std::make_tuple(std::move(box));
-    } else {
-      ERROR(MakeString{} << "Missing required boundary manager tag : "
-            << db::tag_name<tmpl::front<ManagerTags>>);
-    }
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box),
+                                               std::move(boundary_variables));
+    return std::make_tuple(std::move(box));
   }
 };
 }  // namespace detail

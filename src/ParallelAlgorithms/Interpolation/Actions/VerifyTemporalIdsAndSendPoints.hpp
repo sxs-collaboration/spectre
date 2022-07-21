@@ -223,10 +223,7 @@ void verify_temporal_ids_and_send_points_time_dependent(
 template <typename InterpolationTargetTag>
 struct VerifyTemporalIdsAndSendPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::TemporalIds<typename InterpolationTargetTag::
-                                              temporal_id::type>>> = nullptr>
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
