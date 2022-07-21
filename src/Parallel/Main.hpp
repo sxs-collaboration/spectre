@@ -12,11 +12,13 @@
 #include <initializer_list>
 #include <pup.h>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <type_traits>
 
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Tags.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/CreateFromOptions.hpp"
@@ -304,8 +306,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         [](auto mv, int /*gcc_bug*/)
             -> decltype(tmpl::type_from<decltype(mv)>::
                             ignore_unrecognized_command_line_options) {
-          return tmpl::type_from<decltype(
-              mv)>::ignore_unrecognized_command_line_options;
+          return tmpl::type_from<
+              decltype(mv)>::ignore_unrecognized_command_line_options;
         },
         [](auto /*mv*/, auto... /*meta*/) { return false; }}(
         tmpl::type_<Metavariables>{}, 0);
@@ -321,7 +323,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     bpo::store(command_line_parser.run(), parsed_command_line_options);
     bpo::notify(parsed_command_line_options);
 
-    Options::Parser<option_list> options(Metavariables::help);
+    Options::Parser<tmpl::remove<option_list, Options::Tags::InputSource>>
+        options(Metavariables::help);
 
     if (parsed_command_line_options.count("help") != 0) {
       Parallel::printf("%s\n%s", command_line_options, options.help());

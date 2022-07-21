@@ -12,6 +12,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
+#include "IO/H5/Helpers.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/SourceArchive.hpp"  // IWYU pragma: keep
 #include "IO/H5/Wrappers.hpp"
@@ -21,7 +22,8 @@
 
 namespace h5 {
 template <AccessType Access_t>
-H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
+H5File<Access_t>::H5File(std::string file_name, bool append_to_file,
+                         const std::string& input_source)
     : file_name_(std::move(file_name)) {
   if (file_name_.size() - 3 != file_name_.find(".h5")) {
     ERROR("All HDF5 file names must end in '.h5'. The path and file name '"
@@ -63,6 +65,8 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
     insert_header();
     close_current_object();
     insert_source_archive();
+    write_to_attribute<std::string>(file_id_, "InputSource.yaml"s,
+                                    {{input_source}});
   }
   close_current_object();
 }
@@ -115,6 +119,10 @@ H5File<Access_t>::~H5File() {
       sys::abort("");
     }
   }
+}
+template <AccessType Access_t>
+std::string H5File<Access_t>::input_source() const {
+  return h5::read_value_attribute<std::string>(file_id_, "InputSource.yaml"s);
 }
 
 template <>

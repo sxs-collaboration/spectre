@@ -14,6 +14,7 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -161,6 +162,7 @@ struct ContributeVolumeData {
 namespace ThreadedActions {
 namespace VolumeActions_detail {
 void write_data(const std::string& h5_file_name,
+                const std::string& input_source,
                 const std::string& subfile_path,
                 const observers::ObservationId& observation_id,
                 std::vector<ElementVolumeData>&& volume_data);
@@ -315,7 +317,7 @@ struct ContributeVolumeDataToWriter {
                   std::to_string(Parallel::my_node<int>(
                       *Parallel::local_branch(my_proxy))) +
                   ".h5",
-              true);
+              true, observers::input_source_from_cache(cache));
           constexpr size_t version_number = 0;
           auto& volume_file =
               h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
@@ -370,7 +372,7 @@ struct WriteVolumeData {
       typename DataBox = db::DataBox<DbTagsList>,
       Requires<db::tag_is_retrievable_v<Tags::H5FileLock, DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
                     const std::string& h5_file_name,
@@ -380,8 +382,9 @@ struct WriteVolumeData {
     auto& volume_file_lock =
         db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
     volume_file_lock.lock();
-    VolumeActions_detail::write_data(h5_file_name, subfile_path, observation_id,
-                                     std::move(volume_data));
+    VolumeActions_detail::write_data(
+        h5_file_name, observers::input_source_from_cache(cache), subfile_path,
+        observation_id, std::move(volume_data));
     volume_file_lock.unlock();
   }
 };

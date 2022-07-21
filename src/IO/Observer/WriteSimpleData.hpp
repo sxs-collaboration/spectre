@@ -9,6 +9,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -61,7 +62,7 @@ struct WriteSimpleData {
               std::to_string(
                   Parallel::my_node<int>(*Parallel::local_branch(my_proxy))) +
               ".h5",
-          true);
+          true, observers::input_source_from_cache(cache));
       const size_t version_number = 0;
       auto& output_dataset =
           h5file.try_insert<h5::Dat>(subfile_name, file_legend, version_number);

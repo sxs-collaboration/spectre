@@ -9,6 +9,7 @@
 #include <numeric>
 #include <ostream>
 #include <string>
+#include <type_traits>
 
 #include "DataStructures/BoostMultiArray.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -303,8 +304,16 @@ Type read_value_attribute(const hid_t location_id, const std::string& name) {
   const hid_t attribute_id = H5Aopen(location_id, name.c_str(), h5p_default());
   CHECK_H5(attribute_id, "Failed to open attribute '" << name << "'");
   Type value;
-  CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value),
-           "Failed to read attribute '" << name << "'");
+  if constexpr (std::is_same_v<Type, std::string>) {
+    char* value_c = nullptr;
+    CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value_c),
+             "Failed to read attribute '" << name << "'");
+    value = std::string{value_c};
+    H5free_memory(value_c);
+  } else {
+    CHECK_H5(H5Aread(attribute_id, h5_type<Type>(), &value),
+             "Failed to read attribute '" << name << "'");
+  }
   CHECK_H5(H5Aclose(attribute_id),
            "Failed to close attribute '" << name << "'");
   return value;
@@ -606,6 +615,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
                         (double, unsigned int, unsigned long, int))
+
+template std::string read_value_attribute<std::string>(const hid_t location_id,
+                                                       const std::string& name);
 
 #define INSTANTIATE_READ_SCALAR(_, DATA)                 \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \

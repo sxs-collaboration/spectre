@@ -39,17 +39,32 @@ void test_core_functionality() {
     file_system::rm(h5_file_name, true);
   }
   // [h5file_readwrite_get_header]
-  h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name);
+  std::string input_source_yaml{"TestOption: 4\n\nOtherOption: 5\n\n"};
+  // Add a giant set of comments to the h5 file, to test that we can
+  // read and write very long yaml files to H5 attributes
+  input_source_yaml += "# "s;
+  for (size_t i = 0; i < 1000000; ++i) {
+    input_source_yaml += "abcdefghij"s;
+    // Output lines < 80 chars, as in an actual yaml input file
+    if (i % 7 == 0) {
+      input_source_yaml += "\n# "s;
+    }
+  }
+  input_source_yaml += "\n\n"s;
+
+  h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name, false,
+                                                 input_source_yaml);
   // Check that the header was written correctly
   const std::string header = my_file0.get<h5::Header>("/header").get_header();
   // [h5file_readwrite_get_header]
   my_file0.close_current_object();
 
-  const auto check_header = [&h5_file_name](const auto& my_file) {
+  const auto check_header = [&h5_file_name,
+                             &input_source_yaml](const auto& my_file) {
     const auto& header_obj = my_file.template get<h5::Header>("/header");
     CHECK(header_obj.subfile_path() == "/header");
     // Check that the header was written correctly
-    const std::string my_header = header_obj.get_header();
+    const std::string& my_header = header_obj.get_header();
 
     CHECK(my_file.name() == h5_file_name);
 
@@ -67,6 +82,8 @@ void test_core_functionality() {
     CHECK(header_obj.get_env_variables() ==
           formaline::get_environment_variables());
     CHECK(header_obj.get_build_info() == formaline::get_build_info());
+
+    CHECK(my_file.input_source() == input_source_yaml);
   };
   check_header(my_file0);
   my_file0.close_current_object();

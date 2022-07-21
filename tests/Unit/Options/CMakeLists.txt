@@ -19,3 +19,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Options;Utilities"
   )
+
+add_subdirectory(Python)

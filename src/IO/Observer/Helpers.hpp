@@ -4,7 +4,9 @@
 #pragma once
 
 #include "IO/Observer/Tags.hpp"
+#include "Parallel/GlobalCache.hpp"
 #include "Parallel/Reduction.hpp"
+#include "Parallel/Tags/InputSource.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -28,6 +30,28 @@ struct make_reduction_data_tag_impl {
                           ::observers::Tags::ReductionData>;
 };
 }  // namespace detail
+
+/// Function that returns from the global cache a string containing the
+/// options provided in the yaml-formatted input file, if those options are
+/// in the global cache. Otherwise, returns an empty string.
+template <typename Metavariables>
+std::string input_source_from_cache(
+    const Parallel::GlobalCache<Metavariables>& cache) {
+  if constexpr (tmpl::list_contains_v<
+                    ::Parallel::get_const_global_cache_tags<Metavariables>,
+                    ::Parallel::Tags::InputSource>) {
+    const std::vector<std::string> input_source_vector{
+        Parallel::get<::Parallel::Tags::InputSource>(cache)};
+    std::string input_source{};
+    for (auto it = input_source_vector.begin(); it != input_source_vector.end();
+         ++it) {
+      input_source += *it;
+    }
+    return input_source;
+  } else {
+    return ""s;
+  }
+}
 
 /// Each Action that sends data to the reduction Observer must specify
 /// a type alias `observed_reduction_data_tags` that describes the data it
