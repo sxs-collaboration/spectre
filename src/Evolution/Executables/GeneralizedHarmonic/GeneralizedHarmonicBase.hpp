@@ -99,6 +99,7 @@
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
@@ -239,8 +240,6 @@ struct GeneralizedHarmonicTemplateBase<
               3, ::Frame::Inertial>,
           gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
                                         DataVector>,
-          gr::Tags::WeylElectricScalarCompute<volume_dim, ::Frame::Inertial,
-                                              DataVector>,
           gr::Tags::WeylTypeD1Compute<volume_dim, ::Frame::Inertial,
                                       DataVector>,
           gr::Tags::WeylTypeD1ScalarCompute<volume_dim, ::Frame::Inertial,
