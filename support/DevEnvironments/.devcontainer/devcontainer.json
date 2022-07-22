@@ -32,5 +32,5 @@
     "remoteEnv": {
         "SPECTRE_HOME": "${localWorkspaceFolder}"
     },
-    "postCreateCommand": "mkdir -p /root/.local/share/CMakeTools && cp ${localWorkspaceFolder}/support/DevEnvironments/.devcontainer/cmake-kits.json /root/.local/share/CMakeTools/cmake-tools-kits.json"
+    "postCreateCommand": "git config --global --add safe.directory ${localWorkspaceFolder} && mkdir -p /root/.local/share/CMakeTools && cp ${localWorkspaceFolder}/support/DevEnvironments/.devcontainer/cmake-kits.json /root/.local/share/CMakeTools/cmake-tools-kits.json"
 }

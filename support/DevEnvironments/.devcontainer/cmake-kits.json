@@ -12,6 +12,9 @@
             "BUILD_PYTHON_BINDINGS": "ON",
             "MEMORY_ALLOCATOR": "SYSTEM",
             "Python_EXECUTABLE": "/usr/bin/python3"
+        },
+        "preferredGenerator": {
+            "name": "Unix Makefiles"
         }
     }
 ]
