@@ -138,7 +138,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 elif is_2d_surface_in_3d_space:
                     # Number_of_cells == l * (2*l + 1)
                     number_of_cells = sum((extents_x - 1) * extents_y)
-                elif dimensionality == 3:
+                else:
                     number_of_cells = sum(
                         (extents_x - 1) * (extents_y - 1) *
                         (extents_z - 1 if dimensionality == 3 else 1))
