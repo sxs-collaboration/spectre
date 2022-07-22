@@ -13,18 +13,17 @@
 
 namespace Initialization {
 namespace detail {
-template <typename... TagsToDefaultAssign, typename BoxTags>
-constexpr void default_assign(const gsl::not_null<db::DataBox<BoxTags>*> box,
-                              tmpl::list<TagsToDefaultAssign...> /*meta*/) {
-  db::mutate<TagsToDefaultAssign...>(box, [](const auto... args) {
-    EXPAND_PACK_LEFT_TO_RIGHT(*args = typename TagsToDefaultAssign::type{});
-  });
+template <typename... TagsToRemove, typename BoxTags>
+constexpr void remove(const gsl::not_null<db::DataBox<BoxTags>*> box,
+                      tmpl::list<TagsToRemove...> /*meta*/) {
+  EXPAND_PACK_LEFT_TO_RIGHT(db::remove<TagsToRemove>(box));
 }
 }  // namespace detail
 
 /// \ingroup InitializationGroup
-/// Removes an option from the DataBox by resetting its value to that given
-/// by default initialization.
+/// Removes an item from the DataBox by resetting its value to that given
+/// by default initialization.  In debug builds, using a removed item throws an
+/// exception.
 ///
 /// \snippet Test_RemoveOptionsAndTerminatePhase.cpp actions
 ///
@@ -48,7 +47,7 @@ struct RemoveOptionsAndTerminatePhase {
         tmpl::bind<tmpl::list_contains, tmpl::pin<initialization_tags_to_keep>,
                    tmpl::_1>>;
     if constexpr (tmpl::size<tags_to_remove>::value > 0) {
-      detail::default_assign(make_not_null(&box), tags_to_remove{});
+      detail::remove(make_not_null(&box), tags_to_remove{});
     }
     return std::make_tuple(std::move(box), true);
   }

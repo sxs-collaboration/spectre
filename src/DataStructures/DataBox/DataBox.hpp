@@ -250,6 +250,15 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
   template <typename Tag>
   const auto& get() const;
 
+  /// \brief Removes the items with tags `TagsToRemove` by resetting them to
+  /// their default initialized values, should be called by the free function
+  /// db::remove
+  ///
+  /// \details In a debug build, attempting to use a removed item throws an
+  /// exception.
+  template <typename Tag>
+  void remove();
+
   /// Retrieve a mutable reference to the tag `Tag`, should be called
   /// by the free function db::get_mutable_reference
   template <typename Tag>
@@ -593,13 +602,9 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
   const auto pup_simple_item = [&p, this](auto current_tag) {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
-    if (p.isUnpacking()) {
-      typename tag::type t{};
-      p | t;
-      get_item<tag>() = detail::Item<tag>(std::move(t));
+    get_item<tag>().pup(p);
+    if (p.isUnpacking() and get_item<tag>().valid()) {
       add_mutable_subitems_to_box<tag>(typename Subitems<tag>::type{});
-    } else {
-      p | get_item<tag>().mutate();
     }
   };
   (void)pup_simple_item;  // Silence GCC warning about unused variable
@@ -611,6 +616,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
 ////////////////////////////////////////////////////////////////
 // Mutating items in the DataBox
 // Classes and functions necessary for db::mutate to work
+
 template <typename... Tags>
 template <typename ImmutableItemTag>
 SPECTRE_ALWAYS_INLINE constexpr void
@@ -742,6 +748,15 @@ decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
       tmpl::append<detail::expand_subitems<mutate_tags_list>,
                    extra_mutated_tags>;
 
+#ifdef SPECTRE_DEBUG
+  tmpl::for_each<full_mutated_items>([&box](auto tag) {
+    using Tag = tmpl::type_from<decltype(tag)>;
+    ASSERT(box->template get_item<Tag>().valid(),
+           "Cannot mutate '" << db::tag_name<Tag>()
+                             << "' as it has been removed from the DataBox.");
+  });
+#endif  // ifdef SPECTRE_DEBUG
+
   using first_compute_items_to_reset = tmpl::remove_duplicates<
       tmpl::transform<tmpl::filter<typename DataBox<TagList>::edge_list,
                                    tmpl::bind<tmpl::list_contains,
@@ -836,6 +851,13 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const {
           evaluate_compute_item<item_tag>(typename item_tag::argument_tags{});
         }
       }
+      if constexpr (detail::Item<item_tag>::item_type ==
+                    detail::ItemType::Mutable) {
+        ASSERT(get_item<item_tag>().valid(),
+               "Unable to retrieve item '"
+                   << db::tag_name<item_tag>()
+                   << "' as it has been removed from the DataBox.");
+      }
       if constexpr (tt::is_a_v<std::unique_ptr, typename item_tag::type>) {
         return *(get_item<item_tag>().get());
       } else {
@@ -857,6 +879,53 @@ const auto& DataBox<tmpl::list<Tags...>>::get() const {
 template <typename Tag, typename TagList>
 SPECTRE_ALWAYS_INLINE const auto& get(const DataBox<TagList>& box) {
   return box.template get<Tag>();
+}
+
+  ///\cond
+template <typename... Tags>
+template <typename Tag>
+void DataBox<tmpl::list<Tags...>>::remove() {
+  DEBUG_STATIC_ASSERT(
+      not detail::has_no_matching_tag_v<tmpl::list<Tags...>, Tag>,
+      "Found no tags in the DataBox that match the tag being removed.");
+  DEBUG_STATIC_ASSERT(
+      detail::has_unique_matching_tag_v<tmpl::list<Tags...>, Tag>,
+      "Found more than one tag in the DataBox that matches the tag "
+      "being removed. This happens because more than one tag with the same "
+      "base (class) tag was added to the DataBox.");
+
+  using item_tag = detail::first_matching_tag<tmpl::list<Tags...>, Tag>;
+
+  DEBUG_STATIC_ASSERT(tmpl::list_contains_v<mutable_item_tags, item_tag>,
+                      "Can only remove mutable items");
+
+  DEBUG_STATIC_ASSERT(not tmpl::list_contains_v<mutable_subitem_tags, item_tag>,
+                      "Cannot remove subitems");
+  DEBUG_STATIC_ASSERT(not detail::has_subitems_v<item_tag>,
+                      "Cannot remove an item with subitems.");
+
+  DEBUG_STATIC_ASSERT(
+      tmpl::none<edge_list, std::is_same<tmpl::pin<item_tag>,
+                                         tmpl::get_source<tmpl::_1>>>::value,
+      "Cannot remove an item used by compute items.");
+
+  get_item<item_tag>().invalidate();
+}
+/// \endcond
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Remove the item with `Tag` from the DataBox
+ * \requires Type `Tag` is one of the tags corresponding to an object stored in
+ * the DataBox
+ *
+ * \details The item is reset to its default value.  In a Debug build, an
+ * attempt to use a removed item throws an exception.
+ */
+  template <typename Tag, typename TagsList>
+SPECTRE_ALWAYS_INLINE constexpr void remove(
+    const gsl::not_null<db::DataBox<TagsList>*> box) {
+  box->template remove<Tag>();
 }
 
 template <typename... Tags>

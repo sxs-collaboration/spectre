@@ -40,6 +40,9 @@ class Item {
 // Its value may be fetched by calling db::get (which calls get)
 //
 // Its value may be changed by calling db::mutate (which calls mutate)
+//
+// It may be "removed" by calling db::remove (which calls invalidate)
+// after which time any calls to mutate or get will throw an error
 template <typename Tag>
 class Item<Tag, ItemType::Mutable> {
  public:
@@ -60,8 +63,24 @@ class Item<Tag, ItemType::Mutable> {
 
   value_type& mutate() { return value_; }
 
+  bool valid() const { return valid_; }
+
+  void invalidate() {
+    valid_ = false;
+    value_ = {};
+  }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) {
+    p | valid_;
+    if (valid_) {
+      p | value_;
+    }
+  }
+
  private:
   value_type value_{};
+  bool valid_{true};
 };
 
 // A compute item in a DataBox
