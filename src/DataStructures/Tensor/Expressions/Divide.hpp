@@ -143,10 +143,10 @@ struct Divide : public TensorExpression<
   template <typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNonTensorLeafExpression, T1>) {
       t1_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNonTensorLeafExpression, T2>) {
       t2_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
   }
@@ -160,10 +160,10 @@ struct Divide : public TensorExpression<
   template <typename LhsTensorIndices, typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNonTensorLeafExpression, T1>) {
       t1_.assert_lhs_tensorindices_same_in_rhs(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNonTensorLeafExpression, T2>) {
       t2_.assert_lhs_tensorindices_same_in_rhs(lhs_tensor);
     }
   }

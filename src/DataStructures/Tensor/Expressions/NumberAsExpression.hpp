@@ -20,7 +20,9 @@ namespace tenex {
 /// documentation for `TensorExpression`.
 struct NumberAsExpression
     : public TensorExpression<NumberAsExpression, double, tmpl::list<>,
-                              tmpl::list<>, tmpl::list<>> {
+                              tmpl::list<>, tmpl::list<>>,
+      MarkAsDoubleValuedLeafExpression,
+      MarkAsNonTensorLeafExpression {
   // === Index properties ===
   /// The type of the data being stored in the result of the expression
   using type = double;

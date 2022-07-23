@@ -312,6 +312,24 @@ TensorExpression<Derived, DataType, Symm, tmpl::list<Indices...>,
 /// @}
 
 namespace tenex {
+/// \ingroup TensorExpressionsGroup
+/// \brief Marks a class as being a derived TensorExpression type that is a
+/// leaf of expression trees but does not internally contain a `Tensor`
+///
+/// \details
+/// The empty base class provides a simple means for checking if a type fits
+/// this description
+struct MarkAsNonTensorLeafExpression {};
+
+/// \ingroup TensorExpressionsGroup
+/// \brief Marks a class as being a derived TensorExpression type that is a
+/// leaf of expression trees and whose data type is always `double`
+///
+/// \details
+/// The empty base class provides a simple means for checking if a type fits
+/// this description
+struct MarkAsDoubleValuedLeafExpression {};
+
 namespace detail {
 /// @{
 /// \brief The maximum number of arithmetic tensor operations allowed in a

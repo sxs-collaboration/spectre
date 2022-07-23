@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Test_EvaluateRank4.cpp
   Test_EvaluateSpatialSpacetimeIndex.cpp
   Test_EvaluateTimeIndex.cpp
+  Test_KroneckerDelta.cpp
   Test_MixedOperations.cpp
   Test_Negate.cpp
   Test_Product.cpp
