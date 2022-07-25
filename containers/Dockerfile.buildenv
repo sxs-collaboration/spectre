@@ -32,9 +32,7 @@ RUN apt-get update -y \
 # The system MPI libraries are usually configured to take advantage of
 # InfiniBand or various other networking layers.
 RUN apt-get update -y \
-    && apt-get install -y gcc-7 g++-7 gfortran-7 \
-                          gcc-8 g++-8 gfortran-8 \
-                          gcc-9 g++-9 gfortran-9 \
+    && apt-get install -y gcc-9 g++-9 gfortran-9 \
                           gcc-10 g++-10 gfortran-10 \
                           gcc-11 g++-11 gfortran-11 \
                           gdb git ninja-build autoconf automake \
@@ -182,8 +180,8 @@ RUN wget https://github.com/hfp/libxsmm/archive/1.16.1.tar.gz -O libxsmm.tar.gz 
     && tar -xzf libxsmm.tar.gz \
     && mv libxsmm-* libxsmm \
     && cd libxsmm \
-    && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-7 CC=gcc-7 \
-        FC=gfortran-7 install \
+    && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ CXX=g++-9 CC=gcc-9 \
+        FC=gfortran-9 install \
     && cd .. \
     && rm -rf libxsmm libxsmm.tar.gz
 # - Yaml-cpp
@@ -194,7 +192,7 @@ RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yam
     && mkdir build \
     && cd build \
     && cmake -D CMAKE_BUILD_TYPE=Release -D YAML_CPP_BUILD_TESTS=OFF \
-             -D CMAKE_C_COMPILER=gcc-7 -D CMAKE_CXX_COMPILER=g++-7 \
+             -D CMAKE_C_COMPILER=gcc-9 -D CMAKE_CXX_COMPILER=g++-9 \
              -D YAML_CPP_BUILD_CONTRIB=OFF \
              -D YAML_CPP_BUILD_TOOLS=ON \
              -D CMAKE_INSTALL_PREFIX=/usr/local/ \
@@ -283,8 +281,13 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
 #   inside a container (0 is true in bash)
+# - Set CHARM_ROOT so it's easy to find the Charm++ directory. Just use GCC
+#   since clang is GCC-compatible
+# - Symlink gfortran-9 to gfortran so it we can just specify gfortran in CMake
 # - The singularity containers work better if the locale is set properly
 ENV SPECTRE_CONTAINER 0
+ENV CHARM_ROOT="/work/charm_7_0_0/multicore-linux-x86_64-gcc"
+RUN ln -s $(which gfortran-9) /usr/local/bin/gfortran
 RUN apt-get update -y \
     && apt-get install -y locales language-pack-fi language-pack-en \
     && export LANGUAGE=en_US.UTF-8 \
