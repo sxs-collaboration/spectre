@@ -76,11 +76,9 @@ struct RegisterWithElementDataReader {
  * \see Dev guide on \ref dev_guide_importing
  */
 struct RegisterElementWithSelf {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
-      Requires<db::tag_is_retrievable_v<Tags::RegisteredElements, DataBox>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,

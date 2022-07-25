@@ -163,12 +163,8 @@ struct ReadVolumeData {
 template <typename ImporterOptionsGroup, typename FieldTagsList,
           typename ReceiveComponent>
 struct ReadAllVolumeDataAndDistribute {
-  template <
-      typename ParallelComponent, typename DataBox, typename Metavariables,
-      typename ArrayIndex,
-      Requires<db::tag_is_retrievable_v<Tags::RegisteredElements, DataBox> and
-               db::tag_is_retrievable_v<Tags::ElementDataAlreadyRead,
-                                        DataBox>> = nullptr>
+  template <typename ParallelComponent, typename DataBox,
+            typename Metavariables, typename ArrayIndex>
   static void apply(DataBox& box, Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     tuples::tagged_tuple_from_typelist<

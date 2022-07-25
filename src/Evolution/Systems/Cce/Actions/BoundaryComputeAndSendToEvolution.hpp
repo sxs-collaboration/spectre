@@ -89,11 +89,7 @@ struct SendToEvolution;
 template <typename Metavariables, typename EvolutionComponent>
 struct BoundaryComputeAndSendToEvolution<H5WorldtubeBoundary<Metavariables>,
                                          EvolutionComponent> {
-  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<std::is_same_v<
-                ::Tags::Variables<
-                    typename Metavariables::cce_boundary_communication_tags>,
-                DbTags>...>> = nullptr>
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time) {
@@ -156,42 +152,33 @@ struct BoundaryComputeAndSendToEvolution<
   static void apply(db::DataBox<DbTagList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time) {
-    if constexpr (tmpl::list_contains_v<
-                      DbTagList,
-                      ::Tags::Variables<typename Metavariables::
-                                            cce_boundary_communication_tags>>) {
-      bool successfully_populated = false;
-      db::mutate<Tags::AnalyticBoundaryDataManager,
-                 ::Tags::Variables<
-                     typename Metavariables::cce_boundary_communication_tags>>(
-          make_not_null(&box),
-          [&successfully_populated, &time](
-              const gsl::not_null<Cce::AnalyticBoundaryDataManager*>
-                  worldtube_data_manager,
-              const gsl::not_null<Variables<
-                  typename Metavariables::cce_boundary_communication_tags>*>
-                  boundary_variables) {
-            successfully_populated =
-                (*worldtube_data_manager)
-                    .populate_hypersurface_boundary_data(
-                        boundary_variables, time.substep_time().value());
-          });
+    bool successfully_populated = false;
+    db::mutate<Tags::AnalyticBoundaryDataManager,
+               ::Tags::Variables<
+                   typename Metavariables::cce_boundary_communication_tags>>(
+        make_not_null(&box),
+        [&successfully_populated, &time](
+            const gsl::not_null<Cce::AnalyticBoundaryDataManager*>
+                worldtube_data_manager,
+            const gsl::not_null<Variables<
+                typename Metavariables::cce_boundary_communication_tags>*>
+                boundary_variables) {
+          successfully_populated =
+              (*worldtube_data_manager)
+                  .populate_hypersurface_boundary_data(
+                      boundary_variables, time.substep_time().value());
+        });
 
-      if (not successfully_populated) {
-        ERROR("Insufficient boundary data to proceed, exiting early at time "
-              << time.substep_time().value());
-      }
-      Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
-          typename Metavariables::cce_boundary_communication_tags>>(
-          Parallel::get_parallel_component<EvolutionComponent>(cache), time,
-          db::get<::Tags::Variables<
-              typename Metavariables::cce_boundary_communication_tags>>(box),
-          true);
-    } else {
-      ERROR(
-          "Did not find required tag `::Tags::Variables<typename "
-          "Metavariables::cce_boundary_communication_tags>` in the DataBox");
+    if (not successfully_populated) {
+      ERROR("Insufficient boundary data to proceed, exiting early at time "
+            << time.substep_time().value());
     }
+    Parallel::receive_data<Cce::ReceiveTags::BoundaryData<
+        typename Metavariables::cce_boundary_communication_tags>>(
+        Parallel::get_parallel_component<EvolutionComponent>(cache), time,
+        db::get<::Tags::Variables<
+            typename Metavariables::cce_boundary_communication_tags>>(box),
+        true);
   }
 };
 
@@ -220,11 +207,7 @@ struct BoundaryComputeAndSendToEvolution<
 template <typename Metavariables, typename EvolutionComponent>
 struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
                                          EvolutionComponent> {
-  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<std::is_same_v<
-                ::Tags::Variables<
-                    typename Metavariables::cce_boundary_communication_tags>,
-                DbTags>...>> = nullptr>
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, const TimeStepId& time) {
@@ -256,11 +239,7 @@ struct BoundaryComputeAndSendToEvolution<GhWorldtubeBoundary<Metavariables>,
 /// \cond
 template <typename Metavariables, typename EvolutionComponent>
 struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
-  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex,
-            Requires<tmpl2::flat_any_v<std::is_same_v<
-                ::Tags::Variables<
-                    typename Metavariables::cce_boundary_communication_tags>,
-                DbTags>...>> = nullptr>
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
   static void apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       Parallel::GlobalCache<Metavariables>& cache,

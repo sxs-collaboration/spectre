@@ -43,9 +43,7 @@ namespace Actions {
 /// For requirements on Metavariables, see `InterpolationTarget`.
 struct RegisterElement {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<db::tag_is_retrievable_v<Tags::NumberOfElements,
-                                              db::DataBox<DbTags>>> = nullptr>
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
@@ -72,9 +70,7 @@ struct RegisterElement {
 /// For requirements on Metavariables, see `InterpolationTarget`.
 struct DeregisterElement {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<db::tag_is_retrievable_v<Tags::NumberOfElements,
-                                              db::DataBox<DbTags>>> = nullptr>
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {

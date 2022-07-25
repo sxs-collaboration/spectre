@@ -47,9 +47,7 @@ struct InitializeResidual {
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
-                nullptr>
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
@@ -104,9 +102,7 @@ struct ComputeAlpha {
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
-                nullptr>
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
@@ -131,9 +127,7 @@ struct UpdateResidual {
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
-                nullptr>
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,

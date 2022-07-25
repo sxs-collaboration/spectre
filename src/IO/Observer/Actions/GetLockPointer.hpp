@@ -28,22 +28,15 @@ struct GetLockPointer {
   template <typename ParallelComponent, typename DbTagList>
   static return_type apply(db::DataBox<DbTagList>& box,
                            const gsl::not_null<Parallel::NodeLock*> node_lock) {
-    if constexpr (tmpl::list_contains_v<DbTagList, LockTag>) {
-      Parallel::NodeLock* result_lock;
-      node_lock->lock();
-      db::mutate<LockTag>(
-          make_not_null(&box),
-          [&result_lock](const gsl::not_null<Parallel::NodeLock*> lock) {
-            result_lock = lock;
-          });
-      node_lock->unlock();
-      return result_lock;
-    } else {
-      // silence 'unused variable' warnings
-      (void)node_lock;
-      ERROR("Could not find required tag " << pretty_type::get_name<LockTag>()
-                                           << " in the databox");
-    }
+    Parallel::NodeLock* result_lock;
+    node_lock->lock();
+    db::mutate<LockTag>(
+        make_not_null(&box),
+        [&result_lock](const gsl::not_null<Parallel::NodeLock*> lock) {
+          result_lock = lock;
+        });
+    node_lock->unlock();
+    return result_lock;
   }
 };
 }  // namespace observers::Actions

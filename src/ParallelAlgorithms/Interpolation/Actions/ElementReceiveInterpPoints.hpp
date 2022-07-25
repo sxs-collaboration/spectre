@@ -31,9 +31,7 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct ElementReceiveInterpPoints {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
-            typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                DbTags, intrp::Tags::InterpPointInfo<Metavariables>>> = nullptr>
+            typename ArrayIndex>
   static void apply(
       db::DataBox<DbTags>& box,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,

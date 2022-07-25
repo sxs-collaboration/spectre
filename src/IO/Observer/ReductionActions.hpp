@@ -125,102 +125,87 @@ struct ContributeReductionData {
                     Parallel::ReductionData<Ts...>&& reduction_data,
                     std::optional<Formatter>&& formatter = std::nullopt,
                     const bool observe_per_core = false) {
-    if constexpr (tmpl::list_contains_v<DbTagsList,
-                                        Tags::ReductionData<Ts...>> and
-                  tmpl::list_contains_v<DbTagsList,
-                                        Tags::ReductionDataNames<Ts...>> and
-                  tmpl::list_contains_v<DbTagsList,
-                                        Tags::ContributorsOfReductionData>) {
-      db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionDataNames<Ts...>,
-                 Tags::ContributorsOfReductionData>(
-          make_not_null(&box),
-          [&array_index, &cache, &observation_id,
-           reduction_data = std::move(reduction_data), &reduction_names,
-           &sender_array_id, &subfile_name, &formatter, &observe_per_core](
-              const gsl::not_null<std::unordered_map<
-                  ObservationId, Parallel::ReductionData<Ts...>>*>
-                  reduction_data_map,
-              const gsl::not_null<
-                  std::unordered_map<ObservationId, std::vector<std::string>>*>
-                  reduction_names_map,
-              const gsl::not_null<std::unordered_map<
-                  ObservationId, std::unordered_set<ArrayComponentId>>*>
-                  reduction_observers_contributed,
-              const std::unordered_map<ObservationKey,
-                                       std::unordered_set<ArrayComponentId>>&
-                  observations_registered) mutable {  // NOLINT(spectre-mutable)
-            ASSERT(observations_registered.find(
-                       observation_id.observation_key()) !=
-                       observations_registered.end(),
-                   "Couldn't find registration key "
-                       << observation_id.observation_key()
-                       << " in the registered observers.");
+    db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionDataNames<Ts...>,
+               Tags::ContributorsOfReductionData>(
+        make_not_null(&box),
+        [&array_index, &cache, &observation_id,
+         reduction_data = std::move(reduction_data), &reduction_names,
+         &sender_array_id, &subfile_name, &formatter, &observe_per_core](
+            const gsl::not_null<std::unordered_map<
+                ObservationId, Parallel::ReductionData<Ts...>>*>
+                reduction_data_map,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::vector<std::string>>*>
+                reduction_names_map,
+            const gsl::not_null<std::unordered_map<
+                ObservationId, std::unordered_set<ArrayComponentId>>*>
+                reduction_observers_contributed,
+            const std::unordered_map<ObservationKey,
+                                     std::unordered_set<ArrayComponentId>>&
+                observations_registered) mutable {  // NOLINT(spectre-mutable)
+          ASSERT(
+              observations_registered.find(observation_id.observation_key()) !=
+                  observations_registered.end(),
+              "Couldn't find registration key "
+                  << observation_id.observation_key()
+                  << " in the registered observers.");
 
-            auto& contributed_array_ids =
-                (*reduction_observers_contributed)[observation_id];
-            if (UNLIKELY(contributed_array_ids.find(sender_array_id) !=
-                         contributed_array_ids.end())) {
-              ERROR("Already received reduction data to observation id "
-                    << observation_id << " from array component id "
-                    << sender_array_id);
-            }
-            contributed_array_ids.insert(sender_array_id);
+          auto& contributed_array_ids =
+              (*reduction_observers_contributed)[observation_id];
+          if (UNLIKELY(contributed_array_ids.find(sender_array_id) !=
+                       contributed_array_ids.end())) {
+            ERROR("Already received reduction data to observation id "
+                  << observation_id << " from array component id "
+                  << sender_array_id);
+          }
+          contributed_array_ids.insert(sender_array_id);
 
-            if (reduction_data_map->count(observation_id) == 0) {
-              reduction_data_map->emplace(observation_id,
-                                          std::move(reduction_data));
-              reduction_names_map->emplace(observation_id, reduction_names);
-            } else {
-              if (UNLIKELY(reduction_names_map->at(observation_id) !=
-                           reduction_names)) {
-                using ::operator<<;
-                ERROR("Reduction names differ at ObservationId "
-                      << observation_id << " with the expected names being "
-                      << reduction_names_map->at(observation_id)
-                      << " and the received names being " << reduction_names);
-              }
-              reduction_data_map->operator[](observation_id)
-                  .combine(std::move(reduction_data));
+          if (reduction_data_map->count(observation_id) == 0) {
+            reduction_data_map->emplace(observation_id,
+                                        std::move(reduction_data));
+            reduction_names_map->emplace(observation_id, reduction_names);
+          } else {
+            if (UNLIKELY(reduction_names_map->at(observation_id) !=
+                         reduction_names)) {
+              using ::operator<<;
+              ERROR("Reduction names differ at ObservationId "
+                    << observation_id << " with the expected names being "
+                    << reduction_names_map->at(observation_id)
+                    << " and the received names being " << reduction_names);
             }
+            reduction_data_map->operator[](observation_id)
+                .combine(std::move(reduction_data));
+          }
 
-            // Check if we have received all reduction data from the registered
-            // elements. If so, we reduce to the local ObserverWriter nodegroup.
-            if (UNLIKELY(
-                    contributed_array_ids.size() ==
-                    observations_registered.at(observation_id.observation_key())
-                        .size())) {
-              auto& local_writer = *Parallel::local_branch(
-                  Parallel::get_parallel_component<
-                      ObserverWriter<Metavariables>>(cache));
-              auto& my_proxy =
-                  Parallel::get_parallel_component<ParallelComponent>(cache);
-              const std::optional<int> observe_with_core_id =
-                  observe_per_core ? std::make_optional(Parallel::my_proc<int>(
-                                         *Parallel::local_branch(my_proxy)))
-                                   : std::nullopt;
-              Parallel::threaded_action<
-                  ThreadedActions::CollectReductionDataOnNode>(
-                  local_writer, observation_id,
-                  ArrayComponentId{
-                      std::add_pointer_t<ParallelComponent>{nullptr},
-                      Parallel::ArrayIndex<ArrayIndex>(array_index)},
-                  subfile_name, (*reduction_names_map)[observation_id],
-                  std::move((*reduction_data_map)[observation_id]),
-                  std::move(formatter), observe_with_core_id);
-              reduction_data_map->erase(observation_id);
-              reduction_names_map->erase(observation_id);
-              reduction_observers_contributed->erase(observation_id);
-            }
-          },
-          db::get<Tags::ExpectedContributorsForObservations>(box));
-    } else {
-      ERROR("Could not find the tag "
-            << pretty_type::get_name<Tags::ReductionData<Ts...>>() << ' '
-            << pretty_type::get_name<Tags::ReductionDataNames<Ts...>>()
-            << " or "
-            << pretty_type::get_name<Tags::ContributorsOfReductionData>()
-            << " in the DataBox.");
-    }
+          // Check if we have received all reduction data from the registered
+          // elements. If so, we reduce to the local ObserverWriter nodegroup.
+          if (UNLIKELY(
+                  contributed_array_ids.size() ==
+                  observations_registered.at(observation_id.observation_key())
+                      .size())) {
+            auto& local_writer = *Parallel::local_branch(
+                Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
+                    cache));
+            auto& my_proxy =
+                Parallel::get_parallel_component<ParallelComponent>(cache);
+            const std::optional<int> observe_with_core_id =
+                observe_per_core ? std::make_optional(Parallel::my_proc<int>(
+                                       *Parallel::local_branch(my_proxy)))
+                                 : std::nullopt;
+            Parallel::threaded_action<
+                ThreadedActions::CollectReductionDataOnNode>(
+                local_writer, observation_id,
+                ArrayComponentId{std::add_pointer_t<ParallelComponent>{nullptr},
+                                 Parallel::ArrayIndex<ArrayIndex>(array_index)},
+                subfile_name, (*reduction_names_map)[observation_id],
+                std::move((*reduction_data_map)[observation_id]),
+                std::move(formatter), observe_with_core_id);
+            reduction_data_map->erase(observation_id);
+            reduction_names_map->erase(observation_id);
+            reduction_observers_contributed->erase(observation_id);
+          }
+        },
+        db::get<Tags::ExpectedContributorsForObservations>(box));
     // Silence a gcc <= 9 unused-variable warning
     (void)observe_per_core;
   }
@@ -287,194 +272,176 @@ struct CollectReductionDataOnNode {
       Parallel::ReductionData<ReductionDatums...>&& received_reduction_data,
       std::optional<Formatter>&& formatter = std::nullopt,
       const std::optional<int> observe_with_core_id = std::nullopt) {
-    if constexpr (tmpl::list_contains_v<
-                      DbTagsList, Tags::ReductionData<ReductionDatums...>> and
-                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<
-                                                        ReductionDatums...>> and
-                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataLock>) {
-      // The below gymnastics with pointers is done in order to minimize the
-      // time spent locking the entire node, which is necessary because the
-      // DataBox does not allow any functions calls, both get and mutate, during
-      // a mutate. This design choice in DataBox is necessary to guarantee a
-      // consistent state throughout mutation. Here, however, we need to be
-      // reasonable efficient in parallel and so we manually guarantee that
-      // consistent state. To this end, we create pointers and assign to them
-      // the data in the DataBox which is guaranteed to be pointer stable. The
-      // data itself is guaranteed to be stable inside the ReductionDataLock.
-      std::unordered_map<observers::ObservationId,
-                         Parallel::ReductionData<ReductionDatums...>>*
-          reduction_data = nullptr;
-      std::unordered_map<ObservationId, std::vector<std::string>>*
-          reduction_names_map = nullptr;
-      std::unordered_map<observers::ObservationId,
-                         std::unordered_set<ArrayComponentId>>*
-          reduction_observers_contributed = nullptr;
-      Parallel::NodeLock* reduction_data_lock = nullptr;
-      Parallel::NodeLock* reduction_file_lock = nullptr;
-      size_t observations_registered_with_id =
-          std::numeric_limits<size_t>::max();
+    // The below gymnastics with pointers is done in order to minimize the
+    // time spent locking the entire node, which is necessary because the
+    // DataBox does not allow any functions calls, both get and mutate, during
+    // a mutate. This design choice in DataBox is necessary to guarantee a
+    // consistent state throughout mutation. Here, however, we need to be
+    // reasonable efficient in parallel and so we manually guarantee that
+    // consistent state. To this end, we create pointers and assign to them
+    // the data in the DataBox which is guaranteed to be pointer stable. The
+    // data itself is guaranteed to be stable inside the ReductionDataLock.
+    std::unordered_map<observers::ObservationId,
+                       Parallel::ReductionData<ReductionDatums...>>*
+        reduction_data = nullptr;
+    std::unordered_map<ObservationId, std::vector<std::string>>*
+        reduction_names_map = nullptr;
+    std::unordered_map<observers::ObservationId,
+                       std::unordered_set<ArrayComponentId>>*
+        reduction_observers_contributed = nullptr;
+    Parallel::NodeLock* reduction_data_lock = nullptr;
+    Parallel::NodeLock* reduction_file_lock = nullptr;
+    size_t observations_registered_with_id = std::numeric_limits<size_t>::max();
 
-      node_lock->lock();
-      db::mutate<Tags::ReductionData<ReductionDatums...>,
-                 Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::ContributorsOfReductionData, Tags::ReductionDataLock,
-                 Tags::H5FileLock>(
-          make_not_null(&box),
-          [&reduction_data, &reduction_names_map,
-           &reduction_observers_contributed, &reduction_data_lock,
-           &reduction_file_lock, &observation_id, &observer_group_id,
-           &observations_registered_with_id](
-              const gsl::not_null<std::unordered_map<
-                  observers::ObservationId,
-                  Parallel::ReductionData<ReductionDatums...>>*>
-                  reduction_data_ptr,
-              const gsl::not_null<
-                  std::unordered_map<ObservationId, std::vector<std::string>>*>
-                  reduction_names_map_ptr,
-              const gsl::not_null<
-                  std::unordered_map<observers::ObservationId,
-                                     std::unordered_set<ArrayComponentId>>*>
-                  reduction_observers_contributed_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
-              const std::unordered_map<ObservationKey,
-                                       std::unordered_set<ArrayComponentId>>&
-                  observations_registered) {
-            const ObservationKey& key{observation_id.observation_key()};
-            const auto& registered_group_ids = observations_registered.at(key);
-            if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
-                         registered_group_ids.end())) {
-              ERROR("The observer group id "
-                    << observer_group_id
-                    << " was not registered for the observation id "
-                    << observation_id);
-            }
-            reduction_data = &*reduction_data_ptr;
-            reduction_names_map = &*reduction_names_map_ptr;
-            reduction_observers_contributed =
-                &*reduction_observers_contributed_ptr;
-            reduction_data_lock = &*reduction_data_lock_ptr;
-            reduction_file_lock = &*reduction_file_lock_ptr;
-            observations_registered_with_id =
-                observations_registered.at(key).size();
-          },
-          db::get<Tags::ExpectedContributorsForObservations>(box));
-      node_lock->unlock();
+    node_lock->lock();
+    db::mutate<Tags::ReductionData<ReductionDatums...>,
+               Tags::ReductionDataNames<ReductionDatums...>,
+               Tags::ContributorsOfReductionData, Tags::ReductionDataLock,
+               Tags::H5FileLock>(
+        make_not_null(&box),
+        [&reduction_data, &reduction_names_map,
+         &reduction_observers_contributed, &reduction_data_lock,
+         &reduction_file_lock, &observation_id, &observer_group_id,
+         &observations_registered_with_id](
+            const gsl::not_null<std::unordered_map<
+                observers::ObservationId,
+                Parallel::ReductionData<ReductionDatums...>>*>
+                reduction_data_ptr,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::vector<std::string>>*>
+                reduction_names_map_ptr,
+            const gsl::not_null<
+                std::unordered_map<observers::ObservationId,
+                                   std::unordered_set<ArrayComponentId>>*>
+                reduction_observers_contributed_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
+            const std::unordered_map<ObservationKey,
+                                     std::unordered_set<ArrayComponentId>>&
+                observations_registered) {
+          const ObservationKey& key{observation_id.observation_key()};
+          const auto& registered_group_ids = observations_registered.at(key);
+          if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
+                       registered_group_ids.end())) {
+            ERROR("The observer group id "
+                  << observer_group_id
+                  << " was not registered for the observation id "
+                  << observation_id);
+          }
+          reduction_data = &*reduction_data_ptr;
+          reduction_names_map = &*reduction_names_map_ptr;
+          reduction_observers_contributed =
+              &*reduction_observers_contributed_ptr;
+          reduction_data_lock = &*reduction_data_lock_ptr;
+          reduction_file_lock = &*reduction_file_lock_ptr;
+          observations_registered_with_id =
+              observations_registered.at(key).size();
+        },
+        db::get<Tags::ExpectedContributorsForObservations>(box));
+    node_lock->unlock();
 
-      ASSERT(
-          observations_registered_with_id != std::numeric_limits<size_t>::max(),
-          "Failed to set observations_registered_with_id when mutating the "
-          "DataBox. This is a bug in the code.");
+    ASSERT(
+        observations_registered_with_id != std::numeric_limits<size_t>::max(),
+        "Failed to set observations_registered_with_id when mutating the "
+        "DataBox. This is a bug in the code.");
 
-      // Now that we've retrieved pointers to the data in the DataBox we wish to
-      // manipulate, lock the data and manipulate it.
-      reduction_data_lock->lock();
-      auto& contributed_group_ids =
-          (*reduction_observers_contributed)[observation_id];
+    // Now that we've retrieved pointers to the data in the DataBox we wish to
+    // manipulate, lock the data and manipulate it.
+    reduction_data_lock->lock();
+    auto& contributed_group_ids =
+        (*reduction_observers_contributed)[observation_id];
 
-      if (UNLIKELY(contributed_group_ids.find(observer_group_id) !=
-                   contributed_group_ids.end())) {
-        ERROR("Already received reduction data to observation id "
-              << observation_id << " from array component id "
-              << observer_group_id);
-      }
-      contributed_group_ids.insert(observer_group_id);
+    if (UNLIKELY(contributed_group_ids.find(observer_group_id) !=
+                 contributed_group_ids.end())) {
+      ERROR("Already received reduction data to observation id "
+            << observation_id << " from array component id "
+            << observer_group_id);
+    }
+    contributed_group_ids.insert(observer_group_id);
 
-      // If requested, write the intermediate reduction data from the particular
-      // core to one file per node. This allows measuring reduction data
-      // per-core, e.g. performance metrics to assess load balancing.
-      if (observe_with_core_id.has_value()) {
-        auto reduction_data_this_core = received_reduction_data;
-        reduction_data_this_core.finalize();
-        auto reduction_names_this_core = reduction_names;
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        reduction_file_lock->lock();
-        ReductionActions_detail::write_data(
-            "/Core" + std::to_string(observe_with_core_id.value()) +
-                subfile_name,
-            observers::input_source_from_cache(cache),
-            std::move(reduction_names_this_core),
-            std::move(reduction_data_this_core.data()),
-            Parallel::get<Tags::ReductionFileName>(cache) +
-                std::to_string(
-                    Parallel::my_node<int>(*Parallel::local_branch(my_proxy))),
-            std::make_index_sequence<sizeof...(ReductionDatums)>{});
-        reduction_file_lock->unlock();
-      }
+    // If requested, write the intermediate reduction data from the particular
+    // core to one file per node. This allows measuring reduction data
+    // per-core, e.g. performance metrics to assess load balancing.
+    if (observe_with_core_id.has_value()) {
+      auto reduction_data_this_core = received_reduction_data;
+      reduction_data_this_core.finalize();
+      auto reduction_names_this_core = reduction_names;
+      auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+      reduction_file_lock->lock();
+      ReductionActions_detail::write_data(
+          "/Core" + std::to_string(observe_with_core_id.value()) + subfile_name,
+          observers::input_source_from_cache(cache),
+          std::move(reduction_names_this_core),
+          std::move(reduction_data_this_core.data()),
+          Parallel::get<Tags::ReductionFileName>(cache) +
+              std::to_string(
+                  Parallel::my_node<int>(*Parallel::local_branch(my_proxy))),
+          std::make_index_sequence<sizeof...(ReductionDatums)>{});
+      reduction_file_lock->unlock();
+    }
 
-      if (reduction_data->find(observation_id) == reduction_data->end()) {
-        // This Action has been called for the first time,
-        // so all we need to do is move the input data to the
-        // reduction_data in the DataBox.
-        reduction_data->operator[](observation_id) =
-            std::move(received_reduction_data);
-      } else {
-        // This Action is being called at least the second time
-        // (but not the final time if on node 0).
-        reduction_data->at(observation_id)
-            .combine(std::move(received_reduction_data));
-      }
-
-      if (UNLIKELY(reduction_names.empty())) {
-        ERROR(
-            "The reduction names, which is a std::vector of the names of "
-            "the columns in the file, must be non-empty.");
-      }
-      if (auto current_names = reduction_names_map->find(observation_id);
-          current_names == reduction_names_map->end()) {
-        reduction_names_map->emplace(observation_id,
-                                     std::move(reduction_names));
-      } else if (UNLIKELY(current_names->second != reduction_names)) {
-        ERROR(
-            "The reduction names passed in must match the currently "
-            "known reduction names.");
-      }
-
-      // Check if we have received all reduction data from the Observer
-      // group. If so we reduce to node 0 for writing to disk. We use a bool
-      // `send_data` to allow us to defer the send call until after we've
-      // unlocked the lock.
-      bool send_data = false;
-      if (reduction_observers_contributed->at(observation_id).size() ==
-          observations_registered_with_id) {
-        send_data = true;
-        // We intentionally move the data out of the map and erase it
-        // before call `WriteReductionData` since if the call to
-        // `WriteReductionData` is inlined and we erase data from the maps
-        // afterward we would lose data.
-        reduction_names =
-            std::move(reduction_names_map->operator[](observation_id));
-        received_reduction_data =
-            std::move(reduction_data->operator[](observation_id));
-        reduction_observers_contributed->erase(observation_id);
-        reduction_data->erase(observation_id);
-        reduction_names_map->erase(observation_id);
-      }
-      reduction_data_lock->unlock();
-
-      if (send_data) {
-        auto& my_proxy =
-            Parallel::get_parallel_component<ParallelComponent>(cache);
-        Parallel::threaded_action<WriteReductionData>(
-            Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
-                cache)[0],
-            observation_id,
-            Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy)),
-            subfile_name,
-            // NOLINTNEXTLINE(bugprone-use-after-move)
-            std::move(reduction_names), std::move(received_reduction_data),
-            std::move(formatter));
-      }
+    if (reduction_data->find(observation_id) == reduction_data->end()) {
+      // This Action has been called for the first time,
+      // so all we need to do is move the input data to the
+      // reduction_data in the DataBox.
+      reduction_data->operator[](observation_id) =
+          std::move(received_reduction_data);
     } else {
-      (void)node_lock;
-      (void)observer_group_id;
-      ERROR("Could not find one of the tags: "
-            << pretty_type::get_name<Tags::ReductionData<ReductionDatums...>>()
-            << ' '
-            << pretty_type::get_name<
-                   Tags::ReductionDataNames<ReductionDatums...>>()
-            << " or Tags::ReductionDataLock");
+      // This Action is being called at least the second time
+      // (but not the final time if on node 0).
+      reduction_data->at(observation_id)
+          .combine(std::move(received_reduction_data));
+    }
+
+    if (UNLIKELY(reduction_names.empty())) {
+      ERROR(
+          "The reduction names, which is a std::vector of the names of "
+          "the columns in the file, must be non-empty.");
+    }
+    if (auto current_names = reduction_names_map->find(observation_id);
+        current_names == reduction_names_map->end()) {
+      reduction_names_map->emplace(observation_id, std::move(reduction_names));
+    } else if (UNLIKELY(current_names->second != reduction_names)) {
+      ERROR(
+          "The reduction names passed in must match the currently "
+          "known reduction names.");
+    }
+
+    // Check if we have received all reduction data from the Observer
+    // group. If so we reduce to node 0 for writing to disk. We use a bool
+    // `send_data` to allow us to defer the send call until after we've
+    // unlocked the lock.
+    bool send_data = false;
+    if (reduction_observers_contributed->at(observation_id).size() ==
+        observations_registered_with_id) {
+      send_data = true;
+      // We intentionally move the data out of the map and erase it
+      // before call `WriteReductionData` since if the call to
+      // `WriteReductionData` is inlined and we erase data from the maps
+      // afterward we would lose data.
+      reduction_names =
+          std::move(reduction_names_map->operator[](observation_id));
+      received_reduction_data =
+          std::move(reduction_data->operator[](observation_id));
+      reduction_observers_contributed->erase(observation_id);
+      reduction_data->erase(observation_id);
+      reduction_names_map->erase(observation_id);
+    }
+    reduction_data_lock->unlock();
+
+    if (send_data) {
+      auto& my_proxy =
+          Parallel::get_parallel_component<ParallelComponent>(cache);
+      Parallel::threaded_action<WriteReductionData>(
+          Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
+              cache)[0],
+          observation_id,
+          Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy)),
+          subfile_name,
+          // NOLINTNEXTLINE(bugprone-use-after-move)
+          std::move(reduction_names), std::move(received_reduction_data),
+          std::move(formatter));
     }
   }
 };
@@ -507,182 +474,156 @@ struct WriteReductionData {
           "Mismatch between the formatter's `reduction_data` type alias and "
           "the reduction data that is being reduced.");
     }
-    if constexpr (tmpl::list_contains_v<
-                      DbTagsList, Tags::ReductionData<ReductionDatums...>> and
-                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<
-                                                        ReductionDatums...>> and
-                  tmpl::list_contains_v<
-                      DbTagsList, Tags::NodesThatContributedReductions> and
-                  tmpl::list_contains_v<DbTagsList, Tags::ReductionDataLock> and
-                  tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>) {
-      // The below gymnastics with pointers is done in order to minimize the
-      // time spent locking the entire node, which is necessary because the
-      // DataBox does not allow any functions calls, both get and mutate, during
-      // a mutate. This design choice in DataBox is necessary to guarantee a
-      // consistent state throughout mutation. Here, however, we need to be
-      // reasonable efficient in parallel and so we manually guarantee that
-      // consistent state. To this end, we create pointers and assign to them
-      // the data in the DataBox which is guaranteed to be pointer stable. The
-      // data itself is guaranteed to be stable inside the ReductionDataLock.
-      std::unordered_map<observers::ObservationId,
-                         Parallel::ReductionData<ReductionDatums...>>*
-          reduction_data = nullptr;
-      std::unordered_map<ObservationId, std::vector<std::string>>*
-          reduction_names_map = nullptr;
-      std::unordered_map<observers::ObservationId, std::unordered_set<size_t>>*
-          nodes_contributed = nullptr;
-      Parallel::NodeLock* reduction_data_lock = nullptr;
-      Parallel::NodeLock* reduction_file_lock = nullptr;
-      size_t observations_registered_with_id =
-          std::numeric_limits<size_t>::max();
+    // The below gymnastics with pointers is done in order to minimize the
+    // time spent locking the entire node, which is necessary because the
+    // DataBox does not allow any functions calls, both get and mutate, during
+    // a mutate. This design choice in DataBox is necessary to guarantee a
+    // consistent state throughout mutation. Here, however, we need to be
+    // reasonable efficient in parallel and so we manually guarantee that
+    // consistent state. To this end, we create pointers and assign to them
+    // the data in the DataBox which is guaranteed to be pointer stable. The
+    // data itself is guaranteed to be stable inside the ReductionDataLock.
+    std::unordered_map<observers::ObservationId,
+                       Parallel::ReductionData<ReductionDatums...>>*
+        reduction_data = nullptr;
+    std::unordered_map<ObservationId, std::vector<std::string>>*
+        reduction_names_map = nullptr;
+    std::unordered_map<observers::ObservationId, std::unordered_set<size_t>>*
+        nodes_contributed = nullptr;
+    Parallel::NodeLock* reduction_data_lock = nullptr;
+    Parallel::NodeLock* reduction_file_lock = nullptr;
+    size_t observations_registered_with_id = std::numeric_limits<size_t>::max();
 
-      node_lock->lock();
-      db::mutate<Tags::ReductionData<ReductionDatums...>,
-                 Tags::ReductionDataNames<ReductionDatums...>,
-                 Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
-                 Tags::H5FileLock>(
-          make_not_null(&box),
-          [&nodes_contributed, &reduction_data, &reduction_names_map,
-           &reduction_data_lock, &reduction_file_lock, &observation_id,
-           &observations_registered_with_id, &sender_node_number](
-              const gsl::not_null<
-                  typename Tags::ReductionData<ReductionDatums...>::type*>
-                  reduction_data_ptr,
-              const gsl::not_null<
-                  std::unordered_map<ObservationId, std::vector<std::string>>*>
-                  reduction_names_map_ptr,
-              const gsl::not_null<std::unordered_map<
-                  ObservationId, std::unordered_set<size_t>>*>
-                  nodes_contributed_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
-              const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
-              const std::unordered_map<ObservationKey, std::set<size_t>>&
-                  nodes_registered_for_reductions) {
-            const ObservationKey& key{observation_id.observation_key()};
-            ASSERT(nodes_registered_for_reductions.find(key) !=
-                       nodes_registered_for_reductions.end(),
-                   "Performing reduction with unregistered ID key "
-                       << observation_id.observation_key());
-            const auto& registered_nodes =
-                nodes_registered_for_reductions.at(key);
+    node_lock->lock();
+    db::mutate<Tags::ReductionData<ReductionDatums...>,
+               Tags::ReductionDataNames<ReductionDatums...>,
+               Tags::NodesThatContributedReductions, Tags::ReductionDataLock,
+               Tags::H5FileLock>(
+        make_not_null(&box),
+        [&nodes_contributed, &reduction_data, &reduction_names_map,
+         &reduction_data_lock, &reduction_file_lock, &observation_id,
+         &observations_registered_with_id, &sender_node_number](
+            const gsl::not_null<
+                typename Tags::ReductionData<ReductionDatums...>::type*>
+                reduction_data_ptr,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::vector<std::string>>*>
+                reduction_names_map_ptr,
+            const gsl::not_null<
+                std::unordered_map<ObservationId, std::unordered_set<size_t>>*>
+                nodes_contributed_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_data_lock_ptr,
+            const gsl::not_null<Parallel::NodeLock*> reduction_file_lock_ptr,
+            const std::unordered_map<ObservationKey, std::set<size_t>>&
+                nodes_registered_for_reductions) {
+          const ObservationKey& key{observation_id.observation_key()};
+          ASSERT(nodes_registered_for_reductions.find(key) !=
+                     nodes_registered_for_reductions.end(),
+                 "Performing reduction with unregistered ID key "
+                     << observation_id.observation_key());
+          const auto& registered_nodes =
+              nodes_registered_for_reductions.at(key);
 
-            if (UNLIKELY(registered_nodes.find(sender_node_number) ==
-                         registered_nodes.end())) {
-              ERROR("Node " << sender_node_number
-                            << " was not registered for the observation id "
-                            << observation_id);
-            }
-
-            reduction_data = &*reduction_data_ptr;
-            reduction_names_map = &*reduction_names_map_ptr;
-            nodes_contributed = &*nodes_contributed_ptr;
-            reduction_data_lock = &*reduction_data_lock_ptr;
-            reduction_file_lock = &*reduction_file_lock_ptr;
-            observations_registered_with_id =
-                nodes_registered_for_reductions.at(key).size();
-          },
-          db::get<Tags::NodesExpectedToContributeReductions>(box));
-      node_lock->unlock();
-
-      ASSERT(
-          observations_registered_with_id != std::numeric_limits<size_t>::max(),
-          "Failed to set observations_registered_with_id when mutating the "
-          "DataBox. This is a bug in the code.");
-
-      // Now that we've retrieved pointers to the data in the DataBox we wish to
-      // manipulate, lock the data and manipulate it.
-      reduction_data_lock->lock();
-      auto& nodes_contributed_to_observation =
-          (*nodes_contributed)[observation_id];
-      if (nodes_contributed_to_observation.find(sender_node_number) !=
-          nodes_contributed_to_observation.end()) {
-        ERROR("Already received reduction data at observation id "
-              << observation_id << " from node " << sender_node_number);
-      }
-      nodes_contributed_to_observation.insert(sender_node_number);
-
-      if (UNLIKELY(reduction_names.empty())) {
-        ERROR(
-            "The reduction names, which is a std::vector of the names of "
-            "the columns in the file, must be non-empty.");
-      }
-      if (auto current_names = reduction_names_map->find(observation_id);
-          current_names == reduction_names_map->end()) {
-        reduction_names_map->emplace(observation_id,
-                                     std::move(reduction_names));
-      } else if (UNLIKELY(current_names->second != reduction_names)) {
-        using ::operator<<;
-        ERROR(
-            "The reduction names passed in must match the currently "
-            "known reduction names. Current ones are "
-            << current_names->second << " while the received are "
-            << reduction_names);
-      }
-
-      if (reduction_data->find(observation_id) == reduction_data->end()) {
-        // This Action has been called for the first time,
-        // so all we need to do is move the input data to the
-        // reduction_data in the DataBox.
-        reduction_data->operator[](observation_id) =
-            std::move(received_reduction_data);
-      } else {
-        // This Action is being called at least the second time
-        // (but not the final time if on node 0).
-        reduction_data->at(observation_id)
-            .combine(std::move(received_reduction_data));
-      }
-
-      // We use a bool `write_to_disk` to allow us to defer the data writing
-      // until after we've unlocked the lock. For the same reason, we move the
-      // final, reduced result into `received_reduction_data` and
-      // `reduction_names`.
-      bool write_to_disk = false;
-      if (nodes_contributed_to_observation.size() ==
-          observations_registered_with_id) {
-        write_to_disk = true;
-        received_reduction_data =
-            std::move(reduction_data->operator[](observation_id));
-        reduction_names =
-            std::move(reduction_names_map->operator[](observation_id));
-        reduction_data->erase(observation_id);
-        reduction_names_map->erase(observation_id);
-        nodes_contributed->erase(observation_id);
-      }
-      reduction_data_lock->unlock();
-
-      if (write_to_disk) {
-        reduction_file_lock->lock();
-        // NOLINTNEXTLINE(bugprone-use-after-move)
-        received_reduction_data.finalize();
-        if constexpr (not std::is_same_v<Formatter, NoFormatter>) {
-          if (formatter.has_value()) {
-            Parallel::printf(
-                std::apply(*formatter, received_reduction_data.data()) + "\n");
+          if (UNLIKELY(registered_nodes.find(sender_node_number) ==
+                       registered_nodes.end())) {
+            ERROR("Node " << sender_node_number
+                          << " was not registered for the observation id "
+                          << observation_id);
           }
-        }
-        ReductionActions_detail::write_data(
-            subfile_name, observers::input_source_from_cache(cache),
-            // NOLINTNEXTLINE(bugprone-use-after-move)
-            std::move(reduction_names),
-            std::move(received_reduction_data.data()),
-            Parallel::get<Tags::ReductionFileName>(cache),
-            std::make_index_sequence<sizeof...(ReductionDatums)>{});
-        reduction_file_lock->unlock();
-      }
+
+          reduction_data = &*reduction_data_ptr;
+          reduction_names_map = &*reduction_names_map_ptr;
+          nodes_contributed = &*nodes_contributed_ptr;
+          reduction_data_lock = &*reduction_data_lock_ptr;
+          reduction_file_lock = &*reduction_file_lock_ptr;
+          observations_registered_with_id =
+              nodes_registered_for_reductions.at(key).size();
+        },
+        db::get<Tags::NodesExpectedToContributeReductions>(box));
+    node_lock->unlock();
+
+    ASSERT(
+        observations_registered_with_id != std::numeric_limits<size_t>::max(),
+        "Failed to set observations_registered_with_id when mutating the "
+        "DataBox. This is a bug in the code.");
+
+    // Now that we've retrieved pointers to the data in the DataBox we wish to
+    // manipulate, lock the data and manipulate it.
+    reduction_data_lock->lock();
+    auto& nodes_contributed_to_observation =
+        (*nodes_contributed)[observation_id];
+    if (nodes_contributed_to_observation.find(sender_node_number) !=
+        nodes_contributed_to_observation.end()) {
+      ERROR("Already received reduction data at observation id "
+            << observation_id << " from node " << sender_node_number);
+    }
+    nodes_contributed_to_observation.insert(sender_node_number);
+
+    if (UNLIKELY(reduction_names.empty())) {
+      ERROR(
+          "The reduction names, which is a std::vector of the names of "
+          "the columns in the file, must be non-empty.");
+    }
+    if (auto current_names = reduction_names_map->find(observation_id);
+        current_names == reduction_names_map->end()) {
+      reduction_names_map->emplace(observation_id, std::move(reduction_names));
+    } else if (UNLIKELY(current_names->second != reduction_names)) {
+      using ::operator<<;
+      ERROR(
+          "The reduction names passed in must match the currently "
+          "known reduction names. Current ones are "
+          << current_names->second << " while the received are "
+          << reduction_names);
+    }
+
+    if (reduction_data->find(observation_id) == reduction_data->end()) {
+      // This Action has been called for the first time,
+      // so all we need to do is move the input data to the
+      // reduction_data in the DataBox.
+      reduction_data->operator[](observation_id) =
+          std::move(received_reduction_data);
     } else {
-      (void)node_lock;
-      (void)observation_id;
-      (void)sender_node_number;
-      (void)subfile_name;
-      (void)reduction_names;
-      (void)received_reduction_data;
-      ERROR("Could not find one of the tags: "
-            << pretty_type::get_name<Tags::ReductionData<ReductionDatums...>>()
-            << ' '
-            << pretty_type::get_name<
-                   Tags::ReductionDataNames<ReductionDatums...>>()
-            << ", Tags::NodesThatContributedReductions, "
-               "Tags::ReductionDataLock, or Tags::H5FileLock.");
+      // This Action is being called at least the second time
+      // (but not the final time if on node 0).
+      reduction_data->at(observation_id)
+          .combine(std::move(received_reduction_data));
+    }
+
+    // We use a bool `write_to_disk` to allow us to defer the data writing
+    // until after we've unlocked the lock. For the same reason, we move the
+    // final, reduced result into `received_reduction_data` and
+    // `reduction_names`.
+    bool write_to_disk = false;
+    if (nodes_contributed_to_observation.size() ==
+        observations_registered_with_id) {
+      write_to_disk = true;
+      received_reduction_data =
+          std::move(reduction_data->operator[](observation_id));
+      reduction_names =
+          std::move(reduction_names_map->operator[](observation_id));
+      reduction_data->erase(observation_id);
+      reduction_names_map->erase(observation_id);
+      nodes_contributed->erase(observation_id);
+    }
+    reduction_data_lock->unlock();
+
+    if (write_to_disk) {
+      reduction_file_lock->lock();
+      // NOLINTNEXTLINE(bugprone-use-after-move)
+      received_reduction_data.finalize();
+      if constexpr (not std::is_same_v<Formatter, NoFormatter>) {
+        if (formatter.has_value()) {
+          Parallel::printf(
+              std::apply(*formatter, received_reduction_data.data()) + "\n");
+        }
+      }
+      ReductionActions_detail::write_data(
+          subfile_name, observers::input_source_from_cache(cache),
+          // NOLINTNEXTLINE(bugprone-use-after-move)
+          std::move(reduction_names), std::move(received_reduction_data.data()),
+          Parallel::get<Tags::ReductionFileName>(cache),
+          std::make_index_sequence<sizeof...(ReductionDatums)>{});
+      reduction_file_lock->unlock();
     }
   }
 };

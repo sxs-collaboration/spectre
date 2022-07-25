@@ -61,15 +61,7 @@ struct SetVariables {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if constexpr (tmpl::list_contains_v<
-                      typename db::DataBox<DbTagsList>::mutable_item_tags,
-                      ::Initialization::Tags::InitialTime>) {
-      impl<Metavariables>(make_not_null(&box));
-    } else {
-      ERROR(
-          "Could not find dependency 'Initialization::Tags::InitialTime' in "
-          "DataBox.");
-    }
+    impl<Metavariables>(make_not_null(&box));
     return {std::move(box)};
   }
 

@@ -60,11 +60,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct ReceivePoints {
-  template <
-      typename ParallelComponent, typename DbTags, typename Metavariables,
-      typename ArrayIndex, size_t VolumeDim,
-      Requires<tmpl::list_contains_v<DbTags, ::intrp::Tags::NumberOfElements>> =
-          nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex, size_t VolumeDim>
   static void apply(
       db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,

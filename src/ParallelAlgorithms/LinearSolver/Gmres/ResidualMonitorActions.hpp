@@ -47,9 +47,7 @@ struct InitializeResidualMagnitude {
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<initial_residual_magnitude_tag,
-                                              DataBox>> = nullptr>
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
@@ -104,9 +102,7 @@ struct StoreOrthogonalization {
  public:
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>,
-            Requires<db::tag_is_retrievable_v<orthogonalization_history_tag,
-                                              DataBox>> = nullptr>
+            typename DataBox = db::DataBox<DbTagsList>>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
