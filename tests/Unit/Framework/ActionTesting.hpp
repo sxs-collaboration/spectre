@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <charm++.h>
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -17,6 +18,7 @@
 #include "Framework/MockDistributedObject.hpp"
 #include "Framework/MockRuntimeSystem.hpp"
 #include "Framework/MockRuntimeSystemFreeFunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -408,12 +410,12 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     if (not initial_values_valid_) {
       ERROR(
           "The values being used to construct the initial DataBox have not "
@@ -423,7 +425,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),
         std::move(tuples::get<SimpleTags>(initial_values_))...);
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
   /// Sets the initial values of simple tags in the DataBox.

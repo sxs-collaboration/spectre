@@ -10,6 +10,7 @@
 #include <iterator>
 #include <limits>
 #include <map>
+#include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -42,7 +43,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -99,7 +100,7 @@ struct SendDataForReconstruction {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             typename Metavariables>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -190,7 +191,7 @@ struct SendDataForReconstruction {
                       std::move(data)});
       }
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -235,7 +236,7 @@ struct ReceiveDataForReconstruction {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             typename Metavariables>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -250,7 +251,7 @@ struct ReceiveDataForReconstruction {
     const auto number_of_expected_messages = element.neighbors().size();
     if (UNLIKELY(number_of_expected_messages == 0)) {
       // We have no neighbors, so just continue without doing any work
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     using ::operator<<;
@@ -270,7 +271,7 @@ struct ReceiveDataForReconstruction {
     // we have received all data
     if (received == inbox.end() or
         received->second.size() != number_of_expected_messages) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Now that we have received all the data, copy it over as needed.
@@ -380,7 +381,7 @@ struct ReceiveDataForReconstruction {
             }
           }
         });
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::dg::subcell::Actions

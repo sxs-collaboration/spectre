@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -20,6 +21,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -213,13 +215,13 @@ struct InitializePhaseRecord {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(std::move(box));
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -229,12 +231,12 @@ struct RecordPhaseIteration {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::PhaseRecord>(
         make_not_null(&box), [](const gsl::not_null<std::string*> phase_log) {
           *phase_log += MakeString{} << "Running phase: " << Phase << "\n";
@@ -244,7 +246,7 @@ struct RecordPhaseIteration {
           make_not_null(&box),
           [](const gsl::not_null<size_t*> step) { ++(*step); });
     }
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -265,12 +267,12 @@ struct TerminateAndRestart {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     if (db::get<Tags::Step>(box) % interval == 0) {
       if(db::get<Tags::Step>(box) < 15) {
         Parallel::simple_action<Actions::RestartMe<ParallelComponent>>(
@@ -281,20 +283,17 @@ struct TerminateAndRestart {
             [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate and Restart\n";
             });
-        return std::make_tuple(std::move(box),
-                               Parallel::AlgorithmExecution::Pause);
+        return {Parallel::AlgorithmExecution::Pause, std::nullopt};
       } else {
         db::mutate<Tags::PhaseRecord>(
             make_not_null(&box),
             [](const gsl::not_null<std::string*> phase_log) {
               *phase_log += "Terminate Completion\n";
             });
-        return std::make_tuple(std::move(box),
-                               Parallel::AlgorithmExecution::Halt);
+        return {Parallel::AlgorithmExecution::Halt, std::nullopt};
       }
     }
-    return std::make_tuple(std::move(box),
-                           Parallel::AlgorithmExecution::Continue);
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

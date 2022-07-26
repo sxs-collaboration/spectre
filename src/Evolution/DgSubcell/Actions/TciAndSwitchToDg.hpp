@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <deque>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -31,6 +32,7 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Time/History.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeStepId.hpp"
@@ -125,7 +127,7 @@ struct TciAndSwitchToDg {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent, size_t Dim = Metavariables::volume_dim>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -159,7 +161,7 @@ struct TciAndSwitchToDg {
       //
       // The third condition is that the user has requested we always do
       // subcell, so effectively a finite difference/volume code.
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     using variables_tag = typename Metavariables::system::variables_tag;
@@ -245,7 +247,7 @@ struct TciAndSwitchToDg {
             // the DG grid.
             tci_grid_history_ptr->clear();
           });
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     if (not is_substep_method) {
@@ -266,7 +268,7 @@ struct TciAndSwitchToDg {
             }
           });
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::dg::subcell::Actions

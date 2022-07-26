@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -11,6 +12,7 @@
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,7 +43,7 @@ struct SelectNumericalMethod {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -53,13 +55,13 @@ struct SelectNumericalMethod {
       const size_t dg_index =
           tmpl::index_of<ActionList, ::Actions::Label<Labels::BeginDg>>::value +
           1;
-      return {std::move(box), false, dg_index};
+      return {Parallel::AlgorithmExecution::Continue, dg_index};
     } else if (db::get<Tags::ActiveGrid>(box) == subcell::ActiveGrid::Subcell) {
       const size_t subcell_index =
           tmpl::index_of<ActionList,
                          ::Actions::Label<Labels::BeginSubcell>>::value +
           1;
-      return {std::move(box), false, subcell_index};
+      return {Parallel::AlgorithmExecution::Continue, subcell_index};
     }
     ERROR(
         "Only know DG and subcell active grids for selecting the numerical "

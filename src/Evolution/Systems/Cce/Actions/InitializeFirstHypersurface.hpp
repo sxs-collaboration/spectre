@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ScriPlusValues.hpp"
 #include "IO/Observer/Actions/GetLockPointer.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,7 +52,7 @@ struct InitializeFirstHypersurface {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -62,7 +64,7 @@ struct InitializeFirstHypersurface {
     // the self start 'reset's from the beginning
     if (db::get<::Tags::TimeStepId>(box).slab_number() > 0 or
         db::get<::Tags::TimeStepId>(box).substep_time().fraction() != 0) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     // some initialization schemes need the hdf5_lock so that they can read
     // their own input data from disk.
@@ -82,7 +84,7 @@ struct InitializeFirstHypersurface {
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
         make_not_null(&box),
         db::get<::Tags::TimeStepId>(box).substep_time().value());
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

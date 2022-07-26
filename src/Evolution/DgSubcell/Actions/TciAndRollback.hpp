@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <deque>
 #include <iterator>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -31,6 +32,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
@@ -70,7 +72,7 @@ struct TciAndRollback {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent, size_t Dim = Metavariables::volume_dim>
-  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -212,7 +214,7 @@ struct TciAndRollback {
         }
       }
 
-      return {std::move(box), false,
+      return {Parallel::AlgorithmExecution::Continue,
               tmpl::index_of<
                   ActionList,
                   ::Actions::Label<evolution::dg::subcell::Actions::Labels::
@@ -232,8 +234,7 @@ struct TciAndRollback {
           *rdmp_tci_data_ptr = std::move(std::get<1>(std::move(tci_result)));
         });
 
-    return {std::move(box), false,
-            tmpl::index_of<ActionList, TciAndRollback>::value + 1};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::dg::subcell::Actions

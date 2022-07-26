@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -10,6 +11,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshFiltering.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
@@ -47,12 +49,12 @@ struct FilterSwshVolumeQuantity {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t l_max = db::get<Tags::LMax>(box);
     const size_t l_filter_start = get<Tags::FilterLMax>(box);
     const double radial_filter_alpha = get<Tags::RadialFilterAlpha>(box);
@@ -67,7 +69,7 @@ struct FilterSwshVolumeQuantity {
               make_not_null(&get(*bondi_quantity)), l_max, l_filter_start,
               radial_filter_alpha, radial_filter_half_power);
         });
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

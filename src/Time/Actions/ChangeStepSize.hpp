@@ -4,10 +4,12 @@
 #pragma once
 
 #include <limits>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Tags.hpp"
@@ -148,7 +150,7 @@ struct ChangeStepSize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -163,13 +165,11 @@ struct ChangeStepSize {
     const bool step_successful =
         change_step_size<StepChoosersToUse>(make_not_null(&box), cache);
     if (step_successful) {
-      return {std::move(box), false,
-              tmpl::index_of<ActionList, ChangeStepSize>::value + 1};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     } else {
-      return {
-          std::move(box), false,
-          tmpl::index_if<ActionList,
-                         tt::is_a<Actions::UpdateU, tmpl::_1>>::value};
+      return {Parallel::AlgorithmExecution::Continue,
+              tmpl::index_if<ActionList,
+                             tt::is_a<Actions::UpdateU, tmpl::_1>>::value};
     }
   }
 };

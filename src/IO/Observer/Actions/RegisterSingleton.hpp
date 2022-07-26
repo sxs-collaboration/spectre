@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -12,6 +13,7 @@
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -32,7 +34,7 @@ struct RegisterSingletonWithObserverWriter {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -62,7 +64,7 @@ struct RegisterSingletonWithObserverWriter {
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
         observation_key, Parallel::my_node<size_t>(*Parallel::local(my_proxy)));
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 }  // namespace observers::Actions

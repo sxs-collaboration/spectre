@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -38,7 +39,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -218,12 +219,12 @@ struct InitializeElement {
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ElementId<Dim>& /*element_id*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
     const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const size_t num_points = mesh.number_of_grid_points();
@@ -276,7 +277,7 @@ struct InitializeElement {
         make_not_null(&box), std::move(intruding_extents),
         std::move(element_weight), std::move(intruding_overlap_weights),
         SubdomainData{num_points});
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -326,12 +327,11 @@ struct SolveSubdomain {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -343,7 +343,7 @@ struct SolveSubdomain {
     if (LIKELY(has_overlap_data) and
         not dg::has_received_from_all_mortars<overlap_residuals_inbox_tag>(
             iteration_id, element, inboxes)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Do some logging
@@ -452,7 +452,7 @@ struct SolveSubdomain {
                 std::move(overlap_solution)));
       }
     }
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -478,12 +478,11 @@ struct ReceiveOverlapSolution {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = db::get<domain::Tags::Element<Dim>>(box);
@@ -491,12 +490,12 @@ struct ReceiveOverlapSolution {
     // Nothing to do if overlap is empty
     if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
                  element.number_of_neighbors() == 0)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     if (not dg::has_received_from_all_mortars<overlap_solution_inbox_tag>(
             iteration_id, element, inboxes)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Do some logging
@@ -533,7 +532,7 @@ struct ReceiveOverlapSolution {
         db::get<domain::Tags::Mesh<Dim>>(box).extents(),
         db::get<Tags::IntrudingExtents<Dim, OptionsGroup>>(box),
         db::get<domain::Tags::Faces<Dim, Tags::Weight<OptionsGroup>>>(box));
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

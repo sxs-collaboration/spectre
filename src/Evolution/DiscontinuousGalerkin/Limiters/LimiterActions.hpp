@@ -9,12 +9,13 @@
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -82,7 +83,7 @@ struct Limit {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -98,7 +99,7 @@ struct Limit {
     const auto num_expected = element.neighbors().size();
     if (num_expected > 0 and
         (received == inbox.end() or received->second.size() != num_expected)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     const auto& limiter = get<typename Metavariables::limiter>(cache);
@@ -110,7 +111,7 @@ struct Limit {
 
     inbox.erase(local_temporal_id);
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -150,7 +151,7 @@ struct SendData {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -196,7 +197,7 @@ struct SendData {
       }  // loop over neighbors_in_direction
     }    // loop over element.neighbors()
 
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

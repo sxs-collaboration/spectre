@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -19,7 +20,7 @@
 #include "IO/Logging/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/HasReceivedFromAllMortars.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -83,7 +84,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -94,7 +95,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
     // Skip communicating if the overlap is empty
     if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
                  element.number_of_neighbors() == 0)) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     // Do some logging
@@ -155,7 +156,7 @@ struct SendOverlapFields<tmpl::list<OverlapFields...>, OptionsGroup,
                     : collapsed_overlap_fields));
       }
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond
@@ -191,12 +192,11 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const auto& iteration_id =
         get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     const auto& element = get<domain::Tags::Element<Dim>>(box);
@@ -204,12 +204,12 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
     // Nothing to receive if overlap is empty
     if (UNLIKELY(db::get<Tags::MaxOverlap<OptionsGroup>>(box) == 0 or
                  element.number_of_neighbors() == 0)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     if (not dg::has_received_from_all_mortars<overlap_fields_tag>(
             iteration_id, element, inboxes)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Do some logging
@@ -238,7 +238,7 @@ struct ReceiveOverlapFields<Dim, tmpl::list<OverlapFields...>, OptionsGroup> {
           }
         });
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond

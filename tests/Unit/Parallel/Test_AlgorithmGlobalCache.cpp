@@ -20,7 +20,7 @@
 #include "IO/H5/File.hpp"
 #include "IO/Observer/Actions/GetLockPointer.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -89,13 +89,14 @@ struct initialize {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const  // NOLINT const
-                    /*meta*/) {
-    return std::make_tuple(std::move(box), true);
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const  // NOLINT const
+      /*meta*/) {
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -172,8 +173,9 @@ struct use_stored_double {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
-      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
@@ -191,7 +193,7 @@ struct use_stored_double {
                                    this_proxy))
                          : std::unique_ptr<Parallel::Callback>{};
             })) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     // [check_mutable_cache_item_is_ready]
 
@@ -201,7 +203,7 @@ struct use_stored_double {
     SPECTRE_PARALLEL_REQUIRE(Parallel::get<Tags::VectorOfDoubles>(cache) ==
                              expected_result);
     // [retrieve_mutable_cache_item]
-    return {std::move(box), Parallel::AlgorithmExecution::Pause};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 }  // namespace Actions

@@ -5,12 +5,14 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
@@ -77,17 +79,17 @@ struct InitializeResidualMonitor {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename Metavariables, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // The `InitializeResidualMagnitude` action populates these tags
     // with initial values
     Initialization::mutate_assign<tmpl::list<initial_residual_magnitude_tag>>(
         make_not_null(&box), std::numeric_limits<double>::signaling_NaN());
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

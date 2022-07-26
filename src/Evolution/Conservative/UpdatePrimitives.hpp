@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -37,17 +39,17 @@ struct UpdatePrimitives {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     using PrimFromCon =
         typename Metavariables::system::template primitive_from_conservative<
             typename Metavariables::ordered_list_of_primitive_recovery_schemes>;
     db::mutate_apply<PrimFromCon>(make_not_null(&box));
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

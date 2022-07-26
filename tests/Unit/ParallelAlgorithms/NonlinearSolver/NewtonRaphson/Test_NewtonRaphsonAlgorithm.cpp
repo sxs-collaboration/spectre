@@ -3,10 +3,12 @@
 
 #define CATCH_CONFIG_RUNNER
 
+#include <optional>
 #include <vector>
 
 #include "Helpers/ParallelAlgorithms/NonlinearSolver/Algorithm.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -37,7 +39,7 @@ template <typename OperandTag>
 struct ApplyNonlinearOperator {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -47,7 +49,7 @@ struct ApplyNonlinearOperator {
         make_not_null(&box),
         [](const auto Ax, const auto& x) { *Ax = cube(x) - x; },
         get<OperandTag>(box));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -55,7 +57,7 @@ template <typename OperandTag, typename FieldTag>
 struct ApplyLinearizedOperator {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -67,7 +69,7 @@ struct ApplyLinearizedOperator {
           *Ap = (3. * square(x) - 1) * dx;
         },
         get<OperandTag>(box), get<FieldTag>(box));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

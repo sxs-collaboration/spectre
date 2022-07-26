@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseControl/ContributeToPhaseChangeReduction.hpp"
@@ -55,7 +55,7 @@ struct ExecutePhaseChange {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -90,9 +90,9 @@ struct ExecutePhaseChange {
             cache);
       }
     }
-    return {std::move(box), should_halt
-                                ? Parallel::AlgorithmExecution::Halt
-                                : Parallel::AlgorithmExecution::Continue};
+    return {should_halt ? Parallel::AlgorithmExecution::Halt
+                        : Parallel::AlgorithmExecution::Continue,
+            std::nullopt};
   }
 };
 }  // namespace Actions

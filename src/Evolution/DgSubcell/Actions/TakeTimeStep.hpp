@@ -19,6 +19,7 @@
 #include "Evolution/DgSubcell/Tags/Jacobians.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 /// \cond
@@ -63,7 +64,7 @@ struct TakeTimeStep {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent, size_t Dim = Metavariables::volume_dim>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -96,7 +97,7 @@ struct TakeTimeStep {
             data.second = evolution::dg::MortarData<Dim>{};
           }
         });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::dg::subcell::fd::Actions

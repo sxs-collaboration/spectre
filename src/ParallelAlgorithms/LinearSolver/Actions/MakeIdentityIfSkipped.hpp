@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -10,6 +11,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -76,13 +78,12 @@ struct MakeIdentityIfSkipped {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, MakeIdentityIfSkipped>::value;
     constexpr size_t proceed_action_index =
@@ -101,11 +102,9 @@ struct MakeIdentityIfSkipped {
           make_not_null(&box),
           [](const auto fields, const auto& source) { *fields = source; },
           get<typename LinearSolverType::source_tag>(box));
-      return {std::move(box), Parallel::AlgorithmExecution::Continue,
-              this_action_index + 1};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
-            proceed_action_index};
+    return {Parallel::AlgorithmExecution::Continue, proceed_action_index};
   }
 };
 

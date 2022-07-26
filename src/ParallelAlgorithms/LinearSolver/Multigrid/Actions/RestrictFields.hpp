@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -21,6 +22,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -88,7 +90,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -97,7 +99,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
     // Skip restriction on coarsest level
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     if (not parent_id.has_value()) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     const size_t iteration_id =
@@ -150,7 +152,7 @@ struct SendFieldsToCoarserGrid<tmpl::list<FieldsTags...>, OptionsGroup,
         DataFromChildrenInboxTag<Dim, tmpl::list<ReceiveTags...>>>(
         receiver_proxy[*parent_id], iteration_id,
         std::make_pair(element_id, std::move(restricted_fields)));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond
@@ -175,16 +177,15 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // Skip on finest grid
     const auto& child_ids = db::get<Tags::ChildIds<Dim>>(box);
     if (child_ids.empty()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     // Wait for data from finer grid
@@ -195,13 +196,13 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
             inboxes);
     const auto received_this_iteration = inbox.find(iteration_id);
     if (received_this_iteration == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     const auto& received_children_data = received_this_iteration->second;
     for (const auto& child_id : child_ids) {
       if (received_children_data.find(child_id) ==
           received_children_data.end()) {
-        return {std::move(box), Parallel::AlgorithmExecution::Retry};
+        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
       }
     }
     auto children_data = std::move(inbox.extract(iteration_id).mapped());
@@ -231,7 +232,7 @@ struct ReceiveFieldsFromFinerGrid<Dim, FieldsTags, OptionsGroup,
     expand_pack(db::mutate<ReceiveTags>(
         make_not_null(&box), assemble_children_data, ReceiveTags{})...);
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond

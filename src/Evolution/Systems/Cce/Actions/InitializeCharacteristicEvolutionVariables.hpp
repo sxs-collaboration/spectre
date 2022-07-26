@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -13,6 +14,7 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/StepChoosers/ErrorControl.hpp"
@@ -122,12 +124,12 @@ struct InitializeCharacteristicEvolutionVariables {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
     const size_t number_of_radial_points =
         db::get<Spectral::Swsh::Tags::NumberOfRadialPointsBase>(box);
@@ -160,7 +162,7 @@ struct InitializeCharacteristicEvolutionVariables {
         Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
          false);
 
-      return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

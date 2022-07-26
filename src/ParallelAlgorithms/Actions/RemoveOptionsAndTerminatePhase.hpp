@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <optional>
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,11 +35,12 @@ struct RemoveOptionsAndTerminatePhase {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ArrayIndex,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     using initialization_tags = Parallel::get_initialization_tags<ActionList>;
     using initialization_tags_to_keep =
         Parallel::get_initialization_tags_to_keep<ActionList>;
@@ -49,7 +52,7 @@ struct RemoveOptionsAndTerminatePhase {
     if constexpr (tmpl::size<tags_to_remove>::value > 0) {
       detail::remove(make_not_null(&box), tags_to_remove{});
     }
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 }  // namespace Actions

@@ -3,12 +3,13 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/Cce/ReceiveTags.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Time/Tags.hpp"
@@ -42,24 +43,17 @@ struct ReceiveWorldtubeData {
   using inbox_tags = tmpl::list<Cce::ReceiveTags::BoundaryData<
       typename Metavariables::cce_boundary_communication_tags>>;
 
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<
-          tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> and
-          tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution, size_t>
-  apply(db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     auto& inbox = tuples::get<Cce::ReceiveTags::BoundaryData<
         typename Metavariables::cce_boundary_communication_tags>>(inboxes);
     if (inbox.count(db::get<::Tags::TimeStepId>(box)) != 1) {
-      return {std::move(box), Parallel::AlgorithmExecution::Pause,
+      return {Parallel::AlgorithmExecution::Pause,
               tmpl::index_of<ActionList, ReceiveWorldtubeData>::value};
     }
 
@@ -75,29 +69,8 @@ struct ReceiveWorldtubeData {
               db::get<::Tags::TimeStepId>(box));
         });
     inbox.erase(db::get<::Tags::TimeStepId>(box));
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+    return {Parallel::AlgorithmExecution::Continue,
             tmpl::index_of<ActionList, ReceiveWorldtubeData>::value + 1};
-  }
-  template <
-      typename DbTags, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<
-          not tmpl::list_contains_v<
-              tmpl::list<InboxTags...>,
-              Cce::ReceiveTags::BoundaryData<
-                  typename Metavariables::cce_boundary_communication_tags>> or
-          not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    ERROR(
-        "Required tags not present in the inbox or databox to transfer the CCE "
-        "boundary data");
-    // provided for return type inference. This line will never be executed.
-    return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions

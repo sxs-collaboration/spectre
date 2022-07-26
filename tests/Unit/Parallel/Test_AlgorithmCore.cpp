@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
@@ -18,7 +19,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -104,12 +105,11 @@ struct increment_count_actions_called {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -119,7 +119,9 @@ struct increment_count_actions_called {
           ++*count_actions_called;
         });
     static int a = 0;
-    return std::tuple<db::DataBox<DbTags>&&, bool>(std::move(box), ++a >= 5);
+    return {(++a >= 5 ? Parallel::AlgorithmExecution::Pause
+                      : Parallel::AlgorithmExecution::Continue),
+            std::nullopt};
   }
 };
 
@@ -128,18 +130,18 @@ struct no_op {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/)
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/)
   // [apply_iterative]
   {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -148,17 +150,17 @@ struct initialize {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         std::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0, 1, 100);
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -219,12 +221,11 @@ struct add_int_value_10 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -232,7 +233,9 @@ struct add_int_value_10 {
         });
     static int a = 0;
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 10);
-    return std::make_tuple(std::move(box), ++a >= 5);
+    return {(++a >= 5 ? Parallel::AlgorithmExecution::Pause
+                      : Parallel::AlgorithmExecution::Continue),
+            std::nullopt};
   }
 };
 
@@ -240,12 +243,11 @@ struct increment_int0 {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
         [](const gsl::not_null<int*> count_actions_called) {
@@ -253,7 +255,7 @@ struct increment_int0 {
         });
     db::mutate<Int0>(make_not_null(&box),
                      [](const gsl::not_null<int*> int0) { ++*int0; });
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -261,12 +263,12 @@ struct remove_int0 {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 11);
     db::mutate<CountActionsCalled>(
         make_not_null(&box),
@@ -277,7 +279,7 @@ struct remove_int0 {
         db::get<Int0>(box));
     // default assign to "remove"
     Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -305,28 +307,28 @@ struct initialize {
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
       Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
           nullptr>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0,
                                                TestAlgorithmArrayInstance{0});
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
       Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -394,14 +396,13 @@ struct add_int0_to_box {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -411,7 +412,7 @@ struct set_int0_from_receive {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -421,7 +422,7 @@ struct set_int0_from_receive {
                      [](const gsl::not_null<int*> int1) { ++*int1; });
     // [retry_example]
     if (inbox.count(db::get<TemporalId>(box)) == 0) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     // [retry_example]
 
@@ -438,9 +439,9 @@ struct set_int0_from_receive {
         [&int0](const gsl::not_null<int*> int0_box) {
           *int0_box = int0;
         });
-    return {std::move(box),
-            ++a >= 5 ? Parallel::AlgorithmExecution::Pause
-                     : Parallel::AlgorithmExecution::Continue};
+    return {++a >= 5 ? Parallel::AlgorithmExecution::Pause
+                     : Parallel::AlgorithmExecution::Continue,
+            std::nullopt};
   }
 };
 
@@ -448,18 +449,17 @@ struct update_instance {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     db::mutate<TemporalId>(
         make_not_null(&box),
         [](const gsl::not_null<TestAlgorithmArrayInstance*> temporal_id) {
           ++*temporal_id;
         });
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -470,28 +470,28 @@ struct initialize {
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
       Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
           nullptr>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0, 0,
                                                TestAlgorithmArrayInstance{0});
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
       Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -564,14 +564,12 @@ struct iterate_increment_int0 {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>&
-                    /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const  // NOLINT const
-                    /*meta*/)
-      -> std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool, size_t> {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<tmpl::list<DbTags...>>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -585,16 +583,15 @@ struct iterate_increment_int0 {
 
     const int max_int0_value = 25;
     if (db::get<Int0>(box) < max_int0_value) {
-      return std::tuple<decltype(std::move(box)), bool, size_t>(
-          std::move(box), false,
-          tmpl::index_of<ActionList, ::add_remove_test::increment_int0>::value);
+      return {
+          Parallel::AlgorithmExecution::Continue,
+          tmpl::index_of<ActionList, ::add_remove_test::increment_int0>::value};
     }
 
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == max_int0_value);
     // [out_of_order_action]
-    return std::tuple<decltype(std::move(box)), bool, size_t>(
-        std::move(box), true,
-        tmpl::index_of<ActionList, iterate_increment_int0>::value + 1);
+    return {Parallel::AlgorithmExecution::Pause,
+            tmpl::index_of<ActionList, iterate_increment_int0>::value + 1};
     // [out_of_order_action]
   }
 };

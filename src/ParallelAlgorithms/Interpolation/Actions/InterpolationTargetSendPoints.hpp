@@ -3,8 +3,11 @@
 
 #pragma once
 
+#include <optional>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/ElementReceiveInterpPoints.hpp"
@@ -39,7 +42,7 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename Metavariables,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -57,7 +60,7 @@ struct InterpolationTargetSendTimeIndepPointsToElements {
             Metavariables>>(cache);
     Parallel::simple_action<ElementReceiveInterpPoints<InterpolationTargetTag>>(
         receiver_proxy, std::move(coords));
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

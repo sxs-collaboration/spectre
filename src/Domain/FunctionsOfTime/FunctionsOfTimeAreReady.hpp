@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -13,7 +14,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Callback.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -94,7 +95,7 @@ struct CheckFunctionsOfTimeAreReady {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
@@ -102,8 +103,9 @@ struct CheckFunctionsOfTimeAreReady {
     const bool ready =
         functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
             cache, array_index, component, db::get<::Tags::Time>(box));
-    return {std::move(box), ready ? Parallel::AlgorithmExecution::Continue
-                                  : Parallel::AlgorithmExecution::Retry};
+    return {ready ? Parallel::AlgorithmExecution::Continue
+                  : Parallel::AlgorithmExecution::Retry,
+            std::nullopt};
   }
 };
 }  // namespace Actions

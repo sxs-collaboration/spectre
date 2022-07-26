@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>
@@ -39,6 +40,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -166,84 +168,72 @@ struct InitializeSubdomain {
 
   template <typename DataBox, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<DataBox&&> apply(
+  static Parallel::iterable_action_return_t apply(
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    if constexpr (tmpl::all<initialization_tags,
-                            tmpl::bind<db::tag_is_retrievable, tmpl::_1,
-                                       tmpl::pin<DataBox>>>::value) {
-      const auto& element = db::get<domain::Tags::Element<Dim>>(box);
-      for (const auto& [direction, neighbors] : element.neighbors()) {
-        const auto& orientation = neighbors.orientation();
-        const auto direction_from_neighbor = orientation(direction.opposite());
-        for (const auto& neighbor_id : neighbors) {
-          const LinearSolver::Schwarz::OverlapId<Dim> overlap_id{direction,
-                                                                 neighbor_id};
-          // Initialize background-agnostic geometry on overlaps
+    const auto& element = db::get<domain::Tags::Element<Dim>>(box);
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      const auto& orientation = neighbors.orientation();
+      const auto direction_from_neighbor = orientation(direction.opposite());
+      for (const auto& neighbor_id : neighbors) {
+        const LinearSolver::Schwarz::OverlapId<Dim> overlap_id{direction,
+                                                               neighbor_id};
+        // Initialize background-agnostic geometry on overlaps
+        elliptic::util::mutate_apply_at<
+            db::wrap_tags_in<overlaps_tag,
+                             typename InitializeGeometry::return_tags>,
+            typename InitializeGeometry::argument_tags,
+            typename InitializeGeometry::argument_tags>(
+            InitializeGeometry{}, make_not_null(&box), overlap_id, neighbor_id);
+        // Initialize subdomain-specific tags on overlaps
+        elliptic::util::mutate_apply_at<
+            db::wrap_tags_in<overlaps_tag,
+                             typename InitializeOverlapGeometry::return_tags>,
+            db::wrap_tags_in<overlaps_tag,
+                             typename InitializeOverlapGeometry::argument_tags>,
+            tmpl::list<>>(
+            InitializeOverlapGeometry{}, make_not_null(&box), overlap_id,
+            db::get<domain::Tags::InitialExtents<Dim>>(box), neighbor_id,
+            direction_from_neighbor,
+            db::get<LinearSolver::Schwarz::Tags::MaxOverlap<OptionsGroup>>(
+                box));
+        if constexpr (has_background_fields) {
+          // Initialize faces and mortars on overlaps
+          const auto& background = db::get<BackgroundTag>(box);
+          using background_classes = tmpl::at<
+              typename Metavariables::factory_creation::factory_classes,
+              std::decay_t<decltype(background)>>;
           elliptic::util::mutate_apply_at<
               db::wrap_tags_in<overlaps_tag,
-                               typename InitializeGeometry::return_tags>,
-              typename InitializeGeometry::argument_tags,
-              typename InitializeGeometry::argument_tags>(
-              InitializeGeometry{}, make_not_null(&box), overlap_id,
-              neighbor_id);
-          // Initialize subdomain-specific tags on overlaps
-          elliptic::util::mutate_apply_at<
-              db::wrap_tags_in<overlaps_tag,
-                               typename InitializeOverlapGeometry::return_tags>,
+                               typename InitializeFacesAndMortars::return_tags>,
               db::wrap_tags_in<
                   overlaps_tag,
-                  typename InitializeOverlapGeometry::argument_tags>,
-              tmpl::list<>>(
-              InitializeOverlapGeometry{}, make_not_null(&box), overlap_id,
-              db::get<domain::Tags::InitialExtents<Dim>>(box), neighbor_id,
-              direction_from_neighbor,
-              db::get<LinearSolver::Schwarz::Tags::MaxOverlap<OptionsGroup>>(
-                  box));
-          if constexpr (has_background_fields) {
-            // Initialize faces and mortars on overlaps
-            const auto& background = db::get<BackgroundTag>(box);
-            using background_classes = tmpl::at<
-                typename Metavariables::factory_creation::factory_classes,
-                std::decay_t<decltype(background)>>;
-            elliptic::util::mutate_apply_at<
-                db::wrap_tags_in<
-                    overlaps_tag,
-                    typename InitializeFacesAndMortars::return_tags>,
-                db::wrap_tags_in<
-                    overlaps_tag,
-                    typename InitializeFacesAndMortars::argument_tags>,
-                tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                              overlap_id,
-                              db::get<domain::Tags::InitialExtents<Dim>>(box),
-                              background, background_classes{});
-            // Background fields
-            initialize_background_fields(make_not_null(&box), overlap_id);
-          } else {
-            // Initialize faces and mortars on overlaps
-            elliptic::util::mutate_apply_at<
-                db::wrap_tags_in<
-                    overlaps_tag,
-                    typename InitializeFacesAndMortars::return_tags>,
-                db::wrap_tags_in<
-                    overlaps_tag,
-                    typename InitializeFacesAndMortars::argument_tags>,
-                tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
-                              overlap_id,
-                              db::get<domain::Tags::InitialExtents<Dim>>(box));
-          }
-          // Faces on the other side of the overlapped element's mortars
-          initialize_remote_faces(make_not_null(&box), overlap_id);
-        }  // neighbors in direction
-      }    // directions
-    } else {
-      ERROR(
-          "Dependencies not fulfilled. Did you forget to terminate the phase "
-          "after removing options?");
-    }
-    return {std::move(box)};
+                  typename InitializeFacesAndMortars::argument_tags>,
+              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
+                            overlap_id,
+                            db::get<domain::Tags::InitialExtents<Dim>>(box),
+                            background, background_classes{});
+          // Background fields
+          initialize_background_fields(make_not_null(&box), overlap_id);
+        } else {
+          // Initialize faces and mortars on overlaps
+          elliptic::util::mutate_apply_at<
+              db::wrap_tags_in<overlaps_tag,
+                               typename InitializeFacesAndMortars::return_tags>,
+              db::wrap_tags_in<
+                  overlaps_tag,
+                  typename InitializeFacesAndMortars::argument_tags>,
+              tmpl::list<>>(InitializeFacesAndMortars{}, make_not_null(&box),
+                            overlap_id,
+                            db::get<domain::Tags::InitialExtents<Dim>>(box));
+        }
+        // Faces on the other side of the overlapped element's mortars
+        initialize_remote_faces(make_not_null(&box), overlap_id);
+      }  // neighbors in direction
+    }    // directions
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
  private:
