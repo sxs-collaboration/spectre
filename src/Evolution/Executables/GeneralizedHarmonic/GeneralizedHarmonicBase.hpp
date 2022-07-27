@@ -236,14 +236,6 @@ struct GeneralizedHarmonicTemplateBase<
                                         DataVector>,
           gr::Tags::SpatialRicciScalarCompute<volume_dim, ::Frame::Inertial,
                                               DataVector>,
-          GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
-              3, ::Frame::Inertial>,
-          gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
-                                        DataVector>,
-          gr::Tags::WeylTypeD1Compute<volume_dim, ::Frame::Inertial,
-                                      DataVector>,
-          gr::Tags::WeylTypeD1ScalarCompute<volume_dim, ::Frame::Inertial,
-                                            DataVector>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
@@ -267,7 +259,15 @@ struct GeneralizedHarmonicTemplateBase<
                          GeneralizedHarmonic::Tags::FourIndexConstraint<3,
                                                                         frame>>,
                      GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
-                                                                        frame>>,
+                                                                        frame>,
+                     GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
+              3, ::Frame::Inertial>,
+          gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
+                                        DataVector>,
+          gr::Tags::WeylTypeD1Compute<3, ::Frame::Inertial,
+                                      DataVector>,
+          gr::Tags::WeylTypeD1ScalarCompute<3, ::Frame::Inertial,
+                                            DataVector>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

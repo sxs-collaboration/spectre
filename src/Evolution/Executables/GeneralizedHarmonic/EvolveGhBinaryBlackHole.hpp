@@ -266,20 +266,6 @@ struct EvolutionMetavars {
                                         DataVector>,
           gr::Tags::SpatialRicciScalarCompute<volume_dim, ::Frame::Inertial,
                                               DataVector>,
-          //   gr::Tags::SpacetimeNormalVectorCompute<volume_dim,
-          //   ::Frame::Inertial,
-          //                                          DataVector>,
-          //   GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
-          //       3, ::Frame::Inertial>,
-          //   gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
-          //                                 DataVector>,
-          //   gr::Tags::WeylElectricScalarCompute<volume_dim,
-          //   ::Frame::Inertial,
-          //                                       DataVector>,
-          //   gr::Tags::WeylTypeD1Compute<volume_dim, ::Frame::Inertial,
-          //                               DataVector>,
-          //   gr::Tags::WeylTypeD1ScalarCompute<volume_dim, ::Frame::Inertial,
-          //                                     DataVector>,
           // following tags added to observe constraints
           ::Tags::PointwiseL2NormCompute<
               GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim,
@@ -306,7 +292,15 @@ struct EvolutionMetavars {
                   GeneralizedHarmonic::Tags::FourIndexConstraint<
                       3, ::Frame::Inertial>>,
               GeneralizedHarmonic::Tags::ConstraintEnergyCompute<
-                  3, ::Frame::Inertial>>,
+                  3, ::Frame::Inertial>,
+                  GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
+              3, ::Frame::Inertial>,
+          gr::Tags::WeylElectricCompute<3, ::Frame::Inertial,
+                                        DataVector>,
+          gr::Tags::WeylTypeD1Compute<3, ::Frame::Inertial,
+                                      DataVector>,
+          gr::Tags::WeylTypeD1ScalarCompute<3, ::Frame::Inertial,
+                                            DataVector>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
