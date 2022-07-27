@@ -4,7 +4,7 @@
         "compilers": {
             "C": "/usr/bin/clang-10",
             "CXX": "/usr/bin/clang++-10",
-            "Fortran": "/usr/bin/gfortran-8"
+            "Fortran": "/usr/bin/gfortran-9"
         },
         "cmakeSettings": {
             "CHARM_ROOT": "/work/charm_7_0_0/multicore-linux-x86_64-clang",
