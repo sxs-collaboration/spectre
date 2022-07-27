@@ -566,11 +566,11 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
           2.0 * function_at_rhobar_min / deriv_function_at_rhobar_min;
       try {
         // We have a good guess, so use newton_raphson
-        const size_t digits = 14;
         // use rhobar_min as maximum value, since that brackets the root.
         rhobar =
             RootFinder::newton_raphson(function_and_deriv_to_zero, rhobar_min,
-                                       new_rhobar_min, rhobar_min, digits);
+                                       new_rhobar_min, rhobar_min, 0.0, 1.0e-14,
+                                       0.0);
       } catch (std::exception&) {
         const double function_at_new_rhobar_min =
             function_to_zero(new_rhobar_min);
@@ -595,11 +595,11 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
           2.0 * function_at_rhobar_max / deriv_function_at_rhobar_max;
       try {
         // We have a good guess, so use newton_raphson
-        const size_t digits = 14;
         // use rhobar_max as minimum value, since that brackets the root.
         rhobar =
             RootFinder::newton_raphson(function_and_deriv_to_zero, rhobar_max,
-                                       rhobar_max, new_rhobar_max, digits);
+                                       rhobar_max, new_rhobar_max, 0.0, 1.0e-14,
+                                       0.0);
       } catch (std::exception&) {
         const double function_at_new_rhobar_max =
             function_to_zero(new_rhobar_max);

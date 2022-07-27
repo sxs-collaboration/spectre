@@ -180,7 +180,7 @@ RiemannProblem<Dim>::RiemannProblem(
     try {
       pressure_star_ = RootFinder::newton_raphson(
           f_of_p_and_deriv, guess_for_pressure_star, pressure_lower,
-          pressure_upper, -log10(pressure_star_tol_));
+          pressure_upper, 0.0, pressure_star_tol_, 0.0);
     } catch (std::exception& exception) {
       ERROR(
           "Failed to find p_* with Newton-Raphson root finder. Got "

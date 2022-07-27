@@ -187,12 +187,9 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
   // the CubicEquation solver: ~ 480 ns
   // boost implemented Newton-Raphson: ~ 280 ns
   // minimal Newton-Raphson from Numerical Recipes: ~ 255 ns
-  // Despite the minimal Newton-Raphson being more efficient than the boost
-  // version, here we utilize the boost implementation, as it includes
-  // additional checks for zero derivative, checks on bounds, and can implement
-  // bisection if necessary.
   const double scale_factor =
-      RootFinder::newton_raphson(cubic_and_deriv, initial_guess, 0.0, 1.0, 14) /
+      RootFinder::newton_raphson(cubic_and_deriv, initial_guess, 0.0, 1.0,
+                                 1.0e-14, 1.0e-14, 0.0) /
       target_dimensionless_radius;
 
   std::array<double, Dim> result{};

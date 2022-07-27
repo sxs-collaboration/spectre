@@ -281,10 +281,11 @@ double Spectral::rest_mass_density_from_enthalpy(
                         (density * density) * this->gamma(x);
       return std::make_pair(f, df);
     };
-    const size_t digits = 14;
+    const double tolerance = 1.0e-14;
     const double intial_guess = 0.5 * (reference_density_ + upper_density);
     const auto root_from_lambda = RootFinder::newton_raphson(
-        f_df_lambda, intial_guess, reference_density_, upper_density, digits);
+        f_df_lambda, intial_guess, reference_density_, upper_density, 0.0,
+        tolerance, 0.0);
     return root_from_lambda;
   }
 }

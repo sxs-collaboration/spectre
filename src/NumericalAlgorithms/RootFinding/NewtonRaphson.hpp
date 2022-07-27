@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include <boost/math/tools/roots.hpp>
-#include <functional>
-#include <limits>
+#include <cmath>
+#include <cstddef>
+#include <optional>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
@@ -17,20 +18,21 @@
 namespace RootFinder {
 /*!
  * \ingroup NumericalAlgorithmsGroup
- * \brief Finds the root of the function `f` with the Newton-Raphson method.
+ * \brief Finds the root of the function `f` with the Newton-Raphson
+ * method, falling back to bisection on poor convergence.
  *
- * `f` is a unary invokable that takes a `double` which is the current value at
- * which to evaluate `f`. `f` must return a `std::pair<double, double>` where
- * the first element is the function value and the second element is the
- * derivative of the function.  An example is below.
+ * `f` is a unary invokable that takes a `double` which is the current
+ * value at which to evaluate `f`. `f` must return a
+ * `std::pair<double, double>` where the first element is the function
+ * value and the second element is the derivative of the function.
+ * The method converges when the residual is smaller than or equal to
+ * \p residual_tolerance or when the step size is smaller than \p
+ * step_absolute_tolerance or the proposed result times \p
+ * step_relative_tolerance.
  *
  * \snippet Test_NewtonRaphson.cpp double_newton_raphson_root_find
  *
- * See the [Boost](http://www.boost.org/) documentation for more details.
- *
  * \requires Function `f` is invokable with a `double`
- * \note The parameter `digits` specifies the precision of the result in its
- * desired number of base-10 digits.
  *
  * \throws `convergence_error` if the requested precision is not met after
  * `max_iterations` iterations.
@@ -38,27 +40,95 @@ namespace RootFinder {
 template <typename Function>
 double newton_raphson(const Function& f, const double initial_guess,
                       const double lower_bound, const double upper_bound,
-                      const size_t digits, const size_t max_iterations = 50) {
-  ASSERT(digits < std::numeric_limits<double>::digits10,
-         "The desired accuracy of " << digits
-                                    << " base-10 digits must be smaller than "
-                                       "the machine numeric limit of "
-                                    << std::numeric_limits<double>::digits10
-                                    << " base-10 digits.");
+                      const double residual_tolerance,
+                      const double step_absolute_tolerance,
+                      const double step_relative_tolerance,
+                      const size_t max_iterations = 50) {
+  // Check if a and b have the same sign.  Zero does not have the same
+  // sign as anything.
+  const auto same_sign = [](const double a, const double b) {
+    return a * b > 0.0;
+  };
 
-  boost::uintmax_t max_iters = max_iterations;
-  // clang-tidy: internal boost warning, can't fix it.
-  const auto result = boost::math::tools::newton_raphson_iterate(  // NOLINT
-      f, initial_guess, lower_bound, upper_bound,
-      std::round(std::log2(std::pow(10, digits))), max_iters);
-  if (max_iters >= max_iterations) {
-    throw convergence_error(MakeString{}
-                            << "newton_raphson reached max iterations of "
-                            << max_iterations
-                            << " without converging. Best result is: " << result
-                            << " with residual " << f(result).first);
+  ASSERT(residual_tolerance >= 0.0, "residual_tolerance must be non-negative.");
+  ASSERT(step_absolute_tolerance >= 0.0,
+         "step_absolute_tolerance must be non-negative.");
+  ASSERT(step_relative_tolerance >= 0.0,
+         "step_relative_tolerance must be non-negative.");
+
+  ASSERT(not same_sign(f(lower_bound).first, f(upper_bound).first) or
+         std::abs(f(upper_bound).first) < residual_tolerance or
+         std::abs(f(lower_bound).first) < residual_tolerance,
+         "Root not bracketed: "
+         "f(" << lower_bound << ") = " << f(lower_bound).first << "  "
+         "f(" << upper_bound << ") = " << f(upper_bound).first);
+
+  // Avoid evaluating at the bounds if we do not need to.  This will
+  // result in a non-optimal bracket until the region containing the
+  // root has been determined, but will avoid extra function
+  // evaluations if bisection is never needed.
+  std::optional<double> bracket_positive{};
+  std::optional<double> bracket_negative{};
+
+  double x = initial_guess;
+  double step = std::numeric_limits<double>::infinity();
+
+  for (size_t i = 0; i < max_iterations; ++i) {
+    const auto [value, deriv] = f(x);
+    if (std::abs(value) <= residual_tolerance) {
+      return x;
+    }
+    if (value > 0.0) {
+      bracket_positive.emplace(x);
+    } else {
+      bracket_negative.emplace(x);
+    }
+
+    const double previous_x = x;
+    const auto current_bracket =
+        bracket_positive.has_value() and bracket_negative.has_value()
+            ? std::pair(*bracket_positive, *bracket_negative)
+            : std::pair(upper_bound, lower_bound);
+    if (same_sign((x - current_bracket.first) * deriv - value,
+                  (x - current_bracket.second) * deriv - value) or
+        std::abs(2.0 * value) > std::abs(step * deriv)) {
+      // Next guess not bracketed or converging slowly.  Perform a
+      // bisection.
+
+      // We need a bracket to bisect, so find any unknown bounds.
+      if (not(bracket_positive.has_value() and bracket_negative.has_value())) {
+        const double low_value = f(lower_bound).first;
+        if (std::abs(low_value) <= residual_tolerance) {
+          return lower_bound;
+        }
+
+        // Only one can be unset, because we set one of them right
+        // after we evaluated f(x).
+        if (not bracket_positive.has_value()) {
+          bracket_positive.emplace(low_value > 0.0 ? lower_bound : upper_bound);
+        } else {
+          bracket_negative.emplace(low_value > 0.0 ? upper_bound : lower_bound);
+        }
+      }
+      x = 0.5 * (*bracket_positive + *bracket_negative);
+    } else {
+      // Convergence is fine.  Keep going with plain Newton-Raphson.
+      x -= value / deriv;
+    }
+    // Roundoff effects may make this different from value/deriv in
+    // the Newton-Raphson case.
+    step = std::abs(x - previous_x);
+    if (step <= step_absolute_tolerance or
+        step <= step_relative_tolerance * std::abs(x)) {
+      return x;
+    }
   }
-  return result;
+
+  throw convergence_error(MakeString{}
+                          << "newton_raphson reached max iterations of "
+                          << max_iterations
+                          << " without converging. Best result is: " << x
+                          << " with residual " << f(x).first);
 }
 
 /*!
@@ -66,21 +136,13 @@ double newton_raphson(const Function& f, const double initial_guess,
  * \brief Finds the root of the function `f` with the Newton-Raphson method on
  * each element in a `DataVector`.
  *
- * `f` is a binary invokable that takes a `double` as its first argument and a
- * `size_t` as its second. The `double` is the current value at which to
- * evaluate `f`, and the `size_t` is the current index into the `DataVector`s.
- *  `f` must return a `std::pair<double, double>` where the first element is
- * the function value and the second element is the derivative of the function.
- * Below is an example of how to root find different functions by indexing into
- * a lambda-captured `DataVector` using the `size_t` passed to `f`.
+ * Calls the `double` version of `newton_raphson` for each element of
+ * the input `DataVector`s, passing an additional `size_t` to \p f
+ * indicating the current index into the `DataVector`s.
  *
  * \snippet Test_NewtonRaphson.cpp datavector_newton_raphson_root_find
  *
- * See the [Boost](http://www.boost.org/) documentation for more details.
- *
  * \requires Function `f` be callable with a `double` and a `size_t`
- * \note The parameter `digits` specifies the precision of the result in its
- * desired number of base-10 digits.
  *
  * \throws `convergence_error` if, for any index, the requested precision is not
  * met after `max_iterations` iterations.
@@ -88,31 +150,17 @@ double newton_raphson(const Function& f, const double initial_guess,
 template <typename Function>
 DataVector newton_raphson(const Function& f, const DataVector& initial_guess,
                           const DataVector& lower_bound,
-                          const DataVector& upper_bound, const size_t digits,
+                          const DataVector& upper_bound,
+                          const double residual_tolerance,
+                          const double step_absolute_tolerance,
+                          const double step_relative_tolerance,
                           const size_t max_iterations = 50) {
-  ASSERT(digits < std::numeric_limits<double>::digits10,
-         "The desired accuracy of " << digits
-                                    << " base-10 digits must be smaller than "
-                                       "the machine numeric limit of "
-                                    << std::numeric_limits<double>::digits10
-                                    << " base-10 digits.");
-  const auto digits_binary = std::round(std::log2(std::pow(10, digits)));
-
   DataVector result_vector{lower_bound.size()};
   for (size_t i = 0; i < result_vector.size(); ++i) {
-    boost::uintmax_t max_iters = max_iterations;
-    // clang-tidy: internal boost warning, can't fix it.
-    result_vector[i] = boost::math::tools::newton_raphson_iterate(  // NOLINT
-        [&f, i](double x) { return f(x, i); }, initial_guess[i], lower_bound[i],
-        upper_bound[i], digits_binary, max_iters);
-    if (max_iters >= max_iterations) {
-      throw convergence_error(MakeString{}
-                              << "newton_raphson reached max iterations of "
-                              << max_iterations
-                              << " without converging. Best result is: "
-                              << result_vector[i] << " with residual "
-                              << f(result_vector[i], i).first);
-    }
+    result_vector[i] = newton_raphson(
+        [&f, i](const double x) { return f(x, i); }, initial_guess[i],
+        lower_bound[i], upper_bound[i], residual_tolerance,
+        step_absolute_tolerance, step_relative_tolerance, max_iterations);
   }
   return result_vector;
 }

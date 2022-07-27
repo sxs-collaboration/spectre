@@ -40,9 +40,9 @@ double compute_alpha(const double density, const double radius) {
                 pow<2>(pow_2_one_plus_a_square)};
       },
       // Choose initial guess for no particular reason
-      2. * sqrt(5.), sqrt(5.), std::numeric_limits<double>::max(),
+      1.0 / alpha_source, sqrt(5.), 1.0 / alpha_source,
       // Choose a precision of 14 base-10 digits for no particular reason
-      14);
+      0.0, 1.0e-14, 0.0);
 }
 
 template <typename DataType>

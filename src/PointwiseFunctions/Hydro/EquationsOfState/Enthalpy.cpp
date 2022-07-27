@@ -442,11 +442,11 @@ double Enthalpy<LowDensityEoS>::rest_mass_density_from_enthalpy(
           1.0 / density * evaluate_coefficients(derivative_coefficients_, x);
       return std::make_pair(f, df);
     };
-    const size_t digits = 14;
+    const double tolerance = 1.0e-14;
     const double intial_guess = 0.5 * (minimum_density_ + maximum_density_);
     const auto root_from_lambda = RootFinder::newton_raphson(
-        f_df_lambda, intial_guess, reference_density_, maximum_density_,
-        digits);
+        f_df_lambda, intial_guess, reference_density_, maximum_density_, 0.0,
+        tolerance, 0.0);
     return root_from_lambda;
   }
 }

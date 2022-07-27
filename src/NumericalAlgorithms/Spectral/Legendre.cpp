@@ -134,8 +134,10 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
             newton_raphson_step,
             // Initial guess
             -cos((2. * j + 1.) * M_PI / (2. * poly_degree + 2.)),
-            // Lower and upper bound, and number of desired base-10 digits
-            -1., 1., 14);
+            -cos((2. * j) * M_PI / (2. * poly_degree + 2.)),
+            -cos((2. * j + 2.) * M_PI / (2. * poly_degree + 2.)),
+            // Tolerances
+            0.0, 1.0e-14, 0.0);
         const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
                                                        logical_coord);
         x[j] = logical_coord;
@@ -223,8 +225,8 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
             // Initial guess
             -cos((j + 0.25) * M_PI / poly_degree -
                  0.375 / (poly_degree * M_PI * (j + 0.25))),
-            // Lower and upper bound, and number of desired base-10 digits
-            -1., 1., 14);
+            // Lower and upper bound, and tolerances.
+            -1., 1., 0.0, 1.0e-14, 0.0);
         const EvaluateQandL q_and_L(poly_degree, logical_coord);
         x[j] = logical_coord;
         x[poly_degree - j] = -logical_coord;

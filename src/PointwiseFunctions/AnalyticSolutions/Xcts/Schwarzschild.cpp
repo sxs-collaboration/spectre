@@ -101,7 +101,8 @@ double kerr_schild_areal_radius_from_isotropic(const double isotropic_radius,
                 isotropic_radius,
             kerr_schild_isotropic_radius_from_areal_deriv(areal_radius, mass));
       },
-      isotropic_radius, 0., std::numeric_limits<double>::max(), 12);
+      isotropic_radius, isotropic_radius, isotropic_radius + mass, 0.0, 1.0e-12,
+      0.0);
 }
 
 DataVector kerr_schild_areal_radius_from_isotropic(
@@ -113,10 +114,8 @@ DataVector kerr_schild_areal_radius_from_isotropic(
                 isotropic_radius[i],
             kerr_schild_isotropic_radius_from_areal_deriv(areal_radius, mass));
       },
-      isotropic_radius, make_with_value<DataVector>(isotropic_radius, 0.),
-      make_with_value<DataVector>(isotropic_radius,
-                                  std::numeric_limits<double>::max()),
-      12);
+      isotropic_radius, isotropic_radius, isotropic_radius + mass, 0.0, 1.0e-12,
+      0.0);
 }
 }  // namespace
 

@@ -64,9 +64,8 @@ void compute_closure_impl(
   static constexpr double small_velocity = 1.e-15;
   // Dimension of spatial tensors
   constexpr size_t spatial_dim = 3;
-  // Number of significant digits used in the rootfinding rooting
-  // used to find the closure factor
-  constexpr size_t root_find_number_of_digits = 6;
+  // Tolerance used in the root finding used to find the closure
+  // factor
   constexpr double root_find_tolerance = 1.e-6;
   Variables<
       tmpl::list<hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
@@ -244,8 +243,8 @@ void compute_closure_impl(
         get(*closure_factor)[s] = 1.;
       } else {
         get(*closure_factor)[s] = RootFinder::newton_raphson(
-            zeta_j_sqr_minus_h_sqr, zeta_guess, 1.e-15, 1.,
-            root_find_number_of_digits);
+            zeta_j_sqr_minus_h_sqr, zeta_guess, 1.e-15, 1., 0.0,
+            root_find_tolerance, 0.0);
       }
 
       // Assemble output quantities:
