@@ -173,8 +173,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     // is initialized to (time=NaN, strahlkorper=options.initial_guess).
     // The NaN is a sentinel value which indicates that the
     // PreviousStrahlkorper has not been computed but is instead the
-    // supplied initial guess.  Note that the NaN must be quiet_NaN,
-    // so we can test for it later without generating an FPE.
+    // supplied initial guess.
     //
     // Note that if frame is not inertial,
     // StrahlkorperTags::Strahlkorper<::Frame::Inertial> is already
@@ -183,7 +182,8 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
     Initialization::mutate_assign<common_tags>(
         box, options.initial_guess, options.fast_flow, options.verbosity,
         std::deque<std::pair<double, ::Strahlkorper<Frame>>>{std::make_pair(
-            std::numeric_limits<double>::quiet_NaN(), options.initial_guess)});
+            std::numeric_limits<double>::signaling_NaN(),
+            options.initial_guess)});
   }
 
   template <typename Metavariables, typename DbTags, typename TemporalId>

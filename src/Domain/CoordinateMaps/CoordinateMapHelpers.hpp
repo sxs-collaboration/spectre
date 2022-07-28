@@ -46,7 +46,8 @@ void apply_map(
     /*is_time_dependent*/) {
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   *t_map_point = the_map(*t_map_point, t, functions_of_time);
 }
 
@@ -82,7 +83,8 @@ auto apply_map(
   // to the coordinate map.
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   return the_map(source_points, t, functions_of_time);
 }
 /// @}
@@ -118,7 +120,8 @@ auto apply_inverse_map(
     /*is_time_dependent*/) {
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   return the_map.inverse(target_points, t, functions_of_time);
 }
 /// @}
@@ -148,7 +151,8 @@ auto apply_frame_velocity(
     /*is_time_dependent*/) {
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   return the_map.frame_velocity(source_points, t, functions_of_time);
 }
 /// @}
@@ -179,7 +183,8 @@ auto apply_jacobian(
     /*is_time_dependent*/) {
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   if (LIKELY(not the_map.is_identity())) {
     return the_map.jacobian(source_points, t, functions_of_time);
   }
@@ -213,7 +218,8 @@ auto apply_inverse_jacobian(
     /*is_time_dependent*/) {
   ASSERT(not functions_of_time.empty(),
          "A function of time must be present if the maps are time-dependent.");
-  ASSERT(not is_nan(t), "The time must not be NaN for time-dependent maps.");
+  ASSERT(not isnan_safe(t),
+         "The time must not be NaN for time-dependent maps.");
   if (LIKELY(not the_map.is_identity())) {
     return the_map.inv_jacobian(source_points, t, functions_of_time);
   }

@@ -7,10 +7,10 @@
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 
-bool is_nan(const double arg) {
+bool isnan_safe(const double arg) {
   disable_floating_point_exceptions();
 #if defined(__clang__) && __clang__ < 10
-  // Old versions of clang still throw FPEs here, so prevent then from
+  // Old versions of clang still throw FPEs here, so prevent them from
   // reordering statements.
   asm("");
 #endif  /* defined(__clang__) && __clang__ < 10 */
@@ -22,10 +22,10 @@ bool is_nan(const double arg) {
   return result;
 }
 
-bool is_nan(const float arg) {
+bool isnan_safe(const float arg) {
   disable_floating_point_exceptions();
 #if defined(__clang__) && __clang__ < 10
-  // Old versions of clang still throw FPEs here, so prevent then from
+  // Old versions of clang still throw FPEs here, so prevent them from
   // reordering statements.
   asm("");
 #endif  /* defined(__clang__) && __clang__ < 10 */
