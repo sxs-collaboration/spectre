@@ -72,8 +72,8 @@ def shock(x_shifted, t, quantity, quantity_star, adiabatic_index,
 def mass_density(x, t, adiabatic_index, initial_pos, l_mass_density,
                  l_velocity, l_pressure, r_mass_density, r_velocity,
                  r_pressure):
-    velocity_star = 0.9274526526
-    pressure_star = 0.3031302631
+    velocity_star = 0.927452620048950
+    pressure_star = 0.303130178050647
 
     # density in star region for shock
     gamma_mm_over_gamma_pp = (adiabatic_index - 1.0) / (adiabatic_index + 1.0)
@@ -98,8 +98,8 @@ def mass_density(x, t, adiabatic_index, initial_pos, l_mass_density,
 
 def velocity(x, t, adiabatic_index, initial_pos, l_mass_density, l_velocity,
              l_pressure, r_mass_density, r_velocity, r_pressure):
-    velocity_star = 0.9274526526
-    pressure_star = 0.3031302631
+    velocity_star = 0.927452620048950
+    pressure_star = 0.303130178050647
 
     velocity = np.zeros(x.size)
     x_shifted = x[0] - initial_pos
@@ -121,8 +121,8 @@ def velocity(x, t, adiabatic_index, initial_pos, l_mass_density, l_velocity,
 
 def pressure(x, t, adiabatic_index, initial_pos, l_mass_density, l_velocity,
              l_pressure, r_mass_density, r_velocity, r_pressure):
-    velocity_star = 0.9274526526
-    pressure_star = 0.3031302631
+    velocity_star = 0.927452620048950
+    pressure_star = 0.303130178050647
 
     x_shifted = x[0] - initial_pos
     return (rarefaction(x_shifted, t, l_pressure, pressure_star,
