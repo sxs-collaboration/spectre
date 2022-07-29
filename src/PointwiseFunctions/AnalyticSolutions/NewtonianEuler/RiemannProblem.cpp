@@ -145,38 +145,51 @@ RiemannProblem<Dim>::RiemannProblem(
   const double f_max =
       f_of_p_left(p_minmax.second) + f_of_p_right(p_minmax.second) + delta_u;
 
-  double pressure_lower = std::numeric_limits<double>::signaling_NaN();
-  double pressure_upper = std::numeric_limits<double>::signaling_NaN();
   if (f_min > 0.0 and f_max > 0.0) {
-    pressure_lower = 0.0;
-    pressure_upper = p_minmax.first;
-  } else if (f_min < 0.0 and f_max > 0.0) {
-    pressure_lower = p_minmax.first;
-    pressure_upper = p_minmax.second;
+    const double exponent = 0.5 * (adiabatic_index_ - 1.0) / adiabatic_index_;
+    pressure_star_ = std::pow(
+        (left_initial_data_.sound_speed_ + right_initial_data_.sound_speed_ -
+         0.5 * (adiabatic_index_ - 1.0) * delta_u) /
+            (left_initial_data_.sound_speed_ *
+                 std::pow(left_initial_data_.pressure_, -exponent) +
+             right_initial_data_.sound_speed_ *
+                 std::pow(right_initial_data_.pressure_, -exponent)),
+        1.0 / exponent);
+    ASSERT(std::abs(f_of_p_left(pressure_star_) + f_of_p_right(pressure_star_) +
+                    delta_u) < 1.0e-8,
+           "Failed to analytically solve correctly.");
   } else {
-    pressure_lower = p_minmax.second;
-    pressure_upper = 10.0 * pressure_lower;  // Arbitrary upper bound < \infty
-  }
+    double pressure_lower = std::numeric_limits<double>::signaling_NaN();
+    double pressure_upper = std::numeric_limits<double>::signaling_NaN();
+    if (f_min < 0.0 and f_max > 0.0) {
+      pressure_lower = p_minmax.first;
+      pressure_upper = p_minmax.second;
+    } else {
+      pressure_lower = p_minmax.second;
+      pressure_upper = 10.0 * pressure_lower;  // Arbitrary upper bound < \infty
+    }
 
-  // Now get pressure by solving transcendental equation. Newton-Raphson is OK.
-  const auto f_of_p_and_deriv = [&f_of_p_left, &f_of_p_right,
-                                 &delta_u](const double pressure) {
-    // Function of pressure in Eqn. (4.5) of Toro.
-    return std::make_pair(
-        f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u,
-        f_of_p_left.deriv(pressure) + f_of_p_right.deriv(pressure));
-  };
-  try {
-    pressure_star_ = RootFinder::newton_raphson(
-        f_of_p_and_deriv, guess_for_pressure_star, pressure_lower,
-        pressure_upper, -log10(pressure_star_tol_));
-  } catch (std::exception& exception) {
-    ERROR(
-        "Failed to find p_* with Newton-Raphson root finder. Got "
-        "exception message:\n"
-        << exception.what()
-        << "\nIf the residual is small you can change the tolerance for the "
-           "root finder in the input file.");
+    // Now get pressure by solving transcendental
+    // equation. Newton-Raphson is OK.
+    const auto f_of_p_and_deriv = [&f_of_p_left, &f_of_p_right,
+                                   &delta_u](const double pressure) {
+      // Function of pressure in Eqn. (4.5) of Toro.
+      return std::make_pair(
+          f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u,
+          f_of_p_left.deriv(pressure) + f_of_p_right.deriv(pressure));
+    };
+    try {
+      pressure_star_ = RootFinder::newton_raphson(
+          f_of_p_and_deriv, guess_for_pressure_star, pressure_lower,
+          pressure_upper, -log10(pressure_star_tol_));
+    } catch (std::exception& exception) {
+      ERROR(
+          "Failed to find p_* with Newton-Raphson root finder. Got "
+          "exception message:\n"
+          << exception.what()
+          << "\nIf the residual is small you can change the tolerance for the "
+             "root finder in the input file.");
+    }
   }
 
   // Calculated p_*, u_* is obtained from Eqn. (4.9) in Toro.
