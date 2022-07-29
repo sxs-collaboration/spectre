@@ -35,7 +35,6 @@ struct FunctionOfPressureAndData {
     prefactor_ = 2.0 * data.sound_speed_ / (adiabatic_index_ - 1.0);
     prefactor_deriv_ = data.sound_speed_ / adiabatic_index_ / state_pressure_;
     exponent_ = 0.5 * (adiabatic_index_ - 1.0) / adiabatic_index_;
-    exponent_deriv_ = -0.5 * (adiabatic_index_ + 1.0) / adiabatic_index_;
   }
 
   double operator()(const double pressure) const {
@@ -55,7 +54,8 @@ struct FunctionOfPressureAndData {
                ? 0.5 * sqrt(constant_a_) *
                      (pressure + state_pressure_ + 2.0 * constant_b_) /
                      pow(pressure + constant_b_, 1.5)
-               : prefactor_deriv_ * pow(pressure / state_pressure_, exponent_);
+               : prefactor_deriv_ *
+                     pow(pressure / state_pressure_, exponent_ - 1.0);
   }
 
  private:
@@ -68,7 +68,6 @@ struct FunctionOfPressureAndData {
   double prefactor_ = std::numeric_limits<double>::signaling_NaN();
   double prefactor_deriv_ = std::numeric_limits<double>::signaling_NaN();
   double exponent_ = std::numeric_limits<double>::signaling_NaN();
-  double exponent_deriv_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 }  // namespace

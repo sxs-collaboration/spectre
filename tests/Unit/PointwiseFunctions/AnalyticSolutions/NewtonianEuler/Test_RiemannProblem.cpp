@@ -203,21 +203,3 @@ SPECTRE_TEST_CASE(
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
-
-// [[OutputRegex, newton_raphson reached max iterations of 50 without
-// converging.]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.RootF",
-    "[Unit][PointwiseFunctions]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<NewtonianEuler::Solutions::RiemannProblem<1>>(
-      "AdiabaticIndex: 1.4\n"
-      "InitialPosition: 0.25\n"
-      "LeftMassDensity: 10.0\n"
-      "LeftVelocity: [0.0]\n"
-      "LeftPressure: 100.0\n"
-      "RightMassDensity: 1.0\n"
-      "RightVelocity: [0.0]\n"
-      "RightPressure: 1.0\n"
-      "PressureStarTol: 1.e-10");
-}
