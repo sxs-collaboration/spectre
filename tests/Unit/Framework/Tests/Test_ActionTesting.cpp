@@ -275,8 +275,13 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   // [invoke queued simple action]
   CHECK(db::get<PassedToB>(box) == 2);
   CHECK(db::get<ValueTag>(box) == 25);
-  runner.simple_action<component_for_simple_action_mock<metavars>,
-                       simple_action_b>(0, 1);
+  REQUIRE(runner.is_simple_action_queue_empty<
+          component_for_simple_action_mock<metavars>>(0));
+  runner.queue_simple_action<component_for_simple_action_mock<metavars>,
+                             simple_action_b>(0, 1);
+  runner
+      .invoke_queued_simple_action<component_for_simple_action_mock<metavars>>(
+          0);
   REQUIRE(not runner.is_simple_action_queue_empty<
               component_for_simple_action_mock<metavars>>(0));
   runner
@@ -527,7 +532,9 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
         0);
-  ActionTesting::simple_action<component_a, CallActionOnComponentB>(
+  ActionTesting::queue_simple_action<component_a, CallActionOnComponentB>(
+      make_not_null(&runner), 0);
+  ActionTesting::invoke_queued_simple_action<component_a>(
       make_not_null(&runner), 0);
   // [component b mock checks]
   CHECK(not ActionTesting::is_simple_action_queue_empty<component_b_mock>(

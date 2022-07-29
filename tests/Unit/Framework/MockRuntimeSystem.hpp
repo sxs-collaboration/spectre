@@ -499,6 +499,29 @@ class MockRuntimeSystem {
   /// @}
 
   /// @{
+  /// Queue the simple action `Action` on the `Component` labeled by
+  /// `array_index`.
+  template <typename Component, typename Action, typename Arg0,
+            typename... Args>
+  void queue_simple_action(const typename Component::array_index& array_index,
+                           Arg0&& arg0, Args&&... args) {
+    mock_distributed_objects<Component>()
+        .at(array_index)
+        .template simple_action<Action>(
+            std::make_tuple(std::forward<Arg0>(arg0),
+                            std::forward<Args>(args)...),
+            false);
+  }
+
+  template <typename Component, typename Action>
+  void queue_simple_action(const typename Component::array_index& array_index) {
+    mock_distributed_objects<Component>()
+        .at(array_index)
+        .template simple_action<Action>(false);
+  }
+  /// @}
+
+  /// @{
   /// Invoke the threaded action `Action` on the `Component` labeled by
   /// `array_index` immediately.
   template <typename Component, typename Action, typename Arg0,
