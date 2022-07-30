@@ -192,9 +192,10 @@ struct EvolutionMetavars {
         ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
         ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = ::ah::tags_for_observing;
+    using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
-    using compute_items_on_target = ::ah::compute_items_on_target<volume_dim>;
+    using compute_items_on_target =
+        ::ah::compute_items_on_target<volume_dim, Frame::Grid>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhA, ::Frame::Grid>;
     using post_interpolation_callback =
@@ -213,9 +214,10 @@ struct EvolutionMetavars {
         ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
         ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
-    using tags_to_observe = ::ah::tags_for_observing;
+    using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
-    using compute_items_on_target = ::ah::compute_items_on_target<volume_dim>;
+    using compute_items_on_target =
+        ::ah::compute_items_on_target<volume_dim, Frame::Grid>;
     using compute_target_points =
         intrp::TargetPoints::ApparentHorizon<AhB, ::Frame::Grid>;
     using post_interpolation_callback =
