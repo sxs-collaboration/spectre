@@ -216,8 +216,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2022-07-18
-doi: 10.5281/zenodo.6856873
+date-released: 2022-08-01
+doi: 10.5281/zenodo.6949324
 keywords:
 - Software
 - Astrophysics
@@ -235,4 +235,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.07.18
+version: 2022.08.01
