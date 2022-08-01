@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -12,6 +13,7 @@
 #include "DataStructures/DynamicVector.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -48,7 +50,7 @@ struct RunIfSkipped {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -57,7 +59,7 @@ struct RunIfSkipped {
     db::mutate<CheckRunIfSkippedTag>(
         make_not_null(&box),
         [](const gsl::not_null<bool*> flag) { *flag = true; });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

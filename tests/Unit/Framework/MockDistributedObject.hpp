@@ -15,6 +15,7 @@
 #include <deque>
 #include <exception>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <tuple>
 #include <unordered_map>
@@ -22,6 +23,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -655,56 +657,39 @@ class MockDistributedObject {
 
   template <typename ThisAction, typename ActionList, typename DbTags>
   bool invoke_iterable_action(db::DataBox<DbTags>& my_box) {
-    auto action_return = ThisAction::apply(
+    const auto& [requested_execution, next_action_step] = ThisAction::apply(
         my_box, *inboxes_, *global_cache_, std::as_const(array_index_),
         ActionList{}, std::add_pointer_t<Component>{});
 
-    static_assert(
-        Parallel::Algorithm_detail::check_iterable_action_return_type<
-            parallel_component, ThisAction,
-            std::decay_t<decltype(action_return)>>::value,
-        "An iterable action has an invalid return type.\n"
-        "See the template parameters of "
-        "Algorithm_detail::check_iterable_action_return_type for details: the "
-        "first is the parallel component in question, the second is the "
-        "iterable action, and the third is the return type at fault.\n"
-        "The return type must be a tuple of length one, two, or three "
-        "with:\n"
-        " first type is an updated DataBox;\n"
-        " second type is either a bool (indicating termination) or a "
-        "`Parallel::AlgorithmExecution` object;\n"
-        " third type is a size_t indicating the next action in the current"
-        " phase.");
+    if (next_action_step.has_value()) {
+      ASSERT(
+          Parallel::AlgorithmExecution::Retry != requested_execution,
+          "Switching actions on Retry doesn't make sense. Specify std::nullopt "
+          "as the second argument of the iterable action return type");
+      algorithm_step_ = next_action_step.value();
+    }
 
-    constexpr size_t tuple_size =
-        std::tuple_size<decltype(action_return)>::value;
-    if constexpr (tuple_size >= 1_st) {
-      box_ = std::move(std::get<0>(action_return));
+    switch (requested_execution) {
+      case Parallel::AlgorithmExecution::Continue:
+        return true;
+      case Parallel::AlgorithmExecution::Retry:
+        return false;
+      case Parallel::AlgorithmExecution::Pause:
+        terminate_ = true;
+        return true;
+      case Parallel::AlgorithmExecution::Halt:
+        halt_algorithm_until_next_phase_ = true;
+        terminate_ = true;
+        return true;
+      default:  // LCOV_EXCL_LINE
+        // LCOV_EXCL_START
+        ERROR("No case for a Parallel::AlgorithmExecution with integral value "
+              << static_cast<
+                     std::underlying_type_t<Parallel::AlgorithmExecution>>(
+                     requested_execution)
+              << "\n");
+        // LCOV_EXCL_STOP
     }
-    if constexpr (tuple_size >= 2_st) {
-      if constexpr (std::is_same_v<decltype(std::get<1>(action_return)),
-                                   bool&>) {
-        terminate_ = std::get<1>(action_return);
-      } else {
-        switch (std::get<1>(action_return)) {
-          case Parallel::AlgorithmExecution::Halt:
-            halt_algorithm_until_next_phase_ = true;
-            terminate_ = true;
-            break;
-          case Parallel::AlgorithmExecution::Pause:
-            terminate_ = true;
-            break;
-          case Parallel::AlgorithmExecution::Retry:
-            return false;
-       default:
-            break;
-        }
-      }
-    }
-    if constexpr (tuple_size >= 3_st) {
-      algorithm_step_ = std::get<2>(action_return);
-    }
-    return true;
   }
 
   template <typename PhaseDepActions, size_t... Is>

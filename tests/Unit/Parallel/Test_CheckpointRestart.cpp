@@ -6,6 +6,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -13,6 +14,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroup.hpp"
@@ -50,7 +52,7 @@ struct InitializeLog {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -62,7 +64,7 @@ struct InitializeLog {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box),
         component_name + " invoked action InitializeLog\n");
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -70,7 +72,7 @@ struct MutateLog {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -84,7 +86,7 @@ struct MutateLog {
               std::to_string(static_cast<int>(array_index));
           log->append(component_name + " invoked action MutateLog\n");
         });
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -92,7 +94,7 @@ struct CheckLog {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -106,7 +108,7 @@ struct CheckLog {
         component_name + " invoked action InitializeLog\n" + component_name +
         " invoked action MutateLog\n";
     SPECTRE_PARALLEL_REQUIRE(log == expected_log);
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

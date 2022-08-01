@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -27,6 +28,7 @@
 #include "Evolution/DgSubcell/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -110,7 +112,7 @@ struct Initialize {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             typename Metavariables>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& cache,
@@ -195,7 +197,7 @@ struct Initialize {
             dt_vars_ptr->initialize(subcell_mesh.number_of_grid_points(), 0.0);
           });
     }
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::dg::subcell::Actions

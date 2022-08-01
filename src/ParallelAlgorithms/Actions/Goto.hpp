@@ -4,10 +4,12 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -39,18 +41,18 @@ struct Label {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(
         tmpl::count_if<ActionList,
                        std::is_same<tmpl::_1, tmpl::pin<Label<Tag>>>>::value ==
             1,
         "Duplicate label");
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -70,16 +72,15 @@ struct Goto {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     constexpr size_t index =
         tmpl::index_of<ActionList, Actions::Label<Tag>>::value;
-    return std::tuple<db::DataBox<DbTags>&&, bool, size_t>(std::move(box),
-                                                           false, index);
+    return {Parallel::AlgorithmExecution::Continue, index};
   }
 };
 
@@ -93,13 +94,13 @@ struct RepeatStart {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    return {std::move(box), false,
+    return {Parallel::AlgorithmExecution::Continue,
             db::get<ConditionTag>(box)
                 ? tmpl::index_of<ActionList, RepeatEnd<ConditionTag>>::value + 1
                 : tmpl::index_of<ActionList, RepeatStart>::value + 1};
@@ -111,14 +112,14 @@ struct RepeatEnd {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     return {
-        std::move(box), false,
+        Parallel::AlgorithmExecution::Continue,
         db::get<ConditionTag>(box)
             ? tmpl::index_of<ActionList, RepeatEnd>::value + 1
             : tmpl::index_of<ActionList, RepeatStart<ConditionTag>>::value + 1};

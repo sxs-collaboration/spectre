@@ -11,7 +11,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Tags.hpp"
@@ -86,7 +86,7 @@ struct RunEventsAndDenseTriggers {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
@@ -97,7 +97,7 @@ struct RunEventsAndDenseTriggers {
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (time_step_id.slab_number() < 0) {
       // Skip dense output during self-start
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     auto& events_and_dense_triggers =
@@ -124,7 +124,7 @@ struct RunEventsAndDenseTriggers {
     for (;;) {
       const double next_trigger = events_and_dense_triggers.next_trigger(box);
       if (before(step_end.value(), next_trigger)) {
-        return {std::move(box), Parallel::AlgorithmExecution::Continue};
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
 
       // This can only be true the first time through the loop,
@@ -147,14 +147,14 @@ struct RunEventsAndDenseTriggers {
       using TriggeringState = std::decay_t<decltype(triggered)>;
       switch (triggered) {
         case TriggeringState::NotReady:
-          return {std::move(box), Parallel::AlgorithmExecution::Retry};
+          return {Parallel::AlgorithmExecution::Retry, std::nullopt};
         case TriggeringState::NeedsEvolvedVariables:
           if (not already_at_correct_time) {
             if constexpr (Metavariables::local_time_stepping) {
               if (not dg::receive_boundary_data_local_time_stepping<
                       Metavariables, true>(make_not_null(&box),
                                            make_not_null(&inboxes))) {
-                return {std::move(box), Parallel::AlgorithmExecution::Retry};
+                return {Parallel::AlgorithmExecution::Retry, std::nullopt};
               }
             }
 
@@ -173,7 +173,7 @@ struct RunEventsAndDenseTriggers {
                 db::get<::Tags::TimeStepper<>>(box), db::get<history_tag>(box));
             if (not dense_output_succeeded) {
               // Need to take another time step
-              return {std::move(box), Parallel::AlgorithmExecution::Continue};
+              return {Parallel::AlgorithmExecution::Continue, std::nullopt};
             }
 
             if constexpr (Metavariables::local_time_stepping) {
@@ -208,15 +208,14 @@ struct InitializeRunEventsAndDenseTriggers {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*component*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*component*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                std::nullopt);
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace evolution::Actions

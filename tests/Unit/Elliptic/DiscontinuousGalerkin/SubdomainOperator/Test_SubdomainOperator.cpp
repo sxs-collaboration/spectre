@@ -8,6 +8,7 @@
 #include <blaze/math/DynamicVector.h>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <random>
 #include <utility>
 
@@ -51,6 +52,7 @@
 #include "NumericalAlgorithms/LinearSolver/BuildMatrix.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -136,7 +138,7 @@ struct InitializeRandomSubdomainData {
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -180,7 +182,7 @@ struct InitializeRandomSubdomainData {
         db::get<LinearSolver::Schwarz::Tags::Overlaps<
             elliptic::dg::subdomain_operator::Tags::ExtrudingExtent, Dim,
             DummyOptionsGroup>>(box));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -251,7 +253,7 @@ template <typename SubdomainOperator, typename Fields>
 struct ApplySubdomainOperator {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -294,7 +296,7 @@ struct ApplySubdomainOperator {
         [&subdomain_result](const auto subdomain_operator_applied_to_data) {
           *subdomain_operator_applied_to_data = std::move(subdomain_result);
         });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -302,7 +304,7 @@ template <typename SubdomainOperator, typename Fields>
 struct TestSubdomainOperatorMatrix {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -343,7 +345,7 @@ struct TestSubdomainOperatorMatrix {
     Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(
         result_buffer, expected_operator_applied_to_data, custom_approx);
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -642,7 +644,7 @@ struct InitializeConstitutiveRelation {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -653,7 +655,7 @@ struct InitializeConstitutiveRelation {
         std::make_unique<
             Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(1.,
                                                                           2.));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

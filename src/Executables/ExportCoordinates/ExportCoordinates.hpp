@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <pup.h>
 #include <string>
 
@@ -32,6 +33,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -97,7 +99,7 @@ struct ExportCoordinates {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -155,7 +157,7 @@ struct ExportCoordinates {
             Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
         element_name, std::move(components), mesh.extents(), mesh.basis(),
         mesh.quadrature());
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -171,7 +173,7 @@ struct FindGlobalMinimumGridSpacing {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -192,7 +194,7 @@ struct FindGlobalMinimumGridSpacing {
         std::vector<std::string>{"Time", "MinGridSpacing"},
         MinGridSpacingReductionData{time, local_min_grid_spacing},
         std::make_optional(MinGridSpacingFormatter{}));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

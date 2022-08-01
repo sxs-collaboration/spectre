@@ -4,11 +4,13 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <unordered_set>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -86,12 +88,12 @@ struct InitializeInterpolationTarget {
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     if constexpr (
         initialize_interpolation_target_detail::is_initialize_callable_v<
             typename InterpolationTargetTag::compute_target_points,
@@ -100,7 +102,7 @@ struct InitializeInterpolationTarget {
       InterpolationTargetTag::compute_target_points::initialize(
           make_not_null(&box), cache);
     }
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

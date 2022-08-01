@@ -22,6 +22,7 @@
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -101,8 +102,8 @@ struct ReadVolumeData {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -114,7 +115,7 @@ struct ReadVolumeData {
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
         ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
         reader_component);
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

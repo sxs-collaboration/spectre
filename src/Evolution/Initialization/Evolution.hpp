@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 
@@ -16,6 +17,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Slab.hpp"
@@ -108,11 +110,12 @@ struct TimeAndTimeStep {
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const double initial_time_value = db::get<Tags::InitialTime>(box);
     const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
     const double initial_slab_size =
@@ -145,7 +148,7 @@ struct TimeAndTimeStep {
         ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
         make_not_null(&box), TimeStepId{}, time_id, initial_time.value(),
         initial_dt, initial_dt);
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -178,11 +181,12 @@ struct TimeStepperHistory {
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     using DtVars = typename dt_variables_tag::type;
     using ErrorVars = typename error_variables_tag::type;
 
@@ -206,7 +210,7 @@ struct TimeStepperHistory {
         make_not_null(&box), std::move(dt_vars), std::move(history),
         std::move(error_vars), false);
 
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

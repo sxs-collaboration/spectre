@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -21,6 +22,7 @@
 #include "Helpers/ParallelAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -89,7 +91,7 @@ struct InitializeElement {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -119,7 +121,7 @@ struct InitializeElement {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(inertial_coords),
         std::move(initial_fields), std::move(source));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -136,12 +138,12 @@ struct ComputeOperatorAction {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<1>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t multigrid_level = element_id.grid_index();
     const size_t element_index = helpers_distributed::get_index(element_id);
     const auto& operator_matrices = get<LinearOperator>(box)[multigrid_level];
@@ -171,7 +173,7 @@ struct ComputeOperatorAction {
 
     // Pause algorithm for now. The reduction will be broadcast to the next
     // action which is responsible for restarting the algorithm.
-    return {std::move(box), Parallel::AlgorithmExecution::Pause};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -221,14 +223,14 @@ struct TestResult {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ElementId<1>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     if (element_id.grid_index() > 0) {
-      return {std::move(box), true};
+      return {Parallel::AlgorithmExecution::Pause, std::nullopt};
     }
     const size_t element_index = helpers_distributed::get_index(element_id);
     const auto& expected_result =
@@ -237,7 +239,7 @@ struct TestResult {
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
     }
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

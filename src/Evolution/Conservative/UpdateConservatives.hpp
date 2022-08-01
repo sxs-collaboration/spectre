@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -34,7 +36,7 @@ struct UpdateConservatives {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -43,7 +45,7 @@ struct UpdateConservatives {
     db::mutate_apply<
         typename Metavariables::system::conservative_from_primitive>(
         make_not_null(&box));
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

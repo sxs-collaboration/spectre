@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -162,19 +163,19 @@ struct InitializeElement {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // The `PrepareSolve` action populates these tags with initial
     // values, except for `operator_applied_to_fields_tag` which is
     // expected to be updated in every iteration of the algorithm
     Initialization::mutate_assign<
         tmpl::list<Convergence::Tags::IterationId<OptionsGroup>>>(
         make_not_null(&box), std::numeric_limits<size_t>::max());
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -251,7 +252,7 @@ struct PrepareSolve {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -298,7 +299,7 @@ struct PrepareSolve {
                      ArraySectionIdTag, ObserveInitialResidual>>::value;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, PrepareSolve>::value;
-    return {std::move(box), false,
+    return {Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (step_end_index + 1)
                 : (this_action_index + 1)};
@@ -349,7 +350,7 @@ struct CompleteStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -391,7 +392,7 @@ struct CompleteStep {
         1;
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, CompleteStep>::value;
-    return {std::move(box), false,
+    return {Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : step_begin_index};

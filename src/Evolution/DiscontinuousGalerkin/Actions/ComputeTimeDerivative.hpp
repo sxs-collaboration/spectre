@@ -42,6 +42,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/BoundaryHistory.hpp"
@@ -309,7 +310,7 @@ struct ComputeTimeDerivative {
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -326,8 +327,7 @@ struct ComputeTimeDerivative {
 template <typename Metavariables>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent>
-std::tuple<db::DataBox<DbTagsList>&&>
-ComputeTimeDerivative<Metavariables>::apply(
+Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
     db::DataBox<DbTagsList>& box,
     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
     Parallel::GlobalCache<Metavariables>& cache,
@@ -466,7 +466,7 @@ ComputeTimeDerivative<Metavariables>::apply(
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
                                           make_not_null(&box));
-  return {std::move(box)};
+  return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 }
 
 template <typename Metavariables>

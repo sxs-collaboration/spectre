@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <optional>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -91,14 +93,14 @@ struct RegisterWithObservers {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     perform_registration<ParallelComponent>(box, cache, array_index);
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace observers::Actions

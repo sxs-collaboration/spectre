@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 #include <utility>
@@ -29,6 +30,7 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -107,16 +109,15 @@ struct IncrementTime {
   template <typename DataBox, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex>
-  static auto apply(DataBox& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     db::mutate<Tags::Time>(
         make_not_null(&box),
         [](const gsl::not_null<double*> time) { *time += 1.2; });
-    return std::forward_as_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <limits>
+#include <optional>
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -17,6 +18,7 @@
 #include "IO/Importers/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Phi.hpp"
@@ -132,7 +134,7 @@ struct ReadNumericInitialData {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -170,7 +172,7 @@ struct ReadNumericInitialData {
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
         ImporterOptionsGroup, detail::all_numeric_vars, ParallelComponent>>(
         reader_component, std::move(selected_fields));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -199,18 +201,17 @@ struct SetNumericInitialData {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     auto& inbox = tuples::get<importers::Tags::VolumeData<
         ImporterOptionsGroup, detail::all_numeric_vars>>(inboxes);
     // Using 0 for the temporal ID since we only read the volume data once, so
     // there's no need to keep track of the temporal ID.
     if (inbox.find(0_st) == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     auto numeric_initial_data = std::move(inbox.extract(0_st).mapped());
 
@@ -295,7 +296,7 @@ struct SetNumericInitialData {
           "an implementation to "
           "GeneralizedHarmonic::Actions::SetNumericInitialData.");
     }
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

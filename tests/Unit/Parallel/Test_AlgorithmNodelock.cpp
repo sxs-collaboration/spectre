@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -72,12 +73,12 @@ struct nodegroup_initialize {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     static_assert(std::is_same_v<ParallelComponent,
                                  NodegroupParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -87,7 +88,7 @@ struct nodegroup_initialize {
             static_cast<size_t>(number_of_1d_array_elements_per_core *
                                 sys::procs_on_node(sys::my_node()))),
         0);
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

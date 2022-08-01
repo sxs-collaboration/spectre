@@ -8,6 +8,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -29,6 +30,7 @@
 #include "IO/Importers/ElementDataReader.hpp"
 #include "IO/Importers/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -202,7 +204,7 @@ struct WriteTestData {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -225,7 +227,7 @@ struct WriteTestData {
         std::get<double>(get<importers::Tags::ObservationValue<
                              VolumeDataOptions<Grid::Coarse>>>(box)),
         coarse_volume_data<Dim>);
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -233,7 +235,7 @@ struct CleanTestData {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -246,7 +248,7 @@ struct CleanTestData {
       clean_test_data<true>(
           get<importers::Tags::FileGlob<VolumeDataOptions<Grid::Coarse>>>(box));
     }
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -279,13 +281,13 @@ struct InitializeElement {
   using simple_tags = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ElementId<Dim>& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
-    return std::make_tuple(std::move(box), true);
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -310,7 +312,7 @@ template <size_t Dim, Grid TheGrid>
 struct TestResult {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -323,7 +325,7 @@ struct TestResult {
       test_result(array_index, coarse_volume_data<Dim>,
                   get<ScalarFieldTag>(box), get<VectorFieldTag<Dim>>(box));
     }
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

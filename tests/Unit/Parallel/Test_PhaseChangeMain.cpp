@@ -6,6 +6,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -14,6 +15,7 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmGroup.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -66,14 +68,14 @@ struct InitializeStepTag {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0_st);
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -81,7 +83,7 @@ struct IncrementStep {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -91,14 +93,14 @@ struct IncrementStep {
         make_not_null(&box),
         [](const gsl::not_null<size_t*> step_number) { ++(*step_number); });
     SPECTRE_PARALLEL_REQUIRE(db::get<StepNumber>(box) < 31);
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
 struct ReportArrayPhaseControlDataAndTerminate{
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache, const int array_index,
@@ -109,7 +111,7 @@ struct ReportArrayPhaseControlDataAndTerminate{
                                         ? db::get<StepNumber>(box) % 2 == 0
                                         : db::get<StepNumber>(box) % 3 == 0},
         cache, array_index);
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -117,7 +119,7 @@ struct ReportGroupPhaseControlDataAndTerminate {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -128,7 +130,7 @@ struct ReportGroupPhaseControlDataAndTerminate {
         tuples::TaggedTuple<IsDone, PhaseChangeStepNumber>{
             false, db::get<StepNumber>(box)},
         cache);
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

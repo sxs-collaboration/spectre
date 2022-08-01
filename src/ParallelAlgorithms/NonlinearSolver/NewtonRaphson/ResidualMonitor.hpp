@@ -4,11 +4,13 @@
 #pragma once
 
 #include <limits>
+#include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "IO/Logging/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Local.hpp"
@@ -82,18 +84,18 @@ struct InitializeResidualMonitor {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN());
-    return std::make_tuple(std::move(box), true);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -33,6 +34,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -146,7 +148,7 @@ struct ComputeOperatorAction {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
@@ -178,7 +180,7 @@ struct ComputeOperatorAction {
 
     // Terminate algorithm for now. The reduction will be broadcast to the
     // next action which is responsible for restarting the algorithm.
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -228,7 +230,7 @@ struct TestResult {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -250,7 +252,7 @@ struct TestResult {
     for (size_t i = 0; i < expected_result.size(); i++) {
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
     }
-    return {std::move(box), true};
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
   }
 };
 
@@ -266,11 +268,12 @@ struct InitializeElement {
   using compute_tags = tmpl::list<>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ElementId<1>& element_id, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<1>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // Domain geometry
     const auto& domain = db::get<domain::Tags::Domain<1>>(box);
     const auto& initial_extents = db::get<domain::Tags::InitialExtents<1>>(box);
@@ -290,7 +293,7 @@ struct InitializeElement {
         make_not_null(&box), std::move(mesh), std::move(element),
         std::move(logical_coords), typename fields_tag::type{num_points, 0.},
         typename sources_tag::type{source});
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -21,6 +22,7 @@
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -61,14 +63,14 @@ struct ObserveVolumeData {
  public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     if (not db::get<Tags::OutputVolumeData<OptionsGroup>>(box)) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     const auto& volume_data = db::get<volume_data_tag>(box);
     const auto& observation_id =
@@ -118,7 +120,7 @@ struct ObserveVolumeData {
     db::mutate<Tags::ObservationId<OptionsGroup>>(
         make_not_null(&box),
         [](const auto local_observation_id) { ++(*local_observation_id); });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

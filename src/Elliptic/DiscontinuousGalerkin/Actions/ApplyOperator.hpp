@@ -5,6 +5,7 @@
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -32,7 +33,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -96,7 +97,7 @@ struct InitializeFacesMortarsAndBackground {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -125,7 +126,7 @@ struct InitializeFacesMortarsAndBackground {
           InitializeFacesAndMortars{}, make_not_null(&box),
           db::get<domain::Tags::InitialExtents<Dim>>(box));
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -177,7 +178,7 @@ struct PrepareAndSendMortarData<
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -307,7 +308,7 @@ struct PrepareAndSendMortarData<
       }  // loop over neighbors in direction
     }    // loop over directions
 
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -355,7 +356,7 @@ struct ReceiveMortarDataAndApplyOperator<
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -365,7 +366,7 @@ struct ReceiveMortarDataAndApplyOperator<
 
     if (not ::dg::has_received_from_all_mortars<mortar_data_inbox_tag>(
             temporal_id, element, inboxes)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Move received "remote" mortar data into the DataBox
@@ -410,7 +411,7 @@ struct ReceiveMortarDataAndApplyOperator<
         db::get<elliptic::dg::Tags::Massive>(box), temporal_id,
         std::forward_as_tuple(db::get<SourcesArgsTags>(box)...));
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -519,7 +520,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -600,7 +601,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         make_not_null(&box), [&fixed_sources](const auto local_fixed_sources) {
           *local_fixed_sources = std::move(fixed_sources);
         });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 /// \endcond

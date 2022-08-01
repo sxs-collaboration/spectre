@@ -19,6 +19,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -86,7 +87,7 @@ struct RandomizeVariables {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -96,7 +97,7 @@ struct RandomizeVariables {
     const std::optional<RandomParameters>& params =
         db::get<RandomParametersTag>(box);
     if (not params.has_value()) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     const auto& [amplitude, seed] = params.value();
     // Seed a random generator. Include the element ID in the seed so the data
@@ -113,7 +114,7 @@ struct RandomizeVariables {
                                  fields->data()[i] += dist(generator);
                                }
                              });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

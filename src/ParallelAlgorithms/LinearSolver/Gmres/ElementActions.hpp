@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GetSection.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
@@ -70,7 +70,7 @@ struct PrepareSolve {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -85,7 +85,7 @@ struct PrepareSolve {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
-        return {std::move(box)};
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
       }
     }
 
@@ -132,7 +132,7 @@ struct PrepareSolve {
           });
     }
 
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -154,19 +154,16 @@ struct NormalizeInitialOperand {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::InitialOrthogonalization<OptionsGroup>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry,
-              std::numeric_limits<size_t>::max()};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     auto received_data = std::move(inbox.extract(iteration_id).mapped());
@@ -185,8 +182,7 @@ struct NormalizeInitialOperand {
         NormalizeOperandAndUpdateField<FieldsTag, OptionsGroup, Preconditioned,
                                        Label, ArraySectionIdTag>>::value;
     if (get<Convergence::Tags::HasConverged<OptionsGroup>>(box)) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue,
-              step_end_index + 1};
+      return {Parallel::AlgorithmExecution::Continue, step_end_index + 1};
     }
 
     // Skip the solve entirely on elements that are not part of the section. To
@@ -202,8 +198,7 @@ struct NormalizeInitialOperand {
             tmpl::index_of<ActionList,
                            PrepareStep<FieldsTag, OptionsGroup, Preconditioned,
                                        Label, ArraySectionIdTag>>::value;
-        return {std::move(box), Parallel::AlgorithmExecution::Continue,
-                prepare_step_index + 1};
+        return {Parallel::AlgorithmExecution::Continue, prepare_step_index + 1};
       }
     }
 
@@ -221,10 +216,7 @@ struct NormalizeInitialOperand {
           basis_history->push_back(*operand);
         });
 
-    constexpr size_t this_action_index =
-        tmpl::index_of<ActionList, NormalizeInitialOperand>::value;
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
-            this_action_index + 1};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -237,7 +229,7 @@ struct PrepareStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -284,7 +276,7 @@ struct PrepareStep {
           },
           get<operand_tag>(box));
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -305,13 +297,12 @@ struct PerformStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // Skip to the end of the step on elements that are not part of the section
     if constexpr (not std::is_same_v<ArraySectionIdTag, void>) {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
@@ -322,8 +313,7 @@ struct PerformStep {
                            NormalizeOperandAndUpdateField<
                                FieldsTag, OptionsGroup, Preconditioned, Label,
                                ArraySectionIdTag>>::value;
-        return {std::move(box), Parallel::AlgorithmExecution::Continue,
-                step_end_index};
+        return {Parallel::AlgorithmExecution::Continue, step_end_index};
       }
     }
 
@@ -385,10 +375,7 @@ struct PerformStep {
             ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>(cache),
         make_not_null(&section));
 
-    constexpr size_t this_action_index =
-        tmpl::index_of<ActionList, PerformStep>::value;
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
-            this_action_index + 1};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -411,19 +398,16 @@ struct OrthogonalizeOperand {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        Parallel::GlobalCache<Metavariables>& cache,
-        const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::Orthogonalization<OptionsGroup>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry,
-              std::numeric_limits<size_t>::max()};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     const double orthogonalization =
@@ -470,7 +454,7 @@ struct OrthogonalizeOperand {
     // Repeat this action until orthogonalization is complete
     constexpr size_t this_action_index =
         tmpl::index_of<ActionList, OrthogonalizeOperand>::value;
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+    return {Parallel::AlgorithmExecution::Continue,
             orthogonalization_complete ? (this_action_index + 1)
                                        : this_action_index};
   }
@@ -500,19 +484,16 @@ struct NormalizeOperandAndUpdateField {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ArrayIndex& array_index, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     auto& inbox = get<Tags::FinalOrthogonalization<OptionsGroup>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry,
-              std::numeric_limits<size_t>::max()};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     // Retrieve reduction data from inbox
@@ -542,7 +523,7 @@ struct NormalizeOperandAndUpdateField {
       if (not db::get<Parallel::Tags::Section<ParallelComponent,
                                               ArraySectionIdTag>>(box)
                   .has_value()) {
-        return {std::move(box), Parallel::AlgorithmExecution::Continue,
+        return {Parallel::AlgorithmExecution::Continue,
                 get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                     ? (this_action_index + 1)
                     : (prepare_step_index + 1)};
@@ -577,7 +558,7 @@ struct NormalizeOperandAndUpdateField {
         get<preconditioned_basis_history_tag>(box));
 
     // Repeat steps until the solve has converged
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+    return {Parallel::AlgorithmExecution::Continue,
             get<Convergence::Tags::HasConverged<OptionsGroup>>(box)
                 ? (this_action_index + 1)
                 : prepare_step_index};

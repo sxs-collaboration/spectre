@@ -21,6 +21,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AlgorithmExecution.hpp
   AlgorithmMetafunctions.hpp
   ArrayIndex.hpp
   Callback.hpp

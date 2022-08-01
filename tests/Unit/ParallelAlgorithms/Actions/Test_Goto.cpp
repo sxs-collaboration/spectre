@@ -3,10 +3,12 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <optional>
 #include <string>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/Goto.hpp"  // IWYU pragma: keep
@@ -40,7 +42,7 @@ struct Increment {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -49,7 +51,7 @@ struct Increment {
     db::mutate<Counter>(
         make_not_null(&box),
         [](const gsl::not_null<size_t*> counter) { (*counter)++; });
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

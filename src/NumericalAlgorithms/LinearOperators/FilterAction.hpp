@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 
@@ -15,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -85,7 +87,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
             typename Metavariables>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& cache,
@@ -97,7 +99,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
     const FilterType& filter_helper =
         Parallel::get<::Filters::Tags::Filter<FilterType>>(cache);
     if (UNLIKELY(filter_helper.disable_for_debugging())) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     const Mesh<volume_dim> mesh = db::get<domain::Tags::Mesh<volume_dim>>(box);
     const Matrix empty{};
@@ -145,7 +147,7 @@ class Filter<FilterType, tmpl::list<TagsToFilter...>> {
           },
           mesh);
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

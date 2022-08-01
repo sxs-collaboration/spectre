@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/TagsDomain.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Requires.hpp"
@@ -128,18 +130,13 @@ struct Domain {
       // Compute tags for other mesh quantities
       ::domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>;
 
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::all<initialization_tags,
-                         tmpl::bind<db::tag_is_retrievable, tmpl::_1,
-                                    tmpl::pin<DataBox>>>::value> = nullptr>
-  static auto apply(DataBox& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ElementId<Dim>& array_index,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  template <typename DataBox, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const auto& initial_extents =
         db::get<::domain::Tags::InitialExtents<Dim>>(box);
     const auto& initial_refinement =
@@ -173,23 +170,7 @@ struct Domain {
         make_not_null(&box), std::move(mesh), std::move(element),
         std::move(element_map), std::move(grid_to_inertial_map));
 
-    return std::make_tuple(std::move(box));
-  }
-
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::all<initialization_tags,
-                             tmpl::bind<db::tag_is_retrievable, tmpl::_1,
-                                        tmpl::pin<DataBox>>>::value> = nullptr>
-  static std::tuple<DataBox&&> apply(
-      DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    ERROR(
-        "Dependencies not fulfilled. Did you forget to terminate the phase "
-        "after removing options?");
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Initialization

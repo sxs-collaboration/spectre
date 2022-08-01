@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <map>
+#include <optional>
 #include <unordered_set>
 
 #include "DataStructures/ApplyMatrices.hpp"
@@ -19,6 +20,7 @@
 #include "NumericalAlgorithms/Convergence/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
@@ -64,7 +66,7 @@ struct InitializeElement {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -110,7 +112,7 @@ struct InitializeElement {
         std::move(parent_mesh), std::move(observation_key_level),
         std::move(observation_key_is_finest_grid), size_t{0},
         std::move(volume_data));
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -147,13 +149,12 @@ struct PreparePreSmoothing {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const size_t iteration_id =
         db::get<Convergence::Tags::IterationId<OptionsGroup>>(box);
     if (UNLIKELY(db::get<logging::Tags::Verbosity<OptionsGroup>>(box) >=
@@ -205,7 +206,7 @@ struct PreparePreSmoothing {
     const size_t this_action_index =
         tmpl::index_of<ActionList, PreparePreSmoothing>::value;
     return {
-        std::move(box), Parallel::AlgorithmExecution::Continue,
+        Parallel::AlgorithmExecution::Continue,
         db::get<
             LinearSolver::multigrid::Tags::EnablePreSmoothing<OptionsGroup>>(
             box)
@@ -229,13 +230,12 @@ struct SkipPostSmoothingAtBottom {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution,
-                    size_t>
-  apply(db::DataBox<DbTagsList>& box,
-        const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& /*element_id*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const bool is_coarsest_grid =
         not db::get<Tags::ParentId<Dim>>(box).has_value();
 
@@ -266,7 +266,7 @@ struct SkipPostSmoothingAtBottom {
         ::Actions::Label<PostSmoothingBeginLabel>>::value + 1;
     const size_t this_action_index =
         tmpl::index_of<ActionList, SkipPostSmoothingAtBottom>::value;
-    return {std::move(box), Parallel::AlgorithmExecution::Continue,
+    return {Parallel::AlgorithmExecution::Continue,
             is_coarsest_grid
                 ? (db::get<LinearSolver::multigrid::Tags::
                                EnablePostSmoothingAtBottom<OptionsGroup>>(box)
@@ -299,7 +299,7 @@ struct SendCorrectionToFinerGrid {
  public:
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
@@ -326,7 +326,7 @@ struct SendCorrectionToFinerGrid {
     }
 
     if (child_ids.empty()) {
-      return {std::move(box)};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     const size_t iteration_id =
@@ -346,7 +346,7 @@ struct SendCorrectionToFinerGrid {
           receiver_proxy[child_id], iteration_id,
           std::move(coarse_grid_correction));
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -362,12 +362,11 @@ struct ReceiveCorrectionFromCoarserGrid {
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagsList>&&, Parallel::AlgorithmExecution>
-  apply(db::DataBox<DbTagsList>& box,
-        tuples::TaggedTuple<InboxTags...>& inboxes,
-        const Parallel::GlobalCache<Metavariables>& /*cache*/,
-        const ElementId<Dim>& element_id, const ActionList /*meta*/,
-        const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const auto& parent_id = db::get<Tags::ParentId<Dim>>(box);
     // We should always have a `parent_id` at this point because we skip this
     // part of the algorithm on the coarsest grid with the
@@ -381,7 +380,7 @@ struct ReceiveCorrectionFromCoarserGrid {
     // Wait for data from coarser grid
     auto& inbox = tuples::get<CorrectionInboxTag<FieldsTag>>(inboxes);
     if (inbox.find(iteration_id) == inbox.end()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     auto parent_correction = std::move(inbox.extract(iteration_id).mapped());
 
@@ -438,7 +437,7 @@ struct ReceiveCorrectionFromCoarserGrid {
           db::get<fields_tag>(box), db::get<source_tag>(box));
     }
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 

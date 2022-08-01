@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
 
@@ -12,6 +13,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"     // IWYU pragma: keep
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -197,12 +199,12 @@ struct Initialize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const TimeDelta initial_step = db::get<::Tags::TimeStep>(box);
     // The slab number increments each time a new point is generated
     // until it reaches zero.
@@ -230,7 +232,7 @@ struct Initialize {
           *next_time_step = self_start_step;
         });
 
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -253,7 +255,7 @@ struct CheckForCompletion {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -281,11 +283,10 @@ struct CheckForCompletion {
     // will do is update the time, so here we need to check if the
     // next time should be the first real step.
     if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0) {
-      return {std::move(box), false,
+      return {Parallel::AlgorithmExecution::Continue,
               tmpl::index_of<ActionList, ::Actions::Label<ExitTag>>::value};
     }
-    return {std::move(box), false,
-            tmpl::index_of<ActionList, CheckForCompletion>::value + 1};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -309,7 +310,7 @@ struct CheckForOrderIncrease {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -358,7 +359,7 @@ struct CheckForOrderIncrease {
             });
       });
     }
-    return {std::move(box)};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -389,12 +390,12 @@ struct Cleanup {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     // Reset the time step to the value requested by the user.  The
     // variables were reset in CheckForCompletion.
     db::mutate<::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>(
@@ -431,7 +432,7 @@ struct Cleanup {
                  << ". This may indicate that the step size has varied during "
                     "self-start, which should not be permitted.");
     });
-    return std::make_tuple(std::move(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions

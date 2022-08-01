@@ -509,65 +509,50 @@ current phase.  That is, it is equal to the `action_list` type alias
 in the current PDAL.  The `inboxes` is a collection of the tags
 specified as `tmpl::list`s in the iterable actions' member type
 aliases `inbox_tags`.  This collection represents data received from
-other chares using the `receive_data` function.  The return type will
-be discussed below.
+other chares using the `receive_data` function.
 
-Iterable actions can change the type of the db::DataBox by adding or
-removing elements/tags from the db::DataBox. The only requirement is
-that the last action in each PDAL returns a db::DataBox that is the
-same type for each iteration. Iterable actions can also request that
-the algorithm no longer be executed, and control which action in the
-current PDAL will be executed next. This is all done via the return
-value from the `apply` function.  The `apply` function for iterable
-actions must return a `std::tuple` of one, two, or three elements. The
-first element of the tuple is the new db::DataBox, which can be a
-db::DataBox with a new set of tags or an rvalue reference to the `box`
-argument to the function.  Most iterable actions will simply return:
+Iterable actions can request that the algorithm be paused or halted
+for the current phase, and control which action in the current PDAL
+will be executed next. This is all done via the return value from the
+`apply` function.  The `apply` function for iterable actions must
+return a Parallel::iterable_action_return_t which is a
+`std::tuple<Parallel::AlgorithmExecution, std::optional<size_t>>`. The
+first element of the tuple controls how algorithm execution continues.
+See the documentation of `Parallel::AlgorithmExecution` for the
+meanings of different values of that enum.  The second element of the
+tuple is usually set to `std::nullopt` in order to continue iterating
+through the algorithm, but can be used to jump to a different action
+in the current PDAL. Most iterable actions will simply return
 
-\snippet Test_AlgorithmParallel.cpp return_forward_as_tuple
+\snippet Test_AlgorithmParallel.cpp iterable_action_return_continue_next_action
 
-By returning the db::DataBox as a reference in a `std::tuple` we avoid
-any unnecessary copying of the db::DataBox.  The second argument
-controls how algorithm execution continues.  If present, it
-must be either a `bool` or a `Parallel::AlgorithmExecution`.  If a
-`bool` is passed, the termination flag for the chare will be set to
-that value (stopping the algorithm if that value is true).  See the
-documentation of `Parallel::AlgorithmExecution` for the meanings of
-different values of that enum.  If the returned tuple only has one
-element, it acts as if `Parallel::AlgorithmExecution::Continue` was
-returned (that is, the flow control flags are not modified).  For
-example, an action that stops the algorithm could return
+An action that pauses the algorithm will return
 
 \snippet Test_AlgorithmParallel.cpp return_with_termination
 
-Notice that we again return a reference to the db::DataBox, which is
-done to avoid any copying. After an algorithm has been terminated it
-can be restarted by passing `false` to the `set_terminate` method or
-by calling `receive_data(..., true)`. Since the order in which
-messages are received is undefined in most cases the
-`receive_data(..., true)` call should be used to restart the
-algorithm.
+After an algorithm has been paused it can be restarted by passing
+`false` to the `set_terminate` method or by calling `receive_data(...,
+true)`. Since the order in which messages are received is undefined in
+most cases the `receive_data(..., true)` call should be used to
+restart the algorithm.
 
 The return value `Parallel::AlgorithmExecution::Retry` deserves
 special mention.  It is intended for use by actions that use data
 supplied by other parallel objects to indicate that they have not
 received all of the data they require.  The algorithm will stop until
 an operation that could supply data has occurred and then the action
-will be retried.  An example of an waiting because of missing data is
+will be retried.  An example of waiting because of missing data is
 
 \snippet Test_AlgorithmCore.cpp retry_example
 
-The third optional element in the returned `std::tuple` is a `size_t` whose
-value corresponds to the index of the action to be called next in the
-PDAL. The metafunction `tmpl::index_of<list, element>` can be used to
-get an `tmpl::integral_constant` with the value of the index of the element
+In order to jump to a specific action, the metafunction
+`tmpl::index_of<list, element>` can be used to get an
+`tmpl::integral_constant` with the value of the index of the element
 `element` in the typelist `list`. For example,
 
 \snippet Test_AlgorithmCore.cpp out_of_order_action
 
-Again a reference to the db::DataBox is returned, while the
-termination `bool` and next action `size_t` are returned by value. The
-metafunction call `tmpl::index_of<ActionList,
+The metafunction call `tmpl::index_of<ActionList,
 iterate_increment_int0>::%value` returns a `size_t` whose value is
 that of the action `iterate_increment_int0` in the PDAL.  The indexing
 of actions in the PDAL starts at `0`.
@@ -583,7 +568,7 @@ Alternatively, to evaluate the algorithm without changing phases the
 `perform_algorithm()` method can be used.
 
 By passing `true` to `perform_algorithm` the algorithm will be restarted if it
-was terminated.
+was paused.
 
 The algorithm is also evaluated by calling the `receive_data` function, either
 on an entire array or singleton (this does a broadcast), or an on individual

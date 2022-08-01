@@ -9,6 +9,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <pup.h>
 #include <tuple>
@@ -17,7 +18,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
+#include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
@@ -111,14 +112,14 @@ struct ChangeSlabSize {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTags>&&, Parallel::AlgorithmExecution> apply(
+  static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const auto& time_step_id = db::get<::Tags::TimeStepId>(box);
     if (not time_step_id.is_at_slab_boundary()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     auto& message_count_inbox =
@@ -126,7 +127,7 @@ struct ChangeSlabSize {
             inboxes);
     if (message_count_inbox.empty() or
         message_count_inbox.begin()->first != time_step_id.slab_number()) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     auto& new_slab_size_inbox =
@@ -153,7 +154,7 @@ struct ChangeSlabSize {
                        << slab_number << ", but only expected "
                        << expected_messages);
     if (expected_messages != received_messages) {
-      return {std::move(box), Parallel::AlgorithmExecution::Retry};
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
     message_count_inbox.erase(message_count_inbox.begin());
@@ -169,7 +170,7 @@ struct ChangeSlabSize {
     // is in an unusual state.
     if (not time_stepper.can_change_step_size(
             time_step_id, db::get<::Tags::HistoryEvolvedVariables<>>(box))) {
-      return {std::move(box), Parallel::AlgorithmExecution::Continue};
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
 
     const auto& current_step = db::get<::Tags::TimeStep>(box);
@@ -204,7 +205,7 @@ struct ChangeSlabSize {
           *local_time_step_id = new_time_step_id;
         });
 
-    return {std::move(box), Parallel::AlgorithmExecution::Continue};
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 }  // namespace Actions
