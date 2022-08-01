@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
   Test_LinearLeastSquares.cpp
+  Test_LinearRegression.cpp
   Test_PolynomialInterpolation.cpp
   Test_PredictedZeroCrossing.cpp
   Test_RegularGridInterpolant.cpp
