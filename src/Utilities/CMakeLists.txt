@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Simd)
+
 set(LIBRARY Utilities)
 
 add_spectre_library(${LIBRARY})
