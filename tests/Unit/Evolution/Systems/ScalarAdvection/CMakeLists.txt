@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_NeighborPackagedData.cpp
   Subcell/Test_TciOnDgGrid.cpp
   Subcell/Test_TciOnFdGrid.cpp
+  Subcell/Test_TciOptions.cpp
   Subcell/Test_TimeDerivative.cpp
   Subcell/Test_VelocityAtFace.cpp
   Test_Characteristics.cpp

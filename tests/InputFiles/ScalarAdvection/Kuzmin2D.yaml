@@ -41,6 +41,8 @@ SpatialDiscretization:
         PerssonExponent: 4.0
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
+    TciOptions:
+      UCutoff: 1.0e-10
   SubcellSolver:
     Reconstructor:
       MonotonisedCentral
@@ -62,7 +64,7 @@ EventsAndTriggers:
         VariablesToObserve: [U, TciStatus]
         InterpolateToMesh: None
         CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double, Float]
+        FloatingPointTypes: [Float, Float]
 
 EventsAndDenseTriggers:
 

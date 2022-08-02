@@ -136,7 +136,7 @@ struct TimeDerivative {
 
         // copy over the face values of the velocity field
         {
-          using tag = Tags::VelocityField<Dim>;
+          using tag = ::ScalarAdvection::Tags::VelocityField<Dim>;
           const auto& velocity_on_face =
               db::get<evolution::dg::subcell::Tags::OnSubcellFaces<tag, Dim>>(
                   *box);
@@ -235,7 +235,8 @@ struct TimeDerivative {
               &fd_boundary_corrections, &subcell_mesh,
               &one_over_delta_xi](const auto dt_vars_ptr) {
           dt_vars_ptr->initialize(num_pts, 0.0);
-          auto& dt_u = get<::Tags::dt<Tags::U>>(*dt_vars_ptr);
+          auto& dt_u =
+              get<::Tags::dt<::ScalarAdvection::Tags::U>>(*dt_vars_ptr);
 
           for (size_t dim = 0; dim < Dim; ++dim) {
             Scalar<DataVector>& u_correction = get<::ScalarAdvection ::Tags::U>(

@@ -10,6 +10,7 @@
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/ScalarAdvection/Subcell/InitialDataTci.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -34,6 +35,7 @@ void test() {
   const double persson_exponent{4.0};
   const double rdmp_delta0{1.0e-4};
   const double rdmp_epsilon{1.0e-3};
+  const ScalarAdvection::subcell::TciOptions tci_options{1.0e-8};
 
   const auto compute_expected_rdmp_tci_data = [&dg_vars, &dg_mesh,
                                                &subcell_mesh]() {
@@ -53,7 +55,7 @@ void test() {
     INFO("TCI is happy");
     const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
         dg_vars, rdmp_delta0, rdmp_epsilon, persson_exponent, dg_mesh,
-        subcell_mesh);
+        subcell_mesh, tci_options);
     CHECK_FALSE(std::get<0>(result));
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
@@ -67,7 +69,8 @@ void test() {
         dg_vars))[dg_mesh.number_of_grid_points() / 2] *=
         1.0 + std::numeric_limits<double>::epsilon() * 2.0;
     const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, 1.0e-100, 1.0e-18, persson_exponent, dg_mesh, subcell_mesh);
+        dg_vars, 1.0e-100, 1.0e-18, persson_exponent, dg_mesh, subcell_mesh,
+        tci_options);
     CHECK(std::get<0>(result));
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<ScalarAdvection::Tags::U>(
@@ -83,10 +86,22 @@ void test() {
     // set rdmp_delta0 to be very large to ensure that it's the Persson TCI
     // which triggers alarm here
     const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
-        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh,
-        subcell_mesh);
+        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh, subcell_mesh,
+        tci_options);
     CHECK(std::get<0>(result));
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+  }
+
+  {
+    INFO("U is below absolute cutoff");
+    // dg_vars is troubled but it is scaled to be smaller than the cutoff
+    get(get<ScalarAdvection::Tags::U>(dg_vars)) *= 1.0e-10;
+    const auto result = ScalarAdvection::subcell::DgInitialDataTci<Dim>::apply(
+        dg_vars, 1.0e100, rdmp_epsilon, persson_exponent, dg_mesh, subcell_mesh,
+        tci_options);
+    CHECK_FALSE(std::get<0>(result));
+    CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
+    get(get<ScalarAdvection::Tags::U>(dg_vars)) *= 1.0e+10;
   }
 
   {
