@@ -16,7 +16,7 @@
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/ScriPlusInterpolationManager.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
-#include "IO/Observer/WriteSimpleData.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -252,13 +252,12 @@ struct ScriObserveInterpolated {
       (*data_to_write_buffer)[2 * i + 1] = real(goldberg_modes.data()[i]);
       (*data_to_write_buffer)[2 * i + 2] = imag(goldberg_modes.data()[i]);
     }
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
     auto observer_proxy =
-        Parallel::get_parallel_component<ObserverWriterComponent>(
-            cache)[Parallel::my_node<size_t>(*Parallel::local(my_proxy))];
-    Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
-        observer_proxy, legend, *data_to_write_buffer,
-        "/" + detail::ScriOutput<Tag>::name());
+        Parallel::get_parallel_component<ObserverWriterComponent>(cache)[0];
+    Parallel::threaded_action<
+        observers::ThreadedActions::WriteReductionDataRow>(
+        observer_proxy, "/Cce/" + detail::ScriOutput<Tag>::name(), legend,
+        std::make_tuple(*data_to_write_buffer));
   }
 };
 }  // namespace Actions

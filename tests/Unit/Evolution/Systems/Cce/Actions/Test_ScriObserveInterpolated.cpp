@@ -97,7 +97,7 @@ struct mock_observer {
   using with_these_simple_actions = tmpl::list<>;
 
   using const_global_cache_tags =
-      tmpl::list<observers::Tags::VolumeFileName, Tags::ObservationLMax>;
+      tmpl::list<observers::Tags::ReductionFileName, Tags::ObservationLMax>;
   using initialize_action_list =
       tmpl::list<observers::Actions::InitializeWriter<Metavariables>>;
   using initialization_tags =
@@ -255,7 +255,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
   const size_t number_of_radial_points = 4;
   const size_t l_max = 4;
   const size_t scri_output_density = 1;
-  const std::string filename = "ScriObserveInterpolatedTest_CceVolumeOutput";
+  const std::string filename = "ScriObserveInterpolatedTest_CceOutput";
 
   const double start_time = 0.0;
   const double target_step_size = 0.1;
@@ -285,8 +285,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
           std::make_unique<StepControllers::BinaryFraction>()),
       target_step_size, scri_interpolation_size,
       serialize_and_deserialize(analytic_manager));
-  if (file_system::check_if_file_exists(filename + "0.h5")) {
-    file_system::rm(filename + "0.h5", true);
+  if (file_system::check_if_file_exists(filename + ".h5")) {
+    file_system::rm(filename + ".h5", true);
   }
 
   ActionTesting::emplace_component<observation_component>(&runner, 0);
@@ -378,7 +378,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
 
   // scoped to close the file
   {
-    h5::H5File<h5::AccessType::ReadOnly> read_file{filename + "0.h5"};
+    h5::H5File<h5::AccessType::ReadOnly> read_file{filename + ".h5"};
     Approx interpolation_approx =
         Approx::custom()
             .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
@@ -389,7 +389,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
           using tag = typename decltype(tag_v)::type;
           read_file.close_current_object();
           const auto& dataset = read_file.get<h5::Dat>(
-              "/" + Actions::detail::ScriOutput<tag>::name());
+              "/Cce/" + Actions::detail::ScriOutput<tag>::name());
           const Matrix data_matrix = dataset.get_data();
           CHECK(data_matrix.rows() > 20);
           // skip the first time because the extrapolation will make that value
@@ -414,7 +414,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
           }
         });
     read_file.close_current_object();
-    const auto& dataset = read_file.get<h5::Dat>("/News_expected");
+    const auto& dataset = read_file.get<h5::Dat>("/Cce/News_expected");
     const Matrix data_matrix = dataset.get_data();
     for (size_t i = 1; i < data_matrix.rows(); ++i) {
       const ComplexModalVector analytic_news_modes =
@@ -432,8 +432,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.ScriObserveInterpolated",
       }
     }
   }
-  if (file_system::check_if_file_exists(filename + "0.h5")) {
-    file_system::rm(filename + "0.h5", true);
+  if (file_system::check_if_file_exists(filename + ".h5")) {
+    file_system::rm(filename + ".h5", true);
   }
 }
 }  // namespace Cce

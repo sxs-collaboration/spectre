@@ -81,13 +81,13 @@ CCE using external data are:
   have the time value followed by the real and imaginary parts
   of the complex modes in m-varies-fastest order.
 
-Once you have the volume data output file from a successful CCE run, you can
+Once you have the reduction data output file from a successful CCE run, you can
 confirm the integrity of the h5 file and its contents by running
 ```
-h5ls CharacteristicExtractVolumeData0.h5
+h5ls CharacteristicExtractReductionData.h5/Cce.dir
 ```
 
-For the volume file produced by a successful run, the output of the `h5ls`
+For the reduction file produced by a successful run, the output of the `h5ls`
 should resemble
 ```
 EthInertialRetardedTime.dat Dataset {3995/Inf, 163}
@@ -140,7 +140,7 @@ def get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):
 
 plot_quantities = ["Strain", "News", "Psi0", "Psi1", "Psi2", "Psi3", "Psi4"]
 mode_set = [[2, 2], [3, 3]]
-filename = "CharacteristicExtractVolume0.h5"
+filename = "CharacteristicExtractReductionData.h5"
 output_plot_filename = "CCE_plot.pdf"
 
 legend = []
