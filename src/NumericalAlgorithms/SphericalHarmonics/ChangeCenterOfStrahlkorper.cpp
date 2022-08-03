@@ -92,7 +92,7 @@ void change_expansion_center(
   // with radii outside that range. So we pad by 10% to be safe.
   const double padding = 0.10;
 
-  const auto radius_at_each_angle = RootFinder::toms748(
+  const auto radius_at_each_angle = RootFinder::toms748<false>(
       radius_function,
       make_with_value<DataVector>(get<0>(r_hat), r_min * (1.0 - padding)),
       make_with_value<DataVector>(get<0>(r_hat), r_max * (1.0 + padding)),

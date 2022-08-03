@@ -248,7 +248,7 @@ void strahlkorper_in_different_frame(
         << e.what());
   }
   // Find the radius at each angular point by root finding.
-  const auto radius_at_each_angle = RootFinder::toms748(
+  const auto radius_at_each_angle = RootFinder::toms748<false>(
       radius_function, get(bracket_r_min), get(bracket_r_max),
       get(f_bracket_r_min), get(f_bracket_r_max),
       std::numeric_limits<double>::epsilon() * (r_min + r_max),

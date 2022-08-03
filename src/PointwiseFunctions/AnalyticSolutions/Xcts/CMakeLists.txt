@@ -31,6 +31,9 @@ spectre_target_headers(
 
 target_link_libraries(
   ${LIBRARY}
+  PRIVATE
+  Simd
+  RootFinding
   PUBLIC
   DataStructures
   ElasticityPointwiseFunctions

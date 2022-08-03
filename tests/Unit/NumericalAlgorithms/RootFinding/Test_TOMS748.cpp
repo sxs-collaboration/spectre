@@ -18,7 +18,10 @@
 namespace {
 double f_free(double x) { return 2.0 - square(x); }
 struct F {
-  double operator()(double x) const { return 2.0 - square(x); }
+  template <typename T>
+  T operator()(const T& x) const {
+    return 2.0 - square(x);
+  }
 };
 
 void test_simple() {
@@ -86,12 +89,16 @@ void test_datavector() {
   const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
 
   const DataVector constant{2.0, 4.0, 2.0, 4.0};
-  const auto f_lambda = [&constant](const double x, const size_t i) {
-    return constant[i] - square(x);
+  const auto f_lambda = [&constant](const auto x, const size_t i) {
+    if constexpr (simd::is_batch<std::decay_t<decltype(x)>>::value) {
+      return simd::load_unaligned(&(constant[i])) - square(x);
+    } else {
+      return constant[i] - square(x);
+    }
   };
 
   const auto root_no_function_values =
-      RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
+      RootFinder::toms748<true>(f_lambda, lower, upper, abs_tol, rel_tol);
   // [datavector_root_find]
 
   auto check_root = [&abs_tol, &rel_tol](const DataVector& root) {
@@ -115,7 +122,7 @@ void test_datavector() {
     }
     return f;
   };
-  const auto root_function_values = RootFinder::toms748(
+  const auto root_function_values = RootFinder::toms748<true>(
       f_lambda, lower, upper, generate_function_values(lower),
       generate_function_values(upper), abs_tol, rel_tol);
   check_root(root_function_values);
@@ -142,12 +149,68 @@ void test_convergence_error_datavector() {
         const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
         const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
         const DataVector constant{2.0, 4.0, 2.0, 4.0};
-        const auto f = [&constant](const double x, const size_t i) {
-          return constant[i] - square(x);
+        const auto f = [&constant](const auto x, const size_t i) {
+          if constexpr (simd::is_batch<std::decay_t<decltype(x)>>::value) {
+            return simd::load_unaligned(&constant[i]) - square(x);
+          } else {
+            return constant[i] - square(x);
+          }
         };
         RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
       }()),
       convergence_error);
+}
+
+void benchmark_root_find(const bool enable) {
+  if (not enable) {
+    return;
+  }
+
+#ifdef SPECTRE_USE_XSIMD
+  using SimdType = simd::batch<double>;
+  const auto benchmark = [](const int bound_type,
+                            Catch::Benchmark::Chronometer& meter) {
+    const auto f = [](const auto& x) {
+      using T = std::decay_t<decltype(x)>;
+      return simd::fms(x, simd::fma(x, (x - 6.0), T(11.0)), T(6.0));
+    };
+    const SimdType lower_bound(1.5);
+    SimdType upper_bound{};
+    if (bound_type == 0) {
+      upper_bound = SimdType(2.5 + 1.0e-100) + 1.0e-8;
+    } else if (bound_type == 1) {
+      ERROR("Need to adjust");
+      // upper_bound = SimdType(2.1 + 1.0e-10, 2.1 + 1.0e-10, 2.1 + 1.0e-10) +
+      //               1.0e-8;
+    } else if (bound_type == 2) {
+      ERROR("Need to adjust");
+      // upper_bound = SimdType(2.1 + 1.0e-10, 2.2 + 1.0e-10, 2.3 + 1.0e-10,
+      //                        2.4 + 1.0e-10, 2.5, 2.6, 2.7, 2.8) +
+      //               1.0e-8;
+    } else if (bound_type == 3) {
+      ERROR("Need to adjust");
+      // const double base = 2.8 + 1.0e-8;
+      // upper_bound = SimdType(base + 1.0e-10, base + 2.0e-10, base + 3.0e-10,
+      //                        base + 4.0e-10, base + 5.0e-10, base + 6.0e-10,
+      //                        base + 7.0e-10, base + 8.0e-10);
+    }
+    const auto f_at_lower_bound = f(lower_bound);
+    const auto f_at_upper_bound = f(upper_bound);
+    meter.measure([&f, &lower_bound, &upper_bound, &f_at_lower_bound,
+                   &f_at_upper_bound]() {
+      return RootFinder::toms748(f, lower_bound, upper_bound, f_at_lower_bound,
+                                 f_at_upper_bound, 1.0e-14, 1.0e-12);
+    });
+  };
+
+  for (size_t i = 0; i < 4; ++i) {
+    // Can check other bound types, but those are currently hard-coded to
+    // specific vector widths, which won't let the code compile generically.
+    // The general support is left in case someone wants to look at this again.
+    BENCHMARK_ADVANCED(std::string("advanced ") + std::to_string(i))
+    (Catch::Benchmark::Chronometer meter) { benchmark(0, meter); };
+  }
+#endif // SPECTRE_USE_XSIMD
 }
 
 SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
@@ -157,6 +220,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
   test_datavector();
   test_convergence_error_double();
   test_convergence_error_datavector();
+  benchmark_root_find(false);
 
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(
@@ -167,8 +231,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
         const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
 
         const DataVector constant{2.0, 4.0, 2.0, 4.0};
-        const auto f_lambda = [&constant](const double x, const size_t i) {
-          return constant[i] - square(x);
+        const auto f_lambda = [&constant](const auto x, const size_t i) {
+          if constexpr (simd::is_batch<std::decay_t<decltype(x)>>::value) {
+            return simd::load_unaligned(&constant[i]) - square(x);
+          } else {
+            return constant[i] - square(x);
+          }
         };
 
         RootFinder::toms748(f_lambda, lower, upper, abs_tol, rel_tol);
