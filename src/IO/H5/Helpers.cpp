@@ -282,6 +282,7 @@ bool contains_dataset_or_group(const hid_t id, const std::string& group_name,
 }
 
 template <typename Type>
+// NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
 void write_to_attribute(const hid_t location_id, const std::string& name,
                         const Type& value) {
   const hid_t space_id = H5Screate(H5S_SCALAR);
@@ -462,6 +463,94 @@ std::vector<std::string> read_rank1_attribute<std::string>(
   return result;
 }
 
+template <>
+void write_to_attribute<bool>(const hid_t group_id, const std::string& name,
+                              const std::vector<bool>& data) {
+  std::vector<unsigned short> temp(data.begin(), data.end());
+  write_to_attribute(group_id, name, temp);
+}
+
+template <>
+std::vector<bool> read_rank1_attribute<bool>(const hid_t group_id,
+                                             const std::string& name) {
+  const std::vector<unsigned short> temp =
+      read_rank1_attribute<unsigned short>(group_id, name);
+  return std::vector<bool>(temp.begin(), temp.end());
+}
+
+template <typename T, size_t Size>
+void write_to_attribute(const hid_t group_id, const std::string& name,
+                        const std::vector<std::array<T, Size>>& data) {
+  static_assert(std::is_fundamental_v<T>);
+  const hsize_t size = data.size() * Size;
+  const hid_t space_id = H5Screate_simple(1, &size, nullptr);
+  CHECK_H5(space_id,
+           "Failed to create dataspace for attribute  '" << name << "'");
+  const hid_t att_id = H5Acreate2(group_id, name.c_str(), h5::h5_type<T>(),
+                                  space_id, h5p_default(), h5p_default());
+  CHECK_H5(att_id, "Failed to create attribute '" << name << "'");
+  CHECK_H5(
+      H5Awrite(att_id, h5::h5_type<T>(), static_cast<const void*>(data.data())),
+      "Failed to write extents into attribute '" << name << "'");
+  CHECK_H5(H5Sclose(space_id),
+           "Failed to close dataspace when writing attribute '" << name << "'");
+  CHECK_H5(H5Aclose(att_id),
+           "Failed to close attribute '" << name << "' when writing it.");
+}
+
+template <typename T, size_t Size>
+std::vector<std::array<T, Size>> read_rank1_array_attribute(
+    const hid_t group_id, const std::string& name) {
+  static_assert(std::is_fundamental_v<T>);
+  const hid_t attr_id = H5Aopen(group_id, name.c_str(), h5p_default());
+  CHECK_H5(attr_id, "Failed to open attribute");
+  {  // Check that the datatype in the file matches what we are reading.
+    const hid_t datatype_id = H5Aget_type(attr_id);
+    CHECK_H5(datatype_id, "Failed to get datatype from attribute " << name);
+    if (UNLIKELY(not h5::types_equal(datatype_id, h5::h5_type<T>()))) {
+      ERROR("Expected to read type " << pretty_type::short_name<T>()
+                                     << " for attribute " << name);
+    }
+    CHECK_H5(H5Tclose(datatype_id),
+             "Failed to close datatype while reading attribute " << name);
+  }
+  const auto size = [&attr_id, &name] {
+    const hid_t dataspace_id = H5Aget_space(attr_id);
+    const auto rank_of_space = H5Sget_simple_extent_ndims(dataspace_id);
+    if (UNLIKELY(rank_of_space < 0)) {
+      ERROR("Failed to get the rank of the dataspace inside the attribute "
+            << name);
+    }
+    if (UNLIKELY(rank_of_space != 1)) {
+      ERROR(
+          "The rank of the dataspace being read by read_rank1_attribute should "
+          "be 1 but is "
+          << rank_of_space);
+    }
+    std::array<hsize_t, 1> dims{};
+    if (UNLIKELY(H5Sget_simple_extent_dims(dataspace_id, dims.data(),
+                                           nullptr) != 1)) {
+      ERROR(
+          "The rank of the dataspace has changed after checking its rank. "
+          "Checked rank was "
+          << rank_of_space);
+    }
+    H5Sclose(dataspace_id);
+    if (UNLIKELY(dims[0] % Size != 0)) {
+      ERROR("The read size, " << dims[0]
+                              << ", must be a multiple of the number of "
+                                 "elements in the std::array, "
+                              << Size);
+    }
+    return dims[0] / Size;
+  }();
+  std::vector<std::array<T, Size>> data(size);
+  CHECK_H5(H5Aread(attr_id, h5::h5_type<T>(), data.data()),
+           "Failed to read data from attribute " << name);
+  H5Aclose(attr_id);
+  return data;
+}
+
 std::vector<std::string> get_attribute_names(const hid_t file_id,
                                              const std::string& group_name) {
   // Opens the group, loads the group info and then loops over all the
@@ -618,6 +707,29 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
 
 template std::string read_value_attribute<std::string>(const hid_t location_id,
                                                        const std::string& name);
+// std::vector<bool> is annoying, so we instantiate single bools separately
+template void write_to_attribute(const hid_t location_id,
+                                 const std::string& name, const bool& value);
+template bool read_value_attribute<bool>(const hid_t location_id,
+                                         const std::string& name);
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE_ATTRIBUTE_ARRAY(_, DATA)                        \
+  template void write_to_attribute<TYPE(DATA), DIM(DATA)>(          \
+      hid_t group_id, const std::string& name,                      \
+      const std::vector<std::array<TYPE(DATA), DIM(DATA)>>& data);  \
+  template std::vector<std::array<TYPE(DATA), DIM(DATA)>>           \
+  read_rank1_array_attribute<TYPE(DATA), DIM(DATA)>(hid_t group_id, \
+                                                    const std::string& name);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE_ARRAY,
+                        (float, double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long, char),
+                        (1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+
+#undef INSTANTIATE_ATTRIBUTE_ARRAY
+#undef DIM
 
 #define INSTANTIATE_READ_SCALAR(_, DATA)                 \
   template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \

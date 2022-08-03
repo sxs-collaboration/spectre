@@ -69,6 +69,15 @@ void write_to_attribute(hid_t group_id, const std::string& name,
 
 /*!
  * \ingroup HDF5Group
+ * \brief Write the `vector<array<fundamental, size>>` `data` to the attribute
+ * `name` in the group `group_id`.
+ */
+template <typename T, size_t Size>
+void write_to_attribute(hid_t group_id, const std::string& name,
+                        const std::vector<std::array<T, Size>>& data);
+
+/*!
+ * \ingroup HDF5Group
  * \brief Read a value of type `Type` from an HDF5 attribute named `name`
  */
 template <typename Type>
@@ -80,6 +89,15 @@ Type read_value_attribute(hid_t location_id, const std::string& name);
  */
 template <typename Type>
 std::vector<Type> read_rank1_attribute(hid_t group_id, const std::string& name);
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Read the `vector<array<fundamental, size>>` from the attribute
+ * `name` in the group `group_id`.
+ */
+template <typename T, size_t Size>
+std::vector<std::array<T, Size>> read_rank1_array_attribute(
+    hid_t group_id, const std::string& name);
 
 /*!
  * \ingroup HDF5Group
