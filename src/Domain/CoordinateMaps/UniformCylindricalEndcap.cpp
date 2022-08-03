@@ -179,6 +179,21 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
          "z_plane_two is too far from the center of sphere_two: theta/pi = "
              << theta_max_two_ / M_PI);
 
+
+  ASSERT(is_uniform_cylindrical_endcap_invertible_on_sphere_one(
+             center_one_, center_two_, radius_one_, radius_two_, theta_max_one_,
+             theta_max_two_),
+         "The map is not invertible at at least one point on sphere_one."
+         " center_one = "
+             << center_one_ << " center_two = " << center_two_
+             << " radius_one = " << radius_one_ << " radius_two = "
+             << radius_two_ << " theta_max_one = " << theta_max_one_
+             << " theta_max_two = " << theta_max_two_);
+
+  // The code below defines several variables that are used only in ASSERTs.
+  // We put that code in a #ifdef SPECTRE_DEBUG to avoid clang-tidy complaining
+  // about unused variables in release mode.
+#ifdef SPECTRE_DEBUG
   const double dist_spheres = sqrt(square(center_one[0] - center_two[0]) +
                                    square(center_one[1] - center_two[1]) +
                                    square(center_one[2] - center_two[2]));
@@ -211,16 +226,7 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
              << ", max_horizontal_dist_between_circles = "
              << max_horizontal_dist_between_circles
              << ", horizontal_dist_spheres = " << horizontal_dist_spheres);
-
-  ASSERT(is_uniform_cylindrical_endcap_invertible_on_sphere_one(
-             center_one_, center_two_, radius_one_, radius_two_, theta_max_one_,
-             theta_max_two_),
-         "The map is not invertible at at least one point on sphere_one."
-         " center_one = "
-             << center_one_ << " center_two = " << center_two_
-             << " radius_one = " << radius_one_ << " radius_two = "
-             << radius_two_ << " theta_max_one = " << theta_max_one_
-             << " theta_max_two = " << theta_max_two_);
+#endif
 }
 
 template <typename T>
