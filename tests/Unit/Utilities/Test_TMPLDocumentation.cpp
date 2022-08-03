@@ -154,7 +154,7 @@ using evens = tmpl::filter<
 // [metafunctions:maybe_first]
 template <typename L>
 using maybe_first = tmpl::apply<tmpl::apply<
-  tmpl::if_<tmpl::size<L>,
+  tmpl::if_<std::bool_constant<(tmpl::size<L>::value != 0)>,
             tmpl::defer<tmpl::bind<tmpl::front, tmpl::pin<L>>>,
             tmpl::no_such_type_>>>;
 // [metafunctions:maybe_first]
@@ -223,7 +223,7 @@ using factorial_recursion =
     tmpl::bind<  // recursive metalambda starts here
       tmpl::apply,
       tmpl::if_<
-        tmpl::_2,  // base case: zero is false
+        tmpl::not_equal_to<tmpl::_2, tmpl::size_t<0>>,
         tmpl::defer<  // prevent speculative recursion
           tmpl::parent<
             tmpl::times<
@@ -1144,7 +1144,7 @@ assert_same<tmpl::bitor_<tmpl::uint8_t<0b01100011>,
 assert_same<tmpl::bitxor_<tmpl::uint8_t<0b11000011>,
                           tmpl::uint8_t<0b00000110>>::type,
                           tmpl::uint8_t<0b11000101>>();
-assert_same<tmpl::shift_left<tmpl::uint8_t<0b10001110>, tmpl::size_t<3>>::type,
+assert_same<tmpl::shift_left<tmpl::uint8_t<0b00001110>, tmpl::size_t<3>>::type,
                              tmpl::uint8_t<0b01110000>>();
 assert_same<tmpl::shift_right<tmpl::uint8_t<0b10110011>, tmpl::size_t<4>>::type,
                               tmpl::uint8_t<0b00001011>>();

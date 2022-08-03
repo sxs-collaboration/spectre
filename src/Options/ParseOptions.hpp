@@ -344,7 +344,8 @@ class Parser {
   tuples::tagged_tuple_from_typelist<
       tmpl::transform<subgroups, tmpl::bind<SubgroupParser, tmpl::_1>>>
       subgroup_parsers_ =
-          tmpl::as_pack<subgroups>([](auto... subgroup_tags) {
+          tmpl::as_pack<subgroups>([this](auto... subgroup_tags) {
+            (void)this;  // gcc wants this for subgroup_parsers_
             return decltype(subgroup_parsers_)(
                 tmpl::type_from<decltype(subgroup_tags)>::help...);
           });
