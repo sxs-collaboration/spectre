@@ -74,9 +74,15 @@ jobs:
           with open(package_file, 'w') as open_package_file:
             for line in package_file_lines:
               open_package_file.write(line)
-              if line.strip().startswith("version('develop'"):
+              if line.strip().startswith('version("develop"'):
                 for version_line in version_lines:
                   open_package_file.write(version_line + "\n")
+      - name: Fix code formatting
+        run: |
+          spack style --fix `git diff --name-only`
+        # Formatting can also be fixed later by Spack maintainers in the PR, so
+        # it's fine if it fails here for some reason
+        continue-on-error: true
       - name: Print diff
         run: |
           git diff
