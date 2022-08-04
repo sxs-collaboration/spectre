@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "Evolution/Systems/Cce/AnalyticSolutions/WorldtubeData.hpp"
@@ -16,7 +17,7 @@
 #include "Evolution/Systems/Cce/WorldtubeDataManager.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "IO/Observer/WriteSimpleData.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -106,14 +107,12 @@ void AnalyticBoundaryDataManager::write_news(
     data_to_write[2 * i + 1] = real(goldberg_modes[i]);
     data_to_write[2 * i + 2] = imag(goldberg_modes[i]);
   }
-  auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
   auto observer_proxy = Parallel::get_parallel_component<
-      observers::ObserverWriter<Metavariables>>(
-      cache)[Parallel::my_node<size_t>(*Parallel::local(my_proxy))];
+      observers::ObserverWriter<Metavariables>>(cache)[0];
   const std::string prefix =
       generator_->use_noninertial_news() ? "Noninertial_" : "";
-  Parallel::threaded_action<observers::ThreadedActions::WriteSimpleData>(
-      observer_proxy, file_legend, data_to_write,
-      "/News_" + prefix + "expected"s);
+  Parallel::threaded_action<observers::ThreadedActions::WriteReductionDataRow>(
+      observer_proxy, "/Cce/News_" + prefix + "expected"s, file_legend,
+      std::make_tuple(data_to_write));
 }
 }  // namespace Cce

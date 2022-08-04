@@ -21,6 +21,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/Phase.hpp"
 #include "Time/Slab.hpp"
@@ -34,18 +35,18 @@ namespace Cce {
 namespace {
 std::vector<double> output_news_data;
 std::string data_set_name;
-struct MockWriteSimpleData {
+struct MockWriteReductionDataRow {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(db::DataBox<DbTagsList>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& subfile_name,
                     const std::vector<std::string>& /*file_legend*/,
-                    const std::vector<double>& data_row,
-                    const std::string& subfile_name) {
+                    const std::tuple<std::vector<double>>& data_row) {
     data_set_name = subfile_name;
-    output_news_data = data_row;
+    output_news_data = std::get<0>(data_row);
   }
 };
 
@@ -67,8 +68,8 @@ template <typename Metavariables>
 struct mock_observer_writer {
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using replace_these_threaded_actions =
-      tmpl::list<observers::ThreadedActions::WriteSimpleData>;
-  using with_these_threaded_actions = tmpl::list<MockWriteSimpleData>;
+      tmpl::list<observers::ThreadedActions::WriteReductionDataRow>;
+  using with_these_threaded_actions = tmpl::list<MockWriteReductionDataRow>;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -185,7 +186,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.AnalyticBoundaryDataManager",
       l_max, 1, output_news_libsharp_modes);
   CHECK_ITERABLE_APPROX(output_news.data(), get(expected_news).data());
   CHECK(approx(output_news_data[0]) == time);
-  CHECK(data_set_name == "/News_expected");
+  CHECK(data_set_name == "/Cce/News_expected");
 }
 }  // namespace
 }  // namespace Cce

@@ -22,6 +22,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -46,17 +47,17 @@ namespace Cce {
 namespace {
 
 std::unordered_map<std::string, std::vector<double>> written_modes;
-struct MockWriteSimpleData {
+struct MockWriteReductionDataRow {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<DbTagsList>& /*box*/,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const gsl::not_null<Parallel::NodeLock*> /*node_lock*/,
+                    const std::string& subfile_name,
                     const std::vector<std::string>& /*file_legend*/,
-                    const std::vector<double>& data_row,
-                    const std::string& subfile_name) {
-    written_modes[subfile_name] = data_row;
+                    const std::tuple<std::vector<double>>& data_row) {
+    written_modes[subfile_name] = std::get<0>(data_row);
   }
 };
 
@@ -121,8 +122,8 @@ template <typename Metavariables>
 struct MockObserver {
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using replace_these_threaded_actions =
-      tmpl::list<observers::ThreadedActions::WriteSimpleData>;
-  using with_these_threaded_actions = tmpl::list<MockWriteSimpleData>;
+      tmpl::list<observers::ThreadedActions::WriteReductionDataRow>;
+  using with_these_threaded_actions = tmpl::list<MockWriteReductionDataRow>;
 
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
   using initialize_action_list =
@@ -354,13 +355,14 @@ SPECTRE_TEST_CASE(
                   l_max, start_time, tmpl::list<Tags::News>{})))),
           l_max)
           .data();
-  CHECK(written_modes["/News_Noninertial"].size() == 2 * square(l_max + 1) + 1);
-  CHECK(written_modes["/News_Noninertial"][0] == start_time);
-  CHECK(written_modes["/News_Noninertial_expected"][0] == start_time);
+  CHECK(written_modes["/Cce/News_Noninertial"].size() ==
+        2 * square(l_max + 1) + 1);
+  CHECK(written_modes["/Cce/News_Noninertial"][0] == start_time);
+  CHECK(written_modes["/Cce/News_Noninertial_expected"][0] == start_time);
   for (size_t i = 0; i < square(l_max + 1); ++i) {
-    CHECK(written_modes["/News_Noninertial_expected"][2 * i + 1] ==
+    CHECK(written_modes["/Cce/News_Noninertial_expected"][2 * i + 1] ==
           real(analytic_news_modes[i]));
-    CHECK(written_modes["/News_Noninertial_expected"][2 * i + 2] ==
+    CHECK(written_modes["/Cce/News_Noninertial_expected"][2 * i + 2] ==
           imag(analytic_news_modes[i]));
   }
 }

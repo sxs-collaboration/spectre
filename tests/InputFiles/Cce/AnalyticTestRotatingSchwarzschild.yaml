@@ -5,12 +5,12 @@
 # Check: parse;execute_check_output
 # Timeout: 10
 # ExpectedOutput:
-#   CharacteristicExtractVolume0.h5
+#   CharacteristicExtractReduction.h5
 # OutputFileChecks:
 #   - Label: "check_news"
-#     Subfile: "/News.dat"
-#     FileGlob: "CharacteristicExtractVolume*.h5"
-#     ExpectedDataSubfile: "/News_expected.dat"
+#     Subfile: "/Cce/News.dat"
+#     FileGlob: "CharacteristicExtractReduction.h5"
+#     ExpectedDataSubfile: "/Cce/News_expected.dat"
 #     AbsoluteTolerance: 1e-11
 
 Evolution:
@@ -27,8 +27,8 @@ ResourceInfo:
       Exclusive: false
 
 Observers:
-  VolumeFileName: "CharacteristicExtractVolume"
-  ReductionFileName: "CharacteristicExtractUnusedReduction"
+  VolumeFileName: "CharacteristicExtractUnusedVolume"
+  ReductionFileName: "CharacteristicExtractReduction"
 
 Cce:
   Evolution:
