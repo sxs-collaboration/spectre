@@ -14,6 +14,7 @@ spectre_target_sources(
   CubicSpline.cpp
   IrregularInterpolant.cpp
   LinearLeastSquares.cpp
+  LinearRegression.cpp
   LinearSpanInterpolator.cpp
   PolynomialInterpolation.cpp
   PredictedZeroCrossing.cpp
@@ -32,6 +33,7 @@ spectre_target_headers(
   IrregularInterpolant.hpp
   LagrangePolynomial.hpp
   LinearLeastSquares.hpp
+  LinearRegression.hpp
   LinearSpanInterpolator.hpp
   PolynomialInterpolation.hpp
   PredictedZeroCrossing.hpp
