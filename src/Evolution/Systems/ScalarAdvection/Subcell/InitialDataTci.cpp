@@ -19,7 +19,8 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData>
 DgInitialDataTci<Dim>::apply(
     const Variables<tmpl::list<ScalarAdvection::Tags::U>>& dg_vars,
     double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
-    const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh) {
+    const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
+    const TciOptions& tci_options) {
   const auto subcell_vars = evolution::dg::subcell::fd::project(
       dg_vars, dg_mesh, subcell_mesh.extents());
 
@@ -31,11 +32,15 @@ DgInitialDataTci<Dim>::apply(
       {max(max(get(dg_u)), max(get(subcell_u)))},
       {min(min(get(dg_u)), min(get(subcell_u)))}};
 
+  const double max_abs_u =
+      max(abs(get(get<ScalarAdvection::Tags::U>(dg_vars))));
+
   return {evolution::dg::subcell::two_mesh_rdmp_tci(
               dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon) or
-              evolution::dg::subcell::persson_tci(
-                  get<ScalarAdvection::Tags::U>(dg_vars), dg_mesh,
-                  persson_exponent),
+              ((max_abs_u > tci_options.u_cutoff) and
+               evolution::dg::subcell::persson_tci(
+                   get<ScalarAdvection::Tags::U>(dg_vars), dg_mesh,
+                   persson_exponent)),
           std::move(rdmp_tci_data)};
 }
 

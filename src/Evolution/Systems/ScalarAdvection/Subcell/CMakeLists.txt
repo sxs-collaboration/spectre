@@ -8,6 +8,7 @@ spectre_target_sources(
   InitialDataTci.cpp
   TciOnDgGrid.cpp
   TciOnFdGrid.cpp
+  TciOptions.cpp
   )
 
 spectre_target_headers(
@@ -21,6 +22,7 @@ spectre_target_headers(
   Subcell.hpp
   TciOnDgGrid.hpp
   TciOnFdGrid.hpp
+  TciOptions.hpp
   TimeDerivative.hpp
   VelocityAtFace.hpp
   )

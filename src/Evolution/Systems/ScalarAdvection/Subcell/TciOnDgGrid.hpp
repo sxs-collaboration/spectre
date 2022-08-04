@@ -12,6 +12,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
+#include "Evolution/Systems/ScalarAdvection/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -26,7 +27,8 @@ namespace ScalarAdvection::subcell {
  * \brief The troubled-cell indicator run on the DG grid to check if the
  * solution is admissible.
  *
- * Applies the Persson and RDMP TCI to \f$U\f$.
+ * Applies 1) the RDMP TCI to \f$U\f$ and 2) the Persson TCI to \f$U\f$ if the
+ * \f$\max(|U|)\f$ on the DG grid is greater than `tci_options.u_cutoff`.
  */
 template <size_t Dim>
 struct TciOnDgGrid {
@@ -36,13 +38,14 @@ struct TciOnDgGrid {
       tmpl::list<ScalarAdvection::Tags::U, ::domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions>;
+                 evolution::dg::subcell::Tags::SubcellOptions,
+                 Tags::TciOptions>;
 
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       const Scalar<DataVector>& dg_u, const Mesh<Dim>& dg_mesh,
       const Mesh<Dim>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      double persson_exponent);
+      const TciOptions& tci_options, double persson_exponent);
 };
 }  // namespace ScalarAdvection::subcell
