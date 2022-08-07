@@ -41,4 +41,6 @@ class AlgorithmSingleton
                              phase_dependent_action_list>::DistributedObject;
 };
 
-#include "Parallel/Algorithms/AlgorithmArray.hpp"
+#define CK_TEMPLATES_ONLY
+#include "Algorithms/AlgorithmSingleton.def.h"
+#undef CK_TEMPLATES_ONLY

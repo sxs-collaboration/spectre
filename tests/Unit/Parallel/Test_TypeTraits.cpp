@@ -35,6 +35,7 @@ struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using initialization_tags = tmpl::list<>;
   using chare_type = Parallel::Algorithms::Array;
+  using array_index = int;
 };
 struct GroupParallelComponent {
   using metavariables = Metavariables;
@@ -47,10 +48,9 @@ struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
 };
 
-// If passing proxy to a full array, we expect it to be from a
-// Parallel::Algorithms::Singleton. If passing proxy to an element, we expect it
-// to be from a Parallel::Algorithms::Array.
-using array_proxy = CProxy_AlgorithmArray<SingletonParallelComponent, int>;
+using singleton_proxy =
+    CProxy_AlgorithmSingleton<SingletonParallelComponent, int>;
+using array_proxy = CProxy_AlgorithmArray<ArrayParallelComponent, int>;
 using array_element_proxy =
     CProxyElement_AlgorithmArray<ArrayParallelComponent, int>;
 using group_proxy = CProxy_AlgorithmGroup<GroupParallelComponent, int>;
@@ -58,67 +58,48 @@ using nodegroup_proxy =
     CProxy_AlgorithmNodegroup<NodegroupParallelComponent, int>;
 }  // namespace
 
-static_assert(Parallel::is_array_proxy<array_proxy>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<group_proxy>::value,
-              "Failed testing type trait is_array_proxy");
-static_assert(not Parallel::is_array_proxy<nodegroup_proxy>::value,
-              "Failed testing type trait is_array_proxy");
+static_assert(Parallel::is_array_proxy<singleton_proxy>::value);
+static_assert(Parallel::is_array_proxy<array_proxy>::value);
+static_assert(not Parallel::is_array_proxy<array_element_proxy>::value);
+static_assert(not Parallel::is_array_proxy<group_proxy>::value);
+static_assert(not Parallel::is_array_proxy<nodegroup_proxy>::value);
 
-static_assert(not Parallel::is_array_element_proxy<array_proxy>::value,
-              "Failed testing type trait is_array_element_proxy");
-static_assert(Parallel::is_array_element_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_array_element_proxy");
-static_assert(not Parallel::is_array_element_proxy<group_proxy>::value,
-              "Failed testing type trait is_array_element_proxy");
-static_assert(not Parallel::is_array_element_proxy<nodegroup_proxy>::value,
-              "Failed testing type trait is_array_element_proxy");
+static_assert(not Parallel::is_array_element_proxy<singleton_proxy>::value);
+static_assert(not Parallel::is_array_element_proxy<array_proxy>::value);
+static_assert(Parallel::is_array_element_proxy<array_element_proxy>::value);
+static_assert(not Parallel::is_array_element_proxy<group_proxy>::value);
+static_assert(not Parallel::is_array_element_proxy<nodegroup_proxy>::value);
 
-static_assert(not Parallel::is_group_proxy<array_proxy>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(not Parallel::is_group_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(Parallel::is_group_proxy<group_proxy>::value,
-              "Failed testing type trait is_group_proxy");
-static_assert(not Parallel::is_group_proxy<nodegroup_proxy>::value,
-              "Failed testing type trait is_group_proxy");
+static_assert(not Parallel::is_group_proxy<singleton_proxy>::value);
+static_assert(not Parallel::is_group_proxy<array_proxy>::value);
+static_assert(not Parallel::is_group_proxy<array_element_proxy>::value);
+static_assert(Parallel::is_group_proxy<group_proxy>::value);
+static_assert(not Parallel::is_group_proxy<nodegroup_proxy>::value);
 
-static_assert(not Parallel::is_node_group_proxy<array_proxy>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(not Parallel::is_node_group_proxy<array_element_proxy>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(not Parallel::is_node_group_proxy<group_proxy>::value,
-              "Failed testing type trait is_node_group_proxy");
-static_assert(Parallel::is_node_group_proxy<nodegroup_proxy>::value,
-              "Failed testing type trait is_node_group_proxy");
+static_assert(not Parallel::is_node_group_proxy<singleton_proxy>::value);
+static_assert(not Parallel::is_node_group_proxy<array_proxy>::value);
+static_assert(not Parallel::is_node_group_proxy<array_element_proxy>::value);
+static_assert(not Parallel::is_node_group_proxy<group_proxy>::value);
+static_assert(Parallel::is_node_group_proxy<nodegroup_proxy>::value);
 
 // [has_pup_member_example]
-static_assert(Parallel::has_pup_member<PupableClass>::value,
-              "Failed testing type trait has_pup_member");
-static_assert(Parallel::has_pup_member_t<PupableClass>::value,
-              "Failed testing type trait has_pup_member");
-static_assert(Parallel::has_pup_member_v<PupableClass>,
-              "Failed testing type trait has_pup_member");
-static_assert(not Parallel::has_pup_member<NonpupableClass>::value,
-              "Failed testing type trait has_pup_member");
+static_assert(Parallel::has_pup_member<PupableClass>::value);
+static_assert(Parallel::has_pup_member_t<PupableClass>::value);
+static_assert(Parallel::has_pup_member_v<PupableClass>);
+static_assert(not Parallel::has_pup_member<NonpupableClass>::value);
 // [has_pup_member_example]
 
 // [is_pupable_example]
-static_assert(Parallel::is_pupable<PupableClass>::value,
-              "Failed testing type trait is_pupable");
-static_assert(Parallel::is_pupable_t<PupableClass>::value,
-              "Failed testing type trait is_pupable");
-static_assert(Parallel::is_pupable_v<PupableClass>,
-              "Failed testing type trait is_pupable");
-static_assert(not Parallel::is_pupable<NonpupableClass>::value,
-              "Failed testing type trait is_pupable");
+static_assert(Parallel::is_pupable<PupableClass>::value);
+static_assert(Parallel::is_pupable_t<PupableClass>::value);
+static_assert(Parallel::is_pupable_v<PupableClass>);
+static_assert(not Parallel::is_pupable<NonpupableClass>::value);
 // [is_pupable_example]
 
-static_assert(std::is_same_v<
-              SingletonParallelComponent,
-              Parallel::get_parallel_component_from_proxy<array_proxy>::type>);
+static_assert(
+    std::is_same_v<
+        SingletonParallelComponent,
+        Parallel::get_parallel_component_from_proxy<singleton_proxy>::type>);
 static_assert(std::is_same_v<ArrayParallelComponent,
                              Parallel::get_parallel_component_from_proxy<
                                  array_element_proxy>::type>);
