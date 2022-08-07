@@ -26,6 +26,7 @@
 #include "Parallel/Algorithms/AlgorithmGroupDeclarations.hpp"
 #include "Parallel/Algorithms/AlgorithmNodegroupDeclarations.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
+#include "Parallel/Callback.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -39,6 +40,7 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -210,6 +212,15 @@ class DistributedObject<ParallelComponent,
   DistributedObject(
       const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
       tuples::TaggedTuple<InitializationTags...> initialization_items);
+
+  /// Constructor used to dynamically add a new element of an array
+  /// Multiple elements can be added by passing them as `other_ids_to_create`
+  /// The `callback` is executed after all elements are created.
+  DistributedObject(
+      const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
+      Parallel::Phase current_phase,
+      const std::unique_ptr<Parallel::Callback>& callback,
+      std::deque<array_index> other_ids_to_create);
 
   /// Charm++ migration constructor, used after a chare is migrated
   explicit DistributedObject(CkMigrateMessage* /*msg*/);
@@ -499,6 +510,47 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
         Algorithm_detail::action_list_simple_tags<ParallelComponent>,
         Algorithm_detail::action_list_compute_tags<ParallelComponent>>(
         std::move(temp_box));
+  } catch (const std::exception& exception) {
+    initiate_shutdown(exception);
+  }
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
+    DistributedObject(
+        const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
+        Parallel::Phase current_phase,
+        const std::unique_ptr<Parallel::Callback>& callback,
+        std::deque<array_index> other_ids_to_create)
+    : DistributedObject() {
+  static_assert(Parallel::is_array_proxy<cproxy_type>::value,
+                "Can only dynamically add elements to an array component");
+  try {
+    // When we are using the LoadBalancing phase, we want the Main component to
+    // handle the synchronization, so the components do not participate in the
+    // charm++ `AtSync` barrier.
+    // The array parallel components are migratable so they get balanced
+    // appropriately when load balancing is triggered by the LoadBalancing phase
+    // in Main
+    this->usesAtSync = false;
+    this->setMigratable(true);
+    global_cache_proxy_ = global_cache_proxy;
+    phase_ = current_phase;
+    ::Initialization::mutate_assign<
+        tmpl::list<Tags::GlobalCacheProxy<metavariables>>>(make_not_null(&box_),
+                                                           global_cache_proxy_);
+    // The callback in invoked only on the last element to be created.
+    // We create elements one at a time to ensure that they are all constructed
+    // before receiving any messages from any actions executed by the callback
+    if (other_ids_to_create.empty()) {
+      callback->invoke();
+    } else {
+      auto id_to_create = other_ids_to_create.front();
+      other_ids_to_create.pop_front();
+      this->thisProxy[id_to_create].insert(global_cache_proxy_, phase_,
+                                           std::move(callback),
+                                           other_ids_to_create);
+    }
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }

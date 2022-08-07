@@ -5,6 +5,7 @@ module AlgorithmArray {
 
   include "DataStructures/DataBox/DataBox.hpp";
   include "Utilities/TaggedTuple.hpp";
+  include "Parallel/Callback.hpp";
   include "Parallel/GlobalCache.decl.h";
   include "Parallel/MaxInlineMethodsReached.hpp";
   include "Parallel/Phase.hpp";
@@ -27,6 +28,11 @@ module AlgorithmArray {
         tuples::tagged_tuple_from_typelist<
             typename ParallelComponent::initialization_tags>
             initialization_items);
+
+    entry AlgorithmArray(
+        Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
+        Parallel::Phase, std::unique_ptr<Parallel::Callback>,
+        std::deque<typename ParallelComponent::array_index>);
 
     // Ordinarily, indiscriminate use of [inline] has the danger of arbitrarily
     // deep recursive function calls, which then exceed the stack limits of the
