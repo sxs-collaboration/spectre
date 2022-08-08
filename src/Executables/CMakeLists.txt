@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 add_subdirectory(Benchmark)
+add_subdirectory(CombineH5)
 add_subdirectory(DebugPreprocessor)
 add_subdirectory(Examples)
 add_subdirectory(ExportCoordinates)
