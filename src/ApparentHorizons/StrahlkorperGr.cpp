@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>  // IWYU pragma: keep
 #include <cstddef>
+#include <numeric>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
@@ -794,34 +795,24 @@ double dimensionful_spin_magnitude(
   return result;
 }
 
-template <typename Frame>
-void spin_vector(const gsl::not_null<std::array<double, 3>*> result,
-                 const double spin_magnitude,
-                 const Scalar<DataVector>& area_element,
-                 const Scalar<DataVector>& radius,
-                 const tnsr::i<DataVector, 3, Frame>& r_hat,
-                 const Scalar<DataVector>& ricci_scalar,
-                 const Scalar<DataVector>& spin_function,
-                 const Strahlkorper<Frame>& strahlkorper) {
+template <typename MetricDataFrame, typename MeasurementFrame>
+void spin_vector(
+    const gsl::not_null<std::array<double, 3>*> result, double spin_magnitude,
+    const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords) {
   const auto& ylm = strahlkorper.ylm_spherepack();
-  // Assert that the DataVectors in area_element, radius,
-  // r_hat, ricci_scalar, and r_hat have the same size as the ylm size
+
+  // Assert that the DataVectors in area_element, ricci_scalar, and
+  // spin_function have the same size as the ylm size.
 
   // get the ylm's physical size as a variable to reuse
   const size_t ylm_physical_size = ylm.physical_size();
   ASSERT(get(area_element).size() == ylm_physical_size,
          "area_element size doesn't match ylm physical size: "
              << get(area_element).size() << " vs " << ylm_physical_size);
-  ASSERT(get(radius).size() == ylm_physical_size,
-         "radius size doesn't match ylm physical size: "
-             << get(radius).size() << " vs " << ylm_physical_size);
-  ASSERT(get<0>(r_hat).size() == ylm_physical_size and
-             get<1>(r_hat).size() == ylm_physical_size and
-             get<2>(r_hat).size() == ylm_physical_size,
-         "The size of at least one of r_hat's components doesn't match ylm "
-         "physical size: "
-             << "(" << get<0>(r_hat).size() << ", " << get<1>(r_hat).size()
-             << ", " << get<2>(r_hat).size() << ") vs " << ylm_physical_size);
   ASSERT(get(ricci_scalar).size() == ylm_physical_size,
          "ricci_scalar size doesn't match ylm physical size: "
              << get(ricci_scalar).size() << " vs " << ylm_physical_size);
@@ -829,39 +820,54 @@ void spin_vector(const gsl::not_null<std::array<double, 3>*> result,
          "spin_function size doesn't match ylm physical size: "
              << get(spin_function).size() << " vs " << ylm_physical_size);
 
+  // Compute very rough center of the measurement frame by simply
+  // averaging measurement_frame_coords.  It is ok for this center to
+  // be very rough, since it will be corrected below.
+  const auto measurement_frame_center =
+      [&measurement_frame_coords]() -> std::array<double, 3> {
+    std::array<double, 3> center{};
+    for (size_t d = 0; d < 3; ++d) {
+      gsl::at(center, d) =
+          std::accumulate(measurement_frame_coords.get(d).begin(),
+                          measurement_frame_coords.get(d).end(), 0.0) /
+          measurement_frame_coords.get(d).size();
+    }
+    return center;
+  }();
+
   std::array<double, 3> spin_vector =
       make_array<3>(std::numeric_limits<double>::signaling_NaN());
-  auto integrand = make_with_value<Scalar<DataVector>>(get(radius), 0.0);
+  auto integrand = make_with_value<Scalar<DataVector>>(get(area_element), 0.0);
 
   for (size_t i = 0; i < 3; ++i) {
-    // Compute horizon coordinates with a coordinate center such that
-    // the mass dipole moment vanishes.
-    get(integrand) =
-        get(area_element) * get(ricci_scalar) * r_hat.get(i) * get(radius);
+    get(integrand) = get(area_element) * get(ricci_scalar) *
+                     (measurement_frame_coords.get(i) -
+                      gsl::at(measurement_frame_center, i));
     get(integrand) =
         ylm.definite_integral(get(integrand).data()) / (-8.0 * M_PI);
-    get(integrand) += r_hat.get(i) * get(radius);
+    // integrand in the above line is -x^i_R from the paper.
 
-    // Get a component of a vector in the direction of the spin
+    get(integrand) +=
+        measurement_frame_coords.get(i) - gsl::at(measurement_frame_center, i);
     get(integrand) *= get(area_element) * get(spin_function);
     gsl::at(spin_vector, i) = ylm.definite_integral(get(integrand).data());
   }
 
-  // Normalize spin_vector so its magnitude is the magnitude of the spin
+  // Normalize spin_vector so its magnitude is the magnitude of the spin.
   *result = spin_vector * (spin_magnitude / magnitude(spin_vector));
 }
 
-template <typename Frame>
-std::array<double, 3> spin_vector(const double spin_magnitude,
-                                  const Scalar<DataVector>& area_element,
-                                  const Scalar<DataVector>& radius,
-                                  const tnsr::i<DataVector, 3, Frame>& r_hat,
-                                  const Scalar<DataVector>& ricci_scalar,
-                                  const Scalar<DataVector>& spin_function,
-                                  const Strahlkorper<Frame>& strahlkorper) {
+template <typename MetricDataFrame, typename MeasurementFrame>
+std::array<double, 3> spin_vector(
+    double spin_magnitude, const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords) {
   std::array<double, 3> result{};
-  spin_vector(make_not_null(&result), spin_magnitude, area_element, radius,
-              r_hat, ricci_scalar, spin_function, strahlkorper);
+  spin_vector(make_not_null(&result), spin_magnitude, area_element,
+              ricci_scalar, spin_function, strahlkorper,
+              measurement_frame_coords);
   return result;
 }
 
@@ -1052,21 +1058,6 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
       const StrahlkorperTags::aliases::Jacobian<FRAME(data)>& tangents,     \
       const Strahlkorper<FRAME(data)>& strahlkorper,                        \
       const Scalar<DataVector>& area_element);                              \
-  template void StrahlkorperGr::spin_vector<FRAME(data)>(                   \
-      const gsl::not_null<std::array<double, 3>*> result,                   \
-      const double spin_magnitude, const Scalar<DataVector>& area_element,  \
-      const Scalar<DataVector>& radius,                                     \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat,                     \
-      const Scalar<DataVector>& ricci_scalar,                               \
-      const Scalar<DataVector>& spin_function,                              \
-      const Strahlkorper<FRAME(data)>& strahlkorper);                       \
-  template std::array<double, 3> StrahlkorperGr::spin_vector<FRAME(data)>(  \
-      const double spin_magnitude, const Scalar<DataVector>& area_element,  \
-      const Scalar<DataVector>& radius,                                     \
-      const tnsr::i<DataVector, 3, FRAME(data)>& r_hat,                     \
-      const Scalar<DataVector>& ricci_scalar,                               \
-      const Scalar<DataVector>& spin_function,                              \
-      const Strahlkorper<FRAME(data)>& strahlkorper);                       \
   template void StrahlkorperGr::radial_distance<FRAME(data)>(               \
       const gsl::not_null<Scalar<DataVector>*> radial_distance,             \
       const Strahlkorper<FRAME(data)>& strahlkorper_a,                      \
@@ -1074,3 +1065,31 @@ void radial_distance(const gsl::not_null<Scalar<DataVector>*> radial_distance,
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial))
 #undef INSTANTIATE
 #undef FRAME
+
+#define METRICFRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define MEASUREMENTFRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define INSTANTIATE(_, data)                                               \
+  template void                                                            \
+  StrahlkorperGr::spin_vector<METRICFRAME(data), MEASUREMENTFRAME(data)>(  \
+      const gsl::not_null<std::array<double, 3>*> result,                  \
+      const double spin_magnitude, const Scalar<DataVector>& area_element, \
+      const Scalar<DataVector>& ricci_scalar,                              \
+      const Scalar<DataVector>& spin_function,                             \
+      const Strahlkorper<METRICFRAME(data)>& strahlkorper,                 \
+      const tnsr::I<DataVector, 3, MEASUREMENTFRAME(data)>&                \
+          measurement_frame_coords);                                       \
+  template std::array<double, 3>                                           \
+  StrahlkorperGr::spin_vector<METRICFRAME(data), MEASUREMENTFRAME(data)>(  \
+      const double spin_magnitude, const Scalar<DataVector>& area_element, \
+      const Scalar<DataVector>& ricci_scalar,                              \
+      const Scalar<DataVector>& spin_function,                             \
+      const Strahlkorper<METRICFRAME(data)>& strahlkorper,                 \
+      const tnsr::I<DataVector, 3, MEASUREMENTFRAME(data)>&                \
+          measurement_frame_coords);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE,
+                        (Frame::Grid, Frame::Distorted, Frame::Inertial),
+                        (Frame::Inertial))
+#undef INSTANTIATE
+#undef MEASUREMENTFRAME
+#undef METRICFRAME

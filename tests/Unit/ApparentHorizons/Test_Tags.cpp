@@ -151,6 +151,9 @@ void test_dimensionful_spin_vector_compute_tag() {
       make_not_null(&generator), dist, used_for_size);
   const auto spin_function = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), dist, used_for_size);
+  const auto strahlkorper_cartesian_coords =
+      make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), dist, used_for_size);
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
                         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
@@ -158,18 +161,20 @@ void test_dimensionful_spin_vector_compute_tag() {
                         StrahlkorperTags::Rhat<Frame::Inertial>,
                         StrahlkorperTags::RicciScalar,
                         StrahlkorperGr::Tags::SpinFunction,
-                        StrahlkorperTags::Strahlkorper<Frame::Inertial>>,
+                        StrahlkorperTags::Strahlkorper<Frame::Inertial>,
+                        StrahlkorperTags::CartesianCoords<Frame::Inertial>>,
       db::AddComputeTags<StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<
-          Frame::Inertial>>>(dimensionful_spin_magnitude, area_element, radius,
-                             r_hat, ricci_scalar, spin_function, strahlkorper);
+          Frame::Inertial, Frame::Inertial>>>(
+      dimensionful_spin_magnitude, area_element, radius, r_hat, ricci_scalar,
+      spin_function, strahlkorper,strahlkorper_cartesian_coords);
   // LHS of the == in the CHECK is retrieving the computed dimensionful spin
   // vector from your DimensionfulSpinVectorCompute tag and RHS of ==
   // should be same logic as DimensionfulSpinVectorCompute::function
   CHECK(db::get<StrahlkorperGr::Tags::DimensionfulSpinVector<Frame::Inertial>>(
             box) ==
-        StrahlkorperGr::spin_vector<Frame::Inertial>(
-            dimensionful_spin_magnitude, area_element, radius, r_hat,
-            ricci_scalar, spin_function, strahlkorper));
+        StrahlkorperGr::spin_vector<Frame::Inertial, Frame::Inertial>(
+            dimensionful_spin_magnitude, area_element, ricci_scalar,
+            spin_function, strahlkorper, strahlkorper_cartesian_coords));
 }
 
 void test_dimensionless_spin_magnitude_compute_tag() {
@@ -320,7 +325,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
       StrahlkorperGr::Tags::ChristodoulouMassCompute<Frame::Inertial>>(
       "ChristodoulouMass");
   TestHelpers::db::test_compute_tag<
-      StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<Frame::Inertial>>(
+      StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<Frame::Inertial,
+                                                          Frame::Inertial>>(
       "DimensionfulSpinVector");
   TestHelpers::db::test_compute_tag<
       StrahlkorperGr::Tags::DimensionlessSpinMagnitudeCompute<Frame::Inertial>>(
