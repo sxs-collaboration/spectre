@@ -7,6 +7,7 @@ add_subdirectory(Logging)
 set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES
+  H5/Test_CheckH5PropertiesMatch.cpp
   H5/Test_Dat.cpp
   H5/Test_EosTable.cpp
   H5/Test_H5.cpp
