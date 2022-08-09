@@ -70,7 +70,10 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
       gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>,
+      gr::Tags::TraceExtrinsicCurvature<DataType>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial,
+                                                  DataType>>;
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
                                          double t,
@@ -174,6 +177,17 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       tmpl::list<::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>> /*meta*/)
       const;
 
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<
+      Dim, Frame::Inertial, DataType>>
+  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+            tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
+                Dim, Frame::Inertial, DataType>> /*meta*/) const;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };

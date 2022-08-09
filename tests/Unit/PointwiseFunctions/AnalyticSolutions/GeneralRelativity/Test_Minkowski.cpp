@@ -52,8 +52,9 @@ void test_minkowski(const T& value) {
   const auto d_shift = get<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
                                        tmpl::size_t<Dim>, Frame::Inertial>>(
       minkowski.variables(
-          x, t, tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
-                                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
+          x, t,
+          tmpl::list<Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, T>,
+                                 tmpl::size_t<Dim>, Frame::Inertial>>{}));
   const auto g =
       get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>(minkowski.variables(
           x, t,
@@ -61,8 +62,9 @@ void test_minkowski(const T& value) {
   const auto dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>(
           minkowski.variables(
-              x, t, tmpl::list<Tags::dt<
-                        gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
+              x, t,
+              tmpl::list<Tags::dt<
+                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>>>{}));
   const auto d_g =
       get<Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, T>,
                       tmpl::size_t<Dim>, Frame::Inertial>>(
@@ -88,16 +90,28 @@ void test_minkowski(const T& value) {
       get<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>(minkowski.variables(
           x, t, tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>{}));
 
+  const auto trace_christoffel =
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial, T>>(
+          minkowski.variables(
+              x, t,
+              tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
+                  Dim, Frame::Inertial, T>>{}));
+  const auto trace_extrinsic_curvature =
+      get<gr::Tags::TraceExtrinsicCurvature<T>>(minkowski.variables(
+          x, t, tmpl::list<gr::Tags::TraceExtrinsicCurvature<T>>{}));
+
   CHECK(lapse.get() == one);
   CHECK(dt_lapse.get() == zero);
   CHECK(det_g.get() == one);
   CHECK(dt_det_g.get() == zero);
+  CHECK(trace_extrinsic_curvature.get() == zero);
   for (size_t i = 0; i < Dim; ++i) {
     CHECK(shift.get(i) == zero);
     CHECK(dt_shift.get(i) == zero);
     CHECK(d_lapse.get(i) == zero);
     CHECK(g.get(i, i) == one);
     CHECK(inv_g.get(i, i) == one);
+    CHECK(trace_christoffel.get(i) == zero);
     for (size_t j = 0; j < i; ++j) {
       CHECK(g.get(i, j) == zero);
       CHECK(inv_g.get(i, j) == zero);
