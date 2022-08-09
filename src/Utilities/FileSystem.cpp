@@ -30,67 +30,29 @@
 
 namespace file_system {
 
-std::string get_parent_path(const std::string& path) {
-  std::vector<char> file_path(path.length() + 1);
-  strncpy(file_path.data(), path.c_str(), path.length() + 1);
-  // The pointer from ::dirname is not freed since it aliases with file_path
-  char* parent_dir_name = ::dirname(file_path.data());
-  std::string return_name(parent_dir_name);
-  return return_name;
+void copy(const std::string& from, const std::string& to) {
+  std::filesystem::copy(from, to);
 }
 
-std::string get_file_name(const std::string& file_path) {
-  if (file_path.empty()) {
-    ERROR("Received an empty path");
-  }
-  if (file_path.find('/') == std::string::npos) {
-    // Handle file names such as 'dummy.txt' or '.dummy.txt'
-    return file_path;
-  }
-  std::smatch match{};
-  std::regex file_name_pattern{R"(^.*/([^/]+))"};
-  auto regex_matched = std::regex_search(file_path, match, file_name_pattern);
-  if (not regex_matched) {
-    ERROR("Failed to find a file in the given path: '" << file_path << "'");
-  }
-  return match[1];
-}
-
-std::string get_absolute_path(const std::string& rel_path) {
-  std::unique_ptr<char, decltype(&free)> name(
-      realpath(rel_path.c_str(), nullptr), &free);
-  if (nullptr == name) {
-    if (ENAMETOOLONG == errno) {
-      // LCOV_EXCL_START
+std::string cwd() {
+  double wait_time = 1;
+  std::unique_ptr<char, decltype(&free)> the_cwd(nullptr, &free);
+  the_cwd.reset(getcwd(the_cwd.get(), 0));
+  while (the_cwd == nullptr) {
+    // It's not clear how to test this code since we can't make the file system
+    // be slow
+    // LCOV_EXCL_START
+    std::this_thread::sleep_for(std::chrono::duration<double>(wait_time));
+    wait_time += 10;
+    the_cwd.reset(getcwd(the_cwd.get(), 0));
+    if (wait_time > 61) {
       ERROR(
-          "Failed to convert to absolute path because the resulting name is "
-          "too long. Relative path is: '"
-          << rel_path << "'.");
-      // LCOV_EXCL_STOP
-    } else if (EACCES == errno) {
-      // LCOV_EXCL_START
-      ERROR(
-          "Failed to convert to absolute path because one of the components of "
-          "the path does not have proper read access. Relative path is: '"
-          << rel_path << "'.");
-      // LCOV_EXCL_STOP
-    } else if (ENOENT == errno) {
-      ERROR(
-          "Failed to convert to absolute path because one of the path "
-          "components does not exist. Relative path is: '"
-          << rel_path << "'.");
-      // LCOV_EXCL_START
-    } else if (ELOOP == errno) {
-      ERROR(
-          "Failed to convert to absolute path because the maximum number of "
-          "symlinks was in the path. Relative path is: '"
-          << rel_path << "'.");
+          "Could not get the current directory. This is typically related to "
+          "filesystem issues.");
     }
-    const auto local_errno = errno;
-    ERROR("Failed to get absolute path for an unknown reason: " << local_errno);
     // LCOV_EXCL_STOP
   }
-  return name.get();
+  return the_cwd.get();
 }
 
 void create_directory(const std::string& dir, const double wait_time,
@@ -162,6 +124,96 @@ bool check_if_file_exists(const std::string& file) {
   return 0 == stat(file.c_str(), &buf) and S_ISREG(buf.st_mode);
 }
 
+size_t file_size(const std::string& file) {
+  struct stat buf {};
+  // stat returns 0 if the operation is successful (thing exists)
+  if (0 != stat(file.c_str(), &buf)) {
+    ERROR("Cannot get size of file '"
+          << file
+          << "' because it cannot be accessed. Either it does not "
+             "exist or you do not have the appropriate permissions.");
+  }
+  return static_cast<size_t>(buf.st_size);
+}
+
+std::string get_absolute_path(const std::string& rel_path) {
+  std::unique_ptr<char, decltype(&free)> name(
+      realpath(rel_path.c_str(), nullptr), &free);
+  if (nullptr == name) {
+    if (ENAMETOOLONG == errno) {
+      // LCOV_EXCL_START
+      ERROR(
+          "Failed to convert to absolute path because the resulting name is "
+          "too long. Relative path is: '"
+          << rel_path << "'.");
+      // LCOV_EXCL_STOP
+    } else if (EACCES == errno) {
+      // LCOV_EXCL_START
+      ERROR(
+          "Failed to convert to absolute path because one of the components of "
+          "the path does not have proper read access. Relative path is: '"
+          << rel_path << "'.");
+      // LCOV_EXCL_STOP
+    } else if (ENOENT == errno) {
+      ERROR(
+          "Failed to convert to absolute path because one of the path "
+          "components does not exist. Relative path is: '"
+          << rel_path << "'.");
+      // LCOV_EXCL_START
+    } else if (ELOOP == errno) {
+      ERROR(
+          "Failed to convert to absolute path because the maximum number of "
+          "symlinks was in the path. Relative path is: '"
+          << rel_path << "'.");
+    }
+    const auto local_errno = errno;
+    ERROR("Failed to get absolute path for an unknown reason: " << local_errno);
+    // LCOV_EXCL_STOP
+  }
+  return name.get();
+}
+
+std::string get_file_name(const std::string& file_path) {
+  if (file_path.empty()) {
+    ERROR("Received an empty path");
+  }
+  if (file_path.find('/') == std::string::npos) {
+    // Handle file names such as 'dummy.txt' or '.dummy.txt'
+    return file_path;
+  }
+  std::smatch match{};
+  std::regex file_name_pattern{R"(^.*/([^/]+))"};
+  auto regex_matched = std::regex_search(file_path, match, file_name_pattern);
+  if (not regex_matched) {
+    ERROR("Failed to find a file in the given path: '" << file_path << "'");
+  }
+  return match[1];
+}
+
+std::string get_parent_path(const std::string& path) {
+  std::vector<char> file_path(path.length() + 1);
+  strncpy(file_path.data(), path.c_str(), path.length() + 1);
+  // The pointer from ::dirname is not freed since it aliases with file_path
+  char* parent_dir_name = ::dirname(file_path.data());
+  std::string return_name(parent_dir_name);
+  return return_name;
+}
+
+std::vector<std::string> glob(const std::string& pattern) {
+  glob_t buffer;
+  const int return_value =
+      ::glob(pattern.c_str(), GLOB_TILDE, nullptr, &buffer);
+  if (return_value != 0) {
+    ERROR("Unable to resolve glob '" + pattern + "': " + std::strerror(errno));
+  }
+  std::vector<std::string> file_names(
+      buffer.gl_pathv,
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      buffer.gl_pathv + buffer.gl_pathc);
+  globfree(&buffer);
+  return file_names;
+}
+
 bool is_file(const std::string& path) {
   struct stat buf {};
   // stat returns 0 if the operation is successful (thing exists)
@@ -172,38 +224,6 @@ bool is_file(const std::string& path) {
         << path);
   }
   return S_ISREG(buf.st_mode);
-}
-
-size_t file_size(const std::string& file) {
-  struct stat buf {};
-  // stat returns 0 if the operation is successful (thing exists)
-  if (0 != stat(file.c_str(), &buf)) {
-    ERROR("Cannot get size of file '"
-          << file << "' because it cannot be accessed. Either it does not "
-                     "exist or you do not have the appropriate permissions.");
-  }
-  return static_cast<size_t>(buf.st_size);
-}
-
-std::string cwd() {
-  double wait_time = 1;
-  std::unique_ptr<char, decltype(&free)> the_cwd(nullptr, &free);
-  the_cwd.reset(getcwd(the_cwd.get(), 0));
-  while (the_cwd == nullptr) {
-    // It's not clear how to test this code since we can't make the file system
-    // be slow
-    // LCOV_EXCL_START
-    std::this_thread::sleep_for(std::chrono::duration<double>(wait_time));
-    wait_time += 10;
-    the_cwd.reset(getcwd(the_cwd.get(), 0));
-    if (wait_time > 61) {
-      ERROR(
-          "Could not get the current directory. This is typically related to "
-          "filesystem issues.");
-    }
-    // LCOV_EXCL_STOP
-  }
-  return the_cwd.get();
 }
 
 std::vector<std::string> ls(const std::string& dir_name) {
@@ -264,24 +284,5 @@ void rm(const std::string& path, bool recursive) {
                                     << "' because an unknown error occurred.");
     // LCOV_EXCL_STOP
   }
-}
-
-std::vector<std::string> glob(const std::string& pattern) {
-  glob_t buffer;
-  const int return_value =
-      ::glob(pattern.c_str(), GLOB_TILDE, nullptr, &buffer);
-  if (return_value != 0) {
-    ERROR("Unable to resolve glob '" + pattern + "': " + std::strerror(errno));
-  }
-  std::vector<std::string> file_names(
-      buffer.gl_pathv,
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      buffer.gl_pathv + buffer.gl_pathc);
-  globfree(&buffer);
-  return file_names;
-}
-
-void copy(const std::string& from, const std::string& to) {
-  std::filesystem::copy(from, to);
 }
 }  // namespace file_system
