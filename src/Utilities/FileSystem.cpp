@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
+#include <filesystem>
 #include <glob.h>
 #include <libgen.h>
 #include <memory>
@@ -278,5 +279,9 @@ std::vector<std::string> glob(const std::string& pattern) {
       buffer.gl_pathv + buffer.gl_pathc);
   globfree(&buffer);
   return file_names;
+}
+
+void copy(const std::string& from, const std::string& to) {
+  std::filesystem::copy(from, to);
 }
 }  // namespace file_system

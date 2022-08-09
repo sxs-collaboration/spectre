@@ -143,4 +143,12 @@ void rm(const std::string& path, bool recursive);
  * \brief Get a list of files matching the given glob pattern
  */
 std::vector<std::string> glob(const std::string& pattern);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Copies files or directories.
+ *
+ * Wrapper around `std::file_system::copy()`.
+ */
+void copy(const std::string& from, const std::string& to);
 }  // namespace file_system
