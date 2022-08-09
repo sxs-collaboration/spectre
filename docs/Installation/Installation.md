@@ -122,7 +122,7 @@ be `<your_current_directory>/spectre`. That is, inside SPECTRE_ROOT are `docs`,
 to your desired working directory, making sure not to leave out hidden files
 when you `cp` or `mv` the source files.
 
-## Using Docker to obtain a SpECTRE environment
+## Using Docker to obtain a SpECTRE environment {#docker_install}
 
 A [Docker](https://www.docker.com/) image is available from
 [DockerHub](https://hub.docker.com/r/sxscollaboration/spectrebuildenv/) and can

@@ -4,6 +4,9 @@ See LICENSE.txt for details.
 \endcond
 # User Tutorials {#tutorials}
 
+- \subpage beginners_guide - A brief intro to getting started with SpECTRE,
+  building and rebuilding an executable with new features, and visualizing the
+  output
 - \subpage tutorial_visualization - How to run an existing executable and
   visualize its output
 - \subpage tutorial_orientations - How to determine orientations
