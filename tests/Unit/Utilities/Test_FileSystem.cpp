@@ -5,7 +5,10 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 
+#include "Informer/InfoFromBuild.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 
 namespace {
@@ -107,6 +110,57 @@ void test() {
     file_system::rm("glob1.txt", false);
     file_system::rm("glob2.txt", false);
   }
+  {
+    INFO("ls");
+    std::vector<std::string> expected_list{"Test_StdHelpers.cpp",
+                                           "Test_Tuple.cpp",
+                                           "Test_ConstantExpressions.cpp",
+                                           "CMakeLists.txt",
+                                           "Test_Blas.cpp",
+                                           "Test_TaggedTuple.cpp",
+                                           "Test_MakeWithValue.cpp",
+                                           "Test_FractionUtilities.cpp",
+                                           "Test_TupleSlice.cpp",
+                                           "Test_MakeArray.cpp",
+                                           "Test_MakeString.cpp",
+                                           "Test_CallWithDynamicType.cpp",
+                                           "Test_Math.cpp",
+                                           "Test_MakeSignalingNan.cpp",
+                                           "TypeTraits",
+                                           "Test_Blas.hpp",
+                                           "Test_ContainerHelpers.cpp",
+                                           "Test_GetOutput.cpp",
+                                           "Test_ProtocolHelpers.cpp",
+                                           "Test_WrapText.cpp",
+                                           "Test_FileSystem.cpp",
+                                           "Test_Gsl.cpp",
+                                           "Test_Requires.cpp",
+                                           "Test_CachedFunction.cpp",
+                                           "Test_EqualWithinRoundoff.cpp",
+                                           "Test_Numeric.cpp",
+                                           "Test_DereferenceWrapper.cpp",
+                                           "Test_VectorAlgebra.cpp",
+                                           "Test_Formaline.cpp",
+                                           "Test_TMPL.cpp",
+                                           "Test_TMPLDocumentation.cpp",
+                                           "Test_StdArrayHelpers.cpp",
+                                           "Test_StaticCache.cpp",
+                                           "Test_Overloader.cpp",
+                                           "Test_Functional.cpp",
+                                           "Test_Array.cpp",
+                                           "Test_Rational.cpp",
+                                           "Test_OptionalHelpers.cpp",
+                                           "Test_PrettyType.cpp",
+                                           "Test_MemoryHelpers.cpp",
+                                           "Test_Registration.cpp",
+                                           "Test_CloneUniquePtrs.cpp",
+                                           "Test_Algorithm.cpp",
+                                           "Test_MakeVector.cpp"};
+    auto list = file_system::ls(unit_test_src_path() + "/Utilities");
+    alg::sort(list);
+    alg::sort(expected_list);
+    CHECK(list == expected_list);
+  }
 }
 
 void trigger_nonexistent_absolute_path() {
@@ -131,8 +185,8 @@ void test_errors() {
                     Catch::Contains("Received an empty path"));
   CHECK_THROWS_WITH(
       trigger_nonexistent_absolute_path(),
-      Catch::Contains("Failed to convert to absolute path because one of the "
-                      "path components does not exist. Relative path is"));
+      Catch::Contains(
+          "No such file or directory [./get_absolute_path_nonexistent/]"));
   CHECK_THROWS_WITH(
       file_system::file_size("./file_size_error.txt"),
       Catch::Contains("Cannot get size of file './file_size_error.txt' because "
@@ -140,8 +194,7 @@ void test_errors() {
                       "do not have the appropriate permissions."));
   CHECK_THROWS_WITH(
       trigger_rm_error_not_empty(),
-      Catch::Contains("Could not delete file './rm_error_not_empty' because "
-                      "the directory is not empty"));
+      Catch::Contains("remove: Directory not empty [./rm_error_not_empty]"));
   CHECK_THROWS_WITH(file_system::is_file("./is_file_error"),
                     Catch::Contains("Failed to check if path points to a file "
                                     "because the path is invalid"));
