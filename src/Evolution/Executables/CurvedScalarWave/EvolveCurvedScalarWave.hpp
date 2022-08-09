@@ -273,16 +273,6 @@ struct EvolutionMetavars {
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
-  using gr_compute_tags =
-      tmpl::list<gr::Tags::SpatialChristoffelFirstKindCompute<
-                     Dim, Frame::Inertial, DataVector>,
-                 gr::Tags::SpatialChristoffelSecondKindCompute<
-                     Dim, Frame::Inertial, DataVector>,
-                 gr::Tags::TraceSpatialChristoffelSecondKindCompute<
-                     Dim, Frame::Inertial, DataVector>,
-                 GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
-                     Dim, Frame::Inertial>>;
-
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
@@ -294,9 +284,8 @@ struct EvolutionMetavars {
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>,
           CurvedScalarWave::Initialization::InitializeGrVars<volume_dim>>,
-      Initialization::Actions::AddComputeTags<tmpl::flatten<
-          tmpl::list<StepChoosers::step_chooser_compute_tags<EvolutionMetavars>,
-                     gr_compute_tags>>>,
+      Initialization::Actions::AddComputeTags<tmpl::flatten<tmpl::list<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
