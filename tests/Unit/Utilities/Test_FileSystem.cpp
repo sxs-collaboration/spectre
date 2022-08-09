@@ -8,7 +8,8 @@
 
 #include "Utilities/FileSystem.hpp"
 
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
+namespace {
+void test() {
   {
     INFO("get_parent_path");
     // [get_parent_path]
@@ -108,7 +109,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
   }
 }
 
-namespace {
 void trigger_nonexistent_absolute_path() {
   static_cast<void>(
       file_system::get_absolute_path("./get_absolute_path_nonexistent/"));
@@ -122,58 +122,36 @@ void trigger_rm_error_not_empty() {
   file.close();
   file_system::rm("./rm_error_not_empty"s, false);
 }
-}  // namespace
 
-// [[OutputRegex, Failed to find a file in the given path: '/']]
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_error",
-                  "[Unit][Utilities]") {
-  ERROR_TEST();
-  file_system::get_file_name("/");
-}
-
-// [[OutputRegex, Received an empty path]]
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_file_name_empty_path",
-                  "[Unit][Utilities]") {
-  ERROR_TEST();
-  static_cast<void>(file_system::get_file_name(""));
-}
-
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.get_absolute_path_nonexistent",
-                  "[Unit][Utilities]") {
+void test_errors() {
+  CHECK_THROWS_WITH(
+      file_system::get_file_name("/"),
+      Catch::Contains("Failed to find a file in the given path: '/'"));
+  CHECK_THROWS_WITH(file_system::get_file_name(""),
+                    Catch::Contains("Received an empty path"));
   CHECK_THROWS_WITH(
       trigger_nonexistent_absolute_path(),
       Catch::Contains("Failed to convert to absolute path because one of the "
                       "path components does not exist. Relative path is"));
-}
-
-// [[OutputRegex, Failed to check if path points to a file because the path is
-// invalid.]]
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.is_file_error",
-                  "[Unit][Utilities]") {
-  ERROR_TEST();
-  CHECK(file_system::is_file("./is_file_error"));
-}
-
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.file_size_error",
-                  "[Unit][Utilities]") {
   CHECK_THROWS_WITH(
       file_system::file_size("./file_size_error.txt"),
       Catch::Contains("Cannot get size of file './file_size_error.txt' because "
                       "it cannot be accessed. Either it does not exist or you "
                       "do not have the appropriate permissions."));
-}
-
-// [[OutputRegex, Cannot create a directory that has no name]]
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.create_dir_error_cannot_be_empty",
-                  "[Unit][Utilities]") {
-  ERROR_TEST();
-  file_system::create_directory(""s);
-}
-
-SPECTRE_TEST_CASE("Unit.Utilities.FileSystem.rm_error_not_empty",
-                  "[Unit][Utilities]") {
   CHECK_THROWS_WITH(
       trigger_rm_error_not_empty(),
       Catch::Contains("Could not delete file './rm_error_not_empty' because "
                       "the directory is not empty"));
+  CHECK_THROWS_WITH(file_system::is_file("./is_file_error"),
+                    Catch::Contains("Failed to check if path points to a file "
+                                    "because the path is invalid"));
+  CHECK_THROWS_WITH(
+      file_system::create_directory(""s),
+      Catch::Contains("Cannot create a directory that has no name"));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
+  test();
+  test_errors();
 }
