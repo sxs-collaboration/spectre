@@ -13,6 +13,7 @@ spectre_target_sources(
   Minmod.cpp
   MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
+  PositivityPreservingAdaptiveOrder.cpp
   Unlimited.cpp
   Wcns5z.cpp
   )
@@ -28,6 +29,7 @@ spectre_target_headers(
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
   NeighborDataAsVariables.hpp
+  PositivityPreservingAdaptiveOrder.hpp
   Reconstruct.hpp
   Reconstruct.tpp
   Unlimited.hpp
