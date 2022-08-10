@@ -290,6 +290,17 @@ void simple_action(
       array_index, std::forward<Args>(args)...);
 }
 
+/// Queues the simple action `Action` on the `array_index`th element of the
+/// parallel component `Component`.
+template <typename Component, typename Action, typename Metavariables,
+          typename... Args>
+void queue_simple_action(
+    const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
+    const typename Component::array_index& array_index, Args&&... args) {
+  runner->template queue_simple_action<Component, Action>(
+      array_index, std::forward<Args>(args)...);
+}
+
 /// Runs the simple action `Action` on the `array_index`th element of the
 /// parallel component `Component`.
 template <typename Component, typename Action, typename Metavariables,
