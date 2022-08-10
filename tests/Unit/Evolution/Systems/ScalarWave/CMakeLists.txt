@@ -13,6 +13,8 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_EnergyDensity.cpp
   Test_Equations.cpp
+  Test_MomentumDensity.cpp
+  Test_Tags.cpp
   Test_TimeDerivative.cpp
   )
 

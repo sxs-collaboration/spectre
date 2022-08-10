@@ -8,9 +8,9 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Tags",
                   "[Unit][Evolution]") {
-  TestHelpers::db::test_simple_tag<ScalarWave::Psi>("Psi");
-  TestHelpers::db::test_simple_tag<ScalarWave::Pi>("Pi");
-  TestHelpers::db::test_simple_tag<ScalarWave::Phi<3>>("Phi");
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::Psi>("Psi");
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::Pi>("Pi");
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::Phi<3>>("Phi");
   TestHelpers::db::test_simple_tag<ScalarWave::Tags::ConstraintGamma2>(
       "ConstraintGamma2");
   TestHelpers::db::test_simple_tag<ScalarWave::Tags::OneIndexConstraint<3>>(
@@ -28,6 +28,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Tags",
   TestHelpers::db::test_simple_tag<
       ScalarWave::Tags::EvolvedFieldsFromCharacteristicFields<3>>(
       "EvolvedFieldsFromCharacteristicFields");
-  TestHelpers::db::test_simple_tag<ScalarWave::Tags::EnergyDensity<SpatialDim>>(
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::EnergyDensity<3>>(
       "EnergyDensity");
+  TestHelpers::db::test_simple_tag<ScalarWave::Tags::MomentumDensity<3>>(
+      "MomentumDensity");
 }

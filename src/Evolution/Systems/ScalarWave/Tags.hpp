@@ -22,7 +22,6 @@ namespace ScalarWave::Tags {
  */
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "Psi"; }
 };
 
 /*!
@@ -33,7 +32,6 @@ struct Psi : db::SimpleTag {
  */
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "Pi"; }
 };
 
 /*!
@@ -45,12 +43,10 @@ struct Pi : db::SimpleTag {
 template <size_t Dim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-  static std::string name() { return "Phi"; }
 };
 
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "ConstraintGamma2"; }
 };
 
 /*!
@@ -82,39 +78,32 @@ struct TwoIndexConstraint : db::SimpleTag {
 /// CharacteristicSpeedsCompute
 struct VPsi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "VPsi"; }
 };
 template <size_t Dim>
 struct VZero : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-  static std::string name() { return "VZero"; }
 };
 struct VPlus : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "VPlus"; }
 };
 struct VMinus : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() { return "VMinus"; }
 };
 /// @}
 
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 4>;
-  static std::string name() { return "CharacteristicSpeeds"; }
 };
 
 template <size_t Dim>
 struct CharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<VPsi, VZero<Dim>, VPlus, VMinus>>;
-  static std::string name() { return "CharacteristicFields"; }
 };
 
 template <size_t Dim>
 struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<Psi, Pi, Phi<Dim>>>;
-  static std::string name() { return "EvolvedFieldsFromCharacteristicFields"; }
 };
 
 /// The energy density of the scalar wave
@@ -122,4 +111,11 @@ template <size_t Dim>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
+
+/// The momentum density of the scalar wave
+template <size_t Dim>
+struct MomentumDensity : db::SimpleTag {
+  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+};
+
 }  // namespace ScalarWave::Tags

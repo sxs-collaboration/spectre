@@ -34,6 +34,7 @@
 #include "Evolution/Systems/ScalarWave/EnergyDensity.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"
 #include "Evolution/Systems/ScalarWave/Initialize.hpp"
+#include "Evolution/Systems/ScalarWave/MomentumDensity.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "IO/Observer/Actions/RegisterEvents.hpp"
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
@@ -141,6 +142,7 @@ struct EvolutionMetavars {
       tmpl::append<typename system::variables_tag::tags_list,
                    typename deriv_compute::type::tags_list, error_tags>,
       ScalarWave::Tags::EnergyDensityCompute<volume_dim>,
+      ScalarWave::Tags::MomentumDensityCompute<volume_dim>,
       ScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
       ScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
       ::Tags::PointwiseL2NormCompute<
