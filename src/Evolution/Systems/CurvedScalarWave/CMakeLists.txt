@@ -21,6 +21,7 @@ spectre_target_headers(
   HEADERS
   BackgroundSpacetime.hpp
   Characteristics.hpp
+  CalculateGrVars.hpp
   Constraints.hpp
   Equations.hpp
   Initialize.hpp

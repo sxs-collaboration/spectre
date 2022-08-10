@@ -41,7 +41,7 @@ struct System {
   // convert to using dg::ComputeTimeDerivative
   using gradients_tags = gradient_variables;
 
-  using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
+  using spacetime_tag_list = tmpl::list<
       gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
@@ -52,7 +52,7 @@ struct System {
       gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>,
       gr::Tags::TraceSpatialChristoffelSecondKind<volume_dim, Frame::Inertial,
                                                   DataVector>,
-      gr::Tags::TraceExtrinsicCurvature<DataVector>>>;
+      gr::Tags::TraceExtrinsicCurvature<DataVector>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
