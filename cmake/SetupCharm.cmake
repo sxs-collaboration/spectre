@@ -1,11 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(SPECTRE_REQUIRED_CHARM_VERSION 6.10.2)
-# Apple Silicon (arm64) Macs require charm 7.0.0 to run
-if(APPLE AND "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
-  set(SPECTRE_REQUIRED_CHARM_VERSION 7.0.0)
-endif()
+set(SPECTRE_REQUIRED_CHARM_VERSION 7.0.0)
 
 option(USE_SCOTCH_LB "Use the charm++ ScotchLB module" OFF)
 
@@ -45,10 +41,6 @@ find_package(Charm ${SPECTRE_REQUIRED_CHARM_VERSION} REQUIRED
 if(CHARM_VERSION VERSION_GREATER 7.0.0)
   message(WARNING "Builds with Charm++ versions greater than 7.0.0 are \
 considered experimental. Please file any issues you encounter.")
-endif()
-if(CHARM_VERSION VERSION_LESS 7.0.0)
-  message(STATUS "You are using a Charm++ version below the recommended \
-7.0.0. Please upgrade Charm++ if you run into issues.")
 endif()
 
 if (USE_SCOTCH_LB)

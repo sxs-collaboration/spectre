@@ -21,7 +21,7 @@
 # This module supports CMake "components" to load additional Charm++ modules.
 # You can load additional Charm++ modules like this:
 #
-#   find_package(Charm 6.10.2 COMPONENTS EveryLB)
+#   find_package(Charm 7.0.0 COMPONENTS EveryLB)
 #
 # This module exposes the following targets:
 #

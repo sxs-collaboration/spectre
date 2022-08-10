@@ -49,7 +49,7 @@ spack:
   # Charm++:
   # - The 'multicore' backend runs with shared memory on a single node. On
   #   clusters you should choose one of the multi-node backends instead.
-  - 'charmpp@6.10.2: backend=multicore'
+  - 'charmpp@7.0.0: backend=multicore'
   - 'cmake@3.12:'
   - doxygen
   - gsl

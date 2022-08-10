@@ -58,7 +58,7 @@ all of these dependencies.
 * [GCC](https://gcc.gnu.org/) 9.1 or later,
 [Clang](https://clang.llvm.org/) 9.0 or later, or AppleClang 11.0.0 or later
 * [CMake](https://cmake.org/) 3.12.0 or later
-* [Charm++](http://charm.cs.illinois.edu/) 6.10.2, 7.0.0, or later (experimental)
+* [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
 * [Git](https://git-scm.com/)
 * BLAS (e.g. [OpenBLAS](http://www.openblas.net))
 * [Blaze](https://bitbucket.org/blaze-lib/blaze/overview) v3.8. It can be

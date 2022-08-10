@@ -377,8 +377,6 @@ jobs:
             use_pch: ON
             build_type: Debug
             CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
-            CHARM_DIR: /work/charm_6_10_2/multicore-linux-x86_64-
-            charm_name: ["Charm 6.10.2"]
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
