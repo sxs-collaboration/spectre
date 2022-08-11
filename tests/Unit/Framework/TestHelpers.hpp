@@ -91,13 +91,19 @@ void test_serialization_via_base(Args&&... args) {
 }
 
 /// Test for copy semantics assuming operator== is implement correctly
-template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr>
+template <typename T>
 void test_copy_semantics(const T& a) {
+  static_assert(tt::has_equivalence_v<T>,
+                "Class has no operator== implemented");
   static_assert(std::is_copy_assignable<T>::value,
                 "Class is not copy assignable.");
   static_assert(std::is_copy_constructible<T>::value,
                 "Class is not copy constructible.");
-  T b = a;
+  static_assert(std::is_default_constructible_v<T>,
+                "Class needs to be default constructible to check copy "
+                "assignment operator");
+  T b{};
+  b = a;
   CHECK(b == a);
   // clang-tidy: intentionally not a reference to force invocation of copy
   // constructor

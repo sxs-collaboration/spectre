@@ -93,7 +93,6 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
   CHECK(iter4 != iter);
   CHECK(iter != iter4);
 
-  test_copy_semantics(iter);
   const auto iter_copy = iter;
   CHECK(iter_copy == iter);
   test_move_semantics(std::move(iter), iter_copy, 3_st, 2_st, 3_st);
