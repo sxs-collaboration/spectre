@@ -109,7 +109,7 @@ void test_physical_center() {
                      2.0 * cos(theta) * physical_center[2];
     const double c = square(physical_center[0]) + square(physical_center[1]) +
                      square(physical_center[2]) - square(radius);
-    auto roots = real_roots(a, b, c);
+    auto roots = *real_roots(a, b, c);
     r[s] = std::max(roots[0], roots[1]);
   }
   // Construct a new Strahlkorper sk_test with the radius computed

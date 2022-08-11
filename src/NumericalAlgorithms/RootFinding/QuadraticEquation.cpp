@@ -14,23 +14,29 @@
 
 double positive_root(const double a, const double b, const double c) {
   const auto roots = real_roots(a, b, c);
-  ASSERT(roots[0] <= 0.0 and roots[1] >= 0.0,
-         "There are two positive roots, " << roots[0] << " and " << roots[1]
-         << ", with a=" << a << " b=" << b << " c=" << c);
-  return roots[1];
+  ASSERT(roots.has_value(), "There are no real roots with a=" << a << " b="
+         << b << " c=" << c);
+  ASSERT((*roots)[0] <= 0.0 and (*roots)[1] >= 0.0,
+         "There are two positive roots, " << (*roots)[0] << " and "
+         << (*roots)[1] << ", with a=" << a << " b=" << b << " c=" << c);
+  return (*roots)[1];
 }
 
-std::array<double, 2> real_roots(const double a, const double b,
-                                 const double c) {
+std::optional<std::array<double, 2>> real_roots(const double a, const double b,
+                                                const double c) {
+  ASSERT(a != 0.0, "Must have non-zero quadratic term.");
   double x0 = std::numeric_limits<double>::signaling_NaN();
   double x1 = std::numeric_limits<double>::signaling_NaN();
-  // clang-tidy: value stored ... never read (true if in Release Build)
-  // NOLINTNEXTLINE
   const int num_real_roots = gsl_poly_solve_quadratic(a, b, c, &x0, &x1);
-  ASSERT(num_real_roots == 2,
-         "There are only " << num_real_roots << " real roots with a=" << a
-         << " b=" << b << " c=" << c);
-  return {{x0, x1}};
+  if (num_real_roots == 0) {
+    return std::nullopt;
+  } else {
+    ASSERT(num_real_roots == 2,
+           "There are " << num_real_roots << " real roots with a=" << a
+           << " b=" << b << " c=" << c << ", which is not zero or two.  "
+           "This should not be possible.");
+    return {{x0, x1}};
+  }
 }
 
 namespace detail {
@@ -65,27 +71,29 @@ struct root_between_values_impl<double> {
                          const RootToChoose min_or_max) {
     // Roots are returned in increasing order.
     const auto roots = real_roots(a, b, c);
+    ASSERT(roots.has_value(), "No real roots for a=" << a << " b=" << b
+           << " c=" << c);
 
     const std::array<bool, 2> roots_out_of_bounds_low{
-        {roots[0] < min_value and
-             not equal_within_roundoff(roots[0], min_value),
-         roots[1] < min_value and
-             not equal_within_roundoff(roots[1], min_value)}};
+        {(*roots)[0] < min_value and
+             not equal_within_roundoff((*roots)[0], min_value),
+         (*roots)[1] < min_value and
+             not equal_within_roundoff((*roots)[1], min_value)}};
     const std::array<bool, 2> roots_out_of_bounds_high{
-        {roots[0] > max_value and
-             not equal_within_roundoff(roots[0], max_value),
-         roots[1] > max_value and
-             not equal_within_roundoff(roots[1], max_value)}};
+        {(*roots)[0] > max_value and
+             not equal_within_roundoff((*roots)[0], max_value),
+         (*roots)[1] > max_value and
+             not equal_within_roundoff((*roots)[1], max_value)}};
 
     double return_value = std::numeric_limits<double>::signaling_NaN();
     const auto error_message = [&a, &b, &c,
                                 &roots](const std::string& message) {
-      ERROR(message << " Roots are " << roots[0] << " and " << roots[1]
+      ERROR(message << " Roots are " << (*roots)[0] << " and " << (*roots)[1]
                     << ", with a=" << a << " b=" << b << " c=" << c);
     };
 
     if (min_or_max == RootToChoose::min) {
-      // Check roots[0] first because it is the smallest
+      // Check (*roots)[0] first because it is the smallest
       if (roots_out_of_bounds_low[0]) {
         if (roots_out_of_bounds_low[1]) {
           error_message("No root >= (within roundoff) min_value.");
@@ -94,12 +102,12 @@ struct root_between_values_impl<double> {
           error_message(
               "No root between min_value and max_value (within roundoff).");
         }
-        return_value = roots[1];
+        return_value = (*roots)[1];
       } else {
         if (roots_out_of_bounds_high[0]) {
           error_message("No root <= (within roundoff) max_value.");
         }
-        return_value = roots[0];
+        return_value = (*roots)[0];
       }
     } else {
       // Check roots[1] first because it is the largest
@@ -112,12 +120,12 @@ struct root_between_values_impl<double> {
               "No root between min_value and max_value (within "
               "roundoff).");
         }
-        return_value = roots[0];
+        return_value = (*roots)[0];
       } else {
         if (roots_out_of_bounds_low[1]) {
           error_message("No root >= (within roundoff) min_value.");
         }
-        return_value = roots[1];
+        return_value = (*roots)[1];
       }
     }
     return return_value;
