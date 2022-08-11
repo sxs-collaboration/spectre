@@ -36,7 +36,7 @@ void test_predicted_zero_crossing_datavector() {
     y_intercept.push_back(-slope[i] * expected_zero_crossing_value[i]);
   }
 
-  std::deque<double> x_values{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+  std::deque<double> x_values{0., -1., -2., -3., -4., -5., -6., -7., -8., -9.};
   std::deque<DataVector> y_values{};
 
   for (size_t i = 0; i < x_values.size(); i++) {
@@ -55,6 +55,15 @@ void test_predicted_zero_crossing_datavector() {
                                expected_zero_crossing_value, custom_approx);
 }
 
+void test_predicted_zero_crossing_indeterminate() {
+  // Here we set up points so that the error bars are large enough
+  // that it is not clear whether the zero crossing is in the
+  // past or in the future.
+  std::vector<double> x_values{0.0, -1.0, -2.0, -3.0};
+  std::vector<double> y_values{1.0, 2.1, 1.0, 2.0};
+  CHECK(intrp::predicted_zero_crossing_value(x_values, y_values) == 0.0);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -70,7 +79,8 @@ SPECTRE_TEST_CASE(
   const double slope = dist(gen);
   CAPTURE(slope);
 
-  std::vector<double> x_values = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+  std::vector<double> x_values = {0.,  -1., -2., -3., -4.,
+                                  -5., -6., -7., -8., -9.};
   std::vector<double> y_values{};
   double b = -slope * expected_zero_crossing_value;
   for (size_t i = 0; i < x_values.size(); i++) {
@@ -87,4 +97,6 @@ SPECTRE_TEST_CASE(
 
   // Test the zero crossing value for a set of datavectors
   test_predicted_zero_crossing_datavector();
+
+  test_predicted_zero_crossing_indeterminate();
 }
