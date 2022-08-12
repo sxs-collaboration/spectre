@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AccessType.cpp
+  CheckH5PropertiesMatch.cpp
   Dat.cpp
   EosTable.cpp
   File.cpp
@@ -24,6 +25,7 @@ spectre_target_headers(
   HEADERS
   AccessType.hpp
   CheckH5.hpp
+  CheckH5PropertiesMatch.hpp
   Dat.hpp
   EosTable.hpp
   File.hpp
