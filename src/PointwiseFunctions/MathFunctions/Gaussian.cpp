@@ -26,6 +26,11 @@ Gaussian<1, Fr>::Gaussian(double amplitude, double width,
     : Gaussian(amplitude, width, center[0]) {}
 
 template <typename Fr>
+std::unique_ptr<MathFunction<1, Fr>> Gaussian<1, Fr>::get_clone() const {
+  return std::make_unique<Gaussian<1, Fr>>(*this);
+}
+
+template <typename Fr>
 double Gaussian<1, Fr>::operator()(const double& x) const {
   return apply_call_operator(x);
 }
@@ -102,10 +107,34 @@ void Gaussian<1, Fr>::pup(PUP::er& p) {
   p | center_;
 }
 
+template <typename Fr>
+bool Gaussian<1, Fr>::operator==(const MathFunction<1, Fr>& other) const {
+  const auto* derived_other = dynamic_cast<const Gaussian<1, Fr>*>(&other);
+  if (derived_other != nullptr) {
+    return (this->amplitude_ == derived_other->amplitude_) and
+           (this->inverse_width_ == derived_other->inverse_width_) and
+           (this->center_ == derived_other->center_);
+  }
+  // LCOV_EXCL_START
+  return false;
+  // LCOV_EXCL_STOP
+}
+
+template <typename Fr>
+bool Gaussian<1, Fr>::operator!=(const MathFunction<1, Fr>& other) const {
+  return not(*this == other);
+}
+
 template <size_t VolumeDim, typename Fr>
 Gaussian<VolumeDim, Fr>::Gaussian(const double amplitude, const double width,
                                   const std::array<double, VolumeDim>& center)
     : amplitude_(amplitude), inverse_width_(1.0 / width), center_(center) {}
+
+template <size_t VolumeDim, typename Fr>
+std::unique_ptr<MathFunction<VolumeDim, Fr>>
+Gaussian<VolumeDim, Fr>::get_clone() const {
+  return std::make_unique<Gaussian<VolumeDim, Fr>>(*this);
+}
 
 template <size_t VolumeDim, typename Fr>
 template <typename T>
@@ -254,6 +283,27 @@ tnsr::iii<DataVector, VolumeDim, Fr> Gaussian<VolumeDim, Fr>::third_deriv(
 }
 
 template <size_t VolumeDim, typename Fr>
+bool Gaussian<VolumeDim, Fr>::operator==(
+    const MathFunction<VolumeDim, Fr>& other) const {
+  const auto* derived_other =
+      dynamic_cast<const Gaussian<VolumeDim, Fr>*>(&other);
+  if (derived_other != nullptr) {
+    return this->amplitude_ == derived_other->amplitude_ and
+           this->inverse_width_ == derived_other->inverse_width_ and
+           this->center_ == derived_other->center_;
+  }
+  // LCOV_EXCL_START
+  return false;
+  // LCOV_EXCL_STOP
+}
+
+template <size_t VolumeDim, typename Fr>
+bool Gaussian<VolumeDim, Fr>::operator!=(
+    const MathFunction<VolumeDim, Fr>& other) const {
+  return not(*this == other);
+}
+
+template <size_t VolumeDim, typename Fr>
 void Gaussian<VolumeDim, Fr>::pup(PUP::er& p) {
   MathFunction<VolumeDim, Fr>::pup(p);
   p | amplitude_;
@@ -264,77 +314,30 @@ void Gaussian<VolumeDim, Fr>::pup(PUP::er& p) {
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                                          \
-  template MathFunctions::Gaussian<DIM(data), FRAME(data)>::Gaussian( \
-      const double amplitude, const double width,                     \
-      const std::array<double, DIM(data)>& center);                   \
-  template void MathFunctions::Gaussian<DIM(data), FRAME(data)>::pup( \
-      PUP::er& p);
+#define INSTANTIATE(_, data) \
+  template class MathFunctions::Gaussian<DIM(data), FRAME(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+
 #undef DIM
 #undef FRAME
 #undef INSTANTIATE
-
-#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
-
-#define INSTANTIATE(_, data)                                        \
-  template Scalar<DTYPE(data)>                                      \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::operator()(      \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
-  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>             \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::first_deriv(     \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
-  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>            \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::second_deriv(    \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const; \
-  template tnsr::iii<DTYPE(data), DIM(data), FRAME(data)>           \
-  MathFunctions::Gaussian<DIM(data), FRAME(data)>::third_deriv(     \
-      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial),
-                        (double, DataVector))
-#undef FRAME
-#undef DIM
-#undef DTYPE
-#undef INSTANTIATE
-
-template MathFunctions::Gaussian<1, Frame::Grid>::Gaussian(
-    const double amplitude, const double width, const double center);
-template MathFunctions::Gaussian<1, Frame::Inertial>::Gaussian(
-    const double amplitude, const double width, const double center);
-template MathFunctions::Gaussian<1, Frame::Grid>::Gaussian(
-    double amplitude, double width, const std::array<double, 1>& center);
-template MathFunctions::Gaussian<1, Frame::Inertial>::Gaussian(
-    double amplitude, double width, const std::array<double, 1>& center);
-template void MathFunctions::Gaussian<1, Frame::Grid>::pup(PUP::er& p);
-template void MathFunctions::Gaussian<1, Frame::Inertial>::pup(PUP::er& p);
 
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::operator()(   \
-      const DTYPE(data) & x) const;                                           \
-  template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::first_deriv(  \
-      const DTYPE(data) & x) const;                                           \
-  template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::second_deriv( \
-      const DTYPE(data) & x) const;                                           \
-  template DTYPE(data) MathFunctions::Gaussian<1, FRAME(data)>::third_deriv(  \
-      const DTYPE(data) & x) const;                                           \
-  template DTYPE(data)                                                        \
-      MathFunctions::Gaussian<1, FRAME(data)>::apply_call_operator(           \
-          const DTYPE(data) & x) const;                                       \
-  template DTYPE(data)                                                        \
-      MathFunctions::Gaussian<1, FRAME(data)>::apply_first_deriv(             \
-          const DTYPE(data) & x) const;                                       \
-  template DTYPE(data)                                                        \
-      MathFunctions::Gaussian<1, FRAME(data)>::apply_second_deriv(            \
-          const DTYPE(data) & x) const;                                       \
-  template DTYPE(data)                                                        \
-      MathFunctions::Gaussian<1, FRAME(data)>::apply_third_deriv(             \
+#define INSTANTIATE(_, data)                                        \
+  template DTYPE(data)                                              \
+      MathFunctions::Gaussian<1, FRAME(data)>::apply_call_operator( \
+          const DTYPE(data) & x) const;                             \
+  template DTYPE(data)                                              \
+      MathFunctions::Gaussian<1, FRAME(data)>::apply_first_deriv(   \
+          const DTYPE(data) & x) const;                             \
+  template DTYPE(data)                                              \
+      MathFunctions::Gaussian<1, FRAME(data)>::apply_second_deriv(  \
+          const DTYPE(data) & x) const;                             \
+  template DTYPE(data)                                              \
+      MathFunctions::Gaussian<1, FRAME(data)>::apply_third_deriv(   \
           const DTYPE(data) & x) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
@@ -343,3 +346,35 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (Frame::Grid, Frame::Inertial),
 #undef FRAME
 #undef INSTANTIATE
 
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(2, data)
+
+#define INSTANTIATE(_, data)                                                 \
+  template tnsr::I<DTYPE(data), DIM(data), FRAME(data)>                      \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::centered_coordinates(     \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const;          \
+  template Scalar<DTYPE(data)>                                               \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::apply_call_operator(      \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) const;          \
+  template tnsr::i<DTYPE(data), DIM(data), FRAME(data)>                      \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::apply_first_deriv(        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,                 \
+      const Scalar<DTYPE(data)>& gaussian) const;                            \
+  template tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>                     \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::apply_second_deriv(       \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,                 \
+      const Scalar<DTYPE(data)>& gaussian,                                   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& d_gaussian) const; \
+  template tnsr::iii<DTYPE(data), DIM(data), FRAME(data)>                    \
+  MathFunctions::Gaussian<DIM(data), FRAME(data)>::apply_third_deriv(        \
+      const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x,                 \
+      const Scalar<DTYPE(data)>& gaussian,                                   \
+      const tnsr::i<DTYPE(data), DIM(data), FRAME(data)>& d_gaussian,        \
+      const tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>& d2_gaussian) const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3), (Frame::Grid, Frame::Inertial),
+                        (double, DataVector))
+#undef DTYPE
+#undef FRAME
+#undef INSTANTIATE

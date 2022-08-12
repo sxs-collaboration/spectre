@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include <pup.h>
 
 #include "Options/Options.hpp"
@@ -50,13 +51,8 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
       "Applies a Sinusoid function to the input value"};
 
   Sinusoid(double amplitude, double wavenumber, double phase);
-
   Sinusoid() = default;
-  ~Sinusoid() override = default;
-  Sinusoid(const Sinusoid& /*rhs*/) = delete;
-  Sinusoid& operator=(const Sinusoid& /*rhs*/) = delete;
-  Sinusoid(Sinusoid&& /*rhs*/) = default;
-  Sinusoid& operator=(Sinusoid&& /*rhs*/) = default;
+  std::unique_ptr<MathFunction<1, Fr>> get_clone() const override;
 
   WRAPPED_PUPable_decl_base_template(SINGLE_ARG(MathFunction<1, Fr>),
                                      Sinusoid);  // NOLINT
@@ -75,14 +71,12 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   double third_deriv(const double& x) const override;
   DataVector third_deriv(const DataVector& x) const override;
 
+  bool operator==(const MathFunction<1, Fr>& other) const override;
+  bool operator!=(const MathFunction<1, Fr>& other) const override;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
  private:
-  friend bool operator==(const Sinusoid& lhs, const Sinusoid& rhs) {
-    return lhs.amplitude_ == rhs.amplitude_ and
-           lhs.wavenumber_ == rhs.wavenumber_ and lhs.phase_ == rhs.phase_;
-  }
   double amplitude_{};
   double wavenumber_{};
   double phase_{};
@@ -97,10 +91,6 @@ class Sinusoid<1, Fr> : public MathFunction<1, Fr> {
   T apply_third_deriv(const T& x) const;
 };
 
-template <typename Fr>
-bool operator!=(const Sinusoid<1, Fr>& lhs, const Sinusoid<1, Fr>& rhs) {
-  return not(lhs == rhs);
-}
 }  // namespace MathFunctions
 
 /// \cond

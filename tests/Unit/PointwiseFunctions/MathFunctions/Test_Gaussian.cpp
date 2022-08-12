@@ -50,6 +50,11 @@ void test_gaussian_random(const DataType& used_for_size) {
   }
 
   MathFunctions::Gaussian<VolumeDim, Fr> gauss{amplitude, width, center};
+  CHECK(gauss == *(gauss.get_clone()));
+  CHECK_FALSE(gauss != gauss);
+  test_copy_semantics(gauss);
+  auto gauss_for_move = gauss;
+  test_move_semantics(std::move(gauss_for_move), gauss);
 
   TestHelpers::MathFunctions::check(std::move(gauss), "gaussian", used_for_size,
                                     {{{-1.0, 1.0}}}, amplitude, width, center);

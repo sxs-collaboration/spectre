@@ -14,6 +14,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 #include "Utilities/TMPL.hpp"
@@ -31,8 +32,17 @@ template <size_t VolumeDim, typename DataType, typename Fr>
 void test_pow_x_random(const DataType& used_for_size) {
   Parallel::register_classes_with_charm<MathFunctions::PowX<VolumeDim, Fr>>();
 
+  MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{};
   for (int power = -5; power < 6; ++power) {
     MathFunctions::PowX<VolumeDim, Fr> pow_x{power};
+
+    CHECK(pow_x == *(pow_x.get_clone()));
+    CHECK(pow_x != *(sinusoid.get_clone()));
+    CHECK_FALSE(pow_x != pow_x);
+    test_copy_semantics(pow_x);
+    auto pow_for_move = pow_x;
+    test_move_semantics(std::move(pow_for_move), pow_x);
+
     TestHelpers::MathFunctions::check(std::move(pow_x), "pow_x", used_for_size,
                                       {{{-5.0, 5.0}}},
                                       static_cast<double>(power));

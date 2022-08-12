@@ -36,13 +36,8 @@ class MathFunction : public PUP::able {
   using frame = Fr;
 
   WRAPPED_PUPable_abstract(MathFunction);  // NOLINT
-
   MathFunction() = default;
-  MathFunction(const MathFunction& /*rhs*/) = delete;
-  MathFunction& operator=(const MathFunction& /*rhs*/) = delete;
-  MathFunction(MathFunction&& /*rhs*/) = default;
-  MathFunction& operator=(MathFunction&& /*rhs*/) = default;
-  ~MathFunction() override = default;
+  virtual std::unique_ptr<MathFunction> get_clone() const = 0;
 
   /// @{
   /// Returns the value of the function at the coordinate 'x'.
@@ -75,6 +70,9 @@ class MathFunction : public PUP::able {
   virtual tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const = 0;
   /// @}
+
+  virtual bool operator==(const MathFunction<VolumeDim, Fr>& other) const = 0;
+  virtual bool operator!=(const MathFunction<VolumeDim, Fr>& other) const = 0;
 };
 
 /*!
@@ -90,13 +88,8 @@ class MathFunction<1, Fr> : public PUP::able {
   using frame = Fr;
 
   WRAPPED_PUPable_abstract(MathFunction);  // NOLINT
-
   MathFunction() = default;
-  MathFunction(const MathFunction& /*rhs*/) = delete;
-  MathFunction& operator=(const MathFunction& /*rhs*/) = delete;
-  MathFunction(MathFunction&& /*rhs*/) = default;
-  MathFunction& operator=(MathFunction&& /*rhs*/) = default;
-  ~MathFunction() override = default;
+  virtual std::unique_ptr<MathFunction> get_clone() const = 0;
 
   /// Returns the function value at the coordinate 'x'
   virtual double operator()(const double& x) const = 0;
@@ -152,4 +145,6 @@ class MathFunction<1, Fr> : public PUP::able {
     get<0, 0, 0>(result) = third_deriv(get<0>(x));
     return result;
   }
+  virtual bool operator==(const MathFunction<1, Fr>& other) const = 0;
+  virtual bool operator!=(const MathFunction<1, Fr>& other) const = 0;
 };
