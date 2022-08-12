@@ -797,7 +797,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.YlmSpherepack",
   test_prolong_restrict();
 
   YlmSpherepack s(4, 4);
-  test_copy_semantics(s);
-  auto s_copy = s;
+  auto s_copy(s);
+  CHECK(s_copy == s);
   test_move_semantics(std::move(s), s_copy, 6_st, 5_st);
 }
