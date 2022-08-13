@@ -212,7 +212,7 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_left_child = 0;
@@ -222,6 +222,10 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   /// The total number of arithmetic tensor operations done in this expression's
   /// whole subtree, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_subtree = 0;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree. Because this
+  /// expression type is that leaf, the height for this type will always be 0.
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree = 0;
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up

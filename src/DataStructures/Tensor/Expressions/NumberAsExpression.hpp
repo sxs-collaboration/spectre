@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -35,7 +36,7 @@ struct NumberAsExpression
   /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = 0;
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_left_child = 0;
@@ -45,6 +46,12 @@ struct NumberAsExpression
   /// The total number of arithmetic tensor operations done in this expression's
   /// whole subtree, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_subtree = 0;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree. Because this
+  /// expression type is leaf, the height for this type is set to the maximum
+  /// `size_t` value to encode a sense of maximal height.
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree =
+      std::numeric_limits<size_t>::max();
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up

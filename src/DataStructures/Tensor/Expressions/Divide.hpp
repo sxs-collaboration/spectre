@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <type_traits>
 #include <utility>
 
@@ -73,7 +74,7 @@ struct Divide : public TensorExpression<
   static constexpr auto op2_multi_index =
       make_array<op2_num_tensor_indices, size_t>(0);
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand
   static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
@@ -84,6 +85,16 @@ struct Divide : public TensorExpression<
   /// whole subtree
   static constexpr size_t num_ops_subtree =
       num_ops_left_child + num_ops_right_child + 1;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree =
+      T2::height_relative_to_closest_tensor_leaf_in_subtree <=
+              T1::height_relative_to_closest_tensor_leaf_in_subtree
+          ? (T2::height_relative_to_closest_tensor_leaf_in_subtree !=
+                     std::numeric_limits<size_t>::max()
+                 ? T2::height_relative_to_closest_tensor_leaf_in_subtree + 1
+                 : T2::height_relative_to_closest_tensor_leaf_in_subtree)
+          : T1::height_relative_to_closest_tensor_leaf_in_subtree + 1;
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up

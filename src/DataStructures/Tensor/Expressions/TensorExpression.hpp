@@ -137,6 +137,10 @@ struct Expression {};
 /// `num_ops_left_child + num_ops_right_child + 1`, the sum of the number of
 /// operations in each operand's subtrees plus one for the operation done for
 /// the expression, itself.
+/// - variable `static constexpr size_t
+/// height_relative_to_closest_tensor_leaf_in_subtree` : The height of an
+/// expression's node in the overall expression tree relative to the closest
+/// `TensorAsExpression` leaf in its subtree
 /// - function `decltype(auto) get(const std::array<size_t, num_tensor_indices>&
 /// result_multi_index) const`: Accepts a multi-index for the result tensor
 /// represented by the expression and returns the computed result of the
