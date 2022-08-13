@@ -89,7 +89,22 @@ void test_minkowski(const T& value) {
   const auto dt_det_g =
       get<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>(minkowski.variables(
           x, t, tmpl::list<Tags::dt<gr::Tags::SqrtDetSpatialMetric<T>>>{}));
-
+  const auto d_det_g =
+      get<gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, T>>(
+          minkowski.variables(
+              x, t,
+              tmpl::list<
+                  gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, T>>{}));
+  const auto christoffel_first_kind =
+      get<gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, T>>(
+          minkowski.variables(x, t,
+                              tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
+                                  Dim, Frame::Inertial, T>>{}));
+  const auto christoffel_second_kind =
+      get<gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, T>>(
+          minkowski.variables(x, t,
+                              tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
+                                  Dim, Frame::Inertial, T>>{}));
   const auto trace_christoffel =
       get<gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial, T>>(
           minkowski.variables(
@@ -111,6 +126,7 @@ void test_minkowski(const T& value) {
     CHECK(d_lapse.get(i) == zero);
     CHECK(g.get(i, i) == one);
     CHECK(inv_g.get(i, i) == one);
+    CHECK(d_det_g.get(i) == zero);
     CHECK(trace_christoffel.get(i) == zero);
     for (size_t j = 0; j < i; ++j) {
       CHECK(g.get(i, j) == zero);
@@ -121,6 +137,8 @@ void test_minkowski(const T& value) {
       CHECK(dt_g.get(i, j) == zero);
       CHECK(extrinsic_curvature.get(i, j) == zero);
       for (size_t k = 0; k < Dim; ++k) {
+        CHECK(christoffel_first_kind.get(i, j, k) == zero);
+        CHECK(christoffel_second_kind.get(i, j, k) == zero);
         CHECK(d_g.get(i, j, k) == zero);
       }
     }
