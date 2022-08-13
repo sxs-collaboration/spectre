@@ -52,19 +52,23 @@ tnsr::I<DataType, 3, Frame> spatial_coords(const DataType& used_for_size) {
 
 template <typename Frame, typename DataType>
 void test_schwarzschild(const DataType& used_for_size) {
-  // Schwarzschild solution is:
-  // H        = M/r
-  // l_mu     = (1,x/r,y/r,z/r)
-  // lapse    = (1+2M/r)^{-1/2}
-  // d_lapse  = (1+2M/r)^{-3/2}(Mx^i/r^3)
-  // shift^i  = (2Mx^i/r^2) / lapse^2
-  // g_{ij}   = delta_{ij} + 2 M x_i x_j/r^3
-  // d_i H    = -Mx_i/r^3
-  // d_i l_j  = delta_{ij}/r - x^i x^j/r^3
-  // d_k g_ij = -6M x_i x_j x_k/r^5 + 2 M x_i delta_{kj}/r^3
+  // Schwarzschild solution is (with x_i = delta_{ij} x^i):
+  // H                    = M/r
+  // l_mu                 = (1,x/r,y/r,z/r)
+  // lapse                = (1+2M/r)^{-1/2}
+  // d_i lapse            = (1+2M/r)^{-3/2}(Mx^i/r^3)
+  // shift^i              = (2Mx^i/r^2) / lapse^2
+  // g_{ij}               = delta_{ij} + 2 M x_i x_j/r^3
+  // d_i H                = -Mx_i/r^3
+  // d_i l_j              = delta_{ij}/r - x^i x^j/r^3
+  // d_k g_ij             = -6M x_i x_j x_k/r^5 + 2 M x_i delta_{kj}/r^3
   //                                + 2 M x_j delta_{ki}/r^3
+  // Gamma_{ijk}          = M x_i(2r^2 delta_{jk} - 3 x_j x_k) / r^5
+  // Gamma^i_{jk}         = M x^i(2r^2 delta_{jk} - 3 x_j x_k) / (2Mr^4 + r^5)
+  // g^{ij} Gamma^k_{ij}  = M(8M + 3r) x^k / (r(2M+3r))^2
+  // g^{ij} K_{ij}        = 2M(3M + r) * ((2M+r)r)^(-3/2)
 
-  // Parameters for SphericalKerrSchild solution
+  // Parameters for KerrSchild solution
   const double mass = 1.01;
   const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
@@ -89,11 +93,25 @@ void test_schwarzschild(const DataType& used_for_size) {
   const auto& dt_shift =
       get<Tags::dt<gr::Tags::Shift<3, Frame, DataType>>>(vars);
   const auto& g = get<gr::Tags::SpatialMetric<3, Frame, DataType>>(vars);
+  const auto& ig =
+      get<gr::Tags::InverseSpatialMetric<3, Frame, DataType>>(vars);
+
   const auto& dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>(vars);
   const auto& d_g =
       get<typename gr::Solutions::SphericalKerrSchild::DerivSpatialMetric<
           DataType, Frame>>(vars);
+  const auto& christoffel_first_kind =
+      get<typename gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>>(
+          vars);
+  const auto& christoffel_second_kind =
+      get<typename gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>>(
+          vars);
+  const auto& trace_christoffel = get<
+      typename gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType>>(
+      vars);
+  const auto& trace_extrinsic_curvature =
+      get<typename gr::Tags::TraceExtrinsicCurvature<DataType>>(vars);
 
   // Check those quantities that should be zero.
   const auto zero = make_with_value<DataType>(x, 0.);
@@ -148,6 +166,7 @@ void test_schwarzschild(const DataType& used_for_size) {
     expected_g.get(i, i) += 1.0;
   }
   CHECK_ITERABLE_APPROX(g, expected_g);
+  CHECK_ITERABLE_APPROX(ig, determinant_and_inverse(expected_g).second);
 
   auto expected_d_g = make_with_value<tnsr::ijj<DataType, 3, Frame>>(x, 0.0);
   for (size_t k = 0; k < 3; ++k) {
@@ -165,6 +184,53 @@ void test_schwarzschild(const DataType& used_for_size) {
     }
   }
   CHECK_ITERABLE_APPROX(d_g, expected_d_g);
+
+  auto expected_christoffel_first_kind =
+      make_with_value<tnsr::ijj<DataType, 3, Frame>>(x, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = j; k < 3; ++k) {
+        const double delta_jk = j == k ? 1. : 0.;
+        expected_christoffel_first_kind.get(i, j, k) =
+            mass * x.get(i) *
+            (-3. * x.get(j) * x.get(k) + 2. * square(r) * delta_jk) / pow(r, 5);
+      }
+    }
+  }
+  CHECK_ITERABLE_APPROX(christoffel_first_kind,
+                        expected_christoffel_first_kind);
+
+  auto expected_christoffel_second_kind =
+      make_with_value<tnsr::Ijj<DataType, 3, Frame>>(x, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 3; ++j) {
+      for (size_t k = j; k < 3; ++k) {
+        const double delta_jk = j == k ? 1. : 0.;
+        expected_christoffel_second_kind.get(i, j, k) =
+            x.get(i) * mass *
+            (-3. * x.get(j) * x.get(k) + 2. * square(r) * delta_jk) /
+            (2. * mass * pow(r, 4) + pow(r, 5));
+      }
+    }
+  }
+  CHECK_ITERABLE_APPROX(christoffel_second_kind,
+                        expected_christoffel_second_kind);
+
+  auto expected_trace_christoffel =
+      make_with_value<tnsr::I<DataType, 3, Frame>>(x, 0.0);
+  DataType factor =
+      mass * (8. * mass + 3. * r) / (2. * mass + r) / (2. * mass + r) / r / r;
+  for (size_t i = 0; i < 3; ++i) {
+    expected_trace_christoffel.get(i) = factor * x.get(i);
+  }
+  CHECK_ITERABLE_APPROX(trace_christoffel, expected_trace_christoffel);
+
+  auto expected_trace_extrinsic_curvature =
+      make_with_value<Scalar<DataType>>(x, 0.0);
+  expected_trace_extrinsic_curvature.get() =
+      2. * mass * (3. * mass + r) * pow((2. * mass + r) * r, -1.5);
+  CHECK_ITERABLE_APPROX(trace_extrinsic_curvature,
+                        expected_trace_extrinsic_curvature);
 }
 
 template <typename FrameType>

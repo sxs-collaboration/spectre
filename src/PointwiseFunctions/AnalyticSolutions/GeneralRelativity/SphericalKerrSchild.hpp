@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <pup.h>
@@ -405,6 +406,15 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
   static constexpr Options::String help{
       "Black hole in Spherical Kerr-Schild coordinates"};
 
+  template <typename DataType, typename Frame = Frame::Inertial>
+  using tags = tmpl::flatten<tmpl::list<
+      AnalyticSolution<3_st>::tags<DataType, Frame>,
+      gr::Tags::DerivDetSpatialMetric<3, Frame, DataType>,
+      gr::Tags::TraceExtrinsicCurvature<DataType>,
+      gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>,
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType>>>;
+
   SphericalKerrSchild(double mass, Spin::type dimensionless_spin,
                       Center::type center,
                       const Options::Context& context = {});
@@ -423,11 +433,8 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
       const tnsr::I<DataType, volume_dim, Frame>& x, double /*t*/,
       tmpl::list<Tags...> /*meta*/) const {
     static_assert(
-        tmpl2::flat_all_v<tmpl::list_contains_v<
-            tmpl::push_back<
-                tags<DataType, Frame>,
-                gr::Tags::DerivDetSpatialMetric<3, Frame, DataType>>,
-            Tags>...>,
+        tmpl2::flat_all_v<
+            tmpl::list_contains_v<tags<DataType, Frame>, Tags>...>,
         "At least one of the requested tags is not supported. The requested "
         "tags are listed as template parameters of the `variables` function.");
     IntermediateVars<DataType, Frame> cache(get_size(*x.begin()));
@@ -554,7 +561,11 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
       gr::Tags::Shift<3, Frame, DataType>, DerivShift<DataType, Frame>,
       gr::Tags::SpatialMetric<3, Frame, DataType>,
       DerivSpatialMetric<DataType, Frame>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>>;
+      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>,
+      gr::Tags::ExtrinsicCurvature<3, Frame, DataType>,
+      gr::Tags::InverseSpatialMetric<3, Frame, DataType>,
+      gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>,
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>>;
 
   template <typename DataType, typename Frame = ::Frame::Inertial>
   class IntermediateComputer {
@@ -567,183 +578,212 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
     // spin_a_and_squared(const SphericalKerrSchild& solution);
 
     void operator()(
-        gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
-        gsl::not_null<CachedBuffer*> /*cache*/,
+        const gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
+        const gsl::not_null<CachedBuffer*> /*cache*/,
         internal_tags::x_minus_center<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> r_squared,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> r_squared,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::r_squared<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> r,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> r,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::r<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> rho,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> rho,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::rho<DataType> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_F,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_F,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_F<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> transformation_matrix_P,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*>
+            transformation_matrix_P,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::transformation_matrix_P<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> jacobian,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> jacobian,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::jacobian<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_D,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_D,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_D<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_C,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_C,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_C<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::iJk<DataType, 3, Frame>*> deriv_jacobian,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::iJk<DataType, 3, Frame>*> deriv_jacobian,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::deriv_jacobian<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> transformation_matrix_Q,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*>
+            transformation_matrix_Q,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::transformation_matrix_Q<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_G1,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_G1,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_G1<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> a_dot_x,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> a_dot_x,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::a_dot_x<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> s_number,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> s_number,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::s_number<DataType> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_G2,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_G2,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_G2<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 3, Frame>*> G1_dot_x,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 3, Frame>*> G1_dot_x,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::G1_dot_x<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::i<DataType, 3, Frame>*> G2_dot_x,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::i<DataType, 3, Frame>*> G2_dot_x,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::G2_dot_x<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> inv_jacobian,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> inv_jacobian,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::inv_jacobian<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_E1,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_E1,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_E1<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_E2,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::Ij<DataType, 3, Frame>*> helper_matrix_E2,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::helper_matrix_E2<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::iJk<DataType, 3, Frame>*> deriv_inv_jacobian,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::iJk<DataType, 3, Frame>*> deriv_inv_jacobian,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::deriv_inv_jacobian<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> H,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> H,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::H<DataType> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::I<DataType, 3, Frame>*> kerr_schild_x,
-        gsl::not_null<CachedBuffer*> /*cache*/,
+        const gsl::not_null<tnsr::I<DataType, 3, Frame>*> kerr_schild_x,
+        const gsl::not_null<CachedBuffer*> /*cache*/,
         internal_tags::kerr_schild_x<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 3, Frame>*> a_cross_x,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 3, Frame>*> a_cross_x,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::a_cross_x<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::I<DataType, 3, Frame>*> kerr_schild_l,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::I<DataType, 3, Frame>*> kerr_schild_l,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::kerr_schild_l<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::i<DataType, 4, Frame>*> l_lower,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::i<DataType, 4, Frame>*> l_lower,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::l_lower<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 4, Frame>*> l_upper,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 4, Frame>*> l_upper,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::l_upper<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 3, Frame>*> deriv_r,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 3, Frame>*> deriv_r,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::deriv_r<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 4, Frame>*> deriv_H,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 4, Frame>*> deriv_H,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::deriv_H<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::ij<DataType, 4, Frame>*> kerr_schild_deriv_l,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::ij<DataType, 4, Frame>*> kerr_schild_deriv_l,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::kerr_schild_deriv_l<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::ij<DataType, 4, Frame>*> deriv_l,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::ij<DataType, 4, Frame>*> deriv_l,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::deriv_l<DataType, Frame> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> lapse_squared,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> lapse_squared,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::lapse_squared<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> lapse,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> lapse,
+                    const gsl::not_null<CachedBuffer*> cache,
                     gr::Tags::Lapse<DataType> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<Scalar<DataType>*> deriv_lapse_multiplier,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<Scalar<DataType>*> deriv_lapse_multiplier,
+        const gsl::not_null<CachedBuffer*> cache,
         internal_tags::deriv_lapse_multiplier<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<Scalar<DataType>*> shift_multiplier,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<Scalar<DataType>*> shift_multiplier,
+                    const gsl::not_null<CachedBuffer*> cache,
                     internal_tags::shift_multiplier<DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
-                    gsl::not_null<CachedBuffer*> cache,
+    void operator()(const gsl::not_null<tnsr::I<DataType, 3, Frame>*> shift,
+                    const gsl::not_null<CachedBuffer*> cache,
                     gr::Tags::Shift<3, Frame, DataType> /*meta*/) const;
 
-    void operator()(gsl::not_null<tnsr::iJ<DataType, 3, Frame>*> deriv_shift,
-                    gsl::not_null<CachedBuffer*> cache,
-                    DerivShift<DataType, Frame> /*meta*/) const;
-
-    void operator()(gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
-                    gsl::not_null<CachedBuffer*> cache,
-                    gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const;
+    void operator()(
+        const gsl::not_null<tnsr::iJ<DataType, 3, Frame>*> deriv_shift,
+        const gsl::not_null<CachedBuffer*> cache,
+        DerivShift<DataType, Frame> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::ijj<DataType, 3, Frame>*> deriv_spatial_metric,
-        gsl::not_null<CachedBuffer*> cache,
-        DerivSpatialMetric<DataType, Frame> /*meta*/) const;
+        const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> spatial_metric,
+        const gsl::not_null<CachedBuffer*> cache,
+        gr::Tags::SpatialMetric<3, Frame, DataType> /*meta*/) const;
 
     void operator()(
-        gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
-        gsl::not_null<CachedBuffer*> cache,
+        const gsl::not_null<tnsr::II<DataType, 3, Frame>*>
+            inverse_spatial_metric,
+        const gsl::not_null<CachedBuffer*> cache,
+        gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) const;
+
+    void operator()(const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
+                        deriv_spatial_metric,
+                    const gsl::not_null<CachedBuffer*> cache,
+                    DerivSpatialMetric<DataType, Frame> /*meta*/) const;
+
+    void operator()(
+        const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> dt_spatial_metric,
+        const gsl::not_null<CachedBuffer*> cache,
         ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>> /*meta*/) const;
+
+    void operator()(
+        const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
+        const gsl::not_null<CachedBuffer*> cache,
+        gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) const;
+
+    void operator()(
+        const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
+            christoffel_first_kind,
+        const gsl::not_null<CachedBuffer*> cache,
+        gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType> /*meta*/)
+        const;
+
+    void operator()(
+        const gsl::not_null<tnsr::Ijj<DataType, 3, Frame>*>
+            christoffel_second_kind,
+        const gsl::not_null<CachedBuffer*> cache,
+        gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/)
+        const;
 
    private:
     const SphericalKerrSchild& solution_;
@@ -781,13 +821,14 @@ class SphericalKerrSchild : public AnalyticSolution<3_st>,
         const IntermediateComputer<DataType, Frame>& computer,
         gr::Tags::DerivDetSpatialMetric<3, Frame, DataType> /*meta*/);
 
-    tnsr::II<DataType, 3, Frame> get_var(
+    Scalar<DataType> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/);
+        gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/);
 
-    tnsr::ii<DataType, 3, Frame> get_var(
+    tnsr::I<DataType, 3, Frame> get_var(
         const IntermediateComputer<DataType, Frame>& computer,
-        gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/);
+        gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame,
+                                                    DataType> /*meta*/);
 
    private:
     // Here null_vector_0 is simply -1, but if you have a boosted solution,
