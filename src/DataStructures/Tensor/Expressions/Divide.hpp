@@ -179,6 +179,20 @@ struct Divide : public TensorExpression<
     }
   }
 
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    if constexpr (T1::height_relative_to_closest_tensor_leaf_in_subtree <=
+                  T2::height_relative_to_closest_tensor_leaf_in_subtree) {
+      return t1_.get_rhs_tensor_component_size();
+    } else {
+      return t2_.get_rhs_tensor_component_size();
+    }
+  }
+
   /// \brief Return the value of the component of the quotient tensor at a given
   /// multi-index
   ///

@@ -131,6 +131,15 @@ struct Negate
     }
   }
 
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    return t_.get_rhs_tensor_component_size();
+  }
+
   /// \brief Return the value of the component of the negated tensor expression
   /// at a given multi-index
   ///

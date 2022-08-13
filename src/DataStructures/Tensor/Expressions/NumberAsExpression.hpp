@@ -75,16 +75,8 @@ struct NumberAsExpression
   /// we will have already computed the subtree at the next lowest leg's
   /// starting point. This is just 0 because this expression is a leaf.
   static constexpr size_t num_ops_to_evaluate_primary_subtree = 0;
-  /// \brief If on the primary path, whether or not the expression is a starting
-  /// point of a leg
-  ///
-  /// \details
-  /// Note: it's especially important for `NumberAsExpression` to define this as
-  /// `false` because if we have a case where this kind of an expression is the
-  /// leaf of the first leg being evaluated in the overall tree, we don't want
-  /// to use a `double` to initialize/size one of our LHS tensor's components,
-  /// because things would break if the LHS tensor components are supposed to
-  /// be e.g. a `DataVector` with a specific size.
+  /// If on the primary path, whether or not the expression is a starting point
+  /// of a leg
   static constexpr bool is_primary_start = false;
   /// If on the primary path, whether or not the expression's child along the
   /// primary path is a subtree that contains a starting point of a leg along
@@ -110,6 +102,9 @@ struct NumberAsExpression
   template <typename LhsTensorIndices, typename LhsTensor>
   void assert_lhs_tensorindices_same_in_rhs(
       const gsl::not_null<LhsTensor*> lhs_tensor) const = delete;
+  // This expression is a non-`Tensor` leaf, so we should never try to get the
+  // size of a `Tensor` component from this expression.
+  size_t get_rhs_tensor_component_size() const = delete;
 
   /// \brief Returns the number represented by the expression
   ///
@@ -129,13 +124,10 @@ struct NumberAsExpression
     return number_;
   }
 
-  // This expression is a leaf but does not store any information related to the
-  // sizing of the tensor components, because it does not represent an actual
-  // expression with tensors. Therefore, this expression should never be used to
-  // initialize a LHS result tensor component. We would run into trouble if e.g.
-  // the tensor components in the equations are `DataVector`s, but then we
-  // initialize a LHS component using the `double` stored in this leaf
-  // expression on the primary path.
+  // This expression is a leaf and therefore will never be the start of a leg
+  // to evaluate in a split tree, which is enforced by
+  // `is_primary_start == false`. Therefore, this function should never be
+  // called on this expression type.
   template <typename ResultType>
   void evaluate_primary_subtree(
       ResultType&,

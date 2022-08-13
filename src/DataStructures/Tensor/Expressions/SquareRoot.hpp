@@ -140,6 +140,15 @@ struct SquareRoot
     }
   }
 
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    return t_.get_rhs_tensor_component_size();
+  }
+
   /// \brief Returns the square root of the component of the tensor evaluated
   /// from the contained tensor expression
   ///

@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -296,6 +297,15 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
     }
   }
 
+  /// \brief Get the size of a component from the `Tensor` contained by this
+  /// expression
+  ///
+  /// \return the size of a component from the `Tensor` contained by this
+  /// expression
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    return get_size((*t_)[0]);
+  }
+
   /// \brief Returns the value of the contained tensor's multi-index
   ///
   /// \param multi_index the multi-index of the tensor component to retrieve
@@ -315,21 +325,12 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
     return t_->get(multi_index);
   }
 
-  /// \brief If this expression is the start of a leg, update the LHS result
-  /// component to be the value of the component at the given multi-index of the
-  /// `Tensor` represented by the expression
-  ///
-  /// \param result_component the LHS tensor component to evaluate
-  /// \param multi_index the multi-index of the component of the `Tensor`
-  /// represented by the expression
-  SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
-      type& result_component,
-      const std::array<size_t, num_tensor_indices>& multi_index) const {
-    if constexpr (is_primary_start) {
-      // We want to evaluate the subtree for this expression
-      result_component = get(multi_index);
-    }
-  }
+  // This expression is a leaf and therefore will never be the start of a leg
+  // to evaluate in a split tree, which is enforced by
+  // `is_primary_start == false`. Therefore, this function should never be
+  // called on this expression type.
+  void evaluate_primary_subtree(
+      type&, const std::array<size_t, num_tensor_indices>&) const = delete;
 
   /// Retrieve the i'th entry of the Tensor being held
   SPECTRE_ALWAYS_INLINE type operator[](const size_t i) const {

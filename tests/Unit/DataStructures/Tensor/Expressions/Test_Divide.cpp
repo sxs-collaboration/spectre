@@ -83,6 +83,7 @@ void test_divide_double_denominator(const gsl::not_null<Generator*> generator,
 // The cases tested are:
 // - \f$L = R / S\f$
 // - \f$L = R / \sqrt{T^j{}_j}\f$
+// - \f$L = 1.0 / (R + R + R + R + R + R + R + R + R)\f$
 //
 // where \f$R\f$ is a `double` and \f$S\f$, \f$T\f$, and \f$L\f$ are tensors
 // with data type `double` or DataVector.
@@ -114,6 +115,14 @@ void test_divide_double_numerator(const gsl::not_null<Generator*> generator,
     trace_T += T.get(j, j);
   }
   CHECK_ITERABLE_APPROX(get(result2), -5.7 / sqrt(trace_T));
+
+  const Scalar<DataVector> R{{{{1.0}}}};
+  Scalar<DataVector> result3{};
+
+  // \f$L = 1.0 / (R + R + R + R + R + R + R + R + R)\f$
+  tenex::evaluate(make_not_null(&result3),
+                  1.0 / (R() + R() + R() + R() + R() + R() + R() + R() + R()));
+  CHECK(get(result3) == 1.0 / (9.0 * get(R)));
 }
 
 // \brief Test the division of a tensor expression over a rank 0 tensor

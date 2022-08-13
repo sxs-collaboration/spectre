@@ -463,6 +463,20 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     }
   }
 
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    if constexpr (T1::height_relative_to_closest_tensor_leaf_in_subtree <=
+                  T2::height_relative_to_closest_tensor_leaf_in_subtree) {
+      return t1_.get_rhs_tensor_component_size();
+    } else {
+      return t2_.get_rhs_tensor_component_size();
+    }
+  }
+
   /// \brief Return the second operand's multi-index given the first operand's
   /// multi-index
   ///
