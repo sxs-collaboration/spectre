@@ -208,6 +208,35 @@ It is recommended to install and use
 to use the full KDE window system) to visualize the output -- the larger graphs
 produced by templight are inefficient to render in the graphviz format.
 
+## Clang profiling
+
+With `clang >= 9`, you can generate a flame graph of what the compiler is
+spending its time on, including specific function instantiations, class
+instantiations, source file parsing, debug info generation, and function
+optimization. To do so, add `-ftime-trace` to the `cmake` option
+`-D CMAKE_CXX_FLAGS` in your `cmake` command for your build. Then, you can
+simply `make TargetName`. This will produce a `.json` for each `.cpp.o` that
+was compiled in the directory that the object file is stored. Note that these
+object and `.json` files are deep within the build directory. You can then load
+your `.json` of interest into `chrome://tracing`. Because our code base utilizes
+many templates and some compilation targets instantiate many types, classes, and
+functions, note that the flame graph for a particular compilation target may be
+a lot to visually navigate, click through, and analyze at a high level. Because
+of this, the tool described below can be very useful and more manageable for
+some analyses.
+
+The companion tool to the flame graph generation is the
+[ClangBuildAnalyzer](https://github.com/aras-p/ClangBuildAnalyzer). This is an
+open source tool that you can clone and run to give you profiling output
+similar to when you profile runtime code in that it identifies compilation hot
+spots for you. It will report things like "Here are the templates/functions
+that took the longest to instantiate/compile." Note that because many of our
+types can have very long names due to our templating, some class and function
+signatures will not fit in the default character limit of what is printed to the
+terminal. You can adjust the maximum character length printed by creating a
+`ClangBuildAnalyzer.ini` file in your working directory as described in the
+[ClangBuildAnalyzer](https://github.com/aras-p/ClangBuildAnalyzer) `readme.md`.
+
 ## Clang AST syntax generation
 
 There is a nice and poorly documented feature of the `clang++` compiler that it
