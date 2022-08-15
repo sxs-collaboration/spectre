@@ -23,6 +23,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonicityPreserving5.hpp"
+#include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -66,7 +67,16 @@ void MonotonicityPreserving5Prim::reconstruct(
         std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh) const {
-  reconstruct_prims_work(
+  FixedHashMap<maximum_number_of_neighbors(dim),
+               std::pair<Direction<dim>, ElementId<dim>>,
+               Variables<prims_to_reconstruct_tags>,
+               boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>
+      neighbor_variables_data{};
+  ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
+                                        neighbor_data, ghost_zone_size(),
+                                        subcell_mesh);
+
+  reconstruct_prims_work<prims_to_reconstruct_tags>(
       vars_on_lower_face, vars_on_upper_face,
       [this](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
              const auto& volume_vars, const auto& ghost_cell_vars,
@@ -76,8 +86,8 @@ void MonotonicityPreserving5Prim::reconstruct(
             ghost_cell_vars, subcell_extents, number_of_variables, alpha_,
             epsilon_);
       },
-      volume_prims, eos, element, neighbor_data, subcell_mesh,
-      ghost_zone_size());
+      volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
+      ghost_zone_size(), true);
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
@@ -92,7 +102,8 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
-  reconstruct_fd_neighbor_work(
+  reconstruct_fd_neighbor_work<prims_to_reconstruct_tags,
+                               prims_to_reconstruct_tags>(
       vars_on_face,
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
@@ -121,7 +132,7 @@ void MonotonicityPreserving5Prim::reconstruct_fd_neighbor(
             local_direction_to_reconstruct, alpha_, epsilon_);
       },
       subcell_volume_prims, eos, element, neighbor_data, subcell_mesh,
-      direction_to_reconstruct, ghost_zone_size());
+      direction_to_reconstruct, ghost_zone_size(), true);
 }
 
 bool operator==(const MonotonicityPreserving5Prim& lhs,

@@ -36,34 +36,50 @@ class EquationOfState;
 
 namespace grmhd::ValenciaDivClean::fd {
 /*!
- * \brief Reconstructs \f$\rho, p, u_i, B^i\f$, and \f$\Phi\f$, then computes
- * the Lorentz factor, upper spatial velocity, specific internal energy,
- * specific enthalpy, and the conserved variables. All results are written into
- * `vars_on_lower_face` and `vars_on_upper_face`.
+ * \brief Reconstructs the `PrimTagsForReconstruction` (usually
+ * \f$\rho, p, Wv^i, B^i\f$, and \f$\Phi\f$), and if `compute_conservatives` is
+ * true computes the Lorentz factor, upper spatial velocity, specific internal
+ * energy, specific enthalpy, and the conserved variables.
+ *
+ * All results are written into `vars_on_lower_face` and `vars_on_upper_face`.
+ *
+ * The reason the `PrimTagsForReconstruction` can be specified separately is
+ * because some variables might need separate reconstruction methods from
+ * others, e.g. to guarantee the reconstructed solution is positive.
  */
-template <typename PrimsTags, typename TagsList, size_t ThermodynamicDim,
-          typename F>
+template <typename PrimTagsForReconstruction, typename PrimsTagsVolume,
+          typename TagsList, size_t ThermodynamicDim, typename F,
+          typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
     gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
     gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
-    const F& reconstruct, const Variables<PrimsTags>& volume_prims,
+    const F& reconstruct, const Variables<PrimsTagsVolume>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
+        Variables<PrimsTagsSentByNeighbor>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
-    const Mesh<3>& subcell_mesh, size_t ghost_zone_size);
+    const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
+    bool compute_conservatives);
 
 /*!
- * \brief Reconstructs the mass density, velocity, and pressure, then computes
- * the specific internal energy and conserved variables. All results are written
- * into `vars_on_face`.
+ * \brief Reconstructs the `PrimTagsForReconstruction` and if
+ * `compute_conservatives` is `true`  computes the Lorentz factor, upper spatial
+ * velocity, specific internal energy, specific enthalpy, and the conserved
+ * variables.
+ *
+ * All results are written into `vars_on_face`.
  *
  * This is used on DG elements to reconstruct their subcell neighbors' solution
  * on the shared faces.
+ *
+ * The reason the `PrimTagsForReconstruction` can be specified separately is
+ * because some variables might need separate reconstruction methods from
+ * others, e.g. to guarantee the reconstructed solution is positiv
  */
-template <typename TagsList, typename PrimsTags, size_t ThermodynamicDim,
+template <typename PrimTagsForReconstruction, typename PrimsTagsSentByNeighbor,
+          typename TagsList, typename PrimsTags, size_t ThermodynamicDim,
           typename F0, typename F1>
 void reconstruct_fd_neighbor_work(
     gsl::not_null<Variables<TagsList>*> vars_on_face,
@@ -76,5 +92,5 @@ void reconstruct_fd_neighbor_work(
         std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    const size_t ghost_zone_size);
+    const size_t ghost_zone_size, bool compute_conservatives);
 }  // namespace grmhd::ValenciaDivClean::fd
