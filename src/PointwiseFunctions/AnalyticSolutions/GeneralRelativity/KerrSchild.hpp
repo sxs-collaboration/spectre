@@ -236,7 +236,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
   static constexpr Options::String help{
       "Black hole in Kerr-Schild coordinates"};
 
-  KerrSchild(double mass, Spin::type dimensionless_spin, Center::type center,
+  KerrSchild(double mass, const std::array<double, 3>& dimensionless_spin,
+             const std::array<double, 3>& center,
              const Options::Context& context = {});
 
   explicit KerrSchild(CkMigrateMessage* /*unused*/) {}
@@ -274,14 +275,12 @@ class KerrSchild : public AnalyticSolution<3_st>,
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
-  SPECTRE_ALWAYS_INLINE double mass() const { return mass_; }
-  SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>& center() const {
-    return center_;
-  }
-  SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>&
-  dimensionless_spin() const {
+  double mass() const { return mass_; }
+  const std::array<double, volume_dim>& center() const { return center_; }
+  const std::array<double, volume_dim>& dimensionless_spin() const {
     return dimensionless_spin_;
   }
+  bool zero_spin() const { return zero_spin_; }
 
   struct internal_tags {
     template <typename DataType, typename Frame = ::Frame::Inertial>
@@ -364,6 +363,8 @@ class KerrSchild : public AnalyticSolution<3_st>,
 
     IntermediateComputer(const KerrSchild& solution,
                          const tnsr::I<DataType, 3, Frame>& x);
+
+    const KerrSchild& solution() const { return solution_; }
 
     void operator()(
         const gsl::not_null<tnsr::I<DataType, 3, Frame>*> x_minus_center,
@@ -564,6 +565,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
       make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
   std::array<double, volume_dim> center_ =
       make_array<volume_dim>(std::numeric_limits<double>::signaling_NaN());
+  bool zero_spin_{};
 };
 
 SPECTRE_ALWAYS_INLINE bool operator==(const KerrSchild& lhs,
