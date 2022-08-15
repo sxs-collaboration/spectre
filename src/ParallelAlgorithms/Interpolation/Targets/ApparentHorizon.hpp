@@ -158,7 +158,7 @@ struct ApparentHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
       common_tags,
       tmpl::conditional_t<
           std::is_same_v<Frame, ::Frame::Inertial>, tmpl::list<>,
-          tmpl::list<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>>>;
+          tmpl::list<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>>>;
   using compute_tags = typename StrahlkorperTags::compute_items_tags<Frame>;
 
   template <typename DbTags, typename Metavariables>

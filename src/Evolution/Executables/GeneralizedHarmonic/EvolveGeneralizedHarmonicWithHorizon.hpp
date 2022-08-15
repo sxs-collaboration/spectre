@@ -88,7 +88,8 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>>;
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA,
+                                             ::Frame::Inertial>>;
   };
 
   using interpolation_target_tags = tmpl::list<AhA>;

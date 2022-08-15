@@ -46,7 +46,8 @@ namespace callbacks {
 ///
 /// For requirements on InterpolationTargetTag, see
 /// intrp::protocols::InterpolationTargetTag
-template <typename TagsToObserve, typename InterpolationTargetTag>
+template <typename TagsToObserve, typename InterpolationTargetTag,
+          typename HorizonFrame>
 struct ObserveSurfaceData
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   static constexpr double fill_invalid_points_with =
@@ -58,23 +59,21 @@ struct ObserveSurfaceData
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
-    const Strahlkorper<Frame::Inertial>& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+    const Strahlkorper<HorizonFrame>& strahlkorper =
+        get<StrahlkorperTags::Strahlkorper<HorizonFrame>>(box);
     const YlmSpherepack& ylm = strahlkorper.ylm_spherepack();
-    const std::array<DataVector, 2> theta_phi = ylm.theta_phi_points();
-    const DataVector& theta = theta_phi[0];
-    const DataVector& phi = theta_phi[1];
-    const DataVector& sin_theta = sin(theta);
-    const DataVector& radius = ylm.spec_to_phys(strahlkorper.coefficients());
+    const auto& inertial_strahlkorper_coords =
+        get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
 
-    // Output the inertial-frame coordinates.
+    // Output the inertial-frame coordinates of the Stralhlkorper.
+    // Note that these coordinates are not
+    // Spherepack-evenly-distributed over the inertial-frame sphere
+    // (they are Spherepack-evenly-distributed over the HorizonFrame
+    // sphere).
     std::vector<TensorComponent> tensor_components{
-        {"InertialCoordinates_x"s,
-         radius * sin_theta * cos(phi) + strahlkorper.expansion_center()[0]},
-        {"InertialCoordinates_y"s,
-         radius * sin_theta * sin(phi) + strahlkorper.expansion_center()[1]},
-        {"InertialCoordinates_z"s,
-         radius * cos(theta) + strahlkorper.expansion_center()[2]}};
+        {"InertialCoordinates_x"s, get<0>(inertial_strahlkorper_coords)},
+        {"InertialCoordinates_y"s, get<1>(inertial_strahlkorper_coords)},
+        {"InertialCoordinates_z"s, get<2>(inertial_strahlkorper_coords)}};
 
     // Output each tag if it is a scalar. Otherwise, throw a compile-time
     // error. This could be generalized to handle tensors of nonzero rank by
@@ -89,8 +88,7 @@ struct ObserveSurfaceData
                     "Each tag in TagsToObserve must be a Scalar<DataVector>. "
                     "This could be generalized if needed; see the code comment "
                     "above the static_assert.");
-      tensor_components.push_back(
-          {db::tag_name<Tag>(), get(get<Tag>(box))});
+      tensor_components.push_back({db::tag_name<Tag>(), get(get<Tag>(box))});
     });
 
     const std::string& surface_name =
