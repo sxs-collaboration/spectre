@@ -256,16 +256,6 @@ RUN ln -s $(which clang++-10) /usr/local/bin/clang++ \
 #
 # We build  with debug symbols to make debugging Charm++-interoperability
 # easier for people, and build with O2 to reduce build size.
-RUN git clone --single-branch --branch v6.10.2 --depth 1 \
-        https://github.com/UIUC-PPL/charm charm_6_10_2 \
-    && cd /work/charm_6_10_2 \
-    && git checkout v6.10.2 \
-    && ./build LIBS multicore-linux-x86_64 gcc \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
-    && ./build LIBS multicore-linux-x86_64 clang \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
-    && rm -r /work/charm_6_10_2/doc /work/charm_6_10_2/examples
-
 RUN wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/Charm/v7.0.0.patch
 
 RUN git clone --single-branch --branch v7.0.0 --depth 1 \
