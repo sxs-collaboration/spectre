@@ -27,6 +27,7 @@ spectre_target_headers(
   Minmod.hpp
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
+  NeighborDataAsVariables.hpp
   Reconstruct.hpp
   Reconstruct.tpp
   Unlimited.hpp
