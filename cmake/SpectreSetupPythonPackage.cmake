@@ -407,7 +407,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   string(TOLOWER "${TAGS}" TAGS)
 
   add_test(
-    NAME "\"${TEST_NAME}\""
+    NAME "${TEST_NAME}"
     COMMAND
     ${Python_EXECUTABLE}
     ${FILE}
@@ -432,7 +432,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
   # The fail regular expression is what Python.unittest returns when no
   # tests are found to be run. We treat this as a test failure.
   set_tests_properties(
-    "\"${TEST_NAME}\""
+    "${TEST_NAME}"
     PROPERTIES
     FAIL_REGULAR_EXPRESSION "Ran 0 test"
     TIMEOUT ${TIMEOUT}
