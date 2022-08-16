@@ -11,6 +11,7 @@
 #include <limits>
 
 #include "DataStructures/DataVector.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/Exceptions.hpp"
 
 namespace RootFinder {
@@ -38,7 +39,6 @@ namespace RootFinder {
  *
  * \requires Function `f` is invokable with a `double`
  *
- * \throws `std::domain_error` if the bounds do not bracket a root.
  * \throws `convergence_error` if the requested tolerance is not met after
  *                            `max_iterations` iterations.
  */
@@ -48,6 +48,11 @@ double toms748(const Function& f, const double lower_bound,
                const double f_at_upper_bound, const double absolute_tolerance,
                const double relative_tolerance,
                const size_t max_iterations = 100) {
+  if (f_at_lower_bound * f_at_upper_bound > 0.0) {
+    ERROR("Root not bracketed: "
+          "f(" << lower_bound << ") = " << f_at_lower_bound << ", "
+          "f(" << upper_bound << ") = " << f_at_upper_bound);
+  }
   ASSERT(relative_tolerance > std::numeric_limits<double>::epsilon(),
          "The relative tolerance is too small.");
 
@@ -109,8 +114,6 @@ double toms748(const Function& f, const double lower_bound,
  *
  * \requires Function `f` be callable with a `double` and a `size_t`
  *
- * \throws `std::domain_error` if, for any index, the bounds do not bracket a
- * root.
  * \throws `convergence_error` if, for any index, the requested tolerance is not
  * met after `max_iterations` iterations.
  */
