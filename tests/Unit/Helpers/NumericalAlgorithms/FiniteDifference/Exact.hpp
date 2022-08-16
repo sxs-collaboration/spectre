@@ -45,6 +45,7 @@ void test_reconstruction_is_exact_if_in_basis(
     const size_t max_degree, const size_t points_per_dimension,
     const size_t stencil_width, const F& invoke_recons,
     const F1& invoke_reconstruct_neighbor) {
+  CAPTURE(Dim);
   const size_t number_of_vars = 2;  // arbitrary, 2 is "cheap but not trivial"
 
   const Mesh<Dim> mesh{points_per_dimension, Spectral::Basis::FiniteDifference,
