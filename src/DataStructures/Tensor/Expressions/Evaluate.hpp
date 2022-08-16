@@ -155,6 +155,10 @@ void evaluate_impl(
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
   using rhs_tensorindex_list = tmpl::list<RhsTensorIndices...>;
 
+  static_assert(std::is_same_v<double, X> or std::is_same_v<DataVector, X>,
+                "TensorExpressions currently only support Tensors whose data "
+                "type is double or DataVector. It is possible to add support "
+                "for other data types that are supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in
@@ -322,6 +326,10 @@ void evaluate_impl(
   using lhs_tensorindex_list =
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
 
+  static_assert(std::is_same_v<double, X> or std::is_same_v<DataVector, X>,
+                "TensorExpressions currently only support Tensors whose data "
+                "type is double or DataVector. It is possible to add support "
+                "for other data types that are supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in
