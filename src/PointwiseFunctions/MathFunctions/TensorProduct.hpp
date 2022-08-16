@@ -23,10 +23,10 @@ class TensorProduct {
   TensorProduct(double scale,
                 std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>,
                            Dim>&& functions);
-
-  TensorProduct(const TensorProduct&) = delete;
+  TensorProduct() = default;
+  TensorProduct(const TensorProduct& other);
   TensorProduct(TensorProduct&&) = default;
-  TensorProduct& operator=(const TensorProduct&) = delete;
+  TensorProduct& operator=(const TensorProduct& other);
   TensorProduct& operator=(TensorProduct&&) = default;
   ~TensorProduct() = default;
 
@@ -43,6 +43,14 @@ class TensorProduct {
   tnsr::ii<T, Dim> second_derivatives(const tnsr::I<T, Dim>& x) const;
 
  private:
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const TensorProduct<LocalDim>& lhs,
+                         const TensorProduct<LocalDim>& rhs);
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator!=(const TensorProduct<LocalDim>& lhs,
+                         const TensorProduct<LocalDim>& rhs);
   double scale_{1.0};
   std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, Dim> functions_;
 };

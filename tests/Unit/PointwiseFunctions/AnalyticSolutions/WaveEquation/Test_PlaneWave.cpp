@@ -69,6 +69,10 @@ void check_solution(
     const std::array<DataVector, Dim + 1>& expected_second_derivs,
     const ScalarWave::Solutions::PlaneWave<DimSolution>& pw,
     const tnsr::I<DataVector, DimSolution>& x, const double t) {
+  CHECK_FALSE(pw != pw);
+  test_copy_semantics(pw);
+  auto pw_for_move = pw;
+  test_move_semantics(std::move(pw_for_move), pw);
   // expected_second_derivs is:
   // 0 -> d^2 psi / dt dx^(Dim-1)
   // 1-3 -> d^2 psi / dx^(Dim - 1) dx^i where i is in [0, 2]

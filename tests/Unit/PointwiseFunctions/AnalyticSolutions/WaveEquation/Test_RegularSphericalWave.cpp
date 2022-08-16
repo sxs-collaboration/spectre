@@ -42,6 +42,10 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
   const ScalarWave::Solutions::RegularSphericalWave solution{
       std::make_unique<MathFunctions::Gaussian<1, Frame::Inertial>>(1., 1.,
                                                                     0.)};
+  CHECK_FALSE(solution != solution);
+  test_copy_semantics(solution);
+  auto solution_for_move = solution;
+  test_move_semantics(std::move(solution_for_move), solution);
 
   const tnsr::I<DataVector, 3> x{std::array<DataVector, 3>{
       {DataVector({0., 1., 2., 3.}), DataVector({0., 0., 0., 0.}),

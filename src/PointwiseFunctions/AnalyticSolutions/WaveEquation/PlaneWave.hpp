@@ -85,8 +85,8 @@ class PlaneWave : public evolution::initial_data::InitialData,
   PlaneWave() = default;
   PlaneWave(std::array<double, Dim> wave_vector, std::array<double, Dim> center,
             std::unique_ptr<MathFunction<1, Frame::Inertial>> profile);
-  PlaneWave(const PlaneWave&) = delete;
-  PlaneWave& operator=(const PlaneWave&) = delete;
+  PlaneWave(const PlaneWave&);
+  PlaneWave& operator=(const PlaneWave&);
   PlaneWave(PlaneWave&&) = default;
   PlaneWave& operator=(PlaneWave&&) = default;
   ~PlaneWave() = default;
@@ -141,6 +141,15 @@ class PlaneWave : public evolution::initial_data::InitialData,
   void pup(PUP::er& p);
 
  private:
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const PlaneWave<LocalDim>& lhs,
+                         const PlaneWave<LocalDim>& rhs);
+  template <size_t LocalDim>
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator!=(const PlaneWave<LocalDim>& lhs,
+                         const PlaneWave<LocalDim>& rhs);
+
   template <typename T>
   T u(const tnsr::I<T, Dim>& x, double t) const;
 

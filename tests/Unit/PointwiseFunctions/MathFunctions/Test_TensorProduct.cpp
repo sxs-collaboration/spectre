@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
+#include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -140,6 +141,12 @@ void test_tensor_product(
   const auto coordinate_map = make_affine_map<VolumeDim>();
   const auto x = coordinate_map(logical_coordinates(mesh));
   MathFunctions::TensorProduct<VolumeDim> f(scale, std::move(functions));
+
+  CHECK_FALSE(f != f);
+  test_copy_semantics(f);
+  auto f_for_move = f;
+  test_move_semantics(std::move(f_for_move), f);
+
   CHECK_ITERABLE_APPROX(f(x), expected_value(x, powers, scale));
   CHECK_ITERABLE_APPROX(f.first_derivatives(x),
                         expected_first_derivs(x, powers, scale));
