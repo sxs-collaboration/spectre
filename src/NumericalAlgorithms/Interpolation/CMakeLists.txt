@@ -20,6 +20,7 @@ spectre_target_sources(
   PredictedZeroCrossing.cpp
   RegularGridInterpolant.cpp
   SpanInterpolator.cpp
+  ZeroCrossingPredictor.cpp
   )
 
 spectre_target_headers(
@@ -39,6 +40,7 @@ spectre_target_headers(
   PredictedZeroCrossing.hpp
   RegularGridInterpolant.hpp
   SpanInterpolator.hpp
+  ZeroCrossingPredictor.hpp
   )
 
 target_link_libraries(

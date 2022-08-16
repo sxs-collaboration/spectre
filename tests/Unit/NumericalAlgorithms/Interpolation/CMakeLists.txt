@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_RegularGridInterpolant.cpp
   Test_SendGhWorldtubeData.cpp
   Test_SpanInterpolators.cpp
+  Test_ZeroCrossingPredictor.cpp
   )
 
 add_test_library(
