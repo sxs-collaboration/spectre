@@ -154,6 +154,57 @@ Minkowski<Dim>::variables(
     const {
   return {make_with_value<Scalar<DataType>>(x, 0.)};
 }
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<
+    gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, DataType>>
+Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+                          tmpl::list<gr::Tags::DerivDetSpatialMetric<
+                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+  return {make_with_value<tnsr::i<DataType, Dim>>(x, 0.)};
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DataType>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const {
+  return {make_with_value<Scalar<DataType>>(x, 0.)};
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<
+    gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, DataType>>
+Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+                          tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
+                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+  return {make_with_value<tnsr::ijj<DataType, Dim>>(x, 0.)};
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<
+    gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
+Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+                          tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
+                              Dim, Frame::Inertial, DataType>> /*meta*/) const {
+  return {make_with_value<tnsr::Ijj<DataType, Dim>>(x, 0.)};
+}
+
+template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<
+    gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
+        Dim, Frame::Inertial, DataType>> /*meta*/) const {
+  return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
+}
+
 }  // namespace gr::Solutions
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -239,6 +290,36 @@ Minkowski<Dim>::variables(
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<                                                              \
           ::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>> /*meta*/)   \
+      const;                                                                   \
+  template tuples::TaggedTuple<gr::Tags::DerivDetSpatialMetric<                \
+      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::DerivDetSpatialMetric<DIM(data), Frame::Inertial,   \
+                                                 DTYPE(data)>> /*meta*/)       \
+      const;                                                                   \
+  template tuples::TaggedTuple<gr::Tags::SpatialChristoffelFirstKind<          \
+      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::SpatialChristoffelFirstKind<                        \
+          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
+  template tuples::TaggedTuple<gr::Tags::SpatialChristoffelSecondKind<         \
+      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::SpatialChristoffelSecondKind<                       \
+          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
+  template tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<    \
+      DIM(data), Frame::Inertial, DTYPE(data)>>                                \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<                  \
+          DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/) const;           \
+  template tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>> \
+  gr::Solutions::Minkowski<DIM(data)>::variables(                              \
+      const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
+      tmpl::list<gr::Tags::TraceExtrinsicCurvature<DTYPE(data)>> /*meta*/)     \
       const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))

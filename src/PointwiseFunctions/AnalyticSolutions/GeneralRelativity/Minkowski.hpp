@@ -42,6 +42,7 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   static constexpr Options::String help{
       "Minkowski solution to Einstein's Equations"};
 
+
   Minkowski() = default;
   Minkowski(const Minkowski& /*rhs*/) = default;
   Minkowski& operator=(const Minkowski& /*rhs*/) = default;
@@ -60,24 +61,26 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   using DerivSpatialMetric =
       ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial>;
-  template <typename DataType>
-  using tags = tmpl::list<
-      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>, gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
+
+  template <typename DataType, typename Frame = Frame::Inertial>
+  using tags = tmpl::flatten<tmpl::list<
+      typename AnalyticSolution<Dim>::template tags<DataType, Frame>,
+      gr::Tags::DerivDetSpatialMetric<Dim, Frame, DataType>,
+      gr::Tags::TraceExtrinsicCurvature<DataType>,
+      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame, DataType>,
+      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame, DataType>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame, DataType>>>;
+
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
                                          double t,
                                          tmpl::list<Tags...> /*meta*/) const {
-    static_assert(sizeof...(Tags) > 1,
-                  "Unrecognized tag requested.  See the function parameters "
-                  "for the tag.");
+    static_assert(
+        tmpl2::flat_all_v<
+            tmpl::list_contains_v<tags<DataType>, Tags>...>,
+        "At least one of the requested tags is not supported. The requested "
+        "tags are listed as template parameters of the `variables` function.");
+
     return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
@@ -168,12 +171,44 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
       tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>> /*meta*/) const;
 
   template <typename DataType>
+  tuples::TaggedTuple<
+      gr::Tags::DerivDetSpatialMetric<Dim, Frame::Inertial, DataType>>
+  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+            tmpl::list<gr::Tags::DerivDetSpatialMetric<
+                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+
+  template <typename DataType>
   tuples::TaggedTuple<::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>>
   variables(
       const tnsr::I<DataType, Dim>& x, double /*t*/,
       tmpl::list<::Tags::dt<gr::Tags::SqrtDetSpatialMetric<DataType>>> /*meta*/)
       const;
 
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::TraceExtrinsicCurvature<DataType>> variables(
+      const tnsr::I<DataType, Dim>& x, double /*t*/,
+      tmpl::list<gr::Tags::TraceExtrinsicCurvature<DataType>> /*meta*/) const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<
+      gr::Tags::SpatialChristoffelFirstKind<Dim, Frame::Inertial, DataType>>
+  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+            tmpl::list<gr::Tags::SpatialChristoffelFirstKind<
+                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<
+      gr::Tags::SpatialChristoffelSecondKind<Dim, Frame::Inertial, DataType>>
+  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+            tmpl::list<gr::Tags::SpatialChristoffelSecondKind<
+                Dim, Frame::Inertial, DataType>> /*meta*/) const;
+
+  template <typename DataType>
+  tuples::TaggedTuple<gr::Tags::TraceSpatialChristoffelSecondKind<
+      Dim, Frame::Inertial, DataType>>
+  variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+            tmpl::list<gr::Tags::TraceSpatialChristoffelSecondKind<
+                Dim, Frame::Inertial, DataType>> /*meta*/) const;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };

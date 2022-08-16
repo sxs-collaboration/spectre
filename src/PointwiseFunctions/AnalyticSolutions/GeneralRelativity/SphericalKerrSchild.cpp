@@ -14,7 +14,9 @@
 #include "DataStructures/Tensor/EagerMath/CrossProduct.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -937,6 +939,73 @@ void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
 }
 
 template <typename DataType, typename Frame>
+void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<tnsr::II<DataType, 3, Frame>*> inverse_spatial_metric,
+    const gsl::not_null<CachedBuffer*> cache,
+    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) const {
+  const auto& H = get(cache->get_var(*this, internal_tags::H<DataType>{}));
+  const auto& lapse_squared =
+      get(cache->get_var(*this, internal_tags::lapse_squared<DataType>{}));
+  const auto& l_upper =
+      cache->get_var(*this, internal_tags::l_upper<DataType, Frame>{});
+  const auto& inv_jacobian =
+      cache->get_var(*this, internal_tags::inv_jacobian<DataType, Frame>{});
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {  // Symmetry
+      inverse_spatial_metric->get(i, j) =
+          -2. * H * lapse_squared * l_upper.get(i + 1) * l_upper.get(j + 1);
+      for (size_t m = 0; m < 3; ++m) {
+        inverse_spatial_metric->get(i, j) +=
+            inv_jacobian.get(m, i) * inv_jacobian.get(m, j);
+      }
+    }
+  }
+}
+
+template <typename DataType, typename Frame>
+void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<tnsr::ii<DataType, 3, Frame>*> extrinsic_curvature,
+    const gsl::not_null<CachedBuffer*> cache,
+    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) const {
+  gr::extrinsic_curvature(
+      extrinsic_curvature, cache->get_var(*this, gr::Tags::Lapse<DataType>{}),
+      cache->get_var(*this, gr::Tags::Shift<3, Frame, DataType>{}),
+      cache->get_var(*this, DerivShift<DataType, Frame>{}),
+      cache->get_var(*this, gr::Tags::SpatialMetric<3, Frame, DataType>{}),
+      cache->get_var(*this,
+                     ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>{}),
+      cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{}));
+}
+
+template <typename DataType, typename Frame>
+void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<tnsr::ijj<DataType, 3, Frame>*>
+        spatial_christoffel_first_kind,
+    const gsl::not_null<CachedBuffer*> cache,
+    gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType> /*meta*/) const {
+  const auto& d_spatial_metric =
+      cache->get_var(*this, DerivSpatialMetric<DataType, Frame>{});
+  gr::christoffel_first_kind<3, Frame, IndexType::Spatial, DataType>(
+      spatial_christoffel_first_kind, d_spatial_metric);
+}
+
+template <typename DataType, typename Frame>
+void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(
+    const gsl::not_null<tnsr::Ijj<DataType, 3, Frame>*>
+        spatial_christoffel_second_kind,
+    const gsl::not_null<CachedBuffer*> cache,
+    gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/) const {
+  const auto& spatial_christoffel_first_kind = cache->get_var(
+      *this, gr::Tags::SpatialChristoffelFirstKind<3, Frame, DataType>{});
+  const auto& inverse_spatial_metric = cache->get_var(
+      *this, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{});
+  raise_or_lower_first_index<DataType, SpatialIndex<3, UpLo::Lo, Frame>,
+                             SpatialIndex<3, UpLo::Lo, Frame>>(
+      spatial_christoffel_second_kind, spatial_christoffel_first_kind,
+      inverse_spatial_metric);
+}
+
+template <typename DataType, typename Frame>
 tnsr::i<DataType, 3, Frame>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
@@ -1002,44 +1071,27 @@ SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
 }
 
 template <typename DataType, typename Frame>
-tnsr::II<DataType, 3, Frame>
+Scalar<DataType>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::InverseSpatialMetric<3, Frame, DataType> /*meta*/) {
-  const auto& H = get(get_var(computer, internal_tags::H<DataType>{}));
-  const auto& lapse_squared =
-      get(get_var(computer, internal_tags::lapse_squared<DataType>{}));
-  const auto& l_upper =
-      get_var(computer, internal_tags::l_upper<DataType, Frame>{});
-  const auto& inv_jacobian =
-      get_var(computer, internal_tags::inv_jacobian<DataType, Frame>{});
-
-  auto result = make_with_value<tnsr::II<DataType, 3, Frame>>(H, 0.);
-  for (size_t i = 0; i < 3; ++i) {
-    for (size_t j = i; j < 3; ++j) {  // Symmetry
-      result.get(i, j) -=
-          2. * H * lapse_squared * l_upper.get(i + 1) * l_upper.get(j + 1);
-      for (size_t m = 0; m < 3; ++m) {
-        result.get(i, j) += inv_jacobian.get(m, i) * inv_jacobian.get(m, j);
-      }
-    }
-  }
-  return result;
+    gr::Tags::TraceExtrinsicCurvature<DataType> /*meta*/) {
+  return trace(
+      get_var(computer, gr::Tags::ExtrinsicCurvature<3, Frame, DataType>{}),
+      get_var(computer, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{}));
 }
 
 template <typename DataType, typename Frame>
-tnsr::ii<DataType, 3, Frame>
+tnsr::I<DataType, 3, Frame>
 SphericalKerrSchild::IntermediateVars<DataType, Frame>::get_var(
     const IntermediateComputer<DataType, Frame>& computer,
-    gr::Tags::ExtrinsicCurvature<3, Frame, DataType> /*meta*/) {
-  return gr::extrinsic_curvature(
-      get_var(computer, gr::Tags::Lapse<DataType>{}),
-      get_var(computer, gr::Tags::Shift<3, Frame, DataType>{}),
-      get_var(computer, DerivShift<DataType, Frame>{}),
-      get_var(computer, gr::Tags::SpatialMetric<3, Frame, DataType>{}),
-      get_var(computer,
-              ::Tags::dt<gr::Tags::SpatialMetric<3, Frame, DataType>>{}),
-      get_var(computer, DerivSpatialMetric<DataType, Frame>{}));
+    gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame, DataType> /*meta*/) {
+  const auto& inverse_spatial_metric =
+      get_var(computer, gr::Tags::InverseSpatialMetric<3, Frame, DataType>{});
+  const auto& spatial_christoffel_second_kind = get_var(
+      computer, gr::Tags::SpatialChristoffelSecondKind<3, Frame, DataType>{});
+  return trace_last_indices<DataType, SpatialIndex<3, UpLo::Up, Frame>,
+                            SpatialIndex<3, UpLo::Lo, Frame>>(
+      spatial_christoffel_second_kind, inverse_spatial_metric);
 }
 
 bool operator==(const SphericalKerrSchild& lhs,
