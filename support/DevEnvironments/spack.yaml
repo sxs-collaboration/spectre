@@ -67,5 +67,6 @@ spack:
   - py-pyyaml
   - py-scipy
   - yaml-cpp@0.6.3
-  concretization: together
+  concretizer:
+    unify: true
   view: true
