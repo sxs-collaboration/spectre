@@ -42,21 +42,17 @@ struct System {
   using gradients_tags = gradient_variables;
 
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
-      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      gr::Tags::Lapse<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                     Frame::Inertial>,
       gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>,
       ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
                     tmpl::size_t<Dim>, Frame::Inertial>,
       gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
-      ::Tags::dt<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
-                    tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>>>;
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<volume_dim, Frame::Inertial,
+                                                  DataVector>,
+      gr::Tags::TraceExtrinsicCurvature<DataVector>>>;
 
   using compute_volume_time_derivative_terms = TimeDerivative<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
