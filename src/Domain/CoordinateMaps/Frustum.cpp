@@ -216,8 +216,10 @@ std::optional<std::array<double, 3>> Frustum::inverse(
     // larger than radius_ due to roundoff error, this 1.0e-4 margin
     // allows these points to still be inverted. Points much further outside
     // of this value are likely to not be invertible, so we return
-    // std::nullopt instead.
-    if (magnitude(physical_coords) > radius_ + 1.0e-4) {
+    // std::nullopt instead. Also, points below the lower bound are likely not
+    // invertible, so return std::nullopt in that case as well.
+    if (magnitude(physical_coords) > radius_ + 1.0e-4 or
+        physical_coords[2] < (sigma_z_ - delta_z_zeta_)) {
       return std::nullopt;
     }
     const double absolute_tolerance = 1.0e-12;

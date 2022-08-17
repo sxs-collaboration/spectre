@@ -522,10 +522,12 @@ void test_frustum_fail_equiangular() {
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const std::array<double, 3> test_mapped_point1{{0.0, 50.0, 9.0}};
   const std::array<double, 3> test_mapped_point2{{4.0, 4.0, 1.0}};
+  const std::array<double, 3> test_mapped_point3{{3.0, 3.0, 1.99}};
   const CoordinateMaps::Frustum equiangular_map(
       face_vertices, 2.0, 5.0, OrientationMap<3>{}, true, 1.0, false, 1.0, 1.0);
   CHECK(not equiangular_map.inverse(test_mapped_point1).has_value());
   CHECK(not equiangular_map.inverse(test_mapped_point2).has_value());
+  CHECK(not equiangular_map.inverse(test_mapped_point3).has_value());
 }
 }  // namespace
 
