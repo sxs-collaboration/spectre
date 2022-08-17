@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_ObjectLabel.cpp
   Test_ObserveCenters.cpp
   Test_StrahlkorperGr.cpp
+  Test_StrahlkorperCoordsInDifferentFrame.cpp
   Test_StrahlkorperInDifferentFrame.cpp
   Test_Tags.cpp
   )
