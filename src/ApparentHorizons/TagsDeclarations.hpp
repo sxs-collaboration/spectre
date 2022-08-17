@@ -66,4 +66,8 @@ template <typename Frame>
 struct DimensionlessSpinMagnitude;
 template <typename Frame>
 struct DimensionlessSpinMagnitudeCompute;
+template <typename Frame>
+struct DimensionfulSpinVector;
+template <typename MeasurementFrame, typename MetricDataFrame>
+struct DimensionfulSpinVectorCompute;
 }  // namespace StrahlkorperGr::Tags

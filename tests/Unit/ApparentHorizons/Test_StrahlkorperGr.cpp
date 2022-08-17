@@ -777,11 +777,10 @@ void test_spin_vector(
       horizon_radius_with_spin_on_z_axis, ylm_with_spin_on_z_axis, ylm, mass,
       dimensionless_spin);
 
-  const auto spin_vector = StrahlkorperGr::spin_vector(
-      magnitude(dimensionless_spin), area_element, std::move(radius), r_hat,
-      ricci_scalar, spin_function, strahlkorper);
-
-  CHECK_ITERABLE_APPROX(spin_vector, dimensionless_spin);
+  const auto spin_vector_taking_coords = StrahlkorperGr::spin_vector(
+      magnitude(dimensionless_spin), area_element, ricci_scalar, spin_function,
+      strahlkorper, cart_coords);
+  CHECK_ITERABLE_APPROX(spin_vector_taking_coords, dimensionless_spin);
 }
 
 template <typename Solution, typename Fr>

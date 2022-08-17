@@ -415,13 +415,15 @@ double dimensionful_spin_magnitude(
  * \ingroup SurfacesGroup
  * \brief Spin vector of a 2D `Strahlkorper`.
  *
- * \details Computes the spin vector of a `Strahlkorper` in a `Frame`, such as
- * `Frame::Inertial`. The result is a `std::array<double, 3>` containing the
- * Cartesian components of the spin vector, whose magnitude is
- * `spin_magnitude`. This function will return the dimensionless spin
- * components if `spin_magnitude` is the dimensionless spin magnitude, and
- * it will return the dimensionful spin components if `spin_magnitude` is
- * the dimensionful spin magnitude. The spin vector is given by
+ * \details Computes the spin vector of a `Strahlkorper` in a
+ * `MeasurementFrame`, such as `Frame::Inertial`. The result is a
+ * `std::array<double, 3>` containing the Cartesian components (in
+ * `MeasurementFrame`) of the spin vector whose magnitude is
+ * `spin_magnitude`. `spin_vector` will return the dimensionless spin
+ * components if `spin_magnitude` is the dimensionless spin magnitude,
+ * and it will return the dimensionful spin components if
+ * `spin_magnitude` is the dimensionful spin magnitude. The spin
+ * vector is given by
  * a surface integral over the horizon \f$\mathcal{H}\f$ [Eq. (25) of
  * \cite Owen2017yaj]:
  * \f$S^i = \frac{S}{N} \oint_\mathcal{H} dA \Omega (x^i - x^i_0 - x^i_R) \f$,
@@ -429,34 +431,55 @@ double dimensionful_spin_magnitude(
  * \f$N\f$ is a normalization factor enforcing \f$\delta_{ij}S^iS^j = S\f$,
  * \f$dA\f$ is the area element (via `StrahlkorperGr::area_element`),
  * \f$\Omega\f$ is the "spin function" (via `StrahlkorperGr::spin_function`),
- * \f$x^i\f$ are the `Frame` coordinates of points on the `Strahlkorper`,
- * \f$x^i_0\f$ are the `Frame` coordinates of the center of the Strahlkorper,
+ * \f$x^i\f$ are the `MeasurementFrame` coordinates of points on
+ * the `Strahlkorper`,
+ * \f$x^i_0\f$ are the `MeasurementFrame` coordinates of the center
+ * of the Strahlkorper,
  * \f$x^i_R = \frac{1}{8\pi}\oint_\mathcal{H} dA (x^i - x^i_0) R \f$,
  * and \f$R\f$ is the intrinsic Ricci scalar of the `Strahlkorper`
  * (via `StrahlkorperGr::ricci_scalar`).
  * Note that measuring positions on the horizon relative to
  * \f$x^i_0 + x^i_R\f$ instead of \f$x^i_0\f$ ensures that the mass dipole
- * moment vanishes. Also note that \f$x^i - x^i_0\f$ is
- * is the product of `StrahlkorperTags::Rhat` and `StrahlkorperTags::Radius`.
+ * moment vanishes.
+ *
+ * \param result The computed spin vector in `MeasurementFrame`.
+ * \param spin_magnitude The spin magnitude.
+ * \param area_element The area element on `strahlkorper`'s
+ *        collocation points.
+ * \param ricci_scalar The intrinsic ricci scalar on `strahlkorper`'s
+ *        collocation points.
+ * \param spin_function The spin function on `strahlkorper`'s
+ *        collocation points.
+ * \param strahlkorper The Strahlkorper in the `MetricDataFrame` frame.
+ * \param measurement_frame_coords The Cartesian coordinates of `strahlkorper`'s
+ * collocation points, mapped to `MeasurementFrame`.
+ *
+ * Note that `spin_vector` uses two frames: the Strahlkorper and all of the
+ * metric quantities are in `MetricDataFrame` and are used for doing integrals,
+ * but the `measurement_frame_coordinates` are in `MeasurementFrame` and are
+ * used for making sure the result is in the appropriate frame.  The two frames
+ * `MeasurementFrame` and `MetricDataFrame` may or may not be the same.
+ * In principle, spin_vector could be written using only a single frame
+ * (`MeasurementFrame`) but that would require that the metric quantities
+ * are known on the collocation points of a Strahlkorper in `MeasurementFrame`,
+ * which would involve more interpolation.
  */
+template <typename MetricDataFrame, typename MeasurementFrame>
+void spin_vector(
+    const gsl::not_null<std::array<double, 3>*> result, double spin_magnitude,
+    const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords);
 
-template <typename Frame>
-void spin_vector(const gsl::not_null<std::array<double, 3>*> result,
-                 double spin_magnitude, const Scalar<DataVector>& area_element,
-                 const Scalar<DataVector>& radius,
-                 const tnsr::i<DataVector, 3, Frame>& r_hat,
-                 const Scalar<DataVector>& ricci_scalar,
-                 const Scalar<DataVector>& spin_function,
-                 const Strahlkorper<Frame>& strahlkorper);
-
-template <typename Frame>
-std::array<double, 3> spin_vector(double spin_magnitude,
-                                  const Scalar<DataVector>& area_element,
-                                  const Scalar<DataVector>& radius,
-                                  const tnsr::i<DataVector, 3, Frame>& r_hat,
-                                  const Scalar<DataVector>& ricci_scalar,
-                                  const Scalar<DataVector>& spin_function,
-                                  const Strahlkorper<Frame>& strahlkorper);
+template <typename MetricDataFrame, typename MeasurementFrame>
+std::array<double, 3> spin_vector(
+    double spin_magnitude, const Scalar<DataVector>& area_element,
+    const Scalar<DataVector>& ricci_scalar,
+    const Scalar<DataVector>& spin_function,
+    const Strahlkorper<MetricDataFrame>& strahlkorper,
+    const tnsr::I<DataVector, 3, MeasurementFrame>& measurement_frame_coords);
 
 /*!
  * \ingroup SurfacesGroup

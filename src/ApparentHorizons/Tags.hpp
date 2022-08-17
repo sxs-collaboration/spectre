@@ -462,22 +462,22 @@ struct DimensionfulSpinVector : db::SimpleTag {
 };
 
 /// Computes the dimensionful spin angular momentum vector.
-template <typename Frame>
-struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<Frame>,
+template <typename MeasurementFrame, typename MetricDataFrame>
+struct DimensionfulSpinVectorCompute : DimensionfulSpinVector<MeasurementFrame>,
                                        db::ComputeTag {
-  using base = DimensionfulSpinVector<Frame>;
+  using base = DimensionfulSpinVector<MeasurementFrame>;
   using return_type = std::array<double, 3>;
   static constexpr auto function = static_cast<void (*)(
       const gsl::not_null<std::array<double, 3>*>, double,
       const Scalar<DataVector>&, const Scalar<DataVector>&,
-      const tnsr::i<DataVector, 3, Frame>&, const Scalar<DataVector>&,
-      const Scalar<DataVector>&, const Strahlkorper<Frame>&)>(
-      &StrahlkorperGr::spin_vector);
+      const Scalar<DataVector>&, const Strahlkorper<MetricDataFrame>&,
+      const tnsr::I<DataVector, 3, MeasurementFrame>&)>(
+      &StrahlkorperGr::spin_vector<MetricDataFrame, MeasurementFrame>);
   using argument_tags =
-      tmpl::list<DimensionfulSpinMagnitude, AreaElement<Frame>,
-                 StrahlkorperTags::Radius<Frame>, StrahlkorperTags::Rhat<Frame>,
+      tmpl::list<DimensionfulSpinMagnitude, AreaElement<MetricDataFrame>,
                  StrahlkorperTags::RicciScalar, SpinFunction,
-                 StrahlkorperTags::Strahlkorper<Frame>>;
+                 StrahlkorperTags::Strahlkorper<MetricDataFrame>,
+                 StrahlkorperTags::CartesianCoords<MeasurementFrame>>;
 };
 
 /// The Christodoulou mass, which is a function of the dimensionful spin
