@@ -220,7 +220,7 @@ struct ArrayComponent {
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
     // we only want one array component for this test.
-    array_proxy[0].insert(global_cache, {}, 0);
+    array_proxy[0].insert(global_cache, tuples::TaggedTuple<>{}, 0);
   }
 
   static void execute_next_phase(

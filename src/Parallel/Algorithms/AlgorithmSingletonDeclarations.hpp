@@ -5,7 +5,7 @@
 
 #include "Parallel/ArrayIndex.hpp"
 
-#include "Parallel/Algorithms/AlgorithmArray.decl.h"
+#include "Parallel/Algorithms/AlgorithmSingleton.decl.h"
 
 namespace Parallel {
 namespace Algorithms {
@@ -30,16 +30,19 @@ namespace Algorithms {
  */
 struct Singleton {
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  using cproxy = CProxy_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
+  using cproxy =
+      CProxy_AlgorithmSingleton<ParallelComponent, SpectreArrayIndex>;
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  using cbase = CBase_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
+  using cbase = CBase_AlgorithmSingleton<ParallelComponent, SpectreArrayIndex>;
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  using algorithm_type = AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
+  using algorithm_type =
+      AlgorithmSingleton<ParallelComponent, SpectreArrayIndex>;
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
-  using ckindex = CkIndex_AlgorithmArray<ParallelComponent, SpectreArrayIndex>;
+  using ckindex =
+      CkIndex_AlgorithmSingleton<ParallelComponent, SpectreArrayIndex>;
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
   using cproxy_section = void;

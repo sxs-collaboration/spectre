@@ -25,7 +25,8 @@ class Callback : public PUP::able {
   Callback& operator=(const Callback&) = default;
   Callback(Callback&&) = default;
   Callback& operator=(Callback&&) = default;
-  virtual ~Callback() = default;
+  ~Callback() override = default;
+  explicit Callback(CkMigrateMessage* msg) : PUP::able(msg) {}
   virtual void invoke() = 0;
 };
 
@@ -35,8 +36,12 @@ template <typename SimpleAction, typename Proxy, typename... Args>
 class SimpleActionCallback : public Callback {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
+  SimpleActionCallback() = default;
   SimpleActionCallback(Proxy proxy, Args&&... args)
-      : proxy_(proxy), args_(std::make_tuple<Args...>(args...)) {}
+      : proxy_(proxy),
+        args_(std::make_tuple<Args...>(std::forward<Args>(args)...)) {}
+  SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
+  using PUP::able::register_constructor;
   void invoke() override {
     std::apply(
         [this](auto&&... args) {
@@ -50,8 +55,8 @@ class SimpleActionCallback : public Callback {
   }
 
  private:
-  Proxy proxy_;
-  std::tuple<Args...> args_;
+  Proxy proxy_{};
+  std::tuple<Args...> args_{};
 };
 
 /// Wraps a call to a simple action without arguments.
@@ -59,13 +64,16 @@ template <typename SimpleAction, typename Proxy>
 class SimpleActionCallback<SimpleAction, Proxy> : public Callback {
  public:
   WRAPPED_PUPable_decl_template(SimpleActionCallback);  // NOLINT
+  SimpleActionCallback() = default;
   SimpleActionCallback(Proxy proxy) : proxy_(proxy) {}
+  SimpleActionCallback(CkMigrateMessage* msg) : Callback(msg) {}
+  using PUP::able::register_constructor;
   void invoke() override { Parallel::simple_action<SimpleAction>(proxy_); }
 
   void pup(PUP::er& p) override { p | proxy_; }
 
  private:
-  Proxy proxy_;
+  Proxy proxy_{};
 };
 
 /// Wraps a call to perform_algorithm.
@@ -73,12 +81,15 @@ template <typename Proxy>
 class PerformAlgorithmCallback : public Callback {
  public:
   WRAPPED_PUPable_decl_template(PerformAlgorithmCallback);  // NOLINT
+  PerformAlgorithmCallback() = default;
   PerformAlgorithmCallback(Proxy proxy) : proxy_(proxy) {}
+  PerformAlgorithmCallback(CkMigrateMessage* msg) : Callback(msg) {}
+  using PUP::able::register_constructor;
   void invoke() override { proxy_.perform_algorithm(); }
   void pup(PUP::er& p) override { p | proxy_; }
 
  private:
-  Proxy proxy_;
+  Proxy proxy_{};
 };
 
 /// \cond

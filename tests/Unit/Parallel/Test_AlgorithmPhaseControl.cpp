@@ -146,7 +146,7 @@ struct ComponentAlpha {
     auto& array_proxy =
         Parallel::get_parallel_component<ComponentAlpha>(local_cache);
 
-    array_proxy[0].insert(global_cache, {}, 0);
+    array_proxy[0].insert(global_cache, tuples::TaggedTuple<>{}, 0);
     array_proxy.doneInserting();
   }
 

@@ -99,6 +99,8 @@ function is not invoked via a proxy, which we do not allow.")
 add_algorithm_test("AlgorithmNodelock")
 add_algorithm_test("AlgorithmParallel")
 add_algorithm_test("AlgorithmReduction")
+add_algorithm_test("Callback")
+add_algorithm_test("DynamicInsertion")
 add_algorithm_test("PhaseChangeMain")
 add_algorithm_test(
   "SectionReductions"
