@@ -49,12 +49,14 @@ namespace TestHelpers::fd::reconstruction {
  *  const Index<Dim>& volume_extents, const size_t number_of_variables)
  * \endcode
  */
-template <size_t Dim, typename ReconsFunction, typename F1>
+template <size_t Dim, typename ReconsFunction, typename F1,
+          typename... ExtraPyArgs>
 void test_with_python(const Index<Dim>& extents, const size_t stencil_width,
                       const std::string& python_test_file,
                       const std::string& python_function,
                       const ReconsFunction& recons_function,
-                      const F1& invoke_reconstruct_neighbor) {
+                      const F1& invoke_reconstruct_neighbor,
+                      const ExtraPyArgs&... extra_py_args) {
   CAPTURE(extents);
   CAPTURE(Dim);
   MAKE_GENERATOR(gen);
@@ -203,7 +205,7 @@ void test_with_python(const Index<Dim>& extents, const size_t stencil_width,
     const auto result =
         pypp::call<std::vector<std::vector<std::vector<double>>>>(
             python_test_file, python_function, var, extents_with_ghosts_vector,
-            Dim);
+            Dim, extra_py_args...);
 
     const std::vector<std::vector<double>>& python_recons_on_lower = result[0];
     const std::vector<std::vector<double>>& python_recons_on_upper = result[1];
