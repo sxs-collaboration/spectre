@@ -360,8 +360,10 @@ void reconstruct_neighbor(
              << ". Note that we pass the Side in as a template parameter to "
                 "avoid runtime branches in tight loops.");
   static_assert(Reconstructor::stencil_width() == 3 or
-                    Reconstructor::stencil_width() == 5,
-                "currently only support stencil widths of 3 and 5.");
+                    Reconstructor::stencil_width() == 5 or
+                    Reconstructor::stencil_width() == 7 or
+                    Reconstructor::stencil_width() == 9,
+                "currently only support stencil widths of 3, 5, 7, and 9.");
 
   constexpr size_t index_of_pointwise = LowerOrUpperSide == Side::Upper ? 0 : 1;
   constexpr size_t offset_into_u_to_reconstruct =

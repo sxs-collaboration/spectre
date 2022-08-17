@@ -18,6 +18,7 @@
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "NumericalAlgorithms/FiniteDifference/FallbackReconstructorType.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -84,6 +85,22 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
         "right value, but anything in the range of 3-5 is 'reasonable'. "
         "Smaller values allow for more oscillations."};
   };
+  struct Alpha7 {
+    using type = Options::Auto<double, Options::AutoLabel::None>;
+    static constexpr Options::String help = {
+        "The alpha parameter in the Persson convergence measurement. 4 is the "
+        "right value, but anything in the range of 3-5 is 'reasonable'. "
+        "Smaller values allow for more oscillations. If not specified then "
+        "7th-order reconstruction is not used."};
+  };
+  struct Alpha9 {
+    using type = Options::Auto<double, Options::AutoLabel::None>;
+    static constexpr Options::String help = {
+        "The alpha parameter in the Persson convergence measurement. 4 is the "
+        "right value, but anything in the range of 3-5 is 'reasonable'. "
+        "Smaller values allow for more oscillations. If not specified then "
+        "9th-order reconstruction is not used."};
+  };
   struct LowOrderReconstructor {
     using type = FallbackReconstructorType;
     static constexpr Options::String help = {
@@ -91,7 +108,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
         "isn't okay."};
   };
 
-  using options = tmpl::list<Alpha5, LowOrderReconstructor>;
+  using options = tmpl::list<Alpha5, Alpha7, Alpha9, LowOrderReconstructor>;
 
   static constexpr Options::String help{
       "Positivity-preserving adaptive-order reconstruction."};
@@ -108,7 +125,9 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
   ~PositivityPreservingAdaptiveOrderPrim() override = default;
 
   PositivityPreservingAdaptiveOrderPrim(
-      double alpha_5, FallbackReconstructorType low_order_reconstructor,
+      double alpha_5, std::optional<double> alpha_7,
+      std::optional<double> alpha_9,
+      FallbackReconstructorType low_order_reconstructor,
       const Options::Context& context = {});
 
   explicit PositivityPreservingAdaptiveOrderPrim(CkMigrateMessage* msg);
@@ -120,7 +139,11 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
 
   void pup(PUP::er& p) override;
 
-  size_t ghost_zone_size() const override { return 3; }
+  size_t ghost_zone_size() const override {
+    return eight_to_the_alpha_9_.has_value()
+               ? 5
+               : (six_to_the_alpha_7_.has_value() ? 4 : 3);
+  }
 
   using reconstruction_argument_tags = tmpl::list<
       ::Tags::Variables<hydro::grmhd_tags<DataVector>>,
@@ -164,6 +187,8 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
                          const PositivityPreservingAdaptiveOrderPrim& rhs);
 
   double four_to_the_alpha_5_ = std::numeric_limits<double>::signaling_NaN();
+  std::optional<double> six_to_the_alpha_7_{};
+  std::optional<double> eight_to_the_alpha_9_{};
   FallbackReconstructorType low_order_reconstructor_ =
       FallbackReconstructorType::None;
 
@@ -171,31 +196,35 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
                        gsl::not_null<std::array<gsl::span<double>, dim>*>,
                        const gsl::span<const double>&,
                        const DirectionMap<dim, gsl::span<const double>>&,
-                       const Index<dim>&, size_t, double) = nullptr;
+                       const Index<dim>&, size_t, double, double,
+                       double) = nullptr;
   void (*reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const double&, const double&) = nullptr;
   void (*reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
                                       const DataVector&, const DataVector&,
                                       const Index<dim>&, const Index<dim>&,
-                                      const Direction<dim>&,
-                                      const double&) = nullptr;
+                                      const Direction<dim>&, const double&,
+                                      const double&, const double&) = nullptr;
   void (*pp_reconstruct_)(gsl::not_null<std::array<gsl::span<double>, dim>*>,
                           gsl::not_null<std::array<gsl::span<double>, dim>*>,
                           const gsl::span<const double>&,
                           const DirectionMap<dim, gsl::span<const double>>&,
-                          const Index<dim>&, size_t, double) = nullptr;
+                          const Index<dim>&, size_t, double, double,
+                          double) = nullptr;
   void (*pp_reconstruct_lower_neighbor_)(gsl::not_null<DataVector*>,
                                          const DataVector&, const DataVector&,
                                          const Index<dim>&, const Index<dim>&,
-                                         const Direction<dim>&,
+                                         const Direction<dim>&, const double&,
+                                         const double&,
                                          const double&) = nullptr;
   void (*pp_reconstruct_upper_neighbor_)(gsl::not_null<DataVector*>,
                                          const DataVector&, const DataVector&,
                                          const Index<dim>&, const Index<dim>&,
-                                         const Direction<dim>&,
+                                         const Direction<dim>&, const double&,
+                                         const double&,
                                          const double&) = nullptr;
 };
 
