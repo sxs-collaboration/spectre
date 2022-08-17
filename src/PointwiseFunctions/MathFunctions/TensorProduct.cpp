@@ -20,6 +20,24 @@ TensorProduct<Dim>::TensorProduct(
     : scale_(scale), functions_(std::move(functions)) {}
 
 template <size_t Dim>
+TensorProduct<Dim>::TensorProduct(const TensorProduct<Dim>& other)
+    : scale_(other.scale_) {
+  for (size_t i = 0; i < Dim; ++i) {
+    functions_.at(i) = other.functions_.at(i)->get_clone();
+  }
+}
+
+template <size_t Dim>
+TensorProduct<Dim>& TensorProduct<Dim>::operator=(
+    const TensorProduct<Dim>& other) {
+  scale_ = other.scale_;
+  for (size_t i = 0; i < Dim; ++i) {
+    functions_.at(i) = other.functions_.at(i)->get_clone();
+  }
+  return *this;
+}
+
+template <size_t Dim>
 template <typename T>
 Scalar<T> TensorProduct<Dim>::operator()(const tnsr::I<T, Dim>& x) const {
   auto result = make_with_value<Scalar<T>>(x, scale_);
@@ -71,6 +89,18 @@ tnsr::ii<T, Dim> TensorProduct<Dim>::second_derivatives(
   }
   return result;
 }
+template <size_t Dim>
+bool operator==(const TensorProduct<Dim>& lhs, const TensorProduct<Dim>& rhs) {
+  bool are_equal = lhs.scale_ == rhs.scale_;
+  for (size_t i = 0; i < Dim; ++i) {
+    are_equal = are_equal and *lhs.functions_.at(i) == *rhs.functions_.at(i);
+  }
+  return are_equal;
+}
+template <size_t Dim>
+bool operator!=(const TensorProduct<Dim>& lhs, const TensorProduct<Dim>& rhs) {
+  return !(lhs == rhs);
+}
 
 }  // namespace MathFunctions
 
@@ -96,11 +126,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                        \
-  template MathFunctions::TensorProduct<DIM(data)>::TensorProduct(  \
-      double scale,                                                 \
-      std::array<std::unique_ptr<MathFunction<1, Frame::Inertial>>, \
-                 DIM(data)>&& functions);
+#define INSTANTIATE(_, data)                               \
+  template class MathFunctions::TensorProduct<DIM(data)>;  \
+  template bool MathFunctions::operator==(                 \
+      const MathFunctions::TensorProduct<DIM(data)>& lhs,  \
+      const MathFunctions::TensorProduct<DIM(data)>& rhs); \
+  template bool MathFunctions::operator!=(                 \
+      const MathFunctions::TensorProduct<DIM(data)>& lhs,  \
+      const MathFunctions::TensorProduct<DIM(data)>& rhs);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

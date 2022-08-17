@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <pup.h>
 
 #include "Options/Options.hpp"
@@ -63,11 +64,7 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   Gaussian(double amplitude, double width, const std::array<double, 1>& center);
 
   Gaussian() = default;
-  ~Gaussian() override = default;
-  Gaussian(const Gaussian& /*rhs*/) = delete;
-  Gaussian& operator=(const Gaussian& /*rhs*/) = delete;
-  Gaussian(Gaussian&& /*rhs*/) = default;
-  Gaussian& operator=(Gaussian&& /*rhs*/) = default;
+  std::unique_ptr<MathFunction<1, Fr>> get_clone() const override;
 
   double operator()(const double& x) const override;
   DataVector operator()(const DataVector& x) const override;
@@ -85,6 +82,8 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   DataVector third_deriv(const DataVector& x) const override;
   using MathFunction<1, Fr>::third_deriv;
 
+  bool operator==(const MathFunction<1, Fr>& other) const override;
+  bool operator!=(const MathFunction<1, Fr>& other) const override;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
@@ -92,12 +91,6 @@ class Gaussian<1, Fr> : public MathFunction<1, Fr> {
   double amplitude_{};
   double inverse_width_{};
   double center_{};
-  friend bool operator==(const Gaussian<1, Fr>& lhs,
-                         const Gaussian<1, Fr>& rhs) {
-    return lhs.amplitude_ == rhs.amplitude_ and
-           lhs.inverse_width_ == rhs.inverse_width_ and
-           lhs.center_ == rhs.center_;
-  }
 
   template <typename T>
   T apply_call_operator(const T& x) const;
@@ -150,13 +143,8 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
 
   Gaussian(double amplitude, double width,
            const std::array<double, VolumeDim>& center);
-
   Gaussian() = default;
-  ~Gaussian() override = default;
-  Gaussian(const Gaussian& /*rhs*/) = delete;
-  Gaussian& operator=(const Gaussian& /*rhs*/) = delete;
-  Gaussian(Gaussian&& /*rhs*/) = default;
-  Gaussian& operator=(Gaussian&& /*rhs*/) = default;
+  std::unique_ptr<MathFunction<VolumeDim, Fr>> get_clone() const override;
 
   Scalar<double> operator()(
       const tnsr::I<double, VolumeDim, Fr>& x) const override;
@@ -178,6 +166,8 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   tnsr::iii<DataVector, VolumeDim, Fr> third_deriv(
       const tnsr::I<DataVector, VolumeDim, Fr>& x) const override;
 
+  bool operator==(const MathFunction<VolumeDim, Fr>& other) const override;
+  bool operator!=(const MathFunction<VolumeDim, Fr>& other) const override;
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override;
 
@@ -185,11 +175,6 @@ class Gaussian : public MathFunction<VolumeDim, Fr> {
   double amplitude_{};
   double inverse_width_{};
   std::array<double, VolumeDim> center_{};
-  friend bool operator==(const Gaussian& lhs, const Gaussian& rhs) {
-    return lhs.amplitude_ == rhs.amplitude_ and
-           lhs.inverse_width_ == rhs.inverse_width_ and
-           lhs.center_ == rhs.center_;
-  }
 
   template <typename T>
   tnsr::I<T, VolumeDim, Fr> centered_coordinates(

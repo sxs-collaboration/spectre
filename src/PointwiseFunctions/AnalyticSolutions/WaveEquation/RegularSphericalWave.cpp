@@ -28,6 +28,16 @@ RegularSphericalWave::RegularSphericalWave(
 RegularSphericalWave::RegularSphericalWave(CkMigrateMessage* msg)
     : InitialData(msg) {}
 
+RegularSphericalWave::RegularSphericalWave(const RegularSphericalWave& other)
+    : evolution::initial_data::InitialData(other),
+      profile_(other.profile_->get_clone()) {}
+
+RegularSphericalWave& RegularSphericalWave::operator=(
+    const RegularSphericalWave& other) {
+  profile_ = other.profile_->get_clone();
+  return *this;
+}
+
 tuples::TaggedTuple<Tags::Psi, Tags::Pi, Tags::Phi<3>>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
@@ -108,6 +118,14 @@ RegularSphericalWave::variables(
   return dt_variables;
 }
 
+bool operator==(const RegularSphericalWave& lhs,
+                const RegularSphericalWave& rhs) {
+  return *(lhs.profile_) == *(rhs.profile_);
+}
+bool operator!=(const RegularSphericalWave& lhs,
+                const RegularSphericalWave& rhs) {
+  return not(lhs == rhs);
+}
 void RegularSphericalWave::pup(PUP::er& p) {
   InitialData::pup(p);
   p | profile_;

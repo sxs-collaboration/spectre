@@ -13,6 +13,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/MathFunctions/TestHelpers.hpp"
 #include "Parallel/PupStlCpp11.hpp"
+#include "PointwiseFunctions/MathFunctions/Gaussian.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/Sinusoid.hpp"
 
@@ -43,6 +44,13 @@ void test_sinusoid_random(const DataType& used_for_size) {
   const double phase = real_dis(gen);
 
   MathFunctions::Sinusoid<VolumeDim, Fr> sinusoid{amplitude, wavenumber, phase};
+  const MathFunctions::Gaussian<VolumeDim, Fr> gaussian{};
+  CHECK_FALSE(sinusoid == *(gaussian.get_clone()));
+  CHECK(sinusoid == *(sinusoid.get_clone()));
+  CHECK_FALSE(sinusoid != sinusoid);
+  test_copy_semantics(sinusoid);
+  auto sinusoid_for_move = sinusoid;
+  test_move_semantics(std::move(sinusoid_for_move), sinusoid);
 
   TestHelpers::MathFunctions::check(std::move(sinusoid), "sinusoid",
                                     used_for_size, {{{-1.0, 1.0}}}, amplitude,

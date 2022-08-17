@@ -26,6 +26,23 @@ PlaneWave<Dim>::PlaneWave(
       omega_(magnitude(wave_vector_)) {}
 
 template <size_t Dim>
+PlaneWave<Dim>::PlaneWave(const PlaneWave& other)
+    : evolution::initial_data::InitialData(other),
+      wave_vector_(other.wave_vector_),
+      center_(other.center_),
+      profile_(other.profile_->get_clone()),
+      omega_(magnitude(wave_vector_)) {}
+
+template <size_t Dim>
+PlaneWave<Dim>& PlaneWave<Dim>::operator=(const PlaneWave& other) {
+  wave_vector_ = other.wave_vector_;
+  center_ = other.center_;
+  omega_ = magnitude(wave_vector_);
+  profile_ = other.profile_->get_clone();
+  return *this;
+}
+
+template <size_t Dim>
 PlaneWave<Dim>::PlaneWave(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <size_t Dim>
@@ -120,6 +137,17 @@ void PlaneWave<Dim>::pup(PUP::er& p) {
   p | profile_;
   p | omega_;
 }
+template <size_t Dim>
+bool operator==(const PlaneWave<Dim>& lhs, const PlaneWave<Dim>& rhs) {
+  return (lhs.wave_vector_ == rhs.wave_vector_) and
+         (lhs.center_ == rhs.center_) and
+         (*(lhs.profile_) == *(rhs.profile_)) and (lhs.omega_ == rhs.omega_);
+}
+
+template <size_t Dim>
+bool operator!=(const PlaneWave<Dim>& lhs, const PlaneWave<Dim>& rhs) {
+  return not(lhs == rhs);
+}
 
 template <size_t Dim>
 template <typename T>
@@ -134,6 +162,21 @@ T PlaneWave<Dim>::u(const tnsr::I<T, Dim>& x, const double t) const {
 template <size_t Dim>
 PUP::able::PUP_ID PlaneWave<Dim>::my_PUP_ID = 0;
 }  // namespace ScalarWave::Solutions
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                   \
+  template class ScalarWave::Solutions::PlaneWave<DIM(data)>;  \
+  template bool ScalarWave::Solutions::operator==(             \
+      const ScalarWave::Solutions::PlaneWave<DIM(data)>& lhs,  \
+      const ScalarWave::Solutions::PlaneWave<DIM(data)>& rhs); \
+  template bool ScalarWave::Solutions::operator!=(             \
+      const ScalarWave::Solutions::PlaneWave<DIM(data)>& lhs,  \
+      const ScalarWave::Solutions::PlaneWave<DIM(data)>& rhs);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef DIM
+#undef INSTANTIATE
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
@@ -165,7 +208,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 #undef DIM
 #undef DTYPE
 #undef INSTANTIATE
-
-template class ScalarWave::Solutions::PlaneWave<1>;
-template class ScalarWave::Solutions::PlaneWave<2>;
-template class ScalarWave::Solutions::PlaneWave<3>;

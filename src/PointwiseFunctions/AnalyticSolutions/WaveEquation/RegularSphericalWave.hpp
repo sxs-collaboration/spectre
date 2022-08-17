@@ -87,8 +87,8 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
   RegularSphericalWave() = default;
   explicit RegularSphericalWave(
       std::unique_ptr<MathFunction<1, Frame::Inertial>> profile);
-  RegularSphericalWave(const RegularSphericalWave&) = delete;
-  RegularSphericalWave& operator=(const RegularSphericalWave&) = delete;
+  RegularSphericalWave(const RegularSphericalWave& other);
+  RegularSphericalWave& operator=(const RegularSphericalWave& other);
   RegularSphericalWave(RegularSphericalWave&&) = default;
   RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
   ~RegularSphericalWave() = default;
@@ -113,6 +113,12 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
   void pup(PUP::er& p);
 
  private:
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator==(const RegularSphericalWave& lhs,
+                         const RegularSphericalWave& rhs);
+  // NOLINTNEXTLINE(readability-redundant-declaration)
+  friend bool operator!=(const RegularSphericalWave& lhs,
+                         const RegularSphericalWave& rhs);
   std::unique_ptr<MathFunction<1, Frame::Inertial>> profile_;
 };
 }  // namespace ScalarWave::Solutions
