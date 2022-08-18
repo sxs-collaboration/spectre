@@ -424,10 +424,9 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::apply(
        &inertial_coordinates =
            db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
        &logical_to_inertial_inv_jacobian =
-           db::get<::domain::Tags::InverseJacobian<
-               Dim, Frame::ElementLogical, Frame::Inertial>>(box),
-       &mesh,
-       &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
+           db::get<::domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                   Frame::Inertial>>(box),
+       &mesh, &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
        &partial_derivs, &temporaries, &volume_fluxes](
           const gsl::not_null<Variables<
               db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
@@ -506,206 +505,197 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
 
-    const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
-    const auto& all_mortar_data =
-        db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
-    const auto& mortar_meshes =
-        get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
+  const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
+  const auto& all_mortar_data =
+      db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
+  const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
 
-    std::optional<DirectionMap<Dim, std::vector<double>>>
-        all_neighbor_data_for_reconstruction = std::nullopt;
-    // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
-    // projection.
-    Mesh<Dim> ghost_cell_mesh =
-        db::get<domain::Tags::Mesh<Dim>>(*box);
+  std::optional<DirectionMap<Dim, std::vector<double>>>
+      all_neighbor_data_for_reconstruction = std::nullopt;
+  // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
+  // projection.
+  Mesh<Dim> ghost_cell_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+  if constexpr (using_subcell_v<Metavariables>) {
+    all_neighbor_data_for_reconstruction =
+        evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
+  }
+
+  for (const auto& [direction, neighbors] : element.neighbors()) {
+    const auto& orientation = neighbors.orientation();
+    const auto direction_from_neighbor = orientation(direction.opposite());
+
+    std::vector<double> ghost_and_subcell_data{};
     if constexpr (using_subcell_v<Metavariables>) {
-      all_neighbor_data_for_reconstruction =
-          evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
+      ASSERT(all_neighbor_data_for_reconstruction.has_value(),
+             "Trying to do DG-subcell but the ghost and subcell data for the "
+             "neighbor has not been set.");
+      ghost_and_subcell_data =
+          std::move(all_neighbor_data_for_reconstruction.value()[direction]);
     }
 
-    for (const auto& [direction, neighbors] : element.neighbors()) {
-      const auto& orientation = neighbors.orientation();
-      const auto direction_from_neighbor = orientation(direction.opposite());
+    for (const auto& neighbor : neighbors) {
+      const std::pair mortar_id{direction, neighbor};
 
-      std::vector<double> ghost_and_subcell_data{};
-      if constexpr (using_subcell_v<Metavariables>) {
-        ASSERT(all_neighbor_data_for_reconstruction.has_value(),
-               "Trying to do DG-subcell but the ghost and subcell data for the "
-               "neighbor has not been set.");
-        ghost_and_subcell_data =
-            std::move(all_neighbor_data_for_reconstruction.value()[direction]);
+      std::pair<Mesh<Dim - 1>, std::vector<double>>
+          neighbor_boundary_data_on_mortar{};
+      ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
+             "The current time step id of the volume is "
+                 << time_step_id
+                 << "but the time step id on the mortar with mortar id "
+                 << mortar_id << " is "
+                 << all_mortar_data.at(mortar_id).time_step_id());
+
+      // Reorient the data to the neighbor orientation if necessary
+      if (LIKELY(orientation.is_aligned())) {
+        neighbor_boundary_data_on_mortar =
+            *all_mortar_data.at(mortar_id).local_mortar_data();
+      } else {
+        const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
+        neighbor_boundary_data_on_mortar.first =
+            all_mortar_data.at(mortar_id).local_mortar_data()->first;
+        neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
+            all_mortar_data.at(mortar_id).local_mortar_data()->second,
+            slice_extents, direction.dimension(), orientation);
       }
 
-      for (const auto& neighbor : neighbors) {
-        const std::pair mortar_id{direction, neighbor};
-
-        std::pair<Mesh<Dim - 1>, std::vector<double>>
-            neighbor_boundary_data_on_mortar{};
-        ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
-               "The current time step id of the volume is "
-                   << time_step_id
-                   << "but the time step id on the mortar with mortar id "
-                   << mortar_id << " is "
-                   << all_mortar_data.at(mortar_id).time_step_id());
-
-        // Reorient the data to the neighbor orientation if necessary
-        if (LIKELY(orientation.is_aligned())) {
-          neighbor_boundary_data_on_mortar =
-              *all_mortar_data.at(mortar_id).local_mortar_data();
+      const TimeStepId& next_time_step_id = [&box]() {
+        if (Metavariables::local_time_stepping) {
+          return db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
         } else {
-          const auto& slice_extents = mortar_meshes.at(mortar_id).extents();
-          neighbor_boundary_data_on_mortar.first =
-              all_mortar_data.at(mortar_id).local_mortar_data()->first;
-          neighbor_boundary_data_on_mortar.second = orient_variables_on_slice(
-              all_mortar_data.at(mortar_id).local_mortar_data()->second,
-              slice_extents, direction.dimension(), orientation);
+          return db::get<::Tags::TimeStepId>(*box);
         }
+      }();
 
-        const TimeStepId& next_time_step_id = [&box]() {
-          if (Metavariables::local_time_stepping) {
-            return db::get<::Tags::Next<::Tags::TimeStepId>>(*box);
-          } else {
-            return db::get<::Tags::TimeStepId>(*box);
-          }
-        }();
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
+                 std::optional<std::vector<double>>, ::TimeStepId>
+          data{ghost_cell_mesh,
+               neighbor_boundary_data_on_mortar.first,
+               ghost_and_subcell_data,
+               {std::move(neighbor_boundary_data_on_mortar.second)},
+               next_time_step_id};
 
-        std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                   std::optional<std::vector<double>>,
-                   std::optional<std::vector<double>>, ::TimeStepId>
-            data{ghost_cell_mesh,
-                 neighbor_boundary_data_on_mortar.first,
-                 ghost_and_subcell_data,
-                 {std::move(neighbor_boundary_data_on_mortar.second)},
-                 next_time_step_id};
+      // Send mortar data (the `std::tuple` named `data`) to neighbor
+      Parallel::receive_data<
+          evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
+          receiver_proxy[neighbor], time_step_id,
+          std::make_pair(std::pair{direction_from_neighbor, element.id()},
+                         data));
+    }
+  }
 
-        // Send mortar data (the `std::tuple` named `data`) to neighbor
-        Parallel::receive_data<
-            evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                Dim>>(
-            receiver_proxy[neighbor], time_step_id,
-            std::make_pair(std::pair{direction_from_neighbor, element.id()},
-                           data));
-      }
+  if constexpr (Metavariables::local_time_stepping) {
+    using variables_tag = typename EvolutionSystem::variables_tag;
+    using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+    // We assume isotropic quadrature, i.e. the quadrature is the same in
+    // all directions.
+    const bool using_gauss_points =
+        db::get<domain::Tags::Mesh<Dim>>(*box).quadrature() ==
+        make_array<Dim>(Spectral::Quadrature::Gauss);
+
+    const Scalar<DataVector> volume_det_inv_jacobian{};
+    if (using_gauss_points) {
+      // NOLINTNEXTLINE
+      const_cast<DataVector&>(get(volume_det_inv_jacobian))
+          .set_data_ref(make_not_null(&const_cast<DataVector&>(  // NOLINT
+              get(db::get<domain::Tags::DetInvJacobian<
+                      Frame::ElementLogical, Frame::Inertial>>(*box)))));
     }
 
-    if constexpr (Metavariables::local_time_stepping) {
-      using variables_tag = typename EvolutionSystem::variables_tag;
-      using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
-      // We assume isotropic quadrature, i.e. the quadrature is the same in
-      // all directions.
-      const bool using_gauss_points =
-          db::get<domain::Tags::Mesh<Dim>>(*box).quadrature() ==
-          make_array<Dim>(Spectral::Quadrature::Gauss);
-
-      const Scalar<DataVector> volume_det_inv_jacobian{};
-      if (using_gauss_points) {
-        // NOLINTNEXTLINE
-        const_cast<DataVector&>(get(volume_det_inv_jacobian))
-            .set_data_ref(make_not_null(&const_cast<DataVector&>(  // NOLINT
-                get(db::get<domain::Tags::DetInvJacobian<
-                        Frame::ElementLogical, Frame::Inertial>>(*box)))));
-      }
-
-      // Add face normal and Jacobian determinants to the local mortar data. We
-      // only need the Jacobians if we are using Gauss points. Then copy over
-      // into the boundary history, since that's what the LTS steppers use.
-      //
-      // The boundary history coupling computation (which computes the _lifted_
-      // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
-      // using the `NormalDotNumericalFlux` prefix tag. This is because the
-      // returned quantity is more a `dt` quantity than a
-      // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-      using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
-      const auto integration_order =
-          db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
-      db::mutate<evolution::dg::Tags::MortarData<Dim>,
-                 evolution::dg::Tags::MortarDataHistory<
-                     Dim, typename dt_variables_tag::type>>(
-          box,
-          [&element, integration_order, &time_step_id, using_gauss_points,
-           &volume_det_inv_jacobian](
-              const gsl::not_null<
-                  std::unordered_map<Key, evolution::dg::MortarData<Dim>,
-                                     boost::hash<Key>>*>
-                  mortar_data,
-              const gsl::not_null<
-                  std::unordered_map<Key,
-                                     TimeSteppers::BoundaryHistory<
-                                         evolution::dg::MortarData<Dim>,
-                                         evolution::dg::MortarData<Dim>,
-                                         typename dt_variables_tag::type>,
-                                     boost::hash<Key>>*>
-                  boundary_data_history,
-              const Mesh<Dim>& volume_mesh,
-              const DirectionMap<
-                  Dim,
-                  std::optional<Variables<tmpl::list<
-                      evolution::dg::Tags::MagnitudeOfNormal,
-                      evolution::dg::Tags::NormalCovector<Dim>>>>>&
-                  normal_covector_and_magnitude) {
-            Scalar<DataVector> volume_det_jacobian{};
-            Scalar<DataVector> face_det_jacobian{};
+    // Add face normal and Jacobian determinants to the local mortar data. We
+    // only need the Jacobians if we are using Gauss points. Then copy over
+    // into the boundary history, since that's what the LTS steppers use.
+    //
+    // The boundary history coupling computation (which computes the _lifted_
+    // boundary correction) returns a Variables<dt<EvolvedVars>> instead of
+    // using the `NormalDotNumericalFlux` prefix tag. This is because the
+    // returned quantity is more a `dt` quantity than a
+    // `NormalDotNormalDotFlux` since it's been lifted to the volume.
+    using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
+    const auto integration_order =
+        db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
+    db::mutate<evolution::dg::Tags::MortarData<Dim>,
+               evolution::dg::Tags::MortarDataHistory<
+                   Dim, typename dt_variables_tag::type>>(
+        box,
+        [&element, integration_order, &time_step_id, using_gauss_points,
+         &volume_det_inv_jacobian](
+            const gsl::not_null<std::unordered_map<
+                Key, evolution::dg::MortarData<Dim>, boost::hash<Key>>*>
+                mortar_data,
+            const gsl::not_null<std::unordered_map<
+                Key,
+                TimeSteppers::BoundaryHistory<evolution::dg::MortarData<Dim>,
+                                              evolution::dg::MortarData<Dim>,
+                                              typename dt_variables_tag::type>,
+                boost::hash<Key>>*>
+                boundary_data_history,
+            const Mesh<Dim>& volume_mesh,
+            const DirectionMap<Dim,
+                               std::optional<Variables<tmpl::list<
+                                   evolution::dg::Tags::MagnitudeOfNormal,
+                                   evolution::dg::Tags::NormalCovector<Dim>>>>>&
+                normal_covector_and_magnitude) {
+          Scalar<DataVector> volume_det_jacobian{};
+          Scalar<DataVector> face_det_jacobian{};
+          if (using_gauss_points) {
+            get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
+          }
+          for (const auto& [direction, neighbors_in_direction] :
+               element.neighbors()) {
+            // We can perform projections once for all neighbors in the
+            // direction because we care about the _face_ mesh, not the mortar
+            // mesh.
+            ASSERT(normal_covector_and_magnitude.at(direction).has_value(),
+                   "The normal covector and magnitude have not been computed.");
+            const Scalar<DataVector>& face_normal_magnitude =
+                get<evolution::dg::Tags::MagnitudeOfNormal>(
+                    *normal_covector_and_magnitude.at(direction));
             if (using_gauss_points) {
-              get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
-            }
-            for (const auto& [direction, neighbors_in_direction] :
-                 element.neighbors()) {
-              // We can perform projections once for all neighbors in the
-              // direction because we care about the _face_ mesh, not the mortar
-              // mesh.
-              ASSERT(
-                  normal_covector_and_magnitude.at(direction).has_value(),
-                  "The normal covector and magnitude have not been computed.");
-              const Scalar<DataVector>& face_normal_magnitude =
-                  get<evolution::dg::Tags::MagnitudeOfNormal>(
-                      *normal_covector_and_magnitude.at(direction));
-              if (using_gauss_points) {
-                const Matrix identity{};
-                auto interpolation_matrices =
-                    make_array<Dim>(std::cref(identity));
-                const std::pair<Matrix, Matrix>& matrices =
-                    Spectral::boundary_interpolation_matrices(
-                        volume_mesh.slice_through(direction.dimension()));
-                gsl::at(interpolation_matrices, direction.dimension()) =
-                    direction.side() == Side::Upper ? matrices.second
-                                                    : matrices.first;
-                if (get(face_det_jacobian).size() !=
-                    get(face_normal_magnitude).size()) {
-                  get(face_det_jacobian) =
-                      DataVector{get(face_normal_magnitude).size()};
-                }
-                apply_matrices(make_not_null(&get(face_det_jacobian)),
-                               interpolation_matrices, get(volume_det_jacobian),
-                               volume_mesh.extents());
+              const Matrix identity{};
+              auto interpolation_matrices =
+                  make_array<Dim>(std::cref(identity));
+              const std::pair<Matrix, Matrix>& matrices =
+                  Spectral::boundary_interpolation_matrices(
+                      volume_mesh.slice_through(direction.dimension()));
+              gsl::at(interpolation_matrices, direction.dimension()) =
+                  direction.side() == Side::Upper ? matrices.second
+                                                  : matrices.first;
+              if (get(face_det_jacobian).size() !=
+                  get(face_normal_magnitude).size()) {
+                get(face_det_jacobian) =
+                    DataVector{get(face_normal_magnitude).size()};
               }
+              apply_matrices(make_not_null(&get(face_det_jacobian)),
+                             interpolation_matrices, get(volume_det_jacobian),
+                             volume_mesh.extents());
+            }
 
-              for (const auto& neighbor : neighbors_in_direction) {
-                const std::pair mortar_id{direction, neighbor};
-                if (using_gauss_points) {
-                  mortar_data->at(mortar_id).insert_local_geometric_quantities(
-                      volume_det_inv_jacobian, face_det_jacobian,
-                      face_normal_magnitude);
-                } else {
-                  mortar_data->at(mortar_id).insert_local_face_normal_magnitude(
-                      face_normal_magnitude);
-                }
-                ASSERT(boundary_data_history->count(mortar_id) != 0,
-                       "Could not insert the mortar data for "
-                           << mortar_id
-                           << " because the unordered map has not been "
-                              "initialized "
-                              "to have the mortar id.");
-                boundary_data_history->at(mortar_id).local_insert(
-                    time_step_id, std::move(mortar_data->at(mortar_id)));
-                boundary_data_history->at(mortar_id).integration_order(
-                    integration_order);
-                mortar_data->at(mortar_id) = MortarData<Dim>{};
+            for (const auto& neighbor : neighbors_in_direction) {
+              const std::pair mortar_id{direction, neighbor};
+              if (using_gauss_points) {
+                mortar_data->at(mortar_id).insert_local_geometric_quantities(
+                    volume_det_inv_jacobian, face_det_jacobian,
+                    face_normal_magnitude);
+              } else {
+                mortar_data->at(mortar_id).insert_local_face_normal_magnitude(
+                    face_normal_magnitude);
               }
+              ASSERT(boundary_data_history->count(mortar_id) != 0,
+                     "Could not insert the mortar data for "
+                         << mortar_id
+                         << " because the unordered map has not been "
+                            "initialized "
+                            "to have the mortar id.");
+              boundary_data_history->at(mortar_id).local_insert(
+                  time_step_id, std::move(mortar_data->at(mortar_id)));
+              boundary_data_history->at(mortar_id).integration_order(
+                  integration_order);
+              mortar_data->at(mortar_id) = MortarData<Dim>{};
             }
-          },
-          db::get<domain::Tags::Mesh<Dim>>(*box),
-          db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
-              *box));
+          }
+        },
+        db::get<domain::Tags::Mesh<Dim>>(*box),
+        db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(*box));
   }
 }
 }  // namespace evolution::dg::Actions
