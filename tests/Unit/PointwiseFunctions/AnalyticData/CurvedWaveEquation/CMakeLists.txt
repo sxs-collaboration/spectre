@@ -6,7 +6,6 @@ set(LIBRARY "Test_CurvedWaveEquationAnalyticData")
 
 set(LIBRARY_SOURCES
   Test_PureSphericalHarmonic.cpp
-  Test_ScalarWaveGr.cpp
   )
 
 add_test_library(

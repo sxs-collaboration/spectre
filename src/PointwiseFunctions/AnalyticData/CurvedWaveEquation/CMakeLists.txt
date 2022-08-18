@@ -9,7 +9,6 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   PureSphericalHarmonic.cpp
-  ScalarWaveGr.cpp
   )
 
 spectre_target_headers(
@@ -18,7 +17,6 @@ spectre_target_headers(
   HEADERS
   AnalyticData.hpp
   PureSphericalHarmonic.hpp
-  ScalarWaveGr.hpp
   )
 
 target_link_libraries(
