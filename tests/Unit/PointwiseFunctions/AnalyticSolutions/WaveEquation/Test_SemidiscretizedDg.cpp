@@ -131,10 +131,10 @@ struct Component {
 
       Parallel::PhaseActions<
           Parallel::Phase, Parallel::Phase::Testing,
-          tmpl::list<
-              evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
-              dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
-              Actions::MutateApply<boundary_scheme>>>>;
+          tmpl::list<evolution::dg::Actions::ComputeTimeDerivative<
+                         volume_dim, system, AllStepChoosers>,
+                     dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
+                     Actions::MutateApply<boundary_scheme>>>>;
 };
 
 struct Metavariables {

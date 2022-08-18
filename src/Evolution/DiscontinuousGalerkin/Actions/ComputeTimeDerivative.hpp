@@ -68,11 +68,6 @@ class TaggedTuple;
 /// \endcond
 
 namespace evolution::dg::Actions {
-namespace detail {
-CREATE_HAS_TYPE_ALIAS(dg_step_choosers)
-CREATE_HAS_TYPE_ALIAS_V(dg_step_choosers)
-CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_step_choosers)
-}  // namespace detail
 /*!
  * \brief Computes the time derivative for a DG time step.
  *
@@ -300,7 +295,7 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_step_choosers)
  * - Modifies:
  *   - `evolution::dg::Tags::MortarData<Dim>`
  */
-template <size_t Dim, typename EvolutionSystem>
+template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers>
 struct ComputeTimeDerivative {
   using inbox_tags = tmpl::list<
       evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
@@ -326,12 +321,12 @@ struct ComputeTimeDerivative {
       gsl::not_null<db::DataBox<DbTagsList>*> box);
 };
 
-template <size_t Dim, typename EvolutionSystem>
+template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
           typename ActionList, typename ParallelComponent,
           typename Metavariables>
 Parallel::iterable_action_return_t
-ComputeTimeDerivative<Dim, EvolutionSystem>::apply(
+ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::apply(
     db::DataBox<DbTagsList>& box,
     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
     Parallel::GlobalCache<Metavariables>& cache,
@@ -492,9 +487,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem>::apply(
       });
 
   if constexpr (Metavariables::local_time_stepping) {
-    take_step<detail::get_dg_step_choosers_or_default_t<Metavariables,
-                                                        AllStepChoosers>>(
-        make_not_null(&box), cache);
+    take_step<DgStepChoosers>(make_not_null(&box), cache);
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
@@ -502,12 +495,13 @@ ComputeTimeDerivative<Dim, EvolutionSystem>::apply(
   return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 }
 
-template <size_t Dim, typename EvolutionSystem>
+template <size_t Dim, typename EvolutionSystem, typename DgStepChoosers>
 template <typename ParallelComponent, typename DbTagsList,
           typename Metavariables>
-void ComputeTimeDerivative<Dim, EvolutionSystem>::send_data_for_fluxes(
-    const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
-    const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
+    send_data_for_fluxes(
+        const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
+        const gsl::not_null<db::DataBox<DbTagsList>*> box) {
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
   const auto& element = db::get<domain::Tags::Element<Dim>>(*box);

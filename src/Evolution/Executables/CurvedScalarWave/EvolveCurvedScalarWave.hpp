@@ -249,7 +249,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<domain::enable_time_dependent_maps,
                           CurvedScalarWave::Actions::CalculateGrVars<system>,
                           tmpl::list<>>,
-      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
+      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
+                                                    AllStepChoosers>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<

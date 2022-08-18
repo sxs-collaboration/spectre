@@ -830,7 +830,8 @@ struct component {
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<::evolution::dg::Actions::ComputeTimeDerivative<
-              Metavariables::volume_dim, typename Metavariables::system>>>>;
+              Metavariables::volume_dim, typename Metavariables::system,
+              AllStepChoosers>>>>;
 };
 
 template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
