@@ -17,7 +17,7 @@ if(${BUILD_PYTHON_BINDINGS})
   # Test is a bit slow because it writes a bunch of plot files to verify
   # the argument handling works.
   set_tests_properties(
-    "\"Unit.Visualization.Python.PlotDatFile\""
+    "Unit.Visualization.Python.PlotDatFile"
     PROPERTIES
     TIMEOUT 10
     )
