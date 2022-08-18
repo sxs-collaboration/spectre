@@ -181,3 +181,14 @@ SpherepackIterator& SpherepackIterator::set(
 
   return *this;
 }
+
+SpherepackIterator& SpherepackIterator::set(const size_t compact_index) {
+  ASSERT(compact_index < offset_into_spherepack_array.size(),
+         "Trying to set the current compact index to "
+             << compact_index
+             << " which is beyond the size of the offset array "
+             << offset_into_spherepack_array.size());
+
+  current_compact_index_ = compact_index;
+  return *this;
+}

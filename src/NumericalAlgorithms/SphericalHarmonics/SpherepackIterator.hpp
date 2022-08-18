@@ -129,6 +129,9 @@ class SpherepackIterator {
                m_input >= 0 ? CoefficientArray::a : CoefficientArray::b);
   }
 
+  /// Set iterator to a specific compact index. Returns *this.
+  SpherepackIterator& set(size_t compact_index);
+
  private:
   size_t l_max_, m_max_, n_th_, n_ph_, stride_;
   size_t number_of_valid_entries_in_a_;

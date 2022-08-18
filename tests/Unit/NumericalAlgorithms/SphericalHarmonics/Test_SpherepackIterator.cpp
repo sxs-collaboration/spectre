@@ -78,6 +78,16 @@ SPECTRE_TEST_CASE("Unit.SphericalHarmonics.SpherepackIterator",
   CHECK(iter.reset()() == 0);
   CHECK(iter.set(2, 1)() == 35);
   CHECK(iter.set(2, -1)() == 110);
+  // Test setting the current compact index
+  CHECK(iter.set(0)() == test_index[0]);
+  CHECK(iter.set(3)() == test_index[3]);
+  CHECK(iter.set(18)() == test_index[18]);
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([&iter]() { iter.set(100); })(),
+      Catch::Contains("Trying to set the current compact index to 100 which is "
+                      "beyond the size of the offset array 19"));
+#endif  // SPECTRE_DEBUG
 
   // Test coefficient_arrya stream operator (assumes output of last 'set').
   CHECK(get_output(iter.coefficient_array()) == "b");
