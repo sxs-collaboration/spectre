@@ -40,7 +40,7 @@ PureSphericalHarmonic::PureSphericalHarmonic(const double radius,
 
 tuples::TaggedTuple<CurvedScalarWave::Tags::Psi, CurvedScalarWave::Tags::Pi,
                     CurvedScalarWave::Tags::Phi<3>>
-PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
+PureSphericalHarmonic::variables(const tnsr::I<DataVector, 3>& x,
                                  tags /*meta*/) const {
   Scalar<DataVector> pi{get(magnitude(x)) - radius_};
   get(pi) = exp(-get(pi) * get(pi) / width_sq_);

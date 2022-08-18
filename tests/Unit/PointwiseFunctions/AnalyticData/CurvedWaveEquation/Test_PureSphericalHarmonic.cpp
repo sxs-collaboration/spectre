@@ -57,7 +57,7 @@ void test_variables() {
 
       const CurvedScalarWave::AnalyticData::PureSphericalHarmonic sh{
           radius, width, {l, m}};
-      const auto sh_res = sh.variables(x, 0., {});
+      const auto sh_res = sh.variables(x, {});
 
       CHECK_ITERABLE_APPROX(get<CurvedScalarWave::Tags::Pi>(sh_res), py_res);
       CHECK(get<CurvedScalarWave::Tags::Phi<3>>(sh_res) ==
