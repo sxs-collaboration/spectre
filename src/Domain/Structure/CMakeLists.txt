@@ -46,6 +46,7 @@ spectre_target_headers(
   OrientationMapHelpers.hpp
   SegmentId.hpp
   Side.hpp
+  TrimMap.hpp
   )
 
 target_link_libraries(

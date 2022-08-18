@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_OrientationMapHelpers.cpp
   Test_SegmentId.cpp
   Test_Side.cpp
+  Test_TrimMap.cpp
   )
 
 add_test_library(
