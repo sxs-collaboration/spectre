@@ -17,7 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -150,6 +150,7 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
     return {make_array<Dim>(0.0)};
   }
 
+  double scale_factor;
   // Check if x_bar is outside of the range of the map.
   // We need a slight buffer because computing (r/R) is not equal to (r * (1/R))
   // at roundoff and thus to make sure we include the boundary we need to
@@ -157,49 +158,25 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
   if (UNLIKELY(target_dimensionless_radius >
                b_of_t * (1.0 + 2.0 * std::numeric_limits<double>::epsilon()))) {
     return std::nullopt;
+  } else if (UNLIKELY(target_dimensionless_radius > b_of_t)) {
+    scale_factor = 1.0;
+  } else {
+    const double cubic_coef_a = (b_of_t - a_of_t);
+
+    // Solve the modified equation:
+    // q * ( (b-a) q^2 + a) - r / R = 0,
+    // where q = rho / R, and rho is the source radius
+    const auto cubic = [&cubic_coef_a, &a_of_t, &target_dimensionless_radius](
+                           const double source_dimensionless_radius) {
+      return source_dimensionless_radius *
+                 (cubic_coef_a * square(source_dimensionless_radius) + a_of_t) -
+             target_dimensionless_radius;
+    };
+
+    scale_factor = RootFinder::toms748(cubic, 0.0, 1.0, 1.0e-14, 1.0e-15);
   }
 
-  // For an initial guess, we provide a linearly approximated solution for
-  // q, which is just r / (R b).
-  const double initial_guess = target_dimensionless_radius / b_of_t;
-  const double cubic_coef_a = (b_of_t - a_of_t);
-
-  // Solve the modified equation:
-  // q * ( (b-a) q^2 + a) - r / R = 0,
-  // where q = rho / R, and rho is the source radius
-  const auto cubic_and_deriv =
-      [&cubic_coef_a, &a_of_t,
-       &target_dimensionless_radius](const double source_dimensionless_radius) {
-        return std::make_pair(
-            source_dimensionless_radius *
-                    (cubic_coef_a * square(source_dimensionless_radius) +
-                     a_of_t) -
-                target_dimensionless_radius,
-
-            3.0 * cubic_coef_a * square(source_dimensionless_radius) + a_of_t);
-      };
-
-  // The original implementation of this inverse function used a cubic
-  // equation solver. However, given that the problem of finding the inverse
-  // in this case is well constrained -- using a Newton-Raphson root find with
-  // a linearly approximated guess is almost twice as fast.
-  // Using google benchmark,
-  // the CubicEquation solver: ~ 480 ns
-  // boost implemented Newton-Raphson: ~ 280 ns
-  // minimal Newton-Raphson from Numerical Recipes: ~ 255 ns
-  // Despite the minimal Newton-Raphson being more efficient than the boost
-  // version, here we utilize the boost implementation, as it includes
-  // additional checks for zero derivative, checks on bounds, and can implement
-  // bisection if necessary.
-  const double scale_factor =
-      RootFinder::newton_raphson(cubic_and_deriv, initial_guess, 0.0, 1.0, 14) /
-      target_dimensionless_radius;
-
-  std::array<double, Dim> result{};
-  for (size_t i = 0; i < Dim; ++i) {
-    gsl::at(result, i) = scale_factor * gsl::at(target_coords, i);
-  }
-  return {std::move(result)};
+  return {scale_factor / target_dimensionless_radius * target_coords};
 }
 
 template <size_t Dim>
