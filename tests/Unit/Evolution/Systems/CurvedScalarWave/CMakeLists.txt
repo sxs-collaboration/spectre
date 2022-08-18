@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_UpwindPenalty.cpp
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
   BoundaryConditions/Test_Outflow.cpp
+  Test_BackgroundSpacetime.cpp
   Test_Constraints.cpp
   Test_Characteristics.cpp
   Test_InitializeConstraintDampingGammas.cpp

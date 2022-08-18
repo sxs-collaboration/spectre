@@ -19,6 +19,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BackgroundSpacetime.hpp
   Characteristics.hpp
   Constraints.hpp
   Equations.hpp
