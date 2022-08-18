@@ -17,7 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Elliptic/Systems/Xcts/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Xcts/CommonVariables.tpp"
@@ -94,29 +94,22 @@ DataType kerr_schild_isotropic_radius_from_areal_deriv(
 
 double kerr_schild_areal_radius_from_isotropic(const double isotropic_radius,
                                                const double mass) {
-  return RootFinder::newton_raphson(
+  return RootFinder::toms748(
       [&isotropic_radius, &mass](const double areal_radius) {
-        return std::make_pair(
-            kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
-                isotropic_radius,
-            kerr_schild_isotropic_radius_from_areal_deriv(areal_radius, mass));
+        return kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
+               isotropic_radius;
       },
-      isotropic_radius, 0., std::numeric_limits<double>::max(), 12);
+      isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15);
 }
 
 DataVector kerr_schild_areal_radius_from_isotropic(
     const DataVector& isotropic_radius, const double mass) {
-  return RootFinder::newton_raphson(
+  return RootFinder::toms748(
       [&isotropic_radius, &mass](const double areal_radius, const size_t i) {
-        return std::make_pair(
-            kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
-                isotropic_radius[i],
-            kerr_schild_isotropic_radius_from_areal_deriv(areal_radius, mass));
+        return kerr_schild_isotropic_radius_from_areal(areal_radius, mass) -
+               isotropic_radius[i];
       },
-      isotropic_radius, make_with_value<DataVector>(isotropic_radius, 0.),
-      make_with_value<DataVector>(isotropic_radius,
-                                  std::numeric_limits<double>::max()),
-      12);
+      isotropic_radius, isotropic_radius + mass, 1.0e-12, 1.0e-15);
 }
 }  // namespace
 
