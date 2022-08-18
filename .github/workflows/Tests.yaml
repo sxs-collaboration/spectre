@@ -341,17 +341,17 @@ jobs:
           # libraries. Building all the tests without the PCH takes very long
           # and the most we would catch is a missing include of something that's
           # in the PCH.
-          - compiler: clang-9
+          - compiler: clang-10
             build_type: Debug
             use_pch: OFF
             ccache_max_size: 400M
-          # Full clang-9 build to catch any incompatibilities.
-          - compiler: clang-9
+          # Full clang-10 build to catch any incompatibilities.
+          - compiler: clang-10
             use_pch: ON
             build_type: Release
             ccache_max_size: 400M
           # Test with ASAN
-          - compiler: clang-10
+          - compiler: clang-11
             build_type: Debug
             use_pch: ON
             # When building with ASAN we also need python bindings to be
@@ -971,8 +971,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
         compiler:
           - gcc-9
           - gcc-10
-          - clang-9
-          - clang-11
+          - clang-10
+          - clang-13
         include:
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake")
@@ -982,10 +982,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             compiler: gcc-10
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server")
-            compiler: clang-9
+            compiler: clang-10
           - sde_arch: ("-nhm;nehalem" "-snb;sandybridge" "-hsw;haswell"
               "-skl;skylake" "-icx;icelake-server" "-tgl;tigerlake")
-            compiler: clang-11
+            compiler: clang-13
     container:
       image: sxscollaboration/spectrebuildenv:latest
       env:

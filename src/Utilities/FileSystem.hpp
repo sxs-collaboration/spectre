@@ -20,42 +20,19 @@
  * take the safe route and use POSIX.
  */
 namespace file_system {
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Copies files or directories.
+ *
+ * Wrapper around `std::file_system::copy()`.
+ */
+void copy(const std::string& from, const std::string& to);
 
 /*!
  * \ingroup FileSystemGroup
- * \brief Wraps the dirname function to get the pathname of the parent directory
- *
- * See the opengroup documentation:
- * http://pubs.opengroup.org/onlinepubs/9699919799/functions/dirname.html
- *
- * \example
- * \snippet Test_FileSystem.cpp get_parent_path
- *
- * \requires `path` is a valid path on the filesystem
- * \returns the path to the parent directory
+ * \brief Returns the current working directory, resolving symlinks
  */
-std::string get_parent_path(const std::string& path);
-
-/*!
- * \ingroup FileSystemGroup
- * \brief Given a path to a file returns the file name
- *
- * \example
- * \snippet Test_FileSystem.cpp get_file_name
- *
- * \requires `file_path` is a valid path on the filesystem
- * \returns the file name
- */
-std::string get_file_name(const std::string& file_path);
-
-/*!
- * \ingroup FileSystemGroup
- * \brief Get the absolute path, resolving symlinks
- *
- * \requires `rel_path` is a valid path on the filesystem
- * \returns the absolute path
- */
-std::string get_absolute_path(const std::string& rel_path);
+std::string cwd();
 
 /*!
  * \ingroup FileSystemGroup
@@ -94,6 +71,57 @@ bool check_if_file_exists(const std::string& file);
 
 /*!
  * \ingroup FileSystemGroup
+ * \brief Returns the file size in bytes
+ *
+ * \requires `file` is a valid file on the filesystem
+ * \returns size of `file` in bytes
+ */
+size_t file_size(const std::string& file);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Get the absolute path, resolving symlinks
+ *
+ * \requires `rel_path` is a valid path on the filesystem
+ * \returns the absolute path
+ */
+std::string get_absolute_path(const std::string& rel_path);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Given a path to a file returns the file name
+ *
+ * \example
+ * \snippet Test_FileSystem.cpp get_file_name
+ *
+ * \requires `file_path` is a valid path on the filesystem
+ * \returns the file name
+ */
+std::string get_file_name(const std::string& file_path);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Wraps the dirname function to get the pathname of the parent directory
+ *
+ * See the opengroup documentation:
+ * http://pubs.opengroup.org/onlinepubs/9699919799/functions/dirname.html
+ *
+ * \example
+ * \snippet Test_FileSystem.cpp get_parent_path
+ *
+ * \requires `path` is a valid path on the filesystem
+ * \returns the path to the parent directory
+ */
+std::string get_parent_path(const std::string& path);
+
+/*!
+ * \ingroup FileSystemGroup
+ * \brief Get a list of files matching the given glob pattern
+ */
+std::vector<std::string> glob(const std::string& pattern);
+
+/*!
+ * \ingroup FileSystemGroup
  * \brief Returns true if the path points to a regular file or a link to a
  * regular file.
  *
@@ -104,21 +132,6 @@ bool check_if_file_exists(const std::string& file);
  * \returns `true` if `file` is a file, not a directory
  */
 bool is_file(const std::string& path);
-
-/*!
- * \ingroup FileSystemGroup
- * \brief Returns the file size in bytes
- *
- * \requires `file` is a valid file on the filesystem
- * \returns size of `file` in bytes
- */
-size_t file_size(const std::string& file);
-
-/*!
- * \ingroup FileSystemGroup
- * \brief Returns the current working directory, resolving symlinks
- */
-std::string cwd();
 
 /*!
  * \ingroup FileSystemGroup
@@ -137,10 +150,4 @@ std::vector<std::string> ls(const std::string& dir_name = "./");
  * behaves like `rm -r`, otherwise like `rm` but will delete an empty directory
  */
 void rm(const std::string& path, bool recursive);
-
-/*!
- * \ingroup FileSystemGroup
- * \brief Get a list of files matching the given glob pattern
- */
-std::vector<std::string> glob(const std::string& pattern);
 }  // namespace file_system
