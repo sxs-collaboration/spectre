@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
@@ -291,18 +291,11 @@ double Spectral::rest_mass_density_from_enthalpy(
   } else {
     // Root-finding appropriate between reference density and maximum density
     // We can use x=0 and x=x_max as bounds
-    const auto f_df_lambda = [this, &specific_enthalpy](const double density) {
-      const double f =
-          this->specific_enthalpy_from_density(density) - specific_enthalpy;
-      const double x = log(density / this->reference_density_);
-      const double df = this->pressure_from_log_density(x) /
-                        (density * density) * this->gamma(x);
-      return std::make_pair(f, df);
+    const auto f = [this, &specific_enthalpy](const double density) {
+      return this->specific_enthalpy_from_density(density) - specific_enthalpy;
     };
-    const size_t digits = 14;
-    const double intial_guess = 0.5 * (reference_density_ + upper_density);
-    const auto root_from_lambda = RootFinder::newton_raphson(
-        f_df_lambda, intial_guess, reference_density_, upper_density, digits);
+    const auto root_from_lambda = RootFinder::toms748(
+        f, reference_density_, upper_density, 1.0e-14, 1.0e-15);
     return root_from_lambda;
   }
 }
