@@ -14,7 +14,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -35,9 +35,6 @@ struct MomentumSquared : db::SimpleTag {
 double minerbo_closure_function(const double zeta) {
   return 1.0 / 3.0 +
          square(zeta) * (0.4 - 2.0 / 15.0 * zeta + 0.4 * square(zeta));
-}
-double minerbo_closure_deriv(const double zeta) {
-  return 0.4 * zeta * (2.0 - zeta + 4.0 * square(zeta));
 }
 }  // namespace
 
@@ -64,9 +61,7 @@ void compute_closure_impl(
   static constexpr double small_velocity = 1.e-15;
   // Dimension of spatial tensors
   constexpr size_t spatial_dim = 3;
-  // Number of significant digits used in the rootfinding rooting
-  // used to find the closure factor
-  constexpr size_t root_find_number_of_digits = 6;
+  // Tolerance used in the rootfinding used to find the closure factor
   constexpr double root_find_tolerance = 1.e-6;
   Variables<
       tmpl::list<hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
@@ -198,55 +193,36 @@ void compute_closure_impl(
           2. * h_thin_v * h_thin_f * v_dot_f_pt - square(h_thin_t);
 
       // Root finding function
-      const auto zeta_j_sqr_minus_h_sqr = [&e_pt, &j_0, &j_thin, &j_thick,
-                                           &h_sqr_0, &h_sqr_thick, &h_sqr_thin,
-                                           &h_sqr_thin_thin, &h_sqr_thick_thick,
-                                           &h_sqr_thin_thick](
-                                              const double local_zeta) {
-        const double chi = minerbo_closure_function(local_zeta);
-        const double dchi_dzeta = minerbo_closure_deriv(local_zeta);
-        const double d_thin = 1.5 * chi - 0.5;
-        const double d_thick = 1. - d_thin;
-        const double d_thin_dzeta = 1.5 * dchi_dzeta;
-        const double d_thick_dzeta = -d_thin_dzeta;
+      const auto zeta_j_sqr_minus_h_sqr =
+          [&e_pt, &j_0, &j_thin, &j_thick, &h_sqr_0, &h_sqr_thick, &h_sqr_thin,
+           &h_sqr_thin_thin, &h_sqr_thick_thick,
+           &h_sqr_thin_thick](const double local_zeta) {
+            const double chi = minerbo_closure_function(local_zeta);
+            const double d_thin = 1.5 * chi - 0.5;
+            const double d_thick = 1. - d_thin;
 
-        const double e_fluid = j_0 + j_thin * d_thin + j_thick * d_thick;
-        const double de_fluid_dzeta =
-            j_thin * d_thin_dzeta + j_thick * d_thick_dzeta;
-        const double h_sqr = h_sqr_0 + h_sqr_thick * d_thick +
-                             h_sqr_thin * d_thin +
-                             h_sqr_thin_thin * square(d_thin) +
-                             h_sqr_thick_thick * square(d_thick) +
-                             h_sqr_thin_thick * d_thin * d_thick;
-        const double dh_sqr_dd_thin = h_sqr_thin + h_sqr_thin_thick * d_thick +
-                                      2. * h_sqr_thin_thin * d_thin;
-        const double dh_sqr_dd_thick = h_sqr_thick + h_sqr_thin_thick * d_thin +
-                                       2. * h_sqr_thick_thick * d_thick;
-        return std::make_pair(
-            (square(e_fluid * local_zeta) - h_sqr) / square(e_pt),
-            (2. * e_fluid * de_fluid_dzeta * square(local_zeta) +
-             2. * square(e_fluid) * local_zeta - d_thin_dzeta * dh_sqr_dd_thin -
-             d_thin_dzeta * dh_sqr_dd_thick) /
-                square(e_pt));
-      };
-      const double& zeta = get(*closure_factor)[s];
-      // Initial guess for root finding.
-      // Choice 1: previous value
-      // Choice 2: value for zero-velocity
-      const double zeta_guess =
-          (zeta <= avoid_divisions_by_zero or zeta >= 1. ? sqrt(s_sqr_pt) / e_pt
-                                                         : zeta);
-      // To avoid failures in Newton-Raphson solver at the boundary of
+            const double e_fluid = j_0 + j_thin * d_thin + j_thick * d_thick;
+            const double h_sqr = h_sqr_0 + h_sqr_thick * d_thick +
+                                 h_sqr_thin * d_thin +
+                                 h_sqr_thin_thin * square(d_thin) +
+                                 h_sqr_thick_thick * square(d_thick) +
+                                 h_sqr_thin_thick * d_thin * d_thick;
+            return (square(e_fluid * local_zeta) - h_sqr) / square(e_pt);
+          };
+      // To avoid failures in the root find at the boundary of
       // the allowed domain for zeta, test the edge values first.
-      if (fabs(zeta_j_sqr_minus_h_sqr(0.).first) < root_find_tolerance) {
+      if (fabs(zeta_j_sqr_minus_h_sqr(0.)) < root_find_tolerance) {
         get(*closure_factor)[s] = 0.;
-      } else if (fabs(zeta_j_sqr_minus_h_sqr(1.).first) < root_find_tolerance) {
+      } else if (fabs(zeta_j_sqr_minus_h_sqr(1.)) < root_find_tolerance) {
         get(*closure_factor)[s] = 1.;
       } else {
-        get(*closure_factor)[s] = RootFinder::newton_raphson(
-            zeta_j_sqr_minus_h_sqr, zeta_guess, 1.e-15, 1.,
-            root_find_number_of_digits);
+        ERROR(
+            "This function is broken and effectively untested.  It will be "
+            "fixed later.");
+        get(*closure_factor)[s] = RootFinder::toms748(
+            zeta_j_sqr_minus_h_sqr, 1.e-15, 1., root_find_tolerance, 1.0e-15);
       }
+      const double& zeta = get(*closure_factor)[s];
 
       // Assemble output quantities:
       const double chi = minerbo_closure_function(zeta);
