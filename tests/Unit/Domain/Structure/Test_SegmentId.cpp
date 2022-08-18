@@ -15,6 +15,29 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
 
+namespace {
+void test_errors() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(SegmentId(3, 8), Catch::Matchers::Contains(
+                                         "index = 8, refinement_level = 3"));
+  CHECK_THROWS_WITH(SegmentId(0, 0).id_of_parent(),
+                    Catch::Matchers::Contains("on root refinement level!"));
+  CHECK_THROWS_WITH(
+      SegmentId(0, 0).id_of_sibling(),
+      Catch::Matchers::Contains(
+          "The segment on the root refinement level has no sibling"));
+  CHECK_THROWS_WITH(
+      SegmentId(0, 0).id_of_abutting_nibling(),
+      Catch::Matchers::Contains(
+          "The segment on the root refinement level has no abutting nibling"));
+  CHECK_THROWS_WITH(
+      SegmentId(0, 0).side_of_sibling(),
+      Catch::Matchers::Contains(
+          "The segment on the root refinement level has no sibling"));
+#endif
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId", "[Domain][Unit]") {
   // Test equality operator:
   SegmentId segment_one(4, 3);
@@ -80,60 +103,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId", "[Domain][Unit]") {
                                         SegmentId{3, 2}} ==
           std::unordered_set<SegmentId>{SegmentId{3, 2}, SegmentId{2, 3}});
   }
-}
 
-// [[OutputRegex, index = 8, refinement_level = 3]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.BadIndex",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_segment_id = SegmentId(3, 8);
-  static_cast<void>(failed_segment_id);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, on root refinement level!]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoParent",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto root_segment_id = SegmentId(0, 0);
-  root_segment_id.id_of_parent();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The segment on the root refinement level has no sibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoSibling",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto root_segment_id = SegmentId(0, 0);
-  root_segment_id.id_of_sibling();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The segment on the root refinement level has no abutting
-// nibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoNibling",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto root_segment_id = SegmentId(0, 0);
-  root_segment_id.id_of_abutting_nibling();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The segment on the root refinement level has no sibling]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.SegmentId.NoSibling2",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto root_segment_id = SegmentId(0, 0);
-  root_segment_id.side_of_sibling();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  test_errors();
 }
