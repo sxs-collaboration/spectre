@@ -146,15 +146,11 @@ struct EvolutionMetavars {
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
                                     Frame::Inertial>,
       typename system::gradient_variables>;
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields>;
-  using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
-  using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
 
   using observe_fields = tmpl::push_back<
       tmpl::flatten<tmpl::list<
           tmpl::append<typename system::variables_tag::tags_list,
-                       typename deriv_compute::type::tags_list, error_tags>,
+                       typename deriv_compute::type::tags_list>,
           CurvedScalarWave::Tags::OneIndexConstraintCompute<volume_dim>,
           CurvedScalarWave::Tags::TwoIndexConstraintCompute<volume_dim>,
           ::Tags::PointwiseL2NormCompute<
@@ -164,8 +160,8 @@ struct EvolutionMetavars {
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
   using non_tensor_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>, deriv_compute,
-                 analytic_compute, error_compute>;
+      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
+                 deriv_compute>;
 
   static constexpr bool interpolate = volume_dim == 3;
   struct SphericalSurface
