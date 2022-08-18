@@ -235,7 +235,7 @@ struct EvolutionMetavars {
           tmpl::at<typename factory_creation::factory_classes, Event>>>>;
 
   using dg_step_actions = tmpl::flatten<tmpl::list<
-      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
+      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           EvolutionMetavars>,
       tmpl::conditional_t<
@@ -251,7 +251,7 @@ struct EvolutionMetavars {
       evolution::dg::subcell::Actions::SelectNumericalMethod,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
 
-      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
+      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
           EvolutionMetavars>,
       tmpl::conditional_t<

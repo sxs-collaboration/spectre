@@ -370,7 +370,7 @@ struct EvolutionMetavars {
        Parallel::Phase::Evolve, Parallel::Phase::Exit}};
 
   using step_actions = tmpl::list<
-      evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
+      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<

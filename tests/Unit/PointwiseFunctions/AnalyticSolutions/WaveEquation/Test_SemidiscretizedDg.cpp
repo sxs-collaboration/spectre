@@ -132,7 +132,7 @@ struct Component {
       Parallel::PhaseActions<
           Parallel::Phase, Parallel::Phase::Testing,
           tmpl::list<
-              evolution::dg::Actions::ComputeTimeDerivative<Metavariables>,
+              evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system>,
               dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
               Actions::MutateApply<boundary_scheme>>>>;
 };

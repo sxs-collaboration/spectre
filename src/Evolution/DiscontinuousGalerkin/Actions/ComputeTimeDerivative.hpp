@@ -300,17 +300,17 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(dg_step_choosers)
  * - Modifies:
  *   - `evolution::dg::Tags::MortarData<Dim>`
  */
-template <typename Metavariables>
+template <size_t Dim, typename EvolutionSystem>
 struct ComputeTimeDerivative {
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Metavariables::volume_dim>>;
-  using const_global_cache_tags = tmpl::append<tmpl::list<
-      ::dg::Tags::Formulation,
-      evolution::Tags::BoundaryCorrection<typename Metavariables::system>>>;
+  using inbox_tags = tmpl::list<
+      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
+  using const_global_cache_tags = tmpl::append<
+      tmpl::list<::dg::Tags::Formulation,
+                 evolution::Tags::BoundaryCorrection<EvolutionSystem>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+            typename ActionList, typename ParallelComponent,
+            typename Metavariables>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -319,31 +319,32 @@ struct ComputeTimeDerivative {
       const ParallelComponent* /*meta*/);  // NOLINT const
 
  private:
-  template <typename ParallelComponent, typename DbTagsList>
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables>
   static void send_data_for_fluxes(
       gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
       gsl::not_null<db::DataBox<DbTagsList>*> box);
 };
 
-template <typename Metavariables>
+template <size_t Dim, typename EvolutionSystem>
 template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-          typename ActionList, typename ParallelComponent>
-Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
+          typename ActionList, typename ParallelComponent,
+          typename Metavariables>
+Parallel::iterable_action_return_t
+ComputeTimeDerivative<Dim, EvolutionSystem>::apply(
     db::DataBox<DbTagsList>& box,
     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
     Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
     const ParallelComponent* const /*meta*/) {  // NOLINT const
-  static constexpr size_t volume_dim = Metavariables::volume_dim;
-  using system = typename Metavariables::system;
-  using variables_tag = typename system::variables_tag;
+  using variables_tag = typename EvolutionSystem::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
-  using partial_derivative_tags = typename system::gradient_variables;
-  using flux_variables = typename system::flux_variables;
+  using partial_derivative_tags = typename EvolutionSystem::gradient_variables;
+  using flux_variables = typename EvolutionSystem::flux_variables;
   using compute_volume_time_derivative_terms =
-      typename system::compute_volume_time_derivative_terms;
+      typename EvolutionSystem::compute_volume_time_derivative_terms;
 
-  const Mesh<volume_dim>& mesh = db::get<::domain::Tags::Mesh<volume_dim>>(box);
+  const Mesh<Dim>& mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
   const ::dg::Formulation dg_formulation =
       db::get<::dg::Tags::Formulation>(box);
   ASSERT(alg::all_of(mesh.basis(),
@@ -377,14 +378,13 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
       Variables<typename compute_volume_time_derivative_terms::temporary_tags>;
   using VarsFluxes =
       Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
-                                 tmpl::size_t<volume_dim>, Frame::Inertial>>;
+                                 tmpl::size_t<Dim>, Frame::Inertial>>;
   using VarsPartialDerivatives =
       Variables<db::wrap_tags_in<::Tags::deriv, partial_derivative_tags,
-                                 tmpl::size_t<volume_dim>, Frame::Inertial>>;
+                                 tmpl::size_t<Dim>, Frame::Inertial>>;
   using VarsDivFluxes = Variables<db::wrap_tags_in<
-      ::Tags::div,
-      db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<volume_dim>,
-                       Frame::Inertial>>>;
+      ::Tags::div, db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                    tmpl::size_t<Dim>, Frame::Inertial>>>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   auto buffer = cpp20::make_unique_for_overwrite<double[]>(
       (VarsTemporaries::number_of_independent_components +
@@ -427,12 +427,12 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
        &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
        &evolved_variables = db::get<variables_tag>(box),
        &inertial_coordinates =
-           db::get<domain::Tags::Coordinates<volume_dim, Frame::Inertial>>(box),
+           db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box),
        &logical_to_inertial_inv_jacobian =
            db::get<::domain::Tags::InverseJacobian<
-               volume_dim, Frame::ElementLogical, Frame::Inertial>>(box),
+               Dim, Frame::ElementLogical, Frame::Inertial>>(box),
        &mesh,
-       &mesh_velocity = db::get<::domain::Tags::MeshVelocity<volume_dim>>(box),
+       &mesh_velocity = db::get<::domain::Tags::MeshVelocity<Dim>>(box),
        &partial_derivs, &temporaries, &volume_fluxes](
           const gsl::not_null<Variables<
               db::wrap_tags_in<::Tags::dt, typename variables_tag::tags_list>>*>
@@ -449,14 +449,15 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
       make_not_null(&box));
 
   const auto& boundary_correction =
-      db::get<evolution::Tags::BoundaryCorrection<system>>(box);
+      db::get<evolution::Tags::BoundaryCorrection<EvolutionSystem>>(box);
   using derived_boundary_corrections =
       typename std::decay_t<decltype(boundary_correction)>::creatable_classes;
 
-  const Variables<detail::get_primitive_vars_tags_from_system<system>>*
+  const Variables<detail::get_primitive_vars_tags_from_system<EvolutionSystem>>*
       primitive_vars{nullptr};
-  if constexpr (system::has_primitive_and_conservative_vars) {
-    primitive_vars = &db::get<typename system::primitive_variables_tag>(box);
+  if constexpr (EvolutionSystem::has_primitive_and_conservative_vars) {
+    primitive_vars =
+        &db::get<typename EvolutionSystem::primitive_variables_tag>(box);
   }
 
   static_assert(
@@ -475,15 +476,15 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
           // Note: this call mutates:
           //  - evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
           //  - evolution::dg::Tags::MortarData<Dim>
-          detail::internal_mortar_data<system, volume_dim>(
+          detail::internal_mortar_data<EvolutionSystem, Dim>(
               make_not_null(&box),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               db::get<variables_tag>(box), volume_fluxes, temporaries,
               primitive_vars,
               typename DerivedCorrection::dg_package_data_volume_tags{});
 
-          detail::apply_boundary_conditions_on_all_external_faces<system,
-                                                                  volume_dim>(
+          detail::apply_boundary_conditions_on_all_external_faces<
+              EvolutionSystem, Dim>(
               make_not_null(&box),
               dynamic_cast<const DerivedCorrection&>(boundary_correction),
               temporaries, volume_fluxes, partial_derivs, primitive_vars);
@@ -501,28 +502,28 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
   return {Parallel::AlgorithmExecution::Continue, std::nullopt};
 }
 
-template <typename Metavariables>
-template <typename ParallelComponent, typename DbTagsList>
-void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
+template <size_t Dim, typename EvolutionSystem>
+template <typename ParallelComponent, typename DbTagsList,
+          typename Metavariables>
+void ComputeTimeDerivative<Dim, EvolutionSystem>::send_data_for_fluxes(
     const gsl::not_null<Parallel::GlobalCache<Metavariables>*> cache,
     const gsl::not_null<db::DataBox<DbTagsList>*> box) {
-  constexpr size_t volume_dim = Metavariables::volume_dim;
   auto& receiver_proxy =
       Parallel::get_parallel_component<ParallelComponent>(*cache);
-  const auto& element = db::get<domain::Tags::Element<volume_dim>>(*box);
+  const auto& element = db::get<domain::Tags::Element<Dim>>(*box);
 
     const auto& time_step_id = db::get<::Tags::TimeStepId>(*box);
     const auto& all_mortar_data =
-        db::get<evolution::dg::Tags::MortarData<volume_dim>>(*box);
+        db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
     const auto& mortar_meshes =
-        get<evolution::dg::Tags::MortarMesh<volume_dim>>(*box);
+        get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
 
-    std::optional<DirectionMap<volume_dim, std::vector<double>>>
+    std::optional<DirectionMap<Dim, std::vector<double>>>
         all_neighbor_data_for_reconstruction = std::nullopt;
     // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
     // projection.
-    Mesh<volume_dim> ghost_cell_mesh =
-        db::get<domain::Tags::Mesh<volume_dim>>(*box);
+    Mesh<Dim> ghost_cell_mesh =
+        db::get<domain::Tags::Mesh<Dim>>(*box);
     if constexpr (using_subcell_v<Metavariables>) {
       all_neighbor_data_for_reconstruction =
           evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
@@ -544,7 +545,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
       for (const auto& neighbor : neighbors) {
         const std::pair mortar_id{direction, neighbor};
 
-        std::pair<Mesh<volume_dim - 1>, std::vector<double>>
+        std::pair<Mesh<Dim - 1>, std::vector<double>>
             neighbor_boundary_data_on_mortar{};
         ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
                "The current time step id of the volume is "
@@ -574,7 +575,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
           }
         }();
 
-        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+        std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
                    std::optional<std::vector<double>>,
                    std::optional<std::vector<double>>, ::TimeStepId>
             data{ghost_cell_mesh,
@@ -586,7 +587,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
         // Send mortar data (the `std::tuple` named `data`) to neighbor
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                volume_dim>>(
+                Dim>>(
             receiver_proxy[neighbor], time_step_id,
             std::make_pair(std::pair{direction_from_neighbor, element.id()},
                            data));
@@ -594,13 +595,13 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
     }
 
     if constexpr (Metavariables::local_time_stepping) {
-      using variables_tag = typename Metavariables::system::variables_tag;
+      using variables_tag = typename EvolutionSystem::variables_tag;
       using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
       // We assume isotropic quadrature, i.e. the quadrature is the same in
       // all directions.
       const bool using_gauss_points =
-          db::get<domain::Tags::Mesh<volume_dim>>(*box).quadrature() ==
-          make_array<volume_dim>(Spectral::Quadrature::Gauss);
+          db::get<domain::Tags::Mesh<Dim>>(*box).quadrature() ==
+          make_array<Dim>(Spectral::Quadrature::Gauss);
 
       const Scalar<DataVector> volume_det_inv_jacobian{};
       if (using_gauss_points) {
@@ -620,33 +621,33 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
       // using the `NormalDotNumericalFlux` prefix tag. This is because the
       // returned quantity is more a `dt` quantity than a
       // `NormalDotNormalDotFlux` since it's been lifted to the volume.
-      using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
+      using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
       const auto integration_order =
           db::get<::Tags::HistoryEvolvedVariables<>>(*box).integration_order();
-      db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
+      db::mutate<evolution::dg::Tags::MortarData<Dim>,
                  evolution::dg::Tags::MortarDataHistory<
-                     volume_dim, typename dt_variables_tag::type>>(
+                     Dim, typename dt_variables_tag::type>>(
           box,
           [&element, integration_order, &time_step_id, using_gauss_points,
            &volume_det_inv_jacobian](
               const gsl::not_null<
-                  std::unordered_map<Key, evolution::dg::MortarData<volume_dim>,
+                  std::unordered_map<Key, evolution::dg::MortarData<Dim>,
                                      boost::hash<Key>>*>
                   mortar_data,
               const gsl::not_null<
                   std::unordered_map<Key,
                                      TimeSteppers::BoundaryHistory<
-                                         evolution::dg::MortarData<volume_dim>,
-                                         evolution::dg::MortarData<volume_dim>,
+                                         evolution::dg::MortarData<Dim>,
+                                         evolution::dg::MortarData<Dim>,
                                          typename dt_variables_tag::type>,
                                      boost::hash<Key>>*>
                   boundary_data_history,
-              const Mesh<volume_dim>& volume_mesh,
+              const Mesh<Dim>& volume_mesh,
               const DirectionMap<
-                  volume_dim,
+                  Dim,
                   std::optional<Variables<tmpl::list<
                       evolution::dg::Tags::MagnitudeOfNormal,
-                      evolution::dg::Tags::NormalCovector<volume_dim>>>>>&
+                      evolution::dg::Tags::NormalCovector<Dim>>>>>&
                   normal_covector_and_magnitude) {
             Scalar<DataVector> volume_det_jacobian{};
             Scalar<DataVector> face_det_jacobian{};
@@ -667,7 +668,7 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
               if (using_gauss_points) {
                 const Matrix identity{};
                 auto interpolation_matrices =
-                    make_array<Metavariables::volume_dim>(std::cref(identity));
+                    make_array<Dim>(std::cref(identity));
                 const std::pair<Matrix, Matrix>& matrices =
                     Spectral::boundary_interpolation_matrices(
                         volume_mesh.slice_through(direction.dimension()));
@@ -704,13 +705,12 @@ void ComputeTimeDerivative<Metavariables>::send_data_for_fluxes(
                     time_step_id, std::move(mortar_data->at(mortar_id)));
                 boundary_data_history->at(mortar_id).integration_order(
                     integration_order);
-                mortar_data->at(mortar_id) =
-                    MortarData<Metavariables::volume_dim>{};
+                mortar_data->at(mortar_id) = MortarData<Dim>{};
               }
             }
           },
-          db::get<domain::Tags::Mesh<volume_dim>>(*box),
-          db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<volume_dim>>(
+          db::get<domain::Tags::Mesh<Dim>>(*box),
+          db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>>(
               *box));
   }
 }
