@@ -157,6 +157,13 @@ SpatialDiscretization:
     Formulation: StrongInertial
     Quadrature: GaussLobatto
 
+Filtering:
+  ExpFilter0:
+    Alpha: 36.0
+    HalfPower: 24
+    DisableForDebugging: True
+
+
 EventsAndTriggers:
   ? Slabs:
       EvenlySpaced:

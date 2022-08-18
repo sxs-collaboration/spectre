@@ -381,15 +381,14 @@ struct EvolutionMetavars {
                   EvolutionMetavars>,
               Actions::RecordTimeStepperData<>,
               evolution::Actions::RunEventsAndDenseTriggers<>,
-              Actions::UpdateU<>,
-              dg::Actions::Filter<
-                  Filters::Exponential<0>,
-                  tmpl::list<gr::Tags::SpacetimeMetric<
-                                 volume_dim, Frame::Inertial, DataVector>,
-                             GeneralizedHarmonic::Tags::Pi<volume_dim,
-                                                           Frame::Inertial>,
-                             GeneralizedHarmonic::Tags::Phi<
-                                 volume_dim, Frame::Inertial>>>>>>;
+              Actions::UpdateU<>>>,
+      dg::Actions::Filter<
+          Filters::Exponential<0>,
+          tmpl::list<
+              gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial,
+                                        DataVector>,
+              GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>,
+              GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>>>;
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
