@@ -11,7 +11,7 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_Characteristics.cpp
   Test_InitializeConstraintDampingGammas.cpp
-  Test_InitializeGrVars.cpp
+  Test_InitializeEvolvedVariables.cpp
   Test_PsiSquared.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
@@ -28,8 +28,12 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   CurvedScalarWave
+  CurvedWaveEquationAnalyticData
   CurvedScalarWaveHelpers
   DataStructures
   GeneralRelativityHelpers
+  GeneralRelativitySolutions
+  MathFunctions
   Utilities
-  )
+  WaveEquationSolutions
+)
