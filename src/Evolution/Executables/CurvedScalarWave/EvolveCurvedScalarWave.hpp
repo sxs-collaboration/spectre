@@ -29,6 +29,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BackgroundSpacetime.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/RegisterDerived.hpp"
@@ -80,7 +81,6 @@
 #include "ParallelAlgorithms/Interpolation/Targets/Sphere.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/PureSphericalHarmonic.hpp"
-#include "PointwiseFunctions/AnalyticData/CurvedWaveEquation/ScalarWaveGr.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -125,13 +125,10 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim, typename BackgroundSpacetime, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<InitialData>,
-                          Tags::AnalyticSolution<InitialData>,
-                          Tags::AnalyticData<InitialData>>;
+  using background_spacetime = BackgroundSpacetime;
   static_assert(
       is_analytic_data_v<InitialData> xor is_analytic_solution_v<InitialData>,
       "initial_data must be either an analytic_data or an analytic_solution");
@@ -264,7 +261,9 @@ struct EvolutionMetavars {
                                          CurvedScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
-  using const_global_cache_tags = tmpl::list<initial_data_tag>;
+  using const_global_cache_tags = tmpl::list<
+      CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>,
+      Tags::AnalyticData<InitialData>>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
@@ -272,16 +271,17 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
-      Initialization::Actions::NonconservativeSystem<system>,
-      evolution::Initialization::Actions::SetVariables<
-          domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       Initialization::Actions::AddSimpleTags<
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>,
-          CurvedScalarWave::Initialization::InitializeGrVars<volume_dim>>,
-      Initialization::Actions::AddComputeTags<tmpl::flatten<tmpl::list<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>>>,
+          CurvedScalarWave::Initialization::InitializeGrVars<
+              BackgroundSpacetime>>,
+      Initialization::Actions::NonconservativeSystem<system>,
+      Actions::MutateApply<CurvedScalarWave::Initialization::
+                               InitializeEvolvedVariables<volume_dim>>,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+      Initialization::Actions::AddComputeTags<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,

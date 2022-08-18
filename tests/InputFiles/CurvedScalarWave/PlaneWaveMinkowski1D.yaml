@@ -8,17 +8,17 @@ ResourceInfo:
   AvoidGlobalProc0: false
 
 AnalyticData:
-  ScalarWaveGr:
-    Background:
-    ScalarField:
-      WaveVector: [1.0]
-      Center: [0.0]
-      Profile:
-        Sinusoid:
-          Amplitude: 1.0
-          Wavenumber: 1.0
-          Phase: 0.0
+  PlaneWave:
+    WaveVector: [1.0]
+    Center: [0.0]
+    Profile:
+      Sinusoid:
+        Amplitude: 1.0
+        Wavenumber: 1.0
+        Phase: 0.0
 
+BackgroundSpacetime:
+  Minkowski:
 
 PhaseChangeAndTriggers:
 
