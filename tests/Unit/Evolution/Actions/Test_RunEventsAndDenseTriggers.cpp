@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <tuple>
 #include <utility>
@@ -91,25 +92,30 @@ class TestTrigger : public DenseTrigger {
         is_triggered_(is_triggered) {}
 
   using is_triggered_argument_tags = tmpl::list<Tags::Time>;
-  Result is_triggered(const double time) const {
+  template <typename Metavariables, typename ArrayIndex, typename Component>
+  std::optional<bool> is_triggered(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const double time) const {
     if (time == init_time_) {
-      return {false, trigger_time_};
+      return false;
     }
     CHECK(time == trigger_time_);
-    return {is_triggered_, (trigger_time_ > init_time_ ? 1.0 : -1.0) *
-                               std::numeric_limits<double>::infinity()};
+    return is_ready_ ? std::optional{is_triggered_} : std::nullopt;
   }
 
-  using is_ready_argument_tags = tmpl::list<Tags::Time>;
+  using next_check_time_argument_tags = tmpl::list<Tags::Time>;
   template <typename Metavariables, typename ArrayIndex, typename Component>
-  bool is_ready(Parallel::GlobalCache<Metavariables>& /*cache*/,
-                const ArrayIndex& /*array_index*/,
-                const Component* const /*meta*/, const double time) const {
+  std::optional<double> next_check_time(
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const Component* /*component*/,
+      const double time) const {
     if (time == init_time_) {
-      return true;
+      return trigger_time_;
     }
     CHECK(time == trigger_time_);
-    return is_ready_;
+    return (trigger_time_ > init_time_ ? 1.0 : -1.0) *
+           std::numeric_limits<double>::infinity();
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

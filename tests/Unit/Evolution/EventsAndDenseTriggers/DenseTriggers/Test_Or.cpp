@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <initializer_list>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -39,8 +40,9 @@ struct Metavariables {
   };
 };
 
-void check(const bool time_runs_forward, const bool expected_is_ready,
-           const bool expected_is_triggered, const double expected_next_check,
+void check(const bool time_runs_forward,
+           const std::optional<bool>& expected_is_triggered,
+           const std::optional<double>& expected_next_check_time,
            const std::string& creation_string) {
   CAPTURE(creation_string);
   const auto box = db::create<
@@ -55,44 +57,46 @@ void check(const bool time_runs_forward, const bool expected_is_ready,
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string));
 
-  CHECK(trigger->is_ready(box, cache, array_index, component) ==
-        expected_is_ready);
-  if (not expected_is_ready) {
-    return;
-  }
-  const auto result = trigger->is_triggered(box);
-  CHECK(result.is_triggered == expected_is_triggered);
-  CHECK(result.next_check == expected_next_check);
+  CHECK(trigger->is_triggered(box, cache, array_index, component) ==
+        expected_is_triggered);
+  CHECK(trigger->next_check_time(box, cache, array_index, component) ==
+        expected_next_check_time);
 }
 
-void check_permutations(
-    const bool expected_is_ready, const bool expected_is_triggered,
-    const double expected_next_check,
-    std::vector<std::pair<bool, bool>> is_ready_and_is_triggered,
-    std::vector<double> next_checks) {
-  alg::sort(is_ready_and_is_triggered);
+void check_permutations(const std::optional<bool>& expected_is_triggered,
+                        const std::optional<double>& expected_next_check,
+                        std::vector<std::optional<bool>> is_triggered,
+                        std::vector<std::optional<double>> next_checks) {
+  alg::sort(is_triggered);
   alg::sort(next_checks);
   do {
     do {
       for (const bool time_runs_forward : {true, false}) {
         const double sign = time_runs_forward ? 1.0 : -1.0;
+        const auto set_sign =
+            [&sign](const std::optional<double>& arg) -> std::optional<double> {
+          if (arg.has_value()) {
+            return std::optional{sign * *arg};
+          } else {
+            return std::nullopt;
+          }
+        };
+        using NotReady = TestHelpers::DenseTriggers::TestTrigger::NotReady;
         std::stringstream creation;
         creation << std::boolalpha;
         creation << "Or:\n";
-        for (size_t i = 0; i < is_ready_and_is_triggered.size(); ++i) {
+        for (size_t i = 0; i < is_triggered.size(); ++i) {
           creation << "  - TestTrigger:\n"
-                   << "      IsReady: " << is_ready_and_is_triggered[i].first
+                   << "      IsTriggered: " << NotReady::format(is_triggered[i])
                    << "\n"
-                   << "      IsTriggered: "
-                   << is_ready_and_is_triggered[i].second << "\n"
-                   << "      NextCheck: " << sign * next_checks[i] << "\n";
+                   << "      NextCheck: "
+                   << NotReady::format(set_sign(next_checks[i])) << "\n";
         }
-        check(time_runs_forward, expected_is_ready, expected_is_triggered,
-              sign * expected_next_check, creation.str());
+        check(time_runs_forward, expected_is_triggered,
+              set_sign(expected_next_check), creation.str());
       }
     } while (cpp20::next_permutation(next_checks.begin(), next_checks.end()));
-  } while (cpp20::next_permutation(is_ready_and_is_triggered.begin(),
-                                   is_ready_and_is_triggered.end()));
+  } while (cpp20::next_permutation(is_triggered.begin(), is_triggered.end()));
 }
 }  // namespace
 
@@ -100,21 +104,45 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Or",
                   "[Unit][Evolution]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
-  check_permutations(true, false, std::numeric_limits<double>::infinity(), {},
-                     {});
+  check_permutations(false, std::numeric_limits<double>::infinity(), {}, {});
 
-  check_permutations(false, false, 0.0, {{false, false}}, {5.0});
-  check_permutations(true, false, 5.0, {{true, false}}, {5.0});
-  check_permutations(true, true, 5.0, {{true, true}}, {5.0});
+  {
+    const std::initializer_list<
+        std::pair<std::optional<bool>, std::vector<std::optional<bool>>>>
+        is_triggered_tests{
+            {std::nullopt, {std::nullopt}}, {false, {false}}, {true, {true}}};
+    const std::initializer_list<
+        std::pair<std::optional<double>, std::vector<std::optional<double>>>>
+        next_check_time_tests{{std::nullopt, {std::nullopt}}, {5.0, {5.0}}};
+    for (const auto& is_triggered_test : is_triggered_tests) {
+      for (const auto& next_check_time_test : next_check_time_tests) {
+        check_permutations(is_triggered_test.first, next_check_time_test.first,
+                           is_triggered_test.second,
+                           next_check_time_test.second);
+      }
+    }
+  }
 
-  check_permutations(false, false, 0.0, {{false, false}, {false, false}},
-                     {5.0, 10.0});
-  check_permutations(false, false, 0.0, {{false, false}, {true, false}},
-                     {5.0, 10.0});
-  check_permutations(true, false, 5.0, {{true, false}, {true, false}},
-                     {5.0, 10.0});
-  check_permutations(true, true, 5.0, {{true, false}, {true, true}},
-                     {5.0, 10.0});
-  check_permutations(true, true, 5.0, {{true, true}, {true, true}},
-                     {5.0, 10.0});
+  {
+    const std::initializer_list<
+        std::pair<std::optional<bool>, std::vector<std::optional<bool>>>>
+        is_triggered_tests{{std::nullopt, {std::nullopt, std::nullopt}},
+                           {std::nullopt, {std::nullopt, false}},
+                           {true, {std::nullopt, true}},
+                           {false, {false, false}},
+                           {true, {false, true}},
+                           {true, {true, true}}};
+    const std::initializer_list<
+        std::pair<std::optional<double>, std::vector<std::optional<double>>>>
+        next_check_time_tests{{std::nullopt, {std::nullopt, std::nullopt}},
+                              {std::nullopt, {std::nullopt, 5.0}},
+                              {5.0, {5.0, 10.0}}};
+    for (const auto& is_triggered_test : is_triggered_tests) {
+      for (const auto& next_check_time_test : next_check_time_tests) {
+        check_permutations(is_triggered_test.first, next_check_time_test.first,
+                           is_triggered_test.second,
+                           next_check_time_test.second);
+      }
+    }
+  }
 }

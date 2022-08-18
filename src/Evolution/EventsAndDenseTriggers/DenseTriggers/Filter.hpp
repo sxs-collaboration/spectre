@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <string>
 
@@ -63,23 +64,28 @@ class Filter : public DenseTrigger {
 
   using is_triggered_argument_tags = tmpl::list<Tags::DataBox>;
 
-  template <typename DbTags>
-  Result is_triggered(const db::DataBox<DbTags>& box) const {
-    auto result = trigger_->is_triggered(box);
-    if (not filter_->is_triggered(box)) {
-      result.is_triggered = false;
+  template <typename Metavariables, typename ArrayIndex, typename Component,
+            typename DbTags>
+  std::optional<bool> is_triggered(Parallel::GlobalCache<Metavariables>& cache,
+                                   const ArrayIndex& array_index,
+                                   const Component* component,
+                                   const db::DataBox<DbTags>& box) const {
+    auto result = trigger_->is_triggered(box, cache, array_index, component);
+    if (result == std::optional{true}) {
+      return filter_->is_triggered(box);
     }
     return result;
   }
 
-  using is_ready_argument_tags = tmpl::list<Tags::DataBox>;
+  using next_check_time_argument_tags = tmpl::list<Tags::DataBox>;
 
   template <typename Metavariables, typename ArrayIndex, typename Component,
             typename DbTags>
-  bool is_ready(Parallel::GlobalCache<Metavariables>& cache,
-                const ArrayIndex& array_index, const Component* const component,
-                const db::DataBox<DbTags>& box) const {
-    return trigger_->is_ready(box, cache, array_index, component);
+  std::optional<double> next_check_time(
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component,
+      const db::DataBox<DbTags>& box) const {
+    return trigger_->next_check_time(box, cache, array_index, component);
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

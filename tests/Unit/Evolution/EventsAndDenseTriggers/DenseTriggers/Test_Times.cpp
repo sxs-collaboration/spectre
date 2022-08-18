@@ -68,17 +68,18 @@ void check_one_direction(const std::vector<double>& trigger_times,
   const int array_index = 0;
   const void* component = nullptr;
 
-  CHECK(trigger->is_ready(box, cache, array_index, component));
   CHECK_FALSE(trigger->previous_trigger_time().has_value());
-  const auto is_triggered = trigger->is_triggered(box);
-  CHECK(is_triggered.is_triggered == expected_is_triggered);
-  CHECK(is_triggered.next_check == expected_next_check);
-  if (expected_is_triggered) {
+  CHECK(trigger->is_triggered(box, cache, array_index, component) ==
+        expected_is_triggered);
+  CHECK(trigger->next_check_time(box, cache, array_index, component) ==
+        std::optional{expected_next_check});
+  if (expected_is_triggered == std::optional{true}) {
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
     db::mutate<::Tags::Time>(
         make_not_null(&box),
         [](const gsl::not_null<double*> time) { *time += 0.01; });
-    CHECK_FALSE(trigger->is_triggered(box).is_triggered);
+    CHECK(trigger->is_triggered(box, cache, array_index, component) ==
+          std::optional{false});
     REQUIRE(trigger->previous_trigger_time().has_value());
     CHECK(trigger->previous_trigger_time().value() == current_time);
   } else {
@@ -86,7 +87,8 @@ void check_one_direction(const std::vector<double>& trigger_times,
     db::mutate<::Tags::Time>(
         make_not_null(&box),
         [](const gsl::not_null<double*> time) { *time += 0.01; });
-    CHECK_FALSE(trigger->is_triggered(box).is_triggered);
+    CHECK(trigger->is_triggered(box, cache, array_index, component) ==
+          std::optional{false});
     CHECK_FALSE(trigger->previous_trigger_time().has_value());
   }
 }

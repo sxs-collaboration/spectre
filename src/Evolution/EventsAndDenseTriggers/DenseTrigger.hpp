@@ -4,6 +4,7 @@
 #pragma once
 
 #include <limits>
+#include <optional>
 #include <pup.h>
 #include <type_traits>
 
@@ -34,17 +35,6 @@ namespace DenseTriggers {}
 /// times off by one step.  The evolved variables will be in an
 /// unspecified state.
 class DenseTrigger : public PUP::able {
- public:
-  /// %Result type for the `is_triggered` method.
-  ///
-  /// This indicates whether the trigger has fired and the next time
-  /// the trigger should be checked.  The consumer is not required to
-  /// wait until the requested time before testing the trigger again.
-  struct Result {
-    bool is_triggered;
-    double next_check;
-  };
-
  protected:
   /// \cond
   DenseTrigger() = default;
@@ -62,52 +52,61 @@ class DenseTrigger : public PUP::able {
   WRAPPED_PUPable_abstract(DenseTrigger);  // NOLINT
   /// \endcond
 
-  /// Check whether the trigger fires.
-  template <typename DbTags>
-  Result is_triggered(const db::DataBox<DbTags>& box) {
+  /// Check whether the trigger fires.  Returns std::nullopt if
+  /// insufficient data is available to make the decision.  The
+  /// trigger is not responsible for checking whether dense output of
+  /// the evolved variables is possible, but may need to check things
+  /// such as the availability of FunctionOfTime data.
+  template <typename DbTags, typename Metavariables, typename ArrayIndex,
+            typename Component>
+  std::optional<bool> is_triggered(const db::DataBox<DbTags>& box,
+                                   Parallel::GlobalCache<Metavariables>& cache,
+                                   const ArrayIndex& array_index,
+                                   const Component* const component) {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
     previous_trigger_time_ = next_previous_trigger_time_;
-    return call_with_dynamic_type<Result,
+    return call_with_dynamic_type<std::optional<bool>,
                                   tmpl::at<factory_classes, DenseTrigger>>(
-        this, [&box, this](auto* const trigger) {
+        this,
+        [this, &array_index, &box, &cache, &component](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
           const auto result =
               db::apply<typename TriggerType::is_triggered_argument_tags>(
-                  [&trigger](const auto&... args) {
-                    return trigger->is_triggered(args...);
+                  [&array_index, &cache, &component,
+                   &trigger](const auto&... args) {
+                    return trigger->is_triggered(cache, array_index, component,
+                                                 args...);
                   },
                   box);
-          if (result.is_triggered) {
+          if (result == std::optional{true}) {
             next_previous_trigger_time_ = db::get<::Tags::Time>(box);
           }
           return result;
         });
   }
 
-  /// Check whether all data required to evaluate the trigger is
-  /// available.  The trigger is not responsible for checking whether
-  /// dense output of the evolved variables is possible, but may need
-  /// to check things such as the availability of FunctionOfTime data.
+  /// Obtain the next time to check the trigger, or std::nullopt if the
+  /// trigger is not ready to report yet.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename Component>
-  bool is_ready(const db::DataBox<DbTags>& box,
-                Parallel::GlobalCache<Metavariables>& cache,
-                const ArrayIndex& array_index,
-                const Component* const component) const {
+  std::optional<double> next_check_time(
+      const db::DataBox<DbTags>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const Component* component) {
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
             box))>::factory_creation::factory_classes;
-    return call_with_dynamic_type<bool,
+    return call_with_dynamic_type<std::optional<double>,
                                   tmpl::at<factory_classes, DenseTrigger>>(
         this, [&array_index, &box, &cache, &component](auto* const trigger) {
           using TriggerType = std::decay_t<decltype(*trigger)>;
-          return db::apply<typename TriggerType::is_ready_argument_tags>(
+          return db::apply<typename TriggerType::next_check_time_argument_tags>(
               [&array_index, &cache, &component,
                &trigger](const auto&... args) {
-                return trigger->is_ready(cache, array_index, component,
-                                         args...);
+                return trigger->next_check_time(cache, array_index, component,
+                                                args...);
               },
               box);
         });

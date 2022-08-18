@@ -14,8 +14,19 @@ namespace DenseTriggers {
 Times::Times(std::unique_ptr<TimeSequence<double>> times)
     : times_(std::move(times)) {}
 
-DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
-                                         const double time) const {
+void Times::pup(PUP::er& p) {
+  DenseTrigger::pup(p);
+  p | times_;
+}
+
+std::optional<bool> Times::is_triggered_impl(const double time) const {
+  const auto trigger_times = times_->times_near(time);
+
+  return time == trigger_times[1];
+}
+
+std::optional<double> Times::next_check_time_impl(
+    const TimeStepId& time_step_id, const double time) const {
   const evolution_less<double> before{time_step_id.time_runs_forward()};
 
   const auto trigger_times = times_->times_near(time);
@@ -27,12 +38,7 @@ DenseTrigger::Result Times::is_triggered(const TimeStepId& time_step_id,
     }
   }
 
-  return {time == trigger_times[1], next_time};
-}
-
-void Times::pup(PUP::er& p) {
-  DenseTrigger::pup(p);
-  p | times_;
+  return next_time;
 }
 
 PUP::able::PUP_ID Times::my_PUP_ID = 0;  // NOLINT

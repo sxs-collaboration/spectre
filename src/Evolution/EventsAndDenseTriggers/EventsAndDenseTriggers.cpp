@@ -30,7 +30,7 @@ EventsAndDenseTriggers::EventsAndDenseTriggers(
 void EventsAndDenseTriggers::add_trigger_and_events(
     std::unique_ptr<DenseTrigger> trigger,
     std::vector<std::unique_ptr<Event>> events) {
-  ASSERT(heap_size_ == -1, "Cannot add events after initialization");
+  ASSERT(not initialized(), "Cannot add events after initialization");
   events_and_triggers_.reserve(events_and_triggers_.size() + 1);
   events_and_triggers_.push_back(
       TriggerRecord{std::numeric_limits<double>::signaling_NaN(),
@@ -40,9 +40,15 @@ void EventsAndDenseTriggers::add_trigger_and_events(
 void EventsAndDenseTriggers::pup(PUP::er& p) {
   p | events_and_triggers_;
   p | heap_size_;
+  p | to_run_position_;
   p | processing_position_;
+  p | event_to_check_;
   p | next_check_;
   p | next_check_after_;
+}
+
+bool EventsAndDenseTriggers::initialized() const {
+  return heap_size_ != std::numeric_limits<size_t>::max();
 }
 
 void EventsAndDenseTriggers::populate_active_triggers() {
@@ -56,17 +62,19 @@ void EventsAndDenseTriggers::populate_active_triggers() {
     std::pop_heap(events_and_triggers_.begin(), heap_end(), next_check_after_);
     --heap_size_;
   }
+  to_run_position_ = heap_size_;
   processing_position_ = heap_size_;
 }
 
-void EventsAndDenseTriggers::finish_processing_trigger_at_current_time(
-    const typename Storage::iterator& index) {
-  ASSERT(not events_and_triggers_.empty(), "No triggers");
-  ASSERT(index >= heap_end(), "Trigger not being processed.");
-
-  using std::swap;
-  swap(*index, *heap_end());
-
+void EventsAndDenseTriggers::reschedule_next_trigger(
+    const double next_check_time, const bool time_runs_forward) {
+  if (not evolution_greater<double>{time_runs_forward}(
+          next_check_time, heap_end()->next_check)) {
+    ERROR("Trigger at time " << heap_end()->next_check
+          << " rescheduled itself for earlier time "
+          << next_check_time);
+  }
+  heap_end()->next_check = next_check_time;
   ++heap_size_;
   std::push_heap(events_and_triggers_.begin(), heap_end(), next_check_after_);
 }

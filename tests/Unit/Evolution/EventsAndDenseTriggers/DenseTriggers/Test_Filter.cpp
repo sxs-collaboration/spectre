@@ -77,17 +77,20 @@ struct Metavariables {
   };
 };
 
-void check(const bool expected_is_ready, const bool expected_is_triggered,
-           const double expected_next_check, const bool dense_is_ready,
-           const bool dense_is_triggered, const bool non_dense_is_triggered) {
+void check(const std::optional<bool>& expected_is_triggered,
+           const std::optional<double>& expected_next_check,
+           const std::optional<bool>& dense_is_triggered,
+           const bool non_dense_is_triggered) {
+  using NotReady = TestHelpers::DenseTriggers::TestTrigger::NotReady;
   std::stringstream creation_string;
   creation_string << std::boolalpha;
   creation_string << "Filter:\n"
                   << "  Trigger:\n"
                   << "    TestTrigger:\n"
-                  << "      IsReady: " << dense_is_ready << "\n"
-                  << "      IsTriggered: " << dense_is_triggered << "\n"
-                  << "      NextCheck: " << expected_next_check << "\n"
+                  << "      IsTriggered: "
+                  << NotReady::format(dense_is_triggered) << "\n"
+                  << "      NextCheck: "
+                  << NotReady::format(expected_next_check) << "\n"
                   << "  Filter:\n"
                   << "    TestTrigger:\n"
                   << "      Result: " << non_dense_is_triggered;
@@ -101,14 +104,10 @@ void check(const bool expected_is_ready, const bool expected_is_triggered,
   const auto trigger = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<DenseTrigger>, Metavariables>(
           creation_string.str()));
-  CHECK(trigger->is_ready(box, cache, array_index, component) ==
-        expected_is_ready);
-  if (not expected_is_ready) {
-    return;
-  }
-  const auto result = trigger->is_triggered(box);
-  CHECK(result.is_triggered == expected_is_triggered);
-  CHECK(result.next_check == expected_next_check);
+  CHECK(trigger->is_triggered(box, cache, array_index, component) ==
+        expected_is_triggered);
+  CHECK(trigger->next_check_time(box, cache, array_index, component) ==
+        expected_next_check);
 }
 
 struct ExampleMetavariables {
@@ -145,7 +144,10 @@ Filter:
         Parallel::Tags::MetavariablesImpl<ExampleMetavariables>, ::Tags::Time,
         ::Tags::TimeStepId>>(ExampleMetavariables{}, time,
                              TimeStepId(true, 0, Slab(0., 1.).start()));
-    return trigger->is_triggered(box).is_triggered;
+    Parallel::GlobalCache<Metavariables> cache{};
+    const int array_index = 0;
+    const void* component = nullptr;
+    return *trigger->is_triggered(box, cache, array_index, component);
   };
   CHECK(not run_trigger(90.));
   CHECK(not run_trigger(95.));
@@ -159,14 +161,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndDenseTriggers.DenseTriggers.Filter",
                   "[Unit][Evolution]") {
   Parallel::register_factory_classes_with_charm<Metavariables>();
 
-  check(false, false, 3.5, false, false, false);
-  check(false, false, 3.5, false, false,  true);
-  check(false, false, 3.5, false,  true, false);
-  check(false, false, 3.5, false,  true,  true);
-  check( true, false, 3.5,  true, false, false);
-  check( true, false, 3.5,  true, false,  true);
-  check( true, false, 3.5,  true,  true, false);
-  check( true,  true, 3.5,  true,  true,  true);
+  for (const auto& next_check : {std::optional{3.5}, std::optional<double>{}}) {
+    check(std::nullopt, next_check, std::nullopt, false);
+    check(std::nullopt, next_check, std::nullopt, true);
+    check(false, next_check, false, false);
+    check(false, next_check, false, true);
+    check(false, next_check, true, false);
+    check(true, next_check, true, true);
+  }
 
   example();
 }

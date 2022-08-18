@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -81,6 +83,11 @@ class EventsAndDenseTriggers {
 
   enum class TriggeringState { Ready, NeedsEvolvedVariables, NotReady };
 
+  /// Check triggers fire and whether all events to run are ready.  If
+  /// this function returns anything other than NotReady, then
+  /// rerunning it will skip checks (except for
+  /// Event::needs_evolved_variables) until a successful call to
+  /// reschedule.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   TriggeringState is_ready(const db::DataBox<DbTags>& box,
@@ -88,9 +95,24 @@ class EventsAndDenseTriggers {
                            const ArrayIndex& array_index,
                            const ComponentPointer component);
 
+  /// Run events associated with fired triggers.  This must be called
+  /// after is_ready returns something other then NotReady.  Any
+  /// repeated calls will be no-ops until a successful call to
+  /// reschedule.
   template <typename DbTags, typename Metavariables, typename ArrayIndex,
             typename ComponentPointer>
   void run_events(db::DataBox<DbTags>& box,
+                  Parallel::GlobalCache<Metavariables>& cache,
+                  const ArrayIndex& array_index,
+                  const ComponentPointer component);
+
+  /// Schedule the next check.  This must be called after run_events
+  /// for the current check.  Returns `true` on success, `false` if
+  /// insufficient data is available and the call should be retried
+  /// later.
+  template <typename DbTags, typename Metavariables, typename ArrayIndex,
+            typename ComponentPointer>
+  bool reschedule(const db::DataBox<DbTags>& box,
                   Parallel::GlobalCache<Metavariables>& cache,
                   const ArrayIndex& array_index,
                   const ComponentPointer component);
@@ -108,20 +130,18 @@ class EventsAndDenseTriggers {
 
  private:
   typename Storage::iterator heap_end() {
-    return events_and_triggers_.begin() + heap_size_;
-  }
-
-  typename Storage::iterator current_trigger() {
-    return events_and_triggers_.begin() + processing_position_;
+    return events_and_triggers_.begin() +
+           static_cast<Storage::difference_type>(heap_size_);
   }
 
   template <typename DbTags>
   void initialize(const db::DataBox<DbTags>& box);
 
+  bool initialized() const;
+
   void populate_active_triggers();
 
-  void finish_processing_trigger_at_current_time(
-      const typename Storage::iterator& index);
+  void reschedule_next_trigger(double next_check_time, bool time_runs_forward);
 
   class TriggerTimeAfter {
    public:
@@ -140,31 +160,55 @@ class EventsAndDenseTriggers {
 
   // The data structure used here is a heap containing the triggers
   // not being tested at the moment, with the earliest time as the
-  // root at index 0, followed by the triggers known to trigger at the
-  // current time, followed by the triggers currently being processed.
-  // When we are done with the current time, we choose the next time
-  // to process by examining the heap root and then pop all triggers
-  // requesting that time into the processing area.  Triggers are
-  // moved back to the heap either when we know they don't trigger or
-  // when we have run their events.
+  // root at index 0, followed by the triggers being processed at the
+  // current time.
   //
-  // Except at initialization (when everything needs to be processed
-  // at the start time), the trigger processing area is expected to be
-  // small.
+  // state at the start of a loop:
+  // non-testing heap | to be tested
+  // 0                  heap_size_ = to_run_position_ = processing_position_
+  //
+  // is_ready checks if everything is_ready and if triggers fire,
+  // moving processing_position_ forward and swapping triggers into
+  // the appropriate areas:
+  //
+  //                              ->      -->
+  // non-testing heap | not fired | fired | to be tested
+  // 0                  heap_size_  to_run_position_
+  //                                        processing_position_
+  //
+  // run_events runs all events for triggers that have fired:
+  //
+  //                              ->
+  // non-testing heap | not fired | fired
+  // 0                  heap_size_  to_run_position_
+  //
+  // reschedule moves triggers back onto the heap...:
+  //
+  //                  ->
+  // non-testing heap | triggers to reschedule
+  // 0                  heap_size_
+  //
+  // ...and then sets up for the next loop by examining the heap root
+  // and popping all triggers requesting that time into the processing
+  // area.
   Storage events_and_triggers_;
   // The size of the heap, or equivalently the index of the start of
-  // the processing area.  The initial -1 is a sentinel for an
+  // the processing area.  The initial value is a sentinel for an
   // uninitialized state.
-  typename Storage::difference_type heap_size_ = -1;
-  // Index of the next trigger to process.
-  typename Storage::difference_type processing_position_{};
+  size_t heap_size_ = std::numeric_limits<size_t>::max();
+  size_t to_run_position_{};
+  size_t processing_position_{};
+  // Index of the current event of the trigger at processing_position_
+  // that we are waiting for to be ready, or none if we are waiting
+  // for the trigger.
+  std::optional<size_t> event_to_check_{};
   double next_check_ = std::numeric_limits<double>::signaling_NaN();
   TriggerTimeAfter next_check_after_{false};
 };
 
 template <typename DbTags>
 double EventsAndDenseTriggers::next_trigger(const db::DataBox<DbTags>& box) {
-  if (UNLIKELY(heap_size_ == -1)) {
+  if (UNLIKELY(not initialized())) {
     initialize(box);
   }
 
@@ -180,49 +224,48 @@ template <typename DbTags, typename Metavariables, typename ArrayIndex,
 EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
     const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index, const ComponentPointer component) {
-  ASSERT(heap_size_ != -1, "Not initialized");
+  ASSERT(initialized(), "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling is_ready with no triggers");
   ASSERT(heap_end() != events_and_triggers_.end(), "No active triggers");
 
-  const evolution_greater<double> after{
-      db::get<::Tags::TimeStepId>(box).time_runs_forward()};
+  for (; processing_position_ != events_and_triggers_.size();
+       ++processing_position_) {
+    const auto& current_trigger = events_and_triggers_[processing_position_];
+    if (not event_to_check_.has_value()) {
+      const auto is_triggered = current_trigger.trigger->is_triggered(
+          box, cache, array_index, component);
+      if (not is_triggered.has_value()) {
+        return TriggeringState::NotReady;
+      }
 
-  while (current_trigger() != events_and_triggers_.end()) {
-    if (not current_trigger()->trigger->is_ready(box, cache, array_index,
+      if (not *is_triggered) {
+        // Move this trigger into the non-fired area.  One of the
+        // earlier fired triggers is moved here, but we don't make any
+        // guarantees about the order anyway so that doesn't matter.
+        std::swap(events_and_triggers_[processing_position_],
+                  events_and_triggers_[to_run_position_]);
+        ++to_run_position_;
+        continue;
+      }
+      event_to_check_.emplace(0);
+    }
+
+    const auto& events = current_trigger.events;
+    for (; *event_to_check_ < events.size(); ++*event_to_check_) {
+      if (not events[*event_to_check_]->is_ready(box, cache, array_index,
                                                  component)) {
-      return TriggeringState::NotReady;
-    }
-
-    const auto is_triggered = current_trigger()->trigger->is_triggered(box);
-    if (not after(is_triggered.next_check, current_trigger()->next_check)) {
-      ERROR("Trigger at time " << current_trigger()->next_check
-            << " rescheduled itself for earlier time "
-            << is_triggered.next_check);
-    }
-    current_trigger()->next_check = is_triggered.next_check;
-    if (not is_triggered.is_triggered) {
-      finish_processing_trigger_at_current_time(current_trigger());
-    }
-    ++processing_position_;
-  }
-
-  // The triggers we are processing are not in the heap, but are
-  // stored after it in the data array.
-  for (auto trigger = heap_end();
-       trigger != events_and_triggers_.end();
-       ++trigger) {
-    for (const auto& event : trigger->events) {
-      if (not event->is_ready(box, cache, array_index, component)) {
         return TriggeringState::NotReady;
       }
     }
+    event_to_check_.reset();
   }
 
-  for (auto trigger = heap_end();
-       trigger != events_and_triggers_.end();
-       ++trigger) {
-    for (const auto& event : trigger->events) {
+  for (size_t trigger_for_events_to_run = to_run_position_;
+       trigger_for_events_to_run != events_and_triggers_.size();
+       ++trigger_for_events_to_run) {
+    for (const auto& event :
+         events_and_triggers_[trigger_for_events_to_run].events) {
       if (event->needs_evolved_variables()) {
         return TriggeringState::NeedsEvolvedVariables;
       }
@@ -237,7 +280,7 @@ template <typename DbTags, typename Metavariables, typename ArrayIndex,
 void EventsAndDenseTriggers::run_events(
     db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
     const ArrayIndex& array_index, const ComponentPointer component) {
-  ASSERT(heap_size_ != -1, "Not initialized");
+  ASSERT(initialized(), "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling run_events with no triggers");
   using compute_tags = tmpl::remove_duplicates<tmpl::filter<
@@ -247,17 +290,17 @@ void EventsAndDenseTriggers::run_events(
           get_tags<tmpl::_1>>>,
       db::is_compute_tag<tmpl::_1>>>;
 
-  for (auto trigger = heap_end();
-       trigger != events_and_triggers_.end();
-       ++trigger) {
+  for (; to_run_position_ != events_and_triggers_.size(); ++to_run_position_) {
+    const auto& trigger_to_run = events_and_triggers_[to_run_position_];
     db::mutate<::evolution::Tags::PreviousTriggerTime>(
         make_not_null(&box),
-        [&trigger](
+        [&trigger_to_run](
             const gsl::not_null<std::optional<double>*> previous_trigger_time) {
-          *previous_trigger_time = trigger->trigger->previous_trigger_time();
+          *previous_trigger_time =
+              trigger_to_run.trigger->previous_trigger_time();
         });
     const auto observation_box = make_observation_box<compute_tags>(box);
-    for (const auto& event : trigger->events) {
+    for (const auto& event : trigger_to_run.events) {
       event->run(observation_box, cache, array_index, component);
     }
     db::mutate<::evolution::Tags::PreviousTriggerTime>(
@@ -265,10 +308,31 @@ void EventsAndDenseTriggers::run_events(
         [](const gsl::not_null<std::optional<double>*> previous_trigger_time) {
           *previous_trigger_time = std::numeric_limits<double>::signaling_NaN();
         });
-    finish_processing_trigger_at_current_time(trigger);
+  }
+}
+
+template <typename DbTags, typename Metavariables, typename ArrayIndex,
+          typename ComponentPointer>
+bool EventsAndDenseTriggers::reschedule(
+    const db::DataBox<DbTags>& box, Parallel::GlobalCache<Metavariables>& cache,
+    const ArrayIndex& array_index, const ComponentPointer component) {
+  ASSERT(initialized(), "Not initialized");
+  ASSERT(not events_and_triggers_.empty(),
+         "Should not be calling run_events with no triggers");
+
+  while (heap_end() != events_and_triggers_.end()) {
+    const std::optional<double> next_check =
+        heap_end()->trigger->next_check_time(box, cache, array_index,
+                                             component);
+    if (not next_check.has_value()) {
+      return false;
+    }
+    reschedule_next_trigger(
+        *next_check, db::get<::Tags::TimeStepId>(box).time_runs_forward());
   }
 
   populate_active_triggers();
+  return true;
 }
 
 template <typename F>
