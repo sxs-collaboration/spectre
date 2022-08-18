@@ -7,10 +7,11 @@ set(LIBRARY_SOURCES
   BoundaryCorrections/Test_UpwindPenalty.cpp
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
   BoundaryConditions/Test_Outflow.cpp
+  Test_BackgroundSpacetime.cpp
   Test_Constraints.cpp
   Test_Characteristics.cpp
   Test_InitializeConstraintDampingGammas.cpp
-  Test_InitializeGrVars.cpp
+  Test_InitializeEvolvedVariables.cpp
   Test_PsiSquared.cpp
   Test_Tags.cpp
   Test_TimeDerivative.cpp
@@ -27,8 +28,12 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   CurvedScalarWave
+  CurvedWaveEquationAnalyticData
   CurvedScalarWaveHelpers
   DataStructures
   GeneralRelativityHelpers
+  GeneralRelativitySolutions
+  MathFunctions
   Utilities
-  )
+  WaveEquationSolutions
+)

@@ -6,11 +6,6 @@
 #include <cstddef>
 
 /// \cond
-namespace CurvedScalarWave::AnalyticData {
-template <typename ScalarFieldSolution, typename BackgroundGrData>
-class ScalarWaveGr;
-}  // namespace CurvedScalarWave::AnalyticData
-
 namespace gr::Solutions {
 template <size_t Dim>
 class Minkowski;
@@ -26,6 +21,6 @@ namespace CurvedScalarWave::AnalyticData {
 class PureSphericalHarmonic;
 }
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim, typename BackgroundSpacetime, typename InitialData>
 struct EvolutionMetavars;
 /// \endcond
