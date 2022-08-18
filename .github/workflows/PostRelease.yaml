@@ -97,3 +97,9 @@ jobs:
           push-to-fork: sxs-bot/spack
           title: "spectre: add ${{ github.event.release.tag_name }}"
           body: ""
+  # Build and push the `demo` container to DockerHub on releases. This is
+  # because the `demo` container has pre-built executables that we want to keep
+  # up to date.
+  docker:
+    uses: ./.github/workflows/DemoContainer.yaml
+    secrets: inherit
