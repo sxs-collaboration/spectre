@@ -135,8 +135,8 @@ std::optional<std::array<double, Dim>> CubicScale<Dim>::inverse(
     ERROR("We require expansion_a > 0 for invertibility, however expansion_a = "
           << a_of_t << ".");
   }
-  if (b_of_t < 2.0 / 3.0 * a_of_t or b_of_t <= 0.0) {
-    ERROR("The map is invertible only if 0 < expansion_b < expansion_a*2/3, "
+  if (b_of_t < 2.0 / 3.0 * a_of_t) {
+    ERROR("The map is invertible only if expansion_b >= expansion_a*2/3, "
           << " but expansion_b = " << b_of_t << " and expansion_a = " << a_of_t
           << ".");
   }

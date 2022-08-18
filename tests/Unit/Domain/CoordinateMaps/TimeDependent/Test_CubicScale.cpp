@@ -258,42 +258,17 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.TimeDependent.CubicScale",
   }
   test_boundaries();
   CHECK(not CoordinateMaps::TimeDependent::CubicScale<1>{}.is_identity());
-}
 
-// [[OutputRegex, The map is invertible only if 0 < expansion_b <
-// expansion_a\*2/3]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.TimeDependent.CubicScale.NonInvertible1",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // the two expansion factors are chosen such that the map is non-invertible
-  cubic_scale_non_invertible(0.96, 0.58, 20.0);
-}
-
-// [[OutputRegex, We require expansion_a > 0 for invertibility]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.TimeDependent.CubicScale.NonInvertible2",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // Make a<0
-  cubic_scale_non_invertible(-0.0001, 1.0, 20.0);
-}
-
-// [[OutputRegex, The map is invertible only if 0 < expansion_b <
-// expansion_a\*2/3]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.TimeDependent.CubicScale.NonInvertible3",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  // Make b==0
-  cubic_scale_non_invertible(0.96, 0.0, 20.0);
-}
-
-// [[OutputRegex, For invertability, we require outer_boundary to be positive]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordinateMaps.TimeDependent.CubicScale.NonInvertible4",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  cubic_scale_non_invertible(0.96, 1.0, 0.0);
+  CHECK_THROWS_WITH(
+      cubic_scale_non_invertible(0.96, 0.58, 20.0),
+      Catch::Contains(
+          "The map is invertible only if expansion_b >= expansion_a*2/3"));
+  CHECK_THROWS_WITH(
+      cubic_scale_non_invertible(-0.0001, 1.0, 20.0),
+      Catch::Contains("We require expansion_a > 0 for invertibility"));
+  CHECK_THROWS_WITH(
+      cubic_scale_non_invertible(0.96, 1.0, 0.0),
+      Catch::Contains(
+          "For invertability, we require outer_boundary to be positive"));
 }
 }  // namespace domain
