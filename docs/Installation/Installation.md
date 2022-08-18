@@ -56,7 +56,7 @@ all of these dependencies.
 #### Required:
 
 * [GCC](https://gcc.gnu.org/) 9.1 or later,
-[Clang](https://clang.llvm.org/) 9.0 or later, or AppleClang 11.0.0 or later
+[Clang](https://clang.llvm.org/) 10.0 or later, or AppleClang 11.0.0 or later
 * [CMake](https://cmake.org/) 3.12.0 or later
 * [Charm++](http://charm.cs.illinois.edu/) 7.0.0, or later (experimental)
 * [Git](https://git-scm.com/)
