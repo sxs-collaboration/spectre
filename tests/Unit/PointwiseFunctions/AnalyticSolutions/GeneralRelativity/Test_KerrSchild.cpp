@@ -347,6 +347,30 @@ void test_einstein_solution() {
   }
 }
 
+template <typename Frame, typename DataType>
+void test_zero_spin_optimization(const DataType& used_for_size) {
+  // the optimizations are only taken when the spin is exactly zero, so we can
+  // test it against a numerical epsilon that should not affect results
+  gr::Solutions::KerrSchild solution_zero_spin(3.0, {{0., 0., 0.}},
+                                               {{0.2, 0.3, 0.2}});
+  gr::Solutions::KerrSchild solution_tiny_spin(3.0, {{0., 0., 1e-50}},
+                                               {{0.2, 0.3, 0.2}});
+  CHECK(solution_zero_spin.zero_spin());
+  CHECK(not solution_tiny_spin.zero_spin());
+  const auto x = spatial_coords<Frame>(used_for_size);
+  using all_tags = typename gr::Solutions::KerrSchild::tags<DataType, Frame>;
+  const auto all_tags_zero_spin =
+      solution_zero_spin.variables(x, 0., all_tags{});
+  const auto all_tags_tiny_spin =
+      solution_tiny_spin.variables(x, 0., all_tags{});
+  tmpl::for_each<all_tags>(
+      [&all_tags_zero_spin, &all_tags_tiny_spin](auto tag_v) {
+        using tag = tmpl::type_from<decltype(tag_v)>;
+        CHECK_ITERABLE_APPROX(get<tag>(all_tags_zero_spin),
+                              get<tag>(all_tags_tiny_spin));
+      });
+}
+
 void test_serialize() {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_serialization(solution);
@@ -383,6 +407,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_tag_retrieval<Frame::Inertial>(DataVector(5));
   test_tag_retrieval<Frame::Inertial>(0.0);
   test_einstein_solution<Frame::Inertial>();
+  test_zero_spin_optimization<Frame::Inertial>(DataVector(5));
+  test_zero_spin_optimization<Frame::Inertial>(0.0);
 
   test_schwarzschild<Frame::Grid>(DataVector(5));
   test_schwarzschild<Frame::Grid>(0.0);
@@ -390,6 +416,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_tag_retrieval<Frame::Grid>(DataVector(5));
   test_tag_retrieval<Frame::Grid>(0.0);
   test_einstein_solution<Frame::Grid>();
+  test_zero_spin_optimization<Frame::Grid>(DataVector(5));
+  test_zero_spin_optimization<Frame::Grid>(0.0);
 
   CHECK_THROWS_WITH(
       []() {
