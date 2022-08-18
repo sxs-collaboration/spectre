@@ -575,7 +575,7 @@ void test_lambda_pin_troubled_cell_tvb_correction(
     const DataVector x = get<0>(logical_coordinates(mesh));
     const double a = 1.25 * (cube(sqrt(5.0)) - 1.0);
     const double b = 6.25 * (1.0 - sqrt(5.0));
-    const double nearly_one = 1.0 - 1e-15;
+    const double nearly_one = 1.0 - 1e-14;
     return DataVector{5.0 + nearly_one * (a * x + b * cube(x))};
   }();
 

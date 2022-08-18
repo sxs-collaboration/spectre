@@ -85,7 +85,7 @@ void test_weak_divergence_random_jacobian(const Mesh<Dim>& mesh) {
   weak_divergence(make_not_null(&divergence_result), fluxes, mesh,
                   det_jac_times_inverse_jacobian);
 
-  Approx local_approx = Approx::custom().epsilon(5.0e-12).scale(1.);
+  Approx local_approx = Approx::custom().epsilon(1.0e-11).scale(1.);
   const Variables<div_tags> expected_divergence_result{
       mesh.number_of_grid_points(), 0.0};
   tmpl::for_each<div_tags>([&divergence_result, &expected_divergence_result,
