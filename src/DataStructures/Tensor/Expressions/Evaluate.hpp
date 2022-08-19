@@ -155,6 +155,10 @@ void evaluate_impl(
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
   using rhs_tensorindex_list = tmpl::list<RhsTensorIndices...>;
 
+  static_assert(std::is_same_v<double, X> or std::is_same_v<DataVector, X>,
+                "TensorExpressions currently only support Tensors whose data "
+                "type is double or DataVector. It is possible to add support "
+                "for other data types that are supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in
@@ -203,10 +207,30 @@ void evaluate_impl(
       "e.g. evaluate<ti::a, ti::b>(L, R(ti::b, ti::a));, where R's first "
       "index has 2 spatial dimensions but L's second index has 3 spatial "
       "dimensions. Check RHS and LHS indices that use the same generic index.");
+  static_assert(Derived::height_relative_to_closest_tensor_leaf_in_subtree <
+                    std::numeric_limits<size_t>::max(),
+                "Either no Tensors were found in the RHS TensorExpression or "
+                "the depth of the tree exceeded the maximum size_t value (very "
+                "unlikely). If there is indeed a Tensor in the RHS expression "
+                "and assuming the tree's height is not actually the maximum "
+                "size_t value, then there is a flaw in the logic for computing "
+                "the derived TensorExpression types' member, "
+                "height_relative_to_closest_tensor_leaf_in_subtree.");
 
   if constexpr (EvaluateSubtrees) {
     // Make sure the LHS tensor doesn't also appear in the RHS tensor expression
     (~rhs_tensorexpression).assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
+    // If the data type is `DataVector`, size the LHS tensor components if their
+    // size does not match the size from a `Tensor` in the RHS expression
+    if constexpr (std::is_same_v<DataVector, X>) {
+      const size_t rhs_component_size =
+          (~rhs_tensorexpression).get_rhs_tensor_component_size();
+      if (rhs_component_size != (*lhs_tensor)[0].size()) {
+        for (auto& lhs_component : *lhs_tensor) {
+          lhs_component = DataVector(rhs_component_size);
+        }
+      }
+    }
   }
 
   constexpr std::array<size_t, num_rhs_indices> index_transformation =
@@ -302,6 +326,10 @@ void evaluate_impl(
   using lhs_tensorindex_list =
       tmpl::list<std::decay_t<decltype(LhsTensorIndices)>...>;
 
+  static_assert(std::is_same_v<double, X> or std::is_same_v<DataVector, X>,
+                "TensorExpressions currently only support Tensors whose data "
+                "type is double or DataVector. It is possible to add support "
+                "for other data types that are supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in

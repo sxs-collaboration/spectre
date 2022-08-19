@@ -137,6 +137,21 @@ struct Expression {};
 /// `num_ops_left_child + num_ops_right_child + 1`, the sum of the number of
 /// operations in each operand's subtrees plus one for the operation done for
 /// the expression, itself.
+/// - variable `static constexpr size_t
+/// height_relative_to_closest_tensor_leaf_in_subtree` : The height of an
+/// expression's node in the overall expression tree relative to the closest
+/// `TensorAsExpression` leaf in its subtree. This is stored so that we can
+/// traverse from the root along the shortest path to a `Tensor` when
+/// retrieving the size of a component from the RHS expression (see
+/// `get_rhs_tensor_component_size()` below). Non-`Tensor` leaves (e.g.
+/// `NumberAsExpression`) are defined to have maximum height
+/// `std::numeric_limits<size_t>::max()` to encode that they are maximally
+/// far away from their nearest `Tensor` descendant, since the expression's
+/// subtree (a leaf) can never have a `TensorAsExpression` descedant from it.
+/// This maximal height is leveraged by `get_rhs_tensor_component_size()` so
+/// that in traversing the expression tree to find a `Tensor`, it will never
+/// take the path that ends in a non-`Tensor` leaf because it is the worst path
+/// option.
 /// - function `decltype(auto) get(const std::array<size_t, num_tensor_indices>&
 /// result_multi_index) const`: Accepts a multi-index for the result tensor
 /// represented by the expression and returns the computed result of the
@@ -162,6 +177,11 @@ struct Expression {};
 /// be used instead of `tenex::evaluate`. See the documentation for
 /// `tenex::update` for more details and `tenex::detail::evaluate_impl` for why
 /// this is safe to do.
+/// - function `size_t get_rhs_tensor_component_size() const`: Gets the size of
+/// a component from a `Tensor` in an expression's subtree of the RHS
+/// expression. This is used to size LHS components, if needed. Utilizes
+/// `height_relative_to_closest_tensor_leaf_in_subtree` to recursively find the
+/// nearest `TensorAsExpression` descendant leaf.
 ///
 /// Each derived `TensorExpression` class must also define the following
 /// members, which have real meaning for the expression *only* if it ends up

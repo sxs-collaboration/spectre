@@ -451,7 +451,7 @@ struct TensorContract
   /// The number of terms to sum for this expression's contraction
   static constexpr size_t num_terms_summed = contracted_type::num_terms_summed;
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand
   static constexpr size_t num_ops_left_child =
@@ -463,6 +463,13 @@ struct TensorContract
   /// The total number of arithmetic tensor operations done in this expression's
   /// whole subtree
   static constexpr size_t num_ops_subtree = num_ops_left_child;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree =
+      T::height_relative_to_closest_tensor_leaf_in_subtree !=
+              std::numeric_limits<size_t>::max()
+          ? T::height_relative_to_closest_tensor_leaf_in_subtree + 1
+          : T::height_relative_to_closest_tensor_leaf_in_subtree;
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up
@@ -576,6 +583,15 @@ struct TensorContract
       t_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
     }
+  }
+
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    return t_.get_rhs_tensor_component_size();
   }
 
   /// \brief Return the highest multi-index between the components being summed

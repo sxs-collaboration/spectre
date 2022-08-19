@@ -350,7 +350,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       generic_indices_at_same_positions<tmpl::list<Args1...>,
                                         tmpl::list<Args2...>>::value;
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand
   static constexpr size_t num_ops_left_child = T1::num_ops_subtree;
@@ -367,6 +367,16 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// whole subtree
   static constexpr size_t num_ops_subtree =
       num_ops_left_child + num_ops_right_child + 1;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree =
+      T2::height_relative_to_closest_tensor_leaf_in_subtree <=
+              T1::height_relative_to_closest_tensor_leaf_in_subtree
+          ? (T2::height_relative_to_closest_tensor_leaf_in_subtree !=
+                     std::numeric_limits<size_t>::max()
+                 ? T2::height_relative_to_closest_tensor_leaf_in_subtree + 1
+                 : T2::height_relative_to_closest_tensor_leaf_in_subtree)
+          : T1::height_relative_to_closest_tensor_leaf_in_subtree + 1;
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up
@@ -450,6 +460,20 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
     if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
       t2_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
+    }
+  }
+
+  /// \brief Get the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  ///
+  /// \return the size of a component from a `Tensor` in this expression's
+  /// subtree of the RHS `TensorExpression`
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    if constexpr (T1::height_relative_to_closest_tensor_leaf_in_subtree <=
+                  T2::height_relative_to_closest_tensor_leaf_in_subtree) {
+      return t1_.get_rhs_tensor_component_size();
+    } else {
+      return t2_.get_rhs_tensor_component_size();
     }
   }
 

@@ -16,6 +16,7 @@
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -212,7 +213,7 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   /// The number of tensor indices in the result of the expression
   static constexpr auto num_tensor_indices = tmpl::size<index_list>::value;
 
-  // === Arithmetic tensor operations properties ===
+  // === Expression subtree properties ===
   /// The number of arithmetic tensor operations done in the subtree for the
   /// left operand, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_left_child = 0;
@@ -222,6 +223,10 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   /// The total number of arithmetic tensor operations done in this expression's
   /// whole subtree, which is 0 because this is a leaf expression
   static constexpr size_t num_ops_subtree = 0;
+  /// The height of this expression's node in the expression tree relative to
+  /// the closest `TensorAsExpression` leaf in its subtree. Because this
+  /// expression type is that leaf, the height for this type will always be 0.
+  static constexpr size_t height_relative_to_closest_tensor_leaf_in_subtree = 0;
 
   // === Properties for splitting up subexpressions along the primary path ===
   // These definitions only have meaning if this expression actually ends up
@@ -292,6 +297,15 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
     }
   }
 
+  /// \brief Get the size of a component from the `Tensor` contained by this
+  /// expression
+  ///
+  /// \return the size of a component from the `Tensor` contained by this
+  /// expression
+  SPECTRE_ALWAYS_INLINE size_t get_rhs_tensor_component_size() const {
+    return get_size((*t_)[0]);
+  }
+
   /// \brief Returns the value of the contained tensor's multi-index
   ///
   /// \param multi_index the multi-index of the tensor component to retrieve
@@ -311,21 +325,12 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
     return t_->get(multi_index);
   }
 
-  /// \brief If this expression is the start of a leg, update the LHS result
-  /// component to be the value of the component at the given multi-index of the
-  /// `Tensor` represented by the expression
-  ///
-  /// \param result_component the LHS tensor component to evaluate
-  /// \param multi_index the multi-index of the component of the `Tensor`
-  /// represented by the expression
-  SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
-      type& result_component,
-      const std::array<size_t, num_tensor_indices>& multi_index) const {
-    if constexpr (is_primary_start) {
-      // We want to evaluate the subtree for this expression
-      result_component = get(multi_index);
-    }
-  }
+  // This expression is a leaf and therefore will never be the start of a leg
+  // to evaluate in a split tree, which is enforced by
+  // `is_primary_start == false`. Therefore, this function should never be
+  // called on this expression type.
+  void evaluate_primary_subtree(
+      type&, const std::array<size_t, num_tensor_indices>&) const = delete;
 
   /// Retrieve the i'th entry of the Tensor being held
   SPECTRE_ALWAYS_INLINE type operator[](const size_t i) const {
