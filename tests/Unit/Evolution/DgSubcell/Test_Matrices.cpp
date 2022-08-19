@@ -35,9 +35,11 @@ void test_projection_matrix() {
            static_cast<size_t>(2),
            Spectral::minimum_number_of_points<BasisType, QuadratureType>);
        num_pts_1d < MaxPts + 1; ++num_pts_1d) {
+    CAPTURE(num_pts_1d);
     const Mesh<Dim> dg_mesh{num_pts_1d, BasisType, QuadratureType};
     const auto logical_coords = logical_coordinates(dg_mesh);
     const size_t num_subcells_1d = 2 * num_pts_1d - 1;
+    CAPTURE(num_subcells_1d);
     const Mesh<Dim> subcell_mesh(num_subcells_1d,
                                  Spectral::Basis::FiniteDifference,
                                  Spectral::Quadrature::CellCentered);
@@ -56,11 +58,62 @@ void test_projection_matrix() {
     apply_matrices(make_not_null(&cell_centered_values), projection_mat,
                    nodal_coeffs, dg_mesh.extents());
 
-    CHECK_ITERABLE_APPROX(
-        cell_centered_values,
+    const DataVector expected_values =
         TestHelpers::evolution::dg::subcell::cell_values(
-            dg_mesh.extents(0) - 2, logical_coordinates(subcell_mesh)));
+            dg_mesh.extents(0) - 2, logical_coordinates(subcell_mesh));
+    CHECK_ITERABLE_APPROX(cell_centered_values, expected_values);
+
+    if constexpr (Dim == 1) {
+      // Check projecting ghost cells. Only do in 1d since the test becomes
+      // rather error-prone and tedious in higher dimensions, and the operation
+      // is dim-by-dim handled by apply_matrices.
+      for (size_t ghost_points = 2;
+           num_subcells_1d > 4 and
+           ghost_points <= std::min(5_st, num_subcells_1d - 2);
+           ++ghost_points) {
+        CAPTURE(ghost_points);
+        for (const Side side : {Side::Lower, Side::Upper}) {
+          CAPTURE(side);
+          CAPTURE(expected_values);
+          DataVector expected_ghost_values(ghost_points);
+          for (size_t i = 0; i < ghost_points; ++i) {
+            expected_ghost_values[i] =
+                expected_values[side == Side::Lower
+                                    ? i
+                                    : (num_subcells_1d - ghost_points + i)];
+          }
+          DataVector ghost_cell_centered_values(ghost_points, 0.0);
+          auto ghost_projection_mat = make_array<Dim>(std::cref(empty));
+          ghost_projection_mat[0] = std::cref(projection_matrix(
+              dg_mesh, subcell_mesh.extents(0), ghost_points, side));
+          apply_matrices(make_not_null(&ghost_cell_centered_values),
+                         ghost_projection_mat, nodal_coeffs, dg_mesh.extents());
+          CHECK_ITERABLE_APPROX(ghost_cell_centered_values,
+                                expected_ghost_values);
+        }
+      }
+    }
   }
+#ifdef SPECTRE_DEBUG
+  if constexpr (Dim == 1) {
+    CHECK_THROWS_WITH(
+        projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto},
+                          5, 1, Side::Lower),
+        Catch::Matchers::Contains("ghost_zone_size must be"));
+    CHECK_THROWS_WITH(
+        projection_matrix(Mesh<1>{3, Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto},
+                          5, 6, Side::Lower),
+        Catch::Matchers::Contains("ghost_zone_size must be"));
+    CHECK_THROWS_WITH(
+        projection_matrix(Mesh<1>{3, Spectral::Basis::Chebyshev,
+                                  Spectral::Quadrature::GaussLobatto},
+                          5, 1, Side::Lower),
+        Catch::Matchers::Contains(
+            "FD Subcell projection only supports Legendre basis"));
+  }
+#endif
 }
 
 template <size_t MaxPts, size_t Dim, Spectral::Basis BasisType,
