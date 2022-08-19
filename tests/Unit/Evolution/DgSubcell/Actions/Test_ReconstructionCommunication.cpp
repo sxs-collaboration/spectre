@@ -37,6 +37,7 @@
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
@@ -75,7 +76,8 @@ struct component {
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci,
       Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
-      evolution::dg::Tags::MortarNextTemporalId<Dim>>;
+      evolution::dg::Tags::MortarNextTemporalId<Dim>,
+      evolution::dg::Tags::NeighborMesh<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -236,7 +238,8 @@ void test() {
        // Explicitly set RDMP data since this would be set previously by the TCI
        evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
                                            {min(get(get<Var1>(evolved_vars)))}},
-       evolved_vars, mortar_data, mortar_next_id});
+       evolved_vars, mortar_data, mortar_next_id,
+       typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
   for (const auto& [direction, neighbor_ids] : neighbors) {
     (void)direction;
     for (const auto& neighbor_id : neighbor_ids) {
@@ -249,7 +252,8 @@ void test() {
           {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
            active_grid, Element<Dim>{}, NeighborDataMap{},
            evolution::dg::subcell::RdmpTciData{},
-           Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{}});
+           Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{},
+           typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
     }
   }
 
@@ -423,6 +427,23 @@ void test() {
     CHECK(neighbor_data_from_box.find(south_neighbor_id)->second ==
           south_ghost_cells_and_rdmp);
   }
+
+  // Check that we got a neighbor mesh from all neighbors.
+  size_t total_neighbors = 0;
+  const auto& neighbor_meshes =
+      get_databox_tag<comp, ::evolution::dg::Tags::NeighborMesh<Dim>>(runner,
+                                                                      self_id);
+  for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
+    for (const auto& neighbor : neighbors_in_direction) {
+      const auto it = neighbor_meshes.find(std::pair{direction, neighbor});
+      REQUIRE(it != neighbor_meshes.end());
+      // Currently all neighbors are doing subcell. We probably want to
+      // generalize this in the future.
+      CHECK(it->second == subcell_mesh);
+      ++total_neighbors;
+    }
+  }
+  CHECK(neighbor_meshes.size() == total_neighbors);
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.ReconstructionCommunication",
