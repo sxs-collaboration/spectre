@@ -9,6 +9,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Rational.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
@@ -57,10 +58,16 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational", "[Unit][Utilities]") {
   CHECK(get_output(Rational(-3, 4)) == "-3/4");
 
   test_serialization(Rational(3, 4));
-}
 
-SPECTRE_TEST_CASE("Unit.Utilities.Rational.internal_overflow",
-                  "[Unit][Utilities]") {
+  struct ArbitraryType {};
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 0.0) == Rational(0));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 1.0) == Rational(1));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, -1.0) == Rational(-1));
+  CHECK(make_with_value<Rational>(ArbitraryType{}, 1234.0) == Rational(1234));
+
+  // Check that the internal implementation does not cause overflow
+  // when the results can be correctly represented.
+
   CHECK(Rational(6000000, 8000000) == Rational(3, 4));
 
   check_cmp(Rational(5, 1 << 16), Rational(1 << 16));
@@ -73,65 +80,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.Rational.internal_overflow",
            Rational(1 << 17, (1 << 10) + 1), Rational((1 << 10) - 1, 1 << 3));
   CHECK_OP(Rational((1 << 20) - 1, 1 << 20), /,
            Rational((1 << 10) + 1, 1 << 17), Rational((1 << 10) - 1, 1 << 3));
-}
 
-// [[OutputRegex, Division by zero]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.denominator_zero",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
+  // Check assertions
 #ifdef SPECTRE_DEBUG
-  Rational(1, 0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Division by zero]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.invert_zero",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Rational(0).inverse();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Division by zero]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.divide_zero",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Rational(1) / 0;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Division by zero]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.divide_equal_zero",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Rational r(1);
-  r /= 0;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Rational overflow: 1000000000000/1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.overflow_numerator",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Rational(1000000) * Rational(1000000);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Rational overflow: 1/1000000000000]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Utilities.Rational.overflow_denominator",
-                               "[Unit][Utilities]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  Rational(1, 1000000) * Rational(1, 1000000);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(Rational(1, 0), Catch::Contains("Division by zero"));
+  CHECK_THROWS_WITH(Rational(0).inverse(), Catch::Contains("Division by zero"));
+  CHECK_THROWS_WITH(Rational(1) / 0, Catch::Contains("Division by zero"));
+  CHECK_THROWS_WITH(
+      []() {
+        Rational r(1);
+        r /= 0;
+      }(),
+      Catch::Contains("Division by zero"));
+  CHECK_THROWS_WITH(Rational(1000000) * Rational(1000000),
+                    Catch::Contains("Rational overflow: 1000000000000/1"));
+  CHECK_THROWS_WITH(Rational(1, 1000000) * Rational(1, 1000000),
+                    Catch::Contains("Rational overflow: 1/1000000000000"));
+  CHECK_THROWS_WITH(
+      make_with_value<Rational>(1, 1.5),
+      Catch::Contains(
+          "Only integer-valued Rationals can be created with MakeWithValue"));
 #endif
 }
