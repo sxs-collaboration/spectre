@@ -40,7 +40,6 @@ RUN apt-get update -y \
                           libopenblas-dev liblapack-dev \
                           libhdf5-dev hdf5-tools \
                           libgsl0-dev \
-                          clang-8 clang-9 \
                           clang-10 clang-format-10 clang-tidy-10 \
                           lld \
                           wget libncurses-dev \
