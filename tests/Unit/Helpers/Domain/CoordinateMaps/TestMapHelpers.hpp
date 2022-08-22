@@ -583,52 +583,38 @@ void test_suite_for_map_on_cylinder(const Map& map, const double inner_radius,
         {inner_radius * cos(phi), inner_radius * sin(phi),
          height > 0.5 ? 1.0 : -1.0}};
 
-    const auto test_helper = [&random_bdry_point_rho, &random_bdry_point_z,
-                              &random_bdry_point_corner,
-                              &random_inner_bdry_point_or_origin,
-                              &random_inner_bdry_point_corner,
-                            &random_point](const auto& map_to_test) {
-      test_serialization(map_to_test);
-      CHECK_FALSE(map_to_test != map_to_test);
+    const auto test_helper =
+        [](const auto& map_to_test,
+           const std::vector<std::array<double, 3>>& points_to_test) {
+          test_serialization(map_to_test);
+          CHECK_FALSE(map_to_test != map_to_test);
 
-      test_coordinate_map_argument_types(map_to_test,
-                                         random_inner_bdry_point_or_origin);
-      test_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-      test_inv_jacobian(map_to_test, random_inner_bdry_point_or_origin);
-      test_inverse_map(map_to_test, random_inner_bdry_point_or_origin);
+          for (const auto& point : points_to_test) {
+            test_coordinate_map_argument_types(map_to_test, point);
+            test_jacobian(map_to_test, point);
+            test_inv_jacobian(map_to_test, point);
+            test_inverse_map(map_to_test, point);
+          }
+        };
 
-      test_coordinate_map_argument_types(map_to_test, random_point);
-      test_jacobian(map_to_test, random_point);
-      test_inv_jacobian(map_to_test, random_point);
-      test_inverse_map(map_to_test, random_point);
+    const auto test_helper_all_points =
+        [&test_helper, &random_bdry_point_rho, &random_bdry_point_z,
+         &random_bdry_point_corner, &random_inner_bdry_point_or_origin,
+         &random_inner_bdry_point_corner,
+         &random_point](const auto& map_to_test) {
+          test_helper(
+              map_to_test,
+              {random_bdry_point_rho, random_bdry_point_z,
+               random_bdry_point_corner, random_inner_bdry_point_or_origin,
+               random_inner_bdry_point_corner, random_point});
+        };
 
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_rho);
-      test_jacobian(map_to_test, random_bdry_point_rho);
-      test_inv_jacobian(map_to_test, random_bdry_point_rho);
-      test_inverse_map(map_to_test, random_bdry_point_rho);
-
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_z);
-      test_jacobian(map_to_test, random_bdry_point_z);
-      test_inv_jacobian(map_to_test, random_bdry_point_z);
-      test_inverse_map(map_to_test, random_bdry_point_z);
-
-      test_coordinate_map_argument_types(map_to_test, random_bdry_point_corner);
-      test_jacobian(map_to_test, random_bdry_point_corner);
-      test_inv_jacobian(map_to_test, random_bdry_point_corner);
-      test_inverse_map(map_to_test, random_bdry_point_corner);
-
-      test_coordinate_map_argument_types(map_to_test,
-                                         random_inner_bdry_point_corner);
-      test_jacobian(map_to_test, random_inner_bdry_point_corner);
-      test_inv_jacobian(map_to_test, random_inner_bdry_point_corner);
-      test_inverse_map(map_to_test, random_inner_bdry_point_corner);
-    };
-    test_helper(map);
+    test_helper_all_points(map);
     const auto map2 = serialize_and_deserialize(map);
     check_if_maps_are_equal(
         domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map),
         domain::make_coordinate_map<Frame::BlockLogical, Frame::Grid>(map2));
-    test_helper(map2);
+    test_helper_all_points(map2);
 }
 
 /*!
