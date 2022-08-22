@@ -48,11 +48,15 @@ struct Coords : db::SimpleTag {
 };
 
 void test_1d_orient_variables() {
+  // Note: only test the DataVector implementation in 1d since all the others
+  // forward to it. Just want to make sure it's publicly visible.
   const Index<1> extents{4};
   Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(extents.product());
   get(get<ScalarTensor>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0}};
   get<0>(get<Coords<1>>(vars)) = DataVector{{0.5, 0.6, 0.7, 0.8}};
   const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
+  const DataVector vars_datavector(const_cast<double*>(vars.data()),
+                                   vars.size());
 
   // Check aligned case
   {
@@ -62,6 +66,11 @@ void test_1d_orient_variables() {
     const std::vector<double> oriented_vars_vector =
         orient_variables(vars_vector, extents, {});
     CHECK(oriented_vars_vector == vars_vector);
+
+    DataVector oriented_vars_datavector(vars_datavector.size());
+    orient_variables(make_not_null(&oriented_vars_datavector), vars_datavector,
+                     extents, {});
+    CHECK(oriented_vars_datavector == vars_datavector);
   }
 
   // Check anti-aligned case
@@ -80,7 +89,36 @@ void test_1d_orient_variables() {
     const std::vector<double> expected_vars_vector(
         expected_vars.data(), expected_vars.data() + expected_vars.size());
     CHECK(oriented_vars_vector == expected_vars_vector);
+
+    DataVector oriented_vars_datavector(vars_datavector.size());
+    orient_variables(make_not_null(&oriented_vars_datavector), vars_datavector,
+                     extents, orientation_map);
+    DataVector expected_vars_datavector(vars_datavector.size());
+    for (size_t i = 0; i < vars_datavector.size(); ++i) {
+      expected_vars_datavector[i] = expected_vars_vector[i];
+    }
+    CHECK(oriented_vars_datavector == expected_vars_datavector);
   }
+
+#ifdef SPECTRE_DEBUG
+  {
+    const OrientationMap<1> orientation_map(
+        std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
+    DataVector oriented_vars_datavector{};
+    CHECK_THROWS_WITH(orient_variables(make_not_null(&oriented_vars_datavector),
+                                       vars_datavector, extents, {}),
+                      Catch::Matchers::Contains("Result should have size"));
+
+    const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
+                                              vars.size() - 1);
+    oriented_vars_datavector = DataVector{vars.size() - 1};
+    CHECK_THROWS_WITH(orient_variables(make_not_null(&oriented_vars_datavector),
+                                       vars_datavector_bad_size, extents, {}),
+                      Catch::Matchers::Contains(
+                          "The size of the variables must be divisible by the "
+                          "number of grid points. Number of grid points: "));
+  }
+#endif  // SPECTRE_DEBUG
 }
 
 // Test one case by hand. This test case is redundant with (though not
@@ -151,6 +189,28 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
   const std::vector<double> expected_vars_vector(
       expected_vars.data(), expected_vars.data() + expected_vars.size());
   CHECK(oriented_vars_vector == expected_vars_vector);
+
+#ifdef SPECTRE_DEBUG
+  {
+    DataVector vars_datavector{vars_vector.size()};
+    std::copy(vars_vector.begin(), vars_vector.end(), vars_datavector.begin());
+    DataVector oriented_vars_datavector{};
+    CHECK_THROWS_WITH(
+        orient_variables(make_not_null(&oriented_vars_datavector),
+                         vars_datavector, extents, orientation_map),
+        Catch::Matchers::Contains("Result should have size"));
+
+    const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
+                                              vars.size() - 1);
+    oriented_vars_datavector = DataVector{vars.size() - 1};
+    CHECK_THROWS_WITH(
+        orient_variables(make_not_null(&oriented_vars_datavector),
+                         vars_datavector_bad_size, extents, orientation_map),
+        Catch::Matchers::Contains(
+            "The size of the variables must be divisible by the "
+            "number of grid points. Number of grid points: "));
+  }
+#endif  // SPECTRE_DEBUG
 }
 
 void test_2d_orient_variables() {
@@ -241,6 +301,28 @@ void test_3d_with_orientation(const OrientationMap<3>& orientation_map) {
   get<1>(get<Coords<3>>(expected_vars)) = oriented_mapped_coords[1];
   get<2>(get<Coords<3>>(expected_vars)) = oriented_mapped_coords[2];
   CHECK(oriented_vars == expected_vars);
+
+#ifdef SPECTRE_DEBUG
+  {
+    DataVector vars_datavector{vars.size()};
+    std::copy(vars.data(), vars.data() + vars.size(), vars_datavector.begin());
+    DataVector oriented_vars_datavector{};
+    CHECK_THROWS_WITH(
+        orient_variables(make_not_null(&oriented_vars_datavector),
+                         vars_datavector, extents, orientation_map),
+        Catch::Matchers::Contains("Result should have size"));
+
+    const DataVector vars_datavector_bad_size(const_cast<double*>(vars.data()),
+                                              vars.size() - 1);
+    oriented_vars_datavector = DataVector{vars.size() - 1};
+    CHECK_THROWS_WITH(
+        orient_variables(make_not_null(&oriented_vars_datavector),
+                         vars_datavector_bad_size, extents, orientation_map),
+        Catch::Matchers::Contains(
+            "The size of the variables must be divisible by the "
+            "number of grid points. Number of grid points: "));
+  }
+#endif  // SPECTRE_DEBUG
 }
 
 void test_3d_orient_variables() {
@@ -342,6 +424,31 @@ void test_1d_slice_with_orientation(const OrientationMap<2>& orientation_map) {
 
     check_vector(vars, oriented_vars, slice_extents, sliced_dim,
                  orientation_map);
+
+#ifdef SPECTRE_DEBUG
+    {
+      DataVector vars_datavector{vars.size()};
+      std::copy(vars.data(), vars.data() + vars.size(),
+                vars_datavector.begin());
+      DataVector oriented_vars_datavector{};
+      CHECK_THROWS_WITH(
+          orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
+                                    vars_datavector, slice_extents, sliced_dim,
+                                    orientation_map),
+          Catch::Matchers::Contains("Result should have size"));
+
+      const DataVector vars_datavector_bad_size(
+          const_cast<double*>(vars.data()), vars.size() - 1);
+      oriented_vars_datavector = DataVector{vars.size() - 1};
+      CHECK_THROWS_WITH(
+          orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
+                                    vars_datavector_bad_size, slice_extents,
+                                    sliced_dim, orientation_map),
+          Catch::Matchers::Contains(
+              "The size of the variables must be divisible by the "
+              "number of grid points. Number of grid points: "));
+    }
+#endif  // SPECTRE_DEBUG
   }
 }
 
@@ -432,6 +539,31 @@ void test_2d_slice_with_orientation(const OrientationMap<3>& orientation_map) {
 
     check_vector(vars, oriented_vars, slice_extents, sliced_dim,
                  orientation_map);
+
+#ifdef SPECTRE_DEBUG
+    {
+      DataVector vars_datavector{vars.size()};
+      std::copy(vars.data(), vars.data() + vars.size(),
+                vars_datavector.begin());
+      DataVector oriented_vars_datavector{};
+      CHECK_THROWS_WITH(
+          orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
+                                    vars_datavector, slice_extents, sliced_dim,
+                                    orientation_map),
+          Catch::Matchers::Contains("Result should have size"));
+
+      const DataVector vars_datavector_bad_size(
+          const_cast<double*>(vars.data()), vars.size() - 1);
+      oriented_vars_datavector = DataVector{vars.size() - 1};
+      CHECK_THROWS_WITH(
+          orient_variables_on_slice(make_not_null(&oriented_vars_datavector),
+                                    vars_datavector_bad_size, slice_extents,
+                                    sliced_dim, orientation_map),
+          Catch::Matchers::Contains(
+              "The size of the variables must be divisible by the "
+              "number of grid points. Number of grid points: "));
+    }
+#endif  // SPECTRE_DEBUG
   }
 }
 

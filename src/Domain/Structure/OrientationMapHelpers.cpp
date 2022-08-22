@@ -7,6 +7,7 @@
 #include <array>
 #include <numeric>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
@@ -202,8 +203,6 @@ std::vector<size_t> compute_offset_permutation(
 }  // namespace
 
 namespace OrientationMapHelpers_detail {
-
-template <>
 std::vector<size_t> oriented_offset(
     const Index<1>& extents, const OrientationMap<1>& orientation_of_neighbor) {
   const Direction<1> neighbor_axis =
@@ -212,7 +211,6 @@ std::vector<size_t> oriented_offset(
   return compute_offset_permutation(extents, is_aligned);
 }
 
-template <>
 std::vector<size_t> oriented_offset(
     const Index<2>& extents, const OrientationMap<2>& orientation_of_neighbor) {
   const Direction<2> neighbor_first_axis =
@@ -231,7 +229,6 @@ std::vector<size_t> oriented_offset(
                                     axes_are_transposed);
 }
 
-template <>
 std::vector<size_t> oriented_offset(
     const Index<3>& extents, const OrientationMap<3>& orientation_of_neighbor) {
   const Direction<3> neighbor_first_axis =
@@ -255,6 +252,13 @@ std::vector<size_t> oriented_offset(
   return compute_offset_permutation(
       extents, neighbor_first_axis_is_aligned, neighbor_second_axis_is_aligned,
       neighbor_third_axis_is_aligned, neighbor_axis_permutation);
+}
+
+std::vector<size_t> oriented_offset_on_slice(
+    const Index<0>& /*slice_extents*/, const size_t /*sliced_dim*/,
+    const OrientationMap<1>& /*orientation_of_neighbor*/) {
+  // There is only one point on a slice of a 1D mesh
+  return {0};
 }
 
 std::vector<size_t> oriented_offset_on_slice(
@@ -324,27 +328,76 @@ template void orient_each_component(
 }  // namespace OrientationMapHelpers_detail
 
 template <size_t VolumeDim>
-std::vector<double> orient_variables(
-    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+void orient_variables(
+    const gsl::not_null<DataVector*> result, const DataVector& variables,
+    const Index<VolumeDim>& extents,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  // Skip work (aside from a copy) if neighbor is aligned
-  if (orientation_of_neighbor.is_aligned()) {
-    return variables;
-  }
-
+  ASSERT(result->size() == variables.size(),
+         "Result should have size " << variables.size() << " but has size "
+                                    << result->size());
   const size_t number_of_grid_points = extents.product();
   ASSERT(variables.size() % number_of_grid_points == 0,
          "The size of the variables must be divisible by the number of grid "
          "points. Number of grid points: "
              << number_of_grid_points << " size: " << variables.size());
-  std::vector<double> oriented_variables(variables.size());
+  // Skip work (aside from a copy) if neighbor is aligned
+  if (orientation_of_neighbor.is_aligned()) {
+    (*result) = variables;
+    return;
+  }
+
   const auto oriented_offset = OrientationMapHelpers_detail::oriented_offset(
       extents, orientation_of_neighbor);
-  auto oriented_vars_view = gsl::make_span(oriented_variables);
+  auto oriented_vars_view = gsl::make_span(result->data(), result->size());
   OrientationMapHelpers_detail::orient_each_component(
-      make_not_null(&oriented_vars_view), gsl::make_span(variables),
-      number_of_grid_points, oriented_offset);
+      make_not_null(&oriented_vars_view),
+      gsl::make_span(variables.data(), variables.size()), number_of_grid_points,
+      oriented_offset);
+}
 
+template <size_t VolumeDim>
+void orient_variables_on_slice(
+    const gsl::not_null<DataVector*> result,
+    const DataVector& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
+  ASSERT(result->size() == variables_on_slice.size(),
+         "Result should have size " << variables_on_slice.size()
+                                    << " but has size " << result->size());
+  const size_t number_of_grid_points = slice_extents.product();
+  ASSERT(variables_on_slice.size() % number_of_grid_points == 0,
+         "The size of the variables must be divisible by the number of grid "
+         "points. Number of grid points: "
+             << number_of_grid_points
+             << " size: " << variables_on_slice.size());
+  // Skip work (aside from a copy) if neighbor slice is aligned
+  if (orientation_of_neighbor.is_aligned()) {
+    (*result) = variables_on_slice;
+    return;
+  }
+
+  const auto oriented_offset =
+      OrientationMapHelpers_detail::oriented_offset_on_slice(
+          slice_extents, sliced_dim, orientation_of_neighbor);
+
+  auto oriented_vars_view = gsl::make_span(result->data(), result->size());
+  OrientationMapHelpers_detail::orient_each_component(
+      make_not_null(&oriented_vars_view),
+      gsl::make_span(variables_on_slice.data(), variables_on_slice.size()),
+      number_of_grid_points, oriented_offset);
+}
+
+template <size_t VolumeDim>
+std::vector<double> orient_variables(
+    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
+  std::vector<double> oriented_variables(variables.size());
+  DataVector result(oriented_variables.data(), oriented_variables.size());
+  orient_variables(
+      make_not_null(&result),
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+      DataVector(const_cast<double*>(variables.data()), variables.size()),
+      extents, orientation_of_neighbor);
   return oriented_variables;
 }
 
@@ -353,33 +406,29 @@ std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor) {
-  // Skip work (aside from a copy) if neighbor slice is aligned
-  if (orientation_of_neighbor.is_aligned()) {
-    return variables_on_slice;
-  }
-
-  const size_t number_of_grid_points = slice_extents.product();
-  ASSERT(variables_on_slice.size() % number_of_grid_points == 0,
-         "The size of the variables must be divisible by the number of grid "
-         "points. Number of grid points: "
-             << number_of_grid_points
-             << " size: " << variables_on_slice.size());
   std::vector<double> oriented_variables(variables_on_slice.size());
-  const auto oriented_offset =
-      OrientationMapHelpers_detail::oriented_offset_on_slice(
-          slice_extents, sliced_dim, orientation_of_neighbor);
-
-  auto oriented_vars_view = gsl::make_span(oriented_variables);
-  OrientationMapHelpers_detail::orient_each_component(
-      make_not_null(&oriented_vars_view), gsl::make_span(variables_on_slice),
-      number_of_grid_points, oriented_offset);
-
+  DataVector result(oriented_variables.data(), oriented_variables.size());
+  orient_variables_on_slice(
+      make_not_null(&result),
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+      DataVector(const_cast<double*>(variables_on_slice.data()),
+                 variables_on_slice.size()),
+      slice_extents, sliced_dim, orientation_of_neighbor);
   return oriented_variables;
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                               \
+  template void orient_variables(                                            \
+      const gsl::not_null<DataVector*> result, const DataVector& variables,  \
+      const Index<DIM(data)>& extents,                                       \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
+  template void orient_variables_on_slice(                                   \
+      const gsl::not_null<DataVector*> result,                               \
+      const DataVector& variables_on_slice,                                  \
+      const Index<DIM(data) - 1>& slice_extents, size_t sliced_dim,          \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
   template std::vector<double> orient_variables<DIM(data)>(                  \
       const std::vector<double>& variables, const Index<DIM(data)>& extents, \
       const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
