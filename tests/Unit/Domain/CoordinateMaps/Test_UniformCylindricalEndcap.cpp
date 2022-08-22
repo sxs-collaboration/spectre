@@ -208,7 +208,7 @@ void test_uniform_cylindrical_endcap() {
 
   const CoordinateMaps::UniformCylindricalEndcap map(
       center_one, center_two, radius_one, radius_two, z_plane_one, z_plane_two);
-  test_suite_for_map_on_cylinder(map, 0.0, 1.0);
+  test_suite_for_map_on_cylinder(map, 0.0, 1.0, true);
 }
 }  // namespace
 
