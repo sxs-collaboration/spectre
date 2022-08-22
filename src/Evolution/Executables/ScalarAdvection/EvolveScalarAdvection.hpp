@@ -223,8 +223,7 @@ struct EvolutionMetavars {
     using DgComputeSubcellNeighborPackagedData =
         ScalarAdvection::subcell::NeighborPackagedData;
 
-    using GhostDataToSlice =
-        ScalarAdvection::subcell::GhostDataToSlice<volume_dim>;
+    using GhostVariables = ScalarAdvection::subcell::GhostVariables;
   };
 
   using observed_reduction_data_tags =
@@ -264,7 +263,7 @@ struct EvolutionMetavars {
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
-          volume_dim, ScalarAdvection::subcell::GhostDataOnSubcells>,
+          volume_dim, ScalarAdvection::subcell::GhostVariables>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

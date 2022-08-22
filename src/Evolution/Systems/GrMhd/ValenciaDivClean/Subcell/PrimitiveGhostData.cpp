@@ -8,12 +8,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/DgSubcell/Projection.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::ValenciaDivClean::subcell {
-auto PrimitiveGhostDataOnSubcells::apply(
+auto PrimitiveGhostVariables::apply(
     const Variables<hydro::grmhd_tags<DataVector>>& prims)
     -> Variables<prims_to_reconstruct_tags> {
   Variables<prims_to_reconstruct_tags> vars_to_reconstruct(
@@ -38,14 +36,5 @@ auto PrimitiveGhostDataOnSubcells::apply(
         get(get<hydro::Tags::LorentzFactor<DataVector>>(prims));
   }
   return vars_to_reconstruct;
-}
-
-auto PrimitiveGhostDataToSlice::apply(
-    const Variables<hydro::grmhd_tags<DataVector>>& prims,
-    const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh)
-    -> Variables<prims_to_reconstruct_tags> {
-  return evolution::dg::subcell::fd::project(
-      PrimitiveGhostDataOnSubcells::apply(prims), dg_mesh,
-      subcell_mesh.extents());
 }
 }  // namespace grmhd::ValenciaDivClean::subcell

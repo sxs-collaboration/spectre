@@ -16,12 +16,15 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -29,28 +32,36 @@
 namespace evolution::dg::subcell {
 /*!
  * \brief Add local data for our and our neighbor's relaxed discrete maximum
- * principle troubled-cell indicator, and compute and slice data needed for the
- * neighbor cells.
+ * principle troubled-cell indicator, and for reconstruction.
  *
  * The local maximum and minimum of the evolved variables is added to
  * `Tags::DataForRdmpTci` for the RDMP TCI. Then the
  * data needed by neighbor elements to do reconstruction on the FD grid is sent.
  * The data to be sent is computed in the mutator
- * `Metavariables::SubcellOptions::GhostDataToSlice`, which returns a
- * `Variables` of the tensors to slice and send to the neighbors. The main
- * reason for having the mutator `GhostDataToSlice` is to allow sending
- * primitive or characteristic variables for reconstruction.
+ * `Metavariables::SubcellOptions::GhostVariables`, which returns a
+ * `Variables` of the tensors to send to the neighbors. The main reason for
+ * having the mutator `GhostVariables` is to allow sending primitive or
+ * characteristic variables for reconstruction.
+ *
+ * \note If all neighbors are using DG then we send our DG volume data _without_
+ * orienting it. This elides the expense of projection and slicing. If any
+ * neighbors are doing FD, we project and slice to all neighbors. A future
+ * optimization would be to measure the cost of slicing data, and figure out how
+ * many neighbors need to be doing FD before it's worth projecting and slicing
+ * vs. just projecting to the ghost cells. Another optimization is to always
+ * send DG volume data to neighbors that we think are doing DG, so that we can
+ * elide any slicing or projection cost in that direction.
  */
-template <typename Metavariables, typename DbTagsList>
-DirectionMap<Metavariables::volume_dim, std::vector<double>>
-prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
-  constexpr size_t volume_dim = Metavariables::volume_dim;
+template <typename Metavariables, typename DbTagsList, size_t Dim>
+auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+                           const gsl::not_null<db::DataBox<DbTagsList>*> box)
+    -> DirectionMap<Metavariables::volume_dim, std::vector<double>> {
+  const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
+  const Mesh<Dim>& subcell_mesh =
+      db::get<::evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
+  const auto& element = db::get<::domain::Tags::Element<Dim>>(*box);
 
-  const auto& element = db::get<::domain::Tags::Element<volume_dim>>(*box);
-  DirectionMap<volume_dim, std::vector<double>>
-      all_neighbor_data_for_reconstruction{};
-
-  DirectionMap<volume_dim, bool> directions_to_slice{};
+  DirectionMap<Dim, bool> directions_to_slice{};
   for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
     if (neighbors_in_direction.size() == 0) {
       directions_to_slice[direction] = false;
@@ -58,53 +69,83 @@ prepare_neighbor_data(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
       directions_to_slice[direction] = true;
     }
   }
+  const auto& neighbor_meshes =
+      db::get<evolution::dg::Tags::NeighborMesh<Dim>>(*box);
 
-  const size_t ghost_zone_size =
-      Metavariables::SubcellOptions::ghost_zone_size(*box);
+  const auto ghost_variables = db::mutate_apply(
+      typename Metavariables::SubcellOptions::GhostVariables{}, box);
 
-  all_neighbor_data_for_reconstruction = subcell::slice_data(
-      db::mutate_apply(
-          typename Metavariables::SubcellOptions::GhostDataToSlice{}, box),
-      db::get<subcell::Tags::Mesh<volume_dim>>(*box).extents(), ghost_zone_size,
-      directions_to_slice);
+  DirectionMap<Dim, std::vector<double>> all_neighbor_data_for_reconstruction{};
+  if (alg::all_of(neighbor_meshes,
+                  [](const auto& directional_element_id_and_mesh) {
+                    ASSERT(directional_element_id_and_mesh.second.basis(0) !=
+                               Spectral::Basis::Chebyshev,
+                           "Don't yet support Chebyshev basis with DG-FD");
+                    return directional_element_id_and_mesh.second.basis(0) ==
+                           Spectral::Basis::Legendre;
+                  })) {
+    *ghost_data_mesh = dg_mesh;
+    for (const auto& [direction, slice] : directions_to_slice) {
+      if (slice) {
+        [[maybe_unused]] const auto insert_result =
+            all_neighbor_data_for_reconstruction.insert(std::pair{
+                direction, std::vector<double>{ghost_variables.data(),
+                                               ghost_variables.data() +
+                                                   ghost_variables.size()}});
+        ASSERT(insert_result.second,
+               "Failed to insert the neighbor data in direction " << direction);
+      }
+    }
+  } else {
+    *ghost_data_mesh = subcell_mesh;
+    const size_t ghost_zone_size =
+        Metavariables::SubcellOptions::ghost_zone_size(*box);
+
+    all_neighbor_data_for_reconstruction = subcell::slice_data(
+        evolution::dg::subcell::fd::project(ghost_variables, dg_mesh,
+                                            subcell_mesh.extents()),
+        db::get<subcell::Tags::Mesh<Dim>>(*box).extents(), ghost_zone_size,
+        directions_to_slice);
+
+    for (const auto& [direction, neighbors] : element.neighbors()) {
+      const auto& orientation = neighbors.orientation();
+      if (not orientation.is_aligned()) {
+        std::array<size_t, Dim> slice_extents{};
+        for (size_t d = 0; d < Dim; ++d) {
+          gsl::at(slice_extents, d) = subcell_mesh.extents(d);
+        }
+
+        gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
+
+        // Only hash the direction once.
+        auto& neighbor_data =
+            all_neighbor_data_for_reconstruction.at(direction);
+        neighbor_data = orient_variables(
+            neighbor_data, Index<Dim>{slice_extents}, orientation);
+      }
+    }
+  }
 
   // Note: The RDMP TCI data must be filled by the TCIs before getting to this
   // call. That means once in the initial data and then in both the DG and FD
   // TCIs.
   const subcell::RdmpTciData& rdmp_data =
       db::get<subcell::Tags::DataForRdmpTci>(*box);
-
   for (const auto& [direction, neighbors] : element.neighbors()) {
-    const auto& orientation = neighbors.orientation();
-    const Mesh<volume_dim>& subcell_mesh =
-        db::get<subcell::Tags::Mesh<volume_dim>>(*box);
-    if (not orientation.is_aligned()) {
-      std::array<size_t, volume_dim> slice_extents{};
-      for (size_t d = 0; d < volume_dim; ++d) {
-        gsl::at(slice_extents, d) = subcell_mesh.extents(d);
-      }
-
-      gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
-
-      all_neighbor_data_for_reconstruction.at(direction) =
-          orient_variables(all_neighbor_data_for_reconstruction.at(direction),
-                           Index<volume_dim>{slice_extents}, orientation);
-    }
-
     // Add the RDMP TCI data to what we will be sending.
     // Note that this is added _after_ the reconstruction data has been
-    // re-oriented.
-    std::vector<double>& neighbor_subcell_data =
+    // re-oriented (in the case where we have neighbors doing FD).
+    std::vector<double>& neighbor_data =
         all_neighbor_data_for_reconstruction.at(direction);
-    neighbor_subcell_data.reserve(neighbor_subcell_data.size() +
-                                  rdmp_data.max_variables_values.size() +
-                                  rdmp_data.min_variables_values.size());
-    neighbor_subcell_data.insert(neighbor_subcell_data.end(),
-                                 rdmp_data.max_variables_values.begin(),
-                                 rdmp_data.max_variables_values.end());
-    neighbor_subcell_data.insert(neighbor_subcell_data.end(),
-                                 rdmp_data.min_variables_values.begin(),
-                                 rdmp_data.min_variables_values.end());
+    neighbor_data.reserve(neighbor_data.size() +
+                          rdmp_data.max_variables_values.size() +
+                          rdmp_data.min_variables_values.size());
+    neighbor_data.insert(neighbor_data.end(),
+                         rdmp_data.max_variables_values.begin(),
+                         rdmp_data.max_variables_values.end());
+    neighbor_data.insert(neighbor_data.end(),
+                         rdmp_data.min_variables_values.begin(),
+                         rdmp_data.min_variables_values.end());
   }
 
   return all_neighbor_data_for_reconstruction;

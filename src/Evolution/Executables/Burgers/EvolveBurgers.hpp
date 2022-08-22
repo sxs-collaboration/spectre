@@ -217,7 +217,7 @@ struct EvolutionMetavars {
     using DgComputeSubcellNeighborPackagedData =
         Burgers::subcell::NeighborPackagedData;
 
-    using GhostDataToSlice = Burgers::subcell::GhostDataToSlice;
+    using GhostVariables = Burgers::subcell::GhostVariables;
   };
 
   using observed_reduction_data_tags =
@@ -261,7 +261,7 @@ struct EvolutionMetavars {
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
-          volume_dim, Burgers::subcell::GhostDataOnSubcells>,
+          volume_dim, Burgers::subcell::GhostVariables>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,
