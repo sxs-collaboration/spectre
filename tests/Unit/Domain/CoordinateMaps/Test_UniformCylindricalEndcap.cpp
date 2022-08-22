@@ -209,6 +209,27 @@ void test_uniform_cylindrical_endcap() {
   const CoordinateMaps::UniformCylindricalEndcap map(
       center_one, center_two, radius_one, radius_two, z_plane_one, z_plane_two);
   test_suite_for_map_on_cylinder(map, 0.0, 1.0, true);
+
+  // The following are tests that the inverse function correctly
+  // returns an invalid std::optional when called for a point that is
+  // outside the range of the map.
+
+  // Point with z less than z_plane_one.
+  CHECK_FALSE(map.inverse({{0.0,0.0,z_plane_one-1.0}}));
+
+  // Point outside sphere_two
+  CHECK_FALSE(map.inverse(
+      {{center_two[0], center_two[1], center_two[2] + 1.2 * radius_two}}));
+
+  // Point inside sphere_one (but z>z_plane_one since z_plane_one
+  // intersects sphere_one)
+  CHECK_FALSE(map.inverse(
+      {{center_one[0], center_one[1], center_one[2] + 0.99 * radius_one}}));
+
+  // Point outside the cone
+  CHECK_FALSE(map.inverse(
+      {{center_one[0], center_one[1] + radius_one * sin(theta_max_one) * 1.01,
+        z_plane_one + (z_plane_one - center_one[2]) * 1.e-5}}));
 }
 }  // namespace
 
