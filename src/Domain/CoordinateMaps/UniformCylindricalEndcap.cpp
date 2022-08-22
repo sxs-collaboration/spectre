@@ -42,16 +42,24 @@ double this_function_is_zero_for_correct_rhobar(
                 lambda * radius_two * sin(rhobar * theta_max_two));
 }
 
-bool is_uniform_cylindrical_endcap_invertible_for_target_on_sphere_one(
+// min and max values of rhobar in the inverse function.
+std::array<double, 2> rhobar_min_max(
     const std::array<double, 3>& center_one,
     const std::array<double, 3>& center_two, const double radius_one,
     const double radius_two, const double theta_max_one,
     const double theta_max_two, const std::array<double, 3>& target_coords) {
+  // Choose the minimum value of rhobar so that lambda >=0, where
+  // lambda is the quantity inside function_to_zero.  Note that the
+  // denominator of lambda inside that function is always positive.
   const double rhobar_min =
       target_coords[2] - center_one[2] >= radius_one
           ? 0.0
           : acos((target_coords[2] - center_one[2]) / radius_one) /
                 theta_max_one;
+  // Likewise, choose the maximum value of rhobar so that lambda <=1.
+  // The second ternary is to account for roundoff so that the acos doesn't
+  // FPE; (other than roundoff, target_coords[2] - center_two[2] should be
+  // <= radius_two)
   const double rhobar_max =
       target_coords[2] - center_two[2] <= radius_two * cos(theta_max_two)
           ? 1.0
@@ -59,6 +67,17 @@ bool is_uniform_cylindrical_endcap_invertible_for_target_on_sphere_one(
                 ? 0.0
                 : acos((target_coords[2] - center_two[2]) / radius_two) /
                       theta_max_two;
+  return {rhobar_min, rhobar_max};
+}
+
+bool is_uniform_cylindrical_endcap_invertible_for_target_on_sphere_one(
+    const std::array<double, 3>& center_one,
+    const std::array<double, 3>& center_two, const double radius_one,
+    const double radius_two, const double theta_max_one,
+    const double theta_max_two, const std::array<double, 3>& target_coords) {
+  const auto [rhobar_min, rhobar_max] =
+      rhobar_min_max(center_one, center_two, radius_one, radius_two,
+                     theta_max_one, theta_max_two, target_coords);
   if (equal_within_roundoff(rhobar_min, rhobar_max)) {
     // Special case where rhobar_min == rhobar_max to roundoff.  This
     // case occurs when the target point (assumed to be on sphere_one)
@@ -388,25 +407,9 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
         return std::make_pair(func_to_zero, deriv_of_func_to_zero);
       };
 
-  // Choose the minimum value of rhobar so that lambda >=0, where
-  // lambda is the quantity inside function_to_zero.  Note that the
-  // denominator of lambda inside that function is always positive.
-  const double rhobar_min =
-      target_coords[2] - center_one_[2] >= radius_one_
-          ? 0.0
-          : acos((target_coords[2] - center_one_[2]) / radius_one_) /
-                theta_max_one_;
-  // Likewise, choose the maximum value of rhobar so that lambda <=1.
-  // The second ternary is to account for roundoff so that the acos doesn't
-  // FPE; (other than roundoff, target_coords[2] - center_two_[2] should be
-  // <= radius_two_)
-  const double rhobar_max =
-      target_coords[2] - center_two_[2] <= radius_two_ * cos(theta_max_two_)
-          ? 1.0
-          : target_coords[2] - center_two_[2] >= radius_two_
-                ? 0.0
-                : acos((target_coords[2] - center_two_[2]) / radius_two_) /
-                      theta_max_two_;
+  const auto [rhobar_min, rhobar_max] =
+      rhobar_min_max(center_one_, center_two_, radius_one_, radius_two_,
+                     theta_max_one_, theta_max_two_, target_coords);
 
   // If rhobar is zero, then the root finding doesn't converge
   // well. This is because the function behaves like rhobar^2 for
