@@ -188,9 +188,8 @@ struct EvolutionMetavars {
 
   struct AhA : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target = tmpl::append<
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
+    using vars_to_interpolate_to_target =
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
@@ -204,15 +203,15 @@ struct EvolutionMetavars {
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhA>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhA,
+                                             ::Frame::Grid>,
         ah::callbacks::ObserveCenters<AhA>>;
   };
 
   struct AhB : tt::ConformsTo<intrp::protocols::InterpolationTargetTag> {
     using temporal_id = ::Tags::Time;
-    using vars_to_interpolate_to_target = tmpl::append<
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>,
-        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Inertial>>;
+    using vars_to_interpolate_to_target =
+        ::ah::vars_to_interpolate_to_target<volume_dim, ::Frame::Grid>;
     using compute_vars_to_interpolate = ah::ComputeHorizonVolumeQuantities;
     using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
     using surface_tags_to_observe = ::ah::surface_tags_for_observing;
@@ -226,7 +225,8 @@ struct EvolutionMetavars {
         intrp::callbacks::IgnoreFailedApparentHorizon;
     using post_horizon_find_callbacks = tmpl::list<
         intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, AhB>,
-        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB>,
+        intrp::callbacks::ObserveSurfaceData<surface_tags_to_observe, AhB,
+                                             ::Frame::Grid>,
         ah::callbacks::ObserveCenters<AhB>>;
   };
 

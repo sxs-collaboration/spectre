@@ -293,8 +293,8 @@ struct MockMetavariables {
     using compute_target_points =
         intrp::TargetPoints::KerrHorizon<SurfaceD, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceData<tmpl::list<Tags::Square>,
-                                             SurfaceD>;
+        intrp::callbacks::ObserveSurfaceData<tmpl::list<Tags::Square>, SurfaceD,
+                                             ::Frame::Inertial>;
   };
 
   using observed_reduction_data_tags = tmpl::list<>;

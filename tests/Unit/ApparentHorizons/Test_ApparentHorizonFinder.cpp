@@ -16,7 +16,7 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.tpp"
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
+#include "ApparentHorizons/StrahlkorperCoordsInDifferentFrame.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -83,6 +83,8 @@ class GlobalCache;
 }  // namespace Parallel
 namespace StrahlkorperTags {
 template <typename Frame>
+struct CartesianCoords;
+template <typename Frame>
 struct Radius;
 template <typename Frame>
 struct Strahlkorper;
@@ -116,31 +118,29 @@ struct TestHorizonFindFailureCallback {
   }
 };
 
-// If we have found the horizon in a non-inertial frame, the the
-// inertial-frame Strahlkorper should also be in the DataBox.  So this
-// test compares the inertial-frame strahlkorper to its expected
-// value.
+// If we have found the horizon in a non-inertial frame, the
+// inertial-frame coords of the Strahlkorper collocation points should
+// also be in the DataBox.  This test compares the inertial-frame
+// strahlkorper coords to their expected value.
 template <typename Frame, typename DbTags, typename Metavariables>
-void test_inertial_strahlkorper(
+void test_inertial_strahlkorper_coords(
     const db::DataBox<DbTags>& box,
     const Parallel::GlobalCache<Metavariables>& cache,
     const typename Metavariables::AhA::temporal_id::type& temporal_id) {
   if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
     const auto& strahlkorper = get<StrahlkorperTags::Strahlkorper<Frame>>(box);
-    const auto& inertial_strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>(box);
+    const auto& inertial_strahlkorper_coords =
+        get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box);
     const auto& functions_of_time = get<domain::Tags::FunctionsOfTime>(cache);
     const auto& domain = get<domain::Tags::Domain<3>>(cache);
 
-    Strahlkorper<::Frame::Inertial> expected_inertial_strahlkorper{};
-    strahlkorper_in_different_frame(
-        make_not_null(&expected_inertial_strahlkorper), strahlkorper, domain,
+    tnsr::I<DataVector, 3, ::Frame::Inertial> expected_inertial_coords{};
+    strahlkorper_coords_in_different_frame(
+        make_not_null(&expected_inertial_coords), strahlkorper, domain,
         functions_of_time,
         intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id));
-    CHECK_ITERABLE_APPROX(expected_inertial_strahlkorper.physical_center(),
-                          inertial_strahlkorper.physical_center());
-    CHECK_ITERABLE_APPROX(expected_inertial_strahlkorper.coefficients(),
-                          inertial_strahlkorper.coefficients());
+    CHECK_ITERABLE_APPROX(expected_inertial_coords,
+                          inertial_strahlkorper_coords);
   }
 }
 
@@ -172,7 +172,7 @@ struct TestSchwarzschildHorizon {
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
-    test_inertial_strahlkorper<Frame>(box, cache, temporal_id);
+    test_inertial_strahlkorper_coords<Frame>(box, cache, temporal_id);
 
     ++test_schwarzschild_horizon_called;
   }
@@ -207,7 +207,7 @@ struct TestKerrHorizon {
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0, 0>(inv_metric).size());
 
-    test_inertial_strahlkorper<Frame>(box, cache, temporal_id);
+    test_inertial_strahlkorper_coords<Frame>(box, cache, temporal_id);
 
     ++test_kerr_horizon_called;
   }

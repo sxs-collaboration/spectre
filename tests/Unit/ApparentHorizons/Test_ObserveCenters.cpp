@@ -61,7 +61,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
   std::vector<std::array<double, 3>> inertial_centers{};
 
   db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>,
-                         StrahlkorperTags::Strahlkorper<Frame::Inertial>>>
+                         StrahlkorperTags::CartesianCoords<Frame::Inertial>,
+                         StrahlkorperGr::Tags::AreaElement<Frame::Grid>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
@@ -73,17 +74,38 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
     inertial_centers.push_back(inertial_center);
 
     db::mutate<StrahlkorperTags::Strahlkorper<Frame::Grid>,
-               StrahlkorperTags::Strahlkorper<Frame::Inertial>>(
+               StrahlkorperTags::CartesianCoords<Frame::Inertial>,
+               StrahlkorperGr::Tags::AreaElement<Frame::Grid>>(
         make_not_null(&box),
         [&grid_center, &inertial_center](
             gsl::not_null<Strahlkorper<Frame::Grid>*> box_grid_horizon,
-            gsl::not_null<Strahlkorper<Frame::Inertial>*>
-                box_inertial_horizon) {
-          // We only care about the centers of the strahlkorper so the
-          // ell and radius are arbitrary
-          *box_grid_horizon = Strahlkorper<Frame::Grid>{2, 1.0, grid_center};
-          *box_inertial_horizon =
-              Strahlkorper<Frame::Inertial>{2, 1.0, inertial_center};
+            gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+                box_inertial_coords,
+            gsl::not_null<Scalar<DataVector>*> box_area_element) {
+          *box_grid_horizon = Strahlkorper<Frame::Grid>{10, 1.0, grid_center};
+          const auto theta_phi =
+              StrahlkorperFunctions::theta_phi(*box_grid_horizon);
+          const auto radius = StrahlkorperFunctions::radius(*box_grid_horizon);
+          const auto rhat = StrahlkorperFunctions::rhat(theta_phi);
+
+          // Set area element to the Euclidean area element for the test.
+          *box_area_element = StrahlkorperGr::euclidean_area_element(
+              StrahlkorperFunctions::jacobian(theta_phi),
+              StrahlkorperFunctions::normal_one_form(
+                  StrahlkorperFunctions::cartesian_derivs_of_scalar(
+                      radius, *box_grid_horizon, radius,
+                      StrahlkorperFunctions::inv_jacobian(theta_phi)),
+                  rhat),
+              radius, rhat);
+
+          // Simply offset the inertial coords from the grid coords.
+          const auto grid_coords = StrahlkorperFunctions::cartesian_coords(
+              *box_grid_horizon, radius, rhat);
+          for (size_t i = 0; i < 3; ++i) {
+            box_inertial_coords->get(i) = grid_coords.get(i) +
+                                          gsl::at(inertial_center, i) -
+                                          gsl::at(grid_center, i);
+          }
         });
   };
 
@@ -133,9 +155,9 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
     const std::array<double, 3>& inertial_center = inertial_centers[i];
     for (size_t j = 0; j < grid_center.size(); j++) {
       // Grid center is columns 2-4
-      CHECK(data(i, j + 1) == gsl::at(grid_center, j));
+      CHECK(data(i, j + 1) == approx(gsl::at(grid_center, j)));
       // Inertial center is columns 5-7
-      CHECK(data(i, j + 4) == gsl::at(inertial_center, j));
+      CHECK(data(i, j + 4) == approx(gsl::at(inertial_center, j)));
     }
   }
 }

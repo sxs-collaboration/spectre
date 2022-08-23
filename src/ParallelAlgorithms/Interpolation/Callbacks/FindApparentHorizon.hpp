@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
-#include "ApparentHorizons/StrahlkorperInDifferentFrame.hpp"
+#include "ApparentHorizons/StrahlkorperCoordsInDifferentFrame.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -317,16 +317,16 @@ struct FindApparentHorizon
           },
           box);
 
-      // Compute Strahlkorper in Inertial frame if the current frame
-      // is not inertial.
+      // Compute Strahlkorper Cartesian coordinates in Inertial frame
+      // if the current frame is not inertial.
       if constexpr (not std::is_same_v<Frame, ::Frame::Inertial>) {
         db::mutate_apply<
-            tmpl::list<StrahlkorperTags::Strahlkorper<::Frame::Inertial>>,
+            tmpl::list<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>,
             tmpl::list<StrahlkorperTags::Strahlkorper<Frame>,
                        domain::Tags::Domain<Metavariables::volume_dim>>>(
             [&cache, &temporal_id](
-                const gsl::not_null<Strahlkorper<::Frame::Inertial>*>
-                    inertial_strahlkorper,
+                const gsl::not_null<tnsr::I<DataVector, 3, ::Frame::Inertial>*>
+                    inertial_strahlkorper_coords,
                 const Strahlkorper<Frame>& strahlkorper,
                 const Domain<Metavariables::volume_dim>& domain) {
               // Note that functions_of_time must already be up to
@@ -334,8 +334,8 @@ struct FindApparentHorizon
               // search above.
               const auto& functions_of_time =
                   get<domain::Tags::FunctionsOfTime>(*cache);
-              strahlkorper_in_different_frame(
-                  inertial_strahlkorper, strahlkorper, domain,
+              strahlkorper_coords_in_different_frame(
+                  inertial_strahlkorper_coords, strahlkorper, domain,
                   functions_of_time,
                   InterpolationTarget_detail::get_temporal_id_value(
                       temporal_id));
