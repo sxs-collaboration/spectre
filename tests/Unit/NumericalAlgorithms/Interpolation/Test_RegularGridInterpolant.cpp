@@ -20,8 +20,8 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep

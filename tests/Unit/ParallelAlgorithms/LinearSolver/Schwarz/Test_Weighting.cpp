@@ -5,12 +5,12 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/Neighbors.hpp"
 #include "Domain/Structure/Side.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "ParallelAlgorithms/LinearSolver/Schwarz/OverlapHelpers.hpp"

@@ -11,7 +11,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"

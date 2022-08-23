@@ -21,6 +21,7 @@ template <size_t, typename>
 struct Coordinates;  // IWYU pragma: keep
 }  // namespace Tags
 }  // namespace domain
+
 template <size_t Dim>
 class Mesh;
 class DataVector;
@@ -54,20 +55,6 @@ template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
     const Mesh<VolumeDim>& mesh);
 /// @}
-
-/*!
- * \ingroup ComputationalDomainGroup
- * \brief Compute the logical coordinates on a face of an Element.
- *
- * \returns element logical-frame vector holding coordinates
- *
- * \example
- * \snippet Test_LogicalCoordinates.cpp interface_logical_coordinates_example
- */
-template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
-interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
-                              const Direction<VolumeDim>& direction);
 
 namespace domain {
 namespace Tags {

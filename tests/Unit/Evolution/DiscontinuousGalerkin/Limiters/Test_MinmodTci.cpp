@@ -16,7 +16,6 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
@@ -24,6 +23,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"

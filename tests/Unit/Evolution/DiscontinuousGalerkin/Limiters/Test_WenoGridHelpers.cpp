@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -18,6 +17,7 @@
 #include "Domain/Structure/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"

@@ -40,4 +40,6 @@ target_link_libraries(
   ErrorHandling
   SPHEREPACK
   Utilities
+  PRIVATE
+  Interpolation
   )

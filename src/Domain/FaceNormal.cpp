@@ -7,7 +7,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"         // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"                    // IWYU pragma: keep
-#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/ContainerHelpers.hpp"

@@ -54,7 +54,6 @@ target_link_libraries(
   Utilities
   PRIVATE
   Boost::boost
-  Domain
   GSL::gsl
   )
 

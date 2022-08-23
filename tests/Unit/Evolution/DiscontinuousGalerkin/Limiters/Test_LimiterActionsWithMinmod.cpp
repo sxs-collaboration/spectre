@@ -25,7 +25,6 @@
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/SizeOfElement.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -34,6 +33,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"

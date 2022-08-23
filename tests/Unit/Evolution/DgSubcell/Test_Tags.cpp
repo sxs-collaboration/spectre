@@ -9,7 +9,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -26,6 +25,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 

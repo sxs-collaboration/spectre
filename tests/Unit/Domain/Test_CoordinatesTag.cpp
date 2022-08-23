@@ -12,9 +12,9 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/ElementMap.hpp"
-#include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
