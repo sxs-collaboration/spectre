@@ -364,10 +364,10 @@ void test(const BoundaryConditionType& boundary_condition,
       get(get<Pressure>(expected_ghost_vars)) = 1.0;
       for (size_t i = 0; i < 3; ++i) {
         get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
-            0.0;
+            0.2;
         get<MagneticField>(expected_ghost_vars).get(i) = 0.5;
       }
-      get(get<DivergenceCleaningField>(expected_ghost_vars)) = 0.0;
+      get(get<DivergenceCleaningField>(expected_ghost_vars)) = 1e-2;
 
       tmpl::for_each<prims_to_reconstruct>(
           [&expected_ghost_vars, &fd_ghost_vars](auto tag_v) {
@@ -410,6 +410,63 @@ void test(const BoundaryConditionType& boundary_condition,
           })(),
           Catch::Contains("Subcell currently does not support moving mesh"));
     }
+
+    if (typeid(BoundaryConditionType) ==
+        typeid(BoundaryConditions::FreeOutflow)) {
+      Variables<prims_to_reconstruct> expected_ghost_vars{ghost_zone_size *
+                                                          num_face_pts};
+      // cf) See line 172-179 for values of prim variables in volume.
+      get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
+      get(get<Pressure>(expected_ghost_vars)) = 1.0;
+      for (size_t i = 0; i < 3; ++i) {
+        get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(i) =
+            0.2;
+        get<MagneticField>(expected_ghost_vars).get(i) = 0.5;
+      }
+      get(get<DivergenceCleaningField>(expected_ghost_vars)) =
+          0.0;  // note the difference from Outflow boundary condition. While
+                // the volume value was set to 1e-2, FreeOutflow boundary should
+                // assign zero to Phi in ghost zones.
+
+      tmpl::for_each<prims_to_reconstruct>(
+          [&expected_ghost_vars, &fd_ghost_vars](auto tag_v) {
+            using tag = typename tmpl::type_from<decltype(tag_v)>;
+            CHECK_ITERABLE_APPROX(get<tag>(expected_ghost_vars),
+                                  get<tag>(fd_ghost_vars));
+          });
+
+      // Now set the spatial velocity pointing inward with respect to the
+      // upper_xi() direction which is the direction with which test is done.
+      // Then re-compute ghost zone data to see if inward-pointing components
+      // are set to zero.
+      db::mutate<SpatialVelocity>(
+          make_not_null(&box), [](const gsl::not_null<tnsr::I<DataVector, 3>*>
+                                      interior_spatial_velocity) {
+            (*interior_spatial_velocity).get(0) = -0.2;
+          });
+      fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
+                                            ReconstructorForTest{});
+
+      const std::vector<double>& fd_ghost_data_velocity_inward =
+          get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
+              box)
+              .at(mortar_id);
+      Variables<prims_to_reconstruct> fd_ghost_vars_velocity_inward{
+          ghost_zone_size * num_face_pts};
+      std::copy(fd_ghost_data_velocity_inward.begin(),
+                fd_ghost_data_velocity_inward.end(),
+                fd_ghost_vars_velocity_inward.data());
+
+      // we expect Wv^0 is zero
+      get<LorentzFactorTimesSpatialVelocity>(expected_ghost_vars).get(0) = 0.0;
+
+      tmpl::for_each<prims_to_reconstruct>(
+          [&expected_ghost_vars, &fd_ghost_vars_velocity_inward](auto tag_v) {
+            using tag = typename tmpl::type_from<decltype(tag_v)>;
+            CHECK_ITERABLE_APPROX(get<tag>(expected_ghost_vars),
+                                  get<tag>(fd_ghost_vars_velocity_inward));
+          });
+    }
   }
 }
 
@@ -423,6 +480,7 @@ SPECTRE_TEST_CASE(
        {TestCases::BcPointerIsNull, TestCases::AllGoodWithDomain}) {
     test(BoundaryConditions::DirichletAnalytic{}, test_this);
     test(BoundaryConditions::Outflow{}, test_this);
+    test(BoundaryConditions::FreeOutflow{}, test_this);
   }
 
 // check that the periodic BC fails
