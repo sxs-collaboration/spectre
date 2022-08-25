@@ -544,7 +544,8 @@ void test_suite_for_map_on_sphere(const Map& map,
 template <typename Map>
 void test_suite_for_map_on_cylinder(
     const Map& map, const double inner_radius, const double outer_radius,
-    const bool test_random_z_bdry_roundoff = false) {
+    const bool test_random_z_bdry_roundoff = false,
+    const bool test_random_rho_bdry_roundoff = false) {
   static_assert(Map::dim == 3,
                 "test_suite_for_map_on_cylinder works only for a 3d map");
 
@@ -616,24 +617,60 @@ void test_suite_for_map_on_cylinder(
   // predict the details of whether roundoff makes certain
   // expressions in the map slightly smaller or slightly larger than
   // they should be.
-  const auto test_helper_roundoff_points =
+  const auto test_helper_z_roundoff_points =
       [&gen, &height_dis, &radius, &phi,
        &test_helper](const auto& map_to_test) {
         for (size_t i = 0; i < 50; ++i) {
-          const double roundoff = 1.e-15 * height_dis(gen);
-          CAPTURE(roundoff);
+          const double z_roundoff = 1.e-15 * height_dis(gen);
+          CAPTURE(z_roundoff);
           const std::array<double, 3> random_bdry_point_roundoff{
-              {radius * cos(phi), radius * sin(phi), 1.0 + roundoff}};
+              {radius * cos(phi), radius * sin(phi), 1.0 + z_roundoff}};
           const std::array<double, 3> random_bdry_point_minus_roundoff{
-              {radius * cos(phi), radius * sin(phi), -1.0 + roundoff}};
+              {radius * cos(phi), radius * sin(phi), -1.0 + z_roundoff}};
           test_helper(map_to_test, {random_bdry_point_roundoff,
                                     random_bdry_point_minus_roundoff});
+        }
+      };
+  const auto test_helper_rho_roundoff_points =
+      [&gen, &radius_dis, &inner_radius, &outer_radius, &phi, &height,
+       &test_helper](const auto& map_to_test) {
+        for (size_t i = 0; i < 25; ++i) {
+          const double rho_roundoff = 1.e-15 * radius_dis(gen) / outer_radius;
+          CAPTURE(rho_roundoff);
+          const std::array<double, 3> random_bdry_point_inner_roundoff{
+              {(inner_radius + rho_roundoff) * cos(phi),
+               (inner_radius + rho_roundoff) * sin(phi), height}};
+          const std::array<double, 3> random_bdry_point_outer_roundoff{
+              {(outer_radius + rho_roundoff) * cos(phi),
+               (outer_radius + rho_roundoff) * sin(phi), height}};
+          const std::array<double, 3> random_bdry_point_outer_minus_roundoff{
+              {(outer_radius - rho_roundoff) * cos(phi),
+               (outer_radius - rho_roundoff) * sin(phi), height}};
+          if(inner_radius != 0.0) {
+            const std::array<double, 3> random_bdry_point_inner_minus_roundoff{
+                {(inner_radius - rho_roundoff) * cos(phi),
+                 (inner_radius - rho_roundoff) * sin(phi), height}};
+            test_helper(map_to_test, {random_bdry_point_inner_roundoff,
+                                      random_bdry_point_outer_roundoff,
+                                      random_bdry_point_outer_minus_roundoff,
+                                      random_bdry_point_inner_minus_roundoff});
+          } else {
+            // If inner_radius is zero, ignore
+            // random_bdry_point_inner_minus_roundoff because that
+            // would make the radius negative.
+            test_helper(map_to_test, {random_bdry_point_inner_roundoff,
+                                      random_bdry_point_outer_roundoff,
+                                      random_bdry_point_outer_minus_roundoff});
+          }
         }
       };
 
   test_helper_all_points(map);
   if (test_random_z_bdry_roundoff) {
-    test_helper_roundoff_points(map);
+    test_helper_z_roundoff_points(map);
+  }
+  if (test_random_rho_bdry_roundoff) {
+    test_helper_rho_roundoff_points(map);
   }
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(

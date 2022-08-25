@@ -25,6 +25,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_TimeDependentHelpers.cpp
   Test_UniformCylindricalEndcap.cpp
+  Test_UniformCylindricalSide.cpp
   Test_Wedge2D.cpp
   Test_Wedge3D.cpp
   )
