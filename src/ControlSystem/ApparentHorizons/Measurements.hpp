@@ -9,6 +9,7 @@
 #include "ApparentHorizons/ComputeHorizonVolumeQuantities.hpp"
 #include "ApparentHorizons/HorizonAliases.hpp"
 #include "ApparentHorizons/ObjectLabel.hpp"
+#include "ApparentHorizons/ObserveCenters.hpp"
 #include "ApparentHorizons/Tags.hpp"
 #include "ControlSystem/Protocols/Measurement.hpp"
 #include "ControlSystem/Protocols/Submeasurement.hpp"
@@ -58,7 +59,9 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Grid>;
       using compute_vars_to_interpolate = ::ah::ComputeHorizonVolumeQuantities;
-      using compute_items_on_target = tmpl::list<>;
+      using tags_to_observe = ::ah::tags_for_observing<Frame::Grid>;
+      using compute_items_on_target =
+          ::ah::compute_items_on_target<3, Frame::Grid>;
       using compute_target_points =
           intrp::TargetPoints::ApparentHorizon<InterpolationTarget,
                                                ::Frame::Grid>;
@@ -68,7 +71,8 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
       using horizon_find_failure_callback =
           intrp::callbacks::ErrorOnFailedApparentHorizon;
       using post_horizon_find_callbacks =
-          tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>>;
+          tmpl::list<control_system::RunCallbacks<FindHorizon, ControlSystems>,
+                     ::ah::callbacks::ObserveCenters<InterpolationTarget>>;
     };
 
    public:
