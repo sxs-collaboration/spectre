@@ -14,6 +14,7 @@ spectre_target_headers(
   AdvanceTime.hpp
   ChangeSlabSize.hpp
   ChangeStepSize.hpp
+  LimitTimeStepToExpirationTimes.hpp
   RecordTimeStepperData.hpp
   SelfStartActions.hpp
   UpdateU.hpp

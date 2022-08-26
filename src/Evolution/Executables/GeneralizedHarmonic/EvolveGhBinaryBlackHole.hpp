@@ -117,6 +117,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/Actions/LimitTimeStepToExpirationTimes.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"
@@ -383,7 +384,7 @@ struct EvolutionMetavars {
                   EvolutionMetavars>,
               Actions::RecordTimeStepperData<>,
               evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
-              Actions::UpdateU<>>>,
+              Actions::LimitTimeStepToExpirationTimes, Actions::UpdateU<>>>,
       dg::Actions::Filter<
           Filters::Exponential<0>,
           tmpl::list<
