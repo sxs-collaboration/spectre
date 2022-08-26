@@ -1,0 +1,28 @@
+{
+    "BasicReplace": {
+        "Actions::MutateApply": [["Actions::MutateApply<", ""], [">()", "()"]],
+        "EvolutionMetavars<grmhd::AnalyticData::KhInstability>": [
+            ["EvolutionMetavars<grmhd::AnalyticData::KhInstability>",
+             "Metavars"]],
+        "evolution::dg::Actions": [["evolution::dg::Actions", "dg"]],
+        "grmhd::ValenciaDivClean::subcell": [
+            ["grmhd::ValenciaDivClean::subcell", "subcell"]]
+    },
+    "RegexReplace": {
+        "subcell::FixConservativesAndComputePrims": [
+            ["subcell::FixConservativesAndComputePrims.*\"",
+             "subcell::FixConservativesAndComputePrims\""]],
+        "subcell::PrimsAfterRollback": [
+            ["subcell::PrimsAfterRollback.*\"",
+             "subcell::PrimsAfterRollback\""]],
+        "subcell::ResizeAndComputePrims": [
+            ["subcell::ResizeAndComputePrims.*\"",
+             "subcell::ResizeAndComputePrims\""]],
+        "subcell::Actions::TciAndRollback": [
+            ["evolution::dg::subcell::Actions::TciAndRollback.*\"",
+             "TciAndRollback\""]],
+        "mem_monitor::ProcessArray" : [
+            ["mem_monitor::ProcessArray<DgElementArray.*\"",
+             "mem_monitor::ProcessArray<DgElementArray>\""]]
+    }
+}

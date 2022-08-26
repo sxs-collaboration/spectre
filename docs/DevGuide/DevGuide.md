@@ -25,8 +25,7 @@ Methods for creating custom coordinate maps are discussed here.
 - \subpage dev_guide_option_parsing "Option parsing" to get options from input
   files
 - \subpage dev_guide_importing "Importing" data from files
-- \subpage profiling_with_projections "Profiling With Charm++ Projections" and
-  PAPI for optimizing performance
+- \subpage profiling "Profiling" SpECTRE with a variety of different tools
 - \subpage spectre_writing_python_bindings "Writing Python Bindings" to use
   SpECTRE C++ classes and functions from within python.
 - \subpage implementing_vectors "Implementing SpECTRE vectors" a quick how-to
