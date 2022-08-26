@@ -41,7 +41,7 @@ void slice_variable(
 
   const std::vector<double> sliced_data{detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
-      subcell_extents, ghost_zone_size, directions_to_slice)[direction]};
+      subcell_extents, ghost_zone_size, directions_to_slice, 0)[direction]};
 
   // copy the returned std::vector<double> data into sliced variables
   std::copy(sliced_data.begin(), sliced_data.end(),

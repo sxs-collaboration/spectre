@@ -82,7 +82,8 @@ template <size_t Dim>
 DirectionMap<Dim, std::vector<double>> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice) {
+    const DirectionMap<Dim, bool>& directions_to_slice,
+    const size_t additional_buffer) {
   const size_t num_pts = subcell_extents.product();
   const size_t number_of_components = volume_subcell_vars.size() / num_pts;
   std::array<size_t, Dim> result_grid_points{};
@@ -102,8 +103,12 @@ DirectionMap<Dim, std::vector<double>> slice_data_impl(
   DirectionMap<Dim, std::vector<double>> result{};
   for (const auto& [dir, should_slice] : directions_to_slice) {
     if (should_slice) {
-      result[dir] = std::vector<double>(
-          gsl::at(result_grid_points, dir.dimension()) * number_of_components);
+      auto& result_in_dir = result[dir] = std::vector<double>{};
+      result_in_dir.reserve(gsl::at(result_grid_points, dir.dimension()) *
+                                number_of_components +
+                            additional_buffer);
+      result_in_dir.resize(gsl::at(result_grid_points, dir.dimension()) *
+                           number_of_components);
     }
   }
 
@@ -133,11 +138,11 @@ DirectionMap<Dim, std::vector<double>> slice_data_impl(
 
 template DirectionMap<1, std::vector<double>> slice_data_impl(
     const gsl::span<const double>&, const Index<1>&, const size_t,
-    const DirectionMap<1, bool>&);
+    const DirectionMap<1, bool>&, size_t);
 template DirectionMap<2, std::vector<double>> slice_data_impl(
     const gsl::span<const double>&, const Index<2>&, const size_t,
-    const DirectionMap<2, bool>&);
+    const DirectionMap<2, bool>&, size_t);
 template DirectionMap<3, std::vector<double>> slice_data_impl(
     const gsl::span<const double>&, const Index<3>&, const size_t,
-    const DirectionMap<3, bool>&);
+    const DirectionMap<3, bool>&, size_t);
 }  // namespace evolution::dg::subcell::detail

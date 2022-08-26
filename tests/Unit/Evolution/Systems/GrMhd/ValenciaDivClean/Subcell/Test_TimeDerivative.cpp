@@ -206,7 +206,7 @@ std::array<double, 5> test(const size_t num_dg_pts) {
             prims_to_reconstruct, subcell_mesh.extents(),
             grmhd::ValenciaDivClean::fd::MonotonisedCentralPrim{}
                 .ghost_zone_size(),
-            directions_to_slice)
+            directions_to_slice, 0)
             .at(direction.opposite());
     neighbor_data[std::pair{direction,
                             *element.neighbors().at(direction).begin()}] =

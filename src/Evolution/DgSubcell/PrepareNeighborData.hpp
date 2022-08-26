@@ -71,6 +71,10 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
   }
   const auto& neighbor_meshes =
       db::get<evolution::dg::Tags::NeighborMesh<Dim>>(*box);
+  const subcell::RdmpTciData& rdmp_data =
+      db::get<subcell::Tags::DataForRdmpTci>(*box);
+  const size_t rdmp_size = rdmp_data.max_variables_values.size() +
+                           rdmp_data.min_variables_values.size();
 
   const auto ghost_variables = db::mutate_apply(
       typename Metavariables::SubcellOptions::GhostVariables{}, box);
@@ -87,11 +91,15 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
     *ghost_data_mesh = dg_mesh;
     for (const auto& [direction, slice] : directions_to_slice) {
       if (slice) {
+        std::vector<double> data{};
+        data.reserve(ghost_variables.size() + rdmp_size);
+        data.resize(ghost_variables.size());
+        std::copy(ghost_variables.data(),
+                  ghost_variables.data() + ghost_variables.size(),
+                  data.begin());
         [[maybe_unused]] const auto insert_result =
-            all_neighbor_data_for_reconstruction.insert(std::pair{
-                direction, std::vector<double>{ghost_variables.data(),
-                                               ghost_variables.data() +
-                                                   ghost_variables.size()}});
+            all_neighbor_data_for_reconstruction.insert(
+                std::pair{direction, std::move(data)});
         ASSERT(insert_result.second,
                "Failed to insert the neighbor data in direction " << direction);
       }
@@ -105,10 +113,14 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
         evolution::dg::subcell::fd::project(ghost_variables, dg_mesh,
                                             subcell_mesh.extents()),
         db::get<subcell::Tags::Mesh<Dim>>(*box).extents(), ghost_zone_size,
-        directions_to_slice);
+        directions_to_slice, rdmp_size);
 
     for (const auto& [direction, neighbors] : element.neighbors()) {
       const auto& orientation = neighbors.orientation();
+      // Note: this currently orients the data for _each_ neighbor. We can
+      // instead just orient the data once for all in a particular direction.
+      ASSERT(neighbors.ids().size() == 1,
+             "Can only have one neighbor per direction right now.");
       if (not orientation.is_aligned()) {
         std::array<size_t, Dim> slice_extents{};
         for (size_t d = 0; d < Dim; ++d) {
@@ -120,8 +132,12 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
         // Only hash the direction once.
         auto& neighbor_data =
             all_neighbor_data_for_reconstruction.at(direction);
-        neighbor_data = orient_variables(
-            neighbor_data, Index<Dim>{slice_extents}, orientation);
+        DataVector local_orientation_data(neighbor_data.size());
+        std::copy(neighbor_data.begin(), neighbor_data.end(),
+                  local_orientation_data.data());
+        DataVector oriented_data(neighbor_data.data(), neighbor_data.size());
+        orient_variables(make_not_null(&oriented_data), local_orientation_data,
+                         Index<Dim>{slice_extents}, orientation);
       }
     }
   }
@@ -129,17 +145,17 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
   // Note: The RDMP TCI data must be filled by the TCIs before getting to this
   // call. That means once in the initial data and then in both the DG and FD
   // TCIs.
-  const subcell::RdmpTciData& rdmp_data =
-      db::get<subcell::Tags::DataForRdmpTci>(*box);
   for (const auto& [direction, neighbors] : element.neighbors()) {
     // Add the RDMP TCI data to what we will be sending.
     // Note that this is added _after_ the reconstruction data has been
     // re-oriented (in the case where we have neighbors doing FD).
     std::vector<double>& neighbor_data =
         all_neighbor_data_for_reconstruction.at(direction);
-    neighbor_data.reserve(neighbor_data.size() +
-                          rdmp_data.max_variables_values.size() +
-                          rdmp_data.min_variables_values.size());
+    ASSERT(
+        neighbor_data.capacity() == neighbor_data.size() + rdmp_size,
+        "Neighbor data capacity does not account for RDMP data. RDMP size is "
+            << rdmp_size << " capacity is " << neighbor_data.capacity()
+            << " size is " << neighbor_data.size());
     neighbor_data.insert(neighbor_data.end(),
                          rdmp_data.max_variables_values.begin(),
                          rdmp_data.max_variables_values.end());

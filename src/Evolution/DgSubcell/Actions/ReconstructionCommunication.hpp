@@ -135,7 +135,7 @@ struct SendDataForReconstruction {
     // all_sliced_data when possible before sending.
     const DirectionMap<Dim, std::vector<double>> all_sliced_data = slice_data(
         db::mutate_apply(GhostDataMutator{}, make_not_null(&box)),
-        subcell_mesh.extents(), ghost_zone_size, directions_to_slice);
+        subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
 
     auto& receiver_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);

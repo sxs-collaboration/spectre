@@ -205,7 +205,7 @@ void test(const bool all_neighbors_are_doing_dg) {
     // do same operation as GhostDataToSlice
     expected_neighbor_data = evolution::dg::subcell::slice_data(
         expected_vars, subcell_mesh.extents(), ghost_zone_size,
-        directions_to_slice);
+        directions_to_slice, 0);
     if constexpr (Dim == 3) {
       const auto direction = expected_neighbor_directions<Dim>()[1];
       Index<Dim> slice_extents = subcell_mesh.extents();

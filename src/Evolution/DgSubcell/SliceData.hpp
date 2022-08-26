@@ -22,7 +22,8 @@ template <size_t Dim>
 DirectionMap<Dim, std::vector<double>> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice);
+    const DirectionMap<Dim, bool>& directions_to_slice,
+    size_t additional_buffer);
 }  // namespace detail
 
 /*!
@@ -40,14 +41,20 @@ DirectionMap<Dim, std::vector<double>> slice_data_impl(
  *
  * The data always has the same ordering as the volume data (tags have the same
  * ordering, grid points are x-varies-fastest).
+ *
+ * The `additional_buffer` argument is used to add extra padding to the result
+ * storage to be used for example for sending the RDMP TCI data. This eliminates
+ * expensive data copying.
  */
 template <size_t Dim, typename TagList>
 DirectionMap<Dim, std::vector<double>> slice_data(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
-    const DirectionMap<Dim, bool>& directions_to_slice) {
+    const DirectionMap<Dim, bool>& directions_to_slice,
+    const size_t additional_buffer) {
   return detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
-      subcell_extents, number_of_ghost_points, directions_to_slice);
+      subcell_extents, number_of_ghost_points, directions_to_slice,
+      additional_buffer);
 }
 }  // namespace evolution::dg::subcell

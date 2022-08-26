@@ -291,7 +291,8 @@ void test() {
   const size_t ghost_zone_size = 2;
   const DirectionMap<Dim, std::vector<double>> all_sliced_data =
       evolution::dg::subcell::slice_data(evolved_vars, subcell_mesh.extents(),
-                                         ghost_zone_size, directions_to_slice);
+                                         ghost_zone_size, directions_to_slice,
+                                         0);
   {
     std::vector<double> expected_east_data =
         all_sliced_data.at(east_neighbor_id.first);
