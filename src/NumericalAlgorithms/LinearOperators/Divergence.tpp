@@ -34,8 +34,33 @@ void divergence(
     divergence_of_F->initialize(mesh.number_of_grid_points());
   }
 
-  const auto logical_partial_derivatives_of_F =
-      logical_partial_derivatives<tmpl::list<FluxTags...>>(F, mesh);
+  using DerivativeTags = tmpl::list<FluxTags...>;
+  const size_t vars_size =
+      Variables<DerivativeTags>::number_of_independent_components *
+      F.number_of_grid_points();
+  const auto logical_derivs_data = cpp20::make_unique_for_overwrite<double[]>(
+      (Dim > 1 ? (Dim + 2) : Dim) * vars_size);
+  std::array<double*, Dim> logical_derivs{};
+  std::array<Variables<DerivativeTags>, Dim> logical_partial_derivatives_of_F{};
+  for (size_t i = 0; i < Dim; ++i) {
+    gsl::at(logical_derivs, i) = &(logical_derivs_data[i * vars_size]);
+    gsl::at(logical_partial_derivatives_of_F, i)
+        .set_data_ref(gsl::at(logical_derivs, i), vars_size);
+  }
+  if constexpr (Dim > 1) {
+    Variables<DerivativeTags> temp0{&logical_derivs_data[Dim * vars_size],
+                                    vars_size};
+    Variables<DerivativeTags> temp1{&logical_derivs_data[(Dim + 1) * vars_size],
+                                    vars_size};
+    partial_derivatives_detail::
+        LogicalImpl<Dim, tmpl::list<FluxTags...>, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), &temp0, &temp1, F, mesh);
+  } else {
+    Variables<DerivativeTags> *temp = nullptr;
+    partial_derivatives_detail::
+        LogicalImpl<Dim, tmpl::list<FluxTags...>, DerivativeTags>::apply(
+            make_not_null(&logical_derivs), temp, temp, F, mesh);
+  }
 
   const auto apply_div = [
     &divergence_of_F, &inverse_jacobian, &logical_partial_derivatives_of_F
