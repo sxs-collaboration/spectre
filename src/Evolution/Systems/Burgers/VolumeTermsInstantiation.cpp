@@ -24,6 +24,12 @@ template void volume_terms<::Burgers::TimeDerivativeTerms>(
         Variables<typename ::Burgers::System::
                       compute_volume_time_derivative_terms::temporary_tags>*>
         temporaries,
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::div,
+        db::wrap_tags_in<::Tags::Flux,
+                         typename ::Burgers::System::flux_variables,
+                         tmpl::size_t<1>, Frame::Inertial>>>*>
+        div_fluxes,
     const Variables<typename ::Burgers::System::variables_tag::tags_list>&
         evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<1>& mesh,

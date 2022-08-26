@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/Gsl.hpp"
@@ -74,6 +75,10 @@ void volume_terms(
     [[maybe_unused]] const gsl::not_null<
         Variables<tmpl::list<TemporaryTags...>>*>
         temporaries,
+    [[maybe_unused]] const gsl::not_null<
+        Variables<tmpl::list<::Tags::div<::Tags::Flux<
+            FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>*>
+        div_fluxes,
     const Variables<tmpl::list<VariablesTags...>>& evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&

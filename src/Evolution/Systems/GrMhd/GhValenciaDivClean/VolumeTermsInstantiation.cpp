@@ -27,6 +27,12 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
         Variables<typename ::grmhd::GhValenciaDivClean::System::
                       compute_volume_time_derivative_terms::temporary_tags>*>
         temporaries,
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::div, db::wrap_tags_in<::Tags::Flux,
+                                      typename ::grmhd::GhValenciaDivClean::
+                                          System::flux_variables,
+                                      tmpl::size_t<3>, Frame::Inertial>>>*>
+        div_fluxes,
     const Variables<
         typename ::grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         evolved_vars,

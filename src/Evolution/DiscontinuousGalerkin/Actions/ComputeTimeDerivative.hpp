@@ -39,6 +39,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/Formulation.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -372,14 +373,44 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
   // obtained using continuous RK methods, and so we will want to reuse
   // buffers. Thus, the volume_terms function returns by reference rather than
   // by value.
-  Variables<typename compute_volume_time_derivative_terms::temporary_tags>
-      temporaries{mesh.number_of_grid_points()};
-  Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
-                             tmpl::size_t<volume_dim>, Frame::Inertial>>
-      volume_fluxes{mesh.number_of_grid_points()};
-  Variables<db::wrap_tags_in<::Tags::deriv, partial_derivative_tags,
-                             tmpl::size_t<volume_dim>, Frame::Inertial>>
-      partial_derivs{mesh.number_of_grid_points()};
+  using VarsTemporaries =
+      Variables<typename compute_volume_time_derivative_terms::temporary_tags>;
+  using VarsFluxes =
+      Variables<db::wrap_tags_in<::Tags::Flux, flux_variables,
+                                 tmpl::size_t<volume_dim>, Frame::Inertial>>;
+  using VarsPartialDerivatives =
+      Variables<db::wrap_tags_in<::Tags::deriv, partial_derivative_tags,
+                                 tmpl::size_t<volume_dim>, Frame::Inertial>>;
+  using VarsDivFluxes = Variables<db::wrap_tags_in<
+      ::Tags::div,
+      db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<volume_dim>,
+                       Frame::Inertial>>>;
+  const size_t number_of_grid_points = mesh.number_of_grid_points();
+  auto buffer = cpp20::make_unique_for_overwrite<double[]>(
+      (VarsTemporaries::number_of_independent_components +
+       VarsFluxes::number_of_independent_components +
+       VarsPartialDerivatives::number_of_independent_components +
+       VarsDivFluxes::number_of_independent_components) *
+      number_of_grid_points);
+  VarsTemporaries temporaries{
+      &buffer[0], VarsTemporaries::number_of_independent_components *
+                      number_of_grid_points};
+  VarsFluxes volume_fluxes{
+      &buffer[VarsTemporaries::number_of_independent_components *
+              number_of_grid_points],
+      VarsFluxes::number_of_independent_components * number_of_grid_points};
+  VarsPartialDerivatives partial_derivs{
+      &buffer[(VarsTemporaries::number_of_independent_components +
+               VarsFluxes::number_of_independent_components) *
+              number_of_grid_points],
+      VarsPartialDerivatives::number_of_independent_components *
+          number_of_grid_points};
+  VarsDivFluxes div_fluxes{
+      &buffer[(VarsTemporaries::number_of_independent_components +
+               VarsFluxes::number_of_independent_components +
+               VarsPartialDerivatives::number_of_independent_components) *
+              number_of_grid_points],
+      VarsDivFluxes::number_of_independent_components * number_of_grid_points};
 
   const Scalar<DataVector>* det_inverse_jacobian = nullptr;
   if constexpr (tmpl::size<flux_variables>::value != 0) {
@@ -392,7 +423,7 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
   db::mutate_apply<
       tmpl::list<dt_variables_tag>,
       typename compute_volume_time_derivative_terms::argument_tags>(
-      [&dg_formulation, &det_inverse_jacobian,
+      [&dg_formulation, &div_fluxes, &det_inverse_jacobian,
        &div_mesh_velocity = db::get<::domain::Tags::DivMeshVelocity>(box),
        &evolved_variables = db::get<variables_tag>(box),
        &inertial_coordinates =
@@ -410,9 +441,10 @@ Parallel::iterable_action_return_t ComputeTimeDerivative<Metavariables>::apply(
         detail::volume_terms<compute_volume_time_derivative_terms>(
             dt_vars_ptr, make_not_null(&volume_fluxes),
             make_not_null(&partial_derivs), make_not_null(&temporaries),
-            evolved_variables, dg_formulation, mesh, inertial_coordinates,
-            logical_to_inertial_inv_jacobian, det_inverse_jacobian,
-            mesh_velocity, div_mesh_velocity, time_derivative_args...);
+            make_not_null(&div_fluxes), evolved_variables, dg_formulation, mesh,
+            inertial_coordinates, logical_to_inertial_inv_jacobian,
+            det_inverse_jacobian, mesh_velocity, div_mesh_velocity,
+            time_derivative_args...);
       },
       make_not_null(&box));
 
