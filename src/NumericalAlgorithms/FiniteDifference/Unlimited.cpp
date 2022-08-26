@@ -23,7 +23,7 @@ namespace fd::reconstruction {
       const size_t number_of_variables);
 
 namespace detail {
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8))
 }  // namespace detail
 
 #undef INSTANTIATION
@@ -38,7 +38,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4))
       const Index<DIM(data)>& ghost_data_extents,                              \
       const Direction<DIM(data)>& direction_to_reconstruct);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4),
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8),
                         (Side::Upper, Side::Lower))
 
 #undef INSTANTIATION

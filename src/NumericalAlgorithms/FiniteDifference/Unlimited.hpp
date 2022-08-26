@@ -21,7 +21,7 @@ namespace fd::reconstruction {
 namespace detail {
 template <size_t Degree>
 struct UnlimitedReconstructor {
-  static_assert(Degree == 2 or Degree == 4);
+  static_assert(Degree == 2 or Degree == 4 or Degree == 6 or Degree == 8);
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
       const double* const q, const int stride) {
     if constexpr (Degree == 2) {
@@ -36,6 +36,29 @@ struct UnlimitedReconstructor {
                0.0234375 * q[-2 * stride] - 0.15625 * q[-stride] +
                0.703125 * q[0] + 0.46875 * q[stride] -
                0.0390625 * q[2 * stride]}};
+    } else if constexpr (Degree == 6) {
+      return {{-0.1708984375 * q[stride] + 0.041015625 * q[2 * stride] -
+                   0.0048828125 * q[3 * stride] + 0.5126953125 * q[-stride] -
+                   0.068359375 * q[-2 * stride] +
+                   0.0068359375 * q[-3 * stride] + 0.68359375 * q[0],
+               0.5126953125 * q[stride] - 0.068359375 * q[2 * stride] +
+                   0.0068359375 * q[3 * stride] - 0.1708984375 * q[-stride] +
+                   0.041015625 * q[-2 * stride] -
+                   0.0048828125 * q[-3 * stride] + 0.68359375 * q[0]}};
+    } else if constexpr (Degree == 8) {
+      return {
+          {-0.179443359375 * q[stride] + 0.0538330078125 * q[2 * stride] -
+               0.010986328125 * q[3 * stride] +
+               0.001068115234375 * q[4 * stride] + 0.538330078125 * q[-stride] -
+               0.0897216796875 * q[-2 * stride] +
+               0.015380859375 * q[-3 * stride] -
+               0.001373291015625 * q[-4 * stride] + 0.67291259765625 * q[0],
+           0.538330078125 * q[stride] - 0.0897216796875 * q[2 * stride] +
+               0.015380859375 * q[3 * stride] -
+               0.001373291015625 * q[4 * stride] - 0.179443359375 * q[-stride] +
+               0.0538330078125 * q[-2 * stride] -
+               0.010986328125 * q[-3 * stride] +
+               0.001068115234375 * q[-4 * stride] + 0.67291259765625 * q[0]}};
     }
   }
 
@@ -65,6 +88,8 @@ struct UnlimitedReconstructor {
  *  u_{j+1/2} &= \frac{3}{128}u_{j-2} - \frac{5}{32}u_{j-1} + \frac{45}{64}u_{j}
  *            + \frac{15}{32}u_{j+1} - \frac{5}{128}u_{j+2}.
  * \f}
+ *
+ * Degree 6 and 8 reconstruction is also supported.
  */
 template <size_t Degree, size_t Dim>
 void unlimited(
