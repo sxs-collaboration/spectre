@@ -69,6 +69,9 @@ struct NeighborPackagedData {
                  std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
                  boost::hash<std::pair<Direction<1>, ElementId<1>>>>
         neighbor_package_data{};
+    if (mortars_to_reconstruct_to.empty()) {
+      return neighbor_package_data;
+    }
 
     using evolved_vars_tags = typename System::variables_tag::tags_list;
     using fluxes_tags = typename Fluxes::return_tags;
