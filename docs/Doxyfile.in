@@ -247,6 +247,8 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.woff \
                          @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
                          @PROJECT_SOURCE_DIR@/docs/config/js/doxygen-navtree-hacks.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-fragment-copy-button.js \
+                         @PROJECT_SOURCE_DIR@/docs/config/doxygen-awesome-paragraph-link.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
