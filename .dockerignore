@@ -1,0 +1,9 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Build directories
+# Ignore build dirs named similarly to the example in the installation notes;
+# in general arbitrary names are possible and cannot all be ignored. This will
+# keep the size of the context down and prevent errors in the demo image where
+# we create our own `build` directory in the container
+build*

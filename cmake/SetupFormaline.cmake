@@ -9,6 +9,7 @@ set(SPECTRE_FORMALINE_LOCATIONS
   .clang-format
   .clang-tidy
   .codecov.yaml
+  .dockerignore
   .github
   .gitignore
   .style.yapf

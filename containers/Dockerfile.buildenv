@@ -2,18 +2,44 @@
 # See LICENSE.txt for details.
 
 # If you change this file please push a new image to DockerHub so that the
-# new image is used for testing. Docker must be run as root on your machine,
-# so to build a new image run the following as root (e.g. sudo su):
+# new image is used. Docker must be run as root on your machine. There are 3
+# different images in this Dockerfile. Here is how to build them:
+# 1. `dev`
+#
 #   cd $SPECTRE_HOME/containers
-#   docker build  -t sxscollaboration/spectrebuildenv:latest \
+#   docker build --target dev -t sxscollaboration/spectre:dev \
 #                 -f ./Dockerfile.buildenv .
-# and then to push to DockerHub:
-#   docker push sxscollaboration/spectrebuildenv
+#
+# 2. `ci` (this should use the `dev` image you just built for most of it)
+#
+#   cd $SPECTRE_HOME/containers
+#   docker build --target ci -t sxscollaboration/spectre:ci \
+#                 -f ./Dockerfile.buildenv .
+#
+# 3. `demo` To build this, it is recommended to first push the `dev` and `ci`
+#    images to DockerHub as the `demo` image uses the remote `dev` image.
+#
+#   docker push sxscollaboration/spectre:dev
+#   docker push sxscollaboration/spectre:ci
+#
+#    To build `demo`, you must be in $SPECTRE_ROOT and there cannot be a
+#    directory named `build` in $SPECTRE_ROOT because the image will create
+#    this directory (in the container).
+#
+#   cd $SPECTRE_HOME
+#   rm -rf build/
+#   docker build --target demo -t sxscollaboration/spectre:demo \
+#                 -f ./containers/Dockerfile.buildenv .
+#
+#    and then to push the `demo` image to DockerHub:
+#
+#   docker push sxscollaboration/spectre:demo
+#
 # If you do not have permission to push to DockerHub please coordinate with
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
 
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS dev
 
 ARG PARALLEL_MAKE_ARG=-j2
 ARG DEBIAN_FRONTEND=noninteractive
@@ -33,14 +59,11 @@ RUN apt-get update -y \
 # InfiniBand or various other networking layers.
 RUN apt-get update -y \
     && apt-get install -y gcc-9 g++-9 gfortran-9 \
-                          gcc-10 g++-10 gfortran-10 \
-                          gcc-11 g++-11 gfortran-11 \
                           gdb git ninja-build autoconf automake \
                           bison flex \
                           libopenblas-dev liblapack-dev \
                           libhdf5-dev hdf5-tools \
                           libgsl0-dev \
-                          clang-8 clang-9 \
                           clang-10 clang-format-10 clang-tidy-10 \
                           lld \
                           wget libncurses-dev \
@@ -49,14 +72,6 @@ RUN apt-get update -y \
                           libboost-thread-dev libboost-tools-dev libssl-dev \
                           libbenchmark-dev \
                           libarpack2-dev
-
-# Install clang-11 and clang-13
-RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
-    && apt-get update -y && apt-get install -y clang-11 \
-    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
-    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
-    && apt-get update -y && apt-get install -y clang-13
 
 # Install libc++ and jemalloc
 # The second `apt-get update` is to ensure that anything that depends on
@@ -85,20 +100,13 @@ RUN apt-get update -y \
 #   on CI. `nbconvert` is used to process ipynb files.
 # - We need `yapf` so the CI can check Python formatting. We use a specific
 # version of it in order to avoid formatting differences between versions.
-# `futures` is needed for `yapf` parallelization on Python 2.
 RUN add-apt-repository universe \
     && apt-get update -y \
-    && apt-get install -y curl python2 python2-dev \
-    && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
-    && python2 get-pip.py && rm get-pip.py \
     && apt-get install -y python3-pip python-is-python3 \
     && pip3 --no-cache-dir install -U pip \
-    && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
-      pyyaml \
     && pip3 --no-cache-dir install pybind11~=2.6.1 \
       numpy~=1.21.5 scipy h5py matplotlib \
       coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
-    && pip2 --no-cache-dir install yapf==0.29.0 futures unittest2 \
     && pip3 --no-cache-dir install yapf==0.29.0
 
 # Add ruby gems and install coveralls using gem
@@ -122,21 +130,11 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2
     && make $PARALLEL_MAKE_ARG\
     && make install \
     && cd .. && rm -rf cmake*
-# Also install our minimum required CMake version so we can test it on CI.
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4.tar.gz \
-    && tar -xzf cmake-3.12.4.tar.gz \
-    && cd cmake-3.12.4 \
-    && mkdir -p /opt/local/cmake/3.12.4 \
-    && ./bootstrap --prefix=/opt/local/cmake/3.12.4 \
-    && make $PARALLEL_MAKE_ARG\
-    && make install \
-    && cd .. && rm -rf cmake*
 
 # We install dependencies not available through apt manually rather than using
 # Spack since Spack ends up building a lot of dependencies from scratch
 # that we don't need. Thus, not building the deps with Spack reduces total
-# build time of the Docker image. We build with GCC7 when easily possible to
-# maximize ABI compatibility.
+# build time of the Docker image.
 # - Blaze
 RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.8.tar.gz -O blaze.tar.gz \
     && tar -xzf blaze.tar.gz \
@@ -202,27 +200,6 @@ RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yam
     && cd ../.. \
     && rm -rf yaml-cpp*
 
-# Install include-what-you-use
-# We specify the CMAKE_PREFIX_PATH to make sure that CMake finds the LLVM libs
-# from the specific LLVM version that IWYU expects. Without this help, CMake
-# can pick up one of the other LLVM libs from the various clang versions that
-# are installed in our container.
-RUN apt-get update -y \
-    && apt-get install -y libclang-10-dev
-WORKDIR /work
-RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/clang_10.tar.gz \
-    && tar -xzf clang_10.tar.gz \
-    && rm clang_10.tar.gz \
-    && mkdir /work/include-what-you-use-clang_10/build \
-    && cd /work/include-what-you-use-clang_10/build \
-    && cmake -D CMAKE_CXX_COMPILER=clang++-10 \
-        -D CMAKE_C_COMPILER=clang-10 \
-        -D CMAKE_PREFIX_PATH=/usr/lib/llvm-10 .. \
-    && make $PARALLEL_MAKE_ARG \
-    && make install \
-    && cd /work \
-    && rm -rf /work/include-what-you-use-clang_10
-
 # Install xsimd https://github.com/xtensor-stack/xsimd
 RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
     && tar -xzf 8.1.0.tar.gz \
@@ -232,20 +209,16 @@ RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
     && cmake -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF \
              -D CMAKE_INSTALL_PREFIX=/usr/local ../ \
     && make install \
-    && cd /work \
+    && cd ../.. \
     && rm -rf /work/8.1.0.tar.gz /work/xsimd-8.1.0
 
-# Download and build the Charm++ version used by SpECTRE
-# We build both Clang and GCC versions of Charm++ so that all our tests can
-# use the same build environment.
 WORKDIR /work
 # Charm doesn't support compiling with clang without symbolic links
 RUN ln -s $(which clang++-10) /usr/local/bin/clang++ \
     && ln -s $(which clang-10) /usr/local/bin/clang \
     && ln -s $(which clang-format-10) /usr/local/bin/clang-format \
     && ln -s $(which clang-tidy-10) /usr/local/bin/clang-tidy
-# Build charm with both GCC and clang.
-#
+# Download and build the Charm++ version used by SpECTRE
 # We check out only a specific branch in order to reduce the repo size.
 #
 # We remove the `doc` and `example` directories since these aren't useful to us
@@ -265,8 +238,6 @@ RUN git clone --single-branch --branch v7.0.0 --depth 1 \
     && git apply /work/v7.0.0.patch \
     && ./build LIBS multicore-linux-x86_64 gcc \
       ${PARALLEL_MAKE_ARG} -g -O2 --build-shared \
-    && ./build LIBS multicore-linux-x86_64 clang \
-      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
     && rm -r /work/charm_7_0_0/doc /work/charm_7_0_0/examples
 
 # - Set the environment variable SPECTRE_CONTAINER so we can check if we are
@@ -300,6 +271,56 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
 ENV PATH="${PATH}:/work/texlive/bin/x86_64-linux"
 
+# Remove the apt-get cache in order to reduce image size
+RUN apt-get -y clean
+
+
+# Everything we need to run tests on CI on GitHub.
+FROM dev as ci
+
+# When building this image individually, the PARALLEL_MAKE_ARG from above is not
+# remembered (and it doesn't hurt to redefine the env variable).
+ARG PARALLEL_MAKE_ARG=-j2
+
+# Install all the compilers we are going to test on CI
+RUN apt-get update -y \
+    && apt-get install -y gcc-10 g++-10 gfortran-10 \
+                          gcc-11 g++-11 gfortran-11
+
+# Install clang-11 and clang-13
+RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main' \
+    && apt-get update -y && apt-get install -y clang-11 \
+    && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
+    && apt-get update -y && apt-get install -y clang-13
+
+# python2 for backwards compatibility
+RUN apt-get update -y \
+    && apt-get install -y curl python2 python2-dev \
+    && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
+    && python2 get-pip.py && rm get-pip.py \
+    && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
+      pyyaml \
+    && pip2 --no-cache-dir install unittest2
+
+# Also install our minimum required CMake version so we can test it on CI.
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4.tar.gz \
+    && tar -xzf cmake-3.12.4.tar.gz \
+    && cd cmake-3.12.4 \
+    && mkdir -p /opt/local/cmake/3.12.4 \
+    && ./bootstrap --prefix=/opt/local/cmake/3.12.4 \
+    && make $PARALLEL_MAKE_ARG\
+    && make install \
+    && cd .. && rm -rf cmake*
+
+# We build both Clang and GCC versions of Charm++ so that all our tests can
+# use the same build environment.
+WORKDIR /work/charm_7_0_0
+RUN ./build LIBS multicore-linux-x86_64 clang \
+      ${PARALLEL_MAKE_ARG} -g -O2 --build-shared\
+    && rm -rf /work/charm_7_0_0/doc /work/charm_7_0_0/examples
+
 # Download and extract the intel Software Development Emulator binaries
 WORKDIR /work
 RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-lin.tar.xz -O sde-external.tar.xz \
@@ -309,3 +330,71 @@ RUN wget https://downloadmirror.intel.com/684899/sde-external-9.0.0-2021-11-07-l
 
 # Remove the apt-get cache in order to reduce image size
 RUN apt-get -y clean
+
+WORKDIR /work
+
+
+# We don't inherit from ci because that has lots of unnecessary compilers that
+# we don't need and would only increase the size of the image. We inherit from
+# the remote image rather than the local dev because it is faster on release
+# CI to just pull the remote dev image and build demo rather than having to
+# build all of dev and demo combined.
+# Instead of basing demo off the remote dev image, we could pre-fetch the dev
+# image and then build from the local cache like
+# FROM dev AS demo
+# Either way works, we just chose to build from remote instead.
+FROM sxscollaboration/spectre:dev AS demo
+
+# When building this image individually, the PARALLEL_MAKE_ARG from above is not
+# remembered (and it doesn't hurt to redefine the env variable).
+ARG PARALLEL_MAKE_ARG=-j2
+
+# vim and emacs for editing files
+# Also ffmpeg for making movies with paraview output pngs
+# paraview needs curl
+RUN apt-get update -y \
+    && apt-get install -y vim emacs-nox ffmpeg curl
+
+# Install headless paraview so we can run pvserver in the container
+WORKDIR /work
+RUN wget -O paraview.tar.gz --no-check-certificate "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.10&type=binary&os=Linux&downloadFile=ParaView-5.10.1-osmesa-MPI-Linux-Python3.9-x86_64.tar.gz" \
+  && tar -xzf paraview.tar.gz \
+  && rm paraview.tar.gz \
+  && mv ParaView-* /opt/paraview
+
+ENV PATH "/opt/paraview/bin:$PATH"
+
+WORKDIR /work
+
+# We copy the entire SpECTRE repo from the current context so that people can
+# edit and rebuild the pre-built executables if they want to experiment with
+# editing and building SpECTRE. The executables are chosen because they are the
+# ones in the "Hitchhikers's" tutorial for SpECTRE. More executables can be
+# added in later if we so desire. We also build python bindings and install
+# jupyterlab for other demos and tutorials.
+COPY . spectre/
+
+RUN mkdir spectre/build && cd spectre/build \
+  && cmake \
+    -D CMAKE_C_COMPILER=clang-10 \
+    -D CMAKE_CXX_COMPILER=clang++-10 \
+    -D CMAKE_Fortran_COMPILER=gfortran-9 \
+    -D OVERRIDE_ARCH=x86-64 \
+    -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-gcc \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D DEBUG_SYMBOLS=OFF \
+    -D BUILD_PYTHON_BINDINGS=ON \
+    -D Python_EXECUTABLE=/usr/bin/python3 \
+    -D MEMORY_ALLOCATOR=SYSTEM \
+    .. \
+  && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
+  && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvectionKuzmin2D \
+  && make ${PARALLEL_MAKE_ARG} all-pybindings
+
+RUN pip3 --no-cache-dir install jupyterlab
+
+ENV SPECTRE_HOME /work/spectre
+ENV PATH $SPECTRE_HOME/build/bin:$PATH
+ENV PYTHONPATH $SPECTRE_HOME/build/bin/python:$PYTHONPATH
+
+WORKDIR /work
