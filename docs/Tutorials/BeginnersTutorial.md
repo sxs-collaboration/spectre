@@ -8,7 +8,7 @@ SpECTRE can be a bit complicated to get started with, especially if you aren't
 familiar with our core concepts of task-based parallelism and Template
 Meta-Programming (TMP). However, <a
 href="https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic">
-Don't Panic</a>. This guide aims to get you introduced to building, running,
+Don't Panic</a>. This guide aims to get you introduced to running,
 visualizing, editing, and then rebuilding SpECTRE to give you a feel for what
 SpECTRE is all about, all on your own laptop! Hopefully by the end of this guide
 you'll feel comfortable enough to look at other executables and maybe even
@@ -20,109 +20,103 @@ To start off, you'll need to obtain an environment to build and run SpECTRE in.
 You could try and install all the dependencies yourself, but that is very
 tedious and very error prone. Instead, we provide a
 [Docker](https://docs.docker.com/get-docker/) container with all the
-dependencies pre-installed for you to use. Probably the easiest way to get
-started with this is to follow our \ref dev_guide_quick_start_docker_vscode
-tutorial which will have you
+dependencies pre-installed for you to use. The container also has the SpECTRE
+repository cloned in it already so you don't have to worry about getting it
+yourself. To obtain the docker image, run
 
-1. Clone SpECTRE
-2. Install Docker
-3. Install VSCode
-4. Open the repository in VSCode in the Development Container
-
-You can stop before the "Configure, compile and run SPECTRE" section as we will
-be going through that here as well, but with different and more in-depth
-examples.
-
-If you'd rather not use VSCode and instead just run the docker container in a
-terminal, you can follow the \ref docker_install tutorial in the \ref
-installation page.
+```
+docker pull sxscollaboration/spectre:demo
+```
 
 Another program you will need for this tutorial is
-[Paraview](https://www.paraview.org/download/) for visualizing the output. If
-you are running any Debian-based OS (like Ubuntu), you can just install it via
-your package manager
+[Paraview](https://www.paraview.org/download/) for visualizing the output. You
+specifically will need version 5.10.1 for this tutorial.
+
+If you'd like to use VSCode, the tutorial also has instructions for how to start
+in VSCode as well.
+
+## Into the Container
+
+For both a terminal and VSCode, create the container in a terminal and start it.
 
 ```
-sudo apt-get install paraview
+docker create --rm --name spectre_demo -p 11111:11111 \
+    -t sxscollaboration/spectre:demo /bin/bash
+```
+```
+docker start spectre_demo
 ```
 
-Otherwise, you can just download the binary/executable. This is what you will
-need to do if you are running Windows or MacOS.
+We connect port `11111` on your local machine to port `11111` of the container
+so we can use Paraview. The `--rm` will delete the container when you stop it.
+This won't put you into the container, only start it in the background.
 
+You can also run a [Jupyter](https://jupyter.org/index.html) server for
+accessing the Python bindings (see \ref spectre_using_python) or running Jupyter
+notebooks. To do so, append another `-p` option with your specified port, e.g.
+`-p 8000:8000`. You can chain as many `-p` options as you want to expose more
+ports.
 
-## Building the ExportTimeDependentCoordinates3D Executable
+The SpECTRE repository is located at `/work/spectre` inside the container.
 
-First, make sure you are inside the Docker container (whether this be in VSCode
-or just a terminal). First we will need to run `cmake` to set up everything
-because we use CMake as our build system.
 
 ### With a Terminal {#with_terminal}
 
-Inside the SpECTRE repository, make a directory called `build`. This is where
-all the compiled objects will go. `cd` into the `build` directory. To configure
-SpECTRE in Release mode (which is recommended for running simulations), run the
-following command
-
+To hop in the container from a terminal, simply type
 
 ```
-cmake -D CMAKE_BUILD_TYPE=Release \
-      -D CHARM_ROOT=/work/charm_7_0_0/multicore-linux-x86_64-clang \
-      -D CMAKE_CXX_COMPILER=/usr/bin/clang++-10 \
-      -D CMAKE_C_COMPILER=/usr/bin/clang-10 ../
+docker attach spectre_demo
 ```
 
-[Charm++](http://charmplusplus.org/) is the library we use for task-based
-parallelism. The `../` is the path to the root of the SpECTRE directory
-(relative or absolute, it doesn't matter). This should only take a few seconds
-to run.
-
-Now that everything is configured, you can build the
-`ExportTimeDependentCoordinates3D` executable like so
-
-```
-make ExportTimeDependentCoordinates3D -jN
-```
-
-Here, `N` is the number of cores you'd like to use to build. It's entirely up to
-you on how many you'd like to use. Since you are most likely running this on a
-laptop, `-j4` should be sufficient.
+and now you're in the container!
 
 ### With VSCode
 
-If you are using VScode, open the
+If you're using VSCode, you'll need the `Remote-Containers` extension to be
+able to access the container. Once you have it, open the
 [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette)
-and run the following commands:
+and run the following commands.
 
-1. `CMake: Select a Kit` - Select the `Default` kit
-2. `CMake: Select Variant` - Select the `Release` variant to make the code run
-   faster.
-3. `CMake: Configure` - This will create a build directory called
-   `build-Default-Release` and run an appropriate `cmake` command for you
-   automatically.
-4. `CMake: Build Target` - Select the `ExportTimeDependentCoordinates3D`
-   executable.
+1. `Remote-Containers: Attach to Running Container` - you should see the
+   container `spectre_demo` that's currently running. Select that.
+2. `File: Open Folder` - select `/work/spectre` which is where the repo is.
 
-This will most likely use all the cores on your laptop to build the executable.
-If configuring and building with VSCode doesn't work, just open a terminal and
-do it manually as in the \ref with_terminal section.
+Now you're in the container within VSCode! The terminal in VSCode will look
+identical to the one if you hadn't used VSCode.
 
-Once the executable is built, you're ready to run it!
+\note Any changes you make inside `/work/spectre` will be lost once you stop the
+container. If you'd like your changes to persist, get rid of the `--rm` flag in
+the `docker create` command.
 
 ## Running ExportTimeDependentCoordinates3D
 
-To run an executable that you built inside the container, you must remain inside
-the container. Make a directory `runs` inside your build directory where you
-will run everything. Copy over the input file
-`tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml` into your `runs`
-directory. We will be visualizing the coordinates of a binary black hole domain.
-To run the executable, do
+One of the pre-built executables inside the container is the
+`ExportTimeDependentCoordinates3D` executable. All executables are located in
+the `/work/spectre/build/bin` directory.
+
+\note From here on out, all paths are assumed to be inside the container unless
+specified otherwise.
+
+Make a directory where you will run everything.
 
 ```
-../bin/ExportTimeDependentCoordinates3D --input-file InputTimeDependent3D.yaml
+mkdir /work/runs
 ```
+
+ Copy over the input file
+`/work/spectre/tests/InputFiles/ExportCoordinates/InputTimeDependent3D.yaml`
+into your `/work/runs` directory. We will be visualizing the coordinates of a
+binary black hole domain. To run the executable, do
+
+```
+ExportTimeDependentCoordinates3D --input-file InputTimeDependent3D.yaml
+```
+
+\note The container already has the `/work/spectre/build/bin` directory added to
+the PATH environment variable, so no need to copy/link executables.
 
 This will run it on one core. If you'd like to use more cores, add the `++ppn N`
-option where, again, `N` is the number of cores. After this finishes you should
+option where `N` is the number of cores. After this finishes you should
 see two `H5` files in your run directory:
 
 1. ExportTimeDependentCoordinates3DVolume0
@@ -148,11 +142,12 @@ memory requirements.
 Before we get to Paraview, we have to tell paraview how to actually use the
 coordinates in the `Volume` `H5` file. To do this we have an executable called
 `GenerateXdmf` which is automatically built whenever you build an executable
-(it's just a python script so it isn't really built). Inside the `runs`
-directory where you have the `H5` files, run
+(it's just a python script so it isn't really built). Since the executables are
+already built, so is `GenerateXdmf`! Inside the `runs` directory where you have
+the `H5` files, run
 
 ```
-../bin/GenerateXdmf \
+GenerateXdmf \
   --file-prefix ExportTimeDependentCoordinates3DVolume \
   --subfile-name element_data --output BBH_Coords
 ```
@@ -168,12 +163,53 @@ file for the volume. The `--subfile-name` argument is the group name inside the
 was generated from. It uses relative paths to find the volume file which means
 if you move it, you won't be able to visualize anything.
 
-Now you can open a Paraview window outside of the Docker container. We don't
-have Paraview in the container and even if we did, it would be difficult to open
-a GUI via a container. Open the `BBH_Coords.xmf` file you just generated inside
-Paraview. You may be prompted to choose which XDMF reader to use. Choose the
-`XDMF Reader` option. The `Xdmf3` options won't work. Once you choose a reader,
-on the left, you'll see
+### Attaching Paraview
+
+This is where we actually need Paraview. We have a headless (no GUI) vesion of
+paraview inside the container which we will refer to as the "server". To start
+the Paraview server, run
+
+```
+pvserver &
+```
+
+The `&` is so that the server runs in the background. If you hit `Enter` a
+couple times you'll get back to being able to type commands. You should see some
+output similar to
+
+```
+Waiting for client...
+Connection URL: cs://92bbb69f2af2:11111
+Accepting connection(s): 92bbb69f2af2:11111
+```
+
+This means it's waiting for you to connect some external Paraview session (the
+"client") to the server. Now, ***outside*** the container, start a session of
+Paraview 5.10.1. (Again, you must use this version otherwise it won't work
+properly.) Go to `File > Connect`. Click `Add Server`. Name it whatever you
+want, but keep the Host as `localhost`, the Server Type as `Client/Server`, the
+Port as `11111` (remember the `-p 11111:11111` flag from the docker command?).
+Here's a snapshot of what it should look like before you configure.
+
+\image html paraview_server.png "Paraview server settings"
+
+Hit `Configure`, then hit `Save` (we don't care about the launch configuration).
+Now you should see a list of your configured servers. Select the one you just
+created and hit `Connect`. It may take a minute or two to connect to the server,
+but once you do on the left you'll see something like
+
+\image html paraview_connect.png "Successfully connected Paraview to a server"
+
+\note If you close your client, the server will stop and you won't be able to
+reconnect. You'll have to restart the server in the container.
+
+### Open the XMF File in Paraview Client {#open_xmf}
+
+Now that you have Paraview connected to the container, open the `BBH_Coords.xmf`
+file you just generated inside Paraview (the paths you'll see are the ones in
+the container, not your filesystem). You may be prompted to choose which XDMF
+reader to use. Choose the `XDMF Reader` option. The `Xdmf3` options won't work.
+Once you choose a reader, on the left, you'll see
 
 \image html beginners_paraview_left.png "Paraview side-bar"
 
@@ -204,7 +240,7 @@ of cool structure.
 If you'd like to read more about our BBH domain, you can look at the
 documentation for `domain::creators::BinaryCompactObject`.
 
-## Make a Movie of BBH Coordinates
+## Evolution of BBH Coordinates
 
 Now that you are able to export and visualize our BBH domain coordinates at a
 single time, let's make a small movie of the coordinates as they evolve! To do
@@ -213,10 +249,10 @@ aren't familiar with YAML, it's a file type that uses key-value pairs to create
 actual objects in our C++ code. Feel free to experiment with keys and values in
 our input files. If you're unsure about what a key or value should be, we offer
 an easy way to check the options in the input file without running a whole
-simulation. If you run
+simulation. In your `/work/runs` directory, if you run
 
 ```
-../bin/ExportTimeDependentCoordinates3D \
+ExportTimeDependentCoordinates3D \
   --input-file InputTimeDependent3D.yaml --check-options
 ```
 
@@ -241,10 +277,12 @@ Depending on how many cores you run on this should take a couple minutes).
 
 Then, run the executable just like you did above (remember to move or delete the
 existing `H5` files), run `GenerateXdmf`, and open it in Paraview and apply some
-filters of your choice. Now, in the top bar of Paraview, you should see a "Play"
-button that looks like a sideways triangle (see the second image above). If you
-click this, Paraview will step through all the timesteps in the output files and
-you'll be able to see the domain rotate a bit!
+filters of your choice. We recommend using a `Slice` filter with the normal
+pointing in the `-z` direction. This is because our BBH domain rotates about the
+`z` axis. Now, in the top bar of Paraview, you should see a "Play" button that
+looks like a sideways triangle (see the second image in the \ref open_xmf
+section). If you click this, Paraview will step through all the timesteps in the
+output files and you'll be able to see the domain rotate a bit!
 
 Next, we encourage you to play with the other inputs that control how the domain
 evolves over time. These options are housed in the
@@ -276,17 +314,12 @@ Play around with these values! You may get an error if you put something that's
 too unphysical, but this is a fairly consequence-free playground for you to
 explore so just try a different value.
 
-Once you are happy with the parameters you've chosen you can go to the `File >
-Save Animation` menu and export your movie! There are a lot of options you can
-choose here, so if you aren't familiar with Paraview just use the defaults.
-Otherwise you can speed up the movie or slow it down.
-
 Now you have a movie of how BBH coordinates evolve in a SpECTRE simulation!
 
 ## Exploring DG+FD
 
-Now that you are able to build, run, and visualize SpECTRE, let's explore a
-feature that is fairly unique to SpECTRE and is really powerful for handling
+Now that you are able to run, and visualize SpECTRE, let's explore a feature
+that is fairly unique to SpECTRE and is really powerful for handling
 discontinuities and shocks in our simulations. We call this feature `DG+FD`
 (it's also sometimes referred to as just `subcell`).
 
@@ -329,9 +362,10 @@ ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink problem using the
 `EvolveScalarAdvectionKuzmin2D` executable. This is a simple test problem that
 rotates a set of geometric shapes with uniform angular velocity, which can be
 used to evaluate how well a numerical code can handle discontinuities stably
-over time. Inside the container build this executable and make a new directory
-`runs2` where you will run it. Also copy the default input file in
-`tests/InputFiles/ScalarAdvection/Kuzmin2D.yaml` to this new `runs2` directory.
+over time. Inside the container make a new directory `/work/runs2` where you
+will run it. Also copy the default input file in
+`/work/spectre/tests/InputFiles/ScalarAdvection/Kuzmin2D.yaml` to this new
+`/work/runs2` directory.
 
 ### Changing the Default Input File
 
@@ -410,7 +444,7 @@ of smaller elements, we distribute these over the available resources via a
 things up.
 
 ```
-./EvolveScalarAdvectionKuzmin2D --input-file Kuzmin2D.yaml ++ppn 4
+EvolveScalarAdvectionKuzmin2D --input-file Kuzmin2D.yaml ++ppn 4
 ```
 
 ### Visualizing the Kuzmin Problem
@@ -418,7 +452,7 @@ things up.
 Once your run finishes, extract the volume data with `GenerateXdmf` using
 
 ```
-../bin/GenerateXdmf \
+GenerateXdmf \
   --file-prefix ScalarAdvectionKuzmin2DVolume \
   --subfile-name VolumeData --output kuzmin_problem
 ```
@@ -470,16 +504,18 @@ solution.
 
 ## Editing the Kuzmin System
 
-Hopefully now you feel comfortable enough building and running SpECTRE that you
-can find an executable, build it, get the default input file and run it. Now we
-are going to try our hand at actually editing some code in SpECTRE. We're going
-to stick with the \link ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink
-system and add a new feature to the solution profile!
+Hopefully now you feel comfortable enough running SpECTRE that you
+can get the default input file for the pre-built executables, edit it, and run
+it. Now we are going to try our hand at actually editing some code in SpECTRE
+and then building SpECTRE. We're going to stick with the \link
+ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink system and add a new feature
+to the solution profile!
 
 You can find the files for the Kuzmin system at
-`src/PointwiseFunctions/AnalyticSolutions/ScalarAdvection/Kuzmin.?pp`. In the
-`hpp` file, you'll see a lot of Doxygen documentation and then the actual Kuzmin
-class. The only function that you will need to care about is
+`/work/spectre/src/PointwiseFunctions/AnalyticSolutions/ScalarAdvection/
+Kuzmin.?pp`.
+In the `hpp` file, you'll see a lot of Doxygen documentation and then the actual
+Kuzmin class. The only function that you will need to care about is
 
 ```cpp
 template <typename DataType>
@@ -522,20 +558,51 @@ one of the following features:
 \note The more detailed you make your feature, the more resolution you will need
 to resolve it.
 
-Once you have your feature coded up, go ahead and save your changes (and commit
-them!), rebuild the Kuzmin executable, and run it! Hopefully everything works
-and you get some output. When you plot it in Paraview, it should look almost the
-same as before except your feature will be there too rotating with the others!
-How cool! You can also see if your feature needs FD or DG more by how much it
-switches back and forth.
+### Re-building SpECTRE
+
+Once you have your feature coded up, go ahead and save your changes. Now we will
+build SpECTRE! Go to the `/work/spectre/build` directory. This is where you have
+to be in order to build SpECTRE. We use [CMake](https://cmake.org/) to configure
+our build directory. However, since the executables are already pre-built, this
+means the build directory is already configured! So you don't have to worry
+about `CMake` for now. If you wanted to reconfigure, for example using a
+different compiler, then you'd have to run `CMake`. If you want to learn more
+about how we use `CMake`, take a look at the \ref common_cmake_flags developers
+guide.
+
+To build the Kuzmin executable, run
+
+```
+make EvolveScalarAdvectionKuzmin2D
+```
+
+This should be very fast because you only edited a `cpp` file. Congrats! You've
+just built SpECTRE!
+
+Now re-run the executable in your `/work/runs2` directory. Hopefully everything
+works and you get some output. When you plot it in Paraview, it should look
+almost the same as before except your feature will be there too rotating with
+the others! How cool! You can also see if your feature needs FD or DG more by
+how much it switches back and forth.
 
 Experiment some more with either different features or different resolution!
 
 ## Conclusions
 
 Congrats! You've made it through the tutorial! If you only want to run our
-executables, you have all the tools necessary to build, run, and visualize
-whatever you want. If you want a full list of our executables, do `make list` in
-the build directory. This will also include our `Test_` executables which you
-can just ignore. Running an executable with the `--help` flag will give a
-description of what system is being evolved and the input options necessary.
+pre-built executables, you have all the tools necessary to run, visualize, and
+re-build them. If you want a full list of our executables, do
+`make list` in the build directory. This will also include our `Test_`
+executables which you can just ignore.
+
+In an already configured build directory, all you have to do to build a new
+executable is
+
+```
+make ExecutableName
+```
+
+and then you can copy the default input file from
+`/work/spectre/tests/InputFiles` and run it. Running an executable with the
+`--help` flag will give a description of what system is being evolved and the
+input options necessary.

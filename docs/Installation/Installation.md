@@ -149,28 +149,30 @@ To build with the Docker image:
 
 2. Retrieve the Docker image (you may need `sudo` in front of this command)
    ```
-   docker pull sxscollaboration/spectrebuildenv:latest
+   docker pull sxscollaboration/spectre:dev
    ```
 3. Start the Docker container (you may need `sudo`)
    ```
-   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
-              -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
+   docker run -v $SPECTRE_ROOT/:$SPECTRE_ROOT/ --name spectre_dev \
+              -i -t sxscollaboration/spectre:dev /bin/bash
    ```
-   - `-v SPECTRE_ROOT:SPECTRE_ROOT` binds the directory SPECTRE_ROOT outside the
-   container to SPECTRE_ROOT inside the container. In this way, files in the
-   SPECTRE_ROOT on your host system (outside the container) become accessible
-   within the container through the directory SPECTRE_ROOT inside the
-   container. If you wonder why the same SPECTRE_ROOT needs to be used for
-   both inside and outside the container, which is why `SPECTRE_ROOT` is
-   repeated in the command above with seperated by a colon, please see one of
+   - `-v $SPECTRE_ROOT/:$SPECTRE_ROOT/` binds the directory `$SPECTRE_ROOT`
+   (which is an environment variable you must set up or just use the actual
+   path) outside the container to `$SPECTRE_ROOT` inside the container. In this
+   way, files in the `$SPECTRE_ROOT` on your host system (outside the container)
+   become accessible within the container through the directory SPECTRE_ROOT
+   inside the container. If you wonder why the same SPECTRE_ROOT needs to be
+   used for both inside and outside the container, which is why `$SPECTRE_ROOT`
+   is repeated in the command above with separated by a colon, please see one of
    the notes below regarding `-v` flag.
-   - The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
-   of your choice. If you don't name your container, docker will generate an
-   arbitrary name.
+   - The `--name spectre_dev` is optional. If you don't name your container,
+   docker will generate an arbitrary name.
    - On macOS you can significantly increase the performance of file system
    operations by appending the flag `:delegated` to `-v`, e.g.
-   `-v SPECTRE_ROOT:SPECTRE_ROOT:delegated` (see
+   `-v $SPECTRE_ROOT/:$SPECTRE_ROOT/:delegated` (see
    https://docs.docker.com/docker-for-mac/osxfs-caching/).
+   - The `-i` flag is for interactive mode, which will drop you into the
+   container.
    - It can be useful to expose a port to the host so you can run servers such
    as [Jupyter](https://jupyter.org/index.html) for accessing the Python
    bindings (see \ref spectre_using_python) or a Python web server to view the
@@ -178,8 +180,8 @@ To build with the Docker image:
 
    You will end up in a bash shell in the docker container,
    as root (you need to be root).
-   Within the container, the files in SPECTRE_ROOT are available and Charm++ is
-   installed in `/work/charm_7_0_0`. For the following steps, stay inside the
+   Within the container, the files in `$SPECTRE_ROOT` are available and Charm++
+   is installed in `/work/charm_7_0_0`. For the following steps, stay inside the
    docker container as root.
 4. Proceed with [building SpECTRE](#building-spectre).
 
@@ -197,7 +199,7 @@ To build with the Docker image:
     1. `docker ps -a`,
       to list all containers with their CONTAINER_IDs and CONTAINER_NAMEs,
     2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID`,
-      to restart your container.
+      to restart your container (above, the CONTAINER_NAME was spectre_dev).
   * When the Docker container gets updated, you can stop it with
     `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`
     and then start at step 2 above to run it again.
@@ -207,14 +209,14 @@ To build with the Docker image:
     To add a new shell, run `docker exec -it CONTAINER_NAME /bin/bash`
     (or `docker exec -it CONTAINER_ID /bin/bash`) from
     a terminal outside the container.
-  * In step 4 above, technically docker allows you to say `-v
-    SPECTRE_ROOT:/my/new/path` to map SPECTRE_ROOT outside the container to any
-    path you want inside the container, but **do not do this**.  Compiling
-    inside the container sets up git hooks in SPECTRE_ROOT that contain
-    hardcoded pathnames to SPECTRE_ROOT *as seen from inside the container*. So
-    if your source paths inside and outside the container are different,
-    commands like `git commit` run *from outside the container* will die with
-    `No such file or directory`.
+  * In step 4 above, technically docker allows you to say
+    `-v $SPECTRE_ROOT/:/my/new/path` to map `$SPECTRE_ROOT` outside the
+    container to any path you want inside the container, but **do not do this**.
+    Compiling inside the container sets up git hooks in SPECTRE_ROOT that
+    contain hardcoded pathnames to SPECTRE_ROOT *as seen from inside the
+    container*. So if your source paths inside and outside the container are
+    different, commands like `git commit` run *from outside the container* will
+    die with `No such file or directory`.
   * If you want to use Docker within VSCode, take a look at our
     [quick start guide](../DevGuide/QuickStartDockerVSCode.md) for using Docker
     with VSCode.
