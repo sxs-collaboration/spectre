@@ -43,8 +43,8 @@ namespace evolution::dg::subcell {
  *
  * A list of all the directions that are doing subcell is created and then
  * passed to the mutator
- * `Metavariables::SubcellOptions::DgOuterCorrectionPackageData::apply`, which
- * must return a
+ * `Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::apply`,
+ * which must return a
  *
  * \code
  *  FixedHashMap<
@@ -59,7 +59,7 @@ namespace evolution::dg::subcell {
  * `std::vector<std::pair<Direction<volume_dim>, ElementId<volume_dim>>>`
  * holding the list of mortars that need to be reconstructed to is passed in as
  * the last argument to
- * `Metavariables::SubcellOptions::DgOuterCorrectionPackageData::apply`.
+ * `Metavariables::SubcellOptions::DgComputeSubcellNeighborPackagedData::apply`.
  */
 template <typename Metavariables, typename DbTagsList>
 void neighbor_reconstructed_face_solution(
