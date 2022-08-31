@@ -132,37 +132,4 @@ struct InitializeEvolvedVariables {
   }
 };
 
-/// \ingroup InitializationGroup
-/// \brief Mutator meant to be used with
-/// `Initialization::Actions::AddSimpleTags` to initialize items related to the
-/// spacetime background of the CurvedScalarWave system
-///
-/// DataBox changes:
-/// - Adds:
-///   * `CurvedScalarWave::System::spacetime_variables_tag`
-/// - Removes: nothing
-/// - Modifies: nothing
-
-template <typename BackgroundSpacetime>
-struct InitializeGrVars {
-  static constexpr size_t Dim = BackgroundSpacetime::volume_dim;
-  using gr_vars_tag =
-      typename CurvedScalarWave::System<Dim>::spacetime_variables_tag;
-  using GrVars = typename gr_vars_tag::type;
-  using return_tags = tmpl::list<gr_vars_tag>;
-  using argument_tags = tmpl::list<
-      ::Initialization::Tags::InitialTime,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>,
-      CurvedScalarWave::Tags::BackgroundSpacetime<BackgroundSpacetime>>;
-  static void apply(
-      const gsl::not_null<GrVars*> gr_vars, const double initial_time,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
-      const BackgroundSpacetime& background_spacetime) {
-    gr_vars->initialize(get<0>(inertial_coords).size());
-    // Set initial data from analytic solution
-    gr_vars->assign_subset(evolution::Initialization::initial_data(
-        background_spacetime, inertial_coords, initial_time,
-        typename GrVars::tags_list{}));
-  }
-};
 }  // namespace CurvedScalarWave::Initialization

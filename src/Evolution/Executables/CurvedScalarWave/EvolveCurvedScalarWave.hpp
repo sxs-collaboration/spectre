@@ -33,6 +33,7 @@
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/CurvedScalarWave/CalculateGrVars.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Constraints.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Equations.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Initialize.hpp"
@@ -240,7 +241,14 @@ struct EvolutionMetavars {
 
   static constexpr bool use_filtering = true;
 
+  struct domain {
+    static constexpr bool enable_time_dependent_maps = true;
+  };
+
   using step_actions = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<domain::enable_time_dependent_maps,
+                          CurvedScalarWave::Actions::CalculateGrVars<system>,
+                          tmpl::list<>>,
       evolution::dg::Actions::ComputeTimeDerivative<EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping,
@@ -271,17 +279,16 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<volume_dim>,
+      Initialization::Actions::NonconservativeSystem<system>,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
+      CurvedScalarWave::Actions::CalculateGrVars<system>,
       Initialization::Actions::AddSimpleTags<
           CurvedScalarWave::Initialization::InitializeConstraintDampingGammas<
               volume_dim>,
-          CurvedScalarWave::Initialization::InitializeGrVars<
-              BackgroundSpacetime>>,
-      Initialization::Actions::NonconservativeSystem<system>,
-      Actions::MutateApply<CurvedScalarWave::Initialization::
-                               InitializeEvolvedVariables<volume_dim>>,
-      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
-      Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
+          CurvedScalarWave::Initialization::InitializeEvolvedVariables<
+              volume_dim>>,
+      Initialization::Actions::AddComputeTags<tmpl::flatten<tmpl::list<
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
@@ -324,10 +331,6 @@ struct EvolutionMetavars {
   static constexpr Options::String help{
       "Evolve a scalar wave in Dim spatial dimension on a curved background "
       "spacetime."};
-
-  struct domain {
-    static constexpr bool enable_time_dependent_maps = false;
-  };
 
   static constexpr std::array<Parallel::Phase, 5> default_phase_order{
       {Parallel::Phase::Initialization,

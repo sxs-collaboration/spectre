@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
   BoundaryConditions/Test_Outflow.cpp
   Test_BackgroundSpacetime.cpp
+  Test_CalculateGrVars.cpp
   Test_Constraints.cpp
   Test_Characteristics.cpp
   Test_InitializeConstraintDampingGammas.cpp
@@ -34,6 +35,7 @@ target_link_libraries(
   GeneralRelativityHelpers
   GeneralRelativitySolutions
   MathFunctions
+  GeneralRelativitySolutions
   Utilities
   WaveEquationSolutions
 )
