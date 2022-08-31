@@ -210,9 +210,9 @@ void reconstruct(
     // to reduce the number of memory allocations and improve data locality.
     const auto& lower_ghost = ghost_cell_vars.at(Direction<Dim>::lower_eta());
     const auto& upper_ghost = ghost_cell_vars.at(Direction<Dim>::upper_eta());
-    std::vector<double> buffer(
-        volume_vars.size() + lower_ghost.size() + upper_ghost.size() +
-        2 * (*reconstructed_upper_side_of_face_vars)[1].size());
+    DataVector buffer(volume_vars.size() + lower_ghost.size() +
+                      upper_ghost.size() +
+                      2 * (*reconstructed_upper_side_of_face_vars)[1].size());
     raw_transpose(make_not_null(buffer.data()), volume_vars.data(),
                   volume_extents[0], volume_vars.size() / volume_extents[0]);
     raw_transpose(make_not_null(buffer.data() + volume_vars.size()),
@@ -234,7 +234,7 @@ void reconstruct(
         buffer.data() + recons_offset_in_buffer + recons_size, recons_size);
     reconstruct_impl<Reconstructor>(
         make_not_null(&recons_upper_view), make_not_null(&recons_lower_view),
-        gsl::make_span(buffer),
+        gsl::make_span(&buffer[0], volume_vars.size()),
         gsl::make_span(buffer.data() + volume_vars.size(), lower_ghost.size()),
         gsl::make_span(buffer.data() + volume_vars.size() + lower_ghost.size(),
                        upper_ghost.size()),
@@ -250,9 +250,9 @@ void reconstruct(
         volume_extents[0]);
 
     if constexpr (Dim > 2) {
-      size_t chunk_size = volume_extents[0] * volume_extents[1];
-      size_t number_of_volume_chunks = volume_vars.size() / chunk_size;
-      size_t number_of_neighbor_chunks =
+      const size_t chunk_size = volume_extents[0] * volume_extents[1];
+      const size_t number_of_volume_chunks = volume_vars.size() / chunk_size;
+      const size_t number_of_neighbor_chunks =
           ghost_cell_vars.at(Direction<Dim>::lower_zeta()).size() / chunk_size;
 
       raw_transpose(make_not_null(buffer.data()), volume_vars.data(),
@@ -267,7 +267,7 @@ void reconstruct(
 
       reconstruct_impl<Reconstructor>(
           make_not_null(&recons_upper_view), make_not_null(&recons_lower_view),
-          gsl::make_span(buffer),
+          gsl::make_span(&buffer[0], volume_vars.size()),
           gsl::make_span(buffer.data() + volume_vars.size(),
                          lower_ghost.size()),
           gsl::make_span(
