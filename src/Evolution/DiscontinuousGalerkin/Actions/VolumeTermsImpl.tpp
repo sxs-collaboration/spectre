@@ -83,6 +83,10 @@ void volume_terms(
     [[maybe_unused]] const gsl::not_null<
         Variables<tmpl::list<TemporaryTags...>>*>
         temporaries,
+    [[maybe_unused]] const gsl::not_null<
+        Variables<tmpl::list<::Tags::div<::Tags::Flux<
+            FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>*>
+        div_fluxes,
     const Variables<tmpl::list<VariablesTags...>>& evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<Dim>& mesh,
     [[maybe_unused]] const tnsr::I<DataVector, Dim, Frame::Inertial>&
@@ -216,17 +220,14 @@ void volume_terms(
   // Add the flux divergence term to du_\alpha/dt, which must be done
   // after the corrections for the moving mesh are made.
   if constexpr (has_fluxes) {
-    Variables<tmpl::list<::Tags::div<::Tags::Flux<
-        FluxVariablesTags, tmpl::size_t<Dim>, Frame::Inertial>>...>>
-        div_fluxes{mesh.number_of_grid_points()};
     if (dg_formulation == ::dg::Formulation::StrongInertial) {
-      divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
+      divergence(div_fluxes, *volume_fluxes, mesh,
                  logical_to_inertial_inverse_jacobian);
     } else if (dg_formulation == ::dg::Formulation::WeakInertial) {
       // We should ideally not recompute the
       // det_jac_times_inverse_jacobian for non-moving meshes.
       if constexpr (Dim == 1) {
-        weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh, {});
+        weak_divergence(div_fluxes, *volume_fluxes, mesh, {});
       } else {
         // The Jacobian should be computed as a compute tag
         const auto jacobian =
@@ -237,13 +238,13 @@ void volume_terms(
         ::dg::metric_identity_det_jac_times_inv_jac(
             make_not_null(&det_jac_times_inverse_jacobian), mesh,
             inertial_coordinates, jacobian);
-        weak_divergence(make_not_null(&div_fluxes), *volume_fluxes, mesh,
+        weak_divergence(div_fluxes, *volume_fluxes, mesh,
                         det_jac_times_inverse_jacobian);
       }
       ASSERT(det_inverse_jacobian != nullptr,
              "The determinant of the inverse Jacobian shouldn't be nullptr "
              "when using the weak form.");
-      div_fluxes *= get(*det_inverse_jacobian);
+      (*div_fluxes) *= get(*det_inverse_jacobian);
     } else {
       ERROR("Unsupported DG formulation: " << dg_formulation);
     }
@@ -253,7 +254,7 @@ void volume_terms(
           auto& dt_var = get<::Tags::dt<var_tag>>(*dt_vars_ptr);
           const auto& div_flux = get<::Tags::div<
               ::Tags::Flux<var_tag, tmpl::size_t<Dim>, Frame::Inertial>>>(
-              div_fluxes);
+              *div_fluxes);
           if (dg_formulation == ::dg::Formulation::StrongInertial) {
             for (size_t storage_index = 0; storage_index < dt_var.size();
                  ++storage_index) {

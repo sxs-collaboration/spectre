@@ -38,6 +38,12 @@ namespace evolution::dg::Actions::detail {
       const gsl::not_null<Variables<typename SYSTEM(                          \
           data)::compute_volume_time_derivative_terms::temporary_tags>*>      \
           temporaries,                                                        \
+      const gsl::not_null<Variables<db::wrap_tags_in<                         \
+          ::Tags::div,                                                        \
+          db::wrap_tags_in<::Tags::Flux,                                      \
+                           typename SYSTEM(data)::flux_variables,             \
+                           tmpl::size_t<DIM(data)>, Frame::Inertial>>>*>      \
+          div_fluxes,                                                         \
       const Variables<typename SYSTEM(data)::variables_tag::tags_list>&       \
           evolved_vars,                                                       \
       const ::dg::Formulation dg_formulation, const Mesh<DIM(data)>& mesh,    \
@@ -90,6 +96,12 @@ template void volume_terms<::NewtonianEuler::TimeDerivativeTerms<
         Variables<isentropic_vortex_3d_system::
                       compute_volume_time_derivative_terms::temporary_tags>*>
         temporaries,
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::div,
+        db::wrap_tags_in<::Tags::Flux,
+                         isentropic_vortex_3d_system::flux_variables,
+                         tmpl::size_t<3>, Frame::Inertial>>>*>
+        div_fluxes,
     const Variables<isentropic_vortex_3d_system::variables_tag::tags_list>&
         evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<3>& mesh,
@@ -129,6 +141,12 @@ template void volume_terms<::NewtonianEuler::TimeDerivativeTerms<
         Variables<typename lane_emden_star_system::
                       compute_volume_time_derivative_terms::temporary_tags>*>
         temporaries,
+    const gsl::not_null<Variables<db::wrap_tags_in<
+        ::Tags::div,
+        db::wrap_tags_in<::Tags::Flux,
+                         typename lane_emden_star_system::flux_variables,
+                         tmpl::size_t<3>, Frame::Inertial>>>*>
+        div_fluxes,
     const Variables<typename lane_emden_star_system::variables_tag::tags_list>&
         evolved_vars,
     const ::dg::Formulation dg_formulation, const Mesh<3>& mesh,

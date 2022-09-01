@@ -6,8 +6,9 @@
 #include <array>
 #include <complex>
 #include <cstddef>
-#include <vector>
+#include <memory>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Transpose.hpp"
@@ -41,7 +42,8 @@ void do_transpose(const gsl::not_null<double*> result, const double* const data,
 }
 
 struct Scratch {
-  std::vector<double> buffer;
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+  std::unique_ptr<double[]> buffer;
   double* a;
   double* b;
 };
@@ -64,7 +66,8 @@ Scratch get_scratch(const std::array<MatrixType, Dim>& matrices,
     }
   }
   Scratch result{};
-  result.buffer.resize(2 * size);
+  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+  result.buffer = cpp20::make_unique_for_overwrite<double[]>(2 * size);
   result.a = &result.buffer[0];
   result.b = &result.buffer[size];
   return result;

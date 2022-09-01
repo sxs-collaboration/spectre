@@ -556,8 +556,11 @@ template <>
 class Variables<tmpl::list<>> {
  public:
   using tags_list = tmpl::list<>;
+  static constexpr size_t number_of_independent_components = 0;
   Variables() = default;
-  explicit Variables(const size_t /*number_of_grid_points*/){};
+  explicit Variables(const size_t /*number_of_grid_points*/) {}
+  template <typename T>
+  Variables(const T* /*pointer*/, const size_t /*size*/) {}
   static constexpr size_t size() { return 0; }
 };
 
