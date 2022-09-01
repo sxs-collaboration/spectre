@@ -11,7 +11,9 @@ spectre_python_add_module(
   Dat.cpp
   File.cpp
   VolumeData.cpp
-  MODULE_PATH "IO/"
+  PYTHON_EXECUTABLES
+  ExtractDatFromH5.py
+  MODULE_PATH "IO"
   )
 
 spectre_python_link_libraries(
