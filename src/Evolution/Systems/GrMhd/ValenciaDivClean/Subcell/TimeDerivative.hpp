@@ -69,8 +69,7 @@ struct TimeDerivative {
     using fluxes_tags = db::wrap_tags_in<::Tags::Flux, evolved_vars_tags,
                                          tmpl::size_t<3>, Frame::Inertial>;
 
-    // The copy of Mesh is intentional to avoid a GCC-7 internal compiler error.
-    const Mesh<3> subcell_mesh =
+    const Mesh<3>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(*box);
     ASSERT(
         subcell_mesh == Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
