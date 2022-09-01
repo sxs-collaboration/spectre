@@ -182,6 +182,10 @@ void write_data(const hid_t group_id, const std::vector<T>& data,
              "Failed to enable gzip filter on dataset " << name);
     CHECK_H5(H5Pset_chunk(property_list, chunk_size.size(), chunk_size.data()),
              "Failed to set chunk size on dataset " << name);
+    CHECK_H5(H5Pset_fill_time(property_list, H5D_FILL_TIME_NEVER),
+             "Failed to disable setting default values on dataset creation for "
+             "dataset "
+                 << name);
   }
 
   const hid_t dataset_id =
@@ -799,6 +803,10 @@ hid_t create_extensible_dataset(const hid_t group_id, const std::string& name,
   CHECK_H5(property_list, "Failed to create property list");
   CHECK_H5(H5Pset_chunk(property_list, Dims, chunk_size.data()),
            "Failed to set chunk size");
+  CHECK_H5(H5Pset_fill_time(property_list, H5D_FILL_TIME_NEVER),
+           "Failed to disable setting default values on dataset creation for "
+           "dataset "
+               << name);
 
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), h5_type<double>(), dataspace_id,
