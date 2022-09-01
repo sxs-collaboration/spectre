@@ -12,18 +12,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// [[OutputRegex, There are only 0 real roots]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.real_roots.no_real_roots",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  real_roots(1.0, -3.0, 3.0);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, There are only 0 real roots]]
+// [[OutputRegex, There are no real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Numerical.RootFinding.positive_root.no_real_roots",
     "[NumericalAlgorithms][RootFinding][Unit]") {
@@ -116,17 +105,25 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.QuadraticEquation",
 
   // Real roots
   const auto roots = real_roots(2.0, -11.0, 5.0);
-  CHECK(approx(0.5) == roots[0]);
-  CHECK(approx(5.0) == roots[1]);
+  REQUIRE(roots.has_value());
+  CHECK(approx(0.5) == (*roots)[0]);
+  CHECK(approx(5.0) == (*roots)[1]);
 
   // Check accuracy with small roots
   const auto small_positive = real_roots(1e-8, 1.0 - 1e-16, -1e-8);
-  CHECK(approx(-1e8) == small_positive[0]);
-  CHECK(approx(1e-8) == small_positive[1]);
+  REQUIRE(small_positive.has_value());
+  CHECK(approx(-1e8) == (*small_positive)[0]);
+  CHECK(approx(1e-8) == (*small_positive)[1]);
 
   const auto small_negative = real_roots(1e-8, -(1.0 - 1e-16), -1e-8);
-  CHECK(approx(-1e-8) == small_negative[0]);
-  CHECK(approx(1e8) == small_negative[1]);
+  REQUIRE(small_negative.has_value());
+  CHECK(approx(-1e-8) == (*small_negative)[0]);
+  CHECK(approx(1e8) == (*small_negative)[1]);
+
+  CHECK(not real_roots(1.0, -3.0, 3.0).has_value());
+
+  const auto repeated_root = real_roots(1.0, -2.0, 1.0);
+  CHECK(repeated_root == std::optional{std::array{1.0, 1.0}});
 
   test_smallest_root_greater_than_value_within_roundoff<double>(1.0);
   test_smallest_root_greater_than_value_within_roundoff(DataVector(5));
