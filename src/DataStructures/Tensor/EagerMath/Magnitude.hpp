@@ -69,25 +69,6 @@ void magnitude(const gsl::not_null<Scalar<DataType>*> magnitude,
 }
 /// @}
 
-/// @{
-/// \ingroup TensorGroup
-/// \brief Compute square root of the Euclidean magnitude of a rank-0 tensor
-///
-/// \details
-/// Computes the square root of the absolute value of the scalar.
-template <typename DataType>
-Scalar<DataType> sqrt_magnitude(const Scalar<DataType>& input) {
-  return Scalar<DataType>{sqrt(abs(get(input)))};
-}
-
-template <typename DataType>
-void sqrt_magnitude(const gsl::not_null<Scalar<DataType>*> sqrt_magnitude,
-                    const Scalar<DataType>& input) {
-  destructive_resize_components(sqrt_magnitude, get_size(get(input)));
-  get(*sqrt_magnitude) = sqrt(abs(get(input)));
-}
-/// @}
-
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
@@ -158,27 +139,4 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
   using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
 };
 
-/// \ingroup DataBoxTagsGroup
-/// \ingroup DataStructuresGroup
-/// The square root of a scalar
-template <typename Tag>
-struct Sqrt : db::PrefixTag, db::SimpleTag {
-  using tag = Tag;
-  using type = Scalar<DataVector>;
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup DataStructuresGroup
-/// The square root of a scalar
-///
-/// This tag inherits from `Tags::Sqrt<Tag>`
-template <typename Tag>
-struct SqrtCompute : Sqrt<Tag>, db::ComputeTag {
-  using base = Sqrt<Tag>;
-  using return_type = Scalar<DataVector>;
-  static constexpr auto function =
-      static_cast<void (*)(const gsl::not_null<return_type*>,
-                           const typename Tag::type&)>(&sqrt_magnitude);
-  using argument_tags = tmpl::list<Tag>;
-};
 }  // namespace Tags
