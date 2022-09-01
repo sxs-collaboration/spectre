@@ -562,7 +562,15 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
     // Root not bracketed.
     // If the bracketing failure is due to roundoff, then
     // slightly adjust the bounds to increase the range. Otherwise, error.
-    if (abs(function_at_rhobar_min) / abs(function_at_rhobar_max) < 1.e-10) {
+    //
+    // roundoff_ratio is the limiting ratio of the two function values
+    // for which we should attempt to adjust the bounds.  It is ok for
+    // roundoff_ratio to be much larger than actual roundoff, since it
+    // doesn't hurt to expand the interval and try again when
+    // otherwise we would just error.
+    constexpr double roundoff_ratio = 1.e-6;
+    if (abs(function_at_rhobar_min) / abs(function_at_rhobar_max) <
+        roundoff_ratio) {
       // Slightly decrease rhobar_min.  How far do we decrease it?
       // Figure that out by looking at the deriv of the function.
       const double deriv_function_at_rhobar_min =
@@ -591,7 +599,7 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
             << function_at_new_rhobar_min);
       }
     } else if (abs(function_at_rhobar_max) / abs(function_at_rhobar_min) <
-               1.e-10) {
+               roundoff_ratio) {
       // Slightly increase rhobar_max.  How far do we increase it?
       // Figure that out by looking at the deriv of the function.
       const double deriv_function_at_rhobar_max =
