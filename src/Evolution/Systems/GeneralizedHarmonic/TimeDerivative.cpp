@@ -194,18 +194,6 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  for (size_t nu = 0; nu < Dim + 1; ++nu) {
-    gauge_constraint->get(nu) =
-        gauge_function.get(nu) + trace_christoffel->get(nu);
-  }
-
-  get(*normal_dot_gauge_constraint) =
-      get<0>(*normal_spacetime_vector) * get<0>(*gauge_constraint);
-  for (size_t mu = 1; mu < Dim + 1; ++mu) {
-    get(*normal_dot_gauge_constraint) +=
-        normal_spacetime_vector->get(mu) * gauge_constraint->get(mu);
-  }
-
   get(*gamma1_plus_1) = 1.0 + gamma1.get();
   const DataVector& gamma1p1 = get(*gamma1_plus_1);
 
@@ -218,6 +206,20 @@ void TimeDerivative<Dim>::apply(
             shift->get(m) * three_index_constraint->get(m, mu, nu);
       }
     }
+  }
+
+  // Compute source function last so that we don't need to recompute any of the
+  // other temporary tags.
+  for (size_t nu = 0; nu < Dim + 1; ++nu) {
+    gauge_constraint->get(nu) =
+        gauge_function.get(nu) + trace_christoffel->get(nu);
+  }
+
+  get(*normal_dot_gauge_constraint) =
+      get<0>(*normal_spacetime_vector) * get<0>(*gauge_constraint);
+  for (size_t mu = 1; mu < Dim + 1; ++mu) {
+    get(*normal_dot_gauge_constraint) +=
+        normal_spacetime_vector->get(mu) * gauge_constraint->get(mu);
   }
 
   // Here are the actual equations
