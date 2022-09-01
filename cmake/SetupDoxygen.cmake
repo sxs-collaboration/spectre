@@ -47,7 +47,7 @@ if (DOXYGEN_FOUND)
 
   # Make sure the Doxygen version is compatible with the CSS, or print a
   # warning. Notes:
-  # - We use https://github.com/jothepro/doxygen-awesome-css release v1.6.1,
+  # - We use https://github.com/jothepro/doxygen-awesome-css release v2.0.3,
   #   which ensures compatibility with Doxygen v1.9.2. When upgrading Doxygen,
   #   it's probably also a good idea to upgrade the CSS files in `docs/config/`.
   # - The Doxygen release v1.9.1 has a bug so namespaces don't show up in

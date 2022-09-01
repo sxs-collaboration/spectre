@@ -422,6 +422,8 @@ license() {
               'cmake/Findcppcheck.cpp$' \
               'docs/config/doxygen-awesome-sidebar-only.css' \
               'docs/config/doxygen-awesome.css' \
+              'docs/config/doxygen-awesome-fragment-copy-button.js' \
+              'docs/config/doxygen-awesome-paragraph-link.js' \
               'docs/config/footer.html' \
               'docs/config/header.html' \
               'docs/config/layout.xml' \
