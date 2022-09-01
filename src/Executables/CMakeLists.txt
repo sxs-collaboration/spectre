@@ -3,6 +3,7 @@
 
 add_subdirectory(Benchmark)
 add_subdirectory(CombineH5)
+add_subdirectory(ConvertComposeTable)
 add_subdirectory(DebugPreprocessor)
 add_subdirectory(Examples)
 add_subdirectory(ExportCoordinates)

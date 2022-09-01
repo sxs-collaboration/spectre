@@ -753,6 +753,7 @@ cmakelists_hardcoded_libraries() {
     local CHECKED_COMMANDS=$(cmakelists_hardcoded_libraries_command_list)
     [[ $1 =~ CMakeLists\.txt$ ]] && \
         whitelist "$1" \
+                  "tests/Unit/Executables/CMakeLists.txt$" \
                   "tests/Unit/Parallel/CMakeLists.txt$" \
                   "tests/Unit/ParallelAlgorithms/LinearSolver/\
 ConjugateGradient/CMakeLists.txt$" \

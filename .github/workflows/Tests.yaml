@@ -794,12 +794,12 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D CMAKE_INSTALL_PREFIX=../install \
             -D BUILD_DOCS=OFF \
             $GITHUB_WORKSPACE
-      - name: Build tests
+      - name: Build unit tests
         working-directory: build
         # Build on 3 threads because GitHub's macOS VMs have 3 cores:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
         run: |
-          make -j3 RunTests
+          make -j3 unit-tests
       - name: Build executables
         working-directory: build
         run: |
