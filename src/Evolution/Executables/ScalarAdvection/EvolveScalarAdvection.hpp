@@ -240,9 +240,10 @@ struct EvolutionMetavars {
           EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>>>;
 
@@ -255,9 +256,10 @@ struct EvolutionMetavars {
           EvolutionMetavars>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
-          tmpl::list<Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<>,
-                     Actions::UpdateU<>>>,
+          tmpl::list<
+              Actions::RecordTimeStepperData<>,
+              evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<>>,
+              Actions::UpdateU<>>>,
       evolution::dg::subcell::Actions::TciAndRollback<
           ScalarAdvection::subcell::TciOnDgGrid<Dim>>,
       Actions::Goto<evolution::dg::subcell::Actions::Labels::EndOfSolvers>,
