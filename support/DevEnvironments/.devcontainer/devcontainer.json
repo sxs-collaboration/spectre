@@ -1,6 +1,6 @@
 {
     "name": "SpECTRE development environment",
-    "image": "sxscollaboration/spectrebuildenv:latest",
+    "image": "sxscollaboration/spectre:dev",
     "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind,consistency=delegated",
     "workspaceFolder": "${localWorkspaceFolder}",
     "extensions": [

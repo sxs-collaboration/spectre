@@ -135,6 +135,13 @@ read through the [VS Code documentation on remote containers](https://code.visua
 and inspect the `.devcontainer/devcontainer.json` file that's included in the
 SpECTRE repository.
 
+\note If you look into the `.devcontainer/devcontainer.json` file, you'll see we
+are using the `sxscollaboration/spectre:dev` container. We also offer other
+containers. The `sxscollaboration/spectre:ci` container has more compilers and
+the `sxscollaboration/spectre:demo` container has a couple pre-built
+executables. If you'd like to build in a different container, just switch the
+image name in the json file and reopen in the new container.
+
 ## Configure, compile and run SpECTRE
 
 With Visual Studio Code running in the development container you can now
