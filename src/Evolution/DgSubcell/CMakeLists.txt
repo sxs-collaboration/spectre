@@ -29,7 +29,6 @@ spectre_target_headers(
   SliceTensor.hpp
   SliceVariable.hpp
   SubcellOptions.hpp
-  TciStatus.hpp
   TwoMeshRdmpTci.hpp
   )
 
@@ -49,7 +48,6 @@ spectre_target_sources(
   ReconstructionMethod.cpp
   SliceData.cpp
   SubcellOptions.cpp
-  TciStatus.cpp
   )
 
 target_link_libraries(

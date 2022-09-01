@@ -81,9 +81,6 @@ void test() {
   CHECK(db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
             logical_coords_box) == logical_coordinates(subcell_mesh));
 
-  TestHelpers::db::test_compute_tag<subcell::Tags::TciStatusCompute<Dim>>(
-      "TciStatus");
-
   auto active_coords_box = db::create<
       db::AddSimpleTags<domain::Tags::Coordinates<3, Frame::Inertial>,
                         subcell::Tags::Coordinates<3, Frame::Inertial>,
@@ -133,8 +130,7 @@ void test() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags",
-                  "[Evolution][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<
       ::Events::Tags::ObserverCoordinates<1, Frame::Inertial>>(
       "InertialCoordinates");

@@ -37,6 +37,7 @@
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/Phase.hpp"
@@ -85,6 +86,7 @@ struct component {
           evolution::dg::subcell::Tags::ActiveGrid,
           evolution::dg::subcell::Tags::DidRollback,
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+          evolution::dg::subcell::Tags::TciStatus,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           Tags::Variables<tmpl::list<Var1>>,
           Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
@@ -225,6 +227,10 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
                std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
+
+  Scalar<DataVector> tci_status{dg_mesh.number_of_grid_points(),
+                                static_cast<double>(tci_fails)};
+
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
@@ -273,7 +279,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
+         did_rollback, neighbor_data, tci_status, rdmp_tci_data, evolved_vars,
          time_stepper_history, initial_value_evolved_vars, prim_vars,
          initial_value_prim_vars});
   } else {
@@ -282,7 +288,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, rdmp_tci_data, evolved_vars,
+         did_rollback, neighbor_data, tci_status, rdmp_tci_data, evolved_vars,
          time_stepper_history, initial_value_evolved_vars});
   }
 

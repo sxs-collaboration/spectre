@@ -39,7 +39,6 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
-#include "Evolution/DgSubcell/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
