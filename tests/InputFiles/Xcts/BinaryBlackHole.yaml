@@ -3,7 +3,7 @@
 
 # Executable: SolveXcts
 # Check: parse
-# Timeout: 20
+# Timeout: 30
 
 ResourceInfo:
   AvoidGlobalProc0: false
