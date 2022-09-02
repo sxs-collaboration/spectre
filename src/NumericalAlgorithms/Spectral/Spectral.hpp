@@ -259,6 +259,9 @@ const DataVector& quadrature_weights(const Mesh<1>& mesh);
  * is computed as \f$D_{ij}=l_j^\prime(\xi_i)\f$ where the \f$\xi_i\f$ are the
  * collocation points.
  *
+ * The finite difference matrix uses summation by parts operators,
+ * \f$D_{2-1}, D_{4-2}, D_{4-3}\f$, and \f$D_{6-5}\f$ from \cite Diener2005tn.
+ *
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
