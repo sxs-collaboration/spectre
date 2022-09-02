@@ -181,10 +181,10 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
       }()) {
   // Assumptions made in the map.  Some of these can be relaxed,
   // as long as the unit test is changed to test them.
-  ASSERT(z_plane_two >= z_plane_one + 0.02 * radius_one,
-         "z_plane_two must be >= z_plane_one + 0.02 * radius_one, not "
+  ASSERT(z_plane_two >= z_plane_one + 0.03 * radius_one,
+         "z_plane_two must be >= z_plane_one + 0.03 * radius_one, not "
              << z_plane_two << " " << z_plane_one << " "
-             << z_plane_one + 0.02 * radius_one);
+             << z_plane_one + 0.03 * radius_one);
   ASSERT(theta_max_one_ < M_PI * 0.45,
          "z_plane_one is too close to the center of sphere_one: theta/pi = "
              << theta_max_one_ / M_PI);

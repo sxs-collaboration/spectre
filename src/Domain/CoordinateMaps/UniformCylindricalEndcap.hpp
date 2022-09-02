@@ -453,7 +453,7 @@ namespace domain::CoordinateMaps {
  * map without this assumption, but the assumption simplifies the
  * code, and the expected use cases obey this restriction.
  *
- * We also demand that \f$z_{\mathrm{P}1} <= z_{\mathrm{P}2} -0.02 R_1\f$, and
+ * We also demand that \f$z_{\mathrm{P}1} <= z_{\mathrm{P}2} -0.03 R_1\f$, and
  * that the z planes in the above figures lie above the centers of the
  * corresponding spheres and are not too close to the centers or edges of
  * those spheres; specificially, we demand that
