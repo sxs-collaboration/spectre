@@ -9,11 +9,11 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace evolution::dg::subcell {
-bool rdmp_tci(const std::vector<double>& max_of_current_variables,
-              const std::vector<double>& min_of_current_variables,
-              const std::vector<double>& max_of_past_variables,
-              const std::vector<double>& min_of_past_variables,
-              const double rdmp_delta0, const double rdmp_epsilon) {
+int rdmp_tci(const std::vector<double>& max_of_current_variables,
+             const std::vector<double>& min_of_current_variables,
+             const std::vector<double>& max_of_past_variables,
+             const std::vector<double>& min_of_past_variables,
+             const double rdmp_delta0, const double rdmp_epsilon) {
   const size_t number_of_vars = max_of_current_variables.size();
   ASSERT(min_of_current_variables.size() == number_of_vars and
              max_of_past_variables.size() == number_of_vars and
@@ -28,9 +28,9 @@ bool rdmp_tci(const std::vector<double>& max_of_current_variables,
 
     if (max_of_current_variables[i] > max_of_past_variables[i] + delta or
         min_of_current_variables[i] < min_of_past_variables[i] - delta) {
-      return true;
+      return static_cast<int>(i + 1);
     }
   }
-  return false;
+  return 0;
 }
 }  // namespace evolution::dg::subcell

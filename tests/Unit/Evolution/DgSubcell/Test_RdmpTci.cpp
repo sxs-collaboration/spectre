@@ -54,7 +54,7 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
                     const double rdmp_delta0, const double rdmp_epsilon,
                     const size_t num_pts_1d, const double rescale_dg_by,
                     const double rescale_subcell_by,
-                    const bool expected_tci_triggered) {
+                    const int expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(num_pts_1d);
   CAPTURE(rdmp_delta0);
@@ -147,14 +147,16 @@ void test_rdmp() {
       CAPTURE(component_index);
       auto local_past_max_values = past_max_values;
       local_past_max_values[component_index] *= 0.5;
+      const int expected_tci_status = component_index + 1;
+
       test_rdmp_impl<Dim>(local_past_max_values, past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0, 1.0, true);
+                          1.0e-3, num_pts_1d, 1.0, 1.0, expected_tci_status);
       // Rescale subcell values to be tiny, effectively just checking DG
       test_rdmp_impl<Dim>(local_past_max_values, past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0, 1.0e-5, true);
+                          1.0e-3, num_pts_1d, 1.0, 1.0e-5, expected_tci_status);
       // Rescale DG values to be tiny, effectively just checking subcell
       test_rdmp_impl<Dim>(local_past_max_values, past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0e-5, 1.0, true);
+                          1.0e-3, num_pts_1d, 1.0e-5, 1.0, expected_tci_status);
       // Rescale DG&subcell values to be tiny, so no trigger
       test_rdmp_impl<Dim>(local_past_max_values, past_min_values, 1.0e-4,
                           1.0e-3, num_pts_1d, 1.0e-5, 1.0e-5, false);
@@ -162,13 +164,13 @@ void test_rdmp() {
       auto local_past_min_values = past_min_values;
       local_past_min_values[component_index] *= 0.5;
       test_rdmp_impl<Dim>(past_max_values, local_past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0, 1.0, true);
+                          1.0e-3, num_pts_1d, 1.0, 1.0, expected_tci_status);
       // Rescale subcell values to be tiny, effectively just checking DG
       test_rdmp_impl<Dim>(past_max_values, local_past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0, 1.0e-5, true);
+                          1.0e-3, num_pts_1d, 1.0, 1.0e-5, expected_tci_status);
       // Rescale DG values to be tiny, effectively just checking subcell
       test_rdmp_impl<Dim>(past_max_values, local_past_min_values, 1.0e-4,
-                          1.0e-3, num_pts_1d, 1.0e-5, 1.0, true);
+                          1.0e-3, num_pts_1d, 1.0e-5, 1.0, expected_tci_status);
       // Rescale DG&subcell values to be tiny, so no trigger
       test_rdmp_impl<Dim>(past_max_values, local_past_min_values, 1.0e-4,
                           1.0e-3, num_pts_1d, 1.0e-5, 1.0e-5, false);
