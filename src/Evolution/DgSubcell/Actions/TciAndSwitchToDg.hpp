@@ -99,6 +99,12 @@ namespace evolution::dg::subcell::Actions {
  * \note This action always sets `subcell::Tags::DidRollback` to `false` at the
  * very beginning since this action is called after an FD step has completed.
  *
+ * \note If `subcell::Tags::DidRollback=True` i.e. the grid has been switched
+ * from DG to FD in the current time step by preceding actions, this action is
+ * skipped except setting `DidRollback` to `false`. Stated differently, if an
+ * element switched from DG to FD it needs to remain at least one time step on
+ * the FD grid.
+ *
  * GlobalCache:
  * - Uses:
  *   - `subcell::Tags::SubcellOptions`
@@ -140,9 +146,13 @@ struct TciAndSwitchToDg {
         "Must have the TciAndSwitchToDg action exactly once in the action list "
         "of a phase.");
 
-    db::mutate<subcell::Tags::DidRollback>(
-        make_not_null(&box),
-        [](const gsl::not_null<bool*> did_rollback) { *did_rollback = false; });
+    if (UNLIKELY(db::get<subcell::Tags::DidRollback>(box))) {
+      db::mutate<subcell::Tags::DidRollback>(
+          make_not_null(&box), [](const gsl::not_null<bool*> did_rollback) {
+            *did_rollback = false;
+          });
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
 
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
@@ -222,8 +232,8 @@ struct TciAndSwitchToDg {
 
             // Reconstruct the DG solution for each time in the time stepper
             // history
-            TimeSteppers::History<typename variables_tag::type>
-                dg_history{active_history_ptr->integration_order()};
+            TimeSteppers::History<typename variables_tag::type> dg_history{
+                active_history_ptr->integration_order()};
             const auto end_it = active_history_ptr->derivatives_end();
             for (auto it = active_history_ptr->derivatives_begin();
                  it != end_it; ++it) {

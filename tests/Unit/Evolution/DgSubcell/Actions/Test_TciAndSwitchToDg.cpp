@@ -163,13 +163,15 @@ std::unique_ptr<TimeStepper> make_time_stepper(
 template <size_t Dim>
 void test_impl(
     const bool multistep_time_stepper, const bool rdmp_fails,
-    const bool tci_fails, const bool always_use_subcell,
-    const bool self_starting, const bool in_substep,
+    const bool tci_fails, const bool did_rollback,
+    const bool always_use_subcell, const bool self_starting,
+    const bool in_substep,
     const evolution::dg::subcell::fd::ReconstructionMethod recons_method) {
   CAPTURE(Dim);
   CAPTURE(multistep_time_stepper);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
+  CAPTURE(did_rollback);
   CAPTURE(always_use_subcell);
   CAPTURE(self_starting);
   CAPTURE(in_substep);
@@ -245,9 +247,9 @@ void test_impl(
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {time_step_id, dg_mesh, subcell_mesh, active_grid, true, neighbor_data,
-       rdmp_tci_data, tci_grid_history, evolved_vars, time_stepper_history,
-       make_time_stepper(multistep_time_stepper)});
+      {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
+       neighbor_data, rdmp_tci_data, tci_grid_history, evolved_vars,
+       time_stepper_history, make_time_stepper(multistep_time_stepper)});
 
   // Invoke the TciAndSwitchToDg action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -266,9 +268,9 @@ void test_impl(
       comp, evolution::dg::subcell::Tags::TciGridHistory>(runner, 0);
 
   // true if the TCI wasn't invoked at all because we are always using subcell,
-  // doing self-start, or took a substep.
-  const bool avoid_tci =
-      always_use_subcell or self_starting or time_step_id.substep() != 0;
+  // doing self-start, took a substep, or already did rollback from DG to FD.
+  const bool avoid_tci = always_use_subcell or self_starting or
+                         time_step_id.substep() != 0 or did_rollback;
 
   CHECK_FALSE(ActionTesting::get_databox_tag<
               comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
@@ -280,7 +282,6 @@ void test_impl(
   // Check ActiveGrid
   if (avoid_tci or rdmp_fails or tci_fails) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
-
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
   }
@@ -348,19 +349,22 @@ void test() {
   for (const bool use_multistep_time_stepper : {true, false}) {
     for (const bool rdmp_fails : {true, false}) {
       for (const bool tci_fails : {false, true}) {
-        for (const bool always_use_subcell : {false, true}) {
-          for (const bool self_starting : {false, true}) {
-            for (const auto recons_method :
-                 {evolution::dg::subcell::fd::ReconstructionMethod::
-                      AllDimsAtOnce,
-                  evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}) {
-              test_impl<Dim>(use_multistep_time_stepper, rdmp_fails, tci_fails,
-                             always_use_subcell, self_starting, false,
-                             recons_method);
-              if (not use_multistep_time_stepper) {
+        for (const bool did_rollback : {true, false}) {
+          for (const bool always_use_subcell : {false, true}) {
+            for (const bool self_starting : {false, true}) {
+              for (const auto recons_method :
+                   {evolution::dg::subcell::fd::ReconstructionMethod::
+                        AllDimsAtOnce,
+                    evolution::dg::subcell::fd::ReconstructionMethod::
+                        DimByDim}) {
                 test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
-                               tci_fails, always_use_subcell, self_starting,
-                               true, recons_method);
+                               tci_fails, did_rollback, always_use_subcell,
+                               self_starting, false, recons_method);
+                if (not use_multistep_time_stepper) {
+                  test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
+                                 tci_fails, did_rollback, always_use_subcell,
+                                 self_starting, true, recons_method);
+                }
               }
             }
           }
@@ -379,10 +383,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
   //    stay on subcell
   // 5. Check if RDMP is not triggered, but tci_mutator is, we stay on subcell
   // 6. check if RDMP & TCI not triggered, switch to DG.
+  // 7. check if DidRollBack=True, stay in subcell.
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
                                         TimeSteppers::RungeKutta3>();
   test<1>();
-  // test<2>();
-  // test<3>();
+  test<2>();
+  test<3>();
 }
 }  // namespace
