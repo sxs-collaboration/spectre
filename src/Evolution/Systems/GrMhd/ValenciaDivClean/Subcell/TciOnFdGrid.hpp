@@ -56,7 +56,7 @@ struct TciOnFdGrid {
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
                  evolution::dg::subcell::Tags::SubcellOptions>;
-  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+  static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       const Scalar<DataVector>& subcell_tilde_d,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,

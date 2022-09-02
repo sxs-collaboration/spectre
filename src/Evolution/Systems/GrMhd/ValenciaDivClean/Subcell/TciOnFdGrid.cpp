@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace grmhd::ValenciaDivClean::subcell {
-std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
+std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const Scalar<DataVector>& subcell_tilde_d,
     const Scalar<DataVector>& subcell_tilde_tau,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,

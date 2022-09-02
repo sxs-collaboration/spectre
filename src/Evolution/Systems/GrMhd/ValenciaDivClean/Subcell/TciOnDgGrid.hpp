@@ -96,7 +96,7 @@ class TciOnDgGrid {
                  evolution::dg::subcell::Tags::SubcellOptions>;
 
   template <size_t ThermodynamicDim>
-  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+  static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,

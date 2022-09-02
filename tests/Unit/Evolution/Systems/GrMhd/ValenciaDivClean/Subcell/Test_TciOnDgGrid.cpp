@@ -263,7 +263,7 @@ void test(const TestThis test_this) {
         }
       });
 
-  const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
+  const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(
           make_not_null(&box), persson_exponent);

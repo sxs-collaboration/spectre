@@ -30,7 +30,7 @@
 namespace grmhd::ValenciaDivClean::subcell {
 template <typename RecoveryScheme>
 template <size_t ThermodynamicDim>
-std::tuple<bool, evolution::dg::subcell::RdmpTciData>
+std::tuple<int, evolution::dg::subcell::RdmpTciData>
 TciOnDgGrid<RecoveryScheme>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
@@ -226,7 +226,7 @@ GENERATE_INSTANTIATIONS(
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATION(r, data)                                                \
-  template std::tuple<bool, evolution::dg::subcell::RdmpTciData>              \
+  template std::tuple<int, evolution::dg::subcell::RdmpTciData>               \
   TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(                       \
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>          \
           dg_prim_vars,                                                       \

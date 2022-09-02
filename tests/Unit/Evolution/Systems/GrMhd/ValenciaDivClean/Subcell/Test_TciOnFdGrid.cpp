@@ -166,7 +166,7 @@ void test(const TestThis test_this) {
         }
       });
 
-  const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
+  const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnFdGrid>(
           make_not_null(&box), persson_exponent);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
