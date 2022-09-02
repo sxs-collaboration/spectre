@@ -35,6 +35,18 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
               },
               py::return_value_policy::reference, py::arg("path"))
           .def("close", &H5File::close_current_object)
+          .def("all_files",
+               [](const H5File& f) -> const std::vector<std::string> {
+                 return f.template all_files<void>("/");
+               })
+          .def("all_dat_files",
+               [](const H5File& f) -> const std::vector<std::string> {
+                 return f.template all_files<h5::Dat>("/");
+               })
+          .def("all_vol_files",
+               [](const H5File& f) -> const std::vector<std::string> {
+                 return f.template all_files<h5::VolumeData>("/");
+               })
           .def("groups", &H5File::groups)
           .def(
               "get_vol",
