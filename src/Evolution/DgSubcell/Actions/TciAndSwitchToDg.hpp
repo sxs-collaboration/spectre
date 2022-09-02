@@ -190,6 +190,16 @@ struct TciAndSwitchToDg {
                                      subcell_options.persson_exponent() + 1.0);
     const int tci_status = std::get<0>(tci_result);
     const bool cell_is_troubled = static_cast<bool>(tci_status);
+
+    if (cell_is_troubled) {
+      db::mutate<Tags::TciStatus>(
+          make_not_null(&box),
+          [&tci_status](
+              const gsl::not_null<Scalar<DataVector>*> tci_status_ptr) {
+            get(*tci_status_ptr) = static_cast<double>(tci_status);
+          });
+    }
+
     db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
         make_not_null(&box), [&tci_result](const auto rdmp_data_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
