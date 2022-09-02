@@ -114,6 +114,12 @@ authors:
   family-names: Carpenter
   given-names: Alexander
   orcid: https://orcid.org/0000-0002-9183-8006
+- affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
+    Astronomy, California State University, Fullerton, Fullerton, California 92831,
+    USA
+  family-names: Ceja
+  given-names: Andrea
+  orcid: https://orcid.org/0000-0002-1681-7299
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Chaudhary
@@ -216,8 +222,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2022-08-01
-doi: 10.5281/zenodo.6949324
+date-released: 2022-09-02
+doi: 10.5281/zenodo.7045030
 keywords:
 - Software
 - Astrophysics
@@ -235,4 +241,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.08.01
+version: 2022.09.02
