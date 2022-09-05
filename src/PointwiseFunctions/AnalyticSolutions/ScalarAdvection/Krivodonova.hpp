@@ -70,7 +70,7 @@ class Krivodonova : public evolution::initial_data::InitialData,
   Krivodonova& operator=(const Krivodonova&) = default;
   Krivodonova(Krivodonova&&) = default;
   Krivodonova& operator=(Krivodonova&&) = default;
-  ~Krivodonova() = default;
+  ~Krivodonova() override = default;
 
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
@@ -78,7 +78,7 @@ class Krivodonova : public evolution::initial_data::InitialData,
       tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   /// \cond
   explicit Krivodonova(CkMigrateMessage* msg);

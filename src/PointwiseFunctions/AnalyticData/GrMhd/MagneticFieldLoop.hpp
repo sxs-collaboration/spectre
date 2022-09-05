@@ -130,7 +130,7 @@ class MagneticFieldLoop : public evolution::initial_data::InitialData,
   MagneticFieldLoop& operator=(const MagneticFieldLoop& /*rhs*/) = default;
   MagneticFieldLoop(MagneticFieldLoop&& /*rhs*/) = default;
   MagneticFieldLoop& operator=(MagneticFieldLoop&& /*rhs*/) = default;
-  ~MagneticFieldLoop() = default;
+  ~MagneticFieldLoop() override = default;
 
   MagneticFieldLoop(double pressure, double rest_mass_density,
                     double adiabatic_index,
@@ -216,8 +216,8 @@ class MagneticFieldLoop : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   double pressure_ = std::numeric_limits<double>::signaling_NaN();

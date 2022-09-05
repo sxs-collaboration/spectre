@@ -89,7 +89,7 @@ class PlaneWave : public evolution::initial_data::InitialData,
   PlaneWave& operator=(const PlaneWave&);
   PlaneWave(PlaneWave&&) = default;
   PlaneWave& operator=(PlaneWave&&) = default;
-  ~PlaneWave() = default;
+  ~PlaneWave() override = default;
 
   /// \cond
   explicit PlaneWave(CkMigrateMessage* msg);
@@ -138,7 +138,7 @@ class PlaneWave : public evolution::initial_data::InitialData,
                        ::Tags::dt<Tags::Phi<Dim>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   template <size_t LocalDim>

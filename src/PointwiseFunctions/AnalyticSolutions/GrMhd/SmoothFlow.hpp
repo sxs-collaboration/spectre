@@ -51,7 +51,7 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   SmoothFlow& operator=(const SmoothFlow& /*rhs*/) = default;
   SmoothFlow(SmoothFlow&& /*rhs*/) = default;
   SmoothFlow& operator=(SmoothFlow&& /*rhs*/) = default;
-  ~SmoothFlow() = default;
+  ~SmoothFlow() override = default;
 
   SmoothFlow(const std::array<double, 3>& mean_velocity,
              const std::array<double, 3>& wavevector, double pressure,
@@ -99,8 +99,8 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
     return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  protected:
   friend bool operator==(const SmoothFlow& lhs, const SmoothFlow& rhs);

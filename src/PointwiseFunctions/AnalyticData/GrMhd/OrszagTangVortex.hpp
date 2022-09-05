@@ -73,7 +73,7 @@ class OrszagTangVortex : public evolution::initial_data::InitialData,
   OrszagTangVortex& operator=(const OrszagTangVortex& /*rhs*/) = default;
   OrszagTangVortex(OrszagTangVortex&& /*rhs*/) = default;
   OrszagTangVortex& operator=(OrszagTangVortex&& /*rhs*/) = default;
-  ~OrszagTangVortex() = default;
+  ~OrszagTangVortex() override = default;
 
   /// \cond
   explicit OrszagTangVortex(CkMigrateMessage* msg);
@@ -156,7 +156,8 @@ class OrszagTangVortex : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  void pup(PUP::er& /*p*/);  //  NOLINT(google-runtime-references)
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   EquationsOfState::IdealFluid<true> equation_of_state_{5. / 3.};

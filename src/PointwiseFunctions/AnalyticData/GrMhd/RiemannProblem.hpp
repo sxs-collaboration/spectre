@@ -205,7 +205,7 @@ class RiemannProblem : public evolution::initial_data::InitialData,
   RiemannProblem& operator=(const RiemannProblem& /*rhs*/) = default;
   RiemannProblem(RiemannProblem&& /*rhs*/) = default;
   RiemannProblem& operator=(RiemannProblem&& /*rhs*/) = default;
-  ~RiemannProblem() = default;
+  ~RiemannProblem() override = default;
 
   RiemannProblem(double adiabatic_index, double left_rest_mass_density,
                  double right_rest_mass_density, double left_pressure,
@@ -304,8 +304,8 @@ class RiemannProblem : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   friend bool operator==(const RiemannProblem& lhs, const RiemannProblem& rhs);

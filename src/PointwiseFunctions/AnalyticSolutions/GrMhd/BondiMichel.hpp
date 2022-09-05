@@ -223,7 +223,7 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
   BondiMichel& operator=(const BondiMichel& /*rhs*/) = default;
   BondiMichel(BondiMichel&& /*rhs*/) = default;
   BondiMichel& operator=(BondiMichel&& /*rhs*/) = default;
-  ~BondiMichel() = default;
+  ~BondiMichel() override = default;
 
   BondiMichel(double mass, double sonic_radius, double sonic_density,
               double polytropic_exponent, double mag_field_strength);
@@ -273,8 +273,8 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
             background_spacetime_});
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;
   }

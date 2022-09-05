@@ -161,7 +161,7 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   AlfvenWave& operator=(const AlfvenWave& /*rhs*/) = default;
   AlfvenWave(AlfvenWave&& /*rhs*/) = default;
   AlfvenWave& operator=(AlfvenWave&& /*rhs*/) = default;
-  ~AlfvenWave() = default;
+  ~AlfvenWave() override = default;
 
   AlfvenWave(double wavenumber, double pressure, double rest_mass_density,
              double electron_fraction, double adiabatic_index,
@@ -242,8 +242,8 @@ class AlfvenWave : public evolution::initial_data::InitialData,
     return background_spacetime_.variables(x, t, tmpl::list<Tag>{});
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
   const EquationsOfState::IdealFluid<true>& equation_of_state() const {
     return equation_of_state_;

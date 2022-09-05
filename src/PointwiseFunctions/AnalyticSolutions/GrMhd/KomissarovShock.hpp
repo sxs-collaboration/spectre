@@ -141,7 +141,7 @@ class KomissarovShock : public evolution::initial_data::InitialData,
   KomissarovShock& operator=(const KomissarovShock& /*rhs*/) = default;
   KomissarovShock(KomissarovShock&& /*rhs*/) = default;
   KomissarovShock& operator=(KomissarovShock&& /*rhs*/) = default;
-  ~KomissarovShock() = default;
+  ~KomissarovShock() override = default;
 
   KomissarovShock(double adiabatic_index, double left_rest_mass_density,
                   double right_rest_mass_density, double left_electron_fraction,
@@ -231,8 +231,8 @@ class KomissarovShock : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  protected:
   EquationsOfState::IdealFluid<true> equation_of_state_{};
