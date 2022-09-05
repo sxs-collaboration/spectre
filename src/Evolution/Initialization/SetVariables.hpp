@@ -20,6 +20,10 @@
 #include "Parallel/GlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
+#include "Utilities/CallWithDynamicType.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -63,13 +67,35 @@ struct SetVariables {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    impl<Metavariables>(make_not_null(&box));
+    if constexpr (db::tag_is_retrievable_v<
+                      evolution::initial_data::Tags::InitialData,
+                      db::DataBox<DbTagsList>>) {
+      using derived_classes =
+          tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                   evolution::initial_data::InitialData>;
+      call_with_dynamic_type<void, derived_classes>(
+          &db::get<evolution::initial_data::Tags::InitialData>(box),
+          [&box](const auto* const data_or_solution) {
+            impl<Metavariables>(make_not_null(&box), *data_or_solution);
+          });
+    } else if constexpr (db::tag_is_retrievable_v<
+                             ::Tags::AnalyticSolutionOrData,
+                             db::DataBox<DbTagsList>>) {
+      impl<Metavariables>(make_not_null(&box),
+                          db::get<::Tags::AnalyticSolutionOrData>(box));
+    } else {
+      ERROR(
+          "Either ::Tags::AnalyticSolutionOrData or "
+          "evolution::initial_data::Tags::InitialData must be in the "
+          "DataBox.");
+    }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
  private:
-  template <typename Metavariables, typename DbTagsList>
-  static void impl(const gsl::not_null<db::DataBox<DbTagsList>*> box) {
+  template <typename Metavariables, typename DbTagsList, typename T>
+  static void impl(const gsl::not_null<db::DataBox<DbTagsList>*> box,
+                   const T& solution_or_data) {
     const double initial_time =
         db::get<::Initialization::Tags::InitialTime>(*box);
     const auto inertial_coords =
@@ -81,9 +107,6 @@ struct SetVariables {
             initial_time, db::get<::domain::Tags::FunctionsOfTime>(*box));
 
     using system = typename Metavariables::system;
-
-    const auto& solution_or_data =
-        db::get<::Tags::AnalyticSolutionOrData>(*box);
 
     if constexpr (Metavariables::system::has_primitive_and_conservative_vars) {
       using primitives_tag = typename system::primitive_variables_tag;
