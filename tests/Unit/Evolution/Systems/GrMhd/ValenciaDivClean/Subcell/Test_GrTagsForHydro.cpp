@@ -60,8 +60,10 @@ SPECTRE_TEST_CASE(
   constexpr double central_density = 1.28e-3;
   constexpr double polytropic_constant = 100.0;
   constexpr double polytropic_exponent = 2.0;
-  const Solution solution{central_density, polytropic_constant,
-                          polytropic_exponent};
+  const Solution solution{
+      central_density,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(
+          polytropic_constant, polytropic_exponent)};
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -88,7 +90,9 @@ SPECTRE_TEST_CASE(
                                                                 Identity2D>(
               Translation{"Translation"}, Identity2D{})),
       clone_unique_ptrs(functions_of_time), logical_coords,
-      Solution{central_density, polytropic_constant, polytropic_exponent},
+      Solution{central_density,
+               std::make_unique<EquationsOfState::PolytropicFluid<true>>(
+                   polytropic_constant, polytropic_exponent)},
       SubcellGrVars{}, std::array<FaceGrVars, 3>{});
 
   db::mutate_apply<Initialization::subcell::GrTagsForHydro<System, 3>>(

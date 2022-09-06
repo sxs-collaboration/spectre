@@ -15,7 +15,7 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Initialization/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;Evolution;Utilities"
+  "DataStructures;Domain;Evolution;Hydro;Utilities"
   )
 
 add_dependencies(

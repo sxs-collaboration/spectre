@@ -74,6 +74,22 @@ struct DerivedClasses<false, 2> {
 template <bool IsRelativistic, size_t ThermodynamicDim>
 class EquationOfState;
 
+template <typename T>
+struct get_eos_base_impl {
+  using type = EquationsOfState::EquationOfState<T::is_relativistic,
+                                                 T::thermodynamic_dim>;
+};
+
+template <bool IsRelativistic, size_t ThermodynamicDim>
+struct get_eos_base_impl<
+    EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>> {
+  using type =
+      EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>;
+};
+
+template <typename T>
+using get_eos_base = typename get_eos_base_impl<T>::type;
+
 /*!
  * \ingroup EquationsOfStateGroup
  * \brief Base class for equations of state which need one thermodynamic
@@ -100,6 +116,12 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
+
+  virtual std::unique_ptr<EquationOfState<IsRelativistic, 1>> get_clone()
+      const = 0;
+
+  virtual bool is_equal(
+      const EquationOfState<IsRelativistic, 1>& rhs) const = 0;
 
   /// @{
   /*!
@@ -238,6 +260,11 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
 
+  virtual inline std::unique_ptr<EquationOfState<IsRelativistic, 2>> get_clone()
+      const = 0;
+
+  virtual bool is_equal(
+      const EquationOfState<IsRelativistic, 2>& rhs) const = 0;
   /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
@@ -358,6 +385,23 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
 };
+/// Compare two equations of state for equality
+template <bool IsRelLhs, bool IsRelRhs, size_t ThermoDimLhs,
+          size_t ThermoDimRhs>
+bool operator==(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
+                const EquationOfState<IsRelRhs, ThermoDimRhs>& rhs) {
+  if constexpr (IsRelLhs == IsRelRhs and ThermoDimLhs == ThermoDimRhs) {
+    return typeid(lhs) == typeid(rhs) and lhs.is_equal(rhs);
+  } else {
+    return false;
+  }
+}
+template <bool IsRelLhs, bool IsRelRhs, size_t ThermoDimLhs,
+          size_t ThermoDimRhs>
+bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
+                const EquationOfState<IsRelRhs, ThermoDimRhs>& rhs) {
+  return not(lhs == rhs);
+}
 }  // namespace EquationsOfState
 
 /// \cond

@@ -49,9 +49,18 @@ class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
  public:
   static constexpr size_t thermodynamic_dim = 2;
   static constexpr bool is_relativistic = IsRelativistic;
-  static_assert(IsRelativistic,
+  static_assert(is_relativistic,
                 "Dark energy fluid equation of state only makes sense in a "
                 "relativistic setting.");
+
+  std::unique_ptr<EquationOfState<IsRelativistic, 2>> get_clone()
+      const override;
+
+  bool is_equal(const EquationOfState<IsRelativistic, 2>& rhs) const override;
+
+  bool operator==(const DarkEnergyFluid<IsRelativistic>& rhs) const;
+
+  bool operator!=(const DarkEnergyFluid<IsRelativistic>& rhs) const;
 
   struct ParameterW {
     using type = double;

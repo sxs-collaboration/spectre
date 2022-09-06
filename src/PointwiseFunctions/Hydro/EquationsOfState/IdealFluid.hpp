@@ -75,6 +75,15 @@ class IdealFluid : public EquationOfState<IsRelativistic, 2> {
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(IdealFluid, 2)
 
+  std::unique_ptr<EquationOfState<IsRelativistic, 2>> get_clone()
+      const override;
+
+  bool operator==(const IdealFluid<IsRelativistic>& rhs) const;
+
+  bool operator!=(const IdealFluid<IsRelativistic>& rhs) const;
+
+  bool is_equal(const EquationOfState<IsRelativistic, 2>& rhs) const override;
+
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<IsRelativistic, 2>), IdealFluid);
 

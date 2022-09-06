@@ -9,6 +9,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Options/Options.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 
 /// \ingroup EvolutionSystemsGroup
@@ -211,4 +213,17 @@ struct MassFlux : db::SimpleTag {
   static std::string name() { return Frame::prefix<Fr>() + "MassFlux"; }
 };
 }  // namespace Tags
+
+/// %Tags for options of hydrodynamic systems.
+namespace OptionTags {
+
+/// The equation of state of the fluid.
+template <bool IsRelativistic, size_t ThermoDim>
+struct EquationOfState {
+  using type = std::unique_ptr<
+      EquationsOfState::EquationOfState<IsRelativistic, ThermoDim>>;
+  static constexpr Options::String help = {"The equation of state to use"};
+};
+}  // namespace OptionTags
+
 }  // namespace hydro

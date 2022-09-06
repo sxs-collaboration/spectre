@@ -26,6 +26,34 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      DataVector, 1)
 
 template <bool IsRelativistic>
+bool PolytropicFluid<IsRelativistic>::operator==(
+    const PolytropicFluid<IsRelativistic>& rhs) const {
+  return (polytropic_constant_ == rhs.polytropic_constant_) and
+         (polytropic_exponent_ == rhs.polytropic_exponent_);
+}
+
+template <bool IsRelativistic>
+bool PolytropicFluid<IsRelativistic>::operator!=(
+    const PolytropicFluid<IsRelativistic>& rhs) const {
+  return not(*this == rhs);
+}
+
+template <bool IsRelativistic>
+bool PolytropicFluid<IsRelativistic>::is_equal(
+    const EquationOfState<IsRelativistic, 1>& rhs) const {
+  const auto& derived_ptr =
+      dynamic_cast<const PolytropicFluid<IsRelativistic>* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
+template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 1>>
+PolytropicFluid<IsRelativistic>::get_clone() const {
+  auto clone = std::make_unique<PolytropicFluid<IsRelativistic>>(*this);
+  return std::unique_ptr<EquationOfState<IsRelativistic, 1>>(std::move(clone));
+}
+
+template <bool IsRelativistic>
 PolytropicFluid<IsRelativistic>::PolytropicFluid(CkMigrateMessage* msg)
     : EquationOfState<IsRelativistic, 1>(msg) {}
 

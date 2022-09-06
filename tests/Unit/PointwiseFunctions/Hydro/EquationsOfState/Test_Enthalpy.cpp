@@ -43,6 +43,45 @@ void check_exact() {
 
   const Enthalpy<Spectral>& eos =
       dynamic_cast<const Enthalpy<Spectral>&>(*eos_pointer);
+  TestHelpers::EquationsOfState::test_get_clone(eos);
+
+  const auto other_eos = Enthalpy<Spectral>{
+      1.0,
+      2.0,
+      1.5,
+      1.0,
+      std::vector<double>{1.0, 1.0},
+      std::vector<double>{0.1},
+      std::vector<double>{0.1},
+      Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
+      0.0};
+  const auto other_low_eos =
+      Enthalpy<PolytropicFluid<true>>{1.0,
+                                      2.0,
+                                      1.5,
+                                      1.0,
+                                      std::vector<double>{1.0, 1.0},
+                                      std::vector<double>{0.1},
+                                      std::vector<double>{0.1},
+                                      PolytropicFluid<true>{100.0, 2.0},
+                                      0.0};
+  const auto other_hi_eos = Enthalpy<Spectral>{
+      1.0,
+      2.0,
+      1.5,
+      1.0,
+      std::vector<double>{1.0, .95},
+      std::vector<double>{0.05},
+      std::vector<double>{0.05},
+      Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
+      0.0};
+  const auto other_type_eos = PolytropicFluid<true>{100.0, 2.0};
+  CHECK(eos == eos);
+  CHECK(other_eos != other_low_eos);
+  CHECK(other_eos != other_hi_eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
+  CHECK(other_low_eos != other_type_eos);
   // Test DataVector functions
   {
     const Scalar<DataVector> rho{DataVector{1.5 * exp(1.0), 1.5 * exp(2.0),

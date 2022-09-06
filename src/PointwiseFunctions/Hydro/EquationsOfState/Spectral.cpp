@@ -72,8 +72,26 @@ Spectral::Spectral(const double reference_density,
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(, Spectral, double, 1)
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(, Spectral, DataVector, 1)
 
-Spectral::Spectral(CkMigrateMessage* msg) : EquationOfState<true, 1>(msg) {}
+std::unique_ptr<EquationOfState<true, 1>> Spectral::get_clone() const {
+  auto clone = std::make_unique<Spectral>(*this);
+  return std::unique_ptr<EquationOfState<true, 1>>(std::move(clone));
+}
 
+bool Spectral::operator==(const Spectral& rhs) const {
+  return reference_density_ == rhs.reference_density_ and
+         reference_pressure_ == rhs.reference_pressure_;
+}
+
+bool Spectral::operator!=(const Spectral& rhs) const {
+  return not(*this == rhs);
+}
+
+bool Spectral::is_equal(const EquationOfState<true, 1>& rhs) const {
+  const auto& derived_ptr = dynamic_cast<const Spectral* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
+Spectral::Spectral(CkMigrateMessage* msg) : EquationOfState<true, 1>(msg) {}
 
 void Spectral::pup(PUP::er& p) {
   EquationOfState<true, 1>::pup(p);

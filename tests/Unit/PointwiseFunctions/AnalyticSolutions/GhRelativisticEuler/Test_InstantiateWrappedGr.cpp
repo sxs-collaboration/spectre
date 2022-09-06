@@ -6,6 +6,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/CheckWrappedGrConsistency.hpp"
+#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/SmoothFlow.hpp"
@@ -21,10 +22,11 @@ SPECTRE_TEST_CASE(
   const tnsr::I<DataVector, 1, Frame::Inertial> x_1d{DataVector{3.0, 4.0}};
   check_wrapped_gr_solution_consistency(
       GeneralizedHarmonic::Solutions::WrappedGr<
-      RelativisticEuler::Solutions::FishboneMoncriefDisk>{
-        1.0, 0.23, 6.0, 12.0, 0.001, 1.4},
-      RelativisticEuler::Solutions::FishboneMoncriefDisk{
-        1.0, 0.23, 6.0, 12.0, 0.001, 1.4}, x_3d, t);
+          RelativisticEuler::Solutions::FishboneMoncriefDisk>{1.0, 0.23, 6.0,
+                                                              12.0, 0.001, 1.4},
+      RelativisticEuler::Solutions::FishboneMoncriefDisk{1.0, 0.23, 6.0, 12.0,
+                                                         0.001, 1.4},
+      x_3d, t);
 
   check_wrapped_gr_solution_consistency(
       GeneralizedHarmonic::Solutions::WrappedGr<
@@ -55,9 +57,13 @@ SPECTRE_TEST_CASE(
           std::array<double, 3>{-0.3, 0.1, -0.002},
           std::array<double, 3>{0.4, -0.24, 0.054}, 1.23, 1.334, 0.78},
       x_3d, t);
-
   check_wrapped_gr_solution_consistency(
       GeneralizedHarmonic::Solutions::WrappedGr<
-          RelativisticEuler::Solutions::TovStar>{1.e-3, 8.0, 2.0},
-      RelativisticEuler::Solutions::TovStar{1.e-3, 8.0, 2.0}, x_3d, t);
+          RelativisticEuler::Solutions::TovStar>{
+          1.e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(8.0, 2.0)},
+      RelativisticEuler::Solutions::TovStar{
+          1.e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(8.0, 2.0)},
+      x_3d, t);
 }

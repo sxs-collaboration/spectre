@@ -226,5 +226,15 @@ void check(EosType in_eos, const std::string& python_file_name,
                      member_args...);
 }
 /// @}
+
+/// Test that cloning is correct, and that the equality operator is implemented
+/// correctly
+template <bool IsRelativistic, size_t ThermodynamicDim>
+void test_get_clone(
+    const ::EquationsOfState::EquationOfState<IsRelativistic, ThermodynamicDim>&
+        in_eos) {
+  auto cloned_eos = in_eos.get_clone();
+  CHECK(*cloned_eos == in_eos);
+}
 }  // namespace EquationsOfState
 }  // namespace TestHelpers

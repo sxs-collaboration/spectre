@@ -33,6 +33,7 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -57,7 +58,7 @@ struct PrimVar : db::SimpleTag {
 };
 
 struct EquationOfStateTag : db::SimpleTag {
-  using type = double;
+  using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>;
 };
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
@@ -107,7 +108,10 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
   }
 
   // EoS just needs to be a dummy place holder
-  static double equation_of_state() { return 7.0; }
+  static auto equation_of_state() {
+    EquationsOfState::PolytropicFluid<true> equation_of_state_{100.0, 2.0};
+    return equation_of_state_;
+  }
 
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) {}  // NOLINT
@@ -156,9 +160,9 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
     }
     return vars;
   }
-
+  EquationsOfState::PolytropicFluid<true> equation_of_state_{100.0, 2.0};
   // EoS just needs to be a dummy place holder
-  static double equation_of_state() { return 7.0; }
+  const auto& equation_of_state() { return equation_of_state_; }
 
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) {}  // NOLINT

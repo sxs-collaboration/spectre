@@ -27,6 +27,23 @@ CubicSpline::CubicSpline(std::vector<double> x_values,
   initialize_interpolant();
 }
 
+CubicSpline::CubicSpline(const CubicSpline& rhs)
+    : x_values_(rhs.x_values_), y_values_(rhs.y_values_) {
+  // potential optimization -- copy the interpolant rather than recomputing
+  initialize_interpolant();
+}
+bool CubicSpline::operator==(const CubicSpline& rhs) const {
+  return x_values_ == rhs.x_values_ and y_values_ == rhs.y_values_;
+}
+
+CubicSpline& CubicSpline::operator=(const CubicSpline& rhs) {
+  x_values_ = rhs.x_values_;
+  y_values_ = rhs.y_values_;
+  // potential optimization -- copy the interpolant rather than recomputing
+  initialize_interpolant();
+  return *this;
+}
+
 void CubicSpline::gsl_interp_accel_deleter::operator()(
     gsl_interp_accel* const acc) const {
   gsl_interp_accel_free(acc);

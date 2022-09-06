@@ -34,9 +34,11 @@ class TestTov(unittest.TestCase):
         # Testing `log_specific_enthalpy` only at outer radius because we
         # haven't wrapped any EOS functions yet, so it's not trivial to compute
         # the specific enthalpy at other points
-        npt.assert_allclose(
-            tov.log_specific_enthalpy(np.array([outer_radius, outer_radius])),
-            np.array([0., 0.]))
+        npt.assert_allclose(tov.log_specific_enthalpy(
+            np.array([outer_radius, outer_radius])),
+                            np.array([0., 0.]),
+                            atol=1e-14,
+                            rtol=0.0)
 
 
 if __name__ == '__main__':

@@ -148,6 +148,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -197,7 +198,9 @@ struct EvolutionMetavars {
   static_assert(
       is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
       "initial_data must be either an analytic_data or an analytic_solution");
-  using equation_of_state_type = typename initial_data::equation_of_state_type;
+  using eos_base = typename EquationsOfState::get_eos_base<
+      typename initial_data::equation_of_state_type>;
+  using equation_of_state_type = typename std::unique_ptr<eos_base>;
   using system = grmhd::ValenciaDivClean::System;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
@@ -590,6 +593,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::FunctionsOfTime::register_derived_with_charm,
     &grmhd::ValenciaDivClean::BoundaryCorrections::register_derived_with_charm,
     &grmhd::ValenciaDivClean::fd::register_derived_with_charm,
+    &EquationsOfState::register_derived_with_charm,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{

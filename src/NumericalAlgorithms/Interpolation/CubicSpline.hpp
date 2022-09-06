@@ -31,11 +31,13 @@ class CubicSpline {
   CubicSpline(std::vector<double> x_values, std::vector<double> y_values);
 
   CubicSpline() = default;
-  CubicSpline(const CubicSpline& /*rhs*/) = delete;
-  CubicSpline& operator=(const CubicSpline& /*rhs*/) = delete;
+  CubicSpline(const CubicSpline& /*rhs*/);
+  CubicSpline& operator=(const CubicSpline& /*rhs*/);
   CubicSpline(CubicSpline&& /*rhs*/) = default;
   CubicSpline& operator=(CubicSpline&& rhs) = default;
   ~CubicSpline() = default;
+
+  bool operator==(const CubicSpline& rhs) const;
 
   double operator()(double x_to_interp_to) const;
 

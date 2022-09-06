@@ -85,13 +85,21 @@ class HybridEos
   HybridEos& operator=(HybridEos&&) = default;
   ~HybridEos() override = default;
 
-  HybridEos(ColdEquationOfState cold_eos,
-            double thermal_adiabatic_index);
+  HybridEos(ColdEquationOfState cold_eos, double thermal_adiabatic_index);
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(HybridEos, 2)
 
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(EquationOfState<is_relativistic, 2>), HybridEos);
+
+  std::unique_ptr<EquationOfState<is_relativistic, 2>> get_clone()
+      const override;
+
+  bool operator==(const HybridEos<ColdEquationOfState>& rhs) const;
+
+  bool operator!=(const HybridEos<ColdEquationOfState>& rhs) const;
+
+  bool is_equal(const EquationOfState<is_relativistic, 2>& rhs) const override;
 
   /// The lower bound of the rest mass density that is valid for this EOS
   double rest_mass_density_lower_bound() const override {

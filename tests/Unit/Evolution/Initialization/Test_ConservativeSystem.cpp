@@ -21,6 +21,7 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -36,7 +37,8 @@ struct PrimVar : db::SimpleTag {
 };
 
 struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
-  static int equation_of_state() { return 5; }
+  const EquationsOfState::PolytropicFluid<true> equation_of_state_{100.0, 2.0};
+  const auto& equation_of_state() const { return equation_of_state_; }
 
   // NOLINTNEXTLINE
   void pup(PUP::er& /*p*/) {}
@@ -77,7 +79,7 @@ struct Metavariables {
       tmpl::list<Tags::AnalyticSolution<SystemAnalyticSolution>>;
 
   struct equation_of_state_tag : db::SimpleTag {
-    using type = int;
+    using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>;
   };
 };
 
@@ -87,11 +89,13 @@ void check_primitives(std::true_type /*has_prims*/, const Runner& runner,
   using metavars = Metavariables<Dim, true>;
   using comp = component<Dim, metavars>;
   using prim_vars_tag = Tags::Variables<tmpl::list<PrimVar>>;
+  SystemAnalyticSolution system_analytic_solution{};
   CHECK(ActionTesting::get_databox_tag<comp, prim_vars_tag>(runner, 0)
             .number_of_grid_points() == number_of_grid_points);
-  CHECK(ActionTesting::get_databox_tag<
-            comp, typename Metavariables<Dim, true>::equation_of_state_tag>(
-            runner, 0) == 5);
+  CHECK(dynamic_cast<const EquationsOfState::PolytropicFluid<true>&>(
+            ActionTesting::get_databox_tag<
+                comp, typename Metavariables<Dim, true>::equation_of_state_tag>(
+                runner, 0)) == system_analytic_solution.equation_of_state());
 }
 
 template <size_t Dim, typename Runner>

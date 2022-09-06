@@ -20,6 +20,32 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      IdealFluid<IsRelativistic>, double, 2)
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <bool IsRelativistic>,
                                      IdealFluid<IsRelativistic>, DataVector, 2)
+template <bool IsRelativistic>
+std::unique_ptr<EquationOfState<IsRelativistic, 2>>
+IdealFluid<IsRelativistic>::get_clone() const {
+  auto clone = std::make_unique<IdealFluid<IsRelativistic>>(*this);
+  return std::unique_ptr<EquationOfState<IsRelativistic, 2>>(std::move(clone));
+}
+
+template <bool IsRelativistic>
+bool IdealFluid<IsRelativistic>::is_equal(
+    const EquationOfState<IsRelativistic, 2>& rhs) const {
+  const auto& derived_ptr =
+      dynamic_cast<const IdealFluid<IsRelativistic>* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
+
+template <bool IsRelativistic>
+bool IdealFluid<IsRelativistic>::operator==(
+    const IdealFluid<IsRelativistic>& rhs) const {
+  return adiabatic_index_ == rhs.adiabatic_index_;
+}
+
+template <bool IsRelativistic>
+bool IdealFluid<IsRelativistic>::operator!=(
+    const IdealFluid<IsRelativistic>& rhs) const {
+  return not(*this == rhs);
+}
 
 template <bool IsRelativistic>
 IdealFluid<IsRelativistic>::IdealFluid(CkMigrateMessage* msg)

@@ -119,6 +119,7 @@ class Enthalpy : public EquationOfState<true, 1> {
                  double in_reference_density,
                  double in_exponential_constant =
                      std::numeric_limits<double>::quiet_NaN());
+    bool operator==(const Coefficients& rhs) const;
 
     Enthalpy<LowDensityEoS>::Coefficients compute_exponential_integral(
         const std::pair<double, double>& initial_condition);
@@ -217,6 +218,14 @@ class Enthalpy : public EquationOfState<true, 1> {
            const std::vector<double>& cos_coefficients,
            const LowDensityEoS& low_density_eos,
            const double transition_delta_epsilon);
+
+  std::unique_ptr<EquationOfState<true, 1>> get_clone() const override;
+
+  bool is_equal(const EquationOfState<true, 1>& rhs) const override;
+
+  bool operator==(const Enthalpy<LowDensityEoS>& rhs) const;
+
+  bool operator!=(const Enthalpy<LowDensityEoS>& rhs) const;
 
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(Enthalpy, 1)
 

@@ -263,7 +263,9 @@ struct GhValenciaDivCleanTemplateBase<
       "analytic_solution, or externally provided numerical initial data");
   // note: numeric initial data not yet fully supported; I think it will need a
   // new wrapping class around the numeric initial data class.
-  using equation_of_state_type = typename initial_data::equation_of_state_type;
+  using eos_base = EquationsOfState::get_eos_base<
+      typename initial_data::equation_of_state_type>;
+  using equation_of_state_type = typename std::unique_ptr<eos_base>;
   using equation_of_state_tag =
       hydro::Tags::EquationOfState<equation_of_state_type>;
 
@@ -274,7 +276,7 @@ struct GhValenciaDivCleanTemplateBase<
 
   using interpolator_source_vars =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
+          typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<volume_dim,

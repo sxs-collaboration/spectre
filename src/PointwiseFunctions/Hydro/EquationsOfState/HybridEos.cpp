@@ -12,8 +12,8 @@
 
 namespace EquationsOfState {
 template <typename ColdEquationOfState>
-HybridEos<ColdEquationOfState>::HybridEos(
-    ColdEquationOfState cold_eos, const double thermal_adiabatic_index)
+HybridEos<ColdEquationOfState>::HybridEos(ColdEquationOfState cold_eos,
+                                          const double thermal_adiabatic_index)
     : cold_eos_(std::move(cold_eos)),
       thermal_adiabatic_index_(thermal_adiabatic_index) {}
 
@@ -22,6 +22,35 @@ EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <typename ColdEquationOfState>,
 EQUATION_OF_STATE_MEMBER_DEFINITIONS(template <typename ColdEquationOfState>,
                                      HybridEos<ColdEquationOfState>, DataVector,
                                      2)
+
+template <typename ColdEquationOfState>
+std::unique_ptr<
+    EquationOfState<HybridEos<ColdEquationOfState>::is_relativistic, 2>>
+HybridEos<ColdEquationOfState>::get_clone() const {
+  auto clone = std::make_unique<HybridEos<ColdEquationOfState>>(*this);
+  return std::unique_ptr<EquationOfState<is_relativistic, 2>>(std::move(clone));
+}
+
+template <typename ColdEquationOfState>
+bool HybridEos<ColdEquationOfState>::operator==(
+    const HybridEos<ColdEquationOfState>& rhs) const {
+  return cold_eos_ == rhs.cold_eos_ and
+         thermal_adiabatic_index_ == rhs.thermal_adiabatic_index_;
+}
+
+template <typename ColdEquationOfState>
+bool HybridEos<ColdEquationOfState>::operator!=(
+    const HybridEos<ColdEquationOfState>& rhs) const {
+  return not(*this == rhs);
+}
+
+template <typename ColdEquationOfState>
+bool HybridEos<ColdEquationOfState>::is_equal(
+    const EquationOfState<is_relativistic, 2>& rhs) const {
+  const auto& derived_ptr =
+      dynamic_cast<const HybridEos<ColdEquationOfState>* const>(&rhs);
+  return derived_ptr != nullptr and *derived_ptr == *this;
+}
 
 template <typename ColdEquationOfState>
 HybridEos<ColdEquationOfState>::HybridEos(CkMigrateMessage* msg)

@@ -34,46 +34,71 @@ static_assert(
 using TovCoordinates = RelativisticEuler::Solutions::TovCoordinates;
 
 void test_equality() {
+  Parallel::register_classes_with_charm<
+      grmhd::AnalyticData::MagnetizedTovStar>();
+  Parallel::register_classes_with_charm<
+      EquationsOfState::PolytropicFluid<true>>();
   const MagnetizedTovStar mag_tov_original{
-      1.28e-3, 100.0, 2.0, TovCoordinates::Schwarzschild, 2, 0.04, 2500.0};
+      1.28e-3,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+      TovCoordinates::Schwarzschild,
+      2,
+      0.04,
+      2500.0};
   const auto mag_tov = serialize_and_deserialize(mag_tov_original);
-  CHECK(mag_tov == MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(2.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 200.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 3.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Isotropic, 2, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 3, 0.04,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.05,
-                                     2500.0));
-  CHECK(mag_tov != MagnetizedTovStar(1.28e-3, 100.0, 2.0,
-                                     TovCoordinates::Schwarzschild, 2, 0.04,
-                                     3500.0));
+  CHECK(
+      mag_tov ==
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          2.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Isotropic, 2, 0.04, 2500.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 3, 0.04, 2500.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.05, 2500.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 3500.0));
 }
 
 void test_magnetized_tov_star(const TovCoordinates coord_system) {
   Parallel::register_classes_with_charm<
       grmhd::AnalyticData::MagnetizedTovStar>();
+  Parallel::register_classes_with_charm<
+      EquationsOfState::PolytropicFluid<true>>();
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,
           grmhd::AnalyticData::MagnetizedTovStar>(
           "MagnetizedTovStar:\n"
           "  CentralDensity: 1.28e-3\n"
-          "  PolytropicConstant: 100.0\n"
-          "  PolytropicExponent: 2.0\n"
+          "  EquationOfState:\n"
+          "    PolytropicFluid:\n"
+          "      PolytropicConstant: 100.0\n"
+          "      PolytropicExponent: 2.0\n"
           "  Coordinates: " +
           get_output(coord_system) +
           "\n"
@@ -86,8 +111,10 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
       dynamic_cast<const grmhd::AnalyticData::MagnetizedTovStar&>(
           *deserialized_option_solution);
 
-  const RelativisticEuler::Solutions::TovStar tov{1.28e-3, 100.0, 2.0,
-                                                  coord_system};
+  const RelativisticEuler::Solutions::TovStar tov{
+      1.28e-3,
+      std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+      coord_system};
 
   std::unique_ptr<EquationsOfState::EquationOfState<true, 1>> eos =
       std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0);

@@ -32,8 +32,8 @@ void check_dominant_energy_condition_at_bound() {
   const Scalar<double> rest_mass_density{eos.rest_mass_density_upper_bound()};
   const double specific_internal_energy =
       get(eos.specific_internal_energy_from_density(rest_mass_density));
-  const double pressure = get(eos.pressure_from_density(
-      Scalar<double>{rest_mass_density}));
+  const double pressure =
+      get(eos.pressure_from_density(Scalar<double>{rest_mass_density}));
   const double energy_density =
       get(rest_mass_density) * (1.0 + specific_internal_energy);
   CAPTURE(rest_mass_density);
@@ -67,6 +67,15 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
       EoS::EquationOfState<false, 1>>();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/Hydro/EquationsOfState/"};
+  TestHelpers::EquationsOfState::test_get_clone(
+      EoS::PolytropicFluid<true>(100.0, 2.0));
+
+  const auto eos = EoS::PolytropicFluid<true>{100.0, 2.0};
+  const auto other_eos = EoS::PolytropicFluid<true>{4.0, 2.0};
+  const auto other_type_eos = EoS::DarkEnergyFluid<true>{0.5};
+  CHECK(eos == eos);
+  CHECK(eos != other_eos);
+  CHECK(eos != other_type_eos);
   const double d_for_size = std::numeric_limits<double>::signaling_NaN();
   const DataVector dv_for_size(5);
   TestHelpers::EquationsOfState::check(EoS::PolytropicFluid<true>{100.0, 2.0},
