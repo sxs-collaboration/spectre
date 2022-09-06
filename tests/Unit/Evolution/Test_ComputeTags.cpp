@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -28,22 +29,50 @@ struct FieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-struct TestAnalyticSolution : public MarkAsAnalyticSolution {
+struct TestAnalyticSolution : public MarkAsAnalyticSolution,
+                              public evolution::initial_data::InitialData {
+  TestAnalyticSolution() = default;
+  ~TestAnalyticSolution() override = default;
+
+  explicit TestAnalyticSolution(CkMigrateMessage* msg) : InitialData(msg) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(TestAnalyticSolution);
+#pragma GCC diagnostic pop
+
   static tuples::TaggedTuple<FieldTag> variables(
       const tnsr::I<DataVector, 1>& x, const double t,
       const tmpl::list<FieldTag> /*meta*/) {
     return {Scalar<DataVector>{t * get<0>(x)}};
   }
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override { InitialData::pup(p); }
 };
 
-struct TestAnalyticData : public MarkAsAnalyticData {
+PUP::able::PUP_ID TestAnalyticSolution::my_PUP_ID = 0;
+
+struct TestAnalyticData : public MarkAsAnalyticData,
+                          public evolution::initial_data::InitialData {
+  TestAnalyticData() = default;
+  ~TestAnalyticData() override = default;
+
+  explicit TestAnalyticData(CkMigrateMessage* msg) : InitialData(msg) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(TestAnalyticData);
+#pragma GCC diagnostic pop
+
   static tuples::TaggedTuple<FieldTag> variables(
       const tnsr::I<DataVector, 1>& x, const tmpl::list<FieldTag> /*meta*/) {
     return {Scalar<DataVector>{get<0>(x)}};
   }
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override { InitialData::pup(p); }
 };
+
+PUP::able::PUP_ID TestAnalyticData::my_PUP_ID = 0;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
@@ -51,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
   const double current_time = 2.;
   const Variables<tmpl::list<FieldTag>> vars{4, 3.};
   {
-    INFO("Test analytic solution");
+    INFO("Test analytic solution with analytic solution tag");
     const auto box = db::create<
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           ::Tags::AnalyticSolution<TestAnalyticSolution>,
@@ -68,7 +97,28 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           expected_error);
   }
   {
-    INFO("Test analytic data");
+    INFO("Test analytic solution with base class");
+    const auto box = db::create<
+        db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
+                          evolution::initial_data::Tags::InitialData,
+                          Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
+        db::AddComputeTags<
+            evolution::Tags::AnalyticSolutionsCompute<
+                1, tmpl::list<FieldTag>, tmpl::list<TestAnalyticSolution>>,
+            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        inertial_coords,
+        std::unique_ptr<evolution::initial_data::InitialData>{
+            std::make_unique<TestAnalyticSolution>()},
+        current_time, vars);
+    const DataVector expected{2., 4., 6., 8.};
+    const DataVector expected_error{1., -1., -3., -5.};
+    CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
+                          expected);
+    CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
+                          expected_error);
+  }
+  {
+    INFO("Test analytic data with analytic data tag");
     const auto box = db::create<
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           ::Tags::AnalyticData<TestAnalyticData>, Tags::Time,
@@ -77,6 +127,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
             evolution::Tags::AnalyticSolutionsCompute<1, tmpl::list<FieldTag>>,
             Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords, TestAnalyticData{}, current_time, vars);
+    CHECK_FALSE(get<Tags::Analytic<FieldTag>>(box).has_value());
+    CHECK_FALSE(get<Tags::Error<FieldTag>>(box).has_value());
+  }
+  {
+    INFO("Test analytic data with base class");
+    const auto box = db::create<
+        db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
+                          evolution::initial_data::Tags::InitialData,
+                          Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
+        db::AddComputeTags<
+            evolution::Tags::AnalyticSolutionsCompute<
+                1, tmpl::list<FieldTag>, tmpl::list<TestAnalyticData>>,
+            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        inertial_coords,
+        std::unique_ptr<evolution::initial_data::InitialData>{
+            std::make_unique<TestAnalyticData>()},
+        current_time, vars);
     CHECK_FALSE(get<Tags::Analytic<FieldTag>>(box).has_value());
     CHECK_FALSE(get<Tags::Error<FieldTag>>(box).has_value());
   }
