@@ -100,6 +100,46 @@ class TestIOH5File(unittest.TestCase):
         self.assertEqual(datfile.get_header()[0:16], "#\n# File created")
         file_spec.close()
 
+    def test_all_files(self):
+        file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
+        file_spec.insert_vol(path="/root_vol_2", version=0)
+        file_spec.close()
+        file_spec.insert_vol(path="/root_vol_1", version=0)
+        file_spec.close()
+        file_spec.insert_vol(path="/group0/sub_vol", version=0)
+        file_spec.close()
+        legend = ["Fake"]
+        file_spec.insert_dat(path="/root_dat", legend=legend, version=0)
+        file_spec.close()
+        file_spec.insert_dat(path="/group0/sub_dat_1",
+                             legend=legend,
+                             version=0)
+        file_spec.close()
+        file_spec.insert_dat(path="/group0/sub_dat_2",
+                             legend=legend,
+                             version=0)
+        file_spec.close()
+
+        expected_all_files = [
+            "/group0/sub_dat_1.dat", "/group0/sub_dat_2.dat",
+            "/group0/sub_vol.vol", "/root_dat.dat", "/root_vol_1.vol",
+            "/root_vol_2.vol", "/src.tar.gz"
+        ]
+        expected_dat_files = [
+            "/group0/sub_dat_1.dat", "/group0/sub_dat_2.dat", "/root_dat.dat"
+        ]
+        expected_vol_files = [
+            "/group0/sub_vol.vol", "/root_vol_1.vol", "/root_vol_2.vol"
+        ]
+
+        all_files = file_spec.all_files()
+        dat_files = file_spec.all_dat_files()
+        vol_files = file_spec.all_vol_files()
+
+        self.assertEqual(all_files, expected_all_files)
+        self.assertEqual(dat_files, expected_dat_files)
+        self.assertEqual(vol_files, expected_vol_files)
+
     def test_groups(self):
         file_spec = spectre_h5.H5File(file_name=self.file_name, mode="a")
         file_spec.insert_dat(path="/element_data",

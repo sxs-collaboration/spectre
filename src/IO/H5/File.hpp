@@ -107,6 +107,12 @@ class H5File {
     return h5::get_group_names(file_id_, "/");
   }
 
+  /// \brief Return a vector of all filenames in the H5 file
+  /// \tparam ObjectType Only return a vector that contains this type of file.
+  /// Default is `void` which returns all files.
+  template <typename ObjectType = void>
+  const std::vector<std::string> all_files(const std::string& group_name) const;
+
   /// Get the InputSource.yaml string embedded in the file
   std::string input_source() const;
 
@@ -196,6 +202,54 @@ class H5File {
 // ======================================================================
 // H5File Definitions
 // ======================================================================
+
+template <AccessType Access_t>
+template <typename ObjectType>
+const std::vector<std::string> H5File<Access_t>::all_files(
+    const std::string& group_name) const {
+  std::vector<std::string> groups = h5::get_group_names(file_id_, group_name);
+
+  // Loop through the initial files and groups and get all subfiles and groups
+  std::vector<std::string> all_files_and_groups{};
+  for (auto it = groups.begin(); it != groups.end(); ++it) {
+    // Full group name
+    const std::string prefix =
+        group_name == "/" ? group_name : (group_name + "/");
+
+    // If this is a file, there aren't any subfiles so add it to the overall
+    // list and continue. Most extensions follow the ".XYZ" rule. Headers are
+    // special though because they end in ".tar.gz"
+    const auto extension_pos = it->find_last_of(".");
+    if (not(extension_pos == std::string::npos) and
+        (it->size() - extension_pos == 4 or
+         it->substr(extension_pos) == ".gz")) {
+      all_files_and_groups.insert(all_files_and_groups.end(), prefix + *it);
+      continue;
+    }
+
+    // Get all sub files
+    auto extra_files_and_groups = all_files(prefix + *it);
+
+    // Insert the files to the overall list
+    all_files_and_groups.insert(all_files_and_groups.end(),
+                                extra_files_and_groups.begin(),
+                                extra_files_and_groups.end());
+  }
+
+  // Filter out the ones we don't want
+  if constexpr (not std::is_same_v<ObjectType, void>) {
+    const auto range_end = std::remove_if(
+        all_files_and_groups.begin(), all_files_and_groups.end(),
+        [](const std::string& t) {
+          return t.find(ObjectType::extension()) == std::string::npos;
+        });
+    // Shrink down the vector
+    all_files_and_groups.erase(range_end, all_files_and_groups.end());
+    all_files_and_groups.shrink_to_fit();
+  }
+
+  return all_files_and_groups;
+}
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args,

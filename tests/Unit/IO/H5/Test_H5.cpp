@@ -28,6 +28,7 @@
 #include "IO/H5/SourceArchive.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
+#include "IO/H5/VolumeData.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -205,6 +206,63 @@ void test_errors() {
     file_system::rm("Unit.IO.H5.read_data_error.h5", true);
   }
 }
+
+void test_list_files() {
+  const std::string h5_file_name("Unit.IO.H5.list_files.h5");
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  // Insert a plethora of files to test listing with. Data doesn't matter
+  {
+    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    const std::vector<std::string> legend{{"Fake"}};
+    my_file.insert<h5::Dat>("/root_dat", legend, 0);
+    my_file.close_current_object();
+    my_file.insert<h5::Dat>("/group0/next_dat", legend, 0);
+    my_file.close_current_object();
+    my_file.insert<h5::Dat>("/group0/other_dat", legend, 0);
+    my_file.close_current_object();
+    my_file.insert<h5::VolumeData>("/root_vol_1", 0);
+    my_file.close_current_object();
+    my_file.insert<h5::VolumeData>("/root_vol_2", 0);
+    my_file.close_current_object();
+    my_file.insert<h5::VolumeData>("/group0/sub_vol", 0);
+  }
+
+  // Expected quantities. If ordering becomes an issue, use std::unordered_set
+  // instead
+  const std::vector<std::string> expected_all_files{
+      {"/group0/next_dat.dat", "/group0/other_dat.dat", "/group0/sub_vol.vol",
+       "/root_dat.dat", "/root_vol_1.vol", "/root_vol_2.vol", "/src.tar.gz"}};
+  const std::vector<std::string> expected_dat_files{
+      {"/group0/next_dat.dat", "/group0/other_dat.dat", "/root_dat.dat"}};
+  const std::vector<std::string> expected_vol_files{
+      {"/group0/sub_vol.vol", "/root_vol_1.vol", "/root_vol_2.vol"}};
+  const std::vector<std::string> expected_src_files{{"/src.tar.gz"}};
+
+  h5::H5File<h5::AccessType::ReadOnly> reopened_file(h5_file_name);
+  const auto all_files = reopened_file.all_files<>("/");
+  const auto dat_files = reopened_file.all_files<h5::Dat>("/");
+  const auto vol_files = reopened_file.all_files<h5::VolumeData>("/");
+  const auto src_files = reopened_file.all_files<h5::SourceArchive>("/");
+
+  CHECK(all_files == expected_all_files);
+  CHECK(dat_files == expected_dat_files);
+  CHECK(vol_files == expected_vol_files);
+  CHECK(src_files == expected_src_files);
+
+  const std::vector<std::string> expected_group0_dat_files{
+      "/group0/next_dat.dat", "/group0/other_dat.dat"};
+
+  const auto group0_dat_files = reopened_file.all_files<h5::Dat>("/group0");
+
+  CHECK(expected_group0_dat_files == group0_dat_files);
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.H5", "[Unit][IO][H5]") {
@@ -213,4 +271,5 @@ SPECTRE_TEST_CASE("Unit.IO.H5", "[Unit][IO][H5]") {
   test_check_if_object_exists();
   test_contains_attribute_false();
   test_errors();
+  test_list_files();
 }
