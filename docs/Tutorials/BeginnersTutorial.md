@@ -361,7 +361,7 @@ can read [the paper](https://arxiv.org/abs/2109.11645) on the ArXiv.
 
 To demonstrate DG+FD, we will be evolving the \link
 ScalarAdvection::Solutions::Kuzmin Kuzmin \endlink problem using the
-`EvolveScalarAdvectionKuzmin2D` executable. This is a simple test problem that
+`EvolveScalarAdvection2D` executable. This is a simple test problem that
 rotates a set of geometric shapes with uniform angular velocity, which can be
 used to evaluate how well a numerical code can handle discontinuities stably
 over time. Inside the container make a new directory `/work/runs2` where you
@@ -446,7 +446,7 @@ of smaller elements, we distribute these over the available resources via a
 things up.
 
 ```
-EvolveScalarAdvectionKuzmin2D --input-file Kuzmin2D.yaml ++ppn 4
+EvolveScalarAdvection2D --input-file Kuzmin2D.yaml ++ppn 4
 ```
 
 ### Visualizing the Kuzmin Problem
@@ -575,7 +575,7 @@ guide.
 To build the Kuzmin executable, run
 
 ```
-make EvolveScalarAdvectionKuzmin2D
+make EvolveScalarAdvection2D
 ```
 
 This should be very fast because you only edited a `cpp` file. Congrats! You've

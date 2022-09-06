@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarAdvectionKrivodonova1D
+# Executable: EvolveScalarAdvection1D
 # Check: parse;execute
 # ExpectedOutput:
 #   ScalarAdvectionKrivodonova1DVolume0.h5
@@ -49,7 +49,7 @@ SpatialDiscretization:
     Reconstructor:
       MonotonisedCentral
 
-AnalyticSolution:
+InitialData:
   Krivodonova:
 
 EventsAndTriggers:
