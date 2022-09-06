@@ -550,7 +550,8 @@ using get_boundary_conditions = typename get_boundary_conditions_impl<T>::type;
  */
 template <typename BoundaryCondition, typename BoundaryConditionBase,
           typename System, typename BoundaryCorrectionsList,
-          typename ConversionClassList = tmpl::list<>, size_t FaceDim,
+          typename ConversionClassList = tmpl::list<>,
+          typename Metavariables = NoSuchType, size_t FaceDim,
           typename DbTagsList, typename... RangeTags,
           typename... PythonFunctionNameTags>
 void test_boundary_condition_with_python(
@@ -571,9 +572,16 @@ void test_boundary_condition_with_python(
       db::wrap_tags_in<::Tags::Flux, flux_variables, tmpl::size_t<FaceDim + 1>,
                        Frame::Inertial>;
   const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-      boundary_condition =
-          TestHelpers::test_factory_creation<BoundaryConditionBase,
+      boundary_condition = [&factory_string]() {
+        if constexpr (std::is_same_v<Metavariables, NoSuchType>) {
+          return TestHelpers::test_factory_creation<BoundaryConditionBase,
                                              BoundaryCondition>(factory_string);
+        } else {
+          return TestHelpers::test_creation<
+              std::unique_ptr<BoundaryConditionBase>, Metavariables>(
+              factory_string);
+        }
+      }();
 
   REQUIRE_FALSE(
       domain::BoundaryConditions::is_periodic(boundary_condition->get_clone()));
