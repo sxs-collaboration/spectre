@@ -279,21 +279,6 @@ class AdamsBashforthN : public LtsTimeStepper {
                      const BoundaryHistoryEvaluator<T>& coupling,
                      const TimeType& end_time) const;
 
-  /// Get coefficients for a time step.  Arguments are an iterator
-  /// pair to past times, oldest to newest, and the time step to take.
-  template <typename Iterator, typename Delta>
-  static std::vector<double> get_coefficients(const Iterator& times_begin,
-                                              const Iterator& times_end,
-                                              const Delta& step);
-
-  static std::vector<double> get_coefficients_impl(
-      const std::vector<double>& steps);
-
-  static std::vector<double> variable_coefficients(
-      const std::vector<double>& steps);
-
-  static std::vector<double> constant_coefficients(size_t order);
-
   TIME_STEPPER_DECLARE_OVERLOADS
   LTS_TIME_STEPPER_DECLARE_OVERLOADS
 
