@@ -137,7 +137,8 @@ void test_solution() {
           "  SonicRadius: 50.0\n"
           "  SonicDensity: 1.3\n"
           "  PolytropicExponent: 1.5\n"
-          "  MagFieldStrength: 0.24\n");
+          "  MagFieldStrength: 0.24\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution = dynamic_cast<const grmhd::Solutions::BondiMichel&>(

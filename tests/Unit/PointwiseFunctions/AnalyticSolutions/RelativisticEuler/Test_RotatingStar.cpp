@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <pup.h>
 
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Domain.hpp"
@@ -35,6 +36,7 @@ void verify_solution(const RelativisticEuler::Solutions::RotatingStar& solution,
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.RotatingStar",
     "[Unit][PointwiseFunctions]") {
+  PUPable_reg(RelativisticEuler::Solutions::RotatingStar);
   // You can uncomment the cst_solution code below, include <iostream>,
   // and update the path to the `dat` file in order to figure out what the
   // central rest mass density is.
@@ -47,12 +49,15 @@ SPECTRE_TEST_CASE(
   // tolerance. However, Nils Deppe verified on Jan. 5, 2022 that increasing the
   // RotNS code resolution allows for a stricter tolerance.
   const double error_tolerance = 4.e-6;
-  const auto solution =
-      serialize_and_deserialize(RelativisticEuler::Solutions::RotatingStar(
-          unit_test_src_path() +
-              "/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
-              "RotatingStarId.dat",
-          100));
+  const RelativisticEuler::Solutions::RotatingStar solution(
+      dynamic_cast<const RelativisticEuler::Solutions::RotatingStar&>(
+          *serialize_and_deserialize(
+              RelativisticEuler::Solutions::RotatingStar(
+                  unit_test_src_path() +
+                      "/PointwiseFunctions/AnalyticSolutions/RelativisticEuler/"
+                      "RotatingStarId.dat",
+                  100)
+                  .get_clone())));
 
   // Near the center the finite difference derivatives cause "large" errors
   // (1e-8) and so the check fails.

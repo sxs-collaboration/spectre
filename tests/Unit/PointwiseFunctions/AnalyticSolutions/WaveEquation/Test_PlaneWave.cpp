@@ -187,7 +187,8 @@ void test_1d() {
           "  Center: [2.4]\n"
           "  Profile:\n"
           "    PowX:\n"
-          "      Power: 3");
+          "      Power: 3")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& created_solution =

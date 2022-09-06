@@ -34,6 +34,11 @@ struct TestAnalyticSolution : public MarkAsAnalyticSolution,
   TestAnalyticSolution() = default;
   ~TestAnalyticSolution() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<TestAnalyticSolution>(*this);
+  }
+
   explicit TestAnalyticSolution(CkMigrateMessage* msg) : InitialData(msg) {}
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push
@@ -56,6 +61,12 @@ struct TestAnalyticData : public MarkAsAnalyticData,
                           public evolution::initial_data::InitialData {
   TestAnalyticData() = default;
   ~TestAnalyticData() override = default;
+
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<TestAnalyticData>(*this);
+  }
 
   explicit TestAnalyticData(CkMigrateMessage* msg) : InitialData(msg) {}
   using PUP::able::register_constructor;

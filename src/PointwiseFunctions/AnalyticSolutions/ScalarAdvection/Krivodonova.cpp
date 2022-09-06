@@ -16,6 +16,11 @@
 
 namespace ScalarAdvection::Solutions {
 
+std::unique_ptr<evolution::initial_data::InitialData> Krivodonova::get_clone()
+    const {
+  return std::make_unique<Krivodonova>(*this);
+}
+
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Krivodonova::variables(
     const tnsr::I<DataType, 1>& x, double t,

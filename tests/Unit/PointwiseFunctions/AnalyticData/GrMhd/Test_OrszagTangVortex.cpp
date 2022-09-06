@@ -84,7 +84,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.OrszagTangVortex",
   const std::unique_ptr<evolution::initial_data::InitialData> option_solution =
       TestHelpers::test_option_tag_factory_creation<
           evolution::initial_data::OptionTags::InitialData,
-          grmhd::AnalyticData::OrszagTangVortex>("OrszagTangVortex:\n");
+          grmhd::AnalyticData::OrszagTangVortex>("OrszagTangVortex:\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution =

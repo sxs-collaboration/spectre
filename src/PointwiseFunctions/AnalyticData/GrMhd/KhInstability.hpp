@@ -184,6 +184,9 @@ class KhInstability : public evolution::initial_data::InitialData,
                 double perturbation_amplitude, double perturbation_width,
                 const std::array<double, 3>& magnetic_field);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit KhInstability(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

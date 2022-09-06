@@ -16,6 +16,11 @@
 
 namespace ScalarAdvection::Solutions {
 
+std::unique_ptr<evolution::initial_data::InitialData> Kuzmin::get_clone()
+    const {
+  return std::make_unique<Kuzmin>(*this);
+}
+
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Kuzmin::variables(
     const tnsr::I<DataType, 2>& x, double t,

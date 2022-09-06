@@ -138,6 +138,9 @@ class MagneticFieldLoop : public evolution::initial_data::InitialData,
                     double magnetic_field_magnitude, double inner_radius,
                     double outer_radius, const Options::Context& context = {});
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit MagneticFieldLoop(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

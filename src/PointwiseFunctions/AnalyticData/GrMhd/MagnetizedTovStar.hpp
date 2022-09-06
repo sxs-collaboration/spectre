@@ -243,6 +243,9 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
       size_t pressure_exponent, double cutoff_pressure_fraction,
       double vector_potential_amplitude);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit MagnetizedTovStar(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

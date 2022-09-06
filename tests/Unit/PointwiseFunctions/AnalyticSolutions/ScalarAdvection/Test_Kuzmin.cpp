@@ -44,7 +44,7 @@ void test_derived() {
   const std::unique_ptr<InitialData> initial_data_ptr =
       std::make_unique<Kuzmin>();
   const std::unique_ptr<InitialData> deserialized_initial_data_ptr =
-      serialize_and_deserialize(initial_data_ptr);
+      serialize_and_deserialize(initial_data_ptr)->get_clone();
   CHECK(dynamic_cast<Kuzmin*>(deserialized_initial_data_ptr.get()) != nullptr);
 }
 

@@ -149,6 +149,9 @@ class BlastWave : public evolution::initial_data::InitialData,
             const std::array<double, 3>& magnetic_field, double adiabatic_index,
             Geometry geometry, const Options::Context& context = {});
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit BlastWave(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

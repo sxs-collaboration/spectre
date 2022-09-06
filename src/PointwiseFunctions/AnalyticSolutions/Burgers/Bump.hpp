@@ -64,9 +64,12 @@ class Bump : public evolution::initial_data::InitialData,
   Bump& operator=(const Bump&) = default;
   Bump(Bump&&) = default;
   Bump& operator=(Bump&&) = default;
-  ~Bump() = default;
+  ~Bump() override = default;
 
   Bump(double half_width, double height, double center = 0.);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit Bump(CkMigrateMessage* msg);
@@ -89,7 +92,7 @@ class Bump : public evolution::initial_data::InitialData,
       tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   double half_width_ = std::numeric_limits<double>::signaling_NaN();

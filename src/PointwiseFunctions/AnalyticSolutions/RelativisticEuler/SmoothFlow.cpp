@@ -28,6 +28,12 @@ SmoothFlow<Dim>::SmoothFlow(const std::array<double, Dim>& mean_velocity,
                   perturbation_size} {}
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+SmoothFlow<Dim>::get_clone() const {
+  return std::make_unique<SmoothFlow<Dim>>(*this);
+}
+
+template <size_t Dim>
 SmoothFlow<Dim>::SmoothFlow(CkMigrateMessage* msg)
     : InitialData(msg), smooth_flow(msg) {}
 

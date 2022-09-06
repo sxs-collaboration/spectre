@@ -136,6 +136,9 @@ class MagneticRotor : public evolution::initial_data::InitialData,
                 const std::array<double, 3>& magnetic_field,
                 double adiabatic_index, const Options::Context& context = {});
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit MagneticRotor(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

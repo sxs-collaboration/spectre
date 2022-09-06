@@ -68,6 +68,11 @@ KomissarovShock::KomissarovShock(
       right_magnetic_field_(right_magnetic_field),
       shock_speed_(shock_speed) {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+KomissarovShock::get_clone() const {
+  return std::make_unique<KomissarovShock>(*this);
+}
+
 KomissarovShock::KomissarovShock(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void KomissarovShock::pup(PUP::er& p) {

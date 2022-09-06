@@ -216,6 +216,9 @@ class RiemannProblem : public evolution::initial_data::InitialData,
                  const std::array<double, 3>& right_magnetic_field,
                  double lapse, double shift);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit RiemannProblem(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

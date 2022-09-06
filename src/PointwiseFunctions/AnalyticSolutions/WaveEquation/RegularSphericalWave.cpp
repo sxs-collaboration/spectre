@@ -25,6 +25,11 @@ RegularSphericalWave::RegularSphericalWave(
     std::unique_ptr<MathFunction<1, Frame::Inertial>> profile)
     : profile_(std::move(profile)) {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+RegularSphericalWave::get_clone() const {
+  return std::make_unique<RegularSphericalWave>(*this);
+}
+
 RegularSphericalWave::RegularSphericalWave(CkMigrateMessage* msg)
     : InitialData(msg) {}
 

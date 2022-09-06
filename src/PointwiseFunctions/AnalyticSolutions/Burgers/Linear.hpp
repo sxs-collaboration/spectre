@@ -43,9 +43,12 @@ class Linear : public evolution::initial_data::InitialData,
   Linear& operator=(const Linear&) = default;
   Linear(Linear&&) = default;
   Linear& operator=(Linear&&) = default;
-  ~Linear() = default;
+  ~Linear() override = default;
 
   explicit Linear(double shock_time);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit Linear(CkMigrateMessage* msg);
@@ -68,7 +71,7 @@ class Linear : public evolution::initial_data::InitialData,
       tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   double shock_time_ = std::numeric_limits<double>::signaling_NaN();

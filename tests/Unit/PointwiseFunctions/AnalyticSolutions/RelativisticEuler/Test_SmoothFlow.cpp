@@ -119,7 +119,8 @@ void test_solution(const DataType& used_for_size,
           "\n"
           "  Pressure: 1.23\n"
           "  AdiabaticIndex: 1.3334\n"
-          "  PerturbationSize: 0.78\n");
+          "  PerturbationSize: 0.78\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution_from_options =

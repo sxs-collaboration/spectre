@@ -187,7 +187,8 @@ void test_solution() {
           "  ElectronFraction: 0.1\n"
           "  AdiabaticIndex: 1.4\n"
           "  BkgdMagneticField: [0.0, 0.0, 2.0]\n"
-          "  WaveMagneticField: [0.75, 0.0, 0.0]\n");
+          "  WaveMagneticField: [0.75, 0.0, 0.0]\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution = dynamic_cast<const grmhd::Solutions::AlfvenWave&>(

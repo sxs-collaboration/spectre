@@ -13,6 +13,11 @@
 
 namespace ScalarAdvection::Solutions {
 
+std::unique_ptr<evolution::initial_data::InitialData> Sinusoid::get_clone()
+    const {
+  return std::make_unique<Sinusoid>(*this);
+}
+
 template <typename DataType>
 tuples::TaggedTuple<ScalarAdvection::Tags::U> Sinusoid::variables(
     const tnsr::I<DataType, 1>& x, double t,

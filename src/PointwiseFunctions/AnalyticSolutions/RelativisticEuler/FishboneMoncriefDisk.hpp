@@ -214,11 +214,14 @@ class FishboneMoncriefDisk
       default;
   FishboneMoncriefDisk(FishboneMoncriefDisk&& /*rhs*/) = default;
   FishboneMoncriefDisk& operator=(FishboneMoncriefDisk&& /*rhs*/) = default;
-  ~FishboneMoncriefDisk() = default;
+  ~FishboneMoncriefDisk() override = default;
 
   FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,
                        double inner_edge_radius, double max_pressure_radius,
                        double polytropic_constant, double polytropic_exponent);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit FishboneMoncriefDisk(CkMigrateMessage* msg);
@@ -307,7 +310,7 @@ class FishboneMoncriefDisk
   /// @}
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;

@@ -25,6 +25,8 @@ class InitialData : public PUP::able {
  public:
   ~InitialData() override = default;
 
+  virtual auto get_clone() const -> std::unique_ptr<InitialData> = 0;
+
   /// \cond
   explicit InitialData(CkMigrateMessage* msg) : PUP::able(msg) {}
   WRAPPED_PUPable_abstract(InitialData);

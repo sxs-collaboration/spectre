@@ -151,6 +151,9 @@ class BondiHoyleAccretion : public evolution::initial_data::InitialData,
                       double magnetic_field_strength,
                       double polytropic_constant, double polytropic_exponent);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit BondiHoyleAccretion(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

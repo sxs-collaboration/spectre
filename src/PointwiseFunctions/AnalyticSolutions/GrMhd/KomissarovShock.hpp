@@ -153,6 +153,9 @@ class KomissarovShock : public evolution::initial_data::InitialData,
                   const std::array<double, 3>& right_magnetic_field,
                   double shock_speed);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit KomissarovShock(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

@@ -23,6 +23,11 @@ SemidiscretizedDg::SemidiscretizedDg(const int harmonic,
                                      const std::array<double, 4>& amplitudes)
     : harmonic_(harmonic), amplitudes_(amplitudes) {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+SemidiscretizedDg::get_clone() const {
+  return std::make_unique<SemidiscretizedDg>(*this);
+}
+
 SemidiscretizedDg::SemidiscretizedDg(CkMigrateMessage* msg)
     : InitialData(msg) {}
 

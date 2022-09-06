@@ -91,6 +91,9 @@ class PlaneWave : public evolution::initial_data::InitialData,
   PlaneWave& operator=(PlaneWave&&) = default;
   ~PlaneWave() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit PlaneWave(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

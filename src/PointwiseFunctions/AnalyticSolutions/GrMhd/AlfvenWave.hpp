@@ -168,6 +168,9 @@ class AlfvenWave : public evolution::initial_data::InitialData,
              const std::array<double, 3>& background_magnetic_field,
              const std::array<double, 3>& wave_magnetic_field);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit AlfvenWave(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

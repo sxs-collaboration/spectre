@@ -37,6 +37,11 @@ BondiHoyleAccretion::BondiHoyleAccretion(const double bh_mass,
           bh_mass, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}},
       kerr_schild_coords_{bh_mass, bh_dimless_spin} {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+BondiHoyleAccretion::get_clone() const {
+  return std::make_unique<BondiHoyleAccretion>(*this);
+}
+
 BondiHoyleAccretion::BondiHoyleAccretion(CkMigrateMessage* msg)
     : InitialData(msg) {}
 

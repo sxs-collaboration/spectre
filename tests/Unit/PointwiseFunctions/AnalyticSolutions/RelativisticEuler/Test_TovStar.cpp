@@ -60,7 +60,8 @@ void test_tov_star(const TovCoordinates coord_system) {
           "      PolytropicConstant: 100.0\n"
           "      PolytropicExponent: 2.0\n"
           "  Coordinates: " +
-          get_output(coord_system));
+          get_output(coord_system))
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution =

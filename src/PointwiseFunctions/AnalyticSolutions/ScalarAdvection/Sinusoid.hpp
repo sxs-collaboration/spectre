@@ -48,6 +48,9 @@ class Sinusoid : public evolution::initial_data::InitialData,
   Sinusoid& operator=(Sinusoid&&) = default;
   ~Sinusoid() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
       const tnsr::I<DataType, 1>& x, double t,

@@ -78,7 +78,8 @@ void test_create_from_options() {
           "  OuterPressure: 5.0e-4\n"
           "  MagneticField: [0.1, 0.0, 0.0]\n"
           "  AdiabaticIndex: 1.3333333333333333333\n"
-          "  Geometry: Cylindrical\n");
+          "  Geometry: Cylindrical\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& cylindrical_blast_wave =

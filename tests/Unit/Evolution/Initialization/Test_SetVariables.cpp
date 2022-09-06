@@ -76,6 +76,11 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
   WRAPPED_PUPable_decl_template(SystemAnalyticSolution);
 #pragma GCC diagnostic pop
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<SystemAnalyticSolution>(*this);
+  }
+
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x, const double t,
@@ -147,6 +152,11 @@ struct SystemAnalyticData : public MarkAsAnalyticData,
 #pragma GCC diagnostic ignored "-Wunused-function"
   WRAPPED_PUPable_decl_template(SystemAnalyticData);
 #pragma GCC diagnostic pop
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<SystemAnalyticData>(*this);
+  }
 
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(

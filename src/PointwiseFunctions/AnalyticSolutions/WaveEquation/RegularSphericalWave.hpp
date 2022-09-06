@@ -93,6 +93,9 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
   RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
   ~RegularSphericalWave() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit RegularSphericalWave(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

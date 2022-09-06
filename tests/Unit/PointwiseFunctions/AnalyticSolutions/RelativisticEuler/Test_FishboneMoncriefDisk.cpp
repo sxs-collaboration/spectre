@@ -195,7 +195,8 @@ void test_solution() {
           "  InnerEdgeRadius: 6.0\n"
           "  MaxPressureRadius: 12.0\n"
           "  PolytropicConstant: 0.001\n"
-          "  PolytropicExponent: 1.33333333333333333\n");
+          "  PolytropicExponent: 1.33333333333333333\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution =

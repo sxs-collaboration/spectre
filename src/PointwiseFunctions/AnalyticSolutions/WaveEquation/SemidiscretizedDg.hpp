@@ -64,6 +64,9 @@ class SemidiscretizedDg : public evolution::initial_data::InitialData,
   SemidiscretizedDg() = default;
   ~SemidiscretizedDg() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit SemidiscretizedDg(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

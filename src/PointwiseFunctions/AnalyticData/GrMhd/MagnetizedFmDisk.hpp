@@ -141,6 +141,9 @@ class MagnetizedFmDisk
       double inverse_plasma_beta,
       size_t normalization_grid_res = BFieldNormGridRes::suggested_value());
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit MagnetizedFmDisk(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

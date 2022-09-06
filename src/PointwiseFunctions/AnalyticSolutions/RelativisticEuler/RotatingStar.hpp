@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Solutions.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -300,7 +301,9 @@ class CstSolution {
  * polynomial fits might improve the situation but is a decent about of work to
  * implement.
  */
-class RotatingStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
+class RotatingStar : public virtual evolution::initial_data::InitialData,
+                     public MarkAsAnalyticSolution,
+                     public AnalyticSolution<3> {
   template <typename DataType>
   struct IntermediateVariables {
     IntermediateVariables(
@@ -379,9 +382,18 @@ class RotatingStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
   RotatingStar& operator=(const RotatingStar& /*rhs*/) = default;
   RotatingStar(RotatingStar&& /*rhs*/) = default;
   RotatingStar& operator=(RotatingStar&& /*rhs*/) = default;
-  ~RotatingStar() = default;
+  ~RotatingStar() override = default;
 
   RotatingStar(std::string rot_ns_filename, double polytropic_constant);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit RotatingStar(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(RotatingStar);
+  /// \endcond
 
   /// Retrieve a collection of variables at `(x, t)`
   template <typename DataType, typename... Tags>
@@ -395,7 +407,7 @@ class RotatingStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;

@@ -75,6 +75,11 @@ BondiMichel::BondiMichel(const double mass, const double sonic_radius,
                            1.0 / gamma_minus_one);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> BondiMichel::get_clone()
+    const {
+  return std::make_unique<BondiMichel>(*this);
+}
+
 BondiMichel::BondiMichel(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void BondiMichel::pup(PUP::er& p) {

@@ -57,6 +57,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
              const std::array<double, 3>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit SmoothFlow(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

@@ -104,6 +104,9 @@ class Sinusoid : public evolution::initial_data::InitialData,
   Sinusoid& operator=(Sinusoid&&) = default;
   ~Sinusoid() override = default;
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit Sinusoid(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

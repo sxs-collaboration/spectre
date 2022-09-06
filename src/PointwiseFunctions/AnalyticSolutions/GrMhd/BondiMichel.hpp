@@ -228,6 +228,9 @@ class BondiMichel : public virtual evolution::initial_data::InitialData,
   BondiMichel(double mass, double sonic_radius, double sonic_density,
               double polytropic_exponent, double mag_field_strength);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit BondiMichel(CkMigrateMessage* msg);
   using PUP::able::register_constructor;

@@ -40,6 +40,11 @@ RiemannProblem::RiemannProblem(
       lapse_(lapse),
       shift_(shift) {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+RiemannProblem::get_clone() const {
+  return std::make_unique<RiemannProblem>(*this);
+}
+
 RiemannProblem::RiemannProblem(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void RiemannProblem::pup(PUP::er& p) {

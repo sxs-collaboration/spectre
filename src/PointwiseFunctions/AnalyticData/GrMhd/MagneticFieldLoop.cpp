@@ -52,6 +52,11 @@ MagneticFieldLoop::MagneticFieldLoop(
   }
 }
 
+std::unique_ptr<evolution::initial_data::InitialData>
+MagneticFieldLoop::get_clone() const {
+  return std::make_unique<MagneticFieldLoop>(*this);
+}
+
 MagneticFieldLoop::MagneticFieldLoop(CkMigrateMessage* msg)
     : InitialData(msg) {}
 
