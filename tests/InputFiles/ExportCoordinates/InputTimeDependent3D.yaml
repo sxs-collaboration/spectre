@@ -3,6 +3,7 @@
 
 # Executable: ExportTimeDependentCoordinates3D
 # Check: parse;execute
+# Timeout: 10
 # ExpectedOutput:
 #   ExportTimeDependentCoordinates3DVolume0.h5
 #   ExportTimeDependentCoordinates3DReductions.h5

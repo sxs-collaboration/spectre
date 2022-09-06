@@ -1332,7 +1332,7 @@ void test_compute_tags() {
 }
 }  // namespace
 
-// [[TimeOut, 20]
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Constraints",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
