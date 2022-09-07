@@ -169,7 +169,8 @@ template <typename System, typename ConversionClassList,
           typename BoundaryCondition, size_t FaceDim, typename DbTagsList,
           typename... RangeTags, typename... EvolvedVariablesTags,
           typename... BoundaryCorrectionPackagedDataInputTags,
-          typename... BoundaryConditionVolumeTags>
+          typename... BoundaryConditionVolumeTags,
+          typename... ExtraTagsForPythonFromDataBox>
 void test_boundary_condition_with_python_impl(
     const gsl::not_null<std::mt19937*> generator,
     const std::string& python_module,
@@ -181,7 +182,9 @@ void test_boundary_condition_with_python_impl(
     const tuples::TaggedTuple<Tags::Range<RangeTags>...>& ranges,
     const bool use_moving_mesh, tmpl::list<EvolvedVariablesTags...> /*meta*/,
     tmpl::list<BoundaryCorrectionPackagedDataInputTags...> /*meta*/,
-    tmpl::list<BoundaryConditionVolumeTags...> /*meta*/, const double epsilon) {
+    tmpl::list<BoundaryConditionVolumeTags...> /*meta*/,
+    tmpl::list<ExtraTagsForPythonFromDataBox...> /*meta*/,
+    const double epsilon) {
   CAPTURE(FaceDim);
   CAPTURE(python_module);
   CAPTURE(face_points);
@@ -326,11 +329,12 @@ void test_boundary_condition_with_python_impl(
   if constexpr (uses_time_derivative_condition) {
     Variables<dt_variables_tags> time_derivative_correction{
         number_of_points_on_face};
-    auto apply_bc = [&boundary_condition, epsilon, &face_mesh_velocity,
-                     &interior_normal_covector,
+    auto apply_bc = [&boundary_condition, &box_of_volume_data, epsilon,
+                     &face_mesh_velocity, &interior_normal_covector,
                      &python_boundary_condition_functions, &python_module,
                      &time_derivative_correction](
                         const auto&... interior_face_and_volume_args) {
+      (void)box_of_volume_data;
       const std::optional<std::string> error_msg =
           boundary_condition.dg_time_derivative(
               make_not_null(&get<::Tags::dt<EvolvedVariablesTags>>(
@@ -344,7 +348,8 @@ void test_boundary_condition_with_python_impl(
       const auto python_error_message =
           call_for_error_message<ConversionClassList>(
               python_module, python_error_msg_function, face_mesh_velocity,
-              interior_normal_covector, interior_face_and_volume_args...);
+              interior_normal_covector, interior_face_and_volume_args...,
+              db::get<ExtraTagsForPythonFromDataBox>(box_of_volume_data)...);
       CAPTURE(python_error_msg_function);
       CAPTURE(python_error_message.value_or(""));
       CAPTURE(error_msg.value_or(""));
@@ -370,7 +375,9 @@ void test_boundary_condition_with_python_impl(
           python_result =
               pypp::call<typename DtVarTag::type, ConversionClassList>(
                   python_module, python_tag_function, face_mesh_velocity,
-                  interior_normal_covector, interior_face_and_volume_args...);
+                  interior_normal_covector, interior_face_and_volume_args...,
+                  db::get<ExtraTagsForPythonFromDataBox>(
+                      box_of_volume_data)...);
         } catch (const std::exception& e) {
           INFO("Failed python call with '" << e.what() << "'");
           // Use REQUIRE(false) to print all the CAPTURE variables
@@ -405,10 +412,12 @@ void test_boundary_condition_with_python_impl(
             ::evolution::dg::Tags::NormalCovector<FaceDim + 1>>>;
     Variables<tags_on_exterior_face> exterior_face_fields{
         number_of_points_on_face};
-    auto apply_bc = [&boundary_condition, epsilon, &exterior_face_fields,
-                     &face_mesh_velocity, &interior_normal_covector,
+    auto apply_bc = [&boundary_condition, &box_of_volume_data, epsilon,
+                     &exterior_face_fields, &face_mesh_velocity,
+                     &interior_normal_covector,
                      &python_boundary_condition_functions, &python_module](
                         const auto&... interior_face_and_volume_args) {
+      (void)box_of_volume_data;
       std::optional<std::string> error_msg{};
       if constexpr (has_inv_spatial_metric) {
         error_msg = boundary_condition.dg_ghost(
@@ -432,7 +441,8 @@ void test_boundary_condition_with_python_impl(
       const auto python_error_message =
           call_for_error_message<ConversionClassList>(
               python_module, python_error_msg_function, face_mesh_velocity,
-              interior_normal_covector, interior_face_and_volume_args...);
+              interior_normal_covector, interior_face_and_volume_args...,
+              db::get<ExtraTagsForPythonFromDataBox>(box_of_volume_data)...);
       CAPTURE(python_error_msg_function);
       CAPTURE(python_error_message.value_or(""));
       CAPTURE(error_msg.value_or(""));
@@ -462,7 +472,9 @@ void test_boundary_condition_with_python_impl(
               python_result = pypp::call<typename BoundaryCorrectionTag::type,
                                          ConversionClassList>(
                   python_module, python_tag_function, face_mesh_velocity,
-                  interior_normal_covector, interior_face_and_volume_args...);
+                  interior_normal_covector, interior_face_and_volume_args...,
+                  db::get<ExtraTagsForPythonFromDataBox>(
+                      box_of_volume_data)...);
             } catch (const std::exception& e) {
               INFO("Failed python call with '" << e.what() << "'");
               // Use REQUIRE(false) to print all the CAPTURE variables
@@ -553,6 +565,7 @@ using get_boundary_conditions = typename get_boundary_conditions_impl<T>::type;
 template <typename BoundaryCondition, typename BoundaryConditionBase,
           typename System, typename BoundaryCorrectionsList,
           typename ConversionClassList = tmpl::list<>,
+          typename ExtraTagsForPythonFromDataBox = tmpl::list<>,
           typename Metavariables = NoSuchType, size_t FaceDim,
           typename DbTagsList, typename... RangeTags,
           typename... PythonFunctionNameTags>
@@ -568,6 +581,7 @@ void test_boundary_condition_with_python(
   PUPable_reg(BoundaryCondition);
   static_assert(std::is_final_v<std::decay_t<BoundaryCondition>>,
                 "All boundary condition classes must be marked `final`.");
+  static_assert(tt::is_a_v<tmpl::list, ExtraTagsForPythonFromDataBox>);
   using variables_tags = typename System::variables_tag::tags_list;
   using flux_variables = typename System::flux_variables;
   using fluxes_tags =
@@ -610,7 +624,8 @@ void test_boundary_condition_with_python(
               dynamic_cast<const BoundaryCondition&>(*boundary_condition),
               face_points, box_of_volume_data, ranges, use_moving_mesh,
               variables_tags{}, package_data_input_tags{},
-              boundary_condition_dg_gridless_tags{}, epsilon);
+              boundary_condition_dg_gridless_tags{},
+              ExtraTagsForPythonFromDataBox{}, epsilon);
           // Now serialize and deserialize and test again
           INFO("Test boundary condition after serialization.");
           const auto deserialized_bc =
@@ -621,7 +636,8 @@ void test_boundary_condition_with_python(
               dynamic_cast<const BoundaryCondition&>(*deserialized_bc),
               face_points, box_of_volume_data, ranges, use_moving_mesh,
               variables_tags{}, package_data_input_tags{},
-              boundary_condition_dg_gridless_tags{}, epsilon);
+              boundary_condition_dg_gridless_tags{},
+              ExtraTagsForPythonFromDataBox{}, epsilon);
         }
       });
 }
