@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveBurgersStep
+# Executable: EvolveBurgers
 # CommandLineArgs: +balancer RandCentLB +p2
 # Timeout: 5
 # Check: parse;execute
@@ -9,7 +9,7 @@
 ResourceInfo:
   AvoidGlobalProc0: false
 
-AnalyticSolution:
+InitialData: &InitialData
   Step:
     LeftValue: 2.
     RightValue: 1.
@@ -37,8 +37,12 @@ DomainCreator:
     InitialGridPoints: [7]
     TimeDependence: None
     BoundaryConditions:
-      LowerBoundary: DirichletAnalytic
-      UpperBoundary: DirichletAnalytic
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 SpatialDiscretization:
   BoundaryCorrection:

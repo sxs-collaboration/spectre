@@ -28,7 +28,7 @@
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivative.hpp"
-#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
@@ -75,24 +75,26 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/Tags.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
-#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
-#include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticData/Burgers/Factory.hpp"
+#include "PointwiseFunctions/AnalyticData/Burgers/Sinusoid.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Burgers/Bump.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Bump.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Factory.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Linear.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
-#include "Time/Actions/ChangeSlabSize.hpp"         // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/ChangeSlabSize.hpp"
+#include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Actions/SelfStartActions.hpp"
+#include "Time/Actions/UpdateU.hpp"
 #include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/Factory.hpp"
@@ -121,7 +123,6 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
@@ -132,22 +133,15 @@ struct EvolutionMetavars {
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
-  using initial_data = InitialData;
-  static_assert(
-      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
-      "initial_data must be either an analytic_data or an analytic_solution");
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
+  using initial_data_list = tmpl::append<Burgers::Solutions::all_solutions,
+                                         Burgers::AnalyticData::all_data>;
 
   using limiter =
       Tags::Limiter<Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
-                                                analytic_variables_tags>;
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_variables_tags, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<
@@ -186,6 +180,7 @@ struct EvolutionMetavars {
                                   volume_dim, Tags::Time, observe_fields,
                                   non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
                                   Parallel::Phase::LoadBalancing>,
@@ -284,7 +279,7 @@ struct EvolutionMetavars {
                           dg_step_actions>;
 
   using const_global_cache_tags = tmpl::list<
-      initial_data_tag,
+      evolution::initial_data::Tags::InitialData,
       tmpl::conditional_t<use_dg_subcell,
                           tmpl::list<Burgers::fd::Tags::Reconstructor>,
                           tmpl::list<>>>;

@@ -18,6 +18,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Bump.hpp
+  Factory.hpp
   Linear.hpp
   Solutions.hpp
   Step.hpp

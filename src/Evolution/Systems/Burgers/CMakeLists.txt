@@ -40,6 +40,8 @@ target_link_libraries(
   Parallel
   Utilities
   PRIVATE
+  BurgersAnalyticData
+  BurgersSolutions
   LinearOperators
   )
 

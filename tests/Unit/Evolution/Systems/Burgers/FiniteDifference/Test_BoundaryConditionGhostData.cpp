@@ -326,7 +326,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.BCondGhostData",
     test(TestHelpers::test_creation<Burgers::BoundaryConditions::Dirichlet>(
              "U: 0.3\n"),
          test_this);
-    test(Burgers::BoundaryConditions::DirichletAnalytic{}, test_this);
+    test(
+        Burgers::BoundaryConditions::DirichletAnalytic{
+            std::make_unique<Burgers::Solutions::Linear>(-0.5)},
+        test_this);
     test(Burgers::BoundaryConditions::DemandOutgoingCharSpeeds{}, test_this);
   }
 
