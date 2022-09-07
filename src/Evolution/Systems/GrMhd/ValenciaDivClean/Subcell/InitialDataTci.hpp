@@ -27,7 +27,7 @@ class Variables;
 
 namespace grmhd::ValenciaDivClean::subcell {
 namespace detail {
-std::tuple<bool, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
+std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
     const Scalar<DataVector>& dg_tilde_d,
     const Scalar<DataVector>& dg_tilde_tau,
     const Scalar<DataVector>& dg_tilde_b_magnitude,
@@ -58,7 +58,7 @@ struct DgInitialDataTci {
       tmpl::list<domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  Tags::TciOptions>;
 
-  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+  static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       const Variables<tmpl::list<
           ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
           ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
