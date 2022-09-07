@@ -58,7 +58,7 @@ void test_two_mesh_rdmp_impl(const size_t num_pts_1d,
                              const size_t tensor_component_to_modify,
                              const double rdmp_delta0,
                              const double rdmp_epsilon,
-                             const bool expected_tci_triggered) {
+                             const int expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(num_pts_1d);
   CAPTURE(tensor_component_to_modify);
@@ -101,15 +101,18 @@ void test_two_mesh_rdmp() {
                : Spectral::maximum_number_of_points<Spectral::Basis::Legendre>;
   for (size_t num_pts_1d = 4; num_pts_1d < maximum_number_of_points_1d;
        ++num_pts_1d) {
-    test_two_mesh_rdmp_impl<Dim>(num_pts_1d, 0, 1.0e-4, 1.0e-3, true);
-    test_two_mesh_rdmp_impl<Dim>(num_pts_1d, 0, 1.0e-4, 1.0e3, false);
+    test_two_mesh_rdmp_impl<Dim>(num_pts_1d, 0, 1.0e-4, 1.0e-3, 1);
+    test_two_mesh_rdmp_impl<Dim>(num_pts_1d, 0, 1.0e-4, 1.0e3, 0);
     test_two_mesh_rdmp_impl<Dim>(num_pts_1d, std::numeric_limits<size_t>::max(),
-                                 1.0e-4, 1.0e-3, false);
+                                 1.0e-4, 1.0e-3, 0);
 
     // Modify tensor components
     for (size_t i = 1; i < Dim + 1; ++i) {
-      test_two_mesh_rdmp_impl<Dim>(num_pts_1d, i, 1.0e-4, 1.0e-3, true);
-      test_two_mesh_rdmp_impl<Dim>(num_pts_1d, i, 1.0e-4, 1.0e3, false);
+      const int expected_tci_status = i + 1;
+
+      test_two_mesh_rdmp_impl<Dim>(num_pts_1d, i, 1.0e-4, 1.0e-3,
+                                   expected_tci_status);
+      test_two_mesh_rdmp_impl<Dim>(num_pts_1d, i, 1.0e-4, 1.0e3, 0);
     }
   }
 }
