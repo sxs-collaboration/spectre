@@ -28,20 +28,17 @@ CCE using external data are:
     don't need the extra points, best just set it to 1.
   - If you're extracting at 100M or less, best to reduce the `TargetStepSize`,
     to around .5 at 100M and lower yet for nearer extraction.
-  - The `InitializeJ` in the example file uses `InverseCubic` which is a pretty
-    primitive scheme, but early tests indicate that it gives the best results
-    for most systems.
-    If initial data is a concern, you can also try replacing the `InverseCubic`
-    entry with:
-  ```
-    NoIncomingRadiation:
-      AngularCoordTolerance: 1.0e-13
-      MaxIterations: 500
-      RequireConvergence: true
-  ```
-  which are probably pretty good choices for those parameters,
-  and the `RequireConvergence: true` will cause the iterative solve in
-  this version to error out if it doesn't find a good frame.
+  - The `InitializeJ` in the example file uses `ConformalFactor` which has been
+    found to perform better than the other schemes implemented so far.
+    Other schemes for `InitializeJ` can be found in namespace
+    \link Cce::InitializeJ \endlink.  Some of these are:
+    - `ZeroNonSmooth`: Make `J` vanish
+    - `NoIncomingRadiation`: Make \f$\Psi_0 = 0\f$; this does not actually lead
+      to no incoming radiation, since \f$\Psi_0\f$ and \f$\Psi_4\f$ both include
+      incoming and outgoing radiation.
+    - `InverseCubic`: Ansatz where \f$J = A/r + B/r^3\f$
+    - `ConformalFactor`: Try to make initial time coordinate as inertial as
+      possible at \f$\mathscr{I}^+\f$.
 
 - An example of an appropriate submission command for slurm systems is:
   ```
