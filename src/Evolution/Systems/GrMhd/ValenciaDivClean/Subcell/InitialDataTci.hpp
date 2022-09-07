@@ -44,14 +44,48 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
  *
  * The following checks are done in the order they are listed:
  *
- * - if `TildeD` (`TildeTau`) on the DG or subcell grid (projected from the DG
- *   grid, not initialized to the initial data) is less than
- *   `tci_options.minimum_rest_mass_density_times_lorentz_factor`
- *   (`tci_options.minimum_tilde_tau`), then the element is flagged as troubled.
- * - apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$.
- * - apply the Persson TCI to the magnitude of \f$\tilde{B}\f$ if its magnitude
- *   on the DG grid is greater than `tci_options.magnetic_field_cutoff`.
- * - apply the two-mesh relaxed discrete maximum principle TCI
+ * <table>
+ * <caption>List of checks</caption>
+ * <tr><th> Description <th> TCI status
+ *
+ * <tr><td> if `TildeD` on the DG or subcell grid (projected from the DG grid,
+ * not initialized to the initial data) is less than
+ * `tci_options.minimum_rest_mass_density_times_lorentz_factor` then the element
+ * is flagged as troubled.
+ * <td> `-1`
+ *
+ * <tr><td> if `TildeTau` on the DG or subcell grid (projected from
+ * the DG grid, not initialized to the initial data) is less than
+ * `tci_options.minimum_tilde_tau` then the element is flagged as troubled
+ * <td> `-2`
+ *
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$.
+ * <td> `-5`
+ *
+ * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}\f$ if its
+ * magnitude on the DG grid is greater than `tci_options.magnetic_field_cutoff`.
+ * <td> `-6`
+ *
+ * <tr><td>
+ * apply the two-mesh relaxed discrete maximum principle TCI to `TildeD`,
+ * `TildeTau`, `TildeS`, `TildeB`, and `TildePhi`
+ * <td> `-7`
+ *
+ * </table>
+ *
+ * The second column of the table above denotes the value of an integer stored
+ * as the first element of the returned `std::tuple`, which indicates the
+ * particular kind of check that failed. For example, if the third check
+ * (Persson TCI to TildeD and TildeTau) fails and cell is marked as troubled,
+ * an integer with value `-5` is stored in the first slot of the returned tuple.
+ * Note that this integer is marking only the _first_ check to fail, since
+ * checks are done in a particular sequence as listed above. If all checks are
+ * passed and cell is not troubled, it is returned with the value `0`.
+ *
+ * Somewhat seemingly irregular prescription of TCI status values is due to
+ * matching those with TciOnDgGrid as much as possible (see the documentation of
+ * TciOnDgGrid).
+ *
  */
 struct DgInitialDataTci {
   using argument_tags =
