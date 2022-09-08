@@ -72,19 +72,20 @@ std::optional<std::string> FreeOutflow::dg_ghost(
 
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
     const Scalar<DataVector>& interior_lapse,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& interior_inv_spatial_metric,
-
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
-    const Scalar<DataVector>& interior_sqrt_det_spatial_metric) {
+    const tnsr::II<DataVector, 3, Frame::Inertial>&
+        interior_inv_spatial_metric) {
   const size_t number_of_grid_points = get(interior_rest_mass_density).size();
 
   // temp buffer to store
   //  * n_i v^i
   //  * v_{ghost}^i
   //  * divergence cleaning field on ghost zone
+  //  * spatial metric
+  //  * sqrt determinant of spatial metric
   Variables<tmpl::list<::Tags::TempScalar<0>,
                        hydro::Tags::SpatialVelocity<DataVector, 3>,
-                       ::Tags::TempScalar<1>>>
+                       ::Tags::TempScalar<1>, gr::Tags::SpatialMetric<3>,
+                       gr::Tags::SqrtDetSpatialMetric<>>>
       temp_buffer{number_of_grid_points};
   auto& normal_dot_interior_spatial_velocity =
       get<::Tags::TempScalar<0>>(temp_buffer);
@@ -92,6 +93,9 @@ std::optional<std::string> FreeOutflow::dg_ghost(
       get<hydro::Tags::SpatialVelocity<DataVector, 3>>(temp_buffer);
   auto& exterior_divergence_cleaning_field =
       get<::Tags::TempScalar<1>>(temp_buffer);
+  auto& interior_spatial_metric = get<gr::Tags::SpatialMetric<3>>(temp_buffer);
+  auto& interior_sqrt_det_spatial_metric =
+      get<gr::Tags::SqrtDetSpatialMetric<>>(temp_buffer);
 
   get(*lapse) = get(interior_lapse);
   for (size_t i = 0; i < 3; ++i) {
@@ -100,6 +104,17 @@ std::optional<std::string> FreeOutflow::dg_ghost(
       (*inv_spatial_metric).get(i, j) = interior_inv_spatial_metric.get(i, j);
     }
   }
+
+  // spatial metric and sqrt determinant of spatial metric can be retrived from
+  // Databox but only as gridless_tags with whole volume data (unlike all the
+  // other arguments which are face tensors). Rather than doing expensive tensor
+  // slicing operations on those, we just compute those two quantities from
+  // inverse spatial metric as below.
+  determinant_and_inverse(make_not_null(&interior_sqrt_det_spatial_metric),
+                          make_not_null(&interior_spatial_metric),
+                          interior_inv_spatial_metric);
+  get(interior_sqrt_det_spatial_metric) =
+      1.0 / get(interior_sqrt_det_spatial_metric);
 
   // copy-paste interior spatial velocity to exterior spatial velocity, but
   // kill ingoing normal component to zero
