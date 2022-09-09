@@ -68,6 +68,7 @@ using compute_items_on_target = tmpl::append<
                // extrinsic curvature of the slice embedded in 4d spacetime.
                // Both quantities are in the DataBox.
                StrahlkorperGr::Tags::AreaElementCompute<Frame>,
+               StrahlkorperTags::EuclideanAreaElementCompute<Frame>,
                StrahlkorperTags::ExtrinsicCurvatureCompute<Frame>,
                StrahlkorperTags::RicciScalarCompute<Frame>,
                StrahlkorperGr::Tags::SpinFunctionCompute<Frame>,
