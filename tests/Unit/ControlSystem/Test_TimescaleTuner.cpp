@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <vector>
 
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -21,11 +22,15 @@ void test_increase_or_decrease() {
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+  TimescaleTuner tst(1.0, max_timescale, min_timescale,
                      decrease_timescale_threshold, increase_timescale_threshold,
                      increase_factor, decrease_factor);
 
   const DataVector timescale{1.0};
+
+  CHECK_FALSE(tst.timescales_have_been_set());
+  tst.resize_timescales(timescale.size(), timescale[0]);
+  CHECK(tst.timescales_have_been_set());
   CHECK(tst.current_timescale() == timescale);
 
   // Check the suggested timescale function
@@ -179,7 +184,7 @@ void test_no_change_to_timescale() {
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst({1.0}, max_timescale, min_timescale,
+  TimescaleTuner tst(std::vector<double>{1.0}, max_timescale, min_timescale,
                      decrease_timescale_threshold, increase_timescale_threshold,
                      increase_factor, decrease_factor);
 
@@ -288,6 +293,14 @@ void test_create_from_options() {
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
+  const TimescaleTuner expected{std::vector<double>{1.},
+                                max_timescale,
+                                min_timescale,
+                                decrease_timescale_threshold,
+                                increase_timescale_threshold,
+                                increase_factor,
+                                decrease_factor};
+
   const auto tst = TestHelpers::test_creation<TimescaleTuner>(
       "InitialTimescales: [1.]\n"
       "MinTimescale: 1e-3\n"
@@ -296,10 +309,20 @@ void test_create_from_options() {
       "IncreaseThreshold: 1e-4\n"
       "IncreaseFactor: 1.01\n"
       "DecreaseFactor: 0.99\n");
-  CHECK(tst == TimescaleTuner({1.}, max_timescale, min_timescale,
-                              decrease_timescale_threshold,
-                              increase_timescale_threshold, increase_factor,
-                              decrease_factor));
+  CHECK(tst == expected);
+
+  TimescaleTuner tst2 = TestHelpers::test_creation<TimescaleTuner>(
+      "InitialTimescales: 1.\n"
+      "MinTimescale: 1e-3\n"
+      "MaxTimescale: 10.\n"
+      "DecreaseThreshold: 1e-2\n"
+      "IncreaseThreshold: 1e-4\n"
+      "IncreaseFactor: 1.01\n"
+      "DecreaseFactor: 0.99\n");
+
+  CHECK_FALSE(tst2 == expected);
+  tst2.resize_timescales(1);
+  CHECK(tst2 == expected);
 }
 
 void test_equality_and_serialization() {
@@ -310,13 +333,15 @@ void test_equality_and_serialization() {
   const double max_timescale = 10.0;
   const double min_timescale = 1.0e-3;
 
-  TimescaleTuner tst1(
-      {0.3}, max_timescale, min_timescale, decrease_timescale_threshold,
-      increase_timescale_threshold, increase_factor, decrease_factor);
+  TimescaleTuner tst1(std::vector<double>{0.3}, max_timescale, min_timescale,
+                      decrease_timescale_threshold,
+                      increase_timescale_threshold, increase_factor,
+                      decrease_factor);
 
-  TimescaleTuner tst2(
-      {0.4}, max_timescale, min_timescale, decrease_timescale_threshold,
-      increase_timescale_threshold, increase_factor, decrease_factor);
+  TimescaleTuner tst2(std::vector<double>{0.4}, max_timescale, min_timescale,
+                      decrease_timescale_threshold,
+                      increase_timescale_threshold, increase_factor,
+                      decrease_factor);
 
   CHECK(tst1 == tst1);
   CHECK(tst1 != tst2);
@@ -474,6 +499,60 @@ void test_errors() {
         tst.update_timescale(qs);
       }()),
       Catch::Contains("One or both of the number of components in q_and_dtq"));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
+
+        TimescaleTuner tst(
+            1.0, max_timescale, min_timescale, decrease_timescale_threshold,
+            increase_timescale_threshold, increase_factor, decrease_factor);
+
+        const std::array<DataVector, 2> qs{{{2.0}}};
+        tst.update_timescale(qs);
+      }()),
+      Catch::Contains(
+          "Damping timescales in the TimescaleTuner have not been set yet."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
+
+        TimescaleTuner tst(
+            1.0, max_timescale, min_timescale, decrease_timescale_threshold,
+            increase_timescale_threshold, increase_factor, decrease_factor);
+
+        tst.current_timescale();
+      }()),
+      Catch::Contains(
+          "Damping timescales in the TimescaleTuner have not been set yet."));
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double decrease_timescale_threshold = 1.0e-2;
+        const double increase_timescale_threshold = 1.0e-4;
+        const double increase_factor = 1.01;
+        const double decrease_factor = 0.99;
+        const double max_timescale = 10.0;
+        const double min_timescale = 1.0e-3;
+
+        const std::vector<double> init_timescale{{1.0, 2.0}};
+        TimescaleTuner tst(init_timescale, max_timescale, min_timescale,
+                           decrease_timescale_threshold,
+                           increase_timescale_threshold, increase_factor,
+                           decrease_factor);
+
+        tst.resize_timescales(0);
+      }()),
+      Catch::Contains(
+          "Damping timescales must have a non-zero number of components."));
 #endif
 }
 }  // namespace

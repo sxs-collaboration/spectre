@@ -201,9 +201,10 @@ void test_functions_of_time_tag() {
   // Controller. This value for the timescale was chosen to give an expiration
   // time between the two expiration times used above in the TestCreator
   const double timescale = 27.0;
-  const TimescaleTuner tuner1({timescale}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                              0.99);
-  const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
+                              1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner2(std::vector<double>{0.1}, 10.0, 1.0e-3, 1.0e-2,
+                              1.0e-4, 1.01, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
@@ -398,8 +399,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
       []() {
         const Creator creator = std::make_unique<TestCreator>(true);
 
-        const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                                   0.99);
+        const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
+                                   1.0e-2, 1.0e-4, 1.01, 0.99);
         const Averager<1> averager(0.25, true);
         const double update_fraction = 0.3;
         const Controller<2> controller(update_fraction);
@@ -429,8 +430,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
       []() {
         const Creator creator = std::make_unique<BadCreator>();
 
-        const TimescaleTuner tuner({1.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                                   0.99);
+        const TimescaleTuner tuner(std::vector<double>{1.0}, 10.0, 1.0e-3,
+                                   1.0e-2, 1.0e-4, 1.01, 0.99);
         const Averager<1> averager(0.25, true);
         const double update_fraction = 0.3;
         const Controller<2> controller(update_fraction);

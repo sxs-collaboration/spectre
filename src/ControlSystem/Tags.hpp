@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -14,7 +15,9 @@
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
@@ -27,10 +30,16 @@ namespace control_system {
 template <typename ControlSystem>
 struct OptionHolder;
 }  // namespace control_system
-namespace domain::FunctionsOfTime::OptionTags {
+namespace domain {
+namespace OptionTags {
+template <size_t Dim>
+struct DomainCreator;
+}  // namespace OptionTags
+namespace FunctionsOfTime::OptionTags {
 struct FunctionOfTimeFile;
 struct FunctionOfTimeNameMap;
-}  // namespace domain::FunctionsOfTime::OptionTags
+}  // namespace FunctionsOfTime::OptionTags
+}  // namespace domain
 namespace OptionTags {
 struct InitialTime;
 }  // namespace OptionTags
@@ -131,6 +140,14 @@ struct Averager : db::SimpleTag {
   }
 };
 
+namespace detail {
+template <size_t Dim>
+void initialize_tuner(
+    const gsl::not_null<::TimescaleTuner*> tuner,
+    const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
+    const double initial_time, const std::string& name);
+}  // namespace detail
+
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// DataBox tag for the timescale tuner
@@ -138,12 +155,23 @@ template <typename ControlSystem>
 struct TimescaleTuner : db::SimpleTag {
   using type = ::TimescaleTuner;
 
+  template <typename Metavariables>
   using option_tags =
-      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
-  static constexpr bool pass_metavariables = false;
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>,
+                 domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
+                 ::OptionTags::InitialTime>;
+  static constexpr bool pass_metavariables = true;
+
+  template <typename Metavariables>
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder) {
-    return option_holder.tuner;
+      const control_system::OptionHolder<ControlSystem>& option_holder,
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const double initial_time) {
+    auto tuner = option_holder.tuner;
+    detail::initialize_tuner(make_not_null(&tuner), domain_creator,
+                             initial_time, ControlSystem::name());
+    return tuner;
   }
 };
 
@@ -154,15 +182,23 @@ template <typename ControlSystem>
 struct Controller : db::SimpleTag {
   using type = ::Controller<ControlSystem::deriv_order>;
 
+  template <typename Metavariables>
   using option_tags =
-      tmpl::list<::OptionTags::InitialTime,
-                 OptionTags::ControlSystemInputs<ControlSystem>>;
-  static constexpr bool pass_metavariables = false;
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>,
+                 domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
+                 ::OptionTags::InitialTime>;
+  static constexpr bool pass_metavariables = true;
+
+  template <typename Metavariables>
   static type create_from_options(
-      const double initial_time,
-      const control_system::OptionHolder<ControlSystem>& option_holder) {
+      const control_system::OptionHolder<ControlSystem>& option_holder,
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const double initial_time) {
     type controller = option_holder.controller;
-    const ::TimescaleTuner tuner = option_holder.tuner;
+    ::TimescaleTuner tuner = option_holder.tuner;
+    detail::initialize_tuner(make_not_null(&tuner), domain_creator,
+                             initial_time, ControlSystem::name());
 
     controller.set_initial_update_time(initial_time);
     controller.assign_time_between_updates(min(tuner.current_timescale()));

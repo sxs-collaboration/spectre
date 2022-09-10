@@ -4,6 +4,11 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
+#include <limits>
+#include <optional>
+#include <utility>
+#include <variant>
 
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
@@ -50,9 +55,12 @@ class TimescaleTuner {
       "TimescaleTuner: stores and dynamically updates the timescales for each "
       "component of a particular control system."};
   struct InitialTimescales {
-    using type = std::vector<double>;
+    using type = std::variant<double, std::vector<double>>;
     static constexpr Options::String help = {
-        "Initial timescales for each function of time"};
+        "Initial timescales for each function of time. Can either be a single "
+        "value which will be used for all components of a function of time, or "
+        "a vector of values. The vector must have the same number of "
+        "components as the function of time."};
   };
 
   struct MinTimescale {
@@ -88,7 +96,7 @@ class TimescaleTuner {
                              DecreaseThreshold, IncreaseThreshold,
                              IncreaseFactor, DecreaseFactor>;
 
-  TimescaleTuner(const std::vector<double>& initial_timescale,
+  TimescaleTuner(const typename InitialTimescales::type& initial_timescale,
                  double max_timescale, double min_timescale,
                  double decrease_timescale_threshold,
                  double increase_timescale_threshold, double increase_factor,
@@ -101,22 +109,40 @@ class TimescaleTuner {
   TimescaleTuner& operator=(const TimescaleTuner&) = default;
   ~TimescaleTuner() = default;
 
-  /// returns the current timescale for each component of a FunctionOfTime
-  const DataVector& current_timescale() const { return timescale_; }
-  /// manually sets all timescales to a specified value, unless the value is
+  /// Returns the current timescale for each component of a FunctionOfTime
+  const DataVector& current_timescale() const;
+  /// Manually sets all timescales to a specified value, unless the value is
   /// outside of the specified minimum and maximum timescale bounds, in which
-  /// case it is set to the nearest bounded value
+  /// case it is set to the nearest bounded value.
   void set_timescale_if_in_allowable_range(double suggested_timescale);
-  /// the update function responsible for modifying the timescale based on
+  /// The update function responsible for modifying the timescale based on
   /// the control system errors
   void update_timescale(const std::array<DataVector, 2>& q_and_dtq);
+
+  /// Return whether the timescales have been set
+  bool timescales_have_been_set() const { return timescales_have_been_set_; }
+
+  /// \brief Destructively resize the DataVector of timescales. All previous
+  /// timescale information will be lost.
+  /// \param num_timescales Number of components to resize to. Can be larger or
+  /// smaller than the previous size. Must be greater than 0.
+  /// \param fill_value Optional of what value to use to fill the new
+  /// timescales. `std::nullopt` signifies to use the minimum of the initial
+  /// timescales. Default is `std::nullopt`.
+  void resize_timescales(
+      size_t num_timescales,
+      const std::optional<double>& fill_value = std::nullopt);
 
   void pup(PUP::er& p);
 
   friend bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs);
 
  private:
+  void check_if_timescales_have_been_set() const;
+
   DataVector timescale_;
+  bool timescales_have_been_set_{false};
+  double initial_timescale_{std::numeric_limits<double>::signaling_NaN()};
   double max_timescale_;
   double min_timescale_;
   double decrease_timescale_threshold_;

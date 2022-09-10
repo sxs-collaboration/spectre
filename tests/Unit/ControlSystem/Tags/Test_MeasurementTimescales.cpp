@@ -8,6 +8,7 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Component.hpp"
@@ -64,8 +65,8 @@ template <size_t DerivOrder>
 void test_calculate_measurement_timescales() {
   INFO("Test calculate measurement timescales");
   const double timescale = 20.0;
-  const TimescaleTuner tuner({timescale}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                             0.99);
+  const TimescaleTuner tuner(std::vector<double>{timescale}, 10.0, 1.0e-3,
+                             1.0e-2, 1.0e-4, 1.01, 0.99);
   const double update_fraction = 0.25;
   const Controller<DerivOrder> controller(update_fraction);
 
@@ -94,11 +95,11 @@ void test_measurement_tag() {
   const double time_step = 0.2;
   {
     const double timescale1 = 27.0;
-    const TimescaleTuner tuner1({timescale1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4,
-                                1.01, 0.99);
+    const TimescaleTuner tuner1(std::vector<double>{timescale1}, 10.0, 1.0e-3,
+                                1.0e-2, 1.0e-4, 1.01, 0.99);
     const double timescale2 = 0.5;
-    const TimescaleTuner tuner2({timescale2}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4,
-                                1.01, 0.99);
+    const TimescaleTuner tuner2(std::vector<double>{timescale2}, 10.0, 1.0e-3,
+                                1.0e-2, 1.0e-4, 1.01, 0.99);
     const double averaging_fraction = 0.25;
     const Averager<1> averager(averaging_fraction, true);
     const double update_fraction = 0.3;
@@ -176,10 +177,10 @@ void test_measurement_tag() {
 
   CHECK_THROWS_WITH(
       ([]() {
-        const TimescaleTuner tuner1({27.0}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                                    0.99);
-        const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                                    0.99);
+        const TimescaleTuner tuner1(std::vector<double>{27.0}, 10.0, 1.0e-3,
+                                    1.0e-2, 1.0e-4, 1.01, 0.99);
+        const TimescaleTuner tuner2(std::vector<double>{0.1}, 10.0, 1.0e-3,
+                                    1.0e-2, 1.0e-4, 1.01, 0.99);
         const Averager<1> averager(0.25, true);
         const Controller<2> controller(0.3);
         const control_system::TestHelpers::ControlError control_error{};
