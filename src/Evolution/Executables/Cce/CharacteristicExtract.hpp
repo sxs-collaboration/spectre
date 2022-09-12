@@ -95,7 +95,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &Cce::register_initialize_j_with_charm<
-        metavariables::uses_partially_flat_cartesian_coordinates>,
+        metavariables::uses_partially_flat_cartesian_coordinates,
+        metavariables::cce_boundary_component>,
     &Parallel::register_derived_classes_with_charm<
         Cce::WorldtubeBufferUpdater<Cce::cce_metric_input_tags>>,
     &Parallel::register_derived_classes_with_charm<
