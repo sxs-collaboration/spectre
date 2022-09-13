@@ -13,6 +13,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Events/InterpolateWithoutInterpComponent.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -47,8 +48,11 @@ struct InterpolateDuringSelfStart {
     auto interpolate_event = intrp::Events::InterpolateWithoutInterpComponent<
         Metavariables::volume_dim, CceWorltubeTargetTag, Metavariables,
         typename CceWorltubeTargetTag::vars_to_interpolate_to_target>{};
-    interpolate_event.run(make_observation_box<db::AddComputeTags<>>(box),
-                          cache, array_index, component);
+    ::apply(
+        interpolate_event,
+        make_observation_box<db::AddComputeTags<
+            Events::Tags::ObserverMeshCompute<Metavariables::volume_dim>>>(box),
+        cache, array_index, component);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

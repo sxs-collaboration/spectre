@@ -8,12 +8,17 @@
 #include <memory>
 #include <numeric>
 #include <pup.h>
+#include <string>
 #include <type_traits>
 
+#include "ControlSystem/UpdateFunctionOfTime.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/ObservationBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -165,6 +170,8 @@ struct mock_element {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using initial_databox = db::compute_databox_type<db::AddSimpleTags<>>;
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 };
 
 struct MockMetavariables {
@@ -195,11 +202,11 @@ struct MockMetavariables {
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<tmpl::pair<Event, tmpl::list<event>>>;
   };
-
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                   "[Unit]") {
+  ::domain::FunctionsOfTime::register_derived_with_charm();
   using metavars = MockMetavariables;
   const ElementId<metavars::volume_dim> element_id(2);
   const ElementId<metavars::volume_dim> array_index(element_id);
@@ -208,7 +215,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   using interp_target_component =
       mock_interpolation_target<metavars, metavars::InterpolatorTargetA>;
   using elem_component = mock_element<metavars>;
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  const double initial_expr_time = 0.1;
+  const std::string name{"FunctionToCheck"};
+  functions_of_time[name] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+          0.0, std::array<DataVector, 1>{{DataVector{1, 0.0}}},
+          initial_expr_time);
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {}, {std::move(functions_of_time)}};
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_group_component<interp_component>(&runner);
@@ -252,6 +269,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   };
 
   const TimeStepId temporal_id(true, 0, Slab(0., observation_time).end());
+  const double invalid_time = 0.2;
 
   intrp::interpolate<MockMetavariables::InterpolatorTargetA>(
       temporal_id, mesh, cache, array_index, get<Tags::Lapse>(vars));
@@ -262,16 +280,27 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   MockInterpolatorReceiveVolumeData::results = {};
 
   // Test the event version
-
-  const auto box = db::create<
+  auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavars>,
                         metavars::InterpolatorTargetA::temporal_id,
-                        domain::Tags::Mesh<metavars::volume_dim>,
+                        ::Tags::Time, domain::Tags::Mesh<metavars::volume_dim>,
                         ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      metavars{}, temporal_id, mesh, vars);
+      metavars{}, temporal_id, invalid_time, mesh, vars);
 
   metavars::event event{};
 
+  // Functions of time aren't ready yet.
+  CHECK_FALSE(static_cast<const Event&>(event).is_ready(
+      box, cache, array_index, std::add_pointer_t<elem_component>{}));
+
+  // Update time in box and functions of time
+  db::mutate<::Tags::Time>(make_not_null(&box),
+                           [](gsl::not_null<double*> time) { *time = 1.0; });
+  Parallel::mutate<domain::Tags::FunctionsOfTime,
+                   control_system::UpdateFunctionOfTime>(
+      cache, name, initial_expr_time, DataVector{1, 0.0}, observation_time);
+
+  // Now everything should be ready
   CHECK(static_cast<const Event&>(event).is_ready(
       box, cache, array_index, std::add_pointer_t<elem_component>{}));
   CHECK(event.needs_evolved_variables());
