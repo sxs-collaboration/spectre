@@ -109,6 +109,12 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
   std::string input_options =
       "Evolution:\n"
       "  InitialTime: 0.0\n"
+      "DomainCreator:\n"
+      "  FakeCreator:\n"
+      "    NumberOfComponents:\n"
+      "      Translation: 3\n"
+      "      Rotation: 3\n"
+      "      Expansion: 1\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n";
   input_options += create_input_string(translation_name);

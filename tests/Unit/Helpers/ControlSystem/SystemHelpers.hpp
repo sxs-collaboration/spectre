@@ -35,6 +35,7 @@
 #include "DataStructures/LinkedMessageId.hpp"
 #include "DataStructures/LinkedMessageQueue.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/FunctionsOfTime/FixedSpeedCubic.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -42,6 +43,7 @@
 #include "Domain/FunctionsOfTime/QuaternionFunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
@@ -50,6 +52,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CreateFromOptions.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -77,6 +80,59 @@ using init_simple_tags =
                control_system::Tags::WriteDataToDisk,
                control_system::Tags::IsActive<ControlSystem>,
                typename ControlSystem::MeasurementQueue>;
+
+class FakeCreator : public DomainCreator<3> {
+ private:
+  struct NumberOfComponents {
+    using type = std::unordered_map<std::string, size_t>;
+    static constexpr Options::String help = {
+        "Num of components for function of time"};
+  };
+
+ public:
+  using options = tmpl::list<NumberOfComponents>;
+  static constexpr Options::String help = {
+      "Num of components for all functions of time being tested."};
+
+  FakeCreator() = default;
+
+  FakeCreator(const std::unordered_map<std::string, size_t>& num_components_map)
+      : num_components_map_(num_components_map) {}
+
+  Domain<3> create_domain() const override { ERROR(""); }
+  std::vector<std::array<size_t, 3>> initial_extents() const override {
+    ERROR("");
+  }
+  std::vector<std::array<size_t, 3>> initial_refinement_levels()
+      const override {
+    ERROR("");
+  }
+
+  // This won't give the proper functions of time, it's just used for the number
+  // of components so we can make the values and expiration times whatever we
+  // want.
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                         /*initial_expiration_times*/
+                         = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override {
+    std::unordered_map<std::string,
+                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+        all_functions_of_time{};
+
+    for (const auto& [name, num_components] : num_components_map_) {
+      all_functions_of_time[name] =
+          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+              0.0, std::array<DataVector, 1>{{{num_components, 0.0}}}, 1.0);
+    }
+
+    return all_functions_of_time;
+  }
+
+ private:
+  std::unordered_map<std::string, size_t> num_components_map_{};
+};
 
 template <typename Metavariables, typename ControlSystem>
 struct MockControlComponent {
@@ -144,6 +200,12 @@ struct MockMetavars {
                                 ExpansionDerivOrder>;
 
   using observed_reduction_data_tags = tmpl::list<>;
+
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<DomainCreator<volume_dim>, tmpl::list<FakeCreator>>>;
+  };
 
   static constexpr bool using_expansion = ExpansionDerivOrder != 0;
   static constexpr bool using_rotation = RotationDerivOrder != 0;
@@ -571,7 +633,8 @@ struct SystemHelper {
   using option_list = tmpl::push_back<
       tmpl::remove_duplicates<tmpl::transform<
           control_components, tmpl::bind<option_tag, tmpl::_1>>>,
-      control_system::OptionTags::WriteDataToDisk, ::OptionTags::InitialTime>;
+      control_system::OptionTags::WriteDataToDisk, ::OptionTags::InitialTime,
+      domain::OptionTags::DomainCreator<3>>;
   template <typename System>
   using creatable_tags =
       tmpl::list_difference<init_simple_tags<System>,
@@ -586,7 +649,7 @@ struct SystemHelper {
               std::move(args)...);
         });
 
-    tmpl::for_each<control_systems>([this, options](auto system_v) {
+    tmpl::for_each<control_systems>([this, &options](auto system_v) {
       using system = tmpl::type_from<decltype(system_v)>;
 
       tuples::tagged_tuple_from_typelist<creatable_tags<system>> created_tags =

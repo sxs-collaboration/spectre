@@ -65,6 +65,10 @@ void test_translation_control_system() {
   const std::string input_options =
       "Evolution:\n"
       "  InitialTime: 0.0\n"
+      "DomainCreator:\n"
+      "  FakeCreator:\n"
+      "    NumberOfComponents:\n"
+      "      Translation: 3\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  Translation:\n"
