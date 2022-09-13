@@ -14,6 +14,7 @@
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/LinkedMessageId.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
@@ -24,6 +25,12 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace evolution::Tags {
+struct PreviousTriggerTime;
+}  // namespace evolution::Tags
+/// \endcond
 
 namespace Tags {
 
@@ -49,6 +56,35 @@ struct TimeStep : db::SimpleTag {
 struct Time : db::SimpleTag {
   using type = double;
 };
+
+/// @{
+/// \ingroup TimeGroup
+/// \brief Tag for the current and previous time as doubles
+///
+/// \warning The previous time is calculated via the value of the
+/// ::evolution::Tags::PreviousTriggerTime. Therefore, this tag can only be
+/// used in the context of dense triggers as that is where the
+/// ::evolution::Tags::PreviousTriggerTime tag is set. Any Events that request
+/// this tag in their `argument_tags` type alias, must be triggered by a
+/// DenseTrigger.
+struct TimeAndPrevious : db::SimpleTag {
+  using type = LinkedMessageId<double>;
+};
+
+struct TimeAndPreviousCompute : TimeAndPrevious, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<::Tags::Time, ::evolution::Tags::PreviousTriggerTime>;
+  using base = TimeAndPrevious;
+  using return_type = LinkedMessageId<double>;
+
+  static void function(
+      gsl::not_null<LinkedMessageId<double>*> time_and_previous,
+      const double time, const std::optional<double>& previous_time) {
+    time_and_previous->id = time;
+    time_and_previous->previous = previous_time;
+  }
+};
+/// @}
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
