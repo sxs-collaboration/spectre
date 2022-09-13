@@ -50,7 +50,15 @@ Cce:
   ObservationLMax: 8
 
   InitializeJ:
-    InverseCubic
+    ConformalFactor:
+      AngularCoordTolerance: 1e-13
+      MaxIterations: 1000
+      RequireConvergence: False
+      OptimizeL0Mode: True
+      UseBetaIntegralEstimate: False
+      ConformalFactorIterationHeuristic: SpinWeight1CoordPerturbation
+      UseInputModes: False
+      InputModes: []
 
   StartTime: 0.0
   EndTime: 1000.0
