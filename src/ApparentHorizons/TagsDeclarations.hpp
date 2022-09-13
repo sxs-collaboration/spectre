@@ -6,6 +6,8 @@
 namespace StrahlkorperTags {
 template <typename Frame>
 struct EuclideanAreaElement;
+template <typename Frame>
+struct EuclideanAreaElementCompute;
 template <typename IntegrandTag, typename Frame>
 struct EuclideanSurfaceIntegral;
 struct OneOverOneFormMagnitude;

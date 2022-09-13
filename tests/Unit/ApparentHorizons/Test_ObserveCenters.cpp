@@ -62,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
 
   db::DataBox<tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Grid>,
                          StrahlkorperTags::CartesianCoords<Frame::Inertial>,
-                         StrahlkorperGr::Tags::AreaElement<Frame::Grid>>>
+                         StrahlkorperTags::EuclideanAreaElement<Frame::Grid>>>
       box{};
 
   const auto update_stored_centers = [&make_center, &grid_centers,
@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ObserveCenters",
 
     db::mutate<StrahlkorperTags::Strahlkorper<Frame::Grid>,
                StrahlkorperTags::CartesianCoords<Frame::Inertial>,
-               StrahlkorperGr::Tags::AreaElement<Frame::Grid>>(
+               StrahlkorperTags::EuclideanAreaElement<Frame::Grid>>(
         make_not_null(&box),
         [&grid_center, &inertial_center](
             gsl::not_null<Strahlkorper<Frame::Grid>*> box_grid_horizon,

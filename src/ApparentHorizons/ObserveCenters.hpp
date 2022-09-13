@@ -52,7 +52,7 @@ namespace callbacks {
  *
  * \note Requires StrahlkorperTags::Strahlkorper<Frame::Grid>
  * and StrahlkorperTags::CartesianCoords<Frame::Inertial> and
- * StrahlkorperGr::Tags::AreaElement<Frame::Grid> to be in the DataBox
+ * StrahlkorperTags::EuclideanAreaElement<Frame::Grid> to be in the DataBox
  * of the InterpolationTarget.
  */
 template <typename InterpolationTargetTag>
@@ -63,16 +63,18 @@ struct ObserveCenters {
                     const TemporalId& temporal_id) {
     using GridTag = StrahlkorperTags::Strahlkorper<Frame::Grid>;
     using CoordsTag = StrahlkorperTags::CartesianCoords<Frame::Inertial>;
-    using AreaElementTag = StrahlkorperGr::Tags::AreaElement<Frame::Grid>;
+    using EuclideanAreaElementTag =
+        StrahlkorperTags::EuclideanAreaElement<Frame::Grid>;
     static_assert(
         db::tag_is_retrievable_v<GridTag, db::DataBox<DbTags>>,
         "DataBox must contain StrahlkorperTags::Strahlkorper<Frame::Grid>");
     static_assert(db::tag_is_retrievable_v<CoordsTag, db::DataBox<DbTags>>,
                   "DataBox must contain "
                   "StrahlkorperTags::CartesianCoords<Frame::Inertial>");
-    static_assert(db::tag_is_retrievable_v<AreaElementTag, db::DataBox<DbTags>>,
-                  "DataBox must contain "
-                  "StrahlkorperGr::Tags::AreaElement<Frame::Grid>");
+    static_assert(
+        db::tag_is_retrievable_v<EuclideanAreaElementTag, db::DataBox<DbTags>>,
+        "DataBox must contain "
+        "StrahlkorperTags::EuclideanAreaElement<Frame::Grid>");
 
     const auto& grid_horizon = db::get<GridTag>(box);
     const std::array<double, 3> grid_center = grid_horizon.physical_center();
@@ -80,17 +82,21 @@ struct ObserveCenters {
     // computes the inertial center to be the average value of the
     // inertial coordinates over the Strahlkorper, where the average is
     // computed by a surface integral.
+    // Note that we use the Euclidean area element here, since we are trying
+    // to find a geometric center of a surface without regard to GR.
     const auto& inertial_coords = db::get<CoordsTag>(box);
-    const auto& area_element = db::get<AreaElementTag>(box);
+    const auto& area_element = db::get<EuclideanAreaElementTag>(box);
     std::array<double, 3> inertial_center =
         make_array<3>(std::numeric_limits<double>::signaling_NaN());
     auto integrand = make_with_value<Scalar<DataVector>>(get(area_element), 0.);
+    const double denominator = grid_horizon.ylm_spherepack().definite_integral(
+        get(area_element).data());
     for (size_t i = 0; i < 3; ++i) {
       get(integrand) = get(area_element) * inertial_coords.get(i);
       gsl::at(inertial_center, i) =
           grid_horizon.ylm_spherepack().definite_integral(
               get(integrand).data()) /
-          (4.0 * M_PI);
+          denominator;
     }
 
     // time, grid_x, grid_y, grid_z, inertial_x, inertial_y, inertial_z
