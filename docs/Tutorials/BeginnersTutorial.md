@@ -223,7 +223,9 @@ depending on what version of `Paraview` you have.)
 \image html beginners_paraview_top.png "Paraview top-bar"
 
 Now you'll have a solid sphere with highlighted lines. To view the interior of
-the domain, you'll need to add a filter. Probably the two most helpful filters
+the domain, you'll need to add a filter. To access the filters, navigate to
+`Filters` on the top menu bar, hover over `Alphabetical`, and search for your
+filter of choice.  Probably the two most helpful filters
 for viewing the domain are the `Slice` and `Clip` filters. (Note that you'll
 have to choose the `Surface With Edges` option for each filter separately.)
 

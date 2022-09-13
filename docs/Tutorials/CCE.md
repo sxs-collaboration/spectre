@@ -43,7 +43,7 @@ CCE using external data are:
 - An example of an appropriate submission command for slurm systems is:
   ```
   srun -n 1 -c 1 path/to/build/bin/CharacteristicExtract ++ppn 3 \
- --input-file path/to/input.yaml
+  --input-file path/to/input.yaml
   ```
   CCE doesn't currently scale to more than 4 cores, so those slurm options are
   best.
@@ -73,6 +73,9 @@ CCE using external data are:
         for attribute in input_h5[dset].attrs.keys():
             output_h5[dset].attrs[attribute] = input_h5[dset].attrs[attribute]
   ```
+- Note, these `*.h5` files required as an `input_file` (and also needed
+  in the `.yaml` file) will need to be obtained from an SXS member who has
+  completed a relevant `SpEC` run.
 - The output data will be written as spin-weighted spherical harmonic
   modes, one physical quantity per dataset, and each row will
   have the time value followed by the real and imaginary parts

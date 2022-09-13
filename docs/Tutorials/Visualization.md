@@ -11,9 +11,10 @@ SpECTRE source files for evolution executables are located in
 `make EXECUTABLE_NAME` where `EXECUTABLE_NAME` is the name of the executable
 as defined in the `CMakeLists.txt` file located in the same directory as the
 source file. For example, to compile the executable that evolves a scalar wave
-using a three-dimensional domain, one runs the command:
-`make EvolveScalarWavePlaneWave3D`, which then results in an executable of the
-same name in the `bin` directory of the user's build directory.
+using a three-dimensional domain, navigate to `$SPECTRE_HOME/build/`, then
+one runs the command: `make EvolveScalarWavePlaneWave3D`, which then results
+in an executable of the same name in the `bin` directory of the user's
+build directory.
 
 ### Running an Evolution Executable
 
