@@ -94,12 +94,12 @@ void test_uniform_cylindrical_endcap() {
     // max_radius_one_to_fit_inside_sphere_two is the largest that
     // radius_one can be and still satisfy both
     // 0.98 radius_two >= radius_one + |C_1-C_2| and
-    // z_plane_two >= z_plane_one + 0.02*r_2.
+    // z_plane_two >= z_plane_one + 0.03*r_2.
     // If radius_one takes on that value, then center_one-center_two
     // must point in the minus-z direction, and only one value of
     // center_one[2] is allowed.
     const double max_radius_one_to_fit_inside_sphere_two =
-        (0.96 * radius_two + z_plane_two - center_two[2]) /
+        (0.95 * radius_two + z_plane_two - center_two[2]) /
         (1.0 + z_plane_frac_one);
 
     // max_radius_one_for_alpha is the largest that radius_one can be
@@ -139,11 +139,11 @@ void test_uniform_cylindrical_endcap() {
                    radius_one * sin(theta_max_one)) *
                       tan(min_alpha);
         // max_center_one_z comes from the restriction
-        // z_plane_two >= z_plane_one + 0.02*radius_two, and the restriction
+        // z_plane_two >= z_plane_one + 0.03*radius_two, and the restriction
         // 0.98 r_2 >= r_1 + | C_1 - C_2 |
         const double max_center_one_z = std::min(
             {max_center_one_z_from_alpha,
-             z_plane_two - z_plane_frac_one * radius_one - 0.02 * radius_two,
+             z_plane_two - z_plane_frac_one * radius_one - 0.03 * radius_two,
              center_two[2] + 0.98 * radius_two - radius_one});
         // min_center_one_z comes from the restriction 0.98 r_2 >= r_1 +
         // |C_1-C_2|
@@ -208,7 +208,28 @@ void test_uniform_cylindrical_endcap() {
 
   const CoordinateMaps::UniformCylindricalEndcap map(
       center_one, center_two, radius_one, radius_two, z_plane_one, z_plane_two);
-  test_suite_for_map_on_cylinder(map, 0.0, 1.0);
+  test_suite_for_map_on_cylinder(map, 0.0, 1.0, true);
+
+  // The following are tests that the inverse function correctly
+  // returns an invalid std::optional when called for a point that is
+  // outside the range of the map.
+
+  // Point with z less than z_plane_one.
+  CHECK_FALSE(map.inverse({{0.0,0.0,z_plane_one-1.0}}));
+
+  // Point outside sphere_two
+  CHECK_FALSE(map.inverse(
+      {{center_two[0], center_two[1], center_two[2] + 1.2 * radius_two}}));
+
+  // Point inside sphere_one (but z>z_plane_one since z_plane_one
+  // intersects sphere_one)
+  CHECK_FALSE(map.inverse(
+      {{center_one[0], center_one[1], center_one[2] + 0.99 * radius_one}}));
+
+  // Point outside the cone
+  CHECK_FALSE(map.inverse(
+      {{center_one[0], center_one[1] + radius_one * sin(theta_max_one) * 1.01,
+        z_plane_one + (z_plane_one - center_one[2]) * 1.e-5}}));
 }
 }  // namespace
 
