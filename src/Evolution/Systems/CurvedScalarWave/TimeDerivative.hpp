@@ -28,26 +28,27 @@ namespace CurvedScalarWave {
  * \cite Holst2004wt :
  *
  * \f{align}
- * \partial_t\Psi = & (1 + \gamma_1) \beta^k \partial_k \Psi - \alpha \Pi -
- * \gamma_1 \beta^k \Phi_k \\
+ * \partial_t\Psi = & - \alpha \Pi + \beta^k \partial_k \Psi
+ * + \gamma_1 \beta^k (\partial_k \Psi - \Phi_k) \\
  *
- * \partial_t\Pi = & - \alpha \gamma^{ij}\partial_i\Phi_j + \beta^k \partial_k
- * \Pi + \gamma_1 \gamma_2 \beta^k \partial_k \Psi  + \alpha \Gamma^i -
- * \gamma^{ij} \Phi_i \partial_j \alpha
- *  + \alpha K \Pi - \gamma_1  \gamma_2 \beta^k \Phi_k\\
+ * \partial_t\Pi = & \alpha K \Pi + \beta^i \partial_i \Pi
+ * + \alpha \Gamma^i \Phi_i
+ * + \gamma_1 \gamma_2 \beta^i ( \partial_i \Psi - \Phi_i )
+ * - \alpha \gamma^{ij} \partial_i\Phi_j
+ * - \gamma^{ij} \Phi_i \partial_j \alpha \\
  *
- * \partial_t\Phi_i = & - \alpha \partial_i \Pi  + \beta^k \partial_k \Phi +
- * \gamma_2 \alpha \partial_i \Psi - \Pi
- * \partial_i \alpha + \Phi_k \partial_i \beta^j - \gamma_2 \alpha \Phi_i\\
+ * \partial_t\Phi_i = & - \alpha \partial_i \Pi  + \beta^k \partial_k \Phi_i
+ * + \gamma_2 \alpha ( \partial_i \Psi - \Phi_i )
+ * - \Pi \partial_i \alpha + \Phi_j \partial_i \beta^j \\
  * \f}
  *
  * where \f$\Psi\f$ is the scalar field, \f$\Pi\f$ is the
  * conjugate momentum to \f$\Psi\f$, \f$\Phi_i=\partial_i\Psi\f$ is an
  * auxiliary variable, \f$\alpha\f$ is the lapse, \f$\beta^k\f$ is the shift,
  * \f$ \gamma_{ij} \f$ is the spatial metric, \f$ K \f$ is the trace of the
- * extrinsic curvature, and \f$ \Gamma^i \f$ is the trace of the Christoffel
- * symbol of the second kind. \f$\gamma_1, \gamma_2\f$ are constraint damping
- * parameters.
+ * extrinsic curvature, and \f$ \Gamma^i \f$ is the trace of the spatial
+ * Christoffel symbol of the second kind. \f$\gamma_1, \gamma_2\f$ are
+ * constraint damping parameters.
  */
 template <size_t Dim>
 struct TimeDerivative {
