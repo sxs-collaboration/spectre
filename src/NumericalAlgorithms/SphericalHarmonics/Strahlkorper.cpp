@@ -13,6 +13,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 namespace Frame {
+struct Distorted;
 struct Inertial;
 }  // namespace Frame
 
@@ -142,3 +143,4 @@ bool Strahlkorper<Frame>::point_is_contained(
 
 template class Strahlkorper<Frame::Inertial>;
 template class Strahlkorper<Frame::Grid>;
+template class Strahlkorper<Frame::Distorted>;
