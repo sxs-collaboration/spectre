@@ -623,7 +623,7 @@ struct SystemHelper {
     }
 
     // Get horizons at final time in grid frame
-    std::tie(horizon_a_, horizon_b_) = horizon_function(time);
+    std::tie(horizon_a_, horizon_b_) = horizon_function(final_time);
   }
 
  private:
