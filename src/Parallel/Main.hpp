@@ -650,45 +650,66 @@ void Main<Metavariables>::
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() {
   if (not exception_messages_.empty()) {
-    Parallel::printf("The following exceptions were reported:\n");
+    if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+      Parallel::printf(
+          "Received termination while cleaning up a previous termination. This "
+          "is cyclic behavior and cannot be supported. Cleanup must exit "
+          "cleanly without errors.");
+      sys::abort("");
+    }
+    current_phase_ = Parallel::Phase::PostFailureCleanup;
+    Parallel::printf("Entering phase: %s\n", current_phase_);
+  } else {
+    if (Parallel::Phase::Exit == current_phase_) {
+      ERROR("Current phase is Exit, but program did not exit!");
+    }
+
+    if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+      Parallel::printf("PostFailureCleanup phase complete. Aborting.\n");
+      Informer::print_exit_info();
+      sys::abort("");
+    }
+
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
+        make_not_null(&phase_change_decision_data_), current_phase_,
+        *Parallel::local_branch(global_cache_proxy_));
+    if (next_phase.has_value()) {
+      // Only print info if there was an actual phase change.
+      if (current_phase_ != next_phase.value()) {
+        Parallel::printf("Entering phase from phase control: %s\n",
+                         next_phase.value());
+        current_phase_ = next_phase.value();
+      }
+    } else {
+      const auto& default_order = Metavariables::default_phase_order;
+      auto it = alg::find(default_order, current_phase_);
+      using ::operator<<;
+      if (it == std::end(default_order)) {
+        ERROR("Cannot determine next phase as '"
+              << current_phase_
+              << "' is not in Metavariables::default_phase_order "
+              << default_order << "\n");
+      }
+      if (std::next(it) == std::end(default_order)) {
+        ERROR("Cannot determine next phase as '"
+              << current_phase_
+              << "' is last in Metavariables::default_phase_order "
+              << default_order << "\n");
+      }
+      current_phase_ = *std::next(it);
+
+      Parallel::printf("Entering phase: %s\n", current_phase_);
+    }
+  }
+
+  if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+    Parallel::printf(
+        "\n\n###############################\n"
+        "The following exceptions were reported:\n");
     for (const std::string& exception_message : exception_messages_) {
       Parallel::printf("%s\n\n", exception_message);
     }
-    sys::abort("");
-  }
-  if (Parallel::Phase::Exit == current_phase_) {
-    ERROR("Current phase is Exit, but program did not exit!");
-  }
-
-  const auto next_phase = PhaseControl::arbitrate_phase_change(
-      make_not_null(&phase_change_decision_data_), current_phase_,
-      *Parallel::local_branch(global_cache_proxy_));
-  if (next_phase.has_value()) {
-    // Only print info if there was an actual phase change.
-    if (current_phase_ != next_phase.value()) {
-      Parallel::printf("Entering phase from phase control: %s\n",
-                       next_phase.value());
-      current_phase_ = next_phase.value();
-    }
-  } else {
-    const auto& default_order = Metavariables::default_phase_order;
-    auto it = alg::find(default_order, current_phase_);
-    using ::operator<<;
-    if (it == std::end(default_order)) {
-      ERROR("Cannot determine next phase as '"
-            << current_phase_
-            << "' is not in Metavariables::default_phase_order "
-            << default_order << "\n");
-    }
-    if (std::next(it) == std::end(default_order)) {
-      ERROR("Cannot determine next phase as '"
-            << current_phase_
-            << "' is last in Metavariables::default_phase_order "
-            << default_order << "\n");
-    }
-    current_phase_ = *std::next(it);
-
-    Parallel::printf("Entering phase: %s\n", current_phase_);
+    exception_messages_.clear();
   }
 
   if (Parallel::Phase::Exit == current_phase_) {
