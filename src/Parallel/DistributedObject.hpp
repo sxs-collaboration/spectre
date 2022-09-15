@@ -413,7 +413,7 @@ class DistributedObject<ParallelComponent,
   size_t number_of_actions_in_phase(const Parallel::Phase phase) const;
 
   // After catching an exception, shutdown the simulation
-  [[noreturn]] void initiate_shutdown(const std::exception& exception);
+  void initiate_shutdown(const std::exception& exception);
 
   // Member variables
 #ifdef SPECTRE_CHARM_PROJECTIONS
@@ -1119,10 +1119,33 @@ template <typename ParallelComponent, typename... PhaseDepActionListsPack>
 void DistributedObject<ParallelComponent,
                        tmpl::list<PhaseDepActionListsPack...>>::
     initiate_shutdown(const std::exception& exception) {
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
-  CkError("\nException caught in Algorithm:\n%s\n\nShutting down...\n",
-          exception.what());
-  sys::abort("");
+  // In order to make it so that we can later run other actions for cleanup
+  // (e.g. dumping data) we need to make sure that we enable running actions
+  // again _and_ that we are not locking the node (only matters for nodegroups)
+  performing_action_ = false;
+  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+    node_lock_.unlock();
+  }
+  // Send message to `Main` that we received an exception and set termination.
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  if (UNLIKELY(global_cache == nullptr)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "Global cache pointer is null. This is an internal inconsistency "
+        "error. Please file an issue.");
+    sys::abort("");
+  }
+  auto main_proxy = global_cache->get_main_proxy();
+  if (UNLIKELY(not main_proxy.has_value())) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "The main proxy has not been set in the global cache when terminating "
+        "the component. This is an internal inconsistency error. Please file "
+        "an issue.");
+    sys::abort("");
+  }
+  main_proxy.value().add_exception_message(std::string{exception.what()});
+  set_terminate(true);
 }
 /// \endcond
 
