@@ -112,6 +112,13 @@ class Main : public CBase_Main<Metavariables> {
                                    funcl::Identity, std::index_sequence<>>>
           reduction_data);
 
+  /// Add an exception to the list of exceptions. Upon a phase change we print
+  /// all the received exceptions and exit.
+  ///
+  /// Upon receiving an exception all algorithms are terminated to guarantee
+  /// quiescence occurs soon after the exception is reported.
+  void add_exception_message(std::string exception_message);
+
  private:
   // Return the dir name for the next Charm++ checkpoint as well as the pieces
   // from which the name is built up: the basename and the padding. This is a
@@ -166,6 +173,8 @@ class Main : public CBase_Main<Metavariables> {
       phase_change_decision_data_;
   size_t checkpoint_dir_counter_ = 0_st;
   Parallel::ResourceInfo<Metavariables> resource_info_{};
+  // All exception errors we've received so far.
+  std::vector<std::string> exception_messages_{};
 };
 
 namespace detail {
@@ -558,6 +567,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 
   p | checkpoint_dir_counter_;
   p | resource_info_;
+  p | exception_messages_;
   if (p.isUnpacking()) {
     check_future_checkpoint_dirs_available();
   }
@@ -639,6 +649,13 @@ void Main<Metavariables>::
 
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() {
+  if (not exception_messages_.empty()) {
+    Parallel::printf("The following exceptions were reported:\n");
+    for (const std::string& exception_message : exception_messages_) {
+      Parallel::printf("%s\n\n", exception_message);
+    }
+    sys::abort("");
+  }
   if (Parallel::Phase::Exit == current_phase_) {
     ERROR("Current phase is Exit, but program did not exit!");
   }
@@ -744,6 +761,21 @@ void Main<Metavariables>::phase_change_reduction(
   PhaseControl::TaggedTupleMainCombine::apply(
       make_not_null(&phase_change_decision_data_),
       get<0>(reduction_data.data()));
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::add_exception_message(std::string exception_message) {
+  exception_messages_.push_back(std::move(exception_message));
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
+  // Set terminate_=true on all components to cause them to stop the current
+  // phase.
+  tmpl::for_each<component_list>(
+      [global_cache](auto component_tag_v) {
+        using component_tag = tmpl::type_from<decltype(component_tag_v)>;
+        Parallel::get_parallel_component<component_tag>(*global_cache)
+            .set_terminate(true);
+      });
 }
 
 template <typename Metavariables>

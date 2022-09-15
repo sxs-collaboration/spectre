@@ -3,6 +3,8 @@
 
 module Main {
 
+  include "string";
+
   include "Parallel/ReductionDeclare.hpp";
   include "Utilities/Functional.hpp";
   include "Utilities/TaggedTuple.hpp";
@@ -23,6 +25,7 @@ module Main {
     entry void execute_next_phase();
     entry void start_load_balance();
     entry void start_write_checkpoint();
+    entry void add_exception_message(std::string exception_message);
   }
 
   namespace detail {
