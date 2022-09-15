@@ -56,21 +56,42 @@ namespace evolution::dg::subcell {
  * \f}
  *
  * where we typically take \f$\delta_{0}=10^{-4}\f$ and \f$\epsilon=10^{-3}\f$.
+ *
+ * If all checks are passed and cell is not troubled, returns an integer `0`.
+ * Otherwise returns 1-based index of the tag in the input Variables that fails
+ * the check. For instance, if we have following two Variables objects as
+ * candidate solutions on active and inactive grids
+ *
+ *  - `Variables<tmpl::list<DgVar1, DgVar2, DgVar3>>`
+ *  - `Variables<tmpl::list<SubVar1, SubVar2, SubVar3>>`
+ *
+ * and TCI flags the second pair `DgVar2` and `SubVar2` not satisfying two-mesh
+ * RDMP criteria, returned value is `2` since the second pair of tags failed the
+ * check.
+ *
+ * \note Once a single pair of tags fails to satisfy the check, checks for the
+ * remaining part of the input variables are skipped. In the example above, for
+ * instance if the second pair (`DgVar2`,`SubVar2`) is flagged as troubled, the
+ * third pair (`DgVar3`,`SubVar3`) is ignored and not checked.
+ *
  */
 template <typename... EvolvedVarsTags>
-bool rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
-                  active_grid_candidate_evolved_vars,
-              const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
-                  inactive_grid_candidate_evolved_vars,
-              const std::vector<double>& max_of_past_variables,
-              const std::vector<double>& min_of_past_variables,
-              const double rdmp_delta0, const double rdmp_epsilon) {
+int rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
+                 active_grid_candidate_evolved_vars,
+             const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
+                 inactive_grid_candidate_evolved_vars,
+             const std::vector<double>& max_of_past_variables,
+             const std::vector<double>& min_of_past_variables,
+             const double rdmp_delta0, const double rdmp_epsilon) {
   bool cell_is_troubled = false;
+  int rdmp_tci_status = 0;
   size_t component_index = 0;
+
   tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
       [&active_grid_candidate_evolved_vars, &cell_is_troubled, &component_index,
        &inactive_grid_candidate_evolved_vars, &max_of_past_variables,
-       &min_of_past_variables, rdmp_delta0, rdmp_epsilon](auto tag_v) {
+       &min_of_past_variables, &rdmp_tci_status, rdmp_delta0,
+       rdmp_epsilon](auto tag_v) {
         if (cell_is_troubled) {
           return;
         }
@@ -108,12 +129,13 @@ bool rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
               min(min_active, min_inactive) <
                   min_of_past_variables[component_index] - delta;
           if (cell_is_troubled) {
+            rdmp_tci_status = static_cast<int>(component_index + 1);
             return;
           }
           ++component_index;
         }
       });
-  return cell_is_troubled;
+  return rdmp_tci_status;
 }
 
 /*!
@@ -169,8 +191,9 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
 }
 
 /*!
- * \brief Check if the current variables satisfy the RDMP. Returns `true` if the
- * cell is troubled.
+ * \brief Check if the current variables satisfy the RDMP. Returns an integer
+ * `0` if cell is not troubled and an integer `i+1` if the `[i]`-th element of
+ * the input vector is responsible for failing the RDMP.
  *
  * Let the candidate solution be denoted by \f$u^\star_{\alpha}(t^{n+1})\f$.
  * Then the RDMP requires that
@@ -208,10 +231,25 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
  * \f}
  *
  * where we typically take \f$\delta_{0}=10^{-4}\f$ and \f$\epsilon=10^{-3}\f$.
+ *
+ * If all checks are passed and cell is not troubled, returns an integer `0`.
+ * Otherwise returns an 1-based index of the element in the input
+ * `std::vector<double>` that fails the check.
+ *
+ * e.g. Suppose we have three variables to check RDMP so that
+ * `max_of_current_variables.size() == 3`. If RDMP TCI flags
+ * `max_of_current_variables[1]`, `min_of_current_variables[1]`, .. (and so on)
+ * as troubled, returned integer value is `2`.
+ *
+ * Once cell is marked as troubled, checks for the remaining part of the input
+ * `std::vector`s are skipped. In the example above, for instance if `[1]`-th
+ * component of inputs is flagged as troubled, checking the remaining index
+ * `[2]` is skipped.
+ *
  */
-bool rdmp_tci(const std::vector<double>& max_of_current_variables,
-              const std::vector<double>& min_of_current_variables,
-              const std::vector<double>& max_of_past_variables,
-              const std::vector<double>& min_of_past_variables,
-              double rdmp_delta0, double rdmp_epsilon);
+int rdmp_tci(const std::vector<double>& max_of_current_variables,
+             const std::vector<double>& min_of_current_variables,
+             const std::vector<double>& max_of_past_variables,
+             const std::vector<double>& min_of_past_variables,
+             double rdmp_delta0, double rdmp_epsilon);
 }  // namespace evolution::dg::subcell

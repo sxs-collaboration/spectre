@@ -30,7 +30,6 @@ set(LIBRARY_SOURCES
   Test_SliceVariable.cpp
   Test_SubcellOptions.cpp
   Test_Tags.cpp
-  Test_TciStatus.cpp
   Test_TwoMeshRdmpTci.cpp
   )
 

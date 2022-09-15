@@ -78,6 +78,7 @@ struct component {
       evolution::dg::subcell::Tags::ActiveGrid,
       evolution::dg::subcell::Tags::DidRollback,
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
+      evolution::dg::subcell::Tags::TciStatus,
       evolution::dg::subcell::Tags::DataForRdmpTci,
       evolution::dg::subcell::Tags::TciGridHistory,
       Tags::Variables<tmpl::list<Var1>>,
@@ -211,6 +212,10 @@ void test_impl(
                std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
+
+  Scalar<DataVector> tci_status{dg_mesh.number_of_grid_points(),
+                                static_cast<double>(tci_fails)};
+
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
@@ -248,7 +253,7 @@ void test_impl(
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
-       neighbor_data, rdmp_tci_data, tci_grid_history, evolved_vars,
+       neighbor_data, tci_status, rdmp_tci_data, tci_grid_history, evolved_vars,
        time_stepper_history, make_time_stepper(multistep_time_stepper)});
 
   // Invoke the TciAndSwitchToDg action on the runner

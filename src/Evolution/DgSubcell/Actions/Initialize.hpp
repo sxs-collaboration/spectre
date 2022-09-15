@@ -25,11 +25,11 @@
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
-#include "Evolution/DgSubcell/TciStatus.hpp"
 #include "Evolution/Initialization/SetVariables.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -76,13 +76,13 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::TciGridHistory`
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
+ *   - `subcell::Tags::TciStatus`
  *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
  *   - `subcell::Tags::LogicalCoordinates<Dim>`
  *   - `subcell::Tags::Corodinates<Dim, Frame::Grid>` (as compute tag)
  *   - `subcell::Tags::Coordinates<Dim, Frame::Inertial>` (as compute tag)
- *   - `subcell::Tags::TciStatusCompute<Dim>`
  * - Removes: nothing
  * - Modifies:
  *   - `System::variables_tag` if the cell is troubled
@@ -95,7 +95,7 @@ struct Initialize {
   using simple_tags =
       tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
-                 Tags::DataForRdmpTci,
+                 Tags::TciStatus, Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                  fd::Tags::DetInverseJacobianLogicalToGrid>;
   using compute_tags =
@@ -106,8 +106,7 @@ struct Initialize {
                      subcell::Tags::Coordinates>,
                  Tags::InertialCoordinatesCompute<
                      ::domain::CoordinateMaps::Tags::CoordinateMap<
-                         Dim, Frame::Grid, Frame::Inertial>>,
-                 Tags::TciStatusCompute<Dim>>;
+                         Dim, Frame::Grid, Frame::Inertial>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -137,15 +136,16 @@ struct Initialize {
     db::mutate_apply<
         tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
                    Tags::DidRollback, typename System::variables_tag,
-                   subcell::Tags::DataForRdmpTci>,
+                   subcell::Tags::TciStatus, subcell::Tags::DataForRdmpTci>,
         typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
-         &subcell_mesh,
-         &subcell_options](const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
-                           const gsl::not_null<ActiveGrid*> active_grid_ptr,
-                           const gsl::not_null<bool*> did_rollback_ptr,
-                           const auto active_vars_ptr, const auto rdmp_data_ptr,
-                           const auto&... args_for_tci) {
+         &subcell_mesh, &subcell_options](
+            const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
+            const gsl::not_null<ActiveGrid*> active_grid_ptr,
+            const gsl::not_null<bool*> did_rollback_ptr,
+            const auto active_vars_ptr,
+            const gsl::not_null<Scalar<DataVector>*> tci_status_ptr,
+            const auto rdmp_data_ptr, const auto&... args_for_tci) {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
           // subcells as a normal solve.
@@ -153,6 +153,11 @@ struct Initialize {
 
           *subcell_mesh_ptr = subcell_mesh;
           *active_grid_ptr = ActiveGrid::Dg;
+
+          destructive_resize_components(tci_status_ptr,
+                                        dg_mesh.number_of_grid_points());
+          get(*tci_status_ptr) = static_cast<int>(false);
+
           // Now check if the DG solution is admissible. We call the TCI even if
           // the cell is at the boundary since the TCI must also set the past
           // RDMP data.
@@ -161,14 +166,20 @@ struct Initialize {
               subcell_options.initial_data_rdmp_epsilon(),
               subcell_options.initial_data_persson_exponent(), args_for_tci...);
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+          const int tci_status = std::get<0>(tci_result);
+          const bool tci_flagged = static_cast<bool>(tci_status);
+
           if ((cell_is_not_on_external_boundary or
                subcell_enabled_at_external_boundary) and
-              (cell_is_troubled or std::get<0>(tci_result))) {
-            cell_is_troubled |= std::get<0>(tci_result);
+              (cell_is_troubled or tci_flagged)) {
+            cell_is_troubled |= tci_flagged;
             // Swap to subcell grid
             *active_grid_ptr = ActiveGrid::Subcell;
             *active_vars_ptr =
                 fd::project(*active_vars_ptr, dg_mesh, subcell_mesh.extents());
+            destructive_resize_components(tci_status_ptr,
+                                          subcell_mesh.number_of_grid_points());
+            get(*tci_status_ptr) = tci_status;
           }
         },
         make_not_null(&box));
