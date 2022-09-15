@@ -135,11 +135,6 @@ class Main : public CBase_Main<Metavariables> {
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
-  using parallel_component_tag_list = tmpl::transform<
-      component_list,
-      tmpl::bind<
-          tmpl::type_,
-          tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   // Lists of all parallel component types
   using group_component_list =
       tmpl::filter<component_list, tmpl::or_<Parallel::is_group<tmpl::_1>,
@@ -450,6 +445,11 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   at_sync_indicator_proxy_[0].insert(this->thisProxy, sys::my_proc());
   at_sync_indicator_proxy_.doneInserting();
 
+  using parallel_component_tag_list = tmpl::transform<
+      component_list,
+      tmpl::bind<
+          tmpl::type_,
+          tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
