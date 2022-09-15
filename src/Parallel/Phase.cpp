@@ -24,6 +24,7 @@ std::vector<Phase> known_phases() {
           Phase::InitializeInitialDataDependentQuantities,
           Phase::InitializeTimeStepperHistory,
           Phase::LoadBalancing,
+          Phase::PostFailureCleanup,
           Phase::Register,
           Phase::RegisterWithElementDataReader,
           Phase::Solve,
@@ -51,6 +52,8 @@ std::ostream& operator<<(std::ostream& os, const Phase& phase) {
       return os << "InitializeTimeStepperHistory";
     case Parallel::Phase::LoadBalancing:
       return os << "LoadBalancing";
+    case Parallel::Phase::PostFailureCleanup:
+      return os << "PostFailureCleanup";
     case Parallel::Phase::Register:
       return os << "Register";
     case Parallel::Phase::RegisterWithElementDataReader:

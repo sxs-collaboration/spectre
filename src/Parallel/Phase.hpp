@@ -67,6 +67,9 @@ enum class Phase {
   InitializeTimeStepperHistory,
   ///  phase in which components are migrated
   LoadBalancing,
+  ///  phase in which components know an error occurred and they need to do some
+  ///  sort of cleanup, such as dumping data to disk.
+  PostFailureCleanup,
   ///  phase in which components register with other components
   Register,
   ///  phase in which components register with the data importer components
