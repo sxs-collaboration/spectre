@@ -161,7 +161,7 @@ struct Initialize {
           // Now check if the DG solution is admissible. We call the TCI even if
           // the cell is at the boundary since the TCI must also set the past
           // RDMP data.
-          std::tuple<bool, RdmpTciData> tci_result = TciMutator::apply(
+          std::tuple<int, RdmpTciData> tci_result = TciMutator::apply(
               *active_vars_ptr, subcell_options.initial_data_rdmp_delta0(),
               subcell_options.initial_data_rdmp_epsilon(),
               subcell_options.initial_data_persson_exponent(), args_for_tci...);

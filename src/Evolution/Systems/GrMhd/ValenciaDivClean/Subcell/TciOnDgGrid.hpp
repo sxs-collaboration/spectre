@@ -50,32 +50,76 @@ namespace grmhd::ValenciaDivClean::subcell {
  *
  * The following checks are done in the order they are listed:
  *
- * - if \f$\min(\tilde{D}^{n+1}/\textrm{avg}(\sqrt{\gamma^{n}}))\f$ is less than
- *   `tci_options.minimum_rest_mass_density_times_lorentz_factor` then we have a
- *   negative (or extremely small) density and the cell is troubled. Note that
- *   if this `tci_option` is approximately equal to or larger than the
- *   `atmosphere_density`, the atmosphere will be flagged as troubled.
- * - if \f$\tilde{\tau}\f$ is less than `tci_options.minimum_tilde_tau` then we
- *   have a negative (or extremely small) energy and the cell is troubled.
- * - if \f$\max(\tilde{D}^{n+1}/(\sqrt{\gamma^n}W^n))\f$ and \f$\max(\rho^n)\f$
- *   are less than `tci_options.atmosphere_density` then the entire DG element
- *   is in atmosphere and it is _not_ troubled.
- * - if
- *   \f$(\tilde{B}^{n+1})^2>2\sqrt{\gamma^n}(1-\epsilon_B)\tilde{\tau}^{n+1}\f$
- *   at any grid point, then the cell is troubled
- * - attempt a primitive recovery using the `RecoveryScheme` from the template
- *   parameter. The cell is marked as troubled if the primitive recovery fails
- *   at any grid point.
- * - if \f$\max(\rho^{n+1})\f$ is below `tci_options.atmosphere_density` then
- *   the cell is in atmosphere and not marked as troubled. Note that the
- *   magnetic field is still freely evolved.
- * - apply the Persson TCI to \f$\tilde{D}^{n+1}\f$ and \f$\tilde{\tau}^{n+1}\f$
- * - apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if its
- *   magnitude is greater than `tci_options.magnetic_field_cutoff`.
- * - apply the RDMP TCI to `TildeD`, `TildeTau` and `TildeB`.
+ * <table>
+ * <caption>List of checks</caption>
+ * <tr><th> Description <th> TCI status
+ *
+ * <tr><td> if \f$\min(\tilde{D}^{n+1}/\textrm{avg}(\sqrt{\gamma^{n}}))\f$
+ * is less than `tci_options.minimum_rest_mass_density_times_lorentz_factor`
+ * then we have a negative (or extremely small) density and the cell is
+ * troubled. Note that if this `tci_option` is approximately equal to or larger
+ * than the `atmosphere_density`, the atmosphere will be flagged as troubled.
+ * <td> `-1`
+ *
+ * <tr><td> if \f$\tilde{\tau}\f$ is less than `tci_options.minimum_tilde_tau`
+ * then we have a negative (or extremely small) energy and the cell is troubled.
+ * <td> `-2`
+ *
+ * <tr><td> if \f$\max(\tilde{D}^{n+1}/(\sqrt{\gamma^n}W^n))\f$ and
+ * \f$\max(\rho^n)\f$ are less than `tci_options.atmosphere_density` then the
+ * entire DG element is in atmosphere and it is _not_ troubled.
+ * <td> `0`
+ *
+ * <tr><td> if
+ * \f$(\tilde{B}^{n+1})^2>2\sqrt{\gamma^n}(1-\epsilon_B)\tilde{\tau}^{n+1}\f$ at
+ * any grid point, then the cell is troubled.
+ * <td> `-3`
+ *
+ * <tr><td> attempt a primitive recovery using the `RecoveryScheme` from the
+ * template parameter. The cell is marked as troubled if the primitive recovery
+ * fails at any grid point.
+ * <td> `-4`
+ *
+ * <tr><td> if \f$\max(\rho^{n+1})\f$ is below `tci_options.atmosphere_density`
+ * then the cell is in atmosphere and not marked as troubled. Note that the
+ * magnetic field is still freely evolved.
+ * <td> `0`
+ *
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$ and
+ * \f$\tilde{\tau}^{n+1}\f$
+ * <td> `-5`
+ *
+ * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
+ * its magnitude is greater than `tci_options.magnetic_field_cutoff`
+ * <td> `-6`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeD`
+ * <td> `-7`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <td> `-8`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `-9`
+ *
+ * </table>
  *
  * If the cell is not flagged as troubled then the primitives are computed at
  * time level `n+1`.
+ *
+ * The second column of the table above denotes the value of an integer stored
+ * as the first element of the returned `std::tuple`, which indicates the
+ * particular kind of check that failed. For example, if the fifth check
+ * (primitive recovery) fails and cell is marked as troubled, an integer with
+ * value `-4` is stored in the first slot of the returned tuple. Note that this
+ * integer is marking only the _first_ check to fail, since checks are done in a
+ * particular sequence as listed above. If all checks are passed and cell is not
+ * troubled, it is returned with the value `0`.
+ *
+ * \note We adopt negative integers to mark TCI status from DG grid returned by
+ * TciOnDgGrid class. Positive integers are used for TCIs on FD grid; see
+ * TciOnFdGrid and its documentation.
+ *
  */
 template <typename RecoveryScheme>
 class TciOnDgGrid {
@@ -96,7 +140,7 @@ class TciOnDgGrid {
                  evolution::dg::subcell::Tags::SubcellOptions>;
 
   template <size_t ThermodynamicDim>
-  static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+  static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,

@@ -35,7 +35,7 @@ enum class TestThis {
   RdmpMagnitudeTildeB
 };
 
-void test(const TestThis test_this) {
+void test(const TestThis test_this, const int expected_tci_status) {
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
@@ -166,7 +166,7 @@ void test(const TestThis test_this) {
         }
       });
 
-  const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
+  const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnFdGrid>(
           make_not_null(&box), persson_exponent);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
@@ -174,19 +174,21 @@ void test(const TestThis test_this) {
   if (test_this == TestThis::AllGood) {
     CHECK_FALSE(get<0>(result));
   } else {
-    CHECK(get<0>(result));
+    CHECK(get<0>(result) == expected_tci_status);
   }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
-  for (const TestThis& test_this :
-       {TestThis::AllGood, TestThis::NeededFixing, TestThis::PerssonTildeD,
-        TestThis::PerssonTildeTau, TestThis::PerssonTildeB,
-        TestThis::NegativeTildeD, TestThis::NegativeTildeTau,
-        TestThis::RdmpTildeD, TestThis::RdmpTildeTau,
-        TestThis::RdmpMagnitudeTildeB}) {
-    test(test_this);
-  }
+  test(TestThis::AllGood, 0);
+  test(TestThis::NeededFixing, 1);
+  test(TestThis::NegativeTildeD, 2);
+  test(TestThis::NegativeTildeTau, 2);
+  test(TestThis::PerssonTildeD, 3);
+  test(TestThis::PerssonTildeTau, 3);
+  test(TestThis::RdmpTildeD, 4);
+  test(TestThis::RdmpTildeTau, 5);
+  test(TestThis::RdmpMagnitudeTildeB, 6);
+  test(TestThis::PerssonTildeB, 7);
 }

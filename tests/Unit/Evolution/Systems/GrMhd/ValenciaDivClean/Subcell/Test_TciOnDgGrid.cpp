@@ -50,8 +50,9 @@ enum class TestThis {
   RdmpMagnitudeTildeB
 };
 
-void test(const TestThis test_this) {
+void test(const TestThis test_this, const int expected_tci_status) {
   CAPTURE(test_this);
+  CAPTURE(expected_tci_status);
   const EquationsOfState::PolytropicFluid<true> eos{100.0, 2.0};
   const Mesh<3> mesh{6, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
@@ -162,20 +163,11 @@ void test(const TestThis test_this) {
           get<2>(*tilde_b_ptr)[point_to_change] = 1.0e4;
         });
   } else if (test_this == TestThis::PrimRecoveryFailed) {
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>,
-               grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box),
-        [point_to_change, &tci_options](const auto tilde_b_ptr,
-                                        const auto tilde_tau_ptr) {
-          // The values here are chosen specifically so that the Newman-Hamlin
-          // recovery scheme fails to obtain a solution.
-          get(*tilde_tau_ptr)[point_to_change] = 4.32044e-24;
-
-          get<0>(*tilde_b_ptr)[point_to_change] =
-              sqrt(2.0 * (1.0 - tci_options.safety_factor_for_magnetic_field) *
-                   get(*tilde_tau_ptr)[point_to_change]);
-          get<1>(*tilde_b_ptr)[point_to_change] = 0.0;
-          get<2>(*tilde_b_ptr)[point_to_change] = 0.0;
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(
+        make_not_null(&box), [point_to_change](const auto tilde_s_ptr) {
+          // Manipulate one of the conserved variable in an (very) inconsistent
+          // way so that primitive recovery fails.
+          get<0>(*tilde_s_ptr)[point_to_change] = 1e3;
         });
   } else if (test_this == TestThis::PerssonTildeTau) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
@@ -263,7 +255,7 @@ void test(const TestThis test_this) {
         }
       });
 
-  const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
+  const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>>(
           make_not_null(&box), persson_exponent);
@@ -278,21 +270,25 @@ void test(const TestThis test_this) {
     CHECK(db::get<hydro::Tags::DivergenceCleaningField<DataVector>>(box) ==
           get<hydro::Tags::DivergenceCleaningField<DataVector>>(prim_vars));
   } else {
-    CHECK(get<0>(result));
+    CHECK(get<0>(result) == expected_tci_status);
   }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
                   "[Unit][Evolution]") {
-  for (const TestThis& test_this :
-       {TestThis::AllGood, TestThis::SmallTildeD, TestThis::InAtmosphere,
-        TestThis::TildeB2TooBig, TestThis::PrimRecoveryFailed,
-        TestThis::PerssonTildeD, TestThis::PerssonTildeTau,
-        TestThis::PerssonTildeB, TestThis::NegativeTildeDSubcell,
-        TestThis::NegativeTildeTauSubcell, TestThis::NegativeTildeTau,
-        TestThis::RdmpTildeD, TestThis::RdmpTildeTau,
-        TestThis::RdmpMagnitudeTildeB}) {
-    test(test_this);
-  }
+  test(TestThis::AllGood, 0);
+  test(TestThis::InAtmosphere, 0);
+  test(TestThis::SmallTildeD, -1);
+  test(TestThis::NegativeTildeDSubcell, -1);
+  test(TestThis::NegativeTildeTau, -2);
+  test(TestThis::NegativeTildeTauSubcell, -2);
+  test(TestThis::TildeB2TooBig, -3);
+  test(TestThis::PrimRecoveryFailed, -4);
+  test(TestThis::PerssonTildeD, -5);
+  test(TestThis::PerssonTildeTau, -5);
+  test(TestThis::PerssonTildeB, -6);
+  test(TestThis::RdmpTildeD, -7);
+  test(TestThis::RdmpTildeTau, -8);
+  test(TestThis::RdmpMagnitudeTildeB, -9);
 }

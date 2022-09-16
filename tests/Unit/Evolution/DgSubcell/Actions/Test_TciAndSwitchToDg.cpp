@@ -115,7 +115,7 @@ struct Metavariables {
                    evolution::dg::subcell::Tags::DataForRdmpTci,
                    evolution::dg::subcell::Tags::SubcellOptions>;
 
-    static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+    static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
         const Variables<tmpl::list<Var1>>& subcell_vars,
         const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
         const evolution::dg::subcell::SubcellOptions& subcell_options,

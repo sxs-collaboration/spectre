@@ -71,8 +71,7 @@ SPECTRE_TEST_CASE(
         grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
             dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh,
             tci_options);
-    CHECK_FALSE(std::get<0>(result));
-
+    CHECK(std::get<0>(result) == 0);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
   }
 
@@ -87,28 +86,27 @@ SPECTRE_TEST_CASE(
         grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
             dg_vars, 1.0e-100, 1.0e-18, exponent, dg_mesh, subcell_mesh,
             tci_options);
-    CHECK(std::get<0>(result));
+    CHECK(std::get<0>(result) == -7);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] /=
         1.0 + std::numeric_limits<double>::epsilon() * 2.0;
 
     // Verify TCI passes after restoring value
-    CHECK_FALSE(
-        std::get<0>(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-            dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh,
-            tci_options)));
+    CHECK(std::get<0>(grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
+              dg_vars, delta0, epsilon, exponent, dg_mesh, subcell_mesh,
+              tci_options)) == 0);
   }
 
   {
     INFO("Persson TCI TildeD fails");
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
-        dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0;
     const auto result =
         grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
             dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
             tci_options);
-    CHECK(std::get<0>(result));
+    CHECK(std::get<0>(result) == -5);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
@@ -124,7 +122,7 @@ SPECTRE_TEST_CASE(
         grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
             dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
             tci_options);
-    CHECK(std::get<0>(result));
+    CHECK(std::get<0>(result) == -6);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     for (size_t i = 0; i < 3; ++i) {
       get<grmhd::ValenciaDivClean::Tags::TildeB<>>(dg_vars).get(
@@ -135,11 +133,12 @@ SPECTRE_TEST_CASE(
   {
     INFO("Persson TCI TildeTau fails");
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0e10;
+        dg_vars))[dg_mesh.number_of_grid_points() / 2] += 2.0;
     const auto result =
         grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-            dg_vars, 1.0e100, epsilon, 1.0, dg_mesh, subcell_mesh, tci_options);
-    CHECK(std::get<0>(result));
+            dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
+            tci_options);
+    CHECK(std::get<0>(result) == -5);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
@@ -151,7 +150,7 @@ SPECTRE_TEST_CASE(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
     auto result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
         dg_vars, 1.0e100, epsilon, 1.0, dg_mesh, subcell_mesh, tci_options);
-    CHECK(std::get<0>(result));
+    CHECK(std::get<0>(result) == -1);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeD>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;
@@ -169,9 +168,8 @@ SPECTRE_TEST_CASE(
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = -1.0e-20;
     auto result = grmhd::ValenciaDivClean::subcell::DgInitialDataTci::apply(
-        dg_vars, 1.0e100, epsilon, exponent, dg_mesh, subcell_mesh,
-        tci_options);
-    CHECK(std::get<0>(result));
+        dg_vars, 1.0e100, epsilon, 1.0, dg_mesh, subcell_mesh, tci_options);
+    CHECK(std::get<0>(result) == -2);
     CHECK(std::get<1>(result) == compute_expected_rdmp_tci_data());
     get(get<grmhd::ValenciaDivClean::Tags::TildeTau>(
         dg_vars))[dg_mesh.number_of_grid_points() / 2] = 1.0;

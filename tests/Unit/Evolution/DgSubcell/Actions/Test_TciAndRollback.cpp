@@ -138,7 +138,7 @@ struct Metavariables {
                    evolution::dg::subcell::Tags::DataForRdmpTci,
                    evolution::dg::subcell::Tags::SubcellOptions>;
 
-    static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
+    static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
         const Variables<tmpl::list<Var1>>& dg_vars, const Mesh<Dim>& dg_mesh,
         const Mesh<Dim>& subcell_mesh,
         const evolution::dg::subcell::RdmpTciData& past_rdmp_data,
@@ -253,8 +253,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   get(get<PrimVar1>(prim_vars)) = get<0>(logical_coordinates(dg_mesh)) + 1000.0;
 
   constexpr size_t history_size = 5;
-  TimeSteppers::History<Variables<evolved_vars_tags>>
-      time_stepper_history{history_size};
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{
+      history_size};
   for (size_t i = 0; i < history_size; ++i) {
     Variables<db::wrap_tags_in<Tags::dt, evolved_vars_tags>> dt_vars{
         dg_mesh.number_of_grid_points()};
@@ -340,9 +340,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     for (auto it = time_stepper_history.derivatives_begin(); it != end_it;
          ++it) {
       time_stepper_history_subcells.insert(
-          it.time_step_id(),
-          evolution::dg::subcell::fd::project(*it, dg_mesh,
-                                              subcell_mesh.extents()));
+          it.time_step_id(), evolution::dg::subcell::fd::project(
+                                 *it, dg_mesh, subcell_mesh.extents()));
     }
     REQUIRE(time_stepper_history_subcells.size() ==
             time_stepper_history_from_box.size());
@@ -354,10 +353,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       CHECK(*it == *expected_it);
     }
 
-    CHECK(active_vars_from_box ==
-          evolution::dg::subcell::fd::project(
-              time_stepper_history.most_recent_value(), dg_mesh,
-              subcell_mesh.extents()));
+    CHECK(active_vars_from_box == evolution::dg::subcell::fd::project(
+                                      time_stepper_history.most_recent_value(),
+                                      dg_mesh, subcell_mesh.extents()));
 
     if (self_starting) {
       CHECK(initial_value_evolved_vars_from_box ==

@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 
 namespace grmhd::ValenciaDivClean::subcell {
-std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
+std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const Scalar<DataVector>& subcell_tilde_d,
     const Scalar<DataVector>& subcell_tilde_tau,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
@@ -63,20 +63,21 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       subcell_mesh.extents(),
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
-  // Note: `or` is short-circuiting, so if any of the first tests fail, we won't
-  // do the more expensive Persson TCI test.
-  bool cell_is_troubled =
-      vars_needed_fixing or
-      min(get(dg_tilde_d)) <
+  if (vars_needed_fixing) {
+    return {+1, rdmp_tci_data};
+  }
+
+  if (min(get(dg_tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor or
-      min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau or
-      evolution::dg::subcell::persson_tci(dg_tilde_d, dg_mesh,
+      min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau) {
+    return {+2, rdmp_tci_data};
+  }
+
+  if (evolution::dg::subcell::persson_tci(dg_tilde_d, dg_mesh,
                                           persson_exponent) or
       evolution::dg::subcell::persson_tci(dg_tilde_tau, dg_mesh,
-                                          persson_exponent);
-
-  if (cell_is_troubled) {
-    return {cell_is_troubled, rdmp_tci_data};
+                                          persson_exponent)) {
+    return {+3, rdmp_tci_data};
   }
 
   Scalar<DataVector> dg_mag_tilde_b{};
@@ -100,20 +101,22 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       min(min(get(dg_tilde_tau)), rdmp_tci_data.min_variables_values[1]),
       min(min(get(dg_mag_tilde_b)), rdmp_tci_data.min_variables_values[2])};
 
-  cell_is_troubled |= evolution::dg::subcell::rdmp_tci(
-      rdmp_tci_data_for_check.max_variables_values,
-      rdmp_tci_data_for_check.min_variables_values,
-      past_rdmp_tci_data.max_variables_values,
-      past_rdmp_tci_data.min_variables_values, subcell_options.rdmp_delta0(),
-      subcell_options.rdmp_epsilon());
-
-  if (tci_options.magnetic_field_cutoff.has_value() and not cell_is_troubled) {
-    cell_is_troubled = (max(get(dg_mag_tilde_b)) >
-                            tci_options.magnetic_field_cutoff.value() and
-                        evolution::dg::subcell::persson_tci(
-                            dg_mag_tilde_b, dg_mesh, persson_exponent));
+  if (const int rdmp_tci_status = evolution::dg::subcell::rdmp_tci(
+          rdmp_tci_data_for_check.max_variables_values,
+          rdmp_tci_data_for_check.min_variables_values,
+          past_rdmp_tci_data.max_variables_values,
+          past_rdmp_tci_data.min_variables_values,
+          subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon())) {
+    return {+3 + rdmp_tci_status, rdmp_tci_data};
   }
 
-  return {cell_is_troubled, rdmp_tci_data};
+  if (tci_options.magnetic_field_cutoff.has_value() and
+      (max(get(dg_mag_tilde_b)) > tci_options.magnetic_field_cutoff.value() and
+       evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
+                                           persson_exponent))) {
+    return {+7, rdmp_tci_data};
+  }
+
+  return {false, rdmp_tci_data};
 }
 }  // namespace grmhd::ValenciaDivClean::subcell
