@@ -3,11 +3,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# If Intel MPI gets updated or Charm++ changes the way it builds MPI
-# configurations we might be able to enable clang again.
-echo "Cannot use Clang with Intel MPI v2017.1."
-return 1
-
 spectre_setup_modules() {
     echo "All modules on Wheeler are provided by the system"
 }
@@ -29,7 +24,7 @@ spectre_unload_modules() {
     module unload ninja/1.10.0
     module unload doxygen/1.8.13
     module unload git/2.8.4
-    module unload llvm/10.0.0
+    module unload llvm/13.0.1
     module unload charm/7.0.0-intelmpi-smp
     module unload python/anaconda3-2019.10
     module unload pybind11/2.6.1
@@ -52,7 +47,7 @@ spectre_load_modules() {
     module load ninja/1.10.0
     module load doxygen/1.8.13
     module load git/2.8.4
-    module load llvm/10.0.0
+    module load llvm/13.0.1
     module load charm/7.0.0-intelmpi-smp
     module load python/anaconda3-2019.10
     module load pybind11/2.6.1
