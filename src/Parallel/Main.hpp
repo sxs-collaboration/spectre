@@ -647,7 +647,12 @@ void Main<Metavariables>::execute_next_phase() {
       make_not_null(&phase_change_decision_data_), current_phase_,
       *Parallel::local_branch(global_cache_proxy_));
   if (next_phase.has_value()) {
-    current_phase_ = next_phase.value();
+    // Only print info if there was an actual phase change.
+    if (current_phase_ != next_phase.value()) {
+      Parallel::printf("Entering phase from phase control: %s\n",
+                       next_phase.value());
+      current_phase_ = next_phase.value();
+    }
   } else {
     const auto& default_order = Metavariables::default_phase_order;
     auto it = alg::find(default_order, current_phase_);
@@ -665,9 +670,9 @@ void Main<Metavariables>::execute_next_phase() {
             << default_order << "\n");
     }
     current_phase_ = *std::next(it);
-  }
 
-  Parallel::printf("Entering phase: %s\n", current_phase_);
+    Parallel::printf("Entering phase: %s\n", current_phase_);
+  }
 
   if (Parallel::Phase::Exit == current_phase_) {
     Informer::print_exit_info();
