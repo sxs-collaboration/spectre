@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWavePlaneWave1D
+# Executable: EvolveScalarWave1D
 # Check: parse;execute
 
 ResourceInfo:
   AvoidGlobalProc0: false
 
-AnalyticSolution:
+InitialData: &InitialData
   PlaneWave:
     WaveVector: [1.0]
     Center: [0.0]
@@ -43,8 +43,12 @@ DomainCreator:
     InitialGridPoints: [[7, 3]]
     TimeDependence: None
     BoundaryConditions:
-      LowerBoundary: DirichletAnalytic
-      UpperBoundary: DirichletAnalytic
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 SpatialDiscretization:
   BoundaryCorrection:

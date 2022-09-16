@@ -47,6 +47,8 @@ target_link_libraries(
   INTERFACE
   Initialization
   Parallel
+  PRIVATE
+  WaveEquationSolutions
   )
 
 add_subdirectory(BoundaryConditions)

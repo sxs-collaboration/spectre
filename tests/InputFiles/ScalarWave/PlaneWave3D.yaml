@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWavePlaneWave3D
+# Executable: EvolveScalarWave3D
 # Check: parse;execute
 
 ResourceInfo:
   AvoidGlobalProc0: false
 
-AnalyticSolution:
+InitialData:
   PlaneWave:
     WaveVector: [1.0, 1.0, 1.0]
     Center: [0.0, 0.0, 0.0]

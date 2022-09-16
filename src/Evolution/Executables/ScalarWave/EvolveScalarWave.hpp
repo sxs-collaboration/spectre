@@ -70,6 +70,7 @@
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/WaveEquation/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/RegularSphericalWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/Factory.hpp"
@@ -112,14 +113,11 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
-  // Customization/"input options" to simulation
-  using initial_data_tag = Tags::AnalyticSolution<InitialData>;
-  static_assert(
-      is_analytic_data_v<InitialData> xor is_analytic_solution_v<InitialData>,
-      "initial_data must be either an analytic_data or an analytic_solution");
+
+  using initial_data_list = ScalarWave::Solutions::all_solutions<Dim>;
 
   using system = ScalarWave::System<Dim>;
   static constexpr dg::Formulation dg_formulation =
@@ -134,7 +132,8 @@ struct EvolutionMetavars {
                                     Frame::Inertial>,
       typename system::gradient_variables>;
   using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields>;
+      evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields,
+                                                initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
 
@@ -171,6 +170,7 @@ struct EvolutionMetavars {
                            tmpl::list<ScalarWave::Tags::EnergyDensityCompute<
                                volume_dim>>>,
                        Events::time_events<system>>>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<MathFunction<1, Frame::Inertial>,
                    MathFunctions::all_math_functions<1, Frame::Inertial>>,
@@ -235,7 +235,8 @@ struct EvolutionMetavars {
                          ScalarWave::Tags::Phi<Dim>>>,
           tmpl::list<>>>>;
 
-  using const_global_cache_tags = tmpl::list<initial_data_tag>;
+  using const_global_cache_tags =
+      tmpl::list<evolution::initial_data::Tags::InitialData>;
 
   using dg_registration_list =
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;

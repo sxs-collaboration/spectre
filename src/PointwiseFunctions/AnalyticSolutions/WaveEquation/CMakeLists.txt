@@ -17,6 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Factory.hpp
   PlaneWave.hpp
   RegularSphericalWave.hpp
   SemidiscretizedDg.hpp
