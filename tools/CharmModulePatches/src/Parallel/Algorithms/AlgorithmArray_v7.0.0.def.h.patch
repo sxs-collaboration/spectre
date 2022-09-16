@@ -1,6 +1,34 @@
---- ./AlgorithmArray_orig.def.h	2022-06-16 14:42:37.978886843 -0700
-+++ src/Parallel/Algorithms/AlgorithmArray.def.h	2022-06-16 14:43:04.995671535 -0700
-@@ -550,2 +550,2 @@
+diff --git a/src/Parallel/Algorithms/AlgorithmArray.def.h b/build_main/src/Parallel/Algorithms/AlgorithmArray.def.h
+index 541313a5d..7afe8f1b5 100644
+--- a/src/Parallel/Algorithms/AlgorithmArray.def.h
++++ b/src/Parallel/Algorithms/AlgorithmArray.def.h
+@@ -518,16 +518,17 @@ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::start
+ /* DEFS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_7, const ReceiveData_t &impl_noname_8, bool enable_if_disabled);
+  */
+ template <class ParallelComponent, class SpectreArrayIndex> 
+-template <class ReceiveTag, class ReceiveData_t, typename Fwd1, typename Fwd2>
++template <typename ReceiveTag, typename Fwd2, typename Fwd1>
+ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::receive_data(Fwd1 &&impl_noname_7, Fwd2 &&impl_noname_8, bool enable_if_disabled, const CkEntryOptions *impl_e_opts) 
+ {
++  using ReceiveData_t = Fwd2;
+   ckCheck();
+   AlgorithmArray <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+   envelope env;
+   env.setMsgtype(ForArrayEltMsg);
+   env.setTotalsize(0);
+-  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall9<ReceiveTag, ReceiveData_t>());
++  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall9<ReceiveTag, ReceiveData_t>()));
+   _TRACE_CREATION_DONE(1);
+   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall9<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
+@@ -632,7 +632,7 @@ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::start
+   envelope env;
+   env.setMsgtype(ForArrayEltMsg);
+   env.setTotalsize(0);
 -  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>());
 +  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()));
    _TRACE_CREATION_DONE(1);
+   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::template idx_invoke_iterable_action_void<ThisAction, PhaseIndex, DataBoxIndex>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
