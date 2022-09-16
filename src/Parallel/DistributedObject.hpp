@@ -396,6 +396,10 @@ class DistributedObject<ParallelComponent,
   template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
   bool invoke_iterable_action();
 
+  /// Does a reduction over the component of the reduction status sending the
+  /// result to Main's did_all_elements_terminate member function.
+  void contribute_termination_status_to_main();
+
  private:
   void set_array_index();
 
@@ -1113,6 +1117,34 @@ bool DistributedObject<
             << "\n");
       // LCOV_EXCL_STOP
   }
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
+    contribute_termination_status_to_main() {
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  if (UNLIKELY(global_cache == nullptr)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "Global cache pointer is null. This is an internal inconsistency "
+        "error. Please file an issue.");
+    sys::abort("");
+  }
+  auto main_proxy = global_cache->get_main_proxy();
+  if (UNLIKELY(not main_proxy.has_value())) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "The main proxy has not been set in the global cache when "
+        "checking that all components have terminated. This is an internal "
+        "inconsistency error. Please file an issue.");
+    sys::abort("");
+  }
+  CkCallback cb(
+      CkReductionTarget(Main<metavariables>, did_all_elements_terminate),
+      main_proxy.value());
+  this->contribute(sizeof(bool), &terminate_, CkReduction::logical_and_bool,
+                   cb);
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>

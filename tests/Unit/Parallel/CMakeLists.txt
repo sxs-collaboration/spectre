@@ -100,6 +100,12 @@ add_algorithm_test("AlgorithmNodelock")
 add_algorithm_test("AlgorithmParallel")
 add_algorithm_test("AlgorithmReduction")
 add_algorithm_test("Callback")
+add_algorithm_test("DetectHangArray"
+  REGEX_TO_MATCH
+  "The following components did not terminate cleanly:(.|\r|\n)*"
+  "\(ArrayComponent,SingletonComponent,GroupComponent,NodegroupComponent\)"
+  "(.|\r|\n)*"
+  "This means the executable stopped because of a hang/deadlock\.")
 add_algorithm_test("DynamicInsertion")
 add_algorithm_test("PhaseChangeMain")
 add_algorithm_test(

@@ -22,6 +22,9 @@ module Main {
             std::index_sequence<>>>
             reduction_data);
 
+    entry [reductiontarget] void did_all_elements_terminate(
+        bool all_elements_terminated);
+
     entry void execute_next_phase();
     entry void start_load_balance();
     entry void start_write_checkpoint();

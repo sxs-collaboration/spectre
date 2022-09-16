@@ -80,5 +80,7 @@ module AlgorithmArray {
 
     template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
     entry[local] bool invoke_iterable_action();
+
+    entry void contribute_termination_status_to_main();
   }
 }

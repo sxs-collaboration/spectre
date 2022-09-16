@@ -71,6 +71,10 @@ struct UnpackCounter {
 }  // namespace AlgorithmParallel_detail
 
 namespace Tags {
+struct ReceiveArrayComponentsOnceMore : db::SimpleTag {
+  using type = bool;
+};
+
 struct Int0 : db::SimpleTag {
   static std::string name() { return "Int0"; }
   using type = int;
@@ -121,6 +125,25 @@ struct NodegroupParallelComponent;
 
 namespace SingletonActions {
 
+struct Initialize {
+  using simple_tags = tmpl::list<Tags::ReceiveArrayComponentsOnceMore>;
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    static_assert(std::is_same_v<ParallelComponent,
+                                 SingletonParallelComponent<TestMetavariables>>,
+                  "The ParallelComponent is not deduced to be the right type");
+    Initialization::mutate_assign<simple_tags>(make_not_null(&box), false);
+    return {Parallel::AlgorithmExecution::Pause, std::nullopt};
+  }
+};
+
 // One component (A) may call this simple action on another component (B) so
 // that B then invokes the `perform_algorithm` entry method on A, which will
 // restart A if it has been terminated.
@@ -150,7 +173,7 @@ struct CountReceives {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTags>& /*box*/, tuples::TaggedTuple<InboxTags...>& inboxes,
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
@@ -158,9 +181,16 @@ struct CountReceives {
                                  SingletonParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
     auto& int_receives = tuples::get<Tags::IntReceiveTag>(inboxes);
-    SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 70);
-    if (int_receives.size() != 70) {
-      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    if (db::get<Tags::ReceiveArrayComponentsOnceMore>(box)) {
+      SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 14);
+      if (int_receives.size() != 14) {
+        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+      }
+    } else {
+      SPECTRE_PARALLEL_REQUIRE(int_receives.size() <= 686);
+      if (int_receives.size() != 686) {
+        return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+      }
     }
 
     for (const auto& p : int_receives) {
@@ -169,20 +199,28 @@ struct CountReceives {
     }
     int_receives.clear();
 
-    // Call to arrays, have them execute once then reduce something through
-    // groups and nodegroups
-    // We do not do a broadcast so that we can check inline entry methods on
-    // array work. We pass "true" as the second argument to start the
-    // algorithm up again on the arrays
-    // [call_on_indexed_array]
-    auto& array_parallel_component =
-        Parallel::get_parallel_component<ArrayParallelComponent<Metavariables>>(
-            cache);
-    for (int i = 0; i < number_of_1d_array_elements; ++i) {
-      Parallel::receive_data<Tags::IntReceiveTag>(array_parallel_component[i],
-                                                  0, 101, true);
+    if (not db::get<Tags::ReceiveArrayComponentsOnceMore>(box)) {
+      // Call to arrays, have them execute once then reduce something through
+      // groups and nodegroups
+      // We do not do a broadcast so that we can check inline entry methods on
+      // array work. We pass "true" as the second argument to start the
+      // algorithm up again on the arrays
+      // [call_on_indexed_array]
+      auto& array_parallel_component = Parallel::get_parallel_component<
+          ArrayParallelComponent<Metavariables>>(cache);
+      for (int i = 0; i < number_of_1d_array_elements; ++i) {
+        Parallel::receive_data<Tags::IntReceiveTag>(array_parallel_component[i],
+                                                    0, 101, true);
+      }
+      // [call_on_indexed_array]
     }
-    // [call_on_indexed_array]
+
+    db::mutate<Tags::ReceiveArrayComponentsOnceMore>(
+        make_not_null(&box),
+        [](bool* const receive_array_components_once_more) {
+          *receive_array_components_once_more = true;
+        });
+
     // [return_with_termination]
     return {Parallel::AlgorithmExecution::Pause, std::nullopt};
     // [return_with_termination]
@@ -454,20 +492,20 @@ template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Parallel::Phase::Execute, tmpl::list<SingletonActions::CountReceives>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<SingletonActions::Initialize>>,
+      Parallel::PhaseActions<Parallel::Phase::Solve,
+                             tmpl::list<SingletonActions::CountReceives>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const Parallel::Phase next_phase,
       const Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
-    if (next_phase == Parallel::Phase::Execute) {
-      auto& local_cache = *Parallel::local_branch(global_cache);
-      Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
-          .start_phase(next_phase);
-      return;
-    }
+    auto& local_cache = *Parallel::local_branch(global_cache);
+    Parallel::get_parallel_component<SingletonParallelComponent>(local_cache)
+        .start_phase(next_phase);
   }
 };
 // [singleton_parallel_component]
@@ -509,11 +547,8 @@ struct ArrayParallelComponent {
       const Parallel::Phase next_phase,
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *Parallel::local_branch(global_cache);
-    if (next_phase == Parallel::Phase::Solve or
-        next_phase == Parallel::Phase::Testing) {
-      Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
-          .start_phase(next_phase);
-    }
+    Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
+        .start_phase(next_phase);
   }
 };
 // [array_parallel_component]
@@ -560,8 +595,8 @@ struct TestMetavariables {
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
   static constexpr std::array<Parallel::Phase, 5> default_phase_order{
-      {Parallel::Phase::Initialization, Parallel::Phase::Execute,
-       Parallel::Phase::Solve, Parallel::Phase::Testing,
+      {Parallel::Phase::Initialization, Parallel::Phase::Solve,
+       Parallel::Phase::Testing, Parallel::Phase::Cleanup,
        Parallel::Phase::Exit}};
 
   // NOLINTNEXTLINE(google-runtime-references)
