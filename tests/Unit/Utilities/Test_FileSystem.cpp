@@ -135,6 +135,7 @@ void test() {
                                            "Test_FileSystem.cpp",
                                            "Test_Gsl.cpp",
                                            "Test_Requires.cpp",
+                                           "Test_ParallelInfo.cpp",
                                            "Test_CachedFunction.cpp",
                                            "Test_EqualWithinRoundoff.cpp",
                                            "Test_Numeric.cpp",

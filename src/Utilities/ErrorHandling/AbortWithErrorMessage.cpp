@@ -79,7 +79,8 @@ template <bool ShowTrace>
     os << "Shortened stack trace is:\n"
        << FillBacktrace{} << "End shortened stack trace.\n\n";
   }
-  os << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
+  os << "Wall time: " << sys::pretty_wall_time() << "\n"
+     << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
      << "Line: " << line << " of " << file << "\n"
      << "Function: " << pretty_function << "\n"
      << message << "\n"
@@ -98,6 +99,7 @@ void abort_with_error_message(const char* expression, const char* file,
      << "############ ASSERT FAILED ############\n"
      << "Shortened stack trace is:\n"
      << FillBacktrace{} << "End shortened stack trace.\n\n"
+     << "Wall time: " << sys::pretty_wall_time() << "\n"
      << "Node: " << sys::my_node() << " Proc: " << sys::my_proc() << "\n"
      << "Line: " << line << " of " << file << "\n"
      << "'" << expression << "' violated!\n"

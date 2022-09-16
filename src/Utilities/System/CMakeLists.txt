@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Abort.cpp
+  ParallelInfo.cpp
   )
 
 spectre_target_headers(
