@@ -35,17 +35,18 @@ namespace Actions {
 /// \ingroup TimeGroup
 /// \brief Advance time one substep
 ///
+/// Replaces the time state with the `Tags::Next` values, advances the
+/// `Tags::Next` values, and sets `Tags::Time` to the new substep time.
+///
 /// Uses:
 /// - DataBox:
-///   - Tags::TimeStep
-///   - Tags::TimeStepId
+///   - Tags::Next<Tags::TimeStep>
+///   - Tags::Next<Tags::TimeStepId>
 ///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
 ///   - Tags::Next<Tags::TimeStepId>
+///   - Tags::Next<Tags::TimeStep>
 ///   - Tags::Time
 ///   - Tags::TimeStepId
 ///   - Tags::TimeStep

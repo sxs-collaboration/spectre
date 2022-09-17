@@ -53,6 +53,11 @@ struct TimeStep : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for the current time as a double
+///
+/// The meaning of "current time" varies during the algorithm, but
+/// generally is whatever time is appropriate for the calculation
+/// being run.  Usually this is the substep time, but things such as
+/// dense-output calculations may temporarily change the value.
 struct Time : db::SimpleTag {
   using type = double;
 };
