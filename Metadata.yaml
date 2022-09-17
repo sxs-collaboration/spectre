@@ -64,6 +64,9 @@ Affiliations:
   - &koln
     I. Physikalisches Institut, Universität zu Köln, Zülpicher Straße 77,
     50937, Köln, Germany
+  - &umiss
+    Department of Physics and Astronomy, University of Mississippi,
+    University, Mississippi 38677, USA
 
 Authors:
   Description: |
@@ -318,6 +321,10 @@ Authors:
         Orcid: 0000-0002-5335-4924
         Affiliations: [*fullerton]
         GitHub: jennifersanchez
+      - Name: Stein, Leo C.
+        Orcid: 0000-0001-7559-9597
+        Affiliations: [*umiss]
+        GitHub: duetosymmetry
       - Name: Thomas, Sierra
         Orcid: 0000-0003-3574-2090
         Affiliations: [*fullerton]
