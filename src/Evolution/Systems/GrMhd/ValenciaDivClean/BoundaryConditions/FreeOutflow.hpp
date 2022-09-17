@@ -91,9 +91,7 @@ class FreeOutflow final : public BoundaryCondition {
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
-  using dg_gridless_tags =
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                 gr::Tags::SqrtDetSpatialMetric<DataVector>>;
+  using dg_gridless_tags = tmpl::list<>;
 
   static std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> tilde_d,
@@ -136,9 +134,6 @@ class FreeOutflow final : public BoundaryCondition {
       const tnsr::I<DataVector, 3, Frame::Inertial>& interior_shift,
       const Scalar<DataVector>& interior_lapse,
       const tnsr::II<DataVector, 3, Frame::Inertial>&
-          interior_inv_spatial_metric,
-
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& interior_spatial_metric,
-      const Scalar<DataVector>& interior_sqrt_det_spatial_metric);
+          interior_inv_spatial_metric);
 };
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions
