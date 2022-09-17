@@ -9,6 +9,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "ControlSystem/Actions/Initialization.hpp"
 #include "ControlSystem/Averager.hpp"
@@ -90,7 +91,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
 
   Averager<order - 1> averager{0.5, true};
   const double damping_time = 1.0;
-  TimescaleTuner tuner{{damping_time}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
+  TimescaleTuner tuner{
+      std::vector<double>{damping_time}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
   Controller<order> controller{0.3};
   bool write_data = false;
   const control_system::TestHelpers::ControlError control_error{};

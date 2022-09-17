@@ -11,6 +11,7 @@ spectre_target_sources(
   Averager.cpp
   Controller.cpp
   DataVectorHelpers.cpp
+  Tags.cpp
   TimescaleTuner.cpp
   )
 

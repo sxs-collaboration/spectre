@@ -59,6 +59,10 @@ void test_rotation_control_system(const bool newtonian) {
   const std::string input_options =
       "Evolution:\n"
       "  InitialTime: 0.0\n"
+      "DomainCreator:\n"
+      "  FakeCreator:\n"
+      "    NumberOfComponents:\n"
+      "      Rotation: 3\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  Rotation:\n"

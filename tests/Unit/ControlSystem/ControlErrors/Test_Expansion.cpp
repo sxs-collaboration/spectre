@@ -35,6 +35,10 @@ void test_expansion_control_error() {
   const std::string input_options =
       "Evolution:\n"
       "  InitialTime: 0.0\n"
+      "DomainCreator:\n"
+      "  FakeCreator:\n"
+      "    NumberOfComponents:\n"
+      "      Expansion: 1\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  Expansion:\n"

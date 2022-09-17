@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "ControlSystem/InitialExpirationTimes.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -59,9 +60,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
   const double initial_time_step = 0.1;
 
   const double timescale = 2.0;
-  const TimescaleTuner tuner1({timescale}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01,
-                              0.99);
-  const TimescaleTuner tuner2({0.1}, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
+                              1.0e-2, 1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner2(std::vector<double>{0.1}, 10.0, 1.0e-3, 1.0e-2,
+                              1.0e-4, 1.01, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);

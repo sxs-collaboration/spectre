@@ -9,30 +9,51 @@
 #include <functional>
 #include <ostream>
 #include <pup.h>
+#include <tuple>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 
-TimescaleTuner::TimescaleTuner(const std::vector<double>& initial_timescale,
-                               const double max_timescale,
-                               const double min_timescale,
-                               const double decrease_timescale_threshold,
-                               const double increase_timescale_threshold,
-                               const double increase_factor,
-                               const double decrease_factor)
+namespace {
+struct TimescaleCreator {
+  std::pair<DataVector, bool> operator()(const double timescale) {
+    return std::make_pair(DataVector{1, timescale}, false);
+  }
+
+  std::pair<DataVector, bool> operator()(
+      const std::vector<double>& input_timescales) {
+    DataVector timescales{input_timescales.size()};
+    for (size_t i = 0; i < input_timescales.size(); i++) {
+      timescales[i] = input_timescales[i];
+    }
+    return std::make_pair(std::move(timescales), true);
+  }
+};
+}  // namespace
+
+TimescaleTuner::TimescaleTuner(
+    const typename InitialTimescales::type& initial_timescale,
+    const double max_timescale, const double min_timescale,
+    const double decrease_timescale_threshold,
+    const double increase_timescale_threshold, const double increase_factor,
+    const double decrease_factor)
     : max_timescale_{max_timescale},
       min_timescale_{min_timescale},
       decrease_timescale_threshold_{decrease_timescale_threshold},
       increase_timescale_threshold_{increase_timescale_threshold},
       increase_factor_{increase_factor},
       decrease_factor_{decrease_factor} {
-  DataVector dv(initial_timescale.size());
-  for (size_t i = 0; i < dv.size(); ++i) {
-    dv[i] = initial_timescale[i];
+  std::tie(timescale_, timescales_have_been_set_) =
+      std::visit(TimescaleCreator{}, initial_timescale);
+
+  if (timescales_have_been_set_) {
+    initial_timescale_ = min(timescale_);
+  } else {
+    initial_timescale_ = timescale_[0];
+    timescale_ = DataVector{};
   }
-  timescale_ = std::move(dv);
 
   for (const auto& t_scale : timescale_) {
     if (t_scale <= 0.0) {
@@ -70,15 +91,32 @@ TimescaleTuner::TimescaleTuner(const std::vector<double>& initial_timescale,
   }
 }
 
+const DataVector& TimescaleTuner::current_timescale() const {
+  check_if_timescales_have_been_set();
+  return timescale_;
+}
+
+void TimescaleTuner::resize_timescales(
+    const size_t num_timescales, const std::optional<double>& fill_value) {
+  ASSERT(num_timescales > 0,
+         "Damping timescales must have a non-zero number of components.");
+  timescale_ = DataVector{num_timescales};
+
+  set_timescale_if_in_allowable_range(fill_value.value_or(initial_timescale_));
+}
+
 void TimescaleTuner::set_timescale_if_in_allowable_range(
     const double suggested_timescale) {
   for (auto& t_scale : timescale_) {
     t_scale = std::clamp(suggested_timescale, min_timescale_, max_timescale_);
   }
+
+  timescales_have_been_set_ = true;
 }
 
 void TimescaleTuner::update_timescale(
     const std::array<DataVector, 2>& q_and_dtq) {
+  check_if_timescales_have_been_set();
   ASSERT(q_and_dtq[0].size() == timescale_.size() and
              q_and_dtq[1].size() == timescale_.size(),
          "One or both of the number of components in q_and_dtq("
@@ -116,20 +154,29 @@ void TimescaleTuner::update_timescale(
   }
 }
 
-void TimescaleTuner::pup(PUP::er&p) {
-    p | timescale_;
-    p | max_timescale_;
-    p | min_timescale_;
-    p | decrease_timescale_threshold_;
-    p | increase_timescale_threshold_;
-    p | increase_factor_;
-    p | decrease_factor_;
+void TimescaleTuner::check_if_timescales_have_been_set() const {
+  ASSERT(timescales_have_been_set_,
+         "Damping timescales in the TimescaleTuner have not been set yet.");
+}
+
+void TimescaleTuner::pup(PUP::er& p) {
+  p | timescale_;
+  p | timescales_have_been_set_;
+  p | initial_timescale_;
+  p | max_timescale_;
+  p | min_timescale_;
+  p | decrease_timescale_threshold_;
+  p | increase_timescale_threshold_;
+  p | increase_factor_;
+  p | decrease_factor_;
 }
 
 bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
   return (lhs.timescale_ == rhs.timescale_) and
          (lhs.max_timescale_ == rhs.max_timescale_) and
          (lhs.min_timescale_ == rhs.min_timescale_) and
+         (lhs.timescales_have_been_set_ == rhs.timescales_have_been_set_) and
+         (lhs.initial_timescale_ == rhs.initial_timescale_) and
          (lhs.decrease_timescale_threshold_ ==
           rhs.decrease_timescale_threshold_) and
          (lhs.increase_timescale_threshold_ ==
@@ -138,6 +185,6 @@ bool operator==(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
          (lhs.decrease_factor_ == rhs.decrease_factor_);
 }
 
-bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs){
+bool operator!=(const TimescaleTuner& lhs, const TimescaleTuner& rhs) {
   return not(lhs == rhs);
 }
