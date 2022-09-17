@@ -57,7 +57,8 @@ void simple_action(Proxy&& proxy) {
 
 template <typename Action, typename Proxy, typename Arg0, typename... Args>
 void simple_action(Proxy&& proxy, Arg0&& arg0, Args&&... args) {
-  proxy.template simple_action<Action>(
+  proxy.template simple_action<Action, std::decay_t<Arg0>,
+                               std::decay_t<Args>...>(
       std::tuple<std::decay_t<Arg0>, std::decay_t<Args>...>(
           std::forward<Arg0>(arg0), std::forward<Args>(args)...));
 }
