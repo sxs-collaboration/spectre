@@ -50,6 +50,8 @@ class Minkowski : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   Minkowski& operator=(Minkowski&& /*rhs*/) = default;
   ~Minkowski() = default;
 
+  explicit Minkowski(CkMigrateMessage* /*msg*/);
+
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
                                    Frame::Inertial>;

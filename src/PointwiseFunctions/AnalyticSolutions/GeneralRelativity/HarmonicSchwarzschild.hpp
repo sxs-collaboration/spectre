@@ -175,8 +175,6 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
                         const std::array<double, volume_dim>& center,
                         const Options::Context& context = {});
 
-  explicit HarmonicSchwarzschild(CkMigrateMessage* /*unused*/) {}
-
   HarmonicSchwarzschild() = default;
   HarmonicSchwarzschild(const HarmonicSchwarzschild& /*rhs*/) = default;
   HarmonicSchwarzschild& operator=(const HarmonicSchwarzschild& /*rhs*/) =
@@ -184,6 +182,8 @@ class HarmonicSchwarzschild : public AnalyticSolution<3_st>,
   HarmonicSchwarzschild(HarmonicSchwarzschild&& /*rhs*/) = default;
   HarmonicSchwarzschild& operator=(HarmonicSchwarzschild&& /*rhs*/) = default;
   ~HarmonicSchwarzschild() = default;
+
+  explicit HarmonicSchwarzschild(CkMigrateMessage* /*msg*/);
 
   /*!
    * \brief Computes and returns spacetime quantities for a Schwarzschild black

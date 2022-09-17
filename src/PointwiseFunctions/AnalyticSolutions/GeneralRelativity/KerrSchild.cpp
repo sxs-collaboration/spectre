@@ -25,6 +25,7 @@
 #include "Utilities/StdHelpers.hpp"
 
 namespace gr::Solutions {
+KerrSchild::KerrSchild(CkMigrateMessage* /*msg*/) {}
 
 KerrSchild::KerrSchild(const double mass,
                        const std::array<double, 3>& dimensionless_spin,
