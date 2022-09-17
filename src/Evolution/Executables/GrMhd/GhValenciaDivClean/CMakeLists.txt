@@ -56,33 +56,9 @@ add_ghmhd_with_horizon_executable(
   "${LIBS_TO_LINK}"
   )
 
-add_ghmhd_executable(
-  BlastWave
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::BlastWave>
-  "${LIBS_TO_LINK}"
-  )
-
-add_ghmhd_executable(
-  MagneticFieldLoop
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::MagneticFieldLoop>
-  "${LIBS_TO_LINK}"
-  )
-
-add_ghmhd_executable(
-  MagneticRotor
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::MagneticRotor>
-  "${LIBS_TO_LINK}"
-  )
-
 add_ghmhd_with_horizon_executable(
   MagnetizedFmDisk
   GeneralizedHarmonic::Solutions::WrappedGr<grmhd::AnalyticData::MagnetizedFmDisk>
-  "${LIBS_TO_LINK}"
-  )
-
-add_ghmhd_executable(
-  AlfvenWave
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::AlfvenWave>
   "${LIBS_TO_LINK}"
   )
 
@@ -90,18 +66,6 @@ add_ghmhd_with_horizon_executable(
   BondiMichel
   GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>
   "${LIBS_TO_LINK};ParallelInterpolation"
-  )
-
-add_ghmhd_executable(
-  KomissarovShock
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::KomissarovShock>
-  "${LIBS_TO_LINK}"
-  )
-
-add_ghmhd_executable(
-  SmoothFlow3D
-  GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::SmoothFlow>
-  "${LIBS_TO_LINK}"
   )
 
 add_ghmhd_with_horizon_executable(
