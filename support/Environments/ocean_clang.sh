@@ -10,61 +10,69 @@
 # For questions regarding ocean or to request access, please contact
 # Geoffrey Lovelace by email (glovelace at fullerton dot edu).
 # Access is normally restricted to members of Cal State Fullerton's
-# Gravitational-Wave Physics and Astronomy Center and their collaborators.
+# Nicholas and Lee Begovich Center for Gravitational-Wave Physics and Astronomy
+# and their collaborators.
 
 spectre_setup_modules() {
     echo "All modules on ocean are provided by the system"
 }
 
 spectre_unload_modules() {
-    module unload ohpc
-    module unload llvm/10.0.1
-    module unload gnu7/7.3.0
-    module unload openmpi/1.10.7
     module unload prun/1.2
-    module unload cmake/3.18.5
-    module unload git-2.19.2-gcc-7.3.0-jfnpgdh
-    module unload blaze/3.8
-    module unload brigand-master-gcc-7.3.0-gwg63zg
-    module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module unload catch2-2.11.3-gcc-7.3.0-l7lqzrg
-    module unload gsl-2.5-gcc-7.3.0-i7icadp
-    module unload jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
-    module unload libxsmm/1.16.1
-    module unload yaml-cpp-develop-gcc-7.3.0-qcfbbll
-    module unload boost-1.68.0-gcc-7.3.0-vgl6ofr
-    module unload hdf5-1.12.0-gcc-7.3.0-mknp6xv
-    module unload openblas-0.3.4-gcc-7.3.0-tt2coe7
+    module unload gmp/4.3.2
+    module unload mpc/1.0.3
+    module unload mpf4/3.1.6
+    module unload gnu11/11.3.0
+    module unload openmpi/4.1.4
+    module unload llvm/13.0.1
+    module unload cmake/3.24.1
     module unload python/3.9.5
-    module unload charm-7.0.0-nosmp
-    module unload doxygen-1.9.1-gcc-7.3.0-nxmwu4a
-    module unload zlib-1.2.11-gcc-7.3.0-h3h2oa4
+    module unload openblas-0.3.20-gcc-11.3.0-tc4qxfv
+    module unload zlib-1.2.12-gcc-11.3.0-ge3ye5j
+    module unload blaze-3.8-gcc-11.3.0-y7sgzzc
+    module unload brigand-master-gcc-11.3.0-nsmmsxm
+    module unload libsharp-1.0.0-gcc-11.3.0-w7e7n5z
+    module unload catch2-2.13.8-gcc-11.3.0-k2l7yjm
+    module unload gsl-2.7.1-gcc-11.3.0-sey3z3o
+    module unload jemalloc-5.2.1-gcc-11.3.0-r63hemp
+    module unload yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
+    module unload boost-1.79.0-gcc-11.3.0-ck2cccn
+    module unload hdf5-1.12.2-gcc-11.3.0-dly2yyu
+    module unload binutils-2.38-gcc-11.3.0-fmchbp7
+    module unload libxsmm/1.16.1
+    module unload charm-7.0.0-gnu11-clang-smp
+    module unload git/2.19.6
+    module unload doxygen/1.9.5
 }
 
 spectre_load_modules() {
-    module load ohpc
-    module load python/3.9.5
-    module load gnu7/7.3.0
-    module load openmpi/1.10.7
+    module purge
     module load prun/1.2
-    module load llvm/10.0.1
-    source /opt/ohpc/pub/apps/spack/0.12.0/share/spack/setup-env.sh
-    module load cmake/3.18.5
-    module load git-2.19.2-gcc-7.3.0-jfnpgdh
-    module load blaze/3.8
-    module load brigand-master-gcc-7.3.0-gwg63zg
-    module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
-    module load catch2-2.11.3-gcc-7.3.0-l7lqzrg
-    module load gsl-2.5-gcc-7.3.0-i7icadp
-    module load jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
+    module load gmp/4.3.2
+    module load mpc/1.0.3
+    module load mpfr/3.1.6
+    module load gnu11/11.3.0
+    module load openmpi/4.1.4
+    module load llvm/13.0.1
+    module load cmake/3.24.1
+    module load python/3.9.5
+    source /opt/ohpc/pub/apps/spack2022/share/spack/setup-env.sh
+    module load openblas-0.3.20-gcc-11.3.0-tc4qxfv
+    module load zlib-1.2.12-gcc-11.3.0-ge3ye5j
+    module load blaze-3.8-gcc-11.3.0-y7sgzzc
+    module load brigand-master-gcc-11.3.0-nsmmsxm
+    module load libsharp-1.0.0-gcc-11.3.0-w7e7n5z
+    module load catch2-2.13.8-gcc-11.3.0-k2l7yjm
+    module load gsl-2.7.1-gcc-11.3.0-sey3z3o
+    module load jemalloc-5.2.1-gcc-11.3.0-r63hemp
+    module load yaml-cpp-0.7.0-gcc-11.3.0-a4rumor
+    module load boost-1.79.0-gcc-11.3.0-ck2cccn
+    module load hdf5-1.12.2-gcc-11.3.0-dly2yyu
+    module load binutils-2.38-gcc-11.3.0-fmchbp7
     module load libxsmm/1.16.1
-    module load yaml-cpp-develop-gcc-7.3.0-qcfbbll
-    module load boost-1.68.0-gcc-7.3.0-vgl6ofr
-    module load hdf5-1.12.0-gcc-7.3.0-mknp6xv
-    module load openblas-0.3.4-gcc-7.3.0-tt2coe7
-    module load charm-7.0.0-nosmp
-    module load doxygen-1.9.1-gcc-7.3.0-nxmwu4a
-    module load zlib-1.2.11-gcc-7.3.0-h3h2oa4
+    module load charm-7.0.0-gnu11-clang-smp
+    module load git/2.19.6
+    module load doxygen/1.9.5
 }
 
 spectre_run_cmake() {
@@ -73,12 +81,13 @@ spectre_run_cmake() {
         return 1
     fi
     spectre_load_modules
-    export GCC_HOME=/opt/ohpc/pub/compiler/gcc/7.3.0/bin
+    export GCC_HOME=/opt/ohpc/pub/compiler/gcc/11.3.0/bin
     cmake -D CHARM_ROOT=$CHARM_ROOT \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
+          -D USE_PCH=ON \
           "$@" \
           $SPECTRE_HOME
 }
