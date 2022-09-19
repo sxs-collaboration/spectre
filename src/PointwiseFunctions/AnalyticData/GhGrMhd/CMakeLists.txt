@@ -11,11 +11,19 @@ spectre_target_sources(
   InstantiateWrappedGr.cpp
   )
 
+spectre_target_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Factory.hpp
+  )
+
 target_link_libraries(
   ${LIBRARY}
-  PRIVATE
-  DataStructures
+  PUBLIC
   GeneralRelativitySolutions
   GrMhdAnalyticData
+  PRIVATE
+  DataStructures
   Utilities
   )
