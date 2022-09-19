@@ -76,7 +76,7 @@ run the following to install a fortran compiler and other dependencies:
 ```
 brew install gcc
 brew install openblas boost gsl cmake doxygen
-brew install ccache autoconf automake catch2 jemalloc hdf5 pybind11 yaml-cpp
+brew install ccache autoconf automake jemalloc hdf5 pybind11 yaml-cpp
 ```
 
 ### 4. Install remaining dependencies
@@ -131,6 +131,16 @@ git checkout v7.0.0
 ./build LIBS multicore-darwin-arm8 --with-production -g3 -j
 popd
 ```
+Lastly, install Catch2. Note that catch2 v2.13.7 is required, and homebrew
+can only install v3. Catch2 is a header only package, so no need to build
+separately.
+
+```
+git clone https://github.com/catchorg/Catch2.git
+pushd Catch2
+git checkout v2.13.7
+popd
+```
 
 ### 5. Clone, configure, and build SpECTRE.
 Next, clone SpECTRE, make a build directory, and configure. In whatever
@@ -156,6 +166,7 @@ CMAKE_Fortran_COMPILER=gfortran -D BUILD_PYTHON_BINDINGS=ON \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
 -D BRIGAND_ROOT=${SPECTRE_DEPS_ROOT}/brigand/ \
 -D LIBSHARP_ROOT=${SPECTRE_DEPS_ROOT}/libsharp/ \
+-D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/include/ \
 -D Boost_ROOT=$(brew --prefix boost)/ \
 -D CLANG_TIDY_BIN=$(brew --prefix llvm)/bin/clang-tidy \
 -D MACOSX_MIN=12.0 -D BUILD_SHARED_LIBS=OFF \
