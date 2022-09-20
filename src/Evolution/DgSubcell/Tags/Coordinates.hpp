@@ -11,8 +11,8 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -71,8 +71,8 @@ struct InertialCoordinatesCompute
       const double time,
       const std::unordered_map<
           std::string,
-          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-      functions_of_time) {
+          std::unique_ptr<::domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) {
     *inertial_coords =
         grid_to_inertial_map(grid_coords, time, functions_of_time);
   }
