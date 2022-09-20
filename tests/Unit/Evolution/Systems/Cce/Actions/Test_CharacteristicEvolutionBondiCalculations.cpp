@@ -76,6 +76,9 @@ struct mock_observer_writer {
 };
 
 template <typename Metavariables>
+struct DummyBoundary {};
+
+template <typename Metavariables>
 struct mock_characteristic_evolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
   using replace_these_simple_actions = tmpl::list<>;
@@ -89,7 +92,8 @@ struct mock_characteristic_evolution {
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime, Actions::ReceiveWorldtubeData<Metavariables>,
-      Actions::InitializeFirstHypersurface<false>,
+      Actions::InitializeFirstHypersurface<false,
+                                           DummyBoundary<Metavariables>>,
       ::Actions::MutateApply<InitializeGauge>,
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
           Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,

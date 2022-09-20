@@ -109,7 +109,8 @@ struct mock_characteristic_evolution {
           Parallel::Phase::Testing,
           tmpl::list<
               Actions::InitializeFirstHypersurface<
-                  metavariables::uses_partially_flat_cartesian_coordinates>,
+                  metavariables::uses_partially_flat_cartesian_coordinates,
+                  dummy_boundary<Metavariables>>,
               ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
                   Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
               ::Actions::MutateApply<GaugeUpdateJacobianFromCoordinates<
