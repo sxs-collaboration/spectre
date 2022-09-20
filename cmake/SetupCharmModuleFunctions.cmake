@@ -11,7 +11,11 @@ function(add_charm_module MODULE)
     add_custom_target(module_All)
   endif()
 
-  set(_VERSION_SUFFIX "_v${CHARM_VERSION}")
+  if(APPLE)
+    set(_VERSION_SUFFIX "_macOS_v${CHARM_VERSION}")
+  else()
+    set(_VERSION_SUFFIX "_v${CHARM_VERSION}")
+  endif()
 
   add_custom_command(
     OUTPUT ${MODULE}.decl.h ${MODULE}.def.h
