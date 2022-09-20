@@ -15,6 +15,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Subcell/TciOptions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -38,9 +39,8 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <tr><th> Description <th> TCI status
  *
  * <tr><td> if `grmhd::ValenciaDivClean::Tags::VariablesNeededFixing` is `true`
- * then we remain on FD. (Note: this could be relaxed in the future if we need
- * to allow switching from FD to DG in the atmosphere and the current approach
- * isn't working.)
+ *  and the maximum of \f$\tilde{D}/\sqrt{\gamma}\f$ is greater than
+ * `tci_options.atmosphere_density` on DG and FD grid, then we remain on FD.
  * <td> `+1`
  *
  * <tr><td> if `min(tilde_d)` is less than
@@ -86,6 +86,7 @@ struct TciOnFdGrid {
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
@@ -94,6 +95,7 @@ struct TciOnFdGrid {
       const Scalar<DataVector>& subcell_tilde_d,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
       bool vars_needed_fixing, const Mesh<3>& dg_mesh,
       const Mesh<3>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
