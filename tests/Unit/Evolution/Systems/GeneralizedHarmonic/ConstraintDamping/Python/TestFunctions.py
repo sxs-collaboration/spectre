@@ -12,6 +12,10 @@ def squared_distance_from_center(centered_coords, center):
     return np.einsum("i,i", centered_coords, centered_coords)
 
 
+def constant_call_operator(coords, time, constant):
+    return constant
+
+
 def gaussian_plus_constant_call_operator(coords, time, constant, amplitude,
                                          width, center):
     one_over_width = 1.0 / width
