@@ -18,6 +18,7 @@
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeTargetPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -50,10 +51,8 @@ namespace OptionHolders {
 ///
 /// \details In addition to the parameters for the Kerr black hole, this holder
 /// contains the `Lmax` which encodes the angular resolution of the spherical
-/// harmonic basis and `ThetaVariesFastest` which encodes the collocation
-/// ordering. For example, the apparent horizon finder relies on spherepack
-/// routines that require `true` for `ThetaVariesFastest`, and using this
-/// surface for a CCE worldtube requires `false` for `ThetaVariesFastest`.
+/// harmonic basis and `AngularOrdering` which encodes the collocation
+/// ordering.
 struct KerrHorizon {
   struct Lmax {
     using type = size_t;
@@ -73,20 +72,20 @@ struct KerrHorizon {
     static constexpr Options::String help = {
         "Dimensionless spin of black hole"};
   };
-  struct ThetaVariesFastest {
-    using type = bool;
+  struct AngularOrdering {
+    using type = intrp::AngularOrdering;
     static constexpr Options::String help = {
         "Chooses theta,phi ordering in 2d array"};
   };
   using options =
-      tmpl::list<Lmax, Center, Mass, DimensionlessSpin, ThetaVariesFastest>;
+      tmpl::list<Lmax, Center, Mass, DimensionlessSpin, AngularOrdering>;
   static constexpr Options::String help = {
       "A Strahlkorper conforming to the horizon (in Kerr-Schild coordinates)"
       " of a Kerr black hole with a specified center, mass, and spin."};
 
   KerrHorizon(size_t l_max_in, std::array<double, 3> center_in, double mass_in,
               std::array<double, 3> dimensionless_spin_in,
-              bool theta_varies_fastest_in = true,
+              intrp::AngularOrdering angular_ordering_in,
               const Options::Context& context = {});
 
   KerrHorizon() = default;
@@ -103,7 +102,7 @@ struct KerrHorizon {
   std::array<double, 3> center{};
   double mass{};
   std::array<double, 3> dimensionless_spin{};
-  bool theta_varies_fastest_memory_layout{};
+  intrp::AngularOrdering angular_ordering;
 };
 
 bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs);
@@ -194,7 +193,7 @@ struct KerrHorizon : tt::ConformsTo<intrp::protocols::ComputeTargetPoints> {
       const tmpl::type_<Metavariables>& /*meta*/) {
     const auto& kerr_horizon =
         db::get<Tags::KerrHorizon<InterpolationTargetTag>>(box);
-    if (kerr_horizon.theta_varies_fastest_memory_layout) {
+    if (kerr_horizon.angular_ordering == intrp::AngularOrdering::Strahlkorper) {
       return db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
     } else {
       const auto& strahlkorper =
