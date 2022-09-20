@@ -60,7 +60,7 @@ void check_integration(const size_t min_pts, const size_t max_pts) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgoriths.Spectral.IndefiniteIntegral",
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.IndefiniteIntegral",
                   "[NumericalAlgorithms][Spectral][Unit]") {
   check_integration<Basis::Chebyshev, Quadrature::GaussLobatto>(
       2, maximum_number_of_points<Basis::Chebyshev>);
