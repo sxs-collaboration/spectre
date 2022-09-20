@@ -30,6 +30,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -38,6 +39,24 @@ namespace {
 struct DummyAnalyticSolutionTag : db::SimpleTag, Tags::AnalyticSolutionOrData {
   using type =
       GeneralizedHarmonic::Solutions::WrappedGr<grmhd::Solutions::BondiMichel>;
+};
+
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
+            tmpl::list<grmhd::GhValenciaDivClean::BoundaryConditions::
+                           ProductOfConditions<
+                               GeneralizedHarmonic::BoundaryConditions::
+                                   DirichletAnalytic<3_st>,
+                               grmhd::ValenciaDivClean::BoundaryConditions::
+                                   DirichletAnalytic>>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::list<GeneralizedHarmonic::Solutions::WrappedGr<
+                       grmhd::Solutions::BondiMichel>>>>;
+  };
 };
 
 template <typename DerivedCondition, typename EvolvedTagList,
@@ -392,22 +411,31 @@ void test_boundary_condition_combination(
 SPECTRE_TEST_CASE(
     "Unit.GhValenciaDivClean.BoundaryConditions.ProductOfConditions",
     "[Unit][Evolution]") {
+  Parallel::register_factory_classes_with_charm<Metavariables>();
   // scoped to separate out each product combination
   {
     INFO("Product condition of DirichletAnalytic in each system");
 
     const GeneralizedHarmonic::BoundaryConditions::DirichletAnalytic<3_st>
-        gh_condition{};
+        gh_condition{std::unique_ptr<evolution::initial_data::InitialData>(
+            std::make_unique<GeneralizedHarmonic::Solutions::WrappedGr<
+                grmhd::Solutions::BondiMichel>>(1.0, 4.0, 0.1, 2.0, 0.01))};
     const grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic
         valencia_condition{};
-    const auto product_boundary_condition = TestHelpers::test_factory_creation<
-        grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
-        grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
-            GeneralizedHarmonic::BoundaryConditions::DirichletAnalytic<3_st>,
-            grmhd::ValenciaDivClean::BoundaryConditions::DirichletAnalytic>>(
+    const auto product_boundary_condition = TestHelpers::test_creation<
+        std::unique_ptr<
+            grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition>,
+        Metavariables>(
         "ProductDirichletAnalyticAndDirichletAnalytic:\n"
         "  GeneralizedHarmonicDirichletAnalytic:\n"
-        "  ValenciaDirichletAnalytic:");
+        "    AnalyticPrescription:\n"
+        "      BondiMichel:\n"
+        "        Mass: 1.0\n"
+        "        SonicRadius: 4.0\n"
+        "        SonicDensity: 0.1\n"
+        "        PolytropicExponent: 2.0\n"
+        "        MagFieldStrength: 0.01\n"
+        "  ValenciaDirichletAnalytic:\n");
     const auto gridless_box =
         db::create<db::AddSimpleTags<::Tags::Time, DummyAnalyticSolutionTag>>(
             0.5, GeneralizedHarmonic::Solutions::WrappedGr<

@@ -13,6 +13,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/BoundaryConditions.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Range.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -27,6 +28,20 @@
 namespace helpers = TestHelpers::evolution::dg;
 
 namespace {
+template <size_t Dim>
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<
+            GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
+            tmpl::list<GeneralizedHarmonic::BoundaryConditions::
+                           DirichletAnalytic<Dim>>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   GeneralizedHarmonic::Solutions::all_solutions<Dim>>>;
+  };
+};
+
 template <size_t Dim>
 struct ConvertPlaneWave {
   using unpacked_container = int;
@@ -60,6 +75,8 @@ struct ConvertPlaneWave {
 template <size_t Dim>
 void test() {
   CAPTURE(Dim);
+  Parallel::register_classes_with_charm(
+      GeneralizedHarmonic::Solutions::all_solutions<Dim>{});
   MAKE_GENERATOR(gen);
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
       Tags::Time,
@@ -72,7 +89,11 @@ void test() {
       GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
       GeneralizedHarmonic::System<Dim>,
       tmpl::list<GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>>,
-      tmpl::list<ConvertPlaneWave<Dim>>>(
+      tmpl::list<ConvertPlaneWave<Dim>>,
+      tmpl::list<
+          Tags::AnalyticSolution<GeneralizedHarmonic::Solutions::WrappedGr<
+              gr::Solutions::GaugeWave<Dim>>>>,
+      Metavariables<Dim>>(
       make_not_null(&gen),
       "Evolution.Systems.GeneralizedHarmonic.BoundaryConditions."
       "DirichletAnalytic",
@@ -91,8 +112,12 @@ void test() {
               gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>>{
           "error", "spacetime_metric", "pi", "phi", "constraint_gamma1",
           "constraint_gamma2", "lapse", "shift"},
-      "DirichletAnalytic:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5},
-      box_analytic_soln,
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    GaugeWave:\n"
+      "      Amplitude: 0.2\n"
+      "      Wavelength: 10.0\n",
+      Index<Dim - 1>{Dim == 1 ? 1 : 5}, box_analytic_soln,
       tuples::TaggedTuple<
           helpers::Tags::Range<
               GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>,

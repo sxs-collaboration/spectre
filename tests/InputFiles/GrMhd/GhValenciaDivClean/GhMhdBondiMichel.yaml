@@ -29,6 +29,14 @@ PhaseChangeAndTriggers:
           Offset: 5
     - - VisitAndReturn(LoadBalancing)
 
+AnalyticSolution: &InitialData
+  BondiMichel:
+    Mass: 1.0
+    SonicRadius: 6.0
+    SonicDensity: 1.0e-5
+    PolytropicExponent: 1.4
+    MagFieldStrength: 1.0e-2
+
 DomainCreator:
   Shell:
     InnerRadius: 1.9
@@ -45,19 +53,13 @@ DomainCreator:
       InnerBoundary:
         ProductDirichletAnalyticAndDirichletAnalytic:
           GeneralizedHarmonicDirichletAnalytic:
+            AnalyticPrescription: *InitialData
           ValenciaDirichletAnalytic:
       OuterBoundary:
         ProductDirichletAnalyticAndDirichletAnalytic:
           GeneralizedHarmonicDirichletAnalytic:
+            AnalyticPrescription: *InitialData
           ValenciaDirichletAnalytic:
-
-AnalyticSolution:
-  BondiMichel:
-    Mass: 1.0
-    SonicRadius: 6.0
-    SonicDensity: 1.0e-5
-    PolytropicExponent: 1.4
-    MagFieldStrength: 1.0e-2
 
 VariableFixing:
   FixConservatives:

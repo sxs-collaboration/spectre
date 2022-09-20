@@ -25,6 +25,15 @@ PhaseChangeAndTriggers:
           Offset: 5
     - - VisitAndReturn(LoadBalancing)
 
+AnalyticSolution: &InitialData
+  TovStar:
+    CentralDensity: 1.28e-3
+    EquationOfState:
+        PolytropicFluid:
+            PolytropicConstant: 100.0
+            PolytropicExponent: 2.0
+    Coordinates: Schwarzschild
+
 # Note: this domain is chosen so that we only need to simulate the interior
 # of the star
 DomainCreator:
@@ -37,16 +46,8 @@ DomainCreator:
     BoundaryCondition:
       ProductDirichletAnalyticAndDirichletAnalytic:
         GeneralizedHarmonicDirichletAnalytic:
+            AnalyticPrescription: *InitialData
         ValenciaDirichletAnalytic:
-
-AnalyticSolution:
-  TovStar:
-    CentralDensity: 1.28e-3
-    EquationOfState:
-        PolytropicFluid:
-            PolytropicConstant: 100.0
-            PolytropicExponent: 2.0
-    Coordinates: Schwarzschild
 
 VariableFixing:
   FixConservatives:

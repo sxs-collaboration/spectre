@@ -51,20 +51,15 @@
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 
-// First template parameter specifies the source of the initial data, which
-// could be an analytic solution, analytic data, or imported numerical data.
-// Second template parameter specifies the analytic solution used when imposing
-// dirichlet boundary conditions or against which to compute error norms.
-template <typename InitialData, typename BoundaryConditions>
-struct EvolutionMetavars<3, InitialData, BoundaryConditions>
+template <size_t VolumeDim, bool UseNumericalInitialData>
+struct EvolutionMetavars
     : public GeneralizedHarmonicTemplateBase<
-          true, EvolutionMetavars<3, InitialData, BoundaryConditions>> {
-  using gh_base = GeneralizedHarmonicTemplateBase<
-      true, EvolutionMetavars<3, InitialData, BoundaryConditions>>;
+          true, EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
+  using gh_base = GeneralizedHarmonicTemplateBase<true, EvolutionMetavars>;
   using typename gh_base::frame;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
-  static constexpr size_t volume_dim = 3;
+  static constexpr size_t volume_dim = VolumeDim;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "
@@ -103,14 +98,7 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
                               3, AhA, interpolator_source_vars>>>>;
   };
 
-  using const_global_cache_tags = tmpl::list<
-      typename gh_base::analytic_solution_tag,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
-          volume_dim, Frame::Grid>,
-      GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma2<
-          volume_dim, Frame::Grid>>;
+  using typename gh_base::const_global_cache_tags;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
@@ -131,7 +119,7 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              evolution::is_numeric_initial_data_v<InitialData>,
+              UseNumericalInitialData,
               tmpl::list<
                   Parallel::PhaseActions<
                       Parallel::Phase::RegisterWithElementDataReader,
@@ -172,7 +160,7 @@ struct EvolutionMetavars<3, InitialData, BoundaryConditions>
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
-      std::conditional_t<evolution::is_numeric_initial_data_v<InitialData>,
+      std::conditional_t<UseNumericalInitialData,
                          importers::ElementDataReader<EvolutionMetavars>,
                          tmpl::list<>>,
       gh_dg_element_array, intrp::Interpolator<EvolutionMetavars>,

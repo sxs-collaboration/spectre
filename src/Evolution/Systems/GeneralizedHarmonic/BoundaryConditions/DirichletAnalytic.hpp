@@ -22,6 +22,7 @@
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -41,7 +42,15 @@ namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic final : public BoundaryCondition<Dim> {
  public:
-  using options = tmpl::list<>;
+  /// \brief What analytic solution/data to prescribe.
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+
+  using options = tmpl::list<AnalyticPrescription>;
+
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions setting the value of the "
       "spacetime metric and its derivatives Phi and Pi to the analytic "
@@ -50,9 +59,13 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
   DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
-  DirichletAnalytic(const DirichletAnalytic&) = default;
-  DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
+  DirichletAnalytic(const DirichletAnalytic&);
+  DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
+
+  explicit DirichletAnalytic(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
 
@@ -72,10 +85,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       domain::Tags::Coordinates<Dim, Frame::Inertial>,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
-  template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
       const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
           spacetime_metric,
@@ -93,43 +104,7 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       const tnsr::I<DataVector, Dim, Frame::Inertial>& /*normal_vector*/,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
       const Scalar<DataVector>& interior_gamma1,
-      const Scalar<DataVector>& interior_gamma2, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    *gamma1 = interior_gamma1;
-    *gamma2 = interior_gamma2;
-    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-        return analytic_solution_or_data.variables(
-            coords, time,
-            tmpl::list<
-                GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>,
-                GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>,
-                gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>{});
-
-      } else {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            coords,
-            tmpl::list<
-                GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>,
-                GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>,
-                gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>{});
-      }
-    }();
-
-    *spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
-            boundary_values);
-    *pi = get<GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>(
-        boundary_values);
-    *phi = get<GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>(
-        boundary_values);
-
-    // Now compute lapse and shift...
-    lapse_shift_and_inv_spatial_metric(lapse, shift, inv_spatial_metric,
-                                       *spacetime_metric);
-    return {};
-  }
+      const Scalar<DataVector>& interior_gamma2, const double time) const;
 
  private:
   void lapse_shift_and_inv_spatial_metric(
@@ -138,5 +113,7 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
       gsl::not_null<tnsr::II<DataVector, Dim, Frame::Inertial>*>
           inv_spatial_metric,
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric) const;
+
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
 }  // namespace GeneralizedHarmonic::BoundaryConditions
