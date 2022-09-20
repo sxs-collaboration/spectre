@@ -4,6 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
+  AngularOrdering.cpp
   ApparentHorizon.cpp
   KerrHorizon.cpp
   LineSegment.cpp
@@ -16,6 +17,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  AngularOrdering.hpp
   ApparentHorizon.hpp
   KerrHorizon.hpp
   LineSegment.hpp
