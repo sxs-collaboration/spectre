@@ -179,6 +179,9 @@ if (USE_PCH)
     PUBLIC
     Blaze
     Brigand
+    Charmxx::charmxx
+    Charmxx::pup
+    hdf5::hdf5
     )
   target_include_directories(
     ${SPECTRE_PCH_LIB}
