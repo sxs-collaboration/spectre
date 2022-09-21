@@ -130,6 +130,8 @@ class MultiLinearSpanInterpolation {
                        std::make_index_sequence<Dimension>{});
   }
 
+  MultiLinearSpanInterpolation() = default;
+
   MultiLinearSpanInterpolation(
       std::array<gsl::span<const double>, Dimension> x_,
       gsl::span<const double> y_, Index<Dimension> number_of_points__);
@@ -221,7 +223,7 @@ size_t MultiLinearSpanInterpolation<
   // Use linear extrapolation based of the lowest
   // two points in the table
   ASSERT(allow_extrapolation_below_data_[which_dimension] or
-             UNLIKELY(relative_coordinate > 0.),
+             UNLIKELY(relative_coordinate >= 0.),
          "Interpolation exceeds lower table bounds.");
 
   // We are exceeding the table bounds:

@@ -31,6 +31,8 @@ class PiecewisePolytropicFluid;
 class Spectral;
 template <typename LowDensityEoS>
 class Enthalpy;
+template <bool IsRelativistic>
+class Tabulated3D;
 }  // namespace EquationsOfState
 /// \endcond
 
@@ -65,6 +67,16 @@ struct DerivedClasses<true, 2> {
 template <>
 struct DerivedClasses<false, 2> {
   using type = tmpl::list<IdealFluid<false>, HybridEos<PolytropicFluid<false>>>;
+};
+
+template <>
+struct DerivedClasses<true, 3> {
+  using type = tmpl::list<Tabulated3D<true>>;
+};
+
+template <>
+struct DerivedClasses<false, 3> {
+  using type = tmpl::list<Tabulated3D<false>>;
 };
 
 }  // namespace detail
@@ -392,6 +404,155 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
   /// The lower bound of the specific enthalpy that is valid for this EOS
   virtual double specific_enthalpy_lower_bound() const = 0;
 };
+
+/*!
+ * \ingroup EquationsOfStateGroup
+ * \brief Base class for equations of state which need three independent
+ * thermodynamic variables in order to determine the pressure.
+ *
+ * The template parameter `IsRelativistic` is `true` for relativistic equations
+ * of state and `false` for non-relativistic equations of state.
+ */
+template <bool IsRelativistic>
+class EquationOfState<IsRelativistic, 3> : public PUP::able {
+ public:
+  static constexpr bool is_relativistic = IsRelativistic;
+  static constexpr size_t thermodynamic_dim = 3;
+  using creatable_classes =
+      typename detail::DerivedClasses<IsRelativistic, 3>::type;
+
+  EquationOfState() = default;
+  EquationOfState(const EquationOfState&) = default;
+  EquationOfState& operator=(const EquationOfState&) = default;
+  EquationOfState(EquationOfState&&) = default;
+  EquationOfState& operator=(EquationOfState&&) = default;
+  ~EquationOfState() override = default;
+
+  explicit EquationOfState(CkMigrateMessage* msg) : PUP::able(msg) {}
+
+  WRAPPED_PUPable_abstract(EquationOfState);  // NOLINT
+
+  virtual inline std::unique_ptr<EquationOfState<IsRelativistic, 3>> get_clone()
+      const = 0;
+
+  virtual bool is_equal(
+      const EquationOfState<IsRelativistic, 3>& rhs) const = 0;
+  /// @{
+  /*!
+   * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$, the
+   * specific internal energy \f$\epsilon\f$ and electron fraction \f$Y_e\f$.
+   */
+  virtual Scalar<double> pressure_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+  virtual Scalar<DataVector> pressure_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$, the
+   * temperature \f$T\f$, and electron fraction \f$Y_e\f$.
+   */
+  virtual Scalar<double> pressure_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+  virtual Scalar<DataVector> pressure_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the temperature \f$T\f$ from the rest mass
+   * density \f$\rho\f$, the specific internal energy \f$\epsilon\f$,
+   * and electron fraction \f$Y_e\f$.
+   */
+  virtual Scalar<double> temperature_from_density_and_energy(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*specific_internal_energy*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+  virtual Scalar<DataVector> temperature_from_density_and_energy(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*specific_internal_energy*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes the specific internal energy \f$\epsilon\f$ from the rest mass
+   * density \f$\rho\f$, the temperature \f$T\f$, and electron fraction
+   * \f$Y_e\f$.
+   */
+  virtual Scalar<double> specific_internal_energy_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/
+      ) const = 0;
+  virtual Scalar<DataVector>
+  specific_internal_energy_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/
+      ) const = 0;
+  /// @}
+
+  /// @{
+  /*!
+   * Computes sound speed squared \f$ c_s^2 \f$.
+   *
+   * Interpolate as a function of temperature, rest-mass density and electron
+   * fraction. Note that this will break thermodynamic consistency with the
+   * pressure and internal energy interpolated separately. The precise impact of
+   * this will depend on the EoS and numerical scheme used for the evolution.
+   */
+  virtual Scalar<double> sound_speed_squared_from_density_and_temperature(
+      const Scalar<double>& /*rest_mass_density*/,
+      const Scalar<double>& /*temperature*/,
+      const Scalar<double>& /*electron_fraction*/) const = 0;
+  virtual Scalar<DataVector> sound_speed_squared_from_density_and_temperature(
+      const Scalar<DataVector>& /*rest_mass_density*/,
+      const Scalar<DataVector>& /*temperature*/,
+      const Scalar<DataVector>& /*electron_fraction*/) const = 0;
+  /// @}
+
+  /// The lower bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_lower_bound() const = 0;
+
+  /// The upper bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_upper_bound() const = 0;
+
+  /// The lower bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_lower_bound() const = 0;
+
+  /// The upper bound of the rest mass density that is valid for this EOS
+  virtual double rest_mass_density_upper_bound() const = 0;
+
+  /// The lower bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$ and electron fraction \f$Y_e\f$.
+  virtual double specific_internal_energy_lower_bound(
+      const double rest_mass_density, const double electron_fraction) const = 0;
+
+  /// The upper bound of the specific internal energy that is valid for this EOS
+  /// at the given rest mass density \f$\rho\f$ and electron fraction \f$Y_e\f$.
+  virtual double specific_internal_energy_upper_bound(
+      const double rest_mass_density, const double electron_fraction) const = 0;
+
+  /// The lower bound of the specific enthalpy that is valid for this EOS
+  virtual double specific_enthalpy_lower_bound() const = 0;
+
+  /// The lower bound of the temperature that is valid for this EOS
+  virtual double temperature_lower_bound() const = 0;
+
+  /// The upper bound of the temperature that is valid for this EOS
+  virtual double temperature_upper_bound() const = 0;
+};
+
 /// Compare two equations of state for equality
 template <bool IsRelLhs, bool IsRelRhs, size_t ThermoDimLhs,
           size_t ThermoDimRhs>
@@ -425,6 +586,12 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
    chi_from_density_and_energy,                                          \
    kappa_times_p_over_rho_squared_from_density_and_energy)
 
+#define EQUATION_OF_STATE_FUNCTIONS_3D                                      \
+  (pressure_from_density_and_energy, pressure_from_density_and_temperature, \
+   temperature_from_density_and_energy,                                     \
+   specific_internal_energy_from_density_and_temperature,                   \
+   sound_speed_squared_from_density_and_temperature)
+
 #define EQUATION_OF_STATE_ARGUMENTS_EXPAND(z, n, type) \
   BOOST_PP_COMMA_IF(n) const Scalar<type>&
 
@@ -442,16 +609,17 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
  * \brief Macro used to generate forward declarations of member functions in
  * derived classes
  */
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DERIVED, DIM)               \
-  BOOST_PP_LIST_FOR_EACH(                                                     \
-      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER, DIM,                  \
-      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                             \
-          BOOST_PP_SUB(DIM, 1),                                               \
-          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D)))) \
-                                                                              \
-  /* clang-tidy: do not use non-const references */                           \
-  void pup(PUP::er& p) override; /* NOLINT */                                 \
-                                                                              \
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS(DERIVED, DIM)            \
+  BOOST_PP_LIST_FOR_EACH(                                                  \
+      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBERS_HELPER, DIM,               \
+      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                          \
+          BOOST_PP_SUB(DIM, 1),                                            \
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D, \
+           EQUATION_OF_STATE_FUNCTIONS_3D))))                              \
+                                                                           \
+  /* clang-tidy: do not use non-const references */                        \
+  void pup(PUP::er& p) override; /* NOLINT */                              \
+                                                                           \
   explicit DERIVED(CkMigrateMessage* msg);
 
 /// \cond
@@ -484,7 +652,8 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
       (TEMPLATE, DERIVED, DATA_TYPE, DIM),                                 \
       BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                          \
           BOOST_PP_SUB(DIM, 1),                                            \
-          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D, \
+           EQUATION_OF_STATE_FUNCTIONS_3D))))
 
 /// \cond
 #define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER(r, DIM,        \
@@ -494,9 +663,10 @@ bool operator!=(const EquationOfState<IsRelLhs, ThermoDimLhs>& lhs,
       DIM, EQUATION_OF_STATE_ARGUMENTS_EXPAND, DataType)) const;
 /// \endcond
 
-#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(DIM)       \
-  BOOST_PP_LIST_FOR_EACH(                                         \
-      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER, DIM, \
-      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                 \
-          BOOST_PP_SUB(DIM, 1),                                   \
-          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D))))
+#define EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(DIM)                \
+  BOOST_PP_LIST_FOR_EACH(                                                  \
+      EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS_HELPER, DIM,          \
+      BOOST_PP_TUPLE_TO_LIST(BOOST_PP_TUPLE_ELEM(                          \
+          BOOST_PP_SUB(DIM, 1),                                            \
+          (EQUATION_OF_STATE_FUNCTIONS_1D, EQUATION_OF_STATE_FUNCTIONS_2D, \
+           EQUATION_OF_STATE_FUNCTIONS_3D))))
