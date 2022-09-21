@@ -73,3 +73,11 @@ add_spectre_parallel_executable(
   "EvolutionMetavars"
   "${LIBS_TO_LINK};ControlSystem;GeneralRelativitySolutions;Importers"
 )
+
+add_spectre_parallel_executable(
+  "EvolveGhBbhCce"
+  EvolveGhBbhCce
+  Evolution/Executables/GeneralizedHarmonic
+  "EvolutionMetavars"
+  "${LIBS_TO_LINK};Cce;ControlSystem;GeneralRelativitySolutions;Importers"
+)
