@@ -35,6 +35,7 @@ spectre_target_headers(
   LagrangePolynomial.hpp
   LinearLeastSquares.hpp
   LinearRegression.hpp
+  MultiLinearSpanInterpolation.hpp
   LinearSpanInterpolator.hpp
   PolynomialInterpolation.hpp
   PredictedZeroCrossing.hpp

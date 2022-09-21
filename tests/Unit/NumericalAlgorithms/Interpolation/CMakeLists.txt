@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_CubicSpline.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
+  Test_MultiLinearSpanInterpolation.cpp
   Test_LinearLeastSquares.cpp
   Test_LinearRegression.cpp
   Test_PolynomialInterpolation.cpp
