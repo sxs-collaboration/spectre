@@ -112,6 +112,13 @@ class Main : public CBase_Main<Metavariables> {
                                    funcl::Identity, std::index_sequence<>>>
           reduction_data);
 
+  /// Add an exception to the list of exceptions. Upon a phase change we print
+  /// all the received exceptions and exit.
+  ///
+  /// Upon receiving an exception all algorithms are terminated to guarantee
+  /// quiescence occurs soon after the exception is reported.
+  void add_exception_message(std::string exception_message);
+
  private:
   // Return the dir name for the next Charm++ checkpoint as well as the pieces
   // from which the name is built up: the basename and the padding. This is a
@@ -135,11 +142,6 @@ class Main : public CBase_Main<Metavariables> {
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
-  using parallel_component_tag_list = tmpl::transform<
-      component_list,
-      tmpl::bind<
-          tmpl::type_,
-          tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   // Lists of all parallel component types
   using group_component_list =
       tmpl::filter<component_list, tmpl::or_<Parallel::is_group<tmpl::_1>,
@@ -171,6 +173,8 @@ class Main : public CBase_Main<Metavariables> {
       phase_change_decision_data_;
   size_t checkpoint_dir_counter_ = 0_st;
   Parallel::ResourceInfo<Metavariables> resource_info_{};
+  // All exception errors we've received so far.
+  std::vector<std::string> exception_messages_{};
 };
 
 namespace detail {
@@ -450,6 +454,11 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   at_sync_indicator_proxy_[0].insert(this->thisProxy, sys::my_proc());
   at_sync_indicator_proxy_.doneInserting();
 
+  using parallel_component_tag_list = tmpl::transform<
+      component_list,
+      tmpl::bind<
+          tmpl::type_,
+          tmpl::bind<Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
 
@@ -558,6 +567,7 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
 
   p | checkpoint_dir_counter_;
   p | resource_info_;
+  p | exception_messages_;
   if (p.isUnpacking()) {
     check_future_checkpoint_dirs_available();
   }
@@ -639,39 +649,67 @@ void Main<Metavariables>::
 
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() {
-  if (Parallel::Phase::Exit == current_phase_) {
-    ERROR("Current phase is Exit, but program did not exit!");
+  if (not exception_messages_.empty()) {
+    if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+      Parallel::printf(
+          "Received termination while cleaning up a previous termination. This "
+          "is cyclic behavior and cannot be supported. Cleanup must exit "
+          "cleanly without errors.");
+      sys::abort("");
+    }
+    current_phase_ = Parallel::Phase::PostFailureCleanup;
+    Parallel::printf("Entering phase: %s\n", current_phase_);
+  } else {
+    if (Parallel::Phase::Exit == current_phase_) {
+      ERROR("Current phase is Exit, but program did not exit!");
+    }
+
+    if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+      Parallel::printf("PostFailureCleanup phase complete. Aborting.\n");
+      Informer::print_exit_info();
+      sys::abort("");
+    }
+
+    const auto next_phase = PhaseControl::arbitrate_phase_change(
+        make_not_null(&phase_change_decision_data_), current_phase_,
+        *Parallel::local_branch(global_cache_proxy_));
+    if (next_phase.has_value()) {
+      // Only print info if there was an actual phase change.
+      if (current_phase_ != next_phase.value()) {
+        Parallel::printf("Entering phase from phase control: %s\n",
+                         next_phase.value());
+        current_phase_ = next_phase.value();
+      }
+    } else {
+      const auto& default_order = Metavariables::default_phase_order;
+      auto it = alg::find(default_order, current_phase_);
+      using ::operator<<;
+      if (it == std::end(default_order)) {
+        ERROR("Cannot determine next phase as '"
+              << current_phase_
+              << "' is not in Metavariables::default_phase_order "
+              << default_order << "\n");
+      }
+      if (std::next(it) == std::end(default_order)) {
+        ERROR("Cannot determine next phase as '"
+              << current_phase_
+              << "' is last in Metavariables::default_phase_order "
+              << default_order << "\n");
+      }
+      current_phase_ = *std::next(it);
+
+      Parallel::printf("Entering phase: %s\n", current_phase_);
+    }
   }
 
-  const auto next_phase = PhaseControl::arbitrate_phase_change(
-      make_not_null(&phase_change_decision_data_), current_phase_,
-      *Parallel::local_branch(global_cache_proxy_));
-  if (next_phase.has_value()) {
-    // Only print info if there was an actual phase change.
-    if (current_phase_ != next_phase.value()) {
-      Parallel::printf("Entering phase from phase control: %s\n",
-                       next_phase.value());
-      current_phase_ = next_phase.value();
+  if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
+    Parallel::printf(
+        "\n\n###############################\n"
+        "The following exceptions were reported:\n");
+    for (const std::string& exception_message : exception_messages_) {
+      Parallel::printf("%s\n\n", exception_message);
     }
-  } else {
-    const auto& default_order = Metavariables::default_phase_order;
-    auto it = alg::find(default_order, current_phase_);
-    using ::operator<<;
-    if (it == std::end(default_order)) {
-      ERROR("Cannot determine next phase as '"
-            << current_phase_
-            << "' is not in Metavariables::default_phase_order "
-            << default_order << "\n");
-    }
-    if (std::next(it) == std::end(default_order)) {
-      ERROR("Cannot determine next phase as '"
-            << current_phase_
-            << "' is last in Metavariables::default_phase_order "
-            << default_order << "\n");
-    }
-    current_phase_ = *std::next(it);
-
-    Parallel::printf("Entering phase: %s\n", current_phase_);
+    exception_messages_.clear();
   }
 
   if (Parallel::Phase::Exit == current_phase_) {
@@ -744,6 +782,21 @@ void Main<Metavariables>::phase_change_reduction(
   PhaseControl::TaggedTupleMainCombine::apply(
       make_not_null(&phase_change_decision_data_),
       get<0>(reduction_data.data()));
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::add_exception_message(std::string exception_message) {
+  exception_messages_.push_back(std::move(exception_message));
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
+  // Set terminate_=true on all components to cause them to stop the current
+  // phase.
+  tmpl::for_each<component_list>(
+      [global_cache](auto component_tag_v) {
+        using component_tag = tmpl::type_from<decltype(component_tag_v)>;
+        Parallel::get_parallel_component<component_tag>(*global_cache)
+            .set_terminate(true);
+      });
 }
 
 template <typename Metavariables>
