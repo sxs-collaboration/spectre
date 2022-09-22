@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <random>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
