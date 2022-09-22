@@ -57,6 +57,7 @@
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -361,14 +362,18 @@ SPECTRE_TEST_CASE(
   using obs_writer = MockObserverWriter<metavars>;
 
   // Options for all InterpolationTargets.
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_A(10, {{0.0, 0.0, 0.0}},
-                                                        1.0, {{0.0, 0.0, 0.0}});
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_B(10, {{0.0, 0.0, 0.0}},
-                                                        2.0, {{0.0, 0.0, 0.0}});
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
-                                                        1.5, {{0.0, 0.0, 0.0}});
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_A(
+      10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}},
+      intrp::AngularOrdering::Strahlkorper);
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_B(
+      10, {{0.0, 0.0, 0.0}}, 2.0, {{0.0, 0.0, 0.0}},
+      intrp::AngularOrdering::Strahlkorper);
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
+      10, {{0.0, 0.0, 0.0}}, 1.5, {{0.0, 0.0, 0.0}},
+      intrp::AngularOrdering::Strahlkorper);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_D(
-      10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}});
+      10, {{0.01, 0.02, 0.03}}, 1.4, {{0.0, 0.0, 0.0}},
+      intrp::AngularOrdering::Strahlkorper);
   const auto domain_creator =
       domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<

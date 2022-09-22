@@ -131,4 +131,4 @@ InterpolationTargets:
     Center: [0.0, 0.0, 0.0]
     Mass: *BhMass
     DimensionlessSpin: [0.0, 0.0, *BhDimlessSpin]
-    ThetaVariesFastest: true
+    AngularOrdering: Strahlkorper

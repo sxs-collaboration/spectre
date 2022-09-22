@@ -21,11 +21,13 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
+#include "ParallelAlgorithms/Interpolation/Targets/AngularOrdering.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/KerrHorizon.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Spherepack.hpp"
 #include "Utilities/TMPL.hpp"
@@ -56,7 +58,8 @@ struct MockMetavariables {
 };
 }  // namespace
 
-void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
+void test_interpolation_target_kerr_horizon(
+    const intrp::AngularOrdering angular_ordering) {
   // Constants used in this test.
   // We use l_max=18 to get enough points that the surface is
   // represented to roundoff error; for smaller l_max we would need to
@@ -69,7 +72,7 @@ void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
 
   // Options for KerrHorizon
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts(
-      l_max, center, mass, dimless_spin, theta_varies_fastest);
+      l_max, center, mass, dimless_spin, angular_ordering);
 
   // Test creation of options
   const auto created_opts =
@@ -78,8 +81,8 @@ void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
           "DimensionlessSpin: [0.2, 0.3, 0.4]\n"
           "Lmax: 18\n"
           "Mass: 1.8\n"
-          "ThetaVariesFastest: " +
-          std::string(theta_varies_fastest ? "true" : "false"));
+          "AngularOrdering: " +
+          std::string(MakeString{} << angular_ordering));
   CHECK(created_opts == kerr_horizon_opts);
 
   const auto domain_creator =
@@ -87,7 +90,7 @@ void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
 
   const auto expected_block_coord_holders = [&domain_creator, &mass, &center,
                                              &dimless_spin,
-                                             &theta_varies_fastest]() {
+                                             &angular_ordering]() {
     // How many points are supposed to be in a Strahlkorper,
     // reproduced here by hand for the test.
     const size_t n_theta = l_max + 1;
@@ -125,7 +128,7 @@ void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
     size_t s = 0;
-    if (theta_varies_fastest) {
+    if (angular_ordering == intrp::AngularOrdering::Strahlkorper) {
       for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
         const double phi = two_pi_over_n_phi * i_phi;
         for (size_t i_theta = 0; i_theta < n_theta; ++i_theta) {
@@ -166,6 +169,6 @@ void test_interpolation_target_kerr_horizon(const bool theta_varies_fastest) {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
                   "[Unit]") {
   domain::creators::register_derived_with_charm();
-  test_interpolation_target_kerr_horizon(true);
-  test_interpolation_target_kerr_horizon(false);
+  test_interpolation_target_kerr_horizon(intrp::AngularOrdering::Cce);
+  test_interpolation_target_kerr_horizon(intrp::AngularOrdering::Strahlkorper);
 }
