@@ -40,4 +40,40 @@ auto christoffel_second_kind(
     const tnsr::II<DataType, SpatialDim, Frame>& inv_metric)
     -> tnsr::Ijj<DataType, SpatialDim, Frame>;
 /// @}
+
+/// @{
+/*!
+ * \brief Compute \f$\Gamma_a\f$ from the generalized harmonic evolved
+ * variables.
+ *
+ * Starting from Eq. (40) of \cite Lindblom2005qh we get
+ *
+ * \f{align*}{
+ *  \Gamma_a &= \gamma^{ij}\Phi_{ija} + n^b \Pi_{ab} -
+ *   \frac{1}{2}\gamma^{i}{}_ag^{bc}\Phi_{ibc} - \frac{1}{2}n_ag^{bc}\Pi_{bc}
+ *   \\
+ *   \Gamma_a &= \gamma^{ij}\Phi_{ija} + n^b \Pi_{ab} -\frac{1}{2}
+ *               n_a g^{bc} \left(n^i \Phi_{ibc} + \Pi_{bc}\right)
+ *               - \frac{1}{2} \delta^i_a g^{bc} \Phi_{ibc}
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> trace_christoffel(
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void trace_christoffel(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> trace,
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi);
+/// @}
 }  // namespace GeneralizedHarmonic
