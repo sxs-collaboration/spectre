@@ -39,7 +39,9 @@ namespace detail {
 ///
 /// \tparam X the arithmetic data type
 template <typename X>
-struct is_supported_number_datatype : std::is_same<X, double> {};
+struct is_supported_number_datatype
+    : std::disjunction<std::is_same<X, double>,
+                       std::is_same<X, std::complex<double>>> {};
 
 template <typename X>
 constexpr bool is_supported_number_datatype_v =
@@ -58,8 +60,9 @@ constexpr bool is_supported_number_datatype_v =
 /// \tparam X the `Tensor` data type
 template <typename X>
 struct is_supported_tensor_datatype
-    : std::disjunction<std::is_same<X, double>, std::is_same<X, DataVector>,
-                       std::is_same<X, ComplexDataVector>> {};
+    : std::disjunction<
+          std::is_same<X, double>, std::is_same<X, std::complex<double>>,
+          std::is_same<X, DataVector>, std::is_same<X, ComplexDataVector>> {};
 
 template <typename X>
 constexpr bool is_supported_tensor_datatype_v =
@@ -164,6 +167,9 @@ struct is_assignable;
 /// Can assign a type to itself
 template <typename LhsDataType, typename RhsDataType>
 struct is_assignable : std::is_same<LhsDataType, RhsDataType> {};
+/// Can assign a complex numeric type to its underlying real-valued numeric type
+template <typename X>
+struct is_assignable<std::complex<X>, X> : std::true_type {};
 /// Can assign the LHS `VectorImpl` to the RHS `VectorImpl` if `VectorImpl`
 /// allows it
 template <typename ValueType1, typename VectorType1, typename ValueType2,
@@ -230,6 +236,18 @@ struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType>,
   using type = VectorType;
 };
 /// @{
+/// A binary operation between a type `T` and `std::complex<T>` yields a
+/// `std::complex<T>`
+template <typename T>
+struct get_binop_datatype_impl<T, std::complex<T>> {
+  using type = std::complex<T>;
+};
+template <typename T>
+struct get_binop_datatype_impl<std::complex<T>, T> {
+  using type = std::complex<T>;
+};
+/// @}
+/// @{
 /// A binary operation between a `VectorImpl` and its underlying value type
 /// yields the `VectorImpl`, e.g. `DataVector OP double = DataVector`
 template <typename ValueType, typename VectorType>
@@ -254,6 +272,32 @@ template <typename ValueType, typename VectorType>
 struct get_binop_datatype_impl<
     ValueType, VectorImpl<std::complex<ValueType>, VectorType>> {
   using type = VectorType;
+};
+/// @}
+/// @{
+/// A binary operation between a real-valued `VectorImpl` and the complex-valued
+/// partner to the `VectorImpl`'s underlying type yields the complex partner
+/// type of the `VectorImpl`, e.g.
+/// `std::complex<double> OP DataVector = ComplexDataVector`
+///
+/// \note Blaze supports multiplication between a `std::complex<double>` and a
+/// `DataVector`, but does not support addition, subtraction, or division
+/// between these two types. This specialization of `get_binop_datatype_impl`
+/// simply defines that the result of any of the binary operations should be
+/// `ComplexDataVector`. Because Blaze doesn't support addition, subtraction,
+/// and division between these two types, the `AddSub` and `Divide` classes
+/// disallow this type combination in their class definitions to prevent these
+/// operations. That way, if Blaze support is later added for e.g. division,
+/// we simply need to remove the assert in `Divide` that prevents it.
+template <typename ValueType, typename VectorType>
+struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType>,
+                               std::complex<ValueType>> {
+  using type = typename get_complex_datatype<VectorType>::type;
+};
+template <typename ValueType, typename VectorType>
+struct get_binop_datatype_impl<std::complex<ValueType>,
+                               VectorImpl<ValueType, VectorType>> {
+  using type = typename get_complex_datatype<VectorType>::type;
 };
 /// @}
 /// @{

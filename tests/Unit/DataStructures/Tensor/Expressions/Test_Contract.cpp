@@ -5,6 +5,7 @@
 
 #include <array>
 #include <climits>
+#include <complex>
 #include <cstddef>
 #include <random>
 
@@ -838,6 +839,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Contract",
   test_contraction_summation_consistency();
   test_contractions(make_not_null(&generator),
                     std::numeric_limits<double>::signaling_NaN());
+  test_contractions(
+      make_not_null(&generator),
+      std::complex<double>(std::numeric_limits<double>::signaling_NaN(),
+                           std::numeric_limits<double>::signaling_NaN()));
   test_contractions(
       make_not_null(&generator),
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));

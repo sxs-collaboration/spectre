@@ -35,8 +35,8 @@ struct NumberAsExpression
       MarkAsNumberAsExpression {
   static_assert(detail::is_supported_number_datatype_v<DataType>,
                 "TensorExpressions currently only support numeric terms whose "
-                "type is double. It is possible to add support for more "
-                "numeric types.");
+                "type is double or std::complex<double>. It is possible to add "
+                "support for more numeric types.");
 
   // === Index properties ===
   /// The type of the data being stored in the result of the expression

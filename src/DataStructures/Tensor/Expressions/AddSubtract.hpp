@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -298,6 +299,15 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       "Cannot add or subtract the given TensorExpression types with the given "
       "data types. This can occur from e.g. trying to add a Tensor with data "
       "type double and a Tensor with data type DataVector.");
+  static_assert(
+      not((std::is_same_v<T1, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T2::type, DataVector>) or
+          (std::is_same_v<T2, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T1::type, DataVector>)),
+      "Cannot perform addition and subtraction between a std::complex<double> "
+      "and a TensorExpression whose data type is DataVector because Blaze does "
+      "not support addition and subtraction between std::complex<double> and "
+      "DataVector.");
   static_assert(
       detail::IndexPropertyCheck<typename T1::index_list,
                                  typename T2::index_list, ArgsList1<Args1...>,
@@ -916,6 +926,28 @@ SPECTRE_ALWAYS_INLINE auto operator+(
       "tensor.");
   return t + tenex::NumberAsExpression(number);
 }
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
+    const std::complex<N>& number) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only add a number to a tensor expression that evaluates to a rank 0"
+      "tensor.");
+  return t + tenex::NumberAsExpression(number);
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const std::complex<N>& number,
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only add a number to a tensor expression that evaluates to a rank 0"
+      "tensor.");
+  return t + tenex::NumberAsExpression(number);
+}
 /// @}
 
 /*!
@@ -978,6 +1010,28 @@ template <typename T, typename X, typename Symm, typename IndexList,
           Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator-(
     const N number,
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only subtract a number from a tensor expression that evaluates to a "
+      "rank 0 tensor.");
+  return tenex::NumberAsExpression(number) - t;
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
+    const std::complex<N>& number) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only subtract a number from a tensor expression that evaluates to a "
+      "rank 0 tensor.");
+  return t + tenex::NumberAsExpression(-number);
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const std::complex<N>& number,
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
   static_assert(
       (... and tt::is_time_index<Args>::value),

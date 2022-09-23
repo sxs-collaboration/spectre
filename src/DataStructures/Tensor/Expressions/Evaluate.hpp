@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <type_traits>
 
@@ -164,9 +165,9 @@ void evaluate_impl(
   static_assert(is_supported_tensor_datatype_v<LhsDataType> and
                     is_supported_tensor_datatype_v<RhsDataType>,
                 "TensorExpressions currently only support Tensors whose data "
-                "type is double, DataVector, or ComplexDataVector. It is "
-                "possible to add support for other data types that are "
-                "supported by Tensor.");
+                "type is double, std::complex<double>, DataVector, or "
+                "ComplexDataVector. It is possible to add support for other "
+                "data types that are supported by Tensor.");
   static_assert(
       is_assignable_v<LhsDataType, RhsDataType>,
       "Assignment of the LHS Tensor's data type to the RHS TensorExpression's "
@@ -341,9 +342,9 @@ void evaluate_impl(
 
   static_assert(is_supported_tensor_datatype_v<X> and
                 "TensorExpressions currently only support Tensors whose data "
-                "type is double, DataVector, or ComplexDataVector. It is "
-                "possible to add support for other data types that are "
-                "supported by Tensor.");
+                "type is double, std::complex<double>, DataVector, or "
+                "ComplexDataVector. It is possible to add support for other "
+                "data types that are supported by Tensor.");
   static_assert(
       is_assignable_v<X, NumberType>,
       "Assignment of the LHS Tensor's data type to the RHS number's data type "
@@ -459,6 +460,7 @@ void evaluate(
       lhs_tensor, rhs_tensorexpression);
 }
 
+/// @{
 /*!
  * \ingroup TensorExpressionsGroup
  * \brief Assign a number to components of a tensor with the LHS index order
@@ -487,6 +489,14 @@ void evaluate(
     const N rhs_value) {
   detail::evaluate_impl<LhsTensorIndices...>(lhs_tensor, rhs_value);
 }
+template <auto&... LhsTensorIndices, typename X, typename LhsSymmetry,
+          typename LhsIndexList, typename N>
+void evaluate(
+    const gsl::not_null<Tensor<X, LhsSymmetry, LhsIndexList>*> lhs_tensor,
+    const std::complex<N>& rhs_value) {
+  detail::evaluate_impl<LhsTensorIndices...>(lhs_tensor, rhs_value);
+}
+/// @}
 
 /*!
  * \ingroup TensorExpressionsGroup

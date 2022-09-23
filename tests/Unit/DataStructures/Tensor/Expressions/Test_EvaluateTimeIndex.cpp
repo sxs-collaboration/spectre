@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <random>
 
@@ -150,6 +151,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateTimeIndex",
                   "[DataStructures][Unit]") {
   test_evaluate_spatial_spacetime_index(
       std::numeric_limits<double>::signaling_NaN());
+  test_evaluate_spatial_spacetime_index(
+      std::complex<double>(std::numeric_limits<double>::signaling_NaN(),
+                           std::numeric_limits<double>::signaling_NaN()));
   test_evaluate_spatial_spacetime_index(
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));
   test_evaluate_spatial_spacetime_index(

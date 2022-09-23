@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <type_traits>
@@ -486,6 +487,20 @@ SPECTRE_ALWAYS_INLINE auto operator*(
 template <typename T, typename N, Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator*(
     const N number,
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t) {
+  return t * tenex::NumberAsExpression(number);
+}
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t,
+    const std::complex<N>& number) {
+  return t * tenex::NumberAsExpression(number);
+}
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const std::complex<N>& number,
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t) {
   return t * tenex::NumberAsExpression(number);

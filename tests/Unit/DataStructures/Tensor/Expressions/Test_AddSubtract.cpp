@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <climits>
+#include <complex>
 #include <cstddef>
 #include <random>
 #include <type_traits>
@@ -341,6 +342,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   test_tensor_ops_properties();
   test_addsub(make_not_null(&generator),
               std::numeric_limits<double>::signaling_NaN());
+  test_addsub(
+      make_not_null(&generator),
+      std::complex<double>(std::numeric_limits<double>::signaling_NaN(),
+                           std::numeric_limits<double>::signaling_NaN()));
   test_addsub(make_not_null(&generator),
               DataVector(5, std::numeric_limits<double>::signaling_NaN()));
   test_addsub(
