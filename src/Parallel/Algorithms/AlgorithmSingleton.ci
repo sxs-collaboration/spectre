@@ -5,6 +5,7 @@ module AlgorithmSingleton {
 
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/GlobalCache.decl.h";
+  include "Parallel/MaxInlineMethodsReached.hpp";
   include "Parallel/Phase.hpp";
 
   template <typename ParallelComponent, typename SpectreArrayIndex>
@@ -31,8 +32,9 @@ module AlgorithmSingleton {
     entry void start_phase(Parallel::Phase);
 
     template <typename ReceiveTag, typename ReceiveData_t>
-    entry void receive_data(typename ReceiveTag::temporal_id&, ReceiveData_t&,
-                            bool enable_if_disabled = false);
+    entry [inline] void receive_data(typename ReceiveTag::temporal_id&,
+                                     ReceiveData_t&,
+                                     bool enable_if_disabled = false);
 
     entry void set_terminate(bool);
   }

@@ -1,0 +1,18 @@
+diff --git a/src/Parallel/Algorithms/AlgorithmSingleton.def.h b/build_main/src/Parallel/Algorithms/AlgorithmSingleton.def.h
+index 136029936..4e3875fbf 100644
+--- a/src/Parallel/Algorithms/AlgorithmSingleton.def.h
++++ b/src/Parallel/Algorithms/AlgorithmSingleton.def.h
+@@ -474,11 +474,11 @@ void CProxyElement_AlgorithmSingleton <ParallelComponent, SpectreArrayIndex> ::receive
+ {
+   ckCheck();
+   AlgorithmSingleton <ParallelComponent, SpectreArrayIndex>  *obj = ckLocal();
+-  if (obj) {
++  if (obj != nullptr and not Parallel::detail::max_inline_entry_methods_reached()) {
+   envelope env;
+   env.setMsgtype(ForArrayEltMsg);
+   env.setTotalsize(0);
+-  _TRACE_CREATION_DETAILED(&env, CkIndex_AlgorithmSingleton <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall8<ReceiveTag, ReceiveData_t>());
++  _TRACE_CREATION_DETAILED(&env, (CkIndex_AlgorithmSingleton <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall8<ReceiveTag, ReceiveData_t>()));
+   _TRACE_CREATION_DONE(1);
+   _TRACE_BEGIN_EXECUTE_DETAILED(CpvAccess(curPeEvent),ForArrayEltMsg,(CkIndex_AlgorithmSingleton <ParallelComponent, SpectreArrayIndex> ::template idx_receive_data_marshall8<ReceiveTag, ReceiveData_t>()),CkMyPe(), 0, ((CkArrayIndex&)ckGetIndex()).getProjectionID(), obj);
+ #if CMK_LBDB_ON
