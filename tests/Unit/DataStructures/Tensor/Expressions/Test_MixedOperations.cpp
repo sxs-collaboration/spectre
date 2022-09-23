@@ -8,6 +8,7 @@
 #include <random>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -964,4 +965,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.MixedOperations",
   test_mixed_operations(
       make_not_null(&generator),
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_mixed_operations(
+      make_not_null(&generator),
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

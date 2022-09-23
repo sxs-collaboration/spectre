@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <random>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -318,4 +319,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Divide",
               std::numeric_limits<double>::signaling_NaN());
   test_divide(make_not_null(&generator),
               DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_divide(
+      make_not_null(&generator),
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

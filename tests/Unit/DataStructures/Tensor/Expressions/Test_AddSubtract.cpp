@@ -8,6 +8,7 @@
 #include <random>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
@@ -342,4 +343,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
               std::numeric_limits<double>::signaling_NaN());
   test_addsub(make_not_null(&generator),
               DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_addsub(
+      make_not_null(&generator),
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

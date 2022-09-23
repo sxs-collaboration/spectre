@@ -190,8 +190,9 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
                               IndexList<Indices...>, ArgsList<Args...>> {
   static_assert(detail::is_supported_tensor_datatype_v<X>,
                 "TensorExpressions currently only support Tensors whose data "
-                "type is double or DataVector. It is possible to add support "
-                "for other data types that are supported by Tensor.");
+                "type is double, DataVector, or ComplexDataVector. It is "
+                "possible to add support for other data types that are "
+                "supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in

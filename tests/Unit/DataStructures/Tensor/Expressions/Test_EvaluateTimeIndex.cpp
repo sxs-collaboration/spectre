@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <random>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
@@ -151,4 +152,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.EvaluateTimeIndex",
       std::numeric_limits<double>::signaling_NaN());
   test_evaluate_spatial_spacetime_index(
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_evaluate_spatial_spacetime_index(
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

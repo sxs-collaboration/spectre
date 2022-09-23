@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_DataTypeSupport.cpp
   Test_Divide.cpp
   Test_Evaluate.cpp
+  Test_EvaluateComplex.cpp
   Test_EvaluateRank3NonSymmetric.cpp
   Test_EvaluateRank3Symmetric.cpp
   Test_EvaluateRank4.cpp
