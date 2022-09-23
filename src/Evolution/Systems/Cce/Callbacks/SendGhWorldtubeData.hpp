@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Evolution/Systems/Cce/Actions/BoundaryComputeAndSendToEvolution.hpp"
 #include "Evolution/Systems/Cce/Actions/ReceiveGhWorldtubeData.hpp"
 #include "Evolution/Systems/Cce/Components/WorldtubeBoundary.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -41,7 +42,7 @@ namespace callbacks {
 /// \note This callback requires the temporal ID in an InterpolationTargetTag be
 /// a TimeStepId.
 template <typename CceEvolutionComponent, typename InterpolationTargetTag,
-          bool DuringSelfStart>
+          bool DuringSelfStart, bool LocalTimeStepping>
 struct SendGhWorldtubeData
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables, typename TemporalId>
@@ -59,12 +60,22 @@ struct SendGhWorldtubeData
 
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
-    Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
-        CceEvolutionComponent, DuringSelfStart>>(
-        cce_gh_boundary_component, temporal_id,
-        db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
-        db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
-        db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
+    if constexpr (DuringSelfStart or LocalTimeStepping) {
+      Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
+          CceEvolutionComponent, DuringSelfStart>>(
+          cce_gh_boundary_component, temporal_id,
+          db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
+          db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
+          db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
+    } else {
+      // We want to avoid interface manager for global time stepping
+      Parallel::simple_action<Cce::Actions::SendToEvolution<
+          Cce::GhWorldtubeBoundary<Metavariables>, CceEvolutionComponent>>(
+          cce_gh_boundary_component, temporal_id,
+          db::get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(box),
+          db::get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(box),
+          db::get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(box));
+    }
   }
 };
 }  // namespace callbacks

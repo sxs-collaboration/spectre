@@ -243,25 +243,35 @@ struct SendToEvolution<GhWorldtubeBoundary<Metavariables>, EvolutionComponent> {
   static void apply(
       db::DataBox<tmpl::list<DbTags...>>& box,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const TimeStepId& time,
+      const ArrayIndex& array_index, const TimeStepId& time,
       const InterfaceManagers::GhInterfaceManager::gh_variables& gh_variables) {
+    apply<ParallelComponent>(
+        box, cache, array_index, time,
+        get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
+            gh_variables),
+        get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(gh_variables),
+        get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(gh_variables));
+  }
+
+  template <typename ParallelComponent, typename... DbTags, typename ArrayIndex>
+  static void apply(
+      db::DataBox<tmpl::list<DbTags...>>& box,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const TimeStepId& time,
+      const tnsr::aa<DataVector, 3, ::Frame::Inertial>& spacetime_metric,
+      const tnsr::iaa<DataVector, 3, ::Frame::Inertial>& phi,
+      const tnsr::aa<DataVector, 3, ::Frame::Inertial>& pi) {
     db::mutate<::Tags::Variables<
         typename Metavariables::cce_boundary_communication_tags>>(
         make_not_null(&box),
-        [&gh_variables](
+        [&spacetime_metric, &phi, &pi](
             const gsl::not_null<Variables<
                 typename Metavariables::cce_boundary_communication_tags>*>
                 boundary_variables,
             const double extraction_radius, const double l_max) {
-          create_bondi_boundary_data(
-              boundary_variables,
-              get<GeneralizedHarmonic::Tags::Phi<3, ::Frame::Inertial>>(
-                  gh_variables),
-              get<GeneralizedHarmonic::Tags::Pi<3, ::Frame::Inertial>>(
-                  gh_variables),
-              get<gr::Tags::SpacetimeMetric<3, ::Frame::Inertial, DataVector>>(
-                  gh_variables),
-              extraction_radius, l_max);
+          create_bondi_boundary_data(boundary_variables, phi, pi,
+                                     spacetime_metric, extraction_radius,
+                                     l_max);
         },
         db::get<InitializationTags::ExtractionRadius>(box),
         db::get<Tags::LMax>(box));
