@@ -46,8 +46,10 @@ class DiagonalModalOperator : public VectorImpl<double, DiagonalModalOperator> {
   DiagonalModalOperator& operator=(DiagonalModalOperator&&) = default;
   ~DiagonalModalOperator() = default;
 
-  using VectorImpl<double, DiagonalModalOperator>::operator=;
-  using VectorImpl<double, DiagonalModalOperator>::VectorImpl;
+  using BaseType = VectorImpl<double, DiagonalModalOperator>;
+
+  using BaseType::operator=;
+  using BaseType::VectorImpl;
 };
 
 namespace blaze {

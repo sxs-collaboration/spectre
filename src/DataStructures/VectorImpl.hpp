@@ -33,6 +33,14 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits/IsComplexOfFundamental.hpp"
 
+/// \ingroup TensorExpressionsGroup
+/// \brief Marks a class as being a `VectorImpl`
+///
+/// \details
+/// The empty base class provides a simple means for checking if a type is a
+/// `VectorImpl`
+struct MarkAsVectorImpl {};
+
 /*!
  * \ingroup DataStructuresGroup
  * \brief Base class template for various DataVector and related types
@@ -78,7 +86,8 @@ template <typename T, typename VectorType>
 class VectorImpl
     : public blaze::CustomVector<
           T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded,
-          blaze::defaultTransposeFlag, blaze::GroupTag<0>, VectorType> {
+          blaze::defaultTransposeFlag, blaze::GroupTag<0>, VectorType>,
+      MarkAsVectorImpl {
  public:
   using value_type = T;
   using size_type = size_t;

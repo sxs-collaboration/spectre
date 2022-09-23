@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   AddSubtract.hpp
   Contract.hpp
+  DataTypeSupport.hpp
   Divide.hpp
   Evaluate.hpp
   IndexPropertyCheck.hpp

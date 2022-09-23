@@ -61,8 +61,10 @@ class ComplexDataVector
   ComplexDataVector& operator=(ComplexDataVector&&) = default;
   ~ComplexDataVector() = default;
 
-  using VectorImpl<std::complex<double>, ComplexDataVector>::operator=;
-  using VectorImpl<std::complex<double>, ComplexDataVector>::VectorImpl;
+  using BaseType = VectorImpl<std::complex<double>, ComplexDataVector>;
+
+  using BaseType::operator=;
+  using BaseType::VectorImpl;
 };
 
 namespace blaze {
