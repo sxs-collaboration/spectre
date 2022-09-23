@@ -71,15 +71,23 @@ void test_uniform_cylindrical_endcap() {
   const double radius_two = 6.0 * (unit_dis(gen) + 1.0);
   CAPTURE(radius_two);
 
+  // These angles describe how close the z-planes can be to the
+  // centers or edges of the spheres.
+  constexpr double min_angle = 0.075;
+  constexpr double max_angle_increment = 0.45 - min_angle;
+
   // Make sure z_plane_two intersects sphere_two on the +z side of the
   // center. We don't allow the plane to be too close to the center or
   // too close to the edge.
   const double z_plane_two =
-      center_two[2] + cos((0.05 + 0.4 * unit_dis(gen)) * M_PI) * radius_two;
+      center_two[2] +
+      cos((min_angle + max_angle_increment * unit_dis(gen)) * M_PI) *
+          radius_two;
   CAPTURE(z_plane_two);
 
   // Choose z_plane_frac_one = (z_plane_one - center_one[2])/radius_one
-  const double z_plane_frac_one = cos((0.05 + 0.4 * unit_dis(gen)) * M_PI);
+  const double z_plane_frac_one =
+      cos((min_angle + max_angle_increment * unit_dis(gen)) * M_PI);
 
   // Compute the minimum allowed value of the angle alpha.
   const double theta_max_one = acos(z_plane_frac_one);
@@ -94,12 +102,12 @@ void test_uniform_cylindrical_endcap() {
     // max_radius_one_to_fit_inside_sphere_two is the largest that
     // radius_one can be and still satisfy both
     // 0.98 radius_two >= radius_one + |C_1-C_2| and
-    // z_plane_two >= z_plane_one + 0.03*r_2.
+    // z_plane_two >= z_plane_one + 0.04*r_2.
     // If radius_one takes on that value, then center_one-center_two
     // must point in the minus-z direction, and only one value of
     // center_one[2] is allowed.
     const double max_radius_one_to_fit_inside_sphere_two =
-        (0.95 * radius_two + z_plane_two - center_two[2]) /
+        (0.94 * radius_two + z_plane_two - center_two[2]) /
         (1.0 + z_plane_frac_one);
 
     // max_radius_one_for_alpha is the largest that radius_one can be
@@ -139,11 +147,11 @@ void test_uniform_cylindrical_endcap() {
                    radius_one * sin(theta_max_one)) *
                       tan(min_alpha);
         // max_center_one_z comes from the restriction
-        // z_plane_two >= z_plane_one + 0.03*radius_two, and the restriction
+        // z_plane_two >= z_plane_one + 0.04*radius_two, and the restriction
         // 0.98 r_2 >= r_1 + | C_1 - C_2 |
         const double max_center_one_z = std::min(
             {max_center_one_z_from_alpha,
-             z_plane_two - z_plane_frac_one * radius_one - 0.03 * radius_two,
+             z_plane_two - z_plane_frac_one * radius_one - 0.04 * radius_two,
              center_two[2] + 0.98 * radius_two - radius_one});
         // min_center_one_z comes from the restriction 0.98 r_2 >= r_1 +
         // |C_1-C_2|

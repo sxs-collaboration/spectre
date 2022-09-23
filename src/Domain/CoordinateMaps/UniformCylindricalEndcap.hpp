@@ -453,15 +453,17 @@ namespace domain::CoordinateMaps {
  * map without this assumption, but the assumption simplifies the
  * code, and the expected use cases obey this restriction.
  *
- * We also demand that \f$z_{\mathrm{P}1} <= z_{\mathrm{P}2} -0.03 R_1\f$, and
+ * We also demand that \f$z_{\mathrm{P}1} <= z_{\mathrm{P}2} -0.04 R_2\f$, and
  * that the z planes in the above figures lie above the centers of the
  * corresponding spheres and are not too close to the centers or edges of
  * those spheres; specificially, we demand that
- * - \f$ 0.05\pi < \theta_{1 \mathrm{max}} < 0.45\pi\f$
- * - \f$ 0.05\pi < \theta_{2 \mathrm{max}} < 0.45\pi\f$
+ * - \f$ 0.075\pi < \theta_{1 \mathrm{max}} < 0.45\pi\f$
+ * - \f$ 0.075\pi < \theta_{2 \mathrm{max}} < 0.45\pi\f$
  *
- * Here 0.05 and 0.45 are safety factors. These restrictions are not
- * strictly necessary but are made for simplicity.
+ * Here 0.075 and 0.45 are safety factors. These restrictions are not
+ * strictly necessary but are made for simplicity and to ensure the
+ * accuracy of the inverse map (the inverse map becomes less accurate if
+ * the map parameters are extreme).
  *
  * Consider the line segment \f$L\f$ that connects a point on the
  * circle \f$S_1\f$ (the circle formed by the intersection of sphere 1
