@@ -568,7 +568,7 @@ std::optional<std::array<double, 3>> UniformCylindricalEndcap::inverse(
     // roundoff_ratio to be much larger than actual roundoff, since it
     // doesn't hurt to expand the interval and try again when
     // otherwise we would just error.
-    constexpr double roundoff_ratio = 1.e-6;
+    constexpr double roundoff_ratio = 1.e-3;
     if (abs(function_at_rhobar_min) / abs(function_at_rhobar_max) <
         roundoff_ratio) {
       // Slightly decrease rhobar_min.  How far do we decrease it?
