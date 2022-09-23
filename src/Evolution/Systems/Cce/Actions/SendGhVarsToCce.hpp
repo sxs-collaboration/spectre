@@ -35,7 +35,7 @@ namespace Actions {
 /// of a locally-stepped CCE system and the events and dense triggers
 /// during the self start procedure.
 template <typename CceWorltubeTargetTag>
-struct InterpolateDuringSelfStart {
+struct SendGhVarsToCce {
   template <typename DbTags, typename Metavariables, typename... InboxTags,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>

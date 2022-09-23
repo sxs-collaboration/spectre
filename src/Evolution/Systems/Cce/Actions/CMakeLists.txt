@@ -21,11 +21,11 @@ spectre_target_headers(
   InitializeFirstHypersurface.hpp
   InitializeWorldtubeBoundary.hpp
   InsertInterpolationScriData.hpp
-  InterpolateDuringSelfStart.hpp
   ReceiveGhWorldtubeData.hpp
   ReceiveWorldtubeData.hpp
   RequestBoundaryData.hpp
   ScriObserveInterpolated.hpp
+  SendGhVarsToCce.hpp
   TimeManagement.hpp
   UpdateGauge.hpp
   )
