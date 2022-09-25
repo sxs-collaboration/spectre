@@ -17,18 +17,19 @@
 #include "Time/StepChoosers/Increase.hpp"
 #include "Utilities/TMPL.hpp"
 
+template <bool UsesPartiallyFlatCartesianCoordinates>
 struct CharacteristicExtractDefaults {
-  static constexpr bool uses_partially_flat_cartesian_coordinates = false;
-  using system = Cce::System<uses_partially_flat_cartesian_coordinates>;
+  static constexpr bool uses_partially_flat_cartesian_coordinates =
+      UsesPartiallyFlatCartesianCoordinates;
   using evolved_swsh_tag = Cce::Tags::BondiJ;
   using evolved_swsh_dt_tag = Cce::Tags::BondiH;
   using evolved_coordinates_variables_tag = Tags::Variables<
-      std::conditional_t<uses_partially_flat_cartesian_coordinates,
-                         tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                    Cce::Tags::PartiallyFlatCartesianCoords,
-                                    Cce::Tags::InertialRetardedTime>,
-                         tmpl::list<Cce::Tags::CauchyCartesianCoords,
-                                    Cce::Tags::InertialRetardedTime>>>;
+      tmpl::conditional_t<uses_partially_flat_cartesian_coordinates,
+                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                     Cce::Tags::PartiallyFlatCartesianCoords,
+                                     Cce::Tags::InertialRetardedTime>,
+                          tmpl::list<Cce::Tags::CauchyCartesianCoords,
+                                     Cce::Tags::InertialRetardedTime>>>;
 
   struct swsh_vars_selector {
     static std::string name() { return "SwshVars"; }
@@ -52,7 +53,7 @@ struct CharacteristicExtractDefaults {
       Cce::Tags::BondiUAtScri, Cce::Tags::PartiallyFlatGaugeC,
       Cce::Tags::PartiallyFlatGaugeD, Cce::Tags::PartiallyFlatGaugeOmega,
       Cce::Tags::Du<Cce::Tags::PartiallyFlatGaugeOmega>,
-      std::conditional_t<
+      tmpl::conditional_t<
           uses_partially_flat_cartesian_coordinates,
           tmpl::list<
               Cce::Tags::CauchyGaugeC, Cce::Tags::CauchyGaugeD,
@@ -96,10 +97,10 @@ struct CharacteristicExtractDefaults {
   using cce_transform_buffer_tags = Cce::all_transform_buffer_tags;
   using cce_swsh_derivative_tags = Cce::all_swsh_derivative_tags;
   using cce_angular_coordinate_tags =
-      std::conditional_t<uses_partially_flat_cartesian_coordinates,
-                         tmpl::list<Cce::Tags::CauchyAngularCoords,
-                                    Cce::Tags::PartiallyFlatAngularCoords>,
-                         tmpl::list<Cce::Tags::CauchyAngularCoords>>;
+      tmpl::conditional_t<uses_partially_flat_cartesian_coordinates,
+                          tmpl::list<Cce::Tags::CauchyAngularCoords,
+                                     Cce::Tags::PartiallyFlatAngularCoords>,
+                          tmpl::list<Cce::Tags::CauchyAngularCoords>>;
   using cce_step_choosers = tmpl::list<
       StepChoosers::Constant<StepChooserUse::LtsStep>,
       StepChoosers::Increase<StepChooserUse::LtsStep>,
