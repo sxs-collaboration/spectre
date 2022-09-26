@@ -121,11 +121,11 @@ import h5py as h5
 
 
 def spectre_real_mode_index(l, m):
-    return 2 * (l**2 + l + m)
+    return 2 * (l**2 + l + m) + 1
 
 
 def spectre_imag_mode_index(l, m):
-    return 2 * (l**2 + l + m) + 1
+    return 2 * (l**2 + l + m) + 2
 
 
 def get_modes_from_block_output(filename, dataset, modes=[[2, 2], [3, 3]]):
