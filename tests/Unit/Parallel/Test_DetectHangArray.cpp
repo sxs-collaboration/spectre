@@ -21,11 +21,15 @@
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Printf.hpp"
+#include "Parallel/TypeTraits.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -39,6 +43,40 @@ class er;
 }  // namespace PUP
 
 namespace DetectHang {
+struct CheckNextIterableAction {
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    const Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index) {
+    if constexpr (Parallel::is_array_v<ParallelComponent>) {
+      const auto* local_object =
+          Parallel::local(Parallel::get_parallel_component<ParallelComponent>(
+              cache)[array_index]);
+      SPECTRE_PARALLEL_REQUIRE(local_object != nullptr);
+      SPECTRE_PARALLEL_REQUIRE(
+          local_object->deadlock_analysis_next_iterable_action() ==
+          std::string("Hang"));
+    } else if constexpr (Parallel::is_singleton_v<ParallelComponent>) {
+      const auto* local_object = Parallel::local(
+          Parallel::get_parallel_component<ParallelComponent>(cache));
+      SPECTRE_PARALLEL_REQUIRE(local_object != nullptr);
+      SPECTRE_PARALLEL_REQUIRE(
+          local_object->deadlock_analysis_next_iterable_action() ==
+          std::string("Hang"));
+    } else {
+      const auto* local_object = Parallel::local_branch(
+          Parallel::get_parallel_component<ParallelComponent>(cache));
+      SPECTRE_PARALLEL_REQUIRE(local_object != nullptr);
+      SPECTRE_PARALLEL_REQUIRE(
+          local_object->deadlock_analysis_next_iterable_action() ==
+          std::string("Hang"));
+    }
+    Parallel::printf("Succeeded for %s\n",
+                     pretty_type::name<ParallelComponent>());
+  }
+};
+
 struct Hang {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -159,6 +197,36 @@ struct TestMetavariables {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
+
+  static void run_deadlock_analysis_simple_actions(
+      Parallel::GlobalCache<TestMetavariables>& cache,
+      const std::vector<std::string>& deadlocked_components) {
+    SPECTRE_PARALLEL_REQUIRE(
+        alg::find(deadlocked_components, std::string{"ArrayComponent"}) !=
+        deadlocked_components.end());
+    SPECTRE_PARALLEL_REQUIRE(
+        alg::find(deadlocked_components, std::string{"SingletonComponent"}) !=
+        deadlocked_components.end());
+    SPECTRE_PARALLEL_REQUIRE(
+        alg::find(deadlocked_components, std::string{"GroupComponent"}) !=
+        deadlocked_components.end());
+    SPECTRE_PARALLEL_REQUIRE(
+        alg::find(deadlocked_components, std::string{"NodegroupComponent"}) !=
+        deadlocked_components.end());
+
+    Parallel::simple_action<DetectHang::CheckNextIterableAction>(
+        Parallel::get_parallel_component<
+            DetectHang::ArrayComponent<TestMetavariables>>(cache));
+    Parallel::simple_action<DetectHang::CheckNextIterableAction>(
+        Parallel::get_parallel_component<
+            DetectHang::SingletonComponent<TestMetavariables>>(cache));
+    Parallel::simple_action<DetectHang::CheckNextIterableAction>(
+        Parallel::get_parallel_component<
+            DetectHang::GroupComponent<TestMetavariables>>(cache));
+    Parallel::simple_action<DetectHang::CheckNextIterableAction>(
+        Parallel::get_parallel_component<
+            DetectHang::NodegroupComponent<TestMetavariables>>(cache));
+  }
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{

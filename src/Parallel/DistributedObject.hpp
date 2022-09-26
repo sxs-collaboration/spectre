@@ -400,6 +400,12 @@ class DistributedObject<ParallelComponent,
   /// result to Main's did_all_elements_terminate member function.
   void contribute_termination_status_to_main();
 
+  /// Returns the name of the last "next iterable action" to be run before a
+  /// deadlock occurred.
+  const std::string& deadlock_analysis_next_iterable_action() const {
+    return deadlock_analysis_next_iterable_action_;
+  }
+
  private:
   void set_array_index();
 
@@ -435,6 +441,10 @@ class DistributedObject<ParallelComponent,
 
   bool terminate_{true};
   bool halt_algorithm_until_next_phase_{false};
+
+  // Records the name of the next action to be called so that during deadlock
+  // analysis we can print this out.
+  std::string deadlock_analysis_next_iterable_action_{};
 
   databox_type box_;
   inbox_type inboxes_{};
@@ -891,6 +901,13 @@ void DistributedObject<
             iterate_over_actions<PhaseDep>(
                 std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
         }
+        tmpl::for_each<actions_list>([this](auto action_v) {
+          using action = tmpl::type_from<decltype(action_v)>;
+          if (algorithm_step_ == tmpl::index_of<actions_list, action>::value) {
+            deadlock_analysis_next_iterable_action_ =
+                pretty_type::name<action>();
+          }
+        });
       }
     };
     // Loop over all phases, once the current phase is found we perform the

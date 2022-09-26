@@ -29,6 +29,7 @@ module Main {
     entry void start_load_balance();
     entry void start_write_checkpoint();
     entry void add_exception_message(std::string exception_message);
+    entry void post_deadlock_analysis_termination();
   }
 
   namespace detail {

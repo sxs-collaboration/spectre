@@ -46,10 +46,16 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 #include "Parallel/Main.decl.h"
 
 namespace Parallel {
+namespace detail {
+CREATE_IS_CALLABLE(run_deadlock_analysis_simple_actions)
+CREATE_IS_CALLABLE_V(run_deadlock_analysis_simple_actions)
+}  // namespace detail
+
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
 /// See [the Parallelization documentation](group__ParallelGroup.html#details)
@@ -127,6 +133,10 @@ class Main : public CBase_Main<Metavariables> {
   /// This allows detecting deadlocks in iterable actions, but not simple or
   /// reduction action.
   void did_all_elements_terminate(bool all_elements_terminated);
+
+  /// Prints exit info and stops the executable with failure if a deadlock was
+  /// detected.
+  void post_deadlock_analysis_termination();
 
  private:
   // Return the dir name for the next Charm++ checkpoint as well as the pieces
@@ -844,13 +854,28 @@ void Main<Metavariables>::did_all_elements_terminate(
           "This means the executable stopped because of a hang/deadlock.\n"
           "############ ERROR ############\n\n",
           std::string{MakeString{} << components_that_did_not_terminate_});
+      if constexpr (detail::is_run_deadlock_analysis_simple_actions_callable_v<
+                        Metavariables, Parallel::GlobalCache<Metavariables>&,
+                        const std::vector<std::string>&>) {
+        Parallel::printf("Starting deadlock analysis.\n");
+        Metavariables::run_deadlock_analysis_simple_actions(
+            *Parallel::local_branch(global_cache_proxy_),
+            components_that_did_not_terminate_);
+        CkStartQD(CkCallback(
+            CkIndex_Main<Metavariables>::post_deadlock_analysis_termination(),
+            this->thisProxy));
+        return;
+      } else {
+        Parallel::printf(
+            "No deadlock analysis function found in metavariables. To enable "
+            "deadlock analysis via simple actions add a function:\n"
+            "  static void run_deadlock_analysis_simple_actions(\n"
+            "        Parallel::GlobalCache<TestMetavariables>& cache,\n"
+            "        const std::vector<std::string>& deadlocked_components);\n"
+            "to your metavariables.\n");
+      }
     }
-    Informer::print_exit_info();
-    if (not components_that_did_not_terminate_.empty()) {
-      sys::abort("");
-    } else {
-      sys::exit();
-    }
+    post_deadlock_analysis_termination();
   }
 
   check_if_component_terminated_correctly();
@@ -870,6 +895,16 @@ void Main<Metavariables>::check_if_component_terminated_correctly() {
     }
   });
   current_termination_check_index_++;
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::post_deadlock_analysis_termination() {
+  Informer::print_exit_info();
+  if (not components_that_did_not_terminate_.empty()) {
+    sys::abort("");
+  } else {
+    sys::exit();
+  }
 }
 
 template <typename Metavariables>
