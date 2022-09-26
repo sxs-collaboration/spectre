@@ -66,6 +66,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   tuples::TaggedTuple<name, age, email, parents, not_streamable_tag> test(
       "bla", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
   // [construction_example]
+  {
+    // Test structured bindings
+    const auto& [name_v, age_v, email_v, parents_v, not_streamable_tag_v] =
+        test;
+    CHECK(name_v == get<name>(test));
+    CHECK(age_v == get<age>(test));
+    CHECK(email_v == get<email>(test));
+    CHECK(parents_v == get<parents>(test));
+    CHECK(not_streamable_tag_v == get<not_streamable_tag>(test));
+  }
+  {
+    // Test structured bindings
+    auto& [name_v, age_v, email_v, parents_v, not_streamable_tag_v] = test;
+    CHECK(name_v == get<name>(test));
+    CHECK(age_v == get<age>(test));
+    CHECK(email_v == get<email>(test));
+    CHECK(parents_v == get<parents>(test));
+    CHECK(not_streamable_tag_v == get<not_streamable_tag>(test));
+  }
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
