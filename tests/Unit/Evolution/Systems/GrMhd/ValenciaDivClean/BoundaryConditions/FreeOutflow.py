@@ -41,7 +41,7 @@ def tilde_d(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_d(interior_rest_mass_density,
                         interior_specific_internal_energy,
@@ -62,7 +62,7 @@ def tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_tau(interior_rest_mass_density,
                           interior_specific_internal_energy,
@@ -83,7 +83,7 @@ def tilde_s(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_s(interior_rest_mass_density,
                         interior_specific_internal_energy,
@@ -104,7 +104,7 @@ def tilde_b(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_b(interior_rest_mass_density,
                         interior_specific_internal_energy,
@@ -125,7 +125,7 @@ def tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     return cons.tilde_phi(interior_rest_mass_density,
                           interior_specific_internal_energy,
@@ -191,7 +191,7 @@ def flux_tilde_d(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     cons_vars = _return_cons_vars(
         face_mesh_velocity, outward_directed_normal_covector,
@@ -220,7 +220,7 @@ def flux_tilde_tau(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     cons_vars = _return_cons_vars(
         face_mesh_velocity, outward_directed_normal_covector,
@@ -248,7 +248,7 @@ def flux_tilde_s(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     cons_vars = _return_cons_vars(
         face_mesh_velocity, outward_directed_normal_covector,
@@ -276,7 +276,7 @@ def flux_tilde_b(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     cons_vars = _return_cons_vars(
         face_mesh_velocity, outward_directed_normal_covector,
@@ -305,7 +305,7 @@ def flux_tilde_phi(face_mesh_velocity, outward_directed_normal_covector,
         outward_directed_normal_covector, outward_directed_normal_vector,
         interior_spatial_velocity)
     spatial_metric = _spatial_metric(inv_spatial_metric)
-    sqrt_det_spatial_metric = np.linalg.det(spatial_metric)
+    sqrt_det_spatial_metric = np.sqrt(np.linalg.det(spatial_metric))
 
     cons_vars = _return_cons_vars(
         face_mesh_velocity, outward_directed_normal_covector,
