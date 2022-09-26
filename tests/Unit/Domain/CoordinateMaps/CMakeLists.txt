@@ -22,6 +22,7 @@ set(LIBRARY_SOURCES
   Test_ProductMaps.cpp
   Test_Rotation.cpp
   Test_SpecialMobius.cpp
+  Test_SphericalTorus.cpp
   Test_Tags.cpp
   Test_TimeDependentHelpers.cpp
   Test_UniformCylindricalEndcap.cpp
