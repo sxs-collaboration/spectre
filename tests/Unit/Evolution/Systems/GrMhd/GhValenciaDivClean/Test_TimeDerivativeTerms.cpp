@@ -130,11 +130,13 @@ SPECTRE_TEST_CASE(
       });
 
   // ensure that the signature of the metric is correct
-  get<0, 0>(tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables)) +=
-      -2.0;
-  for (size_t i = 0; i < 3; ++i) {
-    tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables).get(i + 1, 0) *=
-        0.01;
+  {
+    auto& metric = tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables);
+    get<0, 0>(metric) += -2.0;
+    for (size_t i = 0; i < 3; ++i) {
+      metric.get(i + 1, i + 1) += 4.0;
+      metric.get(i + 1, 0) *= 0.01;
+    }
   }
 
   ComputeVolumeTimeDerivativeTermsHelper<
