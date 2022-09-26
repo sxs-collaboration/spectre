@@ -181,6 +181,9 @@ struct test_metavariables {
                  Cce::Tags::ScriPlus<Cce::Tags::Psi3>,
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
+  using ccm_psi0 = tmpl::list<
+        Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+        Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,

@@ -120,4 +120,8 @@ struct CharacteristicExtractDefaults {
       StepChoosers::ErrorControl<StepChooserUse::LtsStep,
                                  evolved_coordinates_variables_tag,
                                  coord_vars_selector>>;
+
+  using ccm_psi0 = tmpl::list<
+      Cce::Tags::BoundaryValue<Cce::Tags::Psi0Match>,
+      Cce::Tags::BoundaryValue<Cce::Tags::Dlambda<Cce::Tags::Psi0Match>>>;
 };
