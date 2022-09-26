@@ -34,14 +34,18 @@ if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
       # The -mno-avx512f flag is necessary to avoid a Blaze 3.8 bug. The flag
       # should be re-enabled when we can insist on Blaze 3.9 which will include
       # a fix that allows this vectorization flag again.
-      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH} -mno-avx512f>)
+      $<$<COMPILE_LANGUAGE:C>:-march=${OVERRIDE_ARCH} -mno-avx512f>
+      $<$<COMPILE_LANGUAGE:CXX>:-march=${OVERRIDE_ARCH} -mno-avx512f>
+      $<$<COMPILE_LANGUAGE:Fortran>:-march=${OVERRIDE_ARCH} -mno-avx512f>)
 else()
   # Apple Silicon Macs do not support the -march flag or the -mno-avx512f flag
   if(NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
     set_property(TARGET SpectreFlags
         APPEND PROPERTY
         INTERFACE_COMPILE_OPTIONS
-        $<$<COMPILE_LANGUAGE:CXX>:-march=native -mno-avx512f>)
+        $<$<COMPILE_LANGUAGE:C>:-march=native -mno-avx512f>
+        $<$<COMPILE_LANGUAGE:CXX>:-march=native -mno-avx512f>
+        $<$<COMPILE_LANGUAGE:Fortran>:-march=native -mno-avx512f>)
   endif()
 endif()
 
