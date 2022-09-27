@@ -449,7 +449,80 @@ void damped_harmonic(
       std::numeric_limits<double>::signaling_NaN(), sigma_r);
 }
 
+DampedHarmonic::DampedHarmonic(const double width,
+                               const std::array<double, 3>& amps,
+                               const std::array<int, 3>& exps)
+    : spatial_decay_width_(width), amplitudes_(amps), exponents_(exps) {}
+
+DampedHarmonic::DampedHarmonic(CkMigrateMessage* const msg)
+    : GaugeCondition(msg) {}
+
+void DampedHarmonic::pup(PUP::er& p) {
+  GaugeCondition::pup(p);
+  p | spatial_decay_width_;
+  p | amplitudes_;
+  p | exponents_;
+}
+
+std::unique_ptr<GaugeCondition> DampedHarmonic::get_clone() const {
+  return std::make_unique<DampedHarmonic>(*this);
+}
+
+template <size_t SpatialDim>
+void DampedHarmonic::gauge_and_spacetime_derivative(
+    const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame::Inertial>*>
+        gauge_h,
+    const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>*>
+        d4_gauge_h,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+    const tnsr::a<DataVector, SpatialDim, Frame::Inertial>&
+        spacetime_unit_normal_one_form,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
+        inverse_spatial_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& spacetime_metric,
+    const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& pi,
+    const tnsr::iaa<DataVector, SpatialDim, Frame::Inertial>& phi,
+    const double /*time*/,
+    const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords)
+    const {
+  damped_harmonic(
+      gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
+      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
+      phi, inertial_coords, amplitudes_[0], amplitudes_[1], amplitudes_[2],
+      exponents_[0], exponents_[1], exponents_[2], spatial_decay_width_);
+}
+
+// NOLINTNEXTLINE
+PUP::able::PUP_ID DampedHarmonic::my_PUP_ID = 0;
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                   \
+  template void DampedHarmonic::gauge_and_spacetime_derivative(                \
+      gsl::not_null<tnsr::a<DataVector, DIM(data), Frame::Inertial>*> gauge_h, \
+      gsl::not_null<tnsr::ab<DataVector, DIM(data), Frame::Inertial>*>         \
+          d4_gauge_h,                                                          \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,            \
+      const tnsr::a<DataVector, DIM(data), Frame::Inertial>&                   \
+          spacetime_unit_normal_one_form,                                      \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
+      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                  \
+          inverse_spatial_metric,                                              \
+      const tnsr::aa<DataVector, DIM(data), Frame::Inertial>&                  \
+          spacetime_metric,                                                    \
+      const tnsr::aa<DataVector, DIM(data), Frame::Inertial>& pi,              \
+      const tnsr::iaa<DataVector, DIM(data), Frame::Inertial>& phi,            \
+      const double /*time*/,                                                   \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords)  \
+      const;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define DTYPE_SCAL(data) BOOST_PP_TUPLE_ELEM(0, data)

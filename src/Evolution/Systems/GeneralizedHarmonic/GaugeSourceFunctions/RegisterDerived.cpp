@@ -16,6 +16,6 @@ void register_derived_with_charm() {
   impl<1>();
   impl<2>();
   impl<3>();
-  Parallel::register_classes_with_charm(tmpl::list<Harmonic>{});
+  Parallel::register_classes_with_charm(tmpl::list<DampedHarmonic, Harmonic>{});
 }
 }  // namespace GeneralizedHarmonic::gauges
