@@ -206,7 +206,7 @@ struct UpdateControlSystem {
     // Begin step 12
     if (db::get<control_system::Tags::WriteDataToDisk>(*box)) {
       write_components_to_disk<ControlSystem>(time, cache, function_of_time,
-                                              *opt_avg_values, control_signal);
+                                              q_and_dtq);
     }
   }
 };
