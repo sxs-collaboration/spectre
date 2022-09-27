@@ -86,41 +86,41 @@ SpatialDiscretization:
     UpwindPenalty:
 
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 2
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(SpacetimeMetric)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Pi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Phi)
-            NormType: L2Norm
-            Components: Sum
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 5
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - SpacetimeMetric
-          - Pi
-          - Phi
-          - PointwiseL2Norm(GaugeConstraint)
-          - PointwiseL2Norm(ThreeIndexConstraint)
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-  ? Slabs:
-      Specified:
-        Values: [5]
-  : - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(SpacetimeMetric)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - - Slabs:
+        Specified:
+          Values: [5]
+    - - Completion
 
 EventsAndDenseTriggers:
 

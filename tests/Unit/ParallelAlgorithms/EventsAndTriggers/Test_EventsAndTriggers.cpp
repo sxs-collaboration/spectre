@@ -75,12 +75,12 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
       TestHelpers::test_creation<std::unique_ptr<Trigger>, Metavariables>(
           trigger_string);
 
-  EventsAndTriggers::Storage events_and_triggers_map;
-  events_and_triggers_map.emplace(std::move(trigger),
-                                  make_vector<std::unique_ptr<Event>>(
-                                      std::make_unique<Events::Completion>()));
+  EventsAndTriggers::Storage events_and_triggers_input;
+  events_and_triggers_input.emplace_back(
+      std::move(trigger), make_vector<std::unique_ptr<Event>>(
+                              std::make_unique<Events::Completion>()));
   const EventsAndTriggers events_and_triggers(
-      std::move(events_and_triggers_map));
+      std::move(events_and_triggers_input));
 
   run_events_and_triggers(events_and_triggers, expected);
 }
@@ -149,15 +149,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.creation",
                   "[Unit][Evolution]") {
   const auto events_and_triggers =
       TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-          "? Not: Always\n"
-          ": - Completion\n"
-          "? Or:\n"
-          "  - Not: Always\n"
-          "  - Always\n"
-          ": - Completion\n"
-          "  - Completion\n"
-          "? Not: Always\n"
-          ": - Completion\n");
+          "- - Not: Always\n"
+          "  - - Completion\n"
+          "- - Or:\n"
+          "    - Not: Always\n"
+          "    - Always\n"
+          "  - - Completion\n"
+          "    - Completion\n"
+          "- - Not: Always\n"
+          "  - - Completion\n");
 
   run_events_and_triggers(events_and_triggers, true);
 }

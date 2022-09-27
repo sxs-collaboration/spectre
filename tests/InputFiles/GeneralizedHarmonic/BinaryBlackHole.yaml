@@ -165,55 +165,55 @@ Filtering:
 
 
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 1
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Norms
-        TensorsToObserve:
-        - Name: Lapse
-          NormType: L2Norm
-          Components: Individual
-        - Name: PointwiseL2Norm(GaugeConstraint)
-          NormType: L2Norm
-          Components: Sum
-        - Name: PointwiseL2Norm(ThreeIndexConstraint)
-          NormType: L2Norm
-          Components: Sum
-        - Name: PointwiseL2Norm(FourIndexConstraint)
-          NormType: L2Norm
-          Components: Sum
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 1000
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - Lapse
-          - PointwiseL2Norm(GaugeConstraint)
-          - PointwiseL2Norm(ThreeIndexConstraint)
-          - PointwiseL2Norm(FourIndexConstraint)
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 1
-        Offset: 0
-  : - AhA
-    - AhB
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 100
-        Offset: 0
-  : - MonitorMemory:
-        ComponentsToMonitor: All
-  ? TimeCompares:
-      Comparison: GreaterThan
-      Value: 0.02
-  : - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+          - Name: PointwiseL2Norm(FourIndexConstraint)
+            NormType: L2Norm
+            Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1000
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Lapse
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - PointwiseL2Norm(FourIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - AhA
+      - AhB
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 100
+          Offset: 0
+    - - MonitorMemory:
+          ComponentsToMonitor: All
+  - - TimeCompares:
+        Comparison: GreaterThan
+        Value: 0.02
+    - - Completion
 
 Observers:
   VolumeFileName: "GhBinaryBlackHoleVolumeData"

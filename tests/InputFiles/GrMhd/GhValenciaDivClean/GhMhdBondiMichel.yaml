@@ -117,81 +117,81 @@ SpatialDiscretization:
       Rusanov:
 
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 5
-        Offset: 0
-  : - ChangeSlabSize:
-        DelayChange: 5
-        StepChoosers:
-          - Cfl:
-              SafetyFactor: 0.6
-          - Increase:
-              Factor: 1.5
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 1
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(SpacetimeMetric)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Pi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Phi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(RestMassDensity)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(SpecificInternalEnergy)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(SpatialVelocity)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(MagneticField)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(DivergenceCleaningField)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(LorentzFactor)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Pressure)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(SpecificEnthalpy)
-            NormType: L2Norm
-            Components: Sum
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 2
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - SpacetimeMetric
-          - RestMassDensity
-          - Pressure
-          - MagneticField
-          - PointwiseL2Norm(GaugeConstraint)
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double, Double, Double, Double, Double]
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 5
-        Offset: 3
-  : - AhA
-  ? Slabs:
-      Specified:
-        Values: [2]
-  : - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    - - ChangeSlabSize:
+          DelayChange: 5
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: 0.6
+            - Increase:
+                Factor: 1.5
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(SpacetimeMetric)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(RestMassDensity)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpecificInternalEnergy)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpatialVelocity)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(MagneticField)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(DivergenceCleaningField)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(LorentzFactor)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pressure)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(SpecificEnthalpy)
+              NormType: L2Norm
+              Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - RestMassDensity
+            - Pressure
+            - MagneticField
+            - PointwiseL2Norm(GaugeConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double, Double, Double, Double, Double]
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 3
+    - - AhA
+  - - Slabs:
+        Specified:
+          Values: [2]
+    - - Completion
 
 ApparentHorizons:
   AhA:

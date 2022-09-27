@@ -60,21 +60,21 @@ SpatialDiscretization:
 #     HalfPower: 32
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [5]
-  : - Completion
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 2
-        Offset: 0
-  : - ChangeSlabSize:
-        DelayChange: 3
-        StepChoosers:
-          # Based on the step size choices above, this should aim for
-          # about 100 steps per slab.
-          - Cfl:
-              SafetyFactor: 20
+  - - Slabs:
+        Specified:
+          Values: [5]
+    - - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    - - ChangeSlabSize:
+          DelayChange: 3
+          StepChoosers:
+            # Based on the step size choices above, this should aim for
+            # about 100 steps per slab.
+            - Cfl:
+                SafetyFactor: 20
 
 EventsAndDenseTriggers:
 

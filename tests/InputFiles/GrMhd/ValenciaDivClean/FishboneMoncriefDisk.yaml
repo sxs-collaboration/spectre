@@ -98,26 +98,26 @@ VariableFixing:
     MaxVelocityMagnitude: 1.0e-4
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [10]
-  : - Completion
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 1
-        Offset: 0
-  : - ChangeSlabSize:
-        # DelayChange: 0 forces a synchronization after every slab.
-        # It is more efficient to use a higher value.  This is for
-        # testing.
-        DelayChange: 0
-        StepChoosers:
-          - Constant: 0.05
-          - Increase:
-              Factor: 2
-          - Cfl:
-              SafetyFactor: 0.2
-          - PreventRapidIncrease
+  - - Slabs:
+        Specified:
+          Values: [10]
+    - - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 1
+          Offset: 0
+    - - ChangeSlabSize:
+          # DelayChange: 0 forces a synchronization after every slab.
+          # It is more efficient to use a higher value.  This is for
+          # testing.
+          DelayChange: 0
+          StepChoosers:
+            - Constant: 0.05
+            - Increase:
+                Factor: 2
+            - Cfl:
+                SafetyFactor: 0.2
+            - PreventRapidIncrease
 
 EventsAndDenseTriggers:
 

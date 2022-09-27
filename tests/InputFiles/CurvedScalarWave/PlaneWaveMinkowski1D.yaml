@@ -62,10 +62,10 @@ Filtering:
     DisableForDebugging: true
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [100]
-  : - Completion
+  - - Slabs:
+        Specified:
+          Values: [100]
+    - - Completion
 
 EventsAndDenseTriggers:
 

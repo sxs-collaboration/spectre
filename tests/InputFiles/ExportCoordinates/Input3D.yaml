@@ -34,10 +34,10 @@ Evolution:
       Order: 1
 
 EventsAndTriggers:
-  ? TimeCompares:
-      Comparison: GreaterThanOrEqualTo
-      Value: 1.0
-  : - Completion
+  - - TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 1.0
+    - - Completion
 
 Observers:
   VolumeFileName: "ExportCoordinates3DVolume"

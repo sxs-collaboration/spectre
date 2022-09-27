@@ -83,20 +83,20 @@ EventsAndDenseTriggers:
             Components: Sum
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [100]
-  : - Completion
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 50
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumePsiPiPhiEvery50Slabs
-        VariablesToObserve: ["Psi", "Pi", "Phi"]
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double, Float, Float]
+  - - Slabs:
+        Specified:
+          Values: [100]
+    - - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 50
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumePsiPiPhiEvery50Slabs
+          VariablesToObserve: ["Psi", "Pi", "Phi"]
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double, Float, Float]
 # [observe_event_trigger]
 
 Observers:

@@ -51,20 +51,20 @@ AnalyticSolution:
   Kuzmin:
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [10]
-  : - Completion
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 10
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve: [U, TciStatus]
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Float, Float]
+  - - Slabs:
+        Specified:
+          Values: [10]
+    - - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve: [U, TciStatus]
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Float, Float]
 
 EventsAndDenseTriggers:
 

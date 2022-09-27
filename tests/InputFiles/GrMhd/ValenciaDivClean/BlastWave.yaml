@@ -93,9 +93,9 @@ Observers:
   ReductionFileName: "ValenciaDivCleanBlastWaveReductions"
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [2]
-  : - Completion
+  - - Slabs:
+        Specified:
+          Values: [2]
+    - - Completion
 
 EventsAndDenseTriggers:

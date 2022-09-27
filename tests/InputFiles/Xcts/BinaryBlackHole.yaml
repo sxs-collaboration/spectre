@@ -156,36 +156,36 @@ LinearSolver:
     ObservePerCoreReductions: False
 
 EventsAndTriggers:
-  ? HasConverged
-  : - ObserveNorms:
-        SubfileName: Norms
-        TensorsToObserve:
-          - Name: ConformalFactor
-            NormType: Max
-            Components: Individual
-          - Name: Lapse
-            NormType: Min
-            Components: Individual
-          - Name: Magnitude(ShiftExcess)
-            NormType: Max
-            Components: Individual
-          - Name: HamiltonianConstraint
-            NormType: L2Norm
-            Components: Individual
-          - Name: MomentumConstraint
-            NormType: L2Norm
-            Components: Individual
-    - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - ConformalFactor
-          - Lapse
-          - Shift
-          - ShiftExcess
-          - SpatialMetric
-          - ExtrinsicCurvature
-          - HamiltonianConstraint
-          - MomentumConstraint
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
+  - - HasConverged
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: ConformalFactor
+              NormType: Max
+              Components: Individual
+            - Name: Lapse
+              NormType: Min
+              Components: Individual
+            - Name: Magnitude(ShiftExcess)
+              NormType: Max
+              Components: Individual
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - ShiftExcess
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - HamiltonianConstraint
+            - MomentumConstraint
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
