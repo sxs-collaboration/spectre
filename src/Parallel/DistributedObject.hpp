@@ -396,6 +396,16 @@ class DistributedObject<ParallelComponent,
   template <typename ThisAction, typename PhaseIndex, typename DataBoxIndex>
   bool invoke_iterable_action();
 
+  /// Does a reduction over the component of the reduction status sending the
+  /// result to Main's did_all_elements_terminate member function.
+  void contribute_termination_status_to_main();
+
+  /// Returns the name of the last "next iterable action" to be run before a
+  /// deadlock occurred.
+  const std::string& deadlock_analysis_next_iterable_action() const {
+    return deadlock_analysis_next_iterable_action_;
+  }
+
  private:
   void set_array_index();
 
@@ -431,6 +441,10 @@ class DistributedObject<ParallelComponent,
 
   bool terminate_{true};
   bool halt_algorithm_until_next_phase_{false};
+
+  // Records the name of the next action to be called so that during deadlock
+  // analysis we can print this out.
+  std::string deadlock_analysis_next_iterable_action_{};
 
   databox_type box_;
   inbox_type inboxes_{};
@@ -887,6 +901,13 @@ void DistributedObject<
             iterate_over_actions<PhaseDep>(
                 std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
         }
+        tmpl::for_each<actions_list>([this](auto action_v) {
+          using action = tmpl::type_from<decltype(action_v)>;
+          if (algorithm_step_ == tmpl::index_of<actions_list, action>::value) {
+            deadlock_analysis_next_iterable_action_ =
+                pretty_type::name<action>();
+          }
+        });
       }
     };
     // Loop over all phases, once the current phase is found we perform the
@@ -1113,6 +1134,34 @@ bool DistributedObject<
             << "\n");
       // LCOV_EXCL_STOP
   }
+}
+
+template <typename ParallelComponent, typename... PhaseDepActionListsPack>
+void DistributedObject<ParallelComponent,
+                       tmpl::list<PhaseDepActionListsPack...>>::
+    contribute_termination_status_to_main() {
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  if (UNLIKELY(global_cache == nullptr)) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "Global cache pointer is null. This is an internal inconsistency "
+        "error. Please file an issue.");
+    sys::abort("");
+  }
+  auto main_proxy = global_cache->get_main_proxy();
+  if (UNLIKELY(not main_proxy.has_value())) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-vararg)
+    CkError(
+        "The main proxy has not been set in the global cache when "
+        "checking that all components have terminated. This is an internal "
+        "inconsistency error. Please file an issue.");
+    sys::abort("");
+  }
+  CkCallback cb(
+      CkReductionTarget(Main<metavariables>, did_all_elements_terminate),
+      main_proxy.value());
+  this->contribute(sizeof(bool), &terminate_, CkReduction::logical_and_bool,
+                   cb);
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>

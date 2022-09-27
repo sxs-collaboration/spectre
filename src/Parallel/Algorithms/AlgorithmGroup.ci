@@ -36,5 +36,7 @@ module AlgorithmGroup {
                                      bool enable_if_disabled = false);
 
     entry void set_terminate(bool);
+
+    entry void contribute_termination_status_to_main();
   }
 }

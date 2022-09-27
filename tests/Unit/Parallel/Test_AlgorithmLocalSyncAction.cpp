@@ -27,6 +27,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -221,6 +222,7 @@ struct ArrayComponent {
         Parallel::get_parallel_component<ArrayComponent>(local_cache);
     // we only want one array component for this test.
     array_proxy[0].insert(global_cache, tuples::TaggedTuple<>{}, 0);
+    array_proxy.doneInserting();
   }
 
   static void execute_next_phase(
@@ -249,7 +251,8 @@ struct TestMetavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting};
+    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &disable_openblas_multithreading};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 

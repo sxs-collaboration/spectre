@@ -38,6 +38,7 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/System/Exit.hpp"
@@ -45,10 +46,16 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
+#include "Utilities/TypeTraits/CreateIsCallable.hpp"
 
 #include "Parallel/Main.decl.h"
 
 namespace Parallel {
+namespace detail {
+CREATE_IS_CALLABLE(run_deadlock_analysis_simple_actions)
+CREATE_IS_CALLABLE_V(run_deadlock_analysis_simple_actions)
+}  // namespace detail
+
 /// \ingroup ParallelGroup
 /// The main function of a Charm++ executable.
 /// See [the Parallelization documentation](group__ParallelGroup.html#details)
@@ -119,6 +126,18 @@ class Main : public CBase_Main<Metavariables> {
   /// quiescence occurs soon after the exception is reported.
   void add_exception_message(std::string exception_message);
 
+  /// A reduction target used to determine if all the elements of the array,
+  /// group, nodegroup, or singleton parallel components terminated
+  /// successfully.
+  ///
+  /// This allows detecting deadlocks in iterable actions, but not simple or
+  /// reduction action.
+  void did_all_elements_terminate(bool all_elements_terminated);
+
+  /// Prints exit info and stops the executable with failure if a deadlock was
+  /// detected.
+  void post_deadlock_analysis_termination();
+
  private:
   // Return the dir name for the next Charm++ checkpoint as well as the pieces
   // from which the name is built up: the basename and the padding. This is a
@@ -132,6 +151,11 @@ class Main : public CBase_Main<Metavariables> {
 
   // Check if future checkpoint dirs are available; error if any already exist.
   void check_future_checkpoint_dirs_available() const;
+
+  // Starts a reduction on the component specified by
+  // the current_termination_check_index_ member variable, then increment
+  // current_termination_check_index_
+  void check_if_component_terminated_correctly();
 
   template <typename ParallelComponent>
   using parallel_component_options =
@@ -175,6 +199,10 @@ class Main : public CBase_Main<Metavariables> {
   Parallel::ResourceInfo<Metavariables> resource_info_{};
   // All exception errors we've received so far.
   std::vector<std::string> exception_messages_{};
+  // Used to keep track of which parallel component we are checking has
+  // successfully terminated.
+  size_t current_termination_check_index_{0};
+  std::vector<std::string> components_that_did_not_terminate_{};
 };
 
 namespace detail {
@@ -568,6 +596,8 @@ void Main<Metavariables>::pup(PUP::er& p) {  // NOLINT
   p | checkpoint_dir_counter_;
   p | resource_info_;
   p | exception_messages_;
+  p | current_termination_check_index_;
+  p | components_that_did_not_terminate_;
   if (p.isUnpacking()) {
     check_future_checkpoint_dirs_available();
   }
@@ -713,8 +743,8 @@ void Main<Metavariables>::execute_next_phase() {
   }
 
   if (Parallel::Phase::Exit == current_phase_) {
-    Informer::print_exit_info();
-    sys::exit();
+    check_if_component_terminated_correctly();
+    return;
   }
   tmpl::for_each<component_list>([this](auto parallel_component) {
     tmpl::type_from<decltype(parallel_component)>::execute_next_phase(
@@ -797,6 +827,84 @@ void Main<Metavariables>::add_exception_message(std::string exception_message) {
         Parallel::get_parallel_component<component_tag>(*global_cache)
             .set_terminate(true);
       });
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::did_all_elements_terminate(
+    const bool all_elements_terminated) {
+  if (not all_elements_terminated) {
+    tmpl::for_each<component_list>([this](auto component_tag_v) {
+      using component_tag = tmpl::type_from<decltype(component_tag_v)>;
+      if (tmpl::index_of<component_list, component_tag>::value ==
+          current_termination_check_index_ - 1) {
+        components_that_did_not_terminate_.push_back(
+            pretty_type::name<component_tag>());
+      }
+    });
+  }
+  if (current_termination_check_index_ == tmpl::size<component_list>::value) {
+    if (not components_that_did_not_terminate_.empty()) {
+      using ::operator<<;
+      // Need the MakeString to avoid GCC compilation failure that it can't
+      // print out the vector...
+      Parallel::printf(
+          "\n############ ERROR ############\n"
+          "The following components did not terminate cleanly:\n"
+          "%s\n\n"
+          "This means the executable stopped because of a hang/deadlock.\n"
+          "############ ERROR ############\n\n",
+          std::string{MakeString{} << components_that_did_not_terminate_});
+      if constexpr (detail::is_run_deadlock_analysis_simple_actions_callable_v<
+                        Metavariables, Parallel::GlobalCache<Metavariables>&,
+                        const std::vector<std::string>&>) {
+        Parallel::printf("Starting deadlock analysis.\n");
+        Metavariables::run_deadlock_analysis_simple_actions(
+            *Parallel::local_branch(global_cache_proxy_),
+            components_that_did_not_terminate_);
+        CkStartQD(CkCallback(
+            CkIndex_Main<Metavariables>::post_deadlock_analysis_termination(),
+            this->thisProxy));
+        return;
+      } else {
+        Parallel::printf(
+            "No deadlock analysis function found in metavariables. To enable "
+            "deadlock analysis via simple actions add a function:\n"
+            "  static void run_deadlock_analysis_simple_actions(\n"
+            "        Parallel::GlobalCache<TestMetavariables>& cache,\n"
+            "        const std::vector<std::string>& deadlocked_components);\n"
+            "to your metavariables.\n");
+      }
+    }
+    post_deadlock_analysis_termination();
+  }
+
+  check_if_component_terminated_correctly();
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::check_if_component_terminated_correctly() {
+  auto* global_cache = Parallel::local_branch(global_cache_proxy_);
+  ASSERT(global_cache != nullptr, "Could not retrieve the local global cache.");
+
+  tmpl::for_each<component_list>([global_cache, this](auto component_tag_v) {
+    using component_tag = tmpl::type_from<decltype(component_tag_v)>;
+    if (tmpl::index_of<component_list, component_tag>::value ==
+        current_termination_check_index_) {
+      Parallel::get_parallel_component<component_tag>(*global_cache)
+          .contribute_termination_status_to_main();
+    }
+  });
+  current_termination_check_index_++;
+}
+
+template <typename Metavariables>
+void Main<Metavariables>::post_deadlock_analysis_termination() {
+  Informer::print_exit_info();
+  if (not components_that_did_not_terminate_.empty()) {
+    sys::abort("");
+  } else {
+    sys::exit();
+  }
 }
 
 template <typename Metavariables>
