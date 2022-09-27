@@ -54,8 +54,10 @@ class DataVector : public VectorImpl<double, DataVector> {
   DataVector& operator=(DataVector&&) = default;
   ~DataVector() = default;
 
-  using VectorImpl<double, DataVector>::operator=;
-  using VectorImpl<double, DataVector>::VectorImpl;
+  using BaseType = VectorImpl<double, DataVector>;
+
+  using BaseType::operator=;
+  using BaseType::VectorImpl;
 };
 
 // Specialize the Blaze type traits to correctly handle DataVector

@@ -7,17 +7,20 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TimeIndex.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace tenex {
@@ -35,28 +38,34 @@ namespace tenex {
 /// \tparam T2 the denominator operand expression of the division expression
 /// \tparam Args2 the generic indices of the denominator expression
 template <typename T1, typename T2, typename... Args2>
-struct Divide : public TensorExpression<
-                    Divide<T1, T2, Args2...>,
-                    typename std::conditional_t<
-                        std::is_same<typename T1::type, DataVector>::value or
-                            std::is_same<typename T2::type, DataVector>::value,
-                        DataVector, double>,
-                    typename T1::symmetry, typename T1::index_list,
-                    typename T1::args_list> {
-  static_assert(std::is_same<typename T1::type, typename T2::type>::value or
-                    std::is_same<T1, NumberAsExpression>::value,
-                "Cannot divide TensorExpressions holding different data types");
+struct Divide
+    : public TensorExpression<Divide<T1, T2, Args2...>,
+                              typename detail::get_binop_datatype<
+                                  typename T1::type, typename T2::type>::type,
+                              typename T1::symmetry, typename T1::index_list,
+                              typename T1::args_list> {
+  static_assert(
+      detail::tensorexpression_binop_datatypes_are_supported_v<T1, T2>,
+      "Cannot divide the given TensorExpressions with the given data types. "
+      "This can occur from e.g. trying to divide a Tensor with data type "
+      "double and a Tensor with data type DataVector.");
+  static_assert(
+      not((std::is_same_v<T1, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T2::type, DataVector>) or
+          (std::is_same_v<T2, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T1::type, DataVector>)),
+      "Cannot perform division between a std::complex<double> and a "
+      "TensorExpression whose data type is DataVector because Blaze does not "
+      "support division between std::complex<double> and DataVector.");
   static_assert((... and tt::is_time_index<Args2>::value),
-                "Can only divide a tensor expression by a double or a tensor "
+                "Can only divide a tensor expression by a number or a tensor "
                 "expression that evaluates to "
                 "a rank 0 tensor.");
 
   // === Index properties ===
   /// The type of the data being stored in the result of the expression
-  using type =
-      std::conditional_t<std::is_same<typename T1::type, DataVector>::value or
-                             std::is_same<typename T2::type, DataVector>::value,
-                         DataVector, double>;
+  using type = typename detail::get_binop_datatype<typename T1::type,
+                                                   typename T2::type>::type;
   /// The ::Symmetry of the result of the expression
   using symmetry = typename T1::symmetry;
   /// The list of \ref SpacetimeIndex "TensorIndexType"s of the result of the
@@ -154,10 +163,10 @@ struct Divide : public TensorExpression<
   template <typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
   }
@@ -171,10 +180,10 @@ struct Divide : public TensorExpression<
   template <typename LhsTensorIndices, typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.assert_lhs_tensorindices_same_in_rhs(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.assert_lhs_tensorindices_same_in_rhs(lhs_tensor);
     }
   }
@@ -220,8 +229,9 @@ struct Divide : public TensorExpression<
   //// tensor to retrieve
   /// \return the value of the component in the quotient tensor at
   /// `result_multi_index`
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
-      const type& result_component,
+      const ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     if constexpr (is_primary_end) {
       (void)result_multi_index;
@@ -232,7 +242,7 @@ struct Divide : public TensorExpression<
     } else {
       // We haven't yet evaluated the whole subtree for this expression, so
       // return the quotient of the results of the two operands' subtrees
-      return t1_.get_primary(result_component, result_multi_index) /
+      return t1_.template get_primary(result_component, result_multi_index) /
              t2_.get(op2_multi_index);
     }
   }
@@ -257,8 +267,9 @@ struct Divide : public TensorExpression<
   /// \param result_component the LHS tensor component to evaluate
   /// \param result_multi_index the multi-index of the component of the result
   /// tensor to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_children(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     if constexpr (is_primary_end) {
       (void)result_multi_index;
@@ -270,7 +281,8 @@ struct Divide : public TensorExpression<
       // We haven't yet evaluated the whole subtree of the primary child, so
       // first assign the result component to be the result of computing the
       // primary child's subtree
-      result_component = t1_.get_primary(result_component, result_multi_index);
+      result_component =
+          t1_.template get_primary(result_component, result_multi_index);
       // Now that the primary child's subtree has been computed, divide the
       // current result by the result of evaluating the other child's subtree
       result_component /= t2_.get(op2_multi_index);
@@ -289,13 +301,15 @@ struct Divide : public TensorExpression<
   /// \param result_component the LHS tensor component to evaluate
   /// \param result_multi_index the multi-index of the component of the result
   /// tensor to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t1_.evaluate_primary_subtree(result_component, result_multi_index);
+      t1_.template evaluate_primary_subtree(result_component,
+                                            result_multi_index);
     }
     if constexpr (is_primary_start) {
       // We want to evaluate the subtree for this expression
@@ -341,36 +355,54 @@ SPECTRE_ALWAYS_INLINE auto operator/(
   return tenex::Divide<T1, T2, Args2...>(~t1, ~t2);
 }
 
+/// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the quotient of a tensor
-/// expression over a `double`
+/// expression over a number
 ///
 /// \note The implementation instead uses the operation, `t * (1.0 / number)`
 ///
 /// \param t the tensor expression operand of the quotient
-/// \param number the `double` operand of the quotient
-/// \return the tensor expression representing the quotient of a tensor
-/// expression and a `double`
-template <typename T>
+/// \param number the numeric operand of the quotient
+/// \return the tensor expression representing the quotient of the tensor
+/// expression over the number
+template <typename T, typename N, Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator/(
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t,
-    const double number) {
+    const N number) {
   return t * tenex::NumberAsExpression(1.0 / number);
 }
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator/(
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t,
+    const std::complex<N>& number) {
+  return t * tenex::NumberAsExpression(1.0 / number);
+}
+/// @}
 
+/// @{
 /// \ingroup TensorExpressionsGroup
-/// \brief Returns the tensor expression representing the quotient of a `double`
+/// \brief Returns the tensor expression representing the quotient of a number
 /// over a tensor expression that evaluates to a rank 0 tensor
 ///
-/// \param number the `double` numerator of the quotient
+/// \param number the numeric numerator of the quotient
 /// \param t the tensor expression denominator of the quotient
-/// \return the tensor expression representing the quotient of a `double` over a
-/// tensor expression that evaluates to a rank 0 tensor
-template <typename T>
+/// \return the tensor expression representing the quotient of the number over
+/// the tensor expression
+template <typename T, typename N, Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator/(
-    const double number,
+    const N number,
     const TensorExpression<T, typename T::type, typename T::symmetry,
                            typename T::index_list, typename T::args_list>& t) {
   return tenex::NumberAsExpression(number) / t;
 }
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator/(
+    const std::complex<N>& number,
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t) {
+  return tenex::NumberAsExpression(number) / t;
+}
+/// @}

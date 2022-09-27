@@ -40,8 +40,10 @@ class ModalVector : public VectorImpl<double, ModalVector> {
   ModalVector& operator=(ModalVector&&) = default;
   ~ModalVector() = default;
 
-  using VectorImpl<double, ModalVector>::operator=;
-  using VectorImpl<double, ModalVector>::VectorImpl;
+  using BaseType = VectorImpl<double, ModalVector>;
+
+  using BaseType::operator=;
+  using BaseType::VectorImpl;
 };
 
 namespace blaze {

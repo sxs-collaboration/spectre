@@ -4,39 +4,26 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <climits>
+#include <complex>
 #include <cstddef>
-#include <iterator>
-#include <numeric>
+#include <random>
 #include <type_traits>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Helpers/DataStructures/Tensor/Expressions/ComponentPlaceholder.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
-template <typename... Ts>
-void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<double, Ts...>*> tensor) {
-  std::iota(tensor->begin(), tensor->end(), 0.0);
-}
 
 template <typename... Ts>
-void assign_unique_values_to_tensor(
-    gsl::not_null<Tensor<DataVector, Ts...>*> tensor) {
-  double value = 0.0;
-  for (auto index_it = tensor->begin(); index_it != tensor->end(); index_it++) {
-    for (auto vector_it = index_it->begin(); vector_it != index_it->end();
-         vector_it++) {
-      *vector_it = value;
-      value += 1.0;
-    }
-  }
-}
-
 // Checks that the number of ops in the expressions match what is expected
 void test_tensor_ops_properties() {
   const Scalar<double> G{5.0};
@@ -90,16 +77,19 @@ void test_tensor_ops_properties() {
 //
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
-template <typename DataType>
-void test_outer_product_double(const DataType& used_for_size) {
+template <typename Generator, typename DataType>
+void test_outer_product_double(const gsl::not_null<Generator*> generator,
+                               const DataType& used_for_size) {
   constexpr size_t dim = 3;
   using tensor_type =
       Tensor<DataType, Symmetry<1, 1>,
              index_list<SpatialIndex<dim, UpLo::Lo, Frame::Inertial>,
                         SpatialIndex<dim, UpLo::Lo, Frame::Inertial>>>;
 
-  tensor_type S(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&S));
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto S = make_with_random_values<tensor_type>(generator, distribution,
+                                                      used_for_size);
 
   // \f$L_{ij} = R * S_{ij}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
@@ -137,25 +127,22 @@ void test_outer_product_double(const DataType& used_for_size) {
 // both LHS index orderings are tested.
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_outer_product_rank_0_operand(const DataType& used_for_size) {
-  Tensor<DataType> R{{{used_for_size}}};
-  if constexpr (std::is_same_v<DataType, double>) {
-    // Replace tensor's value from `used_for_size` to a proper test value
-    R.get() = -3.7;
-  } else {
-    assign_unique_values_to_tensor(make_not_null(&R));
-  }
+template <typename Generator, typename DataType>
+void test_outer_product_rank_0_operand(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto R = make_with_random_values<Scalar<DataType>>(
+      generator, distribution, used_for_size);
 
   // \f$L = R * R\f$
   CHECK(tenex::evaluate(R() * R()).get() == R.get() * R.get());
   // \f$L = R * R * R\f$
   CHECK(tenex::evaluate(R() * R() * R()).get() == R.get() * R.get() * R.get());
 
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
-      Su(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Su));
+  const auto Su =
+      make_with_random_values<tnsr::A<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
 
   // \f$L^{a} = R * S^{a}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
@@ -169,35 +156,35 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) {
     CHECK(LA_from_SA_R.get(a) == Su.get(a) * R.get());
   }
 
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
-                    SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
-      Tll(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Tll));
+  const auto Tll = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<SpacetimeIndex<2, UpLo::Lo, Frame::Inertial>,
+                        SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>>(
+      generator, distribution, used_for_size);
 
   // \f$L_{ai} = R * T_{ai}\f$
   const Tensor<DataType, Symmetry<2, 1>,
-               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
-                          SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
+               index_list<SpacetimeIndex<2, UpLo::Lo, Frame::Inertial>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
       Lai_from_R_Tai = tenex::evaluate<ti::a, ti::i>(R() * Tll(ti::a, ti::i));
   // \f$L_{ia} = R * T_{ai}\f$
   const Tensor<DataType, Symmetry<2, 1>,
-               index_list<SpatialIndex<4, UpLo::Lo, Frame::Inertial>,
-                          SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpacetimeIndex<2, UpLo::Lo, Frame::Inertial>>>
       Lia_from_R_Tai = tenex::evaluate<ti::i, ti::a>(R() * Tll(ti::a, ti::i));
   // \f$L_{ai} = T_{ai} * R\f$
   const Tensor<DataType, Symmetry<2, 1>,
-               index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
-                          SpatialIndex<4, UpLo::Lo, Frame::Inertial>>>
+               index_list<SpacetimeIndex<2, UpLo::Lo, Frame::Inertial>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
       Lai_from_Tai_R = tenex::evaluate<ti::a, ti::i>(Tll(ti::a, ti::i) * R());
   // \f$L_{ia} = T_{ai} * R\f$
   const Tensor<DataType, Symmetry<2, 1>,
-               index_list<SpatialIndex<4, UpLo::Lo, Frame::Inertial>,
-                          SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
+                          SpacetimeIndex<2, UpLo::Lo, Frame::Inertial>>>
       Lia_from_Tai_R = tenex::evaluate<ti::i, ti::a>(Tll(ti::a, ti::i) * R());
 
-  for (size_t a = 0; a < 4; a++) {
-    for (size_t i = 0; i < 4; i++) {
+  for (size_t a = 0; a < 3; a++) {
+    for (size_t i = 0; i < 3; i++) {
       const DataType expected_R_Tai_product = R.get() * Tll.get(a, i);
       CHECK(Lai_from_R_Tai.get(a, i) == expected_R_Tai_product);
       CHECK(Lia_from_R_Tai.get(i, a) == expected_R_Tai_product);
@@ -223,17 +210,16 @@ void test_outer_product_rank_0_operand(const DataType& used_for_size) {
 // operands.
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_outer_product_rank_1_operand(const DataType& used_for_size) {
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      Rl(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rl));
+template <typename Generator, typename DataType>
+void test_outer_product_rank_1_operand(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
 
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      Su(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Su));
+  const auto Rl = make_with_random_values<tnsr::i<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+
+  const auto Su = make_with_random_values<tnsr::A<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
 
   // \f$L^{a}{}_{i} = R_{i} * S^{a}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
@@ -249,10 +235,8 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
     }
   }
 
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::Grid>>>
-      Tu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Tu));
+  const auto Tu = make_with_random_values<tnsr::I<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
 
   // \f$L^{ja}{}_{i} = R_{i} * S^{a} * T^{j}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
@@ -265,36 +249,36 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
   for (size_t j = 0; j < 3; j++) {
     for (size_t a = 0; a < 4; a++) {
       for (size_t i = 0; i < 3; i++) {
-        CHECK(LJAi_from_Ri_SA_TJ.get(j, a, i) ==
-              Rl.get(i) * Su.get(a) * Tu.get(j));
+        CHECK_ITERABLE_APPROX(LJAi_from_Ri_SA_TJ.get(j, a, i),
+                              Rl.get(i) * Su.get(a) * Tu.get(j));
       }
     }
   }
 
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
-      Gll(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Gll));
+  const auto Gll = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<SpacetimeIndex<2, UpLo::Lo, Frame::Grid>,
+                        SpatialIndex<3, UpLo::Lo, Frame::Grid>>>>(
+      generator, distribution, used_for_size);
 
   // \f$L_{k}{}^{c}{}_{d} = S^{c} * G_{dk}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
-               index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>,
+               index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
                           SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
-                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+                          SpacetimeIndex<2, UpLo::Lo, Frame::Grid>>>
       LkCd_from_SC_Gdk =
           tenex::evaluate<ti::k, ti::C, ti::d>(Su(ti::C) * Gll(ti::d, ti::k));
   // \f$L^{c}{}_{dk} = G_{dk} * S^{c}\f$
   const Tensor<DataType, Symmetry<3, 2, 1>,
                index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
-                          SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                          SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
+                          SpacetimeIndex<2, UpLo::Lo, Frame::Grid>,
+                          SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
       LCdk_from_Gdk_SC =
           tenex::evaluate<ti::C, ti::d, ti::k>(Gll(ti::d, ti::k) * Su(ti::C));
 
-  for (size_t k = 0; k < 4; k++) {
+  for (size_t k = 0; k < 3; k++) {
     for (size_t c = 0; c < 4; c++) {
-      for (size_t d = 0; d < 4; d++) {
+      for (size_t d = 0; d < 3; d++) {
         CHECK(LkCd_from_SC_Gdk.get(k, c, d) == Su.get(c) * Gll.get(d, k));
         CHECK(LCdk_from_Gdk_SC.get(c, d, k) == Gll.get(d, k) * Su.get(c));
       }
@@ -309,18 +293,21 @@ void test_outer_product_rank_1_operand(const DataType& used_for_size) {
 // \f$L_{abc}{}^{i} = R_{ab} * S^{i}{}_{c}\f$
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_outer_product_rank_2x2_operands(const DataType& used_for_size) {
+template <typename Generator, typename DataType>
+void test_outer_product_rank_2x2_operands(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
   using R_index = SpacetimeIndex<3, UpLo::Lo, Frame::Grid>;
   using S_first_index = SpatialIndex<4, UpLo::Up, Frame::Grid>;
   using S_second_index = SpacetimeIndex<2, UpLo::Lo, Frame::Grid>;
 
-  Tensor<DataType, Symmetry<1, 1>, index_list<R_index, R_index>> Rll(
-      used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rll));
-  Tensor<DataType, Symmetry<2, 1>, index_list<S_first_index, S_second_index>>
-      Sul(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sul));
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto Rll = make_with_random_values<
+      Tensor<DataType, Symmetry<1, 1>, index_list<R_index, R_index>>>(
+      generator, distribution, used_for_size);
+  const auto Sul = make_with_random_values<Tensor<
+      DataType, Symmetry<2, 1>, index_list<S_first_index, S_second_index>>>(
+      generator, distribution, used_for_size);
 
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
   // return type of `evaluate`
@@ -471,26 +458,24 @@ void test_outer_product_rank_2x2_operands(const DataType& used_for_size) {
 // Each case represents an ordering for the operands and the LHS indices.
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_outer_product_rank_0x1x2_operands(const DataType& used_for_size) {
-  Tensor<DataType> R{{{used_for_size}}};
-  if constexpr (std::is_same_v<DataType, double>) {
-    // Replace tensor's value from `used_for_size` to a proper test value
-    R.get() = 4.5;
-  } else {
-    assign_unique_values_to_tensor(make_not_null(&R));
-  }
+template <typename Generator, typename DataType>
+void test_outer_product_rank_0x1x2_operands(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto R = make_with_random_values<Scalar<DataType>>(
+      generator, distribution, used_for_size);
 
   using S_index = SpacetimeIndex<3, UpLo::Up, Frame::Inertial>;
   using T_first_index = SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>;
   using T_second_index = SpatialIndex<4, UpLo::Lo, Frame::Inertial>;
 
-  Tensor<DataType, Symmetry<1>, index_list<S_index>> Su(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Su));
-
-  Tensor<DataType, Symmetry<2, 1>, index_list<T_first_index, T_second_index>>
-      Tll(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Tll));
+  const auto Su = make_with_random_values<
+      Tensor<DataType, Symmetry<1>, index_list<S_index>>>(
+      generator, distribution, used_for_size);
+  const auto Tll = make_with_random_values<Tensor<
+      DataType, Symmetry<2, 1>, index_list<T_first_index, T_second_index>>>(
+      generator, distribution, used_for_size);
 
   // \f$R * S^{a} * T_{bi}\f$
   const auto R_SA_Tbi_expr = R() * Su(ti::A) * Tll(ti::b, ti::i);
@@ -661,47 +646,83 @@ void test_outer_product_rank_0x1x2_operands(const DataType& used_for_size) {
       for (size_t i = 0; i < T_second_index::dim; i++) {
         const DataType expected_product = R.get() * Su.get(a) * Tll.get(b, i);
 
-        CHECK(LAbi_from_R_SA_Tbi.get(a, b, i) == expected_product);
-        CHECK(LAib_from_R_SA_Tbi.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_R_SA_Tbi.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_R_SA_Tbi.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_R_SA_Tbi.get(i, a, b) == expected_product);
-        CHECK(LibA_from_R_SA_Tbi.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_R_SA_Tbi.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_R_SA_Tbi.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_R_SA_Tbi.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_R_SA_Tbi.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_R_SA_Tbi.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_R_SA_Tbi.get(i, b, a),
+                              expected_product);
 
-        CHECK(LAbi_from_R_Tbi_SA.get(a, b, i) == expected_product);
-        CHECK(LAib_from_R_Tbi_SA.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_R_Tbi_SA.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_R_Tbi_SA.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_R_Tbi_SA.get(i, a, b) == expected_product);
-        CHECK(LibA_from_R_Tbi_SA.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_R_Tbi_SA.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_R_Tbi_SA.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_R_Tbi_SA.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_R_Tbi_SA.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_R_Tbi_SA.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_R_Tbi_SA.get(i, b, a),
+                              expected_product);
 
-        CHECK(LAbi_from_SA_R_Tbi.get(a, b, i) == expected_product);
-        CHECK(LAib_from_SA_R_Tbi.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_SA_R_Tbi.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_SA_R_Tbi.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_SA_R_Tbi.get(i, a, b) == expected_product);
-        CHECK(LibA_from_SA_R_Tbi.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_SA_R_Tbi.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_SA_R_Tbi.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_SA_R_Tbi.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_SA_R_Tbi.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_SA_R_Tbi.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_SA_R_Tbi.get(i, b, a),
+                              expected_product);
 
-        CHECK(LAbi_from_SA_Tbi_R.get(a, b, i) == expected_product);
-        CHECK(LAib_from_SA_Tbi_R.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_SA_Tbi_R.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_SA_Tbi_R.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_SA_Tbi_R.get(i, a, b) == expected_product);
-        CHECK(LibA_from_SA_Tbi_R.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_SA_Tbi_R.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_SA_Tbi_R.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_SA_Tbi_R.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_SA_Tbi_R.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_SA_Tbi_R.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_SA_Tbi_R.get(i, b, a),
+                              expected_product);
 
-        CHECK(LAbi_from_Tbi_R_SA.get(a, b, i) == expected_product);
-        CHECK(LAib_from_Tbi_R_SA.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_Tbi_R_SA.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_Tbi_R_SA.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_Tbi_R_SA.get(i, a, b) == expected_product);
-        CHECK(LibA_from_Tbi_R_SA.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_Tbi_R_SA.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_Tbi_R_SA.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_Tbi_R_SA.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_Tbi_R_SA.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_Tbi_R_SA.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_Tbi_R_SA.get(i, b, a),
+                              expected_product);
 
-        CHECK(LAbi_from_Tbi_SA_R.get(a, b, i) == expected_product);
-        CHECK(LAib_from_Tbi_SA_R.get(a, i, b) == expected_product);
-        CHECK(LbAi_from_Tbi_SA_R.get(b, a, i) == expected_product);
-        CHECK(LbiA_from_Tbi_SA_R.get(b, i, a) == expected_product);
-        CHECK(LiAb_from_Tbi_SA_R.get(i, a, b) == expected_product);
-        CHECK(LibA_from_Tbi_SA_R.get(i, b, a) == expected_product);
+        CHECK_ITERABLE_APPROX(LAbi_from_Tbi_SA_R.get(a, b, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LAib_from_Tbi_SA_R.get(a, i, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbAi_from_Tbi_SA_R.get(b, a, i),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LbiA_from_Tbi_SA_R.get(b, i, a),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LiAb_from_Tbi_SA_R.get(i, a, b),
+                              expected_product);
+        CHECK_ITERABLE_APPROX(LibA_from_Tbi_SA_R.get(i, b, a),
+                              expected_product);
       }
     }
   }
@@ -715,17 +736,15 @@ void test_outer_product_rank_0x1x2_operands(const DataType& used_for_size) {
 // - \f$L = S_{a} * R^{a}\f$
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_inner_product_rank_1x1_operands(const DataType& used_for_size) {
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      Ru(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Ru));
+template <typename Generator, typename DataType>
+void test_inner_product_rank_1x1_operands(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
 
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      Sl(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sl));
+  const auto Ru = make_with_random_values<tnsr::A<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+  const auto Sl = make_with_random_values<tnsr::a<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
 
   // \f$L = R^{a} * S_{a}\f$
   const Tensor<DataType> L_from_RA_Sa = tenex::evaluate(Ru(ti::A) * Sl(ti::a));
@@ -736,8 +755,8 @@ void test_inner_product_rank_1x1_operands(const DataType& used_for_size) {
   for (size_t a = 0; a < 4; a++) {
     expected_sum += (Ru.get(a) * Sl.get(a));
   }
-  CHECK(L_from_RA_Sa.get() == expected_sum);
-  CHECK(L_from_Sa_RA.get() == expected_sum);
+  CHECK_ITERABLE_APPROX(L_from_RA_Sa.get(), expected_sum);
+  CHECK_ITERABLE_APPROX(L_from_Sa_RA.get(), expected_sum);
 }
 
 // \brief Test the inner product of two rank 2 tensors is correctly evaluated
@@ -750,49 +769,52 @@ void test_inner_product_rank_1x1_operands(const DataType& used_for_size) {
 // case: \f$L = R_{ai} * S^{ai}\f$
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_inner_product_rank_2x2_operands(const DataType& used_for_size) {
+template <typename Generator, typename DataType>
+void test_inner_product_rank_2x2_operands(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
   using lower_spacetime_index = SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>;
   using upper_spacetime_index = SpacetimeIndex<3, UpLo::Up, Frame::Inertial>;
   using lower_spatial_index = SpatialIndex<2, UpLo::Lo, Frame::Inertial>;
   using upper_spatial_index = SpatialIndex<2, UpLo::Up, Frame::Inertial>;
 
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
   // All tensor variables starting with 'R' refer to tensors whose first index
   // is a spacetime index and whose second index is a spatial index. Conversely,
   // all tensor variables starting with 'S' refer to tensors whose first index
   // is a spatial index and whose second index is a spacetime index.
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<lower_spacetime_index, lower_spatial_index>>
-      Rll(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rll));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<lower_spatial_index, lower_spacetime_index>>
-      Sll(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sll));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<upper_spacetime_index, upper_spatial_index>>
-      Ruu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Ruu));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<upper_spatial_index, upper_spacetime_index>>
-      Suu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Suu));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<lower_spacetime_index, upper_spatial_index>>
-      Rlu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rlu));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<lower_spatial_index, upper_spacetime_index>>
-      Slu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Slu));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<upper_spacetime_index, lower_spatial_index>>
-      Rul(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rul));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<upper_spatial_index, lower_spacetime_index>>
-      Sul(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sul));
+  const auto Rll = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<lower_spacetime_index, lower_spatial_index>>>(
+      generator, distribution, used_for_size);
+  const auto Sll = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<lower_spatial_index, lower_spacetime_index>>>(
+      generator, distribution, used_for_size);
+  const auto Ruu = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<upper_spacetime_index, upper_spatial_index>>>(
+      generator, distribution, used_for_size);
+  const auto Suu = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<upper_spatial_index, upper_spacetime_index>>>(
+      generator, distribution, used_for_size);
+  const auto Rlu = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<lower_spacetime_index, upper_spatial_index>>>(
+      generator, distribution, used_for_size);
+  const auto Slu = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<lower_spatial_index, upper_spacetime_index>>>(
+      generator, distribution, used_for_size);
+  const auto Rul = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<upper_spacetime_index, lower_spatial_index>>>(
+      generator, distribution, used_for_size);
+  const auto Sul = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>,
+             index_list<upper_spatial_index, lower_spacetime_index>>>(
+      generator, distribution, used_for_size);
 
   // \f$L = Rll_{ai} * Ruu^{ai}\f$
   const Tensor<DataType> L_aiAI_product =
@@ -848,14 +870,14 @@ void test_inner_product_rank_2x2_operands(const DataType& used_for_size) {
       L_AiIa_expected_product += (Rul.get(a, i) * Sul.get(i, a));
     }
   }
-  CHECK(L_aiAI_product.get() == L_aiAI_expected_product);
-  CHECK(L_aiIA_product.get() == L_aiIA_expected_product);
-  CHECK(L_AIai_product.get() == L_AIai_expected_product);
-  CHECK(L_AIia_product.get() == L_AIia_expected_product);
-  CHECK(L_aIAi_product.get() == L_aIAi_expected_product);
-  CHECK(L_aIiA_product.get() == L_aIiA_expected_product);
-  CHECK(L_AiaI_product.get() == L_AiaI_expected_product);
-  CHECK(L_AiIa_product.get() == L_AiIa_expected_product);
+  CHECK_ITERABLE_APPROX(L_aiAI_product.get(), L_aiAI_expected_product);
+  CHECK_ITERABLE_APPROX(L_aiIA_product.get(), L_aiIA_expected_product);
+  CHECK_ITERABLE_APPROX(L_AIai_product.get(), L_AIai_expected_product);
+  CHECK_ITERABLE_APPROX(L_AIia_product.get(), L_AIia_expected_product);
+  CHECK_ITERABLE_APPROX(L_aIAi_product.get(), L_aIAi_expected_product);
+  CHECK_ITERABLE_APPROX(L_aIiA_product.get(), L_aIiA_expected_product);
+  CHECK_ITERABLE_APPROX(L_AiaI_product.get(), L_AiaI_expected_product);
+  CHECK_ITERABLE_APPROX(L_AiIa_product.get(), L_AiIa_expected_product);
 }
 
 // \brief Test the product of two tensors with one pair of indices to contract
@@ -871,16 +893,20 @@ void test_inner_product_rank_2x2_operands(const DataType& used_for_size) {
 // and the ordering of the LHS indices.
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_two_term_inner_outer_product(const DataType& used_for_size) {
+template <typename Generator, typename DataType>
+void test_two_term_inner_outer_product(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
   using R_index = SpacetimeIndex<3, UpLo::Lo, Frame::Grid>;
   using T_index = SpacetimeIndex<3, UpLo::Up, Frame::Grid>;
 
-  Tensor<DataType, Symmetry<1, 1>, index_list<R_index, R_index>> Rll(
-      used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Rll));
-  Tensor<DataType, Symmetry<1>, index_list<T_index>> Tu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Tu));
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto Rll = make_with_random_values<
+      Tensor<DataType, Symmetry<1, 1>, index_list<R_index, R_index>>>(
+      generator, distribution, used_for_size);
+  const auto Tu = make_with_random_values<
+      Tensor<DataType, Symmetry<1>, index_list<T_index>>>(
+      generator, distribution, used_for_size);
 
   // \f$L_{b} = R_{ab} * T^{a}\f$
   // Use explicit type (vs auto) for LHS Tensor so the compiler checks the
@@ -903,21 +929,23 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) {
     for (size_t a = 0; a < T_index::dim; a++) {
       expected_product += (Rll.get(a, b) * Tu.get(a));
     }
-    CHECK(Lb_from_Rab_TA.get(b) == expected_product);
-    CHECK(Lb_from_Rba_TA.get(b) == expected_product);
-    CHECK(Lb_from_TA_Rab.get(b) == expected_product);
-    CHECK(Lb_from_TA_Rba.get(b) == expected_product);
+    CHECK_ITERABLE_APPROX(Lb_from_Rab_TA.get(b), expected_product);
+    CHECK_ITERABLE_APPROX(Lb_from_Rba_TA.get(b), expected_product);
+    CHECK_ITERABLE_APPROX(Lb_from_TA_Rab.get(b), expected_product);
+    CHECK_ITERABLE_APPROX(Lb_from_TA_Rba.get(b), expected_product);
   }
 
   using S_lower_index = SpacetimeIndex<2, UpLo::Lo, Frame::Grid>;
   using S_upper_index = SpacetimeIndex<3, UpLo::Up, Frame::Grid>;
 
-  Tensor<DataType, Symmetry<2, 1>, index_list<S_upper_index, S_lower_index>>
-      Sul(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sul));
-  Tensor<DataType, Symmetry<2, 1>, index_list<S_lower_index, S_upper_index>>
-      Slu(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Slu));
+  const auto Sul =
+      make_with_random_values<Tensor<DataType, Symmetry<2, 1>,
+                                     index_list<S_upper_index, S_lower_index>>>(
+          generator, distribution, used_for_size);
+  const auto Slu =
+      make_with_random_values<Tensor<DataType, Symmetry<2, 1>,
+                                     index_list<S_lower_index, S_upper_index>>>(
+          generator, distribution, used_for_size);
 
   // \f$L_{ac} = R_{ab} * S^{b}_{c}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<R_index, S_lower_index>>
@@ -968,14 +996,14 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) {
         L_baBc_expected_product += (Rll.get(b, a) * Sul.get(b, c));
         L_bacB_expected_product += (Rll.get(b, a) * Slu.get(c, b));
       }
-      CHECK(L_abBc_to_ac.get(a, c) == L_abBc_expected_product);
-      CHECK(L_abBc_to_ca.get(c, a) == L_abBc_expected_product);
-      CHECK(L_abcB_to_ac.get(a, c) == L_abcB_expected_product);
-      CHECK(L_abcB_to_ca.get(c, a) == L_abcB_expected_product);
-      CHECK(L_baBc_to_ac.get(a, c) == L_baBc_expected_product);
-      CHECK(L_baBc_to_ca.get(c, a) == L_baBc_expected_product);
-      CHECK(L_bacB_to_ac.get(a, c) == L_bacB_expected_product);
-      CHECK(L_bacB_to_ca.get(c, a) == L_bacB_expected_product);
+      CHECK_ITERABLE_APPROX(L_abBc_to_ac.get(a, c), L_abBc_expected_product);
+      CHECK_ITERABLE_APPROX(L_abBc_to_ca.get(c, a), L_abBc_expected_product);
+      CHECK_ITERABLE_APPROX(L_abcB_to_ac.get(a, c), L_abcB_expected_product);
+      CHECK_ITERABLE_APPROX(L_abcB_to_ca.get(c, a), L_abcB_expected_product);
+      CHECK_ITERABLE_APPROX(L_baBc_to_ac.get(a, c), L_baBc_expected_product);
+      CHECK_ITERABLE_APPROX(L_baBc_to_ca.get(c, a), L_baBc_expected_product);
+      CHECK_ITERABLE_APPROX(L_bacB_to_ac.get(a, c), L_bacB_expected_product);
+      CHECK_ITERABLE_APPROX(L_bacB_to_ca.get(c, a), L_bacB_expected_product);
     }
   }
 }
@@ -992,20 +1020,20 @@ void test_two_term_inner_outer_product(const DataType& used_for_size) {
 // both LHS index orderings are also tested.
 //
 // \tparam DataType the type of data being stored in the product operands
-template <typename DataType>
-void test_three_term_inner_outer_product(const DataType& used_for_size) {
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Up, Frame::Inertial>>>
-      Ru(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Ru));
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
-      Sl(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Sl));
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>>>
-      Tl(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Tl));
+template <typename Generator, typename DataType>
+void test_three_term_inner_outer_product(
+    const gsl::not_null<Generator*> generator, const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+
+  const auto Ru =
+      make_with_random_values<tnsr::I<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
+  const auto Sl =
+      make_with_random_values<tnsr::i<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
+  const auto Tl =
+      make_with_random_values<tnsr::i<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
 
   // \f$L_{i} = R^{j} * S_{j} * T_{i}\f$
   const decltype(Tl) Li_from_Jji =
@@ -1022,17 +1050,17 @@ void test_three_term_inner_outer_product(const DataType& used_for_size) {
     for (size_t j = 0; j < 3; j++) {
       expected_product += (Ru.get(j) * Sl.get(j) * Tl.get(i));
     }
-    CHECK(Li_from_Jji.get(i) == expected_product);
-    CHECK(Li_from_Jij.get(i) == expected_product);
-    CHECK(Li_from_ijJ.get(i) == expected_product);
+    CHECK_ITERABLE_APPROX(Li_from_Jji.get(i), expected_product);
+    CHECK_ITERABLE_APPROX(Li_from_Jij.get(i), expected_product);
+    CHECK_ITERABLE_APPROX(Li_from_ijJ.get(i), expected_product);
   }
 
   using T_index = tmpl::front<typename decltype(Tl)::index_list>;
   using G_index = SpatialIndex<3, UpLo::Up, Frame::Inertial>;
 
-  Tensor<DataType, Symmetry<2, 1>, index_list<G_index, G_index>> Guu(
-      used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&Guu));
+  const auto Guu = make_with_random_values<
+      Tensor<DataType, Symmetry<2, 1>, index_list<G_index, G_index>>>(
+      generator, distribution, used_for_size);
 
   // \f$L_{i}{}^{k} = S_{j} * T_{i} * G^{jk}\f$
   const Tensor<DataType, Symmetry<2, 1>, index_list<T_index, G_index>>
@@ -1090,18 +1118,18 @@ void test_three_term_inner_outer_product(const DataType& used_for_size) {
       for (size_t j = 0; j < G_index::dim; j++) {
         expected_product += (Sl.get(j) * Tl.get(i) * Guu.get(j, k));
       }
-      CHECK(LiK_from_Sj_Ti_GJK.get(i, k) == expected_product);
-      CHECK(LKi_from_Sj_Ti_GJK.get(k, i) == expected_product);
-      CHECK(LiK_from_Sj_GJK_Ti.get(i, k) == expected_product);
-      CHECK(LKi_from_Sj_GJK_Ti.get(k, i) == expected_product);
-      CHECK(LiK_from_Ti_Sj_GJK.get(i, k) == expected_product);
-      CHECK(LKi_from_Ti_Sj_GJK.get(k, i) == expected_product);
-      CHECK(LiK_from_Ti_GJK_Sj.get(i, k) == expected_product);
-      CHECK(LKi_from_Ti_GJK_Sj.get(k, i) == expected_product);
-      CHECK(LiK_from_GJK_Sj_Ti.get(i, k) == expected_product);
-      CHECK(LKi_from_GJK_Sj_Ti.get(k, i) == expected_product);
-      CHECK(LiK_from_GJK_Ti_Sj.get(i, k) == expected_product);
-      CHECK(LKi_from_GJK_Ti_Sj.get(k, i) == expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_Sj_Ti_GJK.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_Sj_Ti_GJK.get(k, i), expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_Sj_GJK_Ti.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_Sj_GJK_Ti.get(k, i), expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_Ti_Sj_GJK.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_Ti_Sj_GJK.get(k, i), expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_Ti_GJK_Sj.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_Ti_GJK_Sj.get(k, i), expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_GJK_Sj_Ti.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_GJK_Sj_Ti.get(k, i), expected_product);
+      CHECK_ITERABLE_APPROX(LiK_from_GJK_Ti_Sj.get(i, k), expected_product);
+      CHECK_ITERABLE_APPROX(LKi_from_GJK_Ti_Sj.get(k, i), expected_product);
     }
   }
 }
@@ -1122,22 +1150,17 @@ void test_three_term_inner_outer_product(const DataType& used_for_size) {
 //
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
-template <typename DataType>
-void test_spatial_spacetime_index(const DataType& used_for_size) {
-  std::uniform_real_distribution<> distribution(0.1, 1.0);
+template <typename Generator, typename DataType>
+void test_spatial_spacetime_index(const gsl::not_null<Generator*> generator,
+                                  const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
 
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      R(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&R));
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
-      S(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&S));
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      T(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&T));
+  const auto R = make_with_random_values<tnsr::A<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+  const auto S = make_with_random_values<tnsr::i<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+  const auto T = make_with_random_values<tnsr::a<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
 
   // \f$L = R^{i} * S_{i}\f$
   // (spatial) * (spacetime) inner product with generic spatial indices
@@ -1157,16 +1180,12 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
   CHECK_ITERABLE_APPROX(RS.get(), expected_RS_product);
   CHECK_ITERABLE_APPROX(RT.get(), expected_RT_product);
 
-  Tensor<DataType, Symmetry<1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>>
-      G(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&G));
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Inertial>,
-                    SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>>
-      H(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&H));
+  const auto G =
+      make_with_random_values<tnsr::aa<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
+  const auto H =
+      make_with_random_values<tnsr::iA<DataType, 3, Frame::Inertial>>(
+          generator, distribution, used_for_size);
 
   // \f$L_{j, a, i}{}^{b} = G_{i, a} * H_{j}{}^{b}\f$
   // rank 2 x rank 2 outer product containing a spacetime index with a generic
@@ -1219,37 +1238,24 @@ void test_spatial_spacetime_index(const DataType& used_for_size) {
 //
 // \tparam DataType the type of data being stored in the tensor operand of the
 // products
-template <typename DataType>
-void test_time_index(const DataType& used_for_size) {
-  Tensor<DataType, Symmetry<1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
-      R(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&R));
+template <typename Generator, typename DataType>
+void test_time_index(const gsl::not_null<Generator*> generator,
+                     const DataType& used_for_size) {
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
 
-  Tensor<DataType> S{{{used_for_size}}};
-  if constexpr (std::is_same_v<DataType, double>) {
-    // Replace tensor's value from `used_for_size` to a proper test value
-    S.get() = -2.2;
-  } else {
-    assign_unique_values_to_tensor(make_not_null(&S));
-  }
+  const auto R = make_with_random_values<tnsr::a<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+  const auto S = make_with_random_values<Scalar<DataType>>(
+      generator, distribution, used_for_size);
 
   // \f$L = R_{t} * S * R_{t}\f$
   const Tensor<DataType> L = tenex::evaluate(R(ti::t) * S() * R(ti::t));
-  CHECK(L.get() == R.get(0) * S.get() * R.get(0));
+  CHECK_ITERABLE_APPROX(L.get(), R.get(0) * S.get() * R.get(0));
 
-  Tensor<DataType, Symmetry<2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      G(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&G));
-
-  Tensor<DataType, Symmetry<3, 2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>
-      H(used_for_size);
-  assign_unique_values_to_tensor(make_not_null(&H));
+  const auto G = make_with_random_values<tnsr::aB<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
+  const auto H = make_with_random_values<tnsr::aBC<DataType, 3, Frame::Grid>>(
+      generator, distribution, used_for_size);
 
   // \f$L^{b} = G_{t}{}^{a} * H_{a}{}^{tb}\f$
   const Tensor<DataType, Symmetry<1>,
@@ -1267,14 +1273,14 @@ void test_time_index(const DataType& used_for_size) {
   // Assign a placeholder to the LHS tensor's components before it is computed
   // so that when test expressions below only compute time components, we can
   // check that LHS spatial components haven't changed
-  const double spatial_component_placeholder =
-      std::numeric_limits<double>::max();
+  const auto spatial_component_placeholder_value =
+      TestHelpers::tenex::component_placeholder_value<DataType>::value;
   auto L_Tba = make_with_value<
       Tensor<DataType, Symmetry<2, 1, 1>,
              index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>>(
-      used_for_size, spatial_component_placeholder);
+      used_for_size, spatial_component_placeholder_value);
   // \f$L^{T}{}_{ba} = R_{a} * R_{b}\f$
   tenex::evaluate<ti::T, ti::b, ti::a>(make_not_null(&L_Tba),
                                        R(ti::a) * R(ti::b));
@@ -1283,7 +1289,7 @@ void test_time_index(const DataType& used_for_size) {
     for (size_t a = 0; a < 4; a++) {
       CHECK_ITERABLE_APPROX(L_Tba.get(0, b, a), R.get(a) * R.get(b));
       for (size_t i = 0; i < 3; i++) {
-        CHECK(L_Tba.get(i + 1, b, a) == spatial_component_placeholder);
+        CHECK(L_Tba.get(i + 1, b, a) == spatial_component_placeholder_value);
       }
     }
   }
@@ -1292,7 +1298,7 @@ void test_time_index(const DataType& used_for_size) {
       Tensor<DataType, Symmetry<2, 1>,
              index_list<SpacetimeIndex<3, UpLo::Up, Frame::Grid>,
                         SpacetimeIndex<3, UpLo::Up, Frame::Grid>>>>(
-      used_for_size, spatial_component_placeholder);
+      used_for_size, spatial_component_placeholder_value);
   // \f$L_^{ct} = G_{t}{}^{b} * R_{b} * H_{t}^{ta}\f$
   tenex::evaluate<ti::C, ti::T>(
       make_not_null(&L_CT),
@@ -1308,40 +1314,52 @@ void test_time_index(const DataType& used_for_size) {
     CHECK_ITERABLE_APPROX(L_CT.get(c, 0), expected_product);
 
     for (size_t i = 0; i < 3; i++) {
-      CHECK(L_CT.get(c, i + 1) == spatial_component_placeholder);
+      CHECK(L_CT.get(c, i + 1) == spatial_component_placeholder_value);
     }
   }
 }
 
-template <typename DataType>
-void test_products(const DataType& used_for_size) {
+template <typename Generator, typename DataType>
+void test_products(const gsl::not_null<Generator*> generator,
+                   const DataType& used_for_size) {
   // Test evaluation of outer products
-  test_outer_product_double(used_for_size);
-  test_outer_product_rank_0_operand(used_for_size);
-  test_outer_product_rank_1_operand(used_for_size);
-  test_outer_product_rank_2x2_operands(used_for_size);
-  test_outer_product_rank_0x1x2_operands(used_for_size);
+  test_outer_product_double(generator, used_for_size);
+  test_outer_product_rank_0_operand(generator, used_for_size);
+  test_outer_product_rank_1_operand(generator, used_for_size);
+  test_outer_product_rank_2x2_operands(generator, used_for_size);
+  test_outer_product_rank_0x1x2_operands(generator, used_for_size);
 
   // Test evaluation of inner products
-  test_inner_product_rank_1x1_operands(used_for_size);
-  test_inner_product_rank_2x2_operands(used_for_size);
+  test_inner_product_rank_1x1_operands(generator, used_for_size);
+  test_inner_product_rank_2x2_operands(generator, used_for_size);
 
   // Test evaluation of expressions involving both inner and outer products
-  test_two_term_inner_outer_product(used_for_size);
-  test_three_term_inner_outer_product(used_for_size);
+  test_two_term_inner_outer_product(generator, used_for_size);
+  test_three_term_inner_outer_product(generator, used_for_size);
 
   // Test product expressions where generic spatial indices are used for
   // spacetime indices
-  test_spatial_spacetime_index(used_for_size);
+  test_spatial_spacetime_index(generator, used_for_size);
 
   // Test product expressions where time indices are used for spacetime indices
-  test_time_index(used_for_size);
+  test_time_index(generator, used_for_size);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.Product",
                   "[DataStructures][Unit]") {
+  MAKE_GENERATOR(generator);
+
   test_tensor_ops_properties();
-  test_products(std::numeric_limits<double>::signaling_NaN());
-  test_products(DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_products(make_not_null(&generator),
+                std::numeric_limits<double>::signaling_NaN());
+  test_products(
+      make_not_null(&generator),
+      std::complex<double>(std::numeric_limits<double>::signaling_NaN(),
+                           std::numeric_limits<double>::signaling_NaN()));
+  test_products(make_not_null(&generator),
+                DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_products(
+      make_not_null(&generator),
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

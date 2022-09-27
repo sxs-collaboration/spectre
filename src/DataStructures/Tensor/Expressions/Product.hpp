@@ -7,17 +7,20 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <type_traits>
 #include <utility>
 
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
+#include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace tenex {
@@ -31,9 +34,7 @@ template <typename T1, typename T2, template <typename...> class SymmList1,
           typename... Symm2>
 struct OuterProductType<T1, T2, SymmList1<Symm1...>, SymmList2<Symm2...>> {
   using type =
-      std::conditional_t<std::is_same<typename T1::type, DataVector>::value or
-                             std::is_same<typename T2::type, DataVector>::value,
-                         DataVector, double>;
+      typename get_binop_datatype<typename T1::type, typename T2::type>::type;
   using symmetry =
       Symmetry<(Symm1::value + sizeof...(Symm2))..., Symm2::value...>;
   using index_list =
@@ -73,10 +74,11 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
           typename detail::OuterProductType<T1, T2>::symmetry,
           typename detail::OuterProductType<T1, T2>::index_list,
           typename detail::OuterProductType<T1, T2>::tensorindex_list> {
-  static_assert(std::is_same<typename T1::type, typename T2::type>::value or
-                    std::is_same<T1, NumberAsExpression>::value or
-                    std::is_same<T2, NumberAsExpression>::value,
-                "Cannot product Tensors holding different data types.");
+  static_assert(
+      detail::tensorexpression_binop_datatypes_are_supported_v<T1, T2>,
+      "Cannot multiply the given TensorExpressions with the given data types. "
+      "This can occur from e.g. trying to multiply a Tensor with data type "
+      "double and a Tensor with data type DataVector.");
   // === Index properties ===
   /// The type of the data being stored in the result of the expression
   using type = typename detail::OuterProductType<T1, T2>::type;
@@ -181,10 +183,10 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   template <typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
   }
@@ -198,11 +200,11 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   template <typename LhsTensorIndices, typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
     }
@@ -295,8 +297,9 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   /// operand of the product to retrieve
   /// \param op2_multi_index the multi-index of the component of the second
   /// operand of the product to retrieve
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
-      const type& result_component,
+      const ResultType& result_component,
       const std::array<size_t, op1_num_tensor_indices>& op1_multi_index,
       const std::array<size_t, op2_num_tensor_indices>& op2_multi_index) const {
     if constexpr (is_primary_end) {
@@ -308,7 +311,7 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
     } else {
       // We haven't yet evaluated the whole subtree for this expression, so
       // return the product of the results of the two operands' subtrees
-      return t1_.get_primary(result_component, op1_multi_index) *
+      return t1_.template get_primary(result_component, op1_multi_index) *
              t2_.get(op2_multi_index);
     }
   }
@@ -328,8 +331,9 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   /// product tensor to retrieve
   /// \return the value of the component at `result_multi_index` in the outer
   /// product tensor
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
-      const type& result_component,
+      const ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     return get_primary(result_component,
                        get_op1_multi_index(result_multi_index),
@@ -358,8 +362,9 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   /// operand of the product to evaluate
   /// \param op2_multi_index the multi-index of the component of the second
   /// operand of the product to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_children(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, op1_num_tensor_indices>& op1_multi_index,
       const std::array<size_t, op2_num_tensor_indices>& op2_multi_index) const {
     if constexpr (is_primary_end) {
@@ -372,7 +377,8 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
       // We haven't yet evaluated the whole subtree of the primary child, so
       // first assign the result component to be the result of computing the
       // primary child's subtree
-      result_component = t1_.get_primary(result_component, op1_multi_index);
+      result_component =
+          t1_.template get_primary(result_component, op1_multi_index);
       // Now that the primary child's subtree has been computed, multiply the
       // current result by the result of evaluating the other child's subtree
       result_component *= t2_.get(op2_multi_index);
@@ -391,15 +397,16 @@ struct OuterProduct<T1, T2, IndexList1<Indices1...>, IndexList2<Indices2...>,
   /// \param result_component the LHS tensor component to evaluate
   /// \param result_multi_index the multi-index of the component of the outer
   /// product tensor to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     const std::array<size_t, op1_num_tensor_indices> op1_multi_index =
         get_op1_multi_index(result_multi_index);
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t1_.evaluate_primary_subtree(result_component, op1_multi_index);
+      t1_.template evaluate_primary_subtree(result_component, op1_multi_index);
     }
 
     if constexpr (is_primary_start) {
@@ -464,30 +471,38 @@ SPECTRE_ALWAYS_INLINE auto operator*(
 /// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the product of a tensor
-/// expression and a `double`
+/// expression and a number
 ///
-/// \tparam T the derived TensorExpression type of the tensor expression operand
-/// of the product
-/// \tparam X the type of data stored in the tensor expression operand of the
-/// product
-/// \tparam ArgsList the TensorIndexs of the tensor expression operand of the
-/// product
 /// \param t the tensor expression operand of the product
-/// \param number the `double` operand of the product
-/// \return the tensor expression representing the product of a tensor
-/// expression and a `double`
-template <typename T, typename X, typename ArgsList>
+/// \param number the numeric operand of the product
+/// \return the tensor expression representing the product of the tensor
+/// expression and the number
+template <typename T, typename N, Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator*(
-    const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
-                           ArgsList>& t,
-    const double number) {
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t,
+    const N number) {
   return t * tenex::NumberAsExpression(number);
 }
-template <typename T, typename X, typename ArgsList>
+template <typename T, typename N, Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator*(
-    const double number,
-    const TensorExpression<T, X, typename T::symmetry, typename T::index_list,
-                           ArgsList>& t) {
+    const N number,
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t) {
+  return t * tenex::NumberAsExpression(number);
+}
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t,
+    const std::complex<N>& number) {
+  return t * tenex::NumberAsExpression(number);
+}
+template <typename T, typename N>
+SPECTRE_ALWAYS_INLINE auto operator*(
+    const std::complex<N>& number,
+    const TensorExpression<T, typename T::type, typename T::symmetry,
+                           typename T::index_list, typename T::args_list>& t) {
   return t * tenex::NumberAsExpression(number);
 }
 /// @}

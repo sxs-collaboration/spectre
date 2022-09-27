@@ -3,9 +3,12 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <complex>
 #include <cstddef>
 #include <random>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Symmetry.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -244,5 +247,10 @@ SPECTRE_TEST_CASE(
   test_evaluate_spatial_spacetime_index(
       std::numeric_limits<double>::signaling_NaN());
   test_evaluate_spatial_spacetime_index(
+      std::complex<double>(std::numeric_limits<double>::signaling_NaN(),
+                           std::numeric_limits<double>::signaling_NaN()));
+  test_evaluate_spatial_spacetime_index(
       DataVector(5, std::numeric_limits<double>::signaling_NaN()));
+  test_evaluate_spatial_spacetime_index(
+      ComplexDataVector(5, std::numeric_limits<double>::signaling_NaN()));
 }

@@ -12,6 +12,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -187,6 +188,11 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
                                   Symm<SymmValues...>, IndexList<Indices...>,
                                   ArgsList<Args...>>::type,
                               IndexList<Indices...>, ArgsList<Args...>> {
+  static_assert(detail::is_supported_tensor_datatype_v<X>,
+                "TensorExpressions currently only support Tensors whose data "
+                "type is double, std::complex<double>, DataVector, or "
+                "ComplexDataVector. It is possible to add support for other "
+                "data types that are supported by Tensor.");
   // `Symmetry` currently prevents this because antisymmetries are not currently
   // supported for `Tensor`s. This check is repeated here because if
   // antisymmetries are later supported for `Tensor`, using antisymmetries in
@@ -319,8 +325,9 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   ///
   /// \param multi_index the multi-index of the tensor component to retrieve
   /// \return the value of the component at `multi_index` in the tensor
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
-      const type& /*result_component*/,
+      const ResultType& /*result_component*/,
       const std::array<size_t, num_tensor_indices>& multi_index) const {
     return t_->get(multi_index);
   }
@@ -329,8 +336,10 @@ struct TensorAsExpression<Tensor<X, Symm<SymmValues...>, IndexList<Indices...>>,
   // to evaluate in a split tree, which is enforced by
   // `is_primary_start == false`. Therefore, this function should never be
   // called on this expression type.
-  void evaluate_primary_subtree(
-      type&, const std::array<size_t, num_tensor_indices>&) const = delete;
+  template <typename ResultType>
+  SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
+      ResultType& result_component,
+      const std::array<size_t, num_tensor_indices>&) const = delete;
 
   /// Retrieve the i'th entry of the Tensor being held
   SPECTRE_ALWAYS_INLINE type operator[](const size_t i) const {

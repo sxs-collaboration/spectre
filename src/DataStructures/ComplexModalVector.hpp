@@ -49,8 +49,10 @@ class ComplexModalVector
   ComplexModalVector& operator=(ComplexModalVector&&) = default;
   ~ComplexModalVector() = default;
 
-  using VectorImpl<std::complex<double>, ComplexModalVector>::operator=;
-  using VectorImpl<std::complex<double>, ComplexModalVector>::VectorImpl;
+  using BaseType = VectorImpl<std::complex<double>, ComplexModalVector>;
+
+  using BaseType::operator=;
+  using BaseType::VectorImpl;
 };
 
 namespace blaze {

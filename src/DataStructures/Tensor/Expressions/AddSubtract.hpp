@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -14,6 +15,7 @@
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Expressions/DataTypeSupport.hpp"
 #include "DataStructures/Tensor/Expressions/IndexPropertyCheck.hpp"
 #include "DataStructures/Tensor/Expressions/NumberAsExpression.hpp"
 #include "DataStructures/Tensor/Expressions/SpatialSpacetimeIndex.hpp"
@@ -253,9 +255,7 @@ struct AddSubType {
                     std::is_base_of_v<Expression, T2>,
                 "Parameters to AddSubType must be TensorExpressions");
   using type =
-      tmpl::conditional_t<std::is_same_v<typename T1::type, DataVector> or
-                              std::is_same_v<typename T2::type, DataVector>,
-                          DataVector, double>;
+      typename get_binop_datatype<typename T1::type, typename T2::type>::type;
   using symmetry =
       typename AddSubSymmetry<typename T1::symmetry, typename T2::symmetry,
                                    typename T1::args_list,
@@ -294,10 +294,20 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
           typename detail::AddSubType<T1, T2>::symmetry,
           typename detail::AddSubType<T1, T2>::index_list,
           typename detail::AddSubType<T1, T2>::tensorindex_list> {
-  static_assert(std::is_same<typename T1::type, typename T2::type>::value or
-                    std::is_same<T1, NumberAsExpression>::value or
-                    std::is_same<T2, NumberAsExpression>::value,
-                "Cannot add or subtract Tensors holding different data types.");
+  static_assert(
+      detail::tensorexpression_binop_datatypes_are_supported_v<T1, T2>,
+      "Cannot add or subtract the given TensorExpression types with the given "
+      "data types. This can occur from e.g. trying to add a Tensor with data "
+      "type double and a Tensor with data type DataVector.");
+  static_assert(
+      not((std::is_same_v<T1, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T2::type, DataVector>) or
+          (std::is_same_v<T2, NumberAsExpression<std::complex<double>>> and
+           std::is_same_v<typename T1::type, DataVector>)),
+      "Cannot perform addition and subtraction between a std::complex<double> "
+      "and a TensorExpression whose data type is DataVector because Blaze does "
+      "not support addition and subtraction between std::complex<double> and "
+      "DataVector.");
   static_assert(
       detail::IndexPropertyCheck<typename T1::index_list,
                                  typename T2::index_list, ArgsList1<Args1...>,
@@ -436,10 +446,10 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   template <typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensor_not_in_rhs_expression(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.assert_lhs_tensor_not_in_rhs_expression(lhs_tensor);
     }
   }
@@ -453,11 +463,11 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   template <typename LhsTensorIndices, typename LhsTensor>
   SPECTRE_ALWAYS_INLINE void assert_lhs_tensorindices_same_in_rhs(
       const gsl::not_null<LhsTensor*> lhs_tensor) const {
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T1>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T1>) {
       t1_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
     }
-    if constexpr (not std::is_base_of_v<NumberAsExpression, T2>) {
+    if constexpr (not std::is_base_of_v<MarkAsNumberAsExpression, T2>) {
       t2_.template assert_lhs_tensorindices_same_in_rhs<LhsTensorIndices>(
           lhs_tensor);
     }
@@ -662,8 +672,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// operand of the sum or difference to evaluate
   /// \param op2_multi_index the multi-index of the component of the second
   /// operand of the sum or difference to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void add_or_subtract_primary_children(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& op1_multi_index,
       const std::array<size_t, num_tensor_indices_op2>& op2_multi_index) const {
     if constexpr (Sign == 1) {
@@ -678,7 +689,8 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree of the primary child, so
         // first assign the result component to be the result of computing the
         // primary child's subtree
-        result_component = t1_.get_primary(result_component, op1_multi_index);
+        result_component =
+            t1_.template get_primary(result_component, op1_multi_index);
         // Now that the primary child's subtree has been computed, add the
         // result of evaluating the other child's subtree to the current result
         result_component += t2_.get(op2_multi_index);
@@ -695,7 +707,8 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree of the primary child, so
         // first assign the result component to be the result of computing the
         // primary child's subtree
-        result_component = t1_.get_primary(result_component, op1_multi_index);
+        result_component =
+            t1_.template get_primary(result_component, op1_multi_index);
         // Now that the primary child's subtree has been computed, subtract the
         // result of evaluating the other child's subtree from the current
         // result
@@ -714,8 +727,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// \param result_component the LHS tensor component to evaluate
   /// \param result_multi_index the multi-index of the component of the result
   /// tensor to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_children(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     add_or_subtract_primary_children(result_component, result_multi_index,
                                      get_op2_multi_index(result_multi_index));
@@ -737,8 +751,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// \param op2_multi_index the multi-index of the component of the second
   /// operand
   /// \return the sum of or difference between the two components' values
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) add_or_subtract_primary(
-      const type& result_component,
+      const ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& op1_multi_index,
       const std::array<size_t, num_tensor_indices_op2>& op2_multi_index) const {
     if constexpr (Sign == 1) {
@@ -752,7 +767,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
       } else {
         // We haven't yet evaluated the whole subtree for this expression, so
         // return the sum of the results of the two operands' subtrees
-        return t1_.get_primary(result_component, op1_multi_index) +
+        return t1_.template get_primary(result_component, op1_multi_index) +
                t2_.get(op2_multi_index);
       }
     } else {
@@ -767,7 +782,7 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
         // We haven't yet evaluated the whole subtree for this expression, so
         // return the difference between the results of the two operands'
         // subtrees
-        return t1_.get_primary(result_component, op1_multi_index) -
+        return t1_.template get_primary(result_component, op1_multi_index) -
                t2_.get(op2_multi_index);
       }
     }
@@ -788,8 +803,9 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// tensor to retrieve
   /// \return the value of the component at `result_multi_index` in the result
   /// tensor
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE decltype(auto) get_primary(
-      const type& result_component,
+      const ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     return add_or_subtract_primary(result_component, result_multi_index,
                                    get_op2_multi_index(result_multi_index));
@@ -808,13 +824,15 @@ struct AddSub<T1, T2, ArgsList1<Args1...>, ArgsList2<Args2...>, Sign>
   /// \param result_component the LHS tensor component to evaluate
   /// \param result_multi_index the multi-index of the component of the result
   /// tensor to evaluate
+  template <typename ResultType>
   SPECTRE_ALWAYS_INLINE void evaluate_primary_subtree(
-      type& result_component,
+      ResultType& result_component,
       const std::array<size_t, num_tensor_indices>& result_multi_index) const {
     if constexpr (primary_child_subtree_contains_primary_start) {
       // The primary child's subtree contains at least one leg, so recurse down
       // and evaluate that first
-      t1_.evaluate_primary_subtree(result_component, result_multi_index);
+      t1_.template evaluate_primary_subtree(result_component,
+                                            result_multi_index);
     }
 
     if constexpr (is_primary_start) {
@@ -868,7 +886,7 @@ SPECTRE_ALWAYS_INLINE auto operator+(
 /// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the sum of a tensor
-/// expression and a `double`
+/// expression and a number
 ///
 /// \details
 /// The tensor expression operand must represent an expression that, when
@@ -880,25 +898,16 @@ SPECTRE_ALWAYS_INLINE auto operator+(
 /// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
 /// - `R(ti::t, ti::t)`
 ///
-/// \tparam T the derived TensorExpression type of the tensor expression operand
-/// of the sum
-/// \tparam X the type of data stored in the tensor expression operand of the
-/// sum
-/// \tparam Symm the ::Symmetry of the derived TensorExpression type of the
-/// tensor expression operand of the sum
-/// \tparam IndexList the \ref SpacetimeIndex "TensorIndexType"s of the derived
-/// TensorExpression type of the tensor expression operand of the sum
-/// \tparam Args the comma-separated list of generic indices of the derived
-/// TensorExpression type of the tensor expression operand of the sum
 /// \param t the tensor expression operand of the sum
-/// \param number the `double` operand of the sum
-/// \return the tensor expression representing the sum of a tensor expression
-/// and a `double`
+/// \param number the numeric operand of the sum
+/// \return the tensor expression representing the sum of the tensor expression
+/// and the number
 template <typename T, typename X, typename Symm, typename IndexList,
-          typename... Args>
+          typename... Args, typename N,
+          Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator+(
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
-    const double number) {
+    const N number) {
   static_assert(
       (... and tt::is_time_index<Args>::value),
       "Can only add a number to a tensor expression that evaluates to a rank 0"
@@ -906,9 +915,32 @@ SPECTRE_ALWAYS_INLINE auto operator+(
   return t + tenex::NumberAsExpression(number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
-          typename... Args>
+          typename... Args, typename N,
+          Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator+(
-    const double number,
+    const N number,
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only add a number to a tensor expression that evaluates to a rank 0"
+      "tensor.");
+  return t + tenex::NumberAsExpression(number);
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
+    const std::complex<N>& number) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only add a number to a tensor expression that evaluates to a rank 0"
+      "tensor.");
+  return t + tenex::NumberAsExpression(number);
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator+(
+    const std::complex<N>& number,
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
   static_assert(
       (... and tt::is_time_index<Args>::value),
@@ -945,7 +977,7 @@ SPECTRE_ALWAYS_INLINE auto operator-(
 /// @{
 /// \ingroup TensorExpressionsGroup
 /// \brief Returns the tensor expression representing the difference of a tensor
-/// expression and a `double`
+/// expression and a number
 ///
 /// \details
 /// The tensor expression operand must represent an expression that, when
@@ -957,25 +989,16 @@ SPECTRE_ALWAYS_INLINE auto operator-(
 /// - `(R(ti::A, ti::B) * S(ti::a, ti::b))`
 /// - `R(ti::t, ti::t)`
 ///
-/// \tparam T the derived TensorExpression type of the tensor expression operand
-/// of the difference
-/// \tparam X the type of data stored in the tensor expression operand of the
-/// difference
-/// \tparam Symm the ::Symmetry of the derived TensorExpression type of the
-/// tensor expression operand of the difference
-/// \tparam IndexList the \ref SpacetimeIndex "TensorIndexType"s of the derived
-/// TensorExpression type of the tensor expression operand of the difference
-/// \tparam Args the comma-separated list of generic indices of the derived
-/// TensorExpression type of the tensor expression operand of the difference
 /// \param t the tensor expression operand of the difference
-/// \param number the `double` operand of the difference
-/// \return the tensor expression representing the difference of a tensor
-/// expression and a `double`
+/// \param number the numeric operand of the difference
+/// \return the tensor expression representing the difference of the tensor
+/// expression and the number
 template <typename T, typename X, typename Symm, typename IndexList,
-          typename... Args>
+          typename... Args, typename N,
+          Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator-(
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
-    const double number) {
+    const N number) {
   static_assert(
       (... and tt::is_time_index<Args>::value),
       "Can only subtract a number from a tensor expression that evaluates to a "
@@ -983,9 +1006,32 @@ SPECTRE_ALWAYS_INLINE auto operator-(
   return t + tenex::NumberAsExpression(-number);
 }
 template <typename T, typename X, typename Symm, typename IndexList,
-          typename... Args>
+          typename... Args, typename N,
+          Requires<std::is_arithmetic_v<N>> = nullptr>
 SPECTRE_ALWAYS_INLINE auto operator-(
-    const double number,
+    const N number,
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only subtract a number from a tensor expression that evaluates to a "
+      "rank 0 tensor.");
+  return tenex::NumberAsExpression(number) - t;
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t,
+    const std::complex<N>& number) {
+  static_assert(
+      (... and tt::is_time_index<Args>::value),
+      "Can only subtract a number from a tensor expression that evaluates to a "
+      "rank 0 tensor.");
+  return t + tenex::NumberAsExpression(-number);
+}
+template <typename T, typename X, typename Symm, typename IndexList,
+          typename... Args, typename N>
+SPECTRE_ALWAYS_INLINE auto operator-(
+    const std::complex<N>& number,
     const TensorExpression<T, X, Symm, IndexList, tmpl::list<Args...>>& t) {
   static_assert(
       (... and tt::is_time_index<Args>::value),
