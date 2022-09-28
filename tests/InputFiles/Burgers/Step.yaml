@@ -70,10 +70,10 @@ EventsAndTriggers:
                 Factor: 2.0
 
 EventsAndDenseTriggers:
-  ? Times:
-      Specified:
-        Values: [0.123456]
-  : - Completion
+  - - Times:
+        Specified:
+          Values: [0.123456]
+    - - Completion
 
 Observers:
   VolumeFileName: "BurgersStepVolume"

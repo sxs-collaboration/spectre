@@ -7,7 +7,6 @@
 #include <limits>
 #include <memory>
 #include <optional>
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -60,12 +59,14 @@ class EventsAndDenseTriggers {
 
  public:
   using ConstructionType =
-      std::unordered_map<std::unique_ptr<DenseTrigger>,
-                         std::vector<std::unique_ptr<Event>>>;
+      std::vector<std::pair<std::unique_ptr<DenseTrigger>,
+                            std::vector<std::unique_ptr<Event>>>>;
 
  private:
   struct TriggerRecord {
     double next_check;
+    std::optional<bool> is_triggered;
+    size_t num_events_ready;
     std::unique_ptr<DenseTrigger> trigger;
     std::vector<std::unique_ptr<Event>> events;
 
@@ -129,81 +130,14 @@ class EventsAndDenseTriggers {
   void pup(PUP::er& p);
 
  private:
-  typename Storage::iterator heap_end() {
-    return events_and_triggers_.begin() +
-           static_cast<Storage::difference_type>(heap_size_);
-  }
-
   template <typename DbTags>
   void initialize(const db::DataBox<DbTags>& box);
 
   bool initialized() const;
 
-  void populate_active_triggers();
-
-  void reschedule_next_trigger(double next_check_time, bool time_runs_forward);
-
-  class TriggerTimeAfter {
-   public:
-    explicit TriggerTimeAfter(const bool time_runs_forward);
-
-    bool operator()(const TriggerRecord& a, const TriggerRecord& b) const;
-
-    double infinite_future() const;
-
-    // NOLINTNEXTLINE(google-runtime-references)
-    void pup(PUP::er& p);
-
-   private:
-    evolution_greater<double> time_after_{};
-  };
-
-  // The data structure used here is a heap containing the triggers
-  // not being tested at the moment, with the earliest time as the
-  // root at index 0, followed by the triggers being processed at the
-  // current time.
-  //
-  // state at the start of a loop:
-  // non-testing heap | to be tested
-  // 0                  heap_size_ = to_run_position_ = processing_position_
-  //
-  // is_ready checks if everything is_ready and if triggers fire,
-  // moving processing_position_ forward and swapping triggers into
-  // the appropriate areas:
-  //
-  //                              ->      -->
-  // non-testing heap | not fired | fired | to be tested
-  // 0                  heap_size_  to_run_position_
-  //                                        processing_position_
-  //
-  // run_events runs all events for triggers that have fired:
-  //
-  //                              ->
-  // non-testing heap | not fired | fired
-  // 0                  heap_size_  to_run_position_
-  //
-  // reschedule moves triggers back onto the heap...:
-  //
-  //                  ->
-  // non-testing heap | triggers to reschedule
-  // 0                  heap_size_
-  //
-  // ...and then sets up for the next loop by examining the heap root
-  // and popping all triggers requesting that time into the processing
-  // area.
   Storage events_and_triggers_;
-  // The size of the heap, or equivalently the index of the start of
-  // the processing area.  The initial value is a sentinel for an
-  // uninitialized state.
-  size_t heap_size_ = std::numeric_limits<size_t>::max();
-  size_t to_run_position_{};
-  size_t processing_position_{};
-  // Index of the current event of the trigger at processing_position_
-  // that we are waiting for to be ready, or none if we are waiting
-  // for the trigger.
-  std::optional<size_t> event_to_check_{};
   double next_check_ = std::numeric_limits<double>::signaling_NaN();
-  TriggerTimeAfter next_check_after_{false};
+  evolution_less<double> before_{};
 };
 
 template <typename DbTags>
@@ -213,7 +147,7 @@ double EventsAndDenseTriggers::next_trigger(const db::DataBox<DbTags>& box) {
   }
 
   if (events_and_triggers_.empty()) {
-    return next_check_after_.infinite_future();
+    return before_.infinity();
   }
 
   return next_check_;
@@ -227,45 +161,39 @@ EventsAndDenseTriggers::TriggeringState EventsAndDenseTriggers::is_ready(
   ASSERT(initialized(), "Not initialized");
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling is_ready with no triggers");
-  ASSERT(heap_end() != events_and_triggers_.end(), "No active triggers");
 
-  for (; processing_position_ != events_and_triggers_.size();
-       ++processing_position_) {
-    const auto& current_trigger = events_and_triggers_[processing_position_];
-    if (not event_to_check_.has_value()) {
-      const auto is_triggered = current_trigger.trigger->is_triggered(
+  for (auto& trigger_entry : events_and_triggers_) {
+    if (trigger_entry.next_check != next_check_) {
+      continue;
+    }
+    if (not trigger_entry.is_triggered.has_value()) {
+      const auto is_triggered = trigger_entry.trigger->is_triggered(
           box, cache, array_index, component);
       if (not is_triggered.has_value()) {
         return TriggeringState::NotReady;
       }
 
-      if (not *is_triggered) {
-        // Move this trigger into the non-fired area.  One of the
-        // earlier fired triggers is moved here, but we don't make any
-        // guarantees about the order anyway so that doesn't matter.
-        std::swap(events_and_triggers_[processing_position_],
-                  events_and_triggers_[to_run_position_]);
-        ++to_run_position_;
-        continue;
-      }
-      event_to_check_.emplace(0);
+      trigger_entry.is_triggered = *is_triggered;
     }
 
-    const auto& events = current_trigger.events;
-    for (; *event_to_check_ < events.size(); ++*event_to_check_) {
-      if (not events[*event_to_check_]->is_ready(box, cache, array_index,
-                                                 component)) {
+    if (not *trigger_entry.is_triggered) {
+      continue;
+    }
+
+    for (; trigger_entry.num_events_ready < trigger_entry.events.size();
+         ++trigger_entry.num_events_ready) {
+      if (not trigger_entry.events[trigger_entry.num_events_ready]->is_ready(
+              box, cache, array_index, component)) {
         return TriggeringState::NotReady;
       }
     }
-    event_to_check_.reset();
   }
 
-  for (size_t trigger_for_events_to_run = to_run_position_;
-       trigger_for_events_to_run != events_and_triggers_.size();
-       ++trigger_for_events_to_run) {
-    for (const auto& event :
-         events_and_triggers_[trigger_for_events_to_run].events) {
+  for (auto& trigger_entry : events_and_triggers_) {
+    if (trigger_entry.is_triggered != std::optional{true}) {
+      continue;
+    }
+    for (const auto& event : trigger_entry.events) {
       if (event->needs_evolved_variables()) {
         return TriggeringState::NeedsEvolvedVariables;
       }
@@ -290,24 +218,27 @@ void EventsAndDenseTriggers::run_events(
           get_tags<tmpl::_1>>>,
       db::is_compute_tag<tmpl::_1>>>;
 
-  for (; to_run_position_ != events_and_triggers_.size(); ++to_run_position_) {
-    const auto& trigger_to_run = events_and_triggers_[to_run_position_];
-    db::mutate<::evolution::Tags::PreviousTriggerTime>(
-        make_not_null(&box),
-        [&trigger_to_run](
-            const gsl::not_null<std::optional<double>*> previous_trigger_time) {
-          *previous_trigger_time =
-              trigger_to_run.trigger->previous_trigger_time();
-        });
-    const auto observation_box = make_observation_box<compute_tags>(box);
-    for (const auto& event : trigger_to_run.events) {
-      event->run(observation_box, cache, array_index, component);
+  for (auto& trigger_entry : events_and_triggers_) {
+    if (trigger_entry.is_triggered == std::optional{true}) {
+      db::mutate<::evolution::Tags::PreviousTriggerTime>(
+          make_not_null(&box),
+          [&trigger_entry](const gsl::not_null<std::optional<double>*>
+                               previous_trigger_time) {
+            *previous_trigger_time =
+                trigger_entry.trigger->previous_trigger_time();
+          });
+      const auto observation_box = make_observation_box<compute_tags>(box);
+      for (const auto& event : trigger_entry.events) {
+        event->run(observation_box, cache, array_index, component);
+      }
+      db::mutate<::evolution::Tags::PreviousTriggerTime>(
+          make_not_null(&box), [](const gsl::not_null<std::optional<double>*>
+                                      previous_trigger_time) {
+            *previous_trigger_time =
+                std::numeric_limits<double>::signaling_NaN();
+          });
     }
-    db::mutate<::evolution::Tags::PreviousTriggerTime>(
-        make_not_null(&box),
-        [](const gsl::not_null<std::optional<double>*> previous_trigger_time) {
-          *previous_trigger_time = std::numeric_limits<double>::signaling_NaN();
-        });
+    trigger_entry.is_triggered.reset();
   }
 }
 
@@ -320,18 +251,24 @@ bool EventsAndDenseTriggers::reschedule(
   ASSERT(not events_and_triggers_.empty(),
          "Should not be calling run_events with no triggers");
 
-  while (heap_end() != events_and_triggers_.end()) {
-    const std::optional<double> next_check =
-        heap_end()->trigger->next_check_time(box, cache, array_index,
-                                             component);
-    if (not next_check.has_value()) {
-      return false;
+  double new_next_check = before_.infinity();
+  for (auto& trigger_entry : events_and_triggers_) {
+    if (trigger_entry.next_check == next_check_) {
+      const std::optional<double> next_check =
+          trigger_entry.trigger->next_check_time(box, cache, array_index,
+                                                 component);
+      if (not next_check.has_value()) {
+        return false;
+      }
+      trigger_entry.next_check = *next_check;
+      trigger_entry.num_events_ready = 0;
     }
-    reschedule_next_trigger(
-        *next_check, db::get<::Tags::TimeStepId>(box).time_runs_forward());
+    if (before_(trigger_entry.next_check, new_next_check)) {
+      new_next_check = trigger_entry.next_check;
+    }
   }
 
-  populate_active_triggers();
+  next_check_ = new_next_check;
   return true;
 }
 
@@ -346,13 +283,12 @@ void EventsAndDenseTriggers::for_each_event(F&& f) const {
 
 template <typename DbTags>
 void EventsAndDenseTriggers::initialize(const db::DataBox<DbTags>& box) {
-  next_check_after_ =
-      TriggerTimeAfter{db::get<::Tags::TimeStepId>(box).time_runs_forward()};
+  before_ = evolution_less<double>{
+      db::get<::Tags::TimeStepId>(box).time_runs_forward()};
   next_check_ = db::get<::Tags::Time>(box);
   for (auto& trigger_record : events_and_triggers_) {
     trigger_record.next_check = next_check_;
   }
-  heap_size_ = 0;
 }
 }  // namespace evolution
 

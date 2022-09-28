@@ -74,21 +74,21 @@ EventsAndTriggers:
 
 EventsAndDenseTriggers:
   # Test LTS dense output at the initial time
-  ? Times:
-      Specified:
-        Values: [*initial_time]
-  : - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(Psi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Phi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Pi)
-            NormType: L2Norm
-            Components: Sum
+  - - Times:
+        Specified:
+          Values: [*initial_time]
+    - - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(Psi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
 
 Observers:
   VolumeFileName: "ScalarWavePlaneWave2DVolume"
