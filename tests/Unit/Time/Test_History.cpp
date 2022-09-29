@@ -16,8 +16,6 @@
 
 namespace {
 
-constexpr double test_most_recent_value = 1234.56;
-
 Time make_time(const double t) { return Slab(t, t + 0.5).start(); }
 
 TimeStepId make_time_id(const double t) {
@@ -97,8 +95,6 @@ void check_history_state(const HistoryType& hist) {
 
   CHECK(hist.front() == hist[0]);
   CHECK(hist.back() == hist[3]);
-
-  CHECK(hist.most_recent_value() == test_most_recent_value);
 }
 }  // namespace
 
@@ -109,8 +105,6 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(std::as_const(history).integration_order() == 3);
   history.integration_order(2);
   CHECK(history.integration_order() == 2);
-
-  history.most_recent_value() = test_most_recent_value;
 
   CHECK(history.size() == 0);
   CHECK(history.capacity() == 0);

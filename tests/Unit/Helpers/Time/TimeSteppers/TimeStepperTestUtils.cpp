@@ -34,21 +34,14 @@ template <typename F>
 void take_step(
     const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
     const gsl::not_null<TimeSteppers::History<double>*> history,
-    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
-    bool apply_stepper_twice = false) {
+    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0;
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
     history->insert(time_id, rhs(*y, time_id.substep_time().value()));
-    history->most_recent_value() = *y;
     stepper.update_u(y, history, step_size);
-    // check that the stepper still works as expected when re-applied with the
-    // same parameters -- This must be supported for step-rejection to be viable
-    if(apply_stepper_twice) {
-      stepper.update_u(y, history, step_size);
-    }
     time_id = stepper.next_time_id(time_id, step_size);
   }
   CHECK(time_id.substep_time() - *time == step_size);
@@ -60,20 +53,13 @@ void take_step_and_check_error(
     const gsl::not_null<Time*> time, const gsl::not_null<double*> y,
     const gsl::not_null<double*> y_error,
     const gsl::not_null<TimeSteppers::History<double>*> history,
-    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size,
-    const bool apply_stepper_twice = false) {
+    const TimeStepper& stepper, F&& rhs, const TimeDelta& step_size) {
   TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0; substep < stepper.number_of_substeps_for_error();
        ++substep) {
     CHECK(time_id.substep() == substep);
     history->insert(time_id, rhs(*y, time_id.substep_time().value()));
-    history->most_recent_value() = *y;
     bool error_updated = stepper.update_u(y, y_error, history, step_size);
-    // check that the stepper still works as expected when re-applied with the
-    // same parameters -- This must be supported for step-rejection to be viable
-    if(apply_stepper_twice) {
-      stepper.update_u(y, y_error, history, step_size);
-    }
     CAPTURE(substep);
     REQUIRE((substep == stepper.number_of_substeps_for_error() - 1) ==
             error_updated);
@@ -133,8 +119,7 @@ void check_substep_properties(const TimeStepper& stepper) {
 
 void integrate_test(const TimeStepper& stepper, const size_t order,
                     const size_t number_of_past_steps,
-                    const double integration_time, const double epsilon,
-                    const bool test_apply_twice) {
+                    const double integration_time, const double epsilon) {
   auto analytic = [](const double t) { return sin(t); };
   auto rhs = [](const double v, const double /*t*/) {
     return sqrt(1. - square(v));
@@ -156,10 +141,7 @@ void integrate_test(const TimeStepper& stepper, const size_t order,
                      number_of_past_steps);
 
   for (uint64_t i = 0; i < num_steps; ++i) {
-    // last parameter: check that we can apply the stepper twice sometime in the
-    // middle of the evolution without messing anything up.
-    take_step(&time, &y, &history, stepper, rhs, step_size,
-              test_apply_twice and (i == num_steps / 2));
+    take_step(&time, &y, &history, stepper, rhs, step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
   }
@@ -208,8 +190,7 @@ void integrate_test_explicit_time_dependence(const TimeStepper& stepper,
 void integrate_error_test(const TimeStepper& stepper, const size_t order,
                           const size_t number_of_past_steps,
                           const double integration_time, const double epsilon,
-                          const size_t num_steps, const double error_factor,
-                          const bool test_apply_twice) {
+                          const size_t num_steps, const double error_factor) {
   auto analytic = [](const double t) { return sin(t); };
   auto rhs = [](const double v, const double /*t*/) {
     return sqrt(1. - square(v));
@@ -232,12 +213,9 @@ void integrate_error_test(const TimeStepper& stepper, const size_t order,
   double previous_y = std::numeric_limits<double>::signaling_NaN();
   double previous_time = std::numeric_limits<double>::signaling_NaN();
   for (uint64_t i = 0; i < num_steps; ++i) {
-    // last parameter: check that we can apply the stepper twice sometime in the
-    // middle of the evolution without messing anything up.
     take_step_and_check_error(make_not_null(&time), make_not_null(&y),
                               make_not_null(&y_error), make_not_null(&history),
-                              stepper, rhs, step_size,
-                              test_apply_twice and (i == num_steps / 2));
+                              stepper, rhs, step_size);
     // This check needs a looser tolerance for lower-order time steppers.
     CHECK(y == approx(analytic(time.value())).epsilon(epsilon));
 
@@ -386,9 +364,6 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
       history_time -= history_step_size;
       const TimeStepId history_id(forward, 0, history_time);
       volume_history.insert_initial(history_id, 0.);
-      if (j == 0) {
-        volume_history.most_recent_value() = analytic(history_time.value());
-      }
       boundary_history.local_insert_initial(history_id, unused_local_deriv);
       boundary_history.remote_insert_initial(history_id,
                                              driver(history_time.value()));
@@ -400,7 +375,6 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
          substep < stepper.number_of_substeps();
          ++substep) {
       volume_history.insert(time_id, 0.);
-      volume_history.most_recent_value() = y;
       boundary_history.local_insert(time_id, unused_local_deriv);
       boundary_history.remote_insert(time_id,
                                      driver(time_id.substep_time().value()));
@@ -466,11 +440,9 @@ void check_dense_output(const TimeStepper& stepper,
       auto step = step_size;
       for (;;) {
         history.insert(time_id, y);
-        history.most_recent_value() = y;
         if (not before((time_id.step_time() + step).value(), time)) {
-          double result = std::numeric_limits<double>::signaling_NaN();
-          if (stepper.dense_update_u(make_not_null(&result), history, time)) {
-            return result;
+          if (stepper.dense_update_u(make_not_null(&y), history, time)) {
+            return y;
           }
           REQUIRE(before(time_id.step_time().value(), time));
         }

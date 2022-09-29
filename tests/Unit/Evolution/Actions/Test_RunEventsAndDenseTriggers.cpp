@@ -306,7 +306,7 @@ void test(const bool time_runs_forward) {
   using VarsType = typename variables_tag::type;
   using DtVarsType =
       typename db::add_tag_prefix<::Tags::dt, variables_tag>::type;
-  using History = TimeSteppers::History<VarsType>;
+  using History = TimeSteppers::History<DtVarsType>;
 
   const Slab slab(0.0, 4.0);
   const TimeStepId time_step_id(time_runs_forward, 0,
@@ -331,7 +331,6 @@ void test(const bool time_runs_forward) {
               triggers) {
         History history(1);
         history.insert(time_step_id, deriv_vars);
-        history.most_recent_value() = initial_vars;
 
         evolution::EventsAndDenseTriggers::ConstructionType
             events_and_dense_triggers{};

@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
       CAPTURE(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_test(stepper, start_points + 1,
-                                           start_points, 1., epsilon, true);
+                                           start_points, 1., epsilon);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
           stepper, start_points + 1, start_points, 1., epsilon);
 
@@ -122,7 +122,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_test(
           TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
-          -1., epsilon, true);
+          -1., epsilon);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
           TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
           -1., epsilon);
@@ -398,9 +398,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
 
   const Slab slab(0., 1.);
   TimeSteppers::History<double> history{3};
-  const auto add_history = [&df, &f, &history](const Time& time) {
+  const auto add_history = [&df, &history](const Time& time) {
     history.insert(TimeStepId(true, 0, time), df(time.value()));
-    history.most_recent_value() = f(time.value());
   };
   add_history(slab.start());
   add_history(slab.end());

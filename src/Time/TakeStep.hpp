@@ -7,6 +7,7 @@
 #include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -21,9 +22,27 @@ template <typename StepChoosersToUse = AllStepChoosers,
           typename Metavariables>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box,
                const Parallel::GlobalCache<Metavariables>& cache) {
-  record_time_stepper_data<typename Metavariables::system, VariablesTag>(box);
-  do {
-    update_u<typename Metavariables::system, VariablesTag>(box);
-  } while (Metavariables::local_time_stepping and
-           not change_step_size<StepChoosersToUse>(box, cache));
+  using system = typename Metavariables::system;
+  record_time_stepper_data<system, VariablesTag>(box);
+  if constexpr (Metavariables::local_time_stepping) {
+    for (;;) {
+      update_u<system, VariablesTag>(box);
+      if (change_step_size<StepChoosersToUse>(box, cache)) {
+        break;
+      }
+      using variables_tag =
+          tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
+                              typename system::variables_tag, VariablesTag>;
+      using rollback_tag = Tags::RollbackValue<variables_tag>;
+      db::mutate<variables_tag>(
+          box,
+          [](const gsl::not_null<typename variables_tag::type*> vars,
+             const typename rollback_tag::type& rollback_value) {
+            *vars = rollback_value;
+          },
+          db::get<rollback_tag>(*box));
+    }
+  } else {
+    update_u<system, VariablesTag>(box);
+  }
 }

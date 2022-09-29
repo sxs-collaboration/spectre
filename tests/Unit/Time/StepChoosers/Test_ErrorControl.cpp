@@ -10,6 +10,8 @@
 #include <string>
 #include <utility>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -81,18 +83,19 @@ std::pair<double, bool> get_suggestion(
     const Variables<ErrorTags>& error, const double previous_step,
     const size_t stepper_order) {
   const Parallel::GlobalCache<Metavariables<true>> cache{};
-  TimeSteppers::History<Variables<EvolvedTags>> history{stepper_order};
+  TimeSteppers::History<Variables<db::wrap_tags_in<::Tags::dt, EvolvedTags>>>
+      history{stepper_order};
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, 0.1 * step_values);
-  history.most_recent_value() = step_values;
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
           Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
+          Tags::RollbackValue<EvolvedVariablesTag>,
           db::add_tag_prefix<Tags::StepperError, EvolvedVariablesTag>,
           Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>,
           StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>,
       db::AddComputeTags<>>(
-      Metavariables<true>{}, std::move(history), error, false,
+      Metavariables<true>{}, std::move(history), step_values, error, false,
       std::unique_ptr<TimeStepper>{
           std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)},
       *previous_step_error);
@@ -106,10 +109,8 @@ std::pair<double, bool> get_suggestion(
   // check that when the error is not declared updated, the step is accepted and
   // the step is infinity.
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control(
-            previous_step_error,
-            db::get<Tags::HistoryEvolvedVariables<EvolvedVariablesTag>>(box),
-            error, false, time_stepper, previous_step, cache));
+        error_control(previous_step_error, step_values, error, false,
+                      time_stepper, previous_step, cache));
   CHECK(
       *previous_step_error ==
       db::get<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(box));
@@ -121,10 +122,9 @@ std::pair<double, bool> get_suggestion(
       make_not_null(&box), [](const gsl::not_null<bool*> stepper_updated) {
         *stepper_updated = true;
       });
-  const std::pair<double, bool> result = error_control(
-      previous_step_error,
-      db::get<Tags::HistoryEvolvedVariables<EvolvedVariablesTag>>(box), error,
-      true, time_stepper, previous_step, cache);
+  const std::pair<double, bool> result =
+      error_control(previous_step_error, step_values, error, true, time_stepper,
+                    previous_step, cache);
   // reset the previous step error so we can reuse the former state on the next
   // re-application
   *previous_step_error =
@@ -138,9 +138,8 @@ std::pair<double, bool> get_suggestion(
         *previous_step_error_from_box = *previous_step_error;
       });
   CHECK(serialize_and_deserialize(error_control)(
-            previous_step_error,
-            db::get<Tags::HistoryEvolvedVariables<EvolvedVariablesTag>>(box),
-            error, true, time_stepper, previous_step, cache) == result);
+            previous_step_error, step_values, error, true, time_stepper,
+            previous_step, cache) == result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(make_not_null(&box), previous_step, cache) ==
         result);

@@ -8,6 +8,8 @@
 #include <pup.h>
 #include <type_traits>
 
+#include "DataStructures/DataBox/PrefixHelpers.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/MathWrapper.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/History.hpp"
@@ -85,9 +87,12 @@ class TimeStepper : public PUP::able {
   ///                    const TimeDelta& time_step) const;
   /// ```
   template <typename Vars>
-  void update_u(const gsl::not_null<Vars*> u,
-                const gsl::not_null<TimeSteppers::History<Vars>*> history,
-                const TimeDelta& time_step) const {
+  void update_u(
+      const gsl::not_null<Vars*> u,
+      const gsl::not_null<
+          TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>*>
+          history,
+      const TimeDelta& time_step) const {
     return update_u_forward(&*make_math_wrapper(u), &*history, time_step);
   }
 
@@ -109,10 +114,12 @@ class TimeStepper : public PUP::able {
   ///                    const TimeDelta& time_step) const;
   /// ```
   template <typename Vars, typename ErrVars>
-  bool update_u(const gsl::not_null<Vars*> u,
-                const gsl::not_null<ErrVars*> u_error,
-                const gsl::not_null<TimeSteppers::History<Vars>*> history,
-                const TimeDelta& time_step) const {
+  bool update_u(
+      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
+      const gsl::not_null<
+          TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>*>
+          history,
+      const TimeDelta& time_step) const {
     static_assert(
         std::is_same_v<math_wrapper_type<Vars>, math_wrapper_type<ErrVars>>);
     return update_u_forward(&*make_math_wrapper(u),
@@ -134,9 +141,11 @@ class TimeStepper : public PUP::able {
   ///     const UntypedHistory<T>& history, double time) const;
   /// ```
   template <typename Vars>
-  bool dense_update_u(const gsl::not_null<Vars*> u,
-                      const TimeSteppers::History<Vars>& history,
-                      const double time) const {
+  bool dense_update_u(
+      const gsl::not_null<Vars*> u,
+      const TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>&
+          history,
+      const double time) const {
     return dense_update_u_forward(&*make_math_wrapper(u), history, time);
   }
 
@@ -185,9 +194,10 @@ class TimeStepper : public PUP::able {
   /// bool can_change_step_size_impl(const TimeStepId& time_id,
   ///                                const UntypedHistory<T>& history) const;
   /// ```
-  template <typename Vars>
-  bool can_change_step_size(const TimeStepId& time_id,
-                            const TimeSteppers::History<Vars>& history) const {
+  template <typename DerivVars>
+  bool can_change_step_size(
+      const TimeStepId& time_id,
+      const TimeSteppers::History<DerivVars>& history) const {
     return can_change_step_size_forward(time_id, history);
   }
 };

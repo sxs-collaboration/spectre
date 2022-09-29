@@ -752,6 +752,7 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Metavariables::volume_dim>;
 
+  using variables_tag = typename Metavariables::system::variables_tag;
   using internal_directions =
       domain::Tags::InternalDirections<Metavariables::volume_dim>;
   using boundary_directions_interior =
@@ -760,12 +761,9 @@ struct component {
   using simple_tags = tmpl::flatten<tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
-      ::evolution::dg::Tags::Quadrature,
-      typename Metavariables::system::variables_tag,
-      db::add_tag_prefix<::Tags::dt,
-                         typename Metavariables::system::variables_tag>,
-      ::Tags::HistoryEvolvedVariables<
-          typename Metavariables::system::variables_tag>,
+      ::evolution::dg::Tags::Quadrature, variables_tag,
+      db::add_tag_prefix<::Tags::dt, variables_tag>,
+      ::Tags::HistoryEvolvedVariables<variables_tag>,
       Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
       ::domain::Tags::FunctionsOfTimeInitialize,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
@@ -781,7 +779,8 @@ struct component {
           Metavariables::local_time_stepping,
           tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
                      ::Tags::StepController, ::Tags::StepChoosers,
-                     ::Tags::TimeStepper<LtsTimeStepper>>,
+                     ::Tags::TimeStepper<LtsTimeStepper>,
+                     ::Tags::RollbackValue<variables_tag>>,
           tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
                      ::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
@@ -1062,10 +1061,9 @@ void test_impl(const Spectral::Quadrature quadrature,
     get(var3)[i] = 5.0;
     get(var3)[i + 1] = 6.0;
   }
-  Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
-      dt_evolved_vars{mesh.number_of_grid_points()};
-  const ::TimeSteppers::History<Variables<tmpl::list<Var1, Var2<Dim>>>>
-      history{1};
+  using dt_variables_tags = tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>;
+  Variables<dt_variables_tags> dt_evolved_vars{mesh.number_of_grid_points()};
+  const ::TimeSteppers::History<Variables<dt_variables_tags>> history{1};
 
   // Compute expected volume fluxes
   [[maybe_unused]] const auto expected_fluxes = [&evolved_vars, &inv_jac, &mesh,
@@ -1190,7 +1188,8 @@ void test_impl(const Spectral::Quadrature quadrature,
              std::make_unique<StepControllers::SplitRemaining>()),
          std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
+             std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+         typename ::Tags::RollbackValue<variables_tag>::type{}});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
@@ -1224,7 +1223,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                  std::make_unique<StepControllers::SplitRemaining>()),
              std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
+                 std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+             typename ::Tags::RollbackValue<variables_tag>::type{}});
       }
     }
   } else {

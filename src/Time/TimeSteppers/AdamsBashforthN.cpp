@@ -247,6 +247,7 @@ bool AdamsBashforthN::update_u_impl(
       history->end() -
       static_cast<typename decltype(history->end())::difference_type>(
           history->integration_order()));
+  *u_error = *u;
   update_u_common(u, *history, time_step, history->integration_order());
   // the error estimate is only useful once the history has enough elements to
   // do more than one order of step
@@ -282,7 +283,6 @@ void AdamsBashforthN::update_u_common(const gsl::not_null<T*> u,
   const auto coefficients =
       get_coefficients(history_start, history.end(), time_step);
 
-  *u = *history.untyped_most_recent_value();
   auto coefficient = coefficients.rbegin();
   for (auto history_entry = history_start;
        history_entry != history.end();

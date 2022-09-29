@@ -107,7 +107,8 @@ struct HistoryEvolvedVariables<> : db::BaseTag {};
 
 template <typename Tag>
 struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
-  using type = TimeSteppers::History<typename Tag::type>;
+  using type =
+      TimeSteppers::History<typename db::add_tag_prefix<::Tags::dt, Tag>::type>;
 };
 /// \endcond
 
@@ -117,6 +118,13 @@ struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
 template <typename TagList>
 using get_all_history_tags =
     tmpl::filter<TagList, tt::is_a<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
+
+/// \ingroup TimeGroup
+/// \brief Tag containing a previous value for time step rollback.
+template <typename VariablesTag>
+struct RollbackValue : db::SimpleTag {
+  using type = typename VariablesTag::type;
+};
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
