@@ -291,12 +291,9 @@ numerical_derivative(const Invocable& function,
   const std::array<double, VolumeDim> x_1behind = x - dx;
   const std::array<double, VolumeDim> x_2behind = x_1behind - dx;
   const std::array<double, VolumeDim> x_3behind = x_2behind - dx;
-  return (1.0 / (60.0 * delta)) * function(x_3ahead) +
-         (-3.0 / (20.0 * delta)) * function(x_2ahead) +
-         (0.75 / delta) * function(x_1ahead) +
-         (-0.75 / delta) * function(x_1behind) +
-         (3.0 / (20.0 * delta)) * function(x_2behind) +
-         (-1.0 / (60.0 * delta)) * function(x_3behind);
+  return (1.0 / (60.0 * delta)) * (function(x_3ahead) - function(x_3behind)) -
+         (3.0 / (20.0 * delta)) * (function(x_2ahead) - function(x_2behind)) +
+         (0.75 / delta) * (function(x_1ahead) - function(x_1behind));
 }
 
 struct NonCopyable {
