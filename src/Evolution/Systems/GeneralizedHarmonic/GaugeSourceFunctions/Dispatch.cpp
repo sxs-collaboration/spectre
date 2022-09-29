@@ -51,9 +51,11 @@ void dispatch(
     analytic_gauge->gauge_and_spacetime_derivative(
         gauge_h, d4_gauge_h, mesh, time, inertial_coords, inverse_jacobian);
   } else {
+    // LCOV_EXCL_START
     ERROR(
         "Failed to dispatch to Harmonic, DampedHarmonic, or Analytic gauge "
         "condition.");
+    // LCOV_EXCL_STOP
   }
 }
 

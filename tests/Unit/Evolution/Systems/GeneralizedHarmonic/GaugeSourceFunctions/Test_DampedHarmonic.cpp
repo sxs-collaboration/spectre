@@ -241,8 +241,8 @@ void test_derived_class(const Mesh<Dim>& mesh) {
           inverse_spatial_metric, spacetime_metric, pi, phi, time,
           inertial_coords);
 
-  // Used dispatch with defaulted arguments that we don't need for Analytic
-  // gauge.
+  // Used dispatch with defaulted arguments that we don't need for
+  // DampedHarmonic gauge.
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       spacetime_normal_one_form, sqrt_det_spatial_metric,
