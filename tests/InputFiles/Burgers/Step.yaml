@@ -60,20 +60,20 @@ SpatialDiscretization:
     Reconstructor: MonotonisedCentral
 
 EventsAndTriggers:
-  ? Always
-  : - ChangeSlabSize:
-        DelayChange: 5
-        StepChoosers:
-          - Cfl:
-              SafetyFactor: 0.5
-          - Increase:
-              Factor: 2.0
+  - - Always
+    - - ChangeSlabSize:
+          DelayChange: 5
+          StepChoosers:
+            - Cfl:
+                SafetyFactor: 0.5
+            - Increase:
+                Factor: 2.0
 
 EventsAndDenseTriggers:
-  ? Times:
-      Specified:
-        Values: [0.123456]
-  : - Completion
+  - - Times:
+        Specified:
+          Values: [0.123456]
+    - - Completion
 
 Observers:
   VolumeFileName: "BurgersStepVolume"

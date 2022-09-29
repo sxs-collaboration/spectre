@@ -22,6 +22,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
@@ -150,6 +151,9 @@ struct Component {
       tmpl::list<Tags::TimeStepId, Tags::Time,
                  evolution::Tags::EventsAndDenseTriggers>;
 
+  using mutable_global_cache_tags =
+      tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
+
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<
@@ -191,8 +195,14 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   timescales.emplace("A", timescale->get_clone());
   timescales.emplace("B", timescale->get_clone());
   timescales.emplace("C", timescale->get_clone());
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions;
+  functions.emplace("A", timescale->get_clone());
+  functions.emplace("B", timescale->get_clone());
+  functions.emplace("C", timescale->get_clone());
 
-  MockRuntimeSystem runner{{}, {std::move(timescales)}};
+  MockRuntimeSystem runner{{}, {std::move(functions), std::move(timescales)}};
   ActionTesting::emplace_array_component<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
       ActionTesting::LocalCoreId{0}, 0, Tags::TimeStepId::type{true, 0, {}},
@@ -211,6 +221,10 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
           make_not_null(&box));
   // This call initializes events_and_dense_triggers internals
   events_and_dense_triggers.next_trigger(box);
+  CAPTURE(db::get<Tags::Time>(box));
+  CHECK(events_and_dense_triggers.is_ready(box, cache, 0, component_p) ==
+        evolution::EventsAndDenseTriggers::TriggeringState::
+            NeedsEvolvedVariables);
   events_and_dense_triggers.run_events(box, cache, 0, component_p);
 
   CHECK(Submeasurement<tmpl::list<SystemA, SystemB>>::call_count == 1);

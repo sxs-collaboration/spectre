@@ -52,16 +52,12 @@ consistently over the entire domain.
 ### Input file syntax
 
 The `%EventsAndTriggers` (and `%EventsAndDenseTriggers`) sections of
-the \ref dev_guide_option_parsing "input file" indicate structure
-using a collection of `?`, `:`, and `-` characters.  These are
-standard, if perhaps somewhat obscure, YAML syntax.  They are defining
-a map from triggers to lists of events.  The `?:` syntax defines an
-expanded key-value pair, which allows the key to be a complicated
-type, unlike the common `Key: Value` syntax.  The `-` is the expanded
-form of a list, which allows entries to have complicated types.
-Frequently only one event is associated with a trigger, so there will
-only be a single `-` after the `:`, but additional events introduced
-by more `-` characters can appear afterwards:
+the \ref dev_guide_option_parsing "input file" are parsed as several
+nested YAML lists representing vectors and pairs.  The outermost list
+is a vector with one entry for each trigger.  The entries in this
+vector are two-element lists representing pairs whose first elements
+are triggers and whose second elements are a third level of list
+containing the events.
 
 \snippet PlaneWave1DEventsAndTriggersExample.yaml multiple_events
 

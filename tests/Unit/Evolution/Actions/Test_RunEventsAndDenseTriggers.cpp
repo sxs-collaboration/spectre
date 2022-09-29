@@ -334,9 +334,10 @@ void test(const bool time_runs_forward) {
 
         evolution::EventsAndDenseTriggers::ConstructionType
             events_and_dense_triggers{};
+        events_and_dense_triggers.reserve(triggers.size());
         for (auto [trigger_time, is_triggered, next_trigger,
                    needs_evolved_variables] : triggers) {
-          events_and_dense_triggers.emplace(
+          events_and_dense_triggers.emplace_back(
               std::make_unique<TestTrigger>(start_time, trigger_time,
                                             is_triggered, next_trigger),
               make_vector<std::unique_ptr<Event>>(

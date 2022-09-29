@@ -177,9 +177,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.RegisterEvents", "[Unit][Observers]") {
 
   const auto events_and_triggers =
       TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
-          "? Not: Always\n"
-          ": - SomeEvent:\n"
-          "      SubfileName: element_data\n");
+          "- - Not: Always\n"
+          "  - - SomeEvent:\n"
+          "        SubfileName: element_data\n");
 
   using my_component = Component<Metavariables>;
   using obs_component = MockObserverComponent<Metavariables>;

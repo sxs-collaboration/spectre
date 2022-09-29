@@ -101,20 +101,20 @@ LinearSolver:
     ObservePerCoreReductions: False
 
 EventsAndTriggers:
-  ? HasConverged
-  : - ObserveNorms:
-        SubfileName: ErrorNorms
-        TensorsToObserve:
-          - Name: Error(Displacement)
-            NormType: L2Norm
-            Components: Sum
-    - ObserveVolumeIntegrals:
-        SubfileName: VolumeIntegrals
-    - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - Displacement
-          - PotentialEnergyDensity
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
+  - - HasConverged
+    - - ObserveNorms:
+          SubfileName: ErrorNorms
+          TensorsToObserve:
+            - Name: Error(Displacement)
+              NormType: L2Norm
+              Components: Sum
+      - ObserveVolumeIntegrals:
+          SubfileName: VolumeIntegrals
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Displacement
+            - PotentialEnergyDensity
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]

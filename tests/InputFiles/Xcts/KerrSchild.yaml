@@ -108,47 +108,47 @@ LinearSolver:
     ObservePerCoreReductions: False
 
 EventsAndTriggers:
-  ? HasConverged
-  : - ObserveNorms:
-        SubfileName: ErrorNorms
-        TensorsToObserve:
-          - Name: Error(ConformalFactor)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(LapseTimesConformalFactor)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(ShiftExcess)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Flux(ConformalFactor))
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Flux(LapseTimesConformalFactor))
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(LongitudinalShiftExcess)
-            NormType: L2Norm
-            Components: Sum
-    - ObserveNorms:
-        SubfileName: Norms
-        TensorsToObserve:
-          - Name: HamiltonianConstraint
-            NormType: L2Norm
-            Components: Individual
-          - Name: MomentumConstraint
-            NormType: L2Norm
-            Components: Individual
-    - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - ConformalFactor
-          - Lapse
-          - Shift
-          - SpatialMetric
-          - ExtrinsicCurvature
-          - HamiltonianConstraint
-          - MomentumConstraint
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
+  - - HasConverged
+    - - ObserveNorms:
+          SubfileName: ErrorNorms
+          TensorsToObserve:
+            - Name: Error(ConformalFactor)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(LapseTimesConformalFactor)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(ShiftExcess)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Flux(ConformalFactor))
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Flux(LapseTimesConformalFactor))
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(LongitudinalShiftExcess)
+              NormType: L2Norm
+              Components: Sum
+      - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: HamiltonianConstraint
+              NormType: L2Norm
+              Components: Individual
+            - Name: MomentumConstraint
+              NormType: L2Norm
+              Components: Individual
+      - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - ConformalFactor
+            - Lapse
+            - Shift
+            - SpatialMetric
+            - ExtrinsicCurvature
+            - HamiltonianConstraint
+            - MomentumConstraint
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]

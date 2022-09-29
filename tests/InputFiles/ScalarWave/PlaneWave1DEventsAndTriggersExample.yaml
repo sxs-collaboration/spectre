@@ -54,36 +54,36 @@ EventsAndDenseTriggers:
 
 # [multiple_events]
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 10
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: Fields
-        VariablesToObserve: [Psi]
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-    - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(Psi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Phi)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(Pi)
-            NormType: L2Norm
-            Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: Fields
+          VariablesToObserve: [Psi]
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+      - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(Psi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
 # [multiple_events]
 
 # [no_arguments]
-  ? Always
-  : - Completion
+  - - Always
+    - - Completion
 # [no_arguments]
 # [no_arguments_single_line]
-  Always: [Completion]
+  - [Always, [Completion]]
 # [no_arguments_single_line]
 
 Observers:

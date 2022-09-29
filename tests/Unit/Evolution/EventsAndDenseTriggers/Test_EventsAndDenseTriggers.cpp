@@ -151,13 +151,13 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   const int* component = nullptr;
 
   std::string creation_string =
-      "BoxTrigger<A>:\n"
-      "  - TestEvent<A>\n";
+      "- - BoxTrigger<A>\n"
+      "  - - TestEvent<A>\n";
   if (not add_event) {
     creation_string +=
-        "BoxTrigger<B>:\n"
-        "  - TestEvent<B>\n"
-        "  - TestEvent<C>\n";
+        "- - BoxTrigger<B>\n"
+        "  - - TestEvent<B>\n"
+        "    - TestEvent<C>\n";
   }
 
   auto events_and_dense_triggers =
@@ -250,6 +250,7 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   CHECK(
       events_and_dense_triggers.reschedule(box, cache, array_index, component));
   set_tag(TriggerA::NextCheck{}, 4.0 * time_sign);
+  set_tag(EventA::IsReady{}, false);
   set_tag(TriggerB::IsTriggered{}, true);
   set_tag(TriggerB::NextCheck{}, 4.0 * time_sign);
   CHECK(events_and_dense_triggers.next_trigger(box) == 3.0 * time_sign);
@@ -260,6 +261,9 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
   set_tag(EventC::IsReady{}, true);
+  CHECK(events_and_dense_triggers.is_ready(
+            box, cache, array_index, component) == TriggeringState::NotReady);
+  set_tag(EventA::IsReady{}, true);
   CHECK(
       events_and_dense_triggers.is_ready(box, cache, array_index, component) ==
       TriggeringState::NeedsEvolvedVariables);

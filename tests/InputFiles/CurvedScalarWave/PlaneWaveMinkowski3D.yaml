@@ -74,46 +74,46 @@ Filtering:
     DisableForDebugging: true
 
 EventsAndTriggers:
-  ? Slabs:
-      Specified:
-        Values: [30]
-  : - Completion
-  ? Slabs:
-      Specified:
-        Values: [0, 15]
-  : - ObserveFields:
-        SubfileName: VolumePsi0And25
-        VariablesToObserve: ["Psi"]
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 10
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeVarsConstraintsEvery10Slabs
-        VariablesToObserve:
-          - Psi
-          - Pi
-          - Phi
-          - PointwiseL2Norm(OneIndexConstraint)
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 10
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Norms
-        TensorsToObserve:
-          - Name: PointwiseL2Norm(OneIndexConstraint)
-            NormType: L2Norm
-            Components: Individual
-          - Name: PointwiseL2Norm(TwoIndexConstraint)
-            NormType: L2Norm
-            Components: Individual
+  - - Slabs:
+        Specified:
+          Values: [30]
+    - - Completion
+  - - Slabs:
+        Specified:
+          Values: [0, 15]
+    - - ObserveFields:
+          SubfileName: VolumePsi0And25
+          VariablesToObserve: ["Psi"]
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeVarsConstraintsEvery10Slabs
+          VariablesToObserve:
+            - Psi
+            - Pi
+            - Phi
+            - PointwiseL2Norm(OneIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 10
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+            - Name: PointwiseL2Norm(OneIndexConstraint)
+              NormType: L2Norm
+              Components: Individual
+            - Name: PointwiseL2Norm(TwoIndexConstraint)
+              NormType: L2Norm
+              Components: Individual
 
 EventsAndDenseTriggers:
 

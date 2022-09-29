@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <pup.h>  // IWYU pragma: keep
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -37,8 +36,8 @@ class EventsAndTriggers {
   };
 
  public:
-  using Storage = std::unordered_map<std::unique_ptr<Trigger>,
-                                     std::vector<std::unique_ptr<Event>>>;
+  using Storage = std::vector<
+      std::pair<std::unique_ptr<Trigger>, std::vector<std::unique_ptr<Event>>>>;
 
   EventsAndTriggers() = default;
   explicit EventsAndTriggers(Storage events_and_triggers)

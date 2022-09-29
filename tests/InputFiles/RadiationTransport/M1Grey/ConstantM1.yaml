@@ -48,23 +48,23 @@ Limiter:
     DisableForDebugging: false
 
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 3
-        Offset: 5
-  : - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(TildeE_ElectronNeutrinos1)
-            NormType: L2Norm
-            Components: Sum
-          - Name: Error(TildeS_ElectronNeutrinos1)
-            NormType: L2Norm
-            Components: Sum
-  ? Slabs:
-      Specified:
-        Values: [10]
-  : - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 3
+          Offset: 5
+    - - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(TildeE_ElectronNeutrinos1)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(TildeS_ElectronNeutrinos1)
+              NormType: L2Norm
+              Components: Sum
+  - - Slabs:
+        Specified:
+          Values: [10]
+    - - Completion
 
 EventsAndDenseTriggers:
 

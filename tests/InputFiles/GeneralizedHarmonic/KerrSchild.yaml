@@ -103,66 +103,66 @@ SpatialDiscretization:
     Quadrature: GaussLobatto
 
 EventsAndTriggers:
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 2
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Errors
-        TensorsToObserve:
-          - Name: Error(SpacetimeMetric)
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Errors
+          TensorsToObserve:
+            - Name: Error(SpacetimeMetric)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Pi)
+              NormType: L2Norm
+              Components: Sum
+            - Name: Error(Phi)
+              NormType: L2Norm
+              Components: Sum
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 2
+          Offset: 0
+    - - ObserveNorms:
+          SubfileName: Norms
+          TensorsToObserve:
+          - Name: Lapse
+            NormType: L2Norm
+            Components: Individual
+          - Name: PointwiseL2Norm(GaugeConstraint)
             NormType: L2Norm
             Components: Sum
-          - Name: Error(Pi)
+          - Name: PointwiseL2Norm(ThreeIndexConstraint)
             NormType: L2Norm
             Components: Sum
-          - Name: Error(Phi)
+          - Name: PointwiseL2Norm(FourIndexConstraint)
             NormType: L2Norm
             Components: Sum
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 2
-        Offset: 0
-  : - ObserveNorms:
-        SubfileName: Norms
-        TensorsToObserve:
-        - Name: Lapse
-          NormType: L2Norm
-          Components: Individual
-        - Name: PointwiseL2Norm(GaugeConstraint)
-          NormType: L2Norm
-          Components: Sum
-        - Name: PointwiseL2Norm(ThreeIndexConstraint)
-          NormType: L2Norm
-          Components: Sum
-        - Name: PointwiseL2Norm(FourIndexConstraint)
-          NormType: L2Norm
-          Components: Sum
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 5
-        Offset: 0
-  : - ObserveFields:
-        SubfileName: VolumeData
-        VariablesToObserve:
-          - SpacetimeMetric
-          - Pi
-          - Phi
-          - PointwiseL2Norm(GaugeConstraint)
-          - PointwiseL2Norm(ThreeIndexConstraint)
-          - PointwiseL2Norm(FourIndexConstraint)
-        InterpolateToMesh: None
-        CoordinatesFloatingPointType: Double
-        FloatingPointTypes: [Double]
-  ? Slabs:
-      EvenlySpaced:
-        Interval: 5
-        Offset: 2
-  : - AhA
-  ? Slabs:
-      Specified:
-        Values: [3]
-  : - Completion
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 0
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - SpacetimeMetric
+            - Pi
+            - Phi
+            - PointwiseL2Norm(GaugeConstraint)
+            - PointwiseL2Norm(ThreeIndexConstraint)
+            - PointwiseL2Norm(FourIndexConstraint)
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+  - - Slabs:
+        EvenlySpaced:
+          Interval: 5
+          Offset: 2
+    - - AhA
+  - - Slabs:
+        Specified:
+          Values: [3]
+    - - Completion
 
 EventsAndDenseTriggers:
 
