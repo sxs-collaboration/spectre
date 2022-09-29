@@ -17,6 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedWaveHelpers.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -239,6 +240,14 @@ void test_derived_class(const Mesh<Dim>& mesh) {
           spacetime_normal_one_form, sqrt_det_spatial_metric,
           inverse_spatial_metric, spacetime_metric, pi, phi, time,
           inertial_coords);
+
+  // Used dispatch with defaulted arguments that we don't need for Analytic
+  // gauge.
+  GeneralizedHarmonic::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
+      spacetime_normal_one_form, sqrt_det_spatial_metric,
+      inverse_spatial_metric, spacetime_metric, pi, phi, mesh, time,
+      inertial_coords, {}, *gauge_condition);
 
   tnsr::a<DataVector, Dim, Frame::Inertial> expected_gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> expected_d4_gauge_h(num_points);

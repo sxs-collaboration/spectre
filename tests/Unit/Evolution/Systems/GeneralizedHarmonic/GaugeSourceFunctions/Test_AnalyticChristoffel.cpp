@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/AnalyticChristoffel.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/RegisterDerived.hpp"
 #include "Framework/TestCreation.hpp"
@@ -100,11 +101,12 @@ void test_gauge_wave(const Mesh<Dim>& mesh) {
 
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
-  dynamic_cast<const GeneralizedHarmonic::gauges::AnalyticChristoffel&>(
-      *gauge_condition)
-      .gauge_and_spacetime_derivative(make_not_null(&gauge_h),
-                                      make_not_null(&d4_gauge_h), mesh, time,
-                                      inertial_coords, inverse_jacobian);
+  // Used dispatch with defaulted arguments that we don't need for Analytic
+  // gauge.
+  GeneralizedHarmonic::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      *gauge_condition);
 
   CHECK_ITERABLE_APPROX(
       gauge_h, (tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0)));
@@ -135,11 +137,12 @@ void test_ks(const Mesh<3>& mesh) {
 
   tnsr::a<DataVector, 3, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, 3, Frame::Inertial> d4_gauge_h(num_points);
-  dynamic_cast<const GeneralizedHarmonic::gauges::AnalyticChristoffel&>(
-      *gauge_condition)
-      .gauge_and_spacetime_derivative(make_not_null(&gauge_h),
-                                      make_not_null(&d4_gauge_h), mesh, time,
-                                      inertial_coords, inverse_jacobian);
+  // Used dispatch with defaulted arguments that we don't need for Analytic
+  // gauge.
+  GeneralizedHarmonic::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      *gauge_condition);
 
   const GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
       kerr_schild{1.2, {0.1, 0.2, 0.3}, {-0.1, -0.2, -0.4}};
