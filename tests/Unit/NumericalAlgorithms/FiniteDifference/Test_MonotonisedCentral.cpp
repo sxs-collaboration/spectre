@@ -12,6 +12,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/NumericalAlgorithms/FiniteDifference/Exact.hpp"
 #include "Helpers/NumericalAlgorithms/FiniteDifference/Python.hpp"
+#include "Helpers/NumericalAlgorithms/FiniteDifference/Roundoff.hpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 
 namespace {
@@ -56,6 +57,9 @@ void test() {
   TestHelpers::fd::reconstruction::test_with_python(
       Index<Dim>{4}, 3, "MonotonisedCentral", "test_monotonised_central",
       recons, recons_neighbor_data);
+  if constexpr (Dim == 1) {
+    TestHelpers::fd::reconstruction::test_positivity_with_roundoff(3, recons);
+  }
 }
 }  // namespace
 
