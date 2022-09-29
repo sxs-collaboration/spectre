@@ -104,7 +104,7 @@ class TaggedTupleLeaf;
 template <class T, bool B>
 void swap(TaggedTupleLeaf<T, B>& lhs, TaggedTupleLeaf<T, B>& rhs) {
   using std::swap;
-  swap(lhs.get(), rhs.get());
+  swap(lhs.get_data(), rhs.get_data());
 }
 
 template <class Tag>
@@ -159,12 +159,13 @@ class TaggedTupleLeaf<Tag, false> {
 
   ~TaggedTupleLeaf() = default;
 
+  // Note: name get_data instead of get to enable structured binding support.
 #if __cplusplus < 201402L
-  value_type& get() { return value_; }
+  value_type& get_data() { return value_; }
 #else
-  constexpr value_type& get() { return value_; }
+  constexpr value_type& get_data() { return value_; }
 #endif
-  constexpr const value_type& get() const { return value_; }
+  constexpr const value_type& get_data() const { return value_; }
 
   bool swap(TaggedTupleLeaf& t) {
     using std::swap;
@@ -199,13 +200,14 @@ class TaggedTupleLeaf<Tag, true> : private Tag::type {
 
   ~TaggedTupleLeaf() = default;
 
+  // Note: name get_data instead of get to enable structured binding support.
 #if __cplusplus < 201402L
-  value_type& get() { return static_cast<value_type&>(*this); }
+  value_type& get_data() { return static_cast<value_type&>(*this); }
 #else
-  constexpr value_type& get() { return static_cast<value_type&>(*this); }
+  constexpr value_type& get_data() { return static_cast<value_type&>(*this); }
 #endif
 
-  constexpr const value_type& get() const {
+  constexpr const value_type& get_data() const {
     return static_cast<const value_type&>(*this);
   }
 
@@ -481,7 +483,7 @@ inline constexpr const typename Tag::type& get(const TaggedTuple<Tags...>& t) {
                 "template parameter of the instantiation for what Tag is being "
                 "retrieved and the remaining template parameters for what Tags "
                 "are available.");
-  return static_cast<const tuples_detail::TaggedTupleLeaf<Tag>&>(t).get();
+  return static_cast<const tuples_detail::TaggedTupleLeaf<Tag>&>(t).get_data();
 }
 template <class Tag, class... Tags>
 inline constexpr typename Tag::type& get(TaggedTuple<Tags...>& t) {
@@ -491,7 +493,7 @@ inline constexpr typename Tag::type& get(TaggedTuple<Tags...>& t) {
                 "template parameter of the instantiation for what Tag is being "
                 "retrieved and the remaining template parameters for what Tags "
                 "are available.");
-  return static_cast<tuples_detail::TaggedTupleLeaf<Tag>&>(t).get();
+  return static_cast<tuples_detail::TaggedTupleLeaf<Tag>&>(t).get_data();
 }
 template <class Tag, class... Tags>
 inline constexpr const typename Tag::type&& get(
@@ -503,7 +505,7 @@ inline constexpr const typename Tag::type&& get(
                 "retrieved and the remaining template parameters for what Tags "
                 "are available.");
   return static_cast<const typename Tag::type&&>(
-      static_cast<const tuples_detail::TaggedTupleLeaf<Tag>&&>(t).get());
+      static_cast<const tuples_detail::TaggedTupleLeaf<Tag>&&>(t).get_data());
 }
 template <class Tag, class... Tags>
 inline constexpr typename Tag::type&& get(TaggedTuple<Tags...>&& t) {
@@ -514,9 +516,27 @@ inline constexpr typename Tag::type&& get(TaggedTuple<Tags...>&& t) {
                 "retrieved and the remaining template parameters for what Tags "
                 "are available.");
   return static_cast<typename Tag::type&&>(
-      static_cast<tuples_detail::TaggedTupleLeaf<Tag>&&>(t).get());
+      static_cast<tuples_detail::TaggedTupleLeaf<Tag>&&>(t).get_data());
 }
 /// @}
+
+template <size_t I, class... Tags>
+inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type&& get(
+    TaggedTuple<Tags...>&& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
+
+template <size_t I, class... Tags>
+inline constexpr const typename tmpl::at_c<tmpl::list<Tags...>, I>::type& get(
+    const TaggedTuple<Tags...>& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
+
+template <size_t I, class... Tags>
+inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type& get(
+    TaggedTuple<Tags...>& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
 
 // C++17 Draft 23.5.3.8 Relational operators
 namespace tuples_detail {
@@ -746,3 +766,13 @@ constexpr decltype(auto) apply(F&& f, const TaggedTuple<Tags...>& t) {
 /// @}
 
 }  // namespace tuples
+
+namespace std {
+template <typename... Tags>
+struct tuple_size<tuples::TaggedTuple<Tags...>>
+    : std::integral_constant<int, sizeof...(Tags)> {};
+template <size_t I, typename... Tags>
+struct tuple_element<I, tuples::TaggedTuple<Tags...>> {
+  using type = typename tmpl::at_c<tmpl::list<Tags...>, I>::type;
+};
+}  // namespace std

@@ -59,13 +59,31 @@ double test_function(const int first_arg, const double second_arg) {
   return static_cast<double>(first_arg) + second_arg;
 }
 // [expand_tuple_example_function]
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
+void test_general() {
   // [construction_example]
   tuples::TaggedTuple<name, age, email, parents, not_streamable_tag> test(
       "bla", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
   // [construction_example]
+  {
+    // Test structured bindings
+    const auto& [name_v, age_v, email_v, parents_v, not_streamable_tag_v] =
+        test;
+    CHECK(name_v == get<name>(test));
+    CHECK(age_v == get<age>(test));
+    CHECK(email_v == get<email>(test));
+    CHECK(parents_v == get<parents>(test));
+    CHECK(not_streamable_tag_v == get<not_streamable_tag>(test));
+  }
+  {
+    // Test structured bindings
+    auto& [name_v, age_v, email_v, parents_v, not_streamable_tag_v] = test;
+    CHECK(name_v == get<name>(test));
+    CHECK(age_v == get<age>(test));
+    CHECK(email_v == get<email>(test));
+    CHECK(parents_v == get<parents>(test));
+    CHECK(not_streamable_tag_v == get<not_streamable_tag>(test));
+  }
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
@@ -142,8 +160,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   }
 }
 
-namespace {
-
 int global_of_no_default = 0;
 int global_time_mock = 0;
 
@@ -188,7 +204,6 @@ struct Short0 {
 };
 }  // namespace tags
 
-namespace {
 template <class Tuple, class... Value>
 Tuple test_impl(Value&&... value) {
   Tuple tuple(std::forward<Value>(value)...);
@@ -206,9 +221,8 @@ void check_get(Tuple& t, Values&&... values) {
   CHECK(tuples::get<Tag>(static_cast<const Tuple&&>(t)) ==
         typename Tag::type{values...});
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NoTag", "[Unit][Utilities]") {
+void test_no_tag() {
   tuples::TaggedTuple<> dummy;
   tuples::TaggedTuple<> dummy1;
   dummy.swap(dummy1);
@@ -217,7 +231,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NoTag", "[Unit][Utilities]") {
   CHECK(true);
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTag", "[Unit][Utilities]") {
+void test_single_tag() {
   const int i = 0;
   {
     auto t = test_impl<tuples::TaggedTuple<tags::Int>>(1);
@@ -260,7 +274,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTag", "[Unit][Utilities]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.Ebo", "[Unit][Utilities]") {
+void test_ebo() {
   const int i = 1;
   test_impl<tuples::TaggedTuple<tags::no_default>>(i);
   CHECK(global_of_no_default == 1);
@@ -296,8 +310,7 @@ struct non_copyable {
 };
 }  // namespace tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.construction",
-                  "[Unit][Utilities]") {
+void test_construction() {
   {
     // Test copy and move constructors
     tuples::TaggedTuple<tags::Int, tags::Short0> t0{2, 9};
@@ -342,8 +355,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.construction",
 }
 
 // C++17 Draft 23.5.3.2 Assignment
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.assignment",
-                  "[Unit][Utilities]") {
+void test_assignment() {
   {
     // Assignment from same type of TaggedTuple
     tuples::TaggedTuple<tags::Int, tags::Short0> t0{2, 9};
@@ -466,8 +478,7 @@ struct TimedCompare13 {
 };
 }  // namespace relational_tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.equivalence",
-                  "[Unit][Utilities]") {
+void test_equivalence() {
   {
     constexpr tuples::TaggedTuple<relational_tags::Int0, relational_tags::Int1,
                                   relational_tags::Int2>
@@ -642,8 +653,7 @@ struct LexTimeComp13 {
 };
 }  // namespace relational_tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.relational",
-                  "[Unit][Utilities]") {
+void test_relational() {
   {
     // Check lexicographical comparison
     tuples::TaggedTuple<relational_tags::Char0, relational_tags::Char1,
@@ -855,7 +865,7 @@ struct EmptyBaseThrowsSwap1 {
 };
 }  // namespace swap_tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.swap", "[Unit][Utilities]") {
+void test_swap() {
   {
     tuples::TaggedTuple<> t0{};
     tuples::TaggedTuple<> t1{};
@@ -914,8 +924,7 @@ struct NonCopyable1 {
 };
 }  // namespace tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.NonCopyable",
-                  "[Unit][Utilities]") {
+void test_noncopyable() {
   std::vector<std::unique_ptr<int>> a{};
   a.reserve(2);
   a.emplace_back(std::make_unique<int>(1));
@@ -935,8 +944,7 @@ struct Copyable1 {
 };
 }  // namespace tags
 
-SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTagConstructor",
-                  "[Unit][Utilities]") {
+void test_single_tag_constructor() {
   {
     std::vector<std::unique_ptr<int>> a{};
     a.reserve(2);
@@ -961,3 +969,18 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple.SingleTagConstructor",
   }
 }
 }  // namespace
+
+
+SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
+  test_general();
+  test_no_tag();
+  test_single_tag();
+  test_ebo();
+  test_construction();
+  test_assignment();
+  test_equivalence();
+  test_relational();
+  test_swap();
+  test_noncopyable();
+  test_single_tag_constructor();
+}
