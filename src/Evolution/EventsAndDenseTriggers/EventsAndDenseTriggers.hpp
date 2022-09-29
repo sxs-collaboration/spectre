@@ -238,7 +238,9 @@ void EventsAndDenseTriggers::run_events(
                 std::numeric_limits<double>::signaling_NaN();
           });
     }
-    trigger_entry.is_triggered.reset();
+    // Mark this trigger as handled so we will not reprocess it if
+    // this method or is_ready is called again.
+    trigger_entry.is_triggered = false;
   }
 }
 
@@ -266,6 +268,7 @@ bool EventsAndDenseTriggers::reschedule(
     if (before_(trigger_entry.next_check, new_next_check)) {
       new_next_check = trigger_entry.next_check;
     }
+    trigger_entry.is_triggered.reset();
   }
 
   next_check_ = new_next_check;
