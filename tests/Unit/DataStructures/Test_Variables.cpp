@@ -125,6 +125,24 @@ void test_variables_construction_and_access() {
   CHECK(VectorType{number_of_grid_points, initial_fill_value} ==
         get<2>(tensor_in_filled_variables));
 
+  {
+    // Test structured bindings
+    const auto& [vector, scalar1, scalar2] = filled_variables;
+    CHECK(get(scalar1).data() ==
+          get(get<TestHelpers::Tags::Scalar<VectorType>>(filled_variables))
+              .data());
+    CHECK(get(scalar2).data() ==
+          get(get<TestHelpers::Tags::Scalar2<VectorType>>(filled_variables))
+              .data());
+    for (size_t i = 0; i < 3; ++i) {
+      CAPTURE(i);
+      CHECK(vector.get(i).data() ==
+            get<TestHelpers::Tags::Vector<VectorType>>(filled_variables)
+                .get(i)
+                .data());
+    }
+  }
+
   const auto value_for_reference_assignment =
       make_with_random_values<value_type>(make_not_null(&gen),
                                           make_not_null(&dist));
