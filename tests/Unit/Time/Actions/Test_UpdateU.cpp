@@ -83,18 +83,20 @@ using component_with_template_specified_variables =
     Component<Metavariables,
               tmpl::list<alternative_variables_tag, alternative_history_tag>,
               Actions::UpdateU<AlternativeVar>>;
+using component_with_stepper_error = Component<
+    Metavariables,
+    tmpl::list<variables_tag, history_tag, Tags::StepperError<variables_tag>,
+               Tags::StepperErrorUpdated>,
+    Actions::UpdateU<>>;
 
 struct Metavariables {
   using system = System;
-  using component_list =
-      tmpl::list<component_with_default_variables,
-                 component_with_template_specified_variables>;
+  using component_list = tmpl::list<component_with_default_variables,
+                                    component_with_template_specified_variables,
+                                    component_with_stepper_error>;
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
-
+void test_integration() {
   const Slab slab(1., 3.);
   const TimeDelta time_step = slab.duration() / 2;
 
@@ -164,4 +166,65 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
     CHECK(db::get<alternative_variables_tag>(alternative_box) ==
           approx(gsl::at(expected_values, substep)));
   }
+}
+
+void test_stepper_error() {
+  const Slab slab(1., 3.);
+  const TimeDelta time_step = slab.duration() / 2;
+
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  ActionTesting::emplace_component_and_initialize<component_with_stepper_error>(
+      &runner, 0, {time_step, true, 1., history_tag::type{3}, 0., false});
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
+  const std::array<TimeDelta, 3> substep_offsets{
+      {0 * slab.duration(), time_step, time_step / 2}};
+
+  auto& box = ActionTesting::get_databox<component_with_stepper_error>(
+      make_not_null(&runner), 0);
+  const auto do_substep = [&box, &runner, &substep_offsets](
+                              const Time& step_start, const size_t substep) {
+    db::mutate<history_tag>(
+        make_not_null(&box),
+        [&step_start, &substep, &substep_offsets](
+            const gsl::not_null<typename history_tag::type*> history,
+            const double vars) {
+          const Time time = step_start + gsl::at(substep_offsets, substep);
+          history->insert(TimeStepId(true, 0, step_start, substep, time), vars);
+        },
+        db::get<variables_tag>(box));
+
+    runner.next_action<component_with_stepper_error>(0);
+  };
+
+  do_substep(slab.start(), 0);
+  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) == 0.);
+  do_substep(slab.start(), 1);
+  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) == 0.);
+  do_substep(slab.start(), 2);
+  CHECK(db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) != 0.);
+
+  const auto first_step_error = db::get<Tags::StepperError<variables_tag>>(box);
+  const auto second_step = slab.start() + time_step;
+  do_substep(second_step, 0);
+  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) == first_step_error);
+  do_substep(second_step, 1);
+  CHECK(not db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) == first_step_error);
+  do_substep(second_step, 2);
+  CHECK(db::get<Tags::StepperErrorUpdated>(box));
+  CHECK(db::get<Tags::StepperError<variables_tag>>(box) != first_step_error);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
+  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
+
+  test_integration();
+  test_stepper_error();
 }
