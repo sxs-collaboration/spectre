@@ -88,6 +88,12 @@ add_grmhd_executable(
   )
 
 add_grmhd_executable(
+  CcsnCollapse
+  grmhd::AnalyticData::CcsnCollapse
+  "${LIBS_TO_LINK}"
+  )
+
+add_grmhd_executable(
   KhInstability
   grmhd::AnalyticData::KhInstability
   "${LIBS_TO_LINK}"
