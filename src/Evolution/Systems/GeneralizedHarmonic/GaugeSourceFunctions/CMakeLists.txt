@@ -14,6 +14,7 @@ spectre_target_sources(
   Harmonic.cpp
   InitializeDampedHarmonic.cpp
   RegisterDerived.cpp
+  SetPiFromGauge.cpp
   )
 
 spectre_target_headers(
@@ -31,6 +32,7 @@ spectre_target_headers(
   Harmonic.hpp
   InitializeDampedHarmonic.hpp
   RegisterDerived.hpp
+  SetPiFromGauge.hpp
   )
 
 add_subdirectory(Tags)
