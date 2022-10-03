@@ -27,15 +27,21 @@ struct MonotonisedCentralReconstructor {
   SPECTRE_ALWAYS_INLINE static std::array<double, 2> pointwise(
       const double* const q, const int stride) {
     using std::abs;
-    using std::min;
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+
     const double a = q[stride] - q[0];
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     const double b = q[0] - q[-stride];
-    const double slope = 0.5 * (sgn(a) + sgn(b)) *
-                         min(0.5 * abs(a + b), 2.0 * min(abs(a), abs(b)));
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    return {{q[0] - 0.5 * slope, q[0] + 0.5 * slope}};
+
+    if (sgn(a) != sgn(b)) {
+      return {{q[0], q[0]}};
+    }
+    if (3.0 * abs(a) <= abs(b)) {
+      return {{q[0] - a, q[stride]}};
+    } else if (3.0 * abs(b) <= abs(a)) {
+      return {{q[-stride], q[0] + b}};
+    } else {
+      const double slope = 0.5 * (q[stride] - q[-stride]);
+      return {{q[0] - 0.5 * slope, q[0] + 0.5 * slope}};
+    }
   }
 
   SPECTRE_ALWAYS_INLINE static constexpr size_t stencil_width() { return 3; }
