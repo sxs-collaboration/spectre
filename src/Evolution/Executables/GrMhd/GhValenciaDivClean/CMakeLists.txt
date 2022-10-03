@@ -28,8 +28,7 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   GeneralRelativitySolutions
-  GeneralizedHarmonicGaugeSourceFunctions
-  GhConstraintDamping
+  GeneralizedHarmonic
   GhGrMhdAnalyticData
   GhGrMhdSolutions
   GhRelativisticEulerSolutions

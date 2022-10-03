@@ -20,7 +20,7 @@ target_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
-  GhConstraintDamping
+  GeneralizedHarmonic
   GhConstraintDampingHelpers
   Parallel
   Utilities

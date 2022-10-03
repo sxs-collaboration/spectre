@@ -26,7 +26,6 @@ target_link_libraries(
   FunctionsOfTime
   GeneralRelativity
   GeneralizedHarmonic
-  GeneralizedHarmonicGaugeSourceFunctions
   LinearOperators
   Options
   Parallel
