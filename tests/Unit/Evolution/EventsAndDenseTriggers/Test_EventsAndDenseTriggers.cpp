@@ -219,9 +219,19 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   CHECK(not events_and_dense_triggers.reschedule(box, cache, array_index,
                                                  component));
   set_tag(TriggerA::NextCheck{}, 2.0 * time_sign);
+  CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
+  CHECK(events_and_dense_triggers.is_ready(
+            box, cache, array_index, component) == TriggeringState::Ready);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
   CHECK(not events_and_dense_triggers.reschedule(box, cache, array_index,
                                                  component));
   set_tag(TriggerB::NextCheck{}, 3.0 * time_sign);
+  CHECK(events_and_dense_triggers.next_trigger(box) == -1.0 * time_sign);
+  CHECK(events_and_dense_triggers.is_ready(
+            box, cache, array_index, component) == TriggeringState::Ready);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
   CHECK(
       events_and_dense_triggers.reschedule(box, cache, array_index, component));
   CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
@@ -232,7 +242,7 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
   set_tag(TriggerA::IsTriggered{}, true);
-  set_tag(TriggerA::NextCheck{}, 3.0 * time_sign);
+  set_tag(TriggerA::NextCheck{}, std::nullopt);
   CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
   CHECK(events_and_dense_triggers.is_ready(
             box, cache, array_index, component) == TriggeringState::NotReady);
@@ -246,7 +256,19 @@ void do_test(const bool time_runs_forward, const bool add_event) {
   check_events(false, false, false);
   CHECK(EventA::time_during_event == 2.0 * time_sign);
   CHECK(EventA::previous_time_during_event == std::nullopt);
-
+  CHECK(not events_and_dense_triggers.reschedule(box, cache, array_index,
+                                                 component));
+  CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
+  CHECK(events_and_dense_triggers.is_ready(
+            box, cache, array_index, component) == TriggeringState::Ready);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
+  set_tag(TriggerA::NextCheck{}, 3.0 * time_sign);
+  CHECK(events_and_dense_triggers.next_trigger(box) == 2.0 * time_sign);
+  CHECK(events_and_dense_triggers.is_ready(
+            box, cache, array_index, component) == TriggeringState::Ready);
+  events_and_dense_triggers.run_events(box, cache, array_index, component);
+  check_events(false, false, false);
   CHECK(
       events_and_dense_triggers.reschedule(box, cache, array_index, component));
   set_tag(TriggerA::NextCheck{}, 4.0 * time_sign);
