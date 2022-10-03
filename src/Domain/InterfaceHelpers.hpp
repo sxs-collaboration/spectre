@@ -191,19 +191,17 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
                           VolumeTagsList> {
   static constexpr size_t volume_dim = DirectionsTag::volume_dim;
 
-  template <typename InterfaceInvokable, typename DbTagsList,
-            typename... ExtraArgs,
-            Requires<is_apply_callable_v<
-                InterfaceInvokable,
-                db::detail::const_item_type<ArgumentTags, DbTagsList>...,
-                ExtraArgs...>> = nullptr>
+  template <
+      typename InterfaceInvokable, typename DbTagsList, typename... ExtraArgs,
+      Requires<is_apply_callable_v<
+          InterfaceInvokable, db::const_item_type<ArgumentTags, DbTagsList>...,
+          ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
                               ExtraArgs&&... extra_args) {
     using interface_return_type =
         std::decay_t<decltype(InterfaceInvokable::apply(
-            std::declval<
-                db::detail::const_item_type<ArgumentTags, DbTagsList>>()...,
+            std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
             std::declval<ExtraArgs&&>()...))>;
     return DispatchInterfaceInvokable<true, interface_return_type,
                                       DirectionsTag, VolumeTagsList,
@@ -212,18 +210,16 @@ struct InterfaceApplyImpl<DirectionsTag, tmpl::list<ArgumentTags...>,
               std::forward<ExtraArgs>(extra_args)...);
   }
 
-  template <typename InterfaceInvokable, typename DbTagsList,
-            typename... ExtraArgs,
-            Requires<not is_apply_callable_v<
-                InterfaceInvokable,
-                db::detail::const_item_type<ArgumentTags, DbTagsList>...,
-                ExtraArgs...>> = nullptr>
+  template <
+      typename InterfaceInvokable, typename DbTagsList, typename... ExtraArgs,
+      Requires<not is_apply_callable_v<
+          InterfaceInvokable, db::const_item_type<ArgumentTags, DbTagsList>...,
+          ExtraArgs...>> = nullptr>
   static constexpr auto apply(InterfaceInvokable&& interface_invokable,
                               const db::DataBox<DbTagsList>& box,
                               ExtraArgs&&... extra_args) {
     using interface_return_type = std::decay_t<decltype(interface_invokable(
-        std::declval<
-            db::detail::const_item_type<ArgumentTags, DbTagsList>>()...,
+        std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
         std::declval<ExtraArgs&&>()...))>;
     return DispatchInterfaceInvokable<false, interface_return_type,
                                       DirectionsTag, VolumeTagsList,

@@ -372,63 +372,61 @@ void test_databox() {
         std::make_unique<int>(3));
     using DbTags = decltype(box)::tags_list;
     static_assert(
-        std::is_same_v<
-            db::detail::const_item_type<test_databox_tags::Pointer, DbTags>,
-            const int&>,
+        std::is_same_v<db::const_item_type<test_databox_tags::Pointer, DbTags>,
+                       const int&>,
         "Wrong type for const_item_type on unique_ptr simple item");
     static_assert(
-        std::is_same_v<
-            decltype(db::get<test_databox_tags::Pointer>(box)),
-            db::detail::const_item_type<test_databox_tags::Pointer, DbTags>>,
+        std::is_same_v<decltype(db::get<test_databox_tags::Pointer>(box)),
+                       db::const_item_type<test_databox_tags::Pointer, DbTags>>,
         "Wrong type for get on unique_ptr simple item");
     CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
 
     static_assert(
         std::is_same_v<
-            db::detail::const_item_type<test_databox_tags::PointerBase, DbTags>,
+            db::const_item_type<test_databox_tags::PointerBase, DbTags>,
             const int&>,
         "Wrong type for const_item_type on unique_ptr simple item by base");
     static_assert(
-        std::is_same_v<decltype(db::get<test_databox_tags::PointerBase>(box)),
-                       db::detail::const_item_type<
-                           test_databox_tags::PointerBase, DbTags>>,
+        std::is_same_v<
+            decltype(db::get<test_databox_tags::PointerBase>(box)),
+            db::const_item_type<test_databox_tags::PointerBase, DbTags>>,
         "Wrong type for get on unique_ptr simple item by base");
     CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
 
     static_assert(
-        std::is_same_v<db::detail::const_item_type<
-                           test_databox_tags::PointerToCounter, DbTags>,
-                       const int&>,
+        std::is_same_v<
+            db::const_item_type<test_databox_tags::PointerToCounter, DbTags>,
+            const int&>,
         "Wrong type for const_item_type on unique_ptr compute item");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::PointerToCounter>(box)),
-            db::detail::const_item_type<test_databox_tags::PointerToCounter,
-                                        DbTags>>,
+            db::const_item_type<test_databox_tags::PointerToCounter, DbTags>>,
         "Wrong type for get on unique_ptr compute item");
     CHECK(db::get<test_databox_tags::PointerToCounter>(box) == 4);
 
     static_assert(
-        std::is_same_v<db::detail::const_item_type<
+        std::is_same_v<db::const_item_type<
                            test_databox_tags::PointerToCounterBase, DbTags>,
                        const int&>,
         "Wrong type for const_item_type on unique_ptr compute item by base");
     static_assert(
         std::is_same_v<
             decltype(db::get<test_databox_tags::PointerToCounterBase>(box)),
-            db::detail::const_item_type<test_databox_tags::PointerToCounterBase,
-                                        DbTags>>,
+            db::const_item_type<test_databox_tags::PointerToCounterBase,
+                                DbTags>>,
         "Wrong type for get on unique_ptr compute item by base");
     CHECK(db::get<test_databox_tags::PointerToCounterBase>(box) == 4);
 
-    static_assert(std::is_same_v<db::detail::const_item_type<
-                                     test_databox_tags::PointerToSum, DbTags>,
-                                 const int&>,
-                  "Wrong type for const_item_type on unique_ptr");
     static_assert(
-        std::is_same_v<decltype(db::get<test_databox_tags::PointerToSum>(box)),
-                       db::detail::const_item_type<
-                           test_databox_tags::PointerToSum, DbTags>>,
+        std::is_same_v<
+            db::const_item_type<test_databox_tags::PointerToSum, DbTags>,
+            const int&>,
+        "Wrong type for const_item_type on unique_ptr");
+    static_assert(
+        std::is_same_v<
+            decltype(db::get<test_databox_tags::PointerToSum>(box)),
+            db::const_item_type<test_databox_tags::PointerToSum, DbTags>>,
         "Wrong type for get on unique_ptr");
     CHECK(db::get<test_databox_tags::PointerToSum>(box) == 8);
   }
