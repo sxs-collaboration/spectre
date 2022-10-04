@@ -107,10 +107,11 @@ EventsAndDenseTriggers:
 # is actually computed in SpEC.
 EvolutionSystem:
   GeneralizedHarmonic:
-    DhGaugeParameters:
-      SpatialDecayWidth: 17.0152695482514  # From SpEC run: 100.0 / sqrt(34.54)
-      Amplitudes: [1.0, 1.0, 1.0]          # From SpEC run: damped harmonic
-      Exponents: [2, 2, 2]                 # From SpEC run
+    GaugeCondition:
+      DampedHarmonic:
+        SpatialDecayWidth: 17.0152695482514 # From SpEC run: 100.0 / sqrt(34.54)
+        Amplitudes: [1.0, 1.0, 1.0]         # From SpEC run: damped harmonic
+        Exponents: [2, 2, 2]                # From SpEC run
     DampingFunctionGamma0:
       TimeDependentTripleGaussian:
         Constant: 0.001             # 0.001 / (m_A + m_B)

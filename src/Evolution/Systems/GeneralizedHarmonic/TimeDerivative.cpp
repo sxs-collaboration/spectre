@@ -9,6 +9,8 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -31,9 +33,9 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> temp_gamma1,
     const gsl::not_null<Scalar<DataVector>*> temp_gamma2,
-    const gsl::not_null<tnsr::a<DataVector, Dim>*> temp_gauge_function,
+    const gsl::not_null<tnsr::a<DataVector, Dim>*> gauge_function,
     const gsl::not_null<tnsr::ab<DataVector, Dim>*>
-        temp_spacetime_deriv_gauge_function,
+        spacetime_deriv_gauge_function,
     const gsl::not_null<Scalar<DataVector>*> gamma1gamma2,
     const gsl::not_null<Scalar<DataVector>*> half_pi_two_normals,
     const gsl::not_null<Scalar<DataVector>*> normal_dot_gauge_constraint,
@@ -57,6 +59,7 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::ii<DataVector, Dim>*> spatial_metric,
     const gsl::not_null<tnsr::II<DataVector, Dim>*> inverse_spatial_metric,
     const gsl::not_null<Scalar<DataVector>*> det_spatial_metric,
+    const gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
     const gsl::not_null<tnsr::AA<DataVector, Dim>*> inverse_spacetime_metric,
     const gsl::not_null<tnsr::abb<DataVector, Dim>*> christoffel_first_kind,
     const gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
@@ -71,16 +74,16 @@ void TimeDerivative<Dim>::apply(
     const tnsr::aa<DataVector, Dim>& pi, const tnsr::iaa<DataVector, Dim>& phi,
     const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2,
-    const tnsr::a<DataVector, Dim>& gauge_function,
-    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
+    const gauges::GaugeCondition& gauge_condition, const Mesh<Dim>& mesh,
+    double time,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          Frame::Inertial>& inverse_jacobian,
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         mesh_velocity) {
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
-  // Need gauge function on external faces for gauge-constraint preservation
-  *temp_gauge_function = gauge_function;
-  *temp_spacetime_deriv_gauge_function = spacetime_deriv_gauge_function;
 
   gr::spatial_metric(spatial_metric, spacetime_metric);
   determinant_and_inverse(det_spatial_metric, inverse_spatial_metric,
@@ -222,11 +225,20 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
+  // Compute gauge condition.
+  get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
+
+  gauges::dispatch<Dim>(gauge_function, spacetime_deriv_gauge_function, *lapse,
+                        *shift, *normal_spacetime_one_form,
+                        *sqrt_det_spatial_metric, *inverse_spatial_metric,
+                        spacetime_metric, pi, phi, mesh, time, inertial_coords,
+                        inverse_jacobian, gauge_condition);
+
   // Compute source function last so that we don't need to recompute any of the
   // other temporary tags.
   for (size_t nu = 0; nu < Dim + 1; ++nu) {
     gauge_constraint->get(nu) =
-        gauge_function.get(nu) + trace_christoffel->get(nu);
+        gauge_function->get(nu) + trace_christoffel->get(nu);
   }
 
   get(*normal_dot_gauge_constraint) =
@@ -258,8 +270,8 @@ void TimeDerivative<Dim>::apply(
   for (size_t mu = 0; mu < Dim + 1; ++mu) {
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       dt_pi->get(mu, nu) =
-          -spacetime_deriv_gauge_function.get(mu, nu) -
-          spacetime_deriv_gauge_function.get(nu, mu) -
+          -spacetime_deriv_gauge_function->get(mu, nu) -
+          spacetime_deriv_gauge_function->get(nu, mu) -
           get(*half_pi_two_normals) * pi.get(mu, nu) +
           get(gamma0) *
               (normal_spacetime_one_form->get(mu) * gauge_constraint->get(nu) +
@@ -269,7 +281,7 @@ void TimeDerivative<Dim>::apply(
 
       for (size_t delta = 0; delta < Dim + 1; ++delta) {
         dt_pi->get(mu, nu) += 2 * christoffel_second_kind->get(delta, mu, nu) *
-                                  gauge_function.get(delta) -
+                                  gauge_function->get(delta) -
                               2 * pi.get(mu, delta) * pi_2_up->get(nu, delta);
 
         for (size_t n = 0; n < Dim; ++n) {

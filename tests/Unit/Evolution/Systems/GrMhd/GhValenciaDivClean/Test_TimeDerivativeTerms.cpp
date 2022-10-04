@@ -4,11 +4,14 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <cstddef>
+#include <memory>
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
@@ -19,6 +22,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits/IsA.hpp"
 
 namespace {
 template <typename ComputeVolumeTimeDerivativeTerms, size_t Dim,
@@ -46,8 +50,14 @@ struct ComputeVolumeTimeDerivativeTermsHelper<
         make_not_null(&get<::Tags::dt<EvolvedTags>>(*dt_vars_ptr))...,
         make_not_null(&get<FluxTags>(*volume_fluxes))...,
         make_not_null(&get<TempTags>(*temporaries))...,
-        get<GradientTags>(partial_derivs)...,
-        tuples::get<ArgTags>(time_derivative_args)...);
+        get<GradientTags>(partial_derivs)..., [](const auto& t) -> const auto& {
+          if constexpr (tt::is_a_v<std::unique_ptr,
+                                   std::decay_t<decltype(t)>>) {
+            return *t;
+          } else {
+            return t;
+          }
+        }(tuples::get<ArgTags>(time_derivative_args))...);
   }
 };
 }  // namespace
@@ -140,13 +150,16 @@ SPECTRE_TEST_CASE(
               typename tnsr::I<DataVector, 3, Frame::Inertial>>(
               make_not_null(&gen), make_not_null(&dist),
               DataVector{element_size});
-        } else {
+        } else if constexpr (tt::is_a_v<Tensor, typename tag::type>) {
           tuples::get<tag>(arg_variables) =
               make_with_random_values<typename tag::type>(
                   make_not_null(&gen), make_not_null(&dist),
                   DataVector{element_size});
         }
       });
+  get<GeneralizedHarmonic::gauges::Tags::GaugeCondition>(arg_variables) =
+      std::make_unique<GeneralizedHarmonic::gauges::DampedHarmonic>(
+          100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6});
 
   // ensure that the signature of the metric is correct
   {

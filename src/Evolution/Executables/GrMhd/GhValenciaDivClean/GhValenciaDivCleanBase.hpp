@@ -39,7 +39,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -83,6 +86,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
@@ -206,22 +210,16 @@ struct GhValenciaDivCleanDefaults {
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;
 
-  using initialize_initial_data_dependent_quantities_actions = tmpl::list<
-      GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-          volume_dim, use_damped_harmonic_rollon>,
-      // ND: We add the gauge constraint computation separately because when
-      // doing DG-FD observing derivatives is  not possible anymore and so the
-      // 3-index constraint can't be monitored. We will need to revamp the way
-      // we do observing for DG-FD to be able to observe more quantities.
-      Initialization::Actions::AddComputeTags<
-          tmpl::list<GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-                         volume_dim, Frame::Inertial>,
-                     ::Tags::PointwiseL2NormCompute<
-                         GeneralizedHarmonic::Tags::GaugeConstraint<
-                             volume_dim, Frame::Inertial>>>>,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<volume_dim>>,
-      Actions::UpdateConservatives, Parallel::Actions::TerminatePhase>;
+  using initialize_initial_data_dependent_quantities_actions =
+      tmpl::list<Actions::MutateApply<
+                     GeneralizedHarmonic::gauges::SetPiFromGauge<volume_dim>>,
+                 Initialization::Actions::AddComputeTags<
+                     tmpl::list<gr::Tags::SqrtDetSpatialMetricCompute<
+                         volume_dim, domain_frame, DataVector>>>,
+                 VariableFixing::Actions::FixVariables<
+                     VariableFixing::FixToAtmosphere<volume_dim>>,
+                 Actions::UpdateConservatives,
+                 Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
@@ -293,14 +291,31 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::append<typename system::variables_tag::tags_list,
                    typename system::primitive_variables_tag::tags_list,
                    error_tags,
-                   tmpl::list<::Tags::PointwiseL2Norm<
-                       GeneralizedHarmonic::Tags::GaugeConstraint<
-                           volume_dim, domain_frame>>>>,
+                   tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
+                                  volume_dim, domain_frame, DataVector>,
+                              gr::Tags::SpacetimeNormalVectorCompute<
+                                  volume_dim, domain_frame, DataVector>,
+                              gr::Tags::InverseSpacetimeMetricCompute<
+                                  volume_dim, domain_frame, DataVector>,
+                              GeneralizedHarmonic::Tags::GaugeConstraintCompute<
+                                  volume_dim, domain_frame>,
+                              ::Tags::PointwiseL2NormCompute<
+                                  GeneralizedHarmonic::Tags::GaugeConstraint<
+                                      volume_dim, domain_frame>>>>,
       domain::Tags::Coordinates<volume_dim, Frame::Grid>,
       domain::Tags::Coordinates<volume_dim, Frame::Inertial>>;
-  using non_tensor_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,
-                 analytic_compute, error_compute>;
+  using non_tensor_compute_tags = tmpl::list<
+      ::Events::Tags::ObserverMeshCompute<volume_dim>,
+      ::Events::Tags::ObserverCoordinatesCompute<volume_dim, Frame::Inertial>,
+      ::Events::Tags::ObserverInverseJacobianCompute<
+          volume_dim, Frame::ElementLogical, Frame::Inertial>,
+      ::Events::Tags::ObserverJacobianCompute<volume_dim, Frame::ElementLogical,
+                                              Frame::Inertial>,
+      ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
+                                                    Frame::Inertial>,
+      ::Events::Tags::ObserverMeshVelocityCompute<volume_dim, Frame::Inertial>,
+      analytic_compute, error_compute,
+      GeneralizedHarmonic::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -320,6 +335,8 @@ struct GhValenciaDivCleanTemplateBase<
             grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
             grmhd::GhValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>,
+        tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
+                   GeneralizedHarmonic::gauges::all_gauges>,
         tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, tmpl::list<PhaseControl::VisitAndReturn<
@@ -345,6 +362,7 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::at<typename factory_creation::factory_classes, Event>>;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
+      GeneralizedHarmonic::gauges::Tags::GaugeCondition,
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,

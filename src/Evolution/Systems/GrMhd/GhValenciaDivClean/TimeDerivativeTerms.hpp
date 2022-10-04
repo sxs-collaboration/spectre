@@ -62,10 +62,24 @@ struct TimeDerivativeTermsImpl<
           comoving_magnetic_field_one_form,
       const typename ::Tags::deriv<GhGradientTags, tmpl::size_t<3_st>,
                                    Frame::Inertial>::type&... gh_gradients,
-      const typename GhArgTags::type&... gh_args,
-      const typename ValenciaArgTags::type&... valencia_args) {
+      // GH argument tags
+      const tnsr::aa<DataVector, 3>& spacetime_metric,
+      const tnsr::aa<DataVector, 3>& pi, const tnsr::iaa<DataVector, 3>& phi,
+      const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
+      const Scalar<DataVector>& gamma2,
+      const ::GeneralizedHarmonic::gauges::GaugeCondition& gauge_condition,
+      const Mesh<3>& mesh_for_rhs, const double& time,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+      const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                            Frame::Inertial>& inverse_jacobian,
+      const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
+          mesh_velocity,
+      // GRMHD argument tags
+      db::const_item_type<ValenciaArgTags, tmpl::list<>>... valencia_args) {
     GeneralizedHarmonic::TimeDerivative<3_st>::apply(
-        gh_dts..., gh_temporaries..., gh_gradients..., gh_args...);
+        gh_dts..., gh_temporaries..., gh_gradients..., spacetime_metric, pi,
+        phi, gamma0, gamma1, gamma2, gauge_condition, mesh_for_rhs, time,
+        inertial_coords, inverse_jacobian, mesh_velocity);
 
     // This is needed to be able to reuse temporary tags that the GH system
     // computed already and pass them in as argument tags to the GRMHD system.
@@ -85,7 +99,7 @@ struct TimeDerivativeTermsImpl<
             shuffle_refs)...);
     dispatch_to_stress_energy_calculation(stress_energy, four_velocity_one_form,
                                           comoving_magnetic_field_one_form,
-                                          gh_args..., shuffle_refs);
+                                          spacetime_metric, shuffle_refs);
     dispatch_to_add_stress_energy_term_to_dt_pi(gh_dts..., shuffle_refs,
                                                 *stress_energy);
   }
@@ -111,15 +125,6 @@ struct TimeDerivativeTermsImpl<
       gsl::not_null<tnsr::a<DataVector, 3_st>*>
           comoving_magnetic_field_one_form,
       const tnsr::aa<DataVector, 3_st>& spacetime_metric,
-      const tnsr::aa<DataVector, 3_st>& /*pi*/,
-      const tnsr::iaa<DataVector, 3_st>& /*phi*/,
-      const Scalar<DataVector>& /*gamma0*/,
-      const Scalar<DataVector>& /*gamma1*/,
-      const Scalar<DataVector>& /*gamma2*/,
-      const tnsr::a<DataVector, 3_st>& /*gauge_function*/,
-      const tnsr::ab<DataVector, 3_st>& /*spacetime_deriv_gauge_function*/,
-      const std::optional<
-          tnsr::I<DataVector, 3_st, Frame::Inertial>>& /*mesh_velocity*/,
       const TupleType& args) {
     trace_reversed_stress_energy(
         local_stress_energy, four_velocity_buffer_one_form,

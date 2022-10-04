@@ -51,7 +51,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/InitializeDampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Factory.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/SetPiFromGauge.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
@@ -81,6 +84,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -177,8 +181,8 @@ struct EvolutionMetavars {
   static constexpr bool override_functions_of_time = true;
 
   using initialize_initial_data_dependent_quantities_actions =
-      tmpl::list<GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
-                     volume_dim, use_damped_harmonic_rollon>,
+      tmpl::list<Actions::MutateApply<
+                     GeneralizedHarmonic::gauges::SetPiFromGauge<volume_dim>>,
                  Parallel::Actions::TerminatePhase>;
 
   // NOLINTNEXTLINE(google-runtime-references)
@@ -242,15 +246,26 @@ struct EvolutionMetavars {
 
   using observe_fields = tmpl::append<
       tmpl::list<
-          gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
           gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataVector>,
           GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>,
           GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>,
           GeneralizedHarmonic::Tags::GaugeH<volume_dim, Frame::Inertial>,
           GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<volume_dim,
                                                           Frame::Inertial>,
+          gr::Tags::Lapse<DataVector>,
+          gr::Tags::Shift<volume_dim, ::Frame::Inertial, DataVector>,
+          gr::Tags::SpatialMetric<volume_dim, ::Frame::Inertial, DataVector>,
+          gr::Tags::DetSpatialMetric<DataVector>,
+          gr::Tags::InverseSpatialMetric<volume_dim, ::Frame::Inertial,
+                                         DataVector>,
+          gr::Tags::SqrtDetSpatialMetricCompute<volume_dim, ::Frame::Inertial,
+                                                DataVector>,
+          gr::Tags::SpacetimeNormalOneFormCompute<volume_dim, ::Frame::Inertial,
+                                                  DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<volume_dim, ::Frame::Inertial,
+                                                 DataVector>,
+          gr::Tags::InverseSpacetimeMetricCompute<volume_dim, ::Frame::Inertial,
+                                                  DataVector>,
           GeneralizedHarmonic::Tags::GaugeConstraintCompute<volume_dim,
                                                             ::Frame::Inertial>,
           GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<
@@ -324,8 +339,17 @@ struct EvolutionMetavars {
               gr::Tags::WeylElectricCompute<3, Frame::Inertial, DataVector>,
               gr::Tags::Psi4RealCompute<Frame::Inertial>>,
           tmpl::list<>>>;
-  using non_tensor_compute_tags =
-      tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>>;
+  using non_tensor_compute_tags = tmpl::list<
+      ::Events::Tags::ObserverMeshCompute<volume_dim>,
+      ::Events::Tags::ObserverCoordinatesCompute<volume_dim, Frame::Inertial>,
+      ::Events::Tags::ObserverInverseJacobianCompute<
+          volume_dim, Frame::ElementLogical, Frame::Inertial>,
+      ::Events::Tags::ObserverJacobianCompute<volume_dim, Frame::ElementLogical,
+                                              Frame::Inertial>,
+      ::Events::Tags::ObserverDetInvJacobianCompute<Frame::ElementLogical,
+                                                    Frame::Inertial>,
+      ::Events::Tags::ObserverMeshVelocityCompute<volume_dim, Frame::Inertial>,
+      GeneralizedHarmonic::gauges::Tags::GaugeAndDerivativeCompute<volume_dim>>;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
@@ -354,6 +378,9 @@ struct EvolutionMetavars {
                                   DirichletMinkowski<volume_dim>,
                               GeneralizedHarmonic::BoundaryConditions::
                                   DemandOutgoingCharSpeeds<volume_dim>>>,
+        tmpl::pair<GeneralizedHarmonic::gauges::GaugeCondition,
+                   tmpl::list<GeneralizedHarmonic::gauges::DampedHarmonic,
+                              GeneralizedHarmonic::gauges::Harmonic>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             PhaseChange,
@@ -382,6 +409,7 @@ struct EvolutionMetavars {
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<
+      GeneralizedHarmonic::gauges::Tags::GaugeCondition,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<

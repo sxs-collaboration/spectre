@@ -52,8 +52,11 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::aa<DataVector, 3>& pi, const tnsr::iaa<DataVector, 3>& phi,
     const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2,
-    const tnsr::a<DataVector, 3>& gauge_function,
-    const tnsr::ab<DataVector, 3>& spacetime_deriv_gauge_function,
+    const ::GeneralizedHarmonic::gauges::GaugeCondition& gauge_condition,
+    const Mesh<3>& mesh_for_rhs, const double& time,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& inertial_coords,
+    const InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                          Frame::Inertial>& inverse_jacobian,
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
         mesh_velocity_gh,
     // GRMHD argument tags
@@ -62,7 +65,6 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
     const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
     const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,

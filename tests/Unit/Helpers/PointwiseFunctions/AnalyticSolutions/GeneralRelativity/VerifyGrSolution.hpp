@@ -21,6 +21,8 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/AnalyticChristoffel.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Framework/TestHelpers.hpp"
@@ -29,6 +31,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/GaugeSource.hpp"
@@ -74,13 +77,18 @@ void verify_time_independent_einstein_solution(
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
   using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
-  using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
+  using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi>;
+  const GeneralizedHarmonic::Solutions::WrappedGr<Solution> gh_solution{
+      solution};
+  const std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>
+      gauge_condition =
+          std::make_unique<GeneralizedHarmonic::gauges::AnalyticChristoffel>(
+              gh_solution.get_clone());
 
   // Set up grid
   const size_t data_size = pow<3>(grid_size_each_dimension);
-  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
-               Spectral::Quadrature::GaussLobatto};
+  const Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto};
 
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
@@ -96,16 +104,14 @@ void verify_time_independent_einstein_solution(
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);
   const auto x = coord_map(x_logical);
-  const double t = 1.3;  // Arbitrary time for time-independent solution.
+  const auto inverse_jacobian = coord_map.inv_jacobian(x_logical);
+  const double time = 1.3;  // Arbitrary time for time-independent solution.
 
   // Evaluate analytic solution
-  const auto vars =
-      solution.variables(x, t, typename Solution::template tags<DataVector>{});
+  const auto vars = gh_solution.variables(
+      x, time, typename Solution::template tags<DataVector>{});
   const auto& lapse = get<gr::Tags::Lapse<>>(vars);
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
-  const auto& d_lapse =
-      get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                        Frame::Inertial>>(vars);
   const auto& shift = get<gr::Tags::Shift<3>>(vars);
   const auto& d_shift =
       get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -131,75 +137,52 @@ void verify_time_independent_einstein_solution(
   // Also put gauge_function into this list since we need a numerical
   // derivative of it too.
   Variables<VariablesTags> gh_vars(data_size);
-  auto& psi = get<SpacetimeMetric>(gh_vars);
-  auto& pi = get<Pi>(gh_vars);
-  auto& phi = get<Phi>(gh_vars);
-  auto& gauge_function = get<GaugeH>(gh_vars);
-  psi = gr::spacetime_metric(lapse, shift, g);
-  phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, g, d_g);
-  pi = GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift, g, dt_g, phi);
+  gh_vars.assign_subset(gh_solution.variables(x, time, VariablesTags{}));
+  const auto& [spacetime_metric, pi, phi] = gh_vars;
 
-  // Compute gauge_function compatible with d/dt(lapse) and d/dt(shift).
-  gauge_function = GeneralizedHarmonic::gauge_source(
-      lapse, dt_lapse, d_lapse, shift, dt_shift, d_shift, g,
-      trace(gr::extrinsic_curvature(lapse, shift, d_shift, g, dt_g, d_g),
-            upper_spatial_metric),
-      trace_last_indices(gr::christoffel_first_kind(d_g),
-                         upper_spatial_metric));
-
-  // Compute numerical derivatives of psi,pi,phi,H.
+  // Compute numerical derivatives of spacetime_metric,pi,phi,H.
   // Normally one should not take numerical derivatives of H for
   // plugging into the RHS of the generalized harmonic equations, but
   // here this is just a test.
   const auto gh_derivs =
       partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
-          gh_vars, mesh, coord_map.inv_jacobian(x_logical));
-  const auto& d_psi =
+          gh_vars, mesh, inverse_jacobian);
+  const auto& d_spacetime_metric =
       get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
           gh_derivs);
   const auto& d_pi =
       get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
   const auto& d_phi =
       get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
-  const auto& d_H =
-      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
   Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
 
   // Test 3-index constraint
-  CHECK_ITERABLE_CUSTOM_APPROX(d_psi, phi, numerical_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(d_spacetime_metric, phi, numerical_approx);
 
-  // Compute spacetime deriv of H.
-  // Assume time derivative of H is zero, for time-independent solution
-  auto d4_H = make_with_value<tnsr::ab<DataVector, 3>>(x, 0.0);
-  for (size_t a = 0; a < 4; ++a) {
-    for (size_t i = 0; i < 3; ++i) {
-      d4_H.get(i + 1, a) = d_H.get(i, a);
-    }
-  }
-
-  // Compute analytic derivatives of psi, for use in computing
+  // Compute analytic derivatives of spacetime_metric, for use in computing
   // christoffel symbols.
-  auto d4_psi = make_with_value<tnsr::abb<DataVector, 3>>(x, 0.0);
+  auto d4_spacetime_metric = make_with_value<tnsr::abb<DataVector, 3>>(x, 0.0);
   for (size_t b = 0; b < 4; ++b) {
     for (size_t c = b; c < 4; ++c) {  // symmetry
-      d4_psi.get(0, b, c) = -get(lapse) * pi.get(b, c);
+      d4_spacetime_metric.get(0, b, c) = -get(lapse) * pi.get(b, c);
       for (size_t k = 0; k < 3; ++k) {
-        d4_psi.get(0, b, c) += shift.get(k) * phi.get(k, b, c);
-        d4_psi.get(k + 1, b, c) = phi.get(k, b, c);
+        d4_spacetime_metric.get(0, b, c) += shift.get(k) * phi.get(k, b, c);
+        d4_spacetime_metric.get(k + 1, b, c) = phi.get(k, b, c);
       }
     }
   }
 
   // Compute derived spacetime quantities
-  const auto upper_psi =
+  const auto upper_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, upper_spatial_metric);
-  const auto christoffel_first_kind = gr::christoffel_first_kind(d4_psi);
-  const auto christoffel_second_kind =
-      raise_or_lower_first_index(christoffel_first_kind, upper_psi);
+  const auto christoffel_first_kind =
+      gr::christoffel_first_kind(d4_spacetime_metric);
+  const auto christoffel_second_kind = raise_or_lower_first_index(
+      christoffel_first_kind, upper_spacetime_metric);
   const auto trace_christoffel_first_kind =
-      trace_last_indices(christoffel_first_kind, upper_psi);
+      trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
   const auto normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
@@ -222,13 +205,6 @@ void verify_time_independent_einstein_solution(
                           make_with_value<decltype(dt_g_adm)>(x, 0.0));
   }
 
-  // Test 1-index constraint
-  auto C_1 = GeneralizedHarmonic::gauge_constraint(
-      gauge_function, normal_one_form, normal_vector, upper_spatial_metric,
-      upper_psi, pi, phi);
-  CHECK_ITERABLE_CUSTOM_APPROX(C_1, make_with_value<decltype(C_1)>(x, 0.0),
-                               numerical_approx);
-
   // Constraint-damping parameters: Set to arbitrary values.
   // gamma = 0 (for all gammas) and gamma1 = -1 are special because,
   // they zero out various terms in the equations, so don't choose those.
@@ -237,7 +213,7 @@ void verify_time_independent_einstein_solution(
   const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 1.0);
 
   // Compute RHS of generalized harmonic Einstein equations.
-  auto dt_psi =
+  auto dt_spacetime_metric =
       make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
   auto dt_pi =
       make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
@@ -268,6 +244,7 @@ void verify_time_independent_einstein_solution(
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelFirstKind<3, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelSecondKind<3, Frame::Inertial, DataVector>,
@@ -279,7 +256,8 @@ void verify_time_independent_einstein_solution(
       buffer(mesh.number_of_grid_points());
 
   GeneralizedHarmonic::TimeDerivative<3>::apply(
-      make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
+      make_not_null(&dt_spacetime_metric), make_not_null(&dt_pi),
+      make_not_null(&dt_phi),
       make_not_null(
           &get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
               buffer)),
@@ -328,6 +306,7 @@ void verify_time_independent_einstein_solution(
           &get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
               buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial,
                                                           DataVector>>(buffer)),
       make_not_null(
@@ -346,12 +325,29 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
                                                       DataVector>>(buffer)),
-      d_psi, d_pi, d_phi, psi, pi, phi, gamma0, gamma1, gamma2, gauge_function,
-      d4_H, std::nullopt);
+      d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
+      gamma1, gamma2, *gauge_condition, mesh, time, x, inverse_jacobian,
+      std::nullopt);
+
+  const auto gauge_constraint = GeneralizedHarmonic::gauge_constraint(
+      get<GeneralizedHarmonic::Tags::GaugeH<3>>(buffer),
+      get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>>(
+          buffer),
+      get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
+          buffer),
+      get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+          buffer),
+      get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>>(
+          buffer),
+      pi, phi);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      gauge_constraint, make_with_value<decltype(gauge_constraint)>(x, 0.0),
+      numerical_approx);
 
   // Make sure the RHS is zero.
   CHECK_ITERABLE_CUSTOM_APPROX(
-      dt_psi, make_with_value<decltype(dt_psi)>(x, 0.0), numerical_approx);
+      dt_spacetime_metric,
+      make_with_value<decltype(dt_spacetime_metric)>(x, 0.0), numerical_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(dt_pi, make_with_value<decltype(dt_pi)>(x, 0.0),
                                numerical_approx);
   CHECK_ITERABLE_CUSTOM_APPROX(

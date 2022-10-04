@@ -17,12 +17,15 @@
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedHarmonic.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TimeDerivative.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -334,9 +337,9 @@ void test_reference_impl_against_spec() {
       n_pts, make_not_null(&gen));
   const auto shift = create_tensor_with_random_values<
       tnsr::I<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
-  const auto upper_spatial_metric = create_tensor_with_random_values<
+  const auto inverse_spatial_metric = create_tensor_with_random_values<
       tnsr::II<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
-  const auto upper_psi = create_tensor_with_random_values<
+  const auto inverse_psi = create_tensor_with_random_values<
       tnsr::AA<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
   const auto christoffel_first_kind = create_tensor_with_random_values<
       tnsr::abb<DataVector, dim, Frame::Inertial>>(n_pts, make_not_null(&gen));
@@ -351,8 +354,8 @@ void test_reference_impl_against_spec() {
 
   const auto [dt_psi, dt_pi, dt_phi] = gh_rhs_reference_impl(
       psi, pi, phi, d_psi, d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,
-      spacetime_deriv_gauge_function, lapse, shift, upper_spatial_metric,
-      upper_psi, trace_christoffel_first_kind, christoffel_first_kind,
+      spacetime_deriv_gauge_function, lapse, shift, inverse_spatial_metric,
+      inverse_psi, trace_christoffel_first_kind, christoffel_first_kind,
       christoffel_second_kind, normal_vector, normal_one_form);
 
   CHECK(dt_psi.get(0, 0)[0] == approx(-488.874963261792004));
@@ -467,6 +470,9 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
                                   GeneralizedHarmonic::Tags::Pi<Dim>,
                                   GeneralizedHarmonic::Tags::Phi<Dim>>;
 
+  const double time = 1.3;
+  const GeneralizedHarmonic::gauges::DampedHarmonic gauge_condition{
+      100., std::array{1.2, 1.5, 1.7}, std::array{2, 4, 6}};
   const size_t num_grid_points_1d = 3;
   const Mesh<Dim> mesh(num_grid_points_1d, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -483,6 +489,12 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       TestHelpers::gr::random_lapse(generator, used_for_size),
       TestHelpers::gr::random_shift<Dim>(generator, used_for_size),
       TestHelpers::gr::random_spatial_metric<Dim>(generator, used_for_size));
+
+  const auto logical_coords = logical_coordinates(mesh);
+  tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{};
+  for (size_t i = 0; i < Dim; ++i) {
+    inertial_coords.get(i) = logical_coords.get(i);
+  }
 
   InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
       inv_jac{};
@@ -512,7 +524,6 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   const auto& d_pi =
       get<Tags::deriv<GeneralizedHarmonic::Tags::Pi<Dim>, tmpl::size_t<Dim>,
                       Frame::Inertial>>(partial_derivs);
-  ;
 
   const auto gamma0 = make_with_random_values<Scalar<DataVector>>(
       generator, make_not_null(&distribution), used_for_size);
@@ -520,43 +531,47 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       generator, make_not_null(&distribution), used_for_size);
   const auto gamma2 = make_with_random_values<Scalar<DataVector>>(
       generator, make_not_null(&distribution), used_for_size);
-  const auto gauge_function = make_with_random_values<tnsr::a<DataVector, Dim>>(
-      generator, make_not_null(&distribution), used_for_size);
-  const auto spacetime_deriv_gauge_function =
-      make_with_random_values<tnsr::ab<DataVector, Dim>>(
-          generator, make_not_null(&distribution), used_for_size);
 
   // Quantities as input for reference RHS
   const auto spatial_metric = gr::spatial_metric(spacetime_metric);
-  const auto inverse_spatial_metric_and_det = determinant_and_inverse<
-      gr::Tags::DetSpatialMetric<DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-      spatial_metric);
-  const auto& upper_spatial_metric =
-      get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
-          inverse_spatial_metric_and_det);
-  const auto shift = gr::shift(spacetime_metric, upper_spatial_metric);
+  const auto [det_spatial_metric, inverse_spatial_metric] =
+      determinant_and_inverse<
+          gr::Tags::DetSpatialMetric<DataVector>,
+          gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
+          spatial_metric);
+  const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
   const auto lapse = gr::lapse(shift, spacetime_metric);
-  const auto upper_spacetime_metric =
-      gr::inverse_spacetime_metric(lapse, shift, upper_spatial_metric);
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   tnsr::abb<DataVector, Dim> da_spacetime_metric;
   GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
       make_not_null(&da_spacetime_metric), lapse, shift, pi, phi);
   const auto christoffel_first_kind =
       gr::christoffel_first_kind(da_spacetime_metric);
   const auto christoffel_second_kind = raise_or_lower_first_index(
-      christoffel_first_kind, upper_spacetime_metric);
+      christoffel_first_kind, inverse_spacetime_metric);
   const auto trace_christoffel_first_kind =
-      trace_last_indices(christoffel_first_kind, upper_spacetime_metric);
+      trace_last_indices(christoffel_first_kind, inverse_spacetime_metric);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   const auto normal_one_form =
       gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
+  const Scalar<DataVector> sqrt_det_spatial_metric{
+      sqrt(get(det_spatial_metric))};
+
+  tnsr::a<DataVector, Dim> gauge_h{mesh.number_of_grid_points()};
+  tnsr::ab<DataVector, Dim> d4_gauge_h{mesh.number_of_grid_points()};
+
+  GeneralizedHarmonic::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
+      normal_one_form, sqrt_det_spatial_metric, inverse_spatial_metric,
+      spacetime_metric, pi, phi, mesh, time, inertial_coords, inv_jac,
+      gauge_condition);
 
   const auto [expected_dt_spacetime_metric, expected_dt_pi, expected_dt_phi] =
       gh_rhs_reference_impl(
           spacetime_metric, pi, phi, d_spacetime_metric, d_pi, d_phi, gamma0,
-          gamma1, gamma2, gauge_function, spacetime_deriv_gauge_function, lapse,
-          shift, upper_spatial_metric, upper_spacetime_metric,
+          gamma1, gamma2, gauge_h, d4_gauge_h, lapse, shift,
+          inverse_spatial_metric, inverse_spacetime_metric,
           trace_christoffel_first_kind, christoffel_first_kind,
           christoffel_second_kind, normal_vector, normal_one_form);
 
@@ -592,6 +607,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
@@ -654,6 +670,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
                                                         DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
                                                           DataVector>>(buffer)),
       make_not_null(
@@ -672,7 +689,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
                                                       DataVector>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
-      gamma1, gamma2, gauge_function, spacetime_deriv_gauge_function, {});
+      gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
+      {});
 
   CHECK_ITERABLE_APPROX(
       get<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>(
@@ -683,10 +701,10 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           buffer),
       gamma2);
   CHECK_ITERABLE_APPROX(get<GeneralizedHarmonic::Tags::GaugeH<Dim>>(buffer),
-                        gauge_function);
+                        gauge_h);
   CHECK_ITERABLE_APPROX(
       get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer),
-      spacetime_deriv_gauge_function);
+      d4_gauge_h);
 
   CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
   CHECK_ITERABLE_APPROX(expected_dt_pi, dt_pi);
@@ -773,6 +791,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
                                                         DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
                                                           DataVector>>(buffer)),
       make_not_null(
@@ -791,7 +810,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
                                                       DataVector>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
-      gamma1, gamma2, gauge_function, spacetime_deriv_gauge_function, {});
+      gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
+      {});
 
   tnsr::aa<DataVector, Dim, Frame::Inertial> dt_spacetime_metric_moving_mesh(
       mesh.number_of_grid_points());
@@ -846,6 +866,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(&get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial,
                                                         DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::DetSpatialMetric<DataVector>>(buffer)),
+      make_not_null(&get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(buffer)),
       make_not_null(&get<gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial,
                                                           DataVector>>(buffer)),
       make_not_null(
@@ -864,8 +885,8 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
           &get<gr::Tags::DerivativesOfSpacetimeMetric<Dim, Frame::Inertial,
                                                       DataVector>>(buffer)),
       d_spacetime_metric, d_pi, d_phi, spacetime_metric, pi, phi, gamma0,
-      gamma1, gamma2, gauge_function, spacetime_deriv_gauge_function,
-      {mesh_velocity});
+      gamma1, gamma2, gauge_condition, mesh, time, inertial_coords, inv_jac,
+      std::optional{mesh_velocity});
 
   for (size_t a = 0; a < Dim + 1; ++a) {
     for (size_t b = a; b < Dim + 1; ++b) {
