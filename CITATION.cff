@@ -177,6 +177,11 @@ authors:
   family-names: Morales
   given-names: Marlo
   orcid: https://orcid.org/0000-0002-0593-4318
+- affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
+    California Institute of Technology, Pasadena, CA 91125, USA
+  family-names: Pajkos
+  given-names: Michael A.
+  orcid: https://orcid.org/0000-0002-4983-4589
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -199,6 +204,11 @@ authors:
   family-names: Sanchez
   given-names: Jennifer
   orcid: https://orcid.org/0000-0002-5335-4924
+- affiliation: Department of Physics and Astronomy, University of Mississippi, University,
+    Mississippi 38677, USA
+  family-names: Stein
+  given-names: Leo C.
+  orcid: https://orcid.org/0000-0001-7559-9597
 - affiliation: Nicholas and Lee Begovich Center for Gravitational-Wave Physics and
     Astronomy, California State University, Fullerton, Fullerton, California 92831,
     USA
@@ -222,8 +232,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2022-09-02
-doi: 10.5281/zenodo.7045030
+date-released: 2022-10-04
+doi: 10.5281/zenodo.7144771
 keywords:
 - Software
 - Astrophysics
@@ -241,4 +251,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.09.02
+version: 2022.10.04
