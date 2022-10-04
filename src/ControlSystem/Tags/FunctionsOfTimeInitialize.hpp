@@ -122,7 +122,7 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
       const OptionHolders&... option_holders) {
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, option_holders...);
+            initial_time, initial_time_step, domain_creator, option_holders...);
 
     // We need to check the expiration times before we replace functions of
     // time (if we're going to do so) so we can ensure a proper domain creator

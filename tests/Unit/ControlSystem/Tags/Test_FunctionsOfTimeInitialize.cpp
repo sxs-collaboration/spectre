@@ -104,6 +104,8 @@ class TestCreator : public DomainCreator<1> {
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override {
     const std::array<DataVector, 3> initial_values{{{-1.0}, {-2.0}, {-3.0}}};
+    const std::array<DataVector, 3> initial_values3{
+        {{-1.0, 1.0}, {-2.0, 2.0}, {-3.0, 3.0}}};
 
     std::unordered_map<std::string, double> expiration_times{
         {"Uncontrolled", std::numeric_limits<double>::infinity()}};
@@ -136,7 +138,7 @@ class TestCreator : public DomainCreator<1> {
       result.insert(
           {"Controlled3",
            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
-               initial_time, initial_values,
+               initial_time, initial_values3,
                expiration_times.at("Controlled3"))});
     }
     result.insert(
@@ -203,8 +205,7 @@ void test_functions_of_time_tag() {
   const double timescale = 27.0;
   const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
                               1.0e-2, 1.0e-4, 1.01, 0.99);
-  const TimescaleTuner tuner2(std::vector<double>{0.1}, 10.0, 1.0e-3, 1.0e-2,
-                              1.0e-4, 1.01, 0.99);
+  const TimescaleTuner tuner2(0.1, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);

@@ -70,7 +70,7 @@ struct MeasurementTimescales : db::SimpleTag {
 
   template <typename Metavariables>
   using option_tags = typename detail::OptionList<
-      Metavariables, false,
+      Metavariables, true,
       ::detail::has_override_functions_of_time_v<Metavariables>>::type;
 
   /// This version of create_from_options is used if the metavariables
@@ -78,6 +78,8 @@ struct MeasurementTimescales : db::SimpleTag {
   /// and there are control systems in the metavariables
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
       const std::optional<std::string>& function_of_time_file,
       const std::map<std::string, std::string>& function_of_time_name_map,
       const double initial_time, const double initial_time_step,
@@ -87,10 +89,10 @@ struct MeasurementTimescales : db::SimpleTag {
         timescales{};
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, option_holders...);
+            initial_time, initial_time_step, domain_creator, option_holders...);
 
     [[maybe_unused]] const auto construct_measurement_timescales =
-        [&timescales, &initial_time, &initial_time_step,
+        [&timescales, &initial_time, &initial_time_step, &domain_creator,
          &initial_expiration_times, &function_of_time_file,
          &function_of_time_name_map](const auto& option_holder) {
           // This check is intentionally inside the lambda so that it will not
@@ -104,7 +106,9 @@ struct MeasurementTimescales : db::SimpleTag {
           const auto& controller = option_holder.controller;
           const std::string& name =
               std::decay_t<decltype(option_holder)>::control_system::name();
-          const auto& tuner = option_holder.tuner;
+          auto tuner = option_holder.tuner;
+          Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
+                                         initial_time, name);
 
           DataVector measurement_timescales =
               calculate_measurement_timescales(controller, tuner);
@@ -149,11 +153,14 @@ struct MeasurementTimescales : db::SimpleTag {
   /// define a constexpr bool `override_functions_of_time` or it did define it
   /// and it is `false`, and the metavariables did define control systems
   template <typename Metavariables, typename... OptionHolders>
-  static type create_from_options(const double initial_time,
-                                  const double initial_time_step,
-                                  const OptionHolders&... option_holders) {
+  static type create_from_options(
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator,
+      const double initial_time, const double initial_time_step,
+      const OptionHolders&... option_holders) {
     return MeasurementTimescales::create_from_options<Metavariables>(
-        std::nullopt, {}, initial_time, initial_time_step, option_holders...);
+        domain_creator, std::nullopt, {}, initial_time, initial_time_step,
+        option_holders...);
   }
 
   // We don't define a `create_from_options` for when there aren't control
