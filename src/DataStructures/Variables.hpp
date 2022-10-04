@@ -20,6 +20,7 @@
 #include <ostream>
 #include <pup.h>
 #include <string>
+#include <tuple>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Subitems.hpp"
@@ -1182,3 +1183,33 @@ auto make_math_wrapper(const Variables<Tags>& data) {
       const_cast<typename Vector::value_type*>(data.data()), data.size());
   return make_math_wrapper(referencing);
 }
+
+/// \cond
+template <size_t I, class... Tags>
+inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type&& get(
+    Variables<tmpl::list<Tags...>>&& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
+
+template <size_t I, class... Tags>
+inline constexpr const typename tmpl::at_c<tmpl::list<Tags...>, I>::type& get(
+    const Variables<tmpl::list<Tags...>>& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
+
+template <size_t I, class... Tags>
+inline constexpr typename tmpl::at_c<tmpl::list<Tags...>, I>::type& get(
+    Variables<tmpl::list<Tags...>>& t) {
+  return get<tmpl::at_c<tmpl::list<Tags...>, I>>(t);
+}
+/// \endcond
+
+namespace std {
+template <typename... Tags>
+struct tuple_size<Variables<tmpl::list<Tags...>>>
+    : std::integral_constant<int, sizeof...(Tags)> {};
+template <size_t I, typename... Tags>
+struct tuple_element<I, Variables<tmpl::list<Tags...>>> {
+  using type = typename tmpl::at_c<tmpl::list<Tags...>, I>::type;
+};
+}  // namespace std
