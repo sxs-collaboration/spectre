@@ -50,7 +50,11 @@ void test_predicted_zero_crossing_datavector() {
   DataVector compute_zero_crossing_value =
       intrp::predicted_zero_crossing_value(x_values, y_values);
 
-  Approx custom_approx = Approx::custom().epsilon(1e-6);
+  // Epsilon here was chosen empirically.  Note that above we add
+  // random errors to every single point, so we need to make the
+  // epsilon here large enough so that the test doesn't fail in the
+  // rare case that the errors reinforce each other.
+  Approx custom_approx = Approx::custom().epsilon(1e-5);
   CHECK_ITERABLE_CUSTOM_APPROX(compute_zero_crossing_value,
                                expected_zero_crossing_value, custom_approx);
 }
@@ -91,7 +95,11 @@ SPECTRE_TEST_CASE(
   auto compute_zero_crossing_value =
       intrp::predicted_zero_crossing_value(x_values, y_values);
 
-  Approx custom_approx = Approx::custom().epsilon(1.e-6);
+  // Epsilon here was chosen empirically.  Note that above we add
+  // random errors to every single point, so we need to make the
+  // epsilon here large enough so that the test doesn't fail in the
+  // rare case that the errors reinforce each other.
+  Approx custom_approx = Approx::custom().epsilon(1.e-5);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_zero_crossing_value,
                                compute_zero_crossing_value, custom_approx);
 
