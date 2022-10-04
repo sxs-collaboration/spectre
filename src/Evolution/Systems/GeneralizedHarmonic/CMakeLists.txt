@@ -53,6 +53,7 @@ target_link_libraries(
   Spectral
   Utilities
   INTERFACE
+  Events # For observer tags
   Initialization
   Parallel
   )
