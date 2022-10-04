@@ -181,15 +181,24 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       CHECK(approx(first_result.first) ==
             0.95 / pow(expected_linf_error, 1.0 / stepper_order));
       CHECK(first_result.second);
+      const double previous_step_error_hold = *previous_step_error;
       const auto second_result =
           get_suggestion(make_not_null(&previous_step_error), error_control,
                          step_values, decltype(step_errors){1.2 * step_errors},
                          first_result.first, stepper_order);
       CHECK(approx(second_result.first) ==
             0.95 * first_result.first /
-                (pow(expected_linf_error, 1.1 / stepper_order) *
+                (pow(expected_linf_error, 0.3 / stepper_order) *
                  pow(1.2, 0.7 / stepper_order)));
       CHECK(second_result.first);
+      // Check that the suggested step size is smaller if the error in
+      // increasing faster.
+      *previous_step_error = 0.5 * previous_step_error_hold;
+      const auto adjusted_second_result =
+          get_suggestion(make_not_null(&previous_step_error), error_control,
+                         step_values, decltype(step_errors){1.2 * step_errors},
+                         first_result.first, stepper_order);
+      CHECK(adjusted_second_result.first < second_result.first);
     }
     {
       INFO("Test error control step fixed by relative tolerance");
@@ -217,9 +226,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
               (flattened_step_values + 1.2 * flattened_step_errors)) /
           3.0e-4;
       CHECK(approx(second_result.first) ==
-            0.95 * first_result.first /
-                (pow(pow(new_expected_linf_error, 1.0 / stepper_order), 0.7) *
-                 pow(pow(expected_linf_error, 1.0 / stepper_order), 0.4)));
+            0.95 * first_result.first *
+                pow(pow(new_expected_linf_error, 1.0 / stepper_order), -0.7) *
+                pow(pow(expected_linf_error, 1.0 / stepper_order), 0.4));
       CHECK(second_result.first);
     }
     {

@@ -36,8 +36,8 @@ Evolution:
     - ElementSizeCfl:
         SafetyFactor: 0.5
     - ErrorControl:
-        AbsoluteTolerance: 1e-8
-        RelativeTolerance: 1e-6
+        AbsoluteTolerance: 1e-6
+        RelativeTolerance: 1e-4
         MaxFactor: 2
         MinFactor: 0.25
         SafetyFactor: 0.95
