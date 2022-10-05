@@ -83,6 +83,10 @@ constexpr bool is_assignable_v = is_assignable<LhsDataType, RhsDataType>::value;
 /// `VectorImpl`
 struct MarkAsVectorImpl {};
 
+/// \ingroup DataStructuresGroup
+/// Default static size for vector impl
+constexpr size_t default_vector_impl_static_size = 0;
+
 /*!
  * \ingroup DataStructuresGroup
  * \brief Base class template for various DataVector and related types
@@ -109,6 +113,11 @@ struct MarkAsVectorImpl {};
  *  ```
  *  class DataVector : VectorImpl<double, DataVector> {
  *  ```
+ * - `StaticSize` is the size for the static part of the vector. If the vector
+ *   is constructed or resized with a size that is less than or equal to this
+ *   StaticSize, no heap allocations will be done. It will instead use the stack
+ *   allocation. Default is `default_vector_impl_static_size`.
+ *
  *  The second template parameter communicates arithmetic type restrictions to
  *  the underlying Blaze framework. For example, if `VectorType` is
  *  `DataVector`, then the underlying architecture will prevent addition with a
@@ -119,12 +128,12 @@ struct MarkAsVectorImpl {};
  *  vector types in math expressions.
  *
  * \note
- * - If created with size 0, then  `data()` will return `nullptr`
  * - If either `SPECTRE_DEBUG` or `SPECTRE_NAN_INIT` are defined, then the
  *   `VectorImpl` is default initialized to `signaling_NaN()`. Otherwise, the
  *   vector is filled with uninitialized memory for performance.
  */
-template <typename T, typename VectorType>
+template <typename T, typename VectorType,
+          size_t StaticSize = default_vector_impl_static_size>
 class VectorImpl
     : public blaze::CustomVector<
           T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded,
@@ -138,10 +147,11 @@ class VectorImpl
       T, blaze::AlignmentFlag::unaligned, blaze::PaddingFlag::unpadded,
       blaze::defaultTransposeFlag, blaze::GroupTag<0>, VectorType>;
   static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
+  static constexpr size_t static_size = StaticSize;
 
   using ElementType = T;
-  using TransposeType = VectorImpl<T, VectorType>;
-  using CompositeType = const VectorImpl<T, VectorType>&;
+  using TransposeType = VectorImpl<T, VectorType, StaticSize>;
+  using CompositeType = const VectorImpl<T, VectorType, StaticSize>&;
   using iterator = typename BaseType::Iterator;
   using const_iterator = typename BaseType::ConstIterator;
 
@@ -170,15 +180,12 @@ class VectorImpl
   ///
   /// - `set_size` number of values
   explicit VectorImpl(size_t set_size)
-      : owned_data_(
-            set_size > 0
-                ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
-                : nullptr) {
+      : owned_data_(heap_alloc_if_necessary(set_size)) {
+    reset_pointer_vector(set_size);
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
-    std::fill(owned_data_.get(), owned_data_.get() + set_size,
+    std::fill(data(), data() + set_size,
               std::numeric_limits<value_type>::signaling_NaN());
 #endif  // SPECTRE_DEBUG
-    reset_pointer_vector(set_size);
   }
 
   /// Create with the given size and value.
@@ -186,12 +193,9 @@ class VectorImpl
   /// - `set_size` number of values
   /// - `value` the value to initialize each element
   VectorImpl(size_t set_size, T value)
-      : owned_data_(
-            set_size > 0
-                ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
-                : nullptr) {
-    std::fill(owned_data_.get(), owned_data_.get() + set_size, value);
+      : owned_data_(heap_alloc_if_necessary(set_size)) {
     reset_pointer_vector(set_size);
+    std::fill(data(), data() + set_size, value);
   }
 
   /// Create a non-owning VectorImpl that points to `start`
@@ -201,13 +205,10 @@ class VectorImpl
   /// Create from an initializer list of `T`.
   template <class U, Requires<std::is_same_v<U, T>> = nullptr>
   VectorImpl(std::initializer_list<U> list)
-      : owned_data_(
-            list.size() > 0
-                ? cpp20::make_unique_for_overwrite<value_type[]>(list.size())
-                : nullptr) {
-    // Note: can't use memcpy with an initializer list.
-    std::copy(list.begin(), list.end(), owned_data_.get());
+      : owned_data_(heap_alloc_if_necessary(list.size())) {
     reset_pointer_vector(list.size());
+    // Note: can't use memcpy with an initializer list.
+    std::copy(list.begin(), list.end(), data());
   }
 
   /// Empty VectorImpl
@@ -215,10 +216,10 @@ class VectorImpl
   /// \cond HIDDEN_SYMBOLS
   ~VectorImpl() = default;
 
-  VectorImpl(const VectorImpl<T, VectorType>& rhs);
-  VectorImpl& operator=(const VectorImpl<T, VectorType>& rhs);
-  VectorImpl(VectorImpl<T, VectorType>&& rhs);
-  VectorImpl& operator=(VectorImpl<T, VectorType>&& rhs);
+  VectorImpl(const VectorImpl<T, VectorType, StaticSize>& rhs);
+  VectorImpl& operator=(const VectorImpl<T, VectorType, StaticSize>& rhs);
+  VectorImpl(VectorImpl<T, VectorType, StaticSize>&& rhs);
+  VectorImpl& operator=(VectorImpl<T, VectorType, StaticSize>&& rhs);
 
   // This is a converting constructor. clang-tidy complains that it's not
   // explicit, but we want it to allow conversion.
@@ -283,7 +284,7 @@ class VectorImpl
                  << "Attempting to resize a non-owning vector from size: "
                  << size() << " to size: " << new_size
                  << " but we may not destructively resize a non-owning vector");
-      owned_data_ = cpp20::make_unique_for_overwrite<value_type[]>(new_size);
+      owned_data_ = heap_alloc_if_necessary(new_size);
       reset_pointer_vector(new_size);
     }
   }
@@ -297,43 +298,56 @@ class VectorImpl
 
  protected:
   std::unique_ptr<value_type[]> owned_data_{};
+  std::array<T, StaticSize> static_owned_data_{};
   bool owning_{true};
 
+  // This should only be called if we are owning. If we are not owning, then
+  // neither owned_data_ or static_owned_data_ actually has the data we want.
   SPECTRE_ALWAYS_INLINE void reset_pointer_vector(const size_t set_size) {
     if (set_size == 0) {
       return;
     }
-    if (owned_data_ == nullptr) {
+    if (owned_data_ == nullptr and set_size > StaticSize) {
       ERROR(
           "VectorImpl::reset_pointer_vector cannot be called when owned_data_ "
           "is nullptr.");
     }
-    this->reset(owned_data_.get(), set_size);
+
+    if (set_size <= StaticSize) {
+      this->reset(static_owned_data_.data(), set_size);
+      // Free memory if downsizing
+      owned_data_ = nullptr;
+    } else {
+      this->reset(owned_data_.get(), set_size);
+    }
+  }
+
+  SPECTRE_ALWAYS_INLINE std::unique_ptr<value_type[]> heap_alloc_if_necessary(
+      const size_t set_size) {
+    return set_size > StaticSize
+               ? cpp20::make_unique_for_overwrite<value_type[]>(set_size)
+               : nullptr;
   }
 };
 
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>::VectorImpl(const VectorImpl<T, VectorType>& rhs)
-    : BaseType{rhs},
-      owned_data_(
-          rhs.size() > 0
-              ? cpp20::make_unique_for_overwrite<value_type[]>(rhs.size())
-              : nullptr) {
+/// \cond HIDDEN_SYMBOLS
+template <typename T, typename VectorType, size_t StaticSize>
+VectorImpl<T, VectorType, StaticSize>::VectorImpl(
+    const VectorImpl<T, VectorType, StaticSize>& rhs)
+    : BaseType{rhs}, owned_data_(heap_alloc_if_necessary(rhs.size())) {
   reset_pointer_vector(rhs.size());
   std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
 }
 
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    const VectorImpl<T, VectorType>& rhs) {
+template <typename T, typename VectorType, size_t StaticSize>
+VectorImpl<T, VectorType, StaticSize>&
+VectorImpl<T, VectorType, StaticSize>::operator=(
+    const VectorImpl<T, VectorType, StaticSize>& rhs) {
   if (this != &rhs) {
     if (owning_) {
       if (size() != rhs.size()) {
         owned_data_.reset();
-        if (rhs.size() > 0) {
-          owned_data_ =
-              cpp20::make_unique_for_overwrite<value_type[]>(rhs.size());
-        }
+        owned_data_ = heap_alloc_if_necessary(rhs.size());
       }
       reset_pointer_vector(rhs.size());
     } else {
@@ -345,23 +359,37 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
   return *this;
 }
 
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>::VectorImpl(VectorImpl<T, VectorType>&& rhs) {
+template <typename T, typename VectorType, size_t StaticSize>
+VectorImpl<T, VectorType, StaticSize>::VectorImpl(
+    VectorImpl<T, VectorType, StaticSize>&& rhs) {
   owned_data_ = std::move(rhs.owned_data_);
+  static_owned_data_ = std::move(rhs.static_owned_data_);
   **this = std::move(*rhs);
   owning_ = rhs.owning_;
+  if (owning_) {
+    reset_pointer_vector(size());
+  } else {
+    this->reset(data(), size());
+  }
   rhs.owning_ = true;
   rhs.reset();
 }
 
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    VectorImpl<T, VectorType>&& rhs) {
+template <typename T, typename VectorType, size_t StaticSize>
+VectorImpl<T, VectorType, StaticSize>&
+VectorImpl<T, VectorType, StaticSize>::operator=(
+    VectorImpl<T, VectorType, StaticSize>&& rhs) {
   if (this != &rhs) {
     if (owning_) {
       owned_data_ = std::move(rhs.owned_data_);
-      **this = std::move(*rhs);
+      static_owned_data_ = std::move(rhs.static_owned_data_);
       owning_ = rhs.owning_;
+      **this = std::move(*rhs);
+      if (owning_) {
+        reset_pointer_vector(size());
+      } else {
+        this->reset(data(), size());
+      }
     } else {
       ASSERT(rhs.size() == size(), "Must copy into same size, not "
                                        << rhs.size() << " into " << size());
@@ -373,18 +401,16 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
   return *this;
 }
 
-/// \cond HIDDEN_SYMBOLS
 // This is a converting constructor. clang-tidy complains that it's not
 // explicit, but we want it to allow conversion.
 // clang-tidy: mark as explicit (we want conversion to VectorImpl)
-template <typename T, typename VectorType>
+template <typename T, typename VectorType, size_t StaticSize>
 template <typename VT, bool VF,
           Requires<VectorImpl_detail::is_assignable_v<VectorType,
                                                       typename VT::ResultType>>>
-VectorImpl<T, VectorType>::VectorImpl(
+VectorImpl<T, VectorType, StaticSize>::VectorImpl(
     const blaze::DenseVector<VT, VF>& expression)  // NOLINT
-    : owned_data_(cpp20::make_unique_for_overwrite<value_type[]>(
-          (*expression).size())) {
+    : owned_data_(heap_alloc_if_necessary((*expression).size())) {
   static_assert(
       VectorImpl_detail::is_assignable_v<VectorType, typename VT::ResultType>,
       "Cannot construct the VectorImpl type from the given expression type.");
@@ -392,16 +418,16 @@ VectorImpl<T, VectorType>::VectorImpl(
   **this = expression;
 }
 
-template <typename T, typename VectorType>
+template <typename T, typename VectorType, size_t StaticSize>
 template <typename VT, bool VF>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
+VectorImpl<T, VectorType, StaticSize>&
+VectorImpl<T, VectorType, StaticSize>::operator=(
     const blaze::DenseVector<VT, VF>& expression) {
   static_assert(
       VectorImpl_detail::is_assignable_v<VectorType, typename VT::ResultType>,
       "Cannot assign to the VectorImpl type from the given expression type.");
   if (owning_ and (*expression).size() != size()) {
-    owned_data_ =
-        cpp20::make_unique_for_overwrite<value_type[]>((*expression).size());
+    owned_data_ = heap_alloc_if_necessary((*expression).size());
     reset_pointer_vector((*expression).size());
   } else if (not owning_) {
     ASSERT((*expression).size() == size(), "Must copy into same size, not "
@@ -417,21 +443,22 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 // `blaze::DenseVector` forwards the assignment to the `blaze::CustomVector`
 // base type. In the case of a single compatible value, this fills the vector
 // with that value.
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(const T& rhs) {
+template <typename T, typename VectorType, size_t StaticSize>
+VectorImpl<T, VectorType, StaticSize>&
+VectorImpl<T, VectorType, StaticSize>::operator=(const T& rhs) {
   **this = rhs;
   return *this;
 }
 
-template <typename T, typename VectorType>
-void VectorImpl<T, VectorType>::pup(PUP::er& p) {  // NOLINT
+template <typename T, typename VectorType, size_t StaticSize>
+void VectorImpl<T, VectorType, StaticSize>::pup(PUP::er& p) {  // NOLINT
   ASSERT(owning_, "Cannot pup a non-owning vector!");
   auto my_size = size();
   p | my_size;
   if (my_size > 0) {
     if (p.isUnpacking()) {
       owning_ = true;
-      owned_data_ = cpp20::make_unique_for_overwrite<value_type[]>(my_size);
+      owned_data_ = heap_alloc_if_necessary(my_size);
       reset_pointer_vector(my_size);
     }
     PUParray(p, data(), size());
@@ -439,8 +466,9 @@ void VectorImpl<T, VectorType>::pup(PUP::er& p) {  // NOLINT
 }
 
 /// Output operator for VectorImpl
-template <typename T, typename VectorType>
-std::ostream& operator<<(std::ostream& os, const VectorImpl<T, VectorType>& d) {
+template <typename T, typename VectorType, size_t StaticSize>
+std::ostream& operator<<(std::ostream& os,
+                         const VectorImpl<T, VectorType, StaticSize>& d) {
   sequence_print_helper(os, d.begin(), d.end());
   return os;
 }
@@ -670,9 +698,9 @@ template <typename T>
 using get_vector_element_type_t = typename get_vector_element_type<T>::type;
 
 namespace detail {
-template <typename... VectorImplTemplateArgs>
+template <typename T, typename VectorType, size_t StaticSize>
 std::true_type is_derived_of_vector_impl_impl(
-    const VectorImpl<VectorImplTemplateArgs...>*);
+    const VectorImpl<T, VectorType, StaticSize>*);
 
 std::false_type is_derived_of_vector_impl_impl(...);
 }  // namespace detail

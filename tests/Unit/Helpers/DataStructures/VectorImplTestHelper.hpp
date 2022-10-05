@@ -44,112 +44,126 @@ void vector_test_construct_and_assign(
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
-  UniformCustomDistribution<size_t> sdist{2, 20};
+  std::vector<size_t> sizes;
+  if constexpr (VectorType::static_size >= 2) {
+    static_assert(VectorType::static_size < 19);
+    UniformCustomDistribution<size_t> static_sdist{2, VectorType::static_size};
+    UniformCustomDistribution<size_t> sdist{VectorType::static_size + 1, 20};
+    sizes = std::vector<size_t>{static_sdist(gen), VectorType::static_size,
+                                sdist(gen)};
+  } else {
+    UniformCustomDistribution<size_t> sdist{2, 20};
+    // Two for good measure
+    sizes = std::vector<size_t>{sdist(gen), sdist(gen)};
+  }
 
-  const size_t size = sdist(gen);
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    const VectorType size_constructed{size};
+    CHECK(size_constructed.size() == size);
+    const auto generated_value1 = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
 
-  const VectorType size_constructed{size};
-  CHECK(size_constructed.size() == size);
-  const auto generated_value1 = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
+    const VectorType value_size_constructed{size, generated_value1};
+    CHECK(value_size_constructed.size() == size);
+    alg::for_each(value_size_constructed,
+                  [generated_value1, &value_size_constructed](
+                      typename VectorType::value_type element) {
+                    CAPTURE(value_size_constructed);
+                    CHECK(element == generated_value1);
+                  });
 
-  const VectorType value_size_constructed{size, generated_value1};
-  CHECK(value_size_constructed.size() == size);
-  alg::for_each(value_size_constructed,
-                [generated_value1, &value_size_constructed](
-                    typename VectorType::value_type element) {
-                  CAPTURE(value_size_constructed);
-                  CHECK(element == generated_value1);
-                });
+    // random generation must use `make_with_random_values`, because stored
+    // value in vector type might be a non-fundamental type.
+    const auto generated_value2 = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
+    const auto generated_value3 = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
 
-  // random generation must use `make_with_random_values`, because stored value
-  // in vector type might be a non-fundamental type.
-  const auto generated_value2 = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto generated_value3 = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
+    VectorType initializer_list_constructed{
+        {static_cast<typename VectorType::value_type>(generated_value2),
+         static_cast<typename VectorType::value_type>(generated_value3)}};
+    CHECK(initializer_list_constructed.size() == 2);
+    CHECK(initializer_list_constructed.is_owning());
+    CHECK(gsl::at(initializer_list_constructed, 0) == generated_value2);
+    CHECK(gsl::at(initializer_list_constructed, 1) == generated_value3);
 
-  VectorType initializer_list_constructed{
-      {static_cast<typename VectorType::value_type>(generated_value2),
-       static_cast<typename VectorType::value_type>(generated_value3)}};
-  CHECK(initializer_list_constructed.size() == 2);
-  CHECK(initializer_list_constructed.is_owning());
-  CHECK(gsl::at(initializer_list_constructed, 0) == generated_value2);
-  CHECK(gsl::at(initializer_list_constructed, 1) == generated_value3);
+    // check equality operators do not perform approximate comparison
+    CHECK(SINGLE_ARG(
+        initializer_list_constructed ==
+        VectorType{
+            {static_cast<typename VectorType::value_type>(generated_value2),
+             static_cast<typename VectorType::value_type>(generated_value3)}}));
+    CHECK_FALSE(SINGLE_ARG(
+        initializer_list_constructed !=
+        VectorType{
+            {static_cast<typename VectorType::value_type>(generated_value2),
+             static_cast<typename VectorType::value_type>(generated_value3)}}));
+    const VectorType close = (1.0 + 1.0e-14) * initializer_list_constructed;
+    CHECK(initializer_list_constructed != close);
+    CHECK_FALSE(initializer_list_constructed == close);
+    CHECK_ITERABLE_APPROX(initializer_list_constructed, close);
 
-  // check equality operators do not perform approximate comparison
-  CHECK(SINGLE_ARG(
-      initializer_list_constructed ==
-      VectorType{
-          {static_cast<typename VectorType::value_type>(generated_value2),
-           static_cast<typename VectorType::value_type>(generated_value3)}}));
-  CHECK_FALSE(SINGLE_ARG(
-      initializer_list_constructed !=
-      VectorType{
-          {static_cast<typename VectorType::value_type>(generated_value2),
-           static_cast<typename VectorType::value_type>(generated_value3)}}));
-  const VectorType close = (1.0 + 1.0e-14) * initializer_list_constructed;
-  CHECK(initializer_list_constructed != close);
-  CHECK_FALSE(initializer_list_constructed == close);
-  CHECK_ITERABLE_APPROX(initializer_list_constructed, close);
+    CHECK(initializer_list_constructed !=
+          (initializer_list_constructed +
+           1.0e-11 * initializer_list_constructed));
+    CHECK_FALSE(initializer_list_constructed ==
+                (initializer_list_constructed +
+                 1.0e-11 * initializer_list_constructed));
+    CHECK(initializer_list_constructed !=
+          static_cast<typename VectorType::value_type>(generated_value2));
+    CHECK(static_cast<typename VectorType::value_type>(generated_value2) !=
+          initializer_list_constructed);
+    CHECK_FALSE(initializer_list_constructed ==
+                static_cast<typename VectorType::value_type>(generated_value2));
+    CHECK_FALSE(static_cast<typename VectorType::value_type>(
+                    generated_value2) == initializer_list_constructed);
 
-  CHECK(
-      initializer_list_constructed !=
-      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
-  CHECK_FALSE(
-      initializer_list_constructed ==
-      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
-  CHECK(initializer_list_constructed !=
-        static_cast<typename VectorType::value_type>(generated_value2));
-  CHECK(static_cast<typename VectorType::value_type>(generated_value2) !=
-        initializer_list_constructed);
-  CHECK_FALSE(initializer_list_constructed ==
-              static_cast<typename VectorType::value_type>(generated_value2));
-  CHECK_FALSE(static_cast<typename VectorType::value_type>(generated_value2) ==
-              initializer_list_constructed);
+    CHECK((initializer_list_constructed -
+           1.0e-11 * initializer_list_constructed) !=
+          (initializer_list_constructed +
+           1.0e-11 * initializer_list_constructed));
+    CHECK_FALSE((initializer_list_constructed -
+                 1.0e-11 * initializer_list_constructed) ==
+                (initializer_list_constructed +
+                 1.0e-11 * initializer_list_constructed));
 
-  CHECK(
-      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) !=
-      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
-  CHECK_FALSE(
-      (initializer_list_constructed - 1.0e-11 * initializer_list_constructed) ==
-      (initializer_list_constructed + 1.0e-11 * initializer_list_constructed));
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    typename VectorType::value_type raw_ptr[2] = {generated_value2,
+                                                  generated_value3};
+    const VectorType pointer_size_constructed{
+        static_cast<typename VectorType::value_type*>(raw_ptr), 2};
+    CHECK(initializer_list_constructed == pointer_size_constructed);
+    CHECK_FALSE(initializer_list_constructed != pointer_size_constructed);
 
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  typename VectorType::value_type raw_ptr[2] = {generated_value2,
-                                                generated_value3};
-  const VectorType pointer_size_constructed{
-      static_cast<typename VectorType::value_type*>(raw_ptr), 2};
-  CHECK(initializer_list_constructed == pointer_size_constructed);
-  CHECK_FALSE(initializer_list_constructed != pointer_size_constructed);
+    test_copy_semantics(initializer_list_constructed);
+    auto initializer_list_constructed_copy = initializer_list_constructed;
+    CHECK(initializer_list_constructed_copy.is_owning());
+    CHECK(initializer_list_constructed_copy == pointer_size_constructed);
+    test_move_semantics(std::move(initializer_list_constructed),
+                        initializer_list_constructed_copy);
 
-  test_copy_semantics(initializer_list_constructed);
-  auto initializer_list_constructed_copy = initializer_list_constructed;
-  CHECK(initializer_list_constructed_copy.is_owning());
-  CHECK(initializer_list_constructed_copy == pointer_size_constructed);
-  test_move_semantics(std::move(initializer_list_constructed),
-                      initializer_list_constructed_copy);
+    VectorType move_assignment_initialized;
+    move_assignment_initialized = std::move(initializer_list_constructed_copy);
+    CHECK(move_assignment_initialized.is_owning());
 
-  VectorType move_assignment_initialized;
-  move_assignment_initialized = std::move(initializer_list_constructed_copy);
-  CHECK(move_assignment_initialized.is_owning());
+    VectorType move_constructed{std::move(move_assignment_initialized)};
+    CHECK(move_constructed.is_owning());
+    CHECK(move_constructed == pointer_size_constructed);
 
-  VectorType move_constructed{std::move(move_assignment_initialized)};
-  CHECK(move_constructed.is_owning());
-  CHECK(move_constructed == pointer_size_constructed);
+    // clang-tidy has performance complaints, and we're checking functionality
+    const VectorType copy_constructed{move_constructed};  // NOLINT
+    CHECK(copy_constructed.is_owning());
+    CHECK(copy_constructed == pointer_size_constructed);
 
-  // clang-tidy has performance complaints, and we're checking functionality
-  const VectorType copy_constructed{move_constructed};  // NOLINT
-  CHECK(copy_constructed.is_owning());
-  CHECK(copy_constructed == pointer_size_constructed);
-
-  // check the destructive resize utility
-  const VectorType destructive_resize_check_copy = move_constructed;
-  move_constructed.destructive_resize(move_constructed.size());
-  CHECK(move_constructed == destructive_resize_check_copy);
-  move_constructed.destructive_resize(move_constructed.size() + 1);
-  CHECK(move_constructed != destructive_resize_check_copy);
-  CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);
+    // check the destructive resize utility
+    const VectorType destructive_resize_check_copy = move_constructed;
+    move_constructed.destructive_resize(move_constructed.size());
+    CHECK(move_constructed == destructive_resize_check_copy);
+    move_constructed.destructive_resize(move_constructed.size() + 1);
+    CHECK(move_constructed != destructive_resize_check_copy);
+    CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);
+  }
 }
 
 /// \ingroup TestingFrameworkGroup
@@ -163,37 +177,51 @@ void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
-  UniformCustomDistribution<size_t> sdist{2, 20};
+  std::vector<size_t> sizes;
+  if constexpr (VectorType::static_size >= 2) {
+    static_assert(VectorType::static_size < 19);
+    UniformCustomDistribution<size_t> static_sdist{2, VectorType::static_size};
+    UniformCustomDistribution<size_t> sdist{VectorType::static_size + 1, 20};
+    sizes = std::vector<size_t>{static_sdist(gen), VectorType::static_size,
+                                sdist(gen)};
+  } else {
+    UniformCustomDistribution<size_t> sdist{2, 20};
+    // Two for good measure
+    sizes = std::vector<size_t>{sdist(gen), sdist(gen)};
+  }
 
-  const size_t size = sdist(gen);
-  VectorType vector_test{size};
-  VectorType vector_control{size};
-  VectorType vector_ref;
-  const auto start_value = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto value_difference = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
-  // generate_series is used to generate a pair of equivalent, but independently
-  // constructed, data sets to fill the vectors with.
-  ValueType current_value = start_value;
-  const auto generate_series = [&current_value, value_difference]() {
-    return current_value += value_difference;
-  };
-  std::generate(vector_test.begin(), vector_test.end(), generate_series);
-  current_value = start_value;
-  std::generate(vector_control.begin(), vector_control.end(), generate_series);
-  // checks the vectors have been constructed as expected
-  CHECK(vector_control == vector_test);
-  CHECK(vector_test.is_owning());
-  CHECK(vector_control.is_owning());
-  const VectorType serialized_vector_test =
-      serialize_and_deserialize(vector_test);
-  // check that the vector is unaltered by serialize_and_deserialize
-  CHECK(vector_control == vector_test);
-  CHECK(serialized_vector_test == vector_control);
-  CHECK(serialized_vector_test.is_owning());
-  CHECK(serialized_vector_test.data() != vector_test.data());
-  CHECK(vector_test.is_owning());
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    VectorType vector_test{size};
+    VectorType vector_control{size};
+    VectorType vector_ref;
+    const auto start_value = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
+    const auto value_difference = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
+    // generate_series is used to generate a pair of equivalent, but
+    // independently constructed, data sets to fill the vectors with.
+    ValueType current_value = start_value;
+    const auto generate_series = [&current_value, value_difference]() {
+      return current_value += value_difference;
+    };
+    std::generate(vector_test.begin(), vector_test.end(), generate_series);
+    current_value = start_value;
+    std::generate(vector_control.begin(), vector_control.end(),
+                  generate_series);
+    // checks the vectors have been constructed as expected
+    CHECK(vector_control == vector_test);
+    CHECK(vector_test.is_owning());
+    CHECK(vector_control.is_owning());
+    const VectorType serialized_vector_test =
+        serialize_and_deserialize(vector_test);
+    // check that the vector is unaltered by serialize_and_deserialize
+    CHECK(vector_control == vector_test);
+    CHECK(serialized_vector_test == vector_control);
+    CHECK(serialized_vector_test.is_owning());
+    CHECK(serialized_vector_test.data() != vector_test.data());
+    CHECK(vector_test.is_owning());
+  }
 }
 
 /// \ingroup TestingFrameworkGroup
@@ -207,79 +235,93 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
-  UniformCustomDistribution<size_t> sdist{2, 20};
-
-  const size_t size = sdist(gen);
-  auto original_vector = make_with_random_values<VectorType>(
-      make_not_null(&gen), make_not_null(&dist), VectorType{size});
-
-  {
-    INFO("Check construction, copy, move, and ownership of reference vectors")
-    VectorType ref_vector;
-    ref_vector.set_data_ref(&original_vector);
-    CHECK_FALSE(ref_vector.is_owning());
-    CHECK(original_vector.is_owning());
-    CHECK(ref_vector.data() == original_vector.data());
-
-    const VectorType data_check{original_vector};
-    CHECK(ref_vector.size() == size);
-    CHECK(ref_vector == data_check);
-    test_copy_semantics(ref_vector);
-
-    VectorType ref_vector_copy;
-    ref_vector_copy.set_data_ref(&ref_vector);
-    test_move_semantics(std::move(ref_vector), ref_vector_copy);
-    VectorType move_assignment_initialized;
-    move_assignment_initialized = std::move(ref_vector_copy);
-    CHECK(not move_assignment_initialized.is_owning());
-    const VectorType move_constructed{std::move(move_assignment_initialized)};
-    CHECK(not move_constructed.is_owning());
-    // check the ability to make a const view
-    const VectorType const_view;
-    make_const_view(make_not_null(&const_view), move_constructed, 1, size - 1);
-    CHECK(const_view.size() == size - 1);
-    CHECK(const_view.data() == move_constructed.data() + 1);
+  std::vector<size_t> sizes;
+  if constexpr (VectorType::static_size >= 2) {
+    static_assert(VectorType::static_size < 19);
+    UniformCustomDistribution<size_t> static_sdist{2, VectorType::static_size};
+    UniformCustomDistribution<size_t> sdist{VectorType::static_size + 1, 20};
+    sizes = std::vector<size_t>{static_sdist(gen), VectorType::static_size,
+                                sdist(gen)};
+  } else {
+    UniformCustomDistribution<size_t> sdist{2, 20};
+    // Two for good measure
+    sizes = std::vector<size_t>{sdist(gen), sdist(gen)};
   }
-  {
-    INFO("Check move acts appropriately on both source and target refs")
-    VectorType ref_original_vector;
-    ref_original_vector.set_data_ref(&original_vector);
-    auto generated_vector = make_with_random_values<VectorType>(
+
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    auto original_vector = make_with_random_values<VectorType>(
         make_not_null(&gen), make_not_null(&dist), VectorType{size});
-    const VectorType generated_vector_copy = generated_vector;
-    ref_original_vector = std::move(generated_vector);
-    // clang-tidy : Intentionally testing use after move
-    CHECK(original_vector != generated_vector);  // NOLINT
-    CHECK(original_vector == generated_vector_copy);
+
+    {
+      INFO("Check construction, copy, move, and ownership of reference vectors")
+      VectorType ref_vector;
+      ref_vector.set_data_ref(&original_vector);
+      CHECK_FALSE(ref_vector.is_owning());
+      CHECK(original_vector.is_owning());
+      CHECK(ref_vector.data() == original_vector.data());
+
+      const VectorType data_check{original_vector};
+      CHECK(ref_vector.size() == size);
+      CHECK(ref_vector == data_check);
+      test_copy_semantics(ref_vector);
+
+      VectorType ref_vector_copy;
+      ref_vector_copy.set_data_ref(&ref_vector);
+      test_move_semantics(std::move(ref_vector), ref_vector_copy);
+      VectorType move_assignment_initialized;
+      move_assignment_initialized = std::move(ref_vector_copy);
+      CHECK(not move_assignment_initialized.is_owning());
+      const VectorType move_constructed{std::move(move_assignment_initialized)};
+      CHECK(not move_constructed.is_owning());
+      // check the ability to make a const view
+      const VectorType const_view;
+      make_const_view(make_not_null(&const_view), move_constructed, 1,
+                      size - 1);
+      CHECK(const_view.size() == size - 1);
+      CHECK(const_view.data() == move_constructed.data() + 1);
+    }
+    {
+      INFO("Check move acts appropriately on both source and target refs")
+      VectorType ref_original_vector;
+      ref_original_vector.set_data_ref(&original_vector);
+      auto generated_vector = make_with_random_values<VectorType>(
+          make_not_null(&gen), make_not_null(&dist), VectorType{size});
+      const VectorType generated_vector_copy = generated_vector;
+      ref_original_vector = std::move(generated_vector);
+      // clang-tidy : Intentionally testing use after move
+      CHECK(original_vector != generated_vector);  // NOLINT
+      CHECK(original_vector == generated_vector_copy);
 // Intentionally testing self-move
 #ifdef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-move"
 #endif  // defined(__clang__)
-    ref_original_vector = std::move(ref_original_vector);
+      ref_original_vector = std::move(ref_original_vector);
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif  // defined(__clang__)
-    CHECK(original_vector == generated_vector_copy);
-    // clang-tidy: false positive, used after it was moved
-    const VectorType data_check_vector = ref_original_vector;  // NOLINT
-    CHECK(data_check_vector == generated_vector_copy);
-  }
-  {
-    INFO("Check math affects both data vectors which share a ref")
-    const auto generated_value1 = make_with_random_values<ValueType>(
-        make_not_null(&gen), make_not_null(&dist));
-    const auto generated_value2 = make_with_random_values<ValueType>(
-        make_not_null(&gen), make_not_null(&dist));
-    const auto sum_generated_values = generated_value1 + generated_value2;
-    VectorType sharing_vector{size, generated_value1};
-    VectorType owning_vector{size, generated_value2};
-    sharing_vector.set_data_ref(&owning_vector);
-    sharing_vector = sharing_vector + generated_value1;
-    CHECK_ITERABLE_APPROX(owning_vector,
-                          (VectorType{size, sum_generated_values}));
-    CHECK_ITERABLE_APPROX(sharing_vector,
-                          (VectorType{size, sum_generated_values}));
+      CHECK(original_vector == generated_vector_copy);
+      // clang-tidy: false positive, used after it was moved
+      const VectorType data_check_vector = ref_original_vector;  // NOLINT
+      CHECK(data_check_vector == generated_vector_copy);
+    }
+    {
+      INFO("Check math affects both data vectors which share a ref")
+      const auto generated_value1 = make_with_random_values<ValueType>(
+          make_not_null(&gen), make_not_null(&dist));
+      const auto generated_value2 = make_with_random_values<ValueType>(
+          make_not_null(&gen), make_not_null(&dist));
+      const auto sum_generated_values = generated_value1 + generated_value2;
+      VectorType sharing_vector{size, generated_value1};
+      VectorType owning_vector{size, generated_value2};
+      sharing_vector.set_data_ref(&owning_vector);
+      sharing_vector = sharing_vector + generated_value1;
+      CHECK_ITERABLE_APPROX(owning_vector,
+                            (VectorType{size, sum_generated_values}));
+      CHECK_ITERABLE_APPROX(sharing_vector,
+                            (VectorType{size, sum_generated_values}));
+    }
   }
 }
 
@@ -311,25 +353,39 @@ void vector_ref_test_size_error(
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
-  UniformCustomDistribution<size_t> sdist{2, 20};
+  std::vector<size_t> sizes;
+  if constexpr (VectorType::static_size >= 2) {
+    static_assert(VectorType::static_size < 19);
+    UniformCustomDistribution<size_t> static_sdist{2, VectorType::static_size};
+    UniformCustomDistribution<size_t> sdist{VectorType::static_size + 1, 20};
+    sizes = std::vector<size_t>{static_sdist(gen), VectorType::static_size,
+                                sdist(gen)};
+  } else {
+    UniformCustomDistribution<size_t> sdist{2, 20};
+    // Two for good measure
+    sizes = std::vector<size_t>{sdist(gen), sdist(gen)};
+  }
 
-  const size_t size = sdist(gen);
-  auto generated_vector = make_with_random_values<VectorType>(
-      make_not_null(&gen), make_not_null(&dist), VectorType{size});
-  VectorType ref_generated_vector;
-  ref_generated_vector.set_data_ref(&generated_vector);
-  const auto larger_generated_vector = make_with_random_values<VectorType>(
-      make_not_null(&gen), make_not_null(&dist), VectorType{size + 1});
-  // each of the following options should error, the reference should have
-  // received the wrong size
-  if (test_kind == RefSizeErrorTestKind::Copy) {
-    ref_generated_vector = larger_generated_vector;
-  }
-  if (test_kind == RefSizeErrorTestKind::ExpressionAssign) {
-    ref_generated_vector = (larger_generated_vector + larger_generated_vector);
-  }
-  if (test_kind == RefSizeErrorTestKind::Move) {
-    ref_generated_vector = std::move(larger_generated_vector);
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    auto generated_vector = make_with_random_values<VectorType>(
+        make_not_null(&gen), make_not_null(&dist), VectorType{size});
+    VectorType ref_generated_vector;
+    ref_generated_vector.set_data_ref(&generated_vector);
+    const auto larger_generated_vector = make_with_random_values<VectorType>(
+        make_not_null(&gen), make_not_null(&dist), VectorType{size + 1});
+    // each of the following options should error, the reference should have
+    // received the wrong size
+    if (test_kind == RefSizeErrorTestKind::Copy) {
+      ref_generated_vector = larger_generated_vector;
+    }
+    if (test_kind == RefSizeErrorTestKind::ExpressionAssign) {
+      ref_generated_vector =
+          (larger_generated_vector + larger_generated_vector);
+    }
+    if (test_kind == RefSizeErrorTestKind::Move) {
+      ref_generated_vector = std::move(larger_generated_vector);
+    }
   }
 }
 
@@ -345,73 +401,91 @@ void vector_test_math_after_move(
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
-  UniformCustomDistribution<size_t> sdist{2, 20};
-
-  const size_t size = sdist(gen);
-  const auto generated_value1 = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto generated_value2 = make_with_random_values<ValueType>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto sum_generated_values = generated_value1 + generated_value2;
-  const auto difference_generated_values = generated_value1 - generated_value2;
-
-  const VectorType vector_math_lhs{size, generated_value1};
-  const VectorType vector_math_rhs{size, generated_value2};
-  {
-    INFO("Check move assignment and use after move");
-    auto from_vector = make_with_random_values<VectorType>(
-        make_not_null(&gen), make_not_null(&dist), VectorType{size});
-    VectorType to_vector{};
-    to_vector = std::move(from_vector);
-    to_vector = vector_math_lhs + vector_math_rhs;
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
-    // clang-tidy: use after move (intentional here)
-    CHECK(from_vector.size() == 0);  // NOLINT
-    CHECK(from_vector.is_owning());
-    from_vector = vector_math_lhs - vector_math_rhs;
-    CHECK_ITERABLE_APPROX(from_vector,
-                          (VectorType{size, difference_generated_values}));
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
-  }
-  {
-    INFO("Check move assignment and value of target")
-    auto from_value = make_with_random_values<ValueType>(make_not_null(&gen),
-                                                         make_not_null(&dist));
-    VectorType from_vector{size, from_value};
-    VectorType to_vector{};
-    to_vector = std::move(from_vector);
-    from_vector = vector_math_lhs + vector_math_rhs;
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
-    CHECK_ITERABLE_APPROX(from_vector,
-                          (VectorType{size, sum_generated_values}));
-  }
-  {
-    INFO("Check move constructor and use after move")
-    auto from_vector = make_with_random_values<VectorType>(
-        make_not_null(&gen), make_not_null(&dist), VectorType{size});
-    VectorType to_vector{std::move(from_vector)};
-    to_vector = vector_math_lhs + vector_math_rhs;
-    CHECK(to_vector.size() == size);
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
-    // clang-tidy: use after move (intentional here)
-    CHECK(from_vector.size() == 0);  // NOLINT
-    CHECK(from_vector.is_owning());
-    from_vector = vector_math_lhs - vector_math_rhs;
-    CHECK_ITERABLE_APPROX(from_vector,
-                          (VectorType{size, difference_generated_values}));
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
+  std::vector<size_t> sizes;
+  if constexpr (VectorType::static_size >= 2) {
+    static_assert(VectorType::static_size < 19);
+    UniformCustomDistribution<size_t> static_sdist{2, VectorType::static_size};
+    UniformCustomDistribution<size_t> sdist{VectorType::static_size + 1, 20};
+    sizes = std::vector<size_t>{static_sdist(gen), VectorType::static_size,
+                                sdist(gen)};
+  } else {
+    UniformCustomDistribution<size_t> sdist{2, 20};
+    // Two for good measure
+    sizes = std::vector<size_t>{sdist(gen), sdist(gen)};
   }
 
-  {
-    INFO("Check move constructor and value of target")
-    auto from_value = make_with_random_values<ValueType>(make_not_null(&gen),
-                                                         make_not_null(&dist));
-    VectorType from_vector{size, from_value};
-    const VectorType to_vector{std::move(from_vector)};
-    from_vector = vector_math_lhs + vector_math_rhs;
-    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
-    CHECK_ITERABLE_APPROX(from_vector,
-                          (VectorType{size, sum_generated_values}));
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    const auto generated_value1 = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
+    const auto generated_value2 = make_with_random_values<ValueType>(
+        make_not_null(&gen), make_not_null(&dist));
+    const auto sum_generated_values = generated_value1 + generated_value2;
+    const auto difference_generated_values =
+        generated_value1 - generated_value2;
+
+    const VectorType vector_math_lhs{size, generated_value1};
+    const VectorType vector_math_rhs{size, generated_value2};
+    {
+      INFO("Check move assignment and use after move");
+      auto from_vector = make_with_random_values<VectorType>(
+          make_not_null(&gen), make_not_null(&dist), VectorType{size});
+      VectorType to_vector{};
+      to_vector = std::move(from_vector);
+      to_vector = vector_math_lhs + vector_math_rhs;
+      CHECK_ITERABLE_APPROX(to_vector,
+                            (VectorType{size, sum_generated_values}));
+      // clang-tidy: use after move (intentional here)
+      CHECK(from_vector.size() == 0);  // NOLINT
+      CHECK(from_vector.is_owning());
+      from_vector = vector_math_lhs - vector_math_rhs;
+      CHECK_ITERABLE_APPROX(from_vector,
+                            (VectorType{size, difference_generated_values}));
+      CHECK_ITERABLE_APPROX(to_vector,
+                            (VectorType{size, sum_generated_values}));
+    }
+    {
+      INFO("Check move assignment and value of target")
+      auto from_value = make_with_random_values<ValueType>(
+          make_not_null(&gen), make_not_null(&dist));
+      VectorType from_vector{size, from_value};
+      VectorType to_vector{};
+      to_vector = std::move(from_vector);
+      from_vector = vector_math_lhs + vector_math_rhs;
+      CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+      CHECK_ITERABLE_APPROX(from_vector,
+                            (VectorType{size, sum_generated_values}));
+    }
+    {
+      INFO("Check move constructor and use after move")
+      auto from_vector = make_with_random_values<VectorType>(
+          make_not_null(&gen), make_not_null(&dist), VectorType{size});
+      VectorType to_vector{std::move(from_vector)};
+      to_vector = vector_math_lhs + vector_math_rhs;
+      CHECK(to_vector.size() == size);
+      CHECK_ITERABLE_APPROX(to_vector,
+                            (VectorType{size, sum_generated_values}));
+      // clang-tidy: use after move (intentional here)
+      CHECK(from_vector.size() == 0);  // NOLINT
+      CHECK(from_vector.is_owning());
+      from_vector = vector_math_lhs - vector_math_rhs;
+      CHECK_ITERABLE_APPROX(from_vector,
+                            (VectorType{size, difference_generated_values}));
+      CHECK_ITERABLE_APPROX(to_vector,
+                            (VectorType{size, sum_generated_values}));
+    }
+
+    {
+      INFO("Check move constructor and value of target")
+      auto from_value = make_with_random_values<ValueType>(
+          make_not_null(&gen), make_not_null(&dist));
+      VectorType from_vector{size, from_value};
+      const VectorType to_vector{std::move(from_vector)};
+      from_vector = vector_math_lhs + vector_math_rhs;
+      CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+      CHECK_ITERABLE_APPROX(from_vector,
+                            (VectorType{size, sum_generated_values}));
+    }
   }
 }
 
@@ -469,7 +543,7 @@ template <class T>
 std::variant<ValueWrapper<T>, std::reference_wrapper<T>,
              std::reference_wrapper<const T>>
 wrap(UseRefWrap wrapper, T& t) {
-  if(wrapper == UseRefWrap::Cref) {
+  if (wrapper == UseRefWrap::Cref) {
     return std::cref(t);
   } else if (wrapper == UseRefWrap::Ref) {
     return std::ref(t);
@@ -609,27 +683,31 @@ void test_function_on_vector_operands(
     const std::tuple<Operands...>& /*operands*/,
     std::index_sequence<Is...> /*meta*/) {
   MAKE_GENERATOR(generator);
-  UniformCustomDistribution<size_t> size_distribution{2, 5};
-  const size_t size = size_distribution(generator);
-  // using each distribution, generate a value for the appropriate operand type
-  // and put it in a tuple.
-  std::tuple<std::decay_t<Operands>...> operand_values{
-      make_with_random_values<Operands>(
-          make_not_null(&generator),
-          UniformCustomDistribution<
-              tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
-              std::get<Is>(bounds)},
-          size)...};
-  // wrap the tuple of random values according to the passed in `wraps` -- these
-  // will end up being a tuple of std::variant, that we need to choose between
-  // using compile-time logic
-  auto wrapped_operands = wrap_tuple(
-      operand_values, wraps, std::make_index_sequence<sizeof...(Bounds)>{});
-  const auto visitor_helper = [&function](auto... operands) {
-    CheckWrappedOperandsVisitor<Function, Is...> visitor{function};
-    std::visit(visitor, operands...);
-  };
-  std::apply(visitor_helper, wrapped_operands);
+  UniformCustomDistribution<size_t> sdist{2, 5};
+  // Two for good measure
+  std::vector<size_t> sizes{sdist(generator), sdist(generator)};
+
+  for (const size_t& size : sizes) {
+    CAPTURE(size);
+    // using each distribution, generate a value for the appropriate operand
+    // type and put it in a tuple.
+    std::tuple<std::decay_t<Operands>...> operand_values{
+        make_with_random_values<Operands>(
+            make_not_null(&generator),
+            UniformCustomDistribution<tt::get_fundamental_type_t<
+                get_vector_element_type_t<Operands>>>{std::get<Is>(bounds)},
+            size)...};
+    // wrap the tuple of random values according to the passed in `wraps` --
+    // these will end up being a tuple of std::variant, that we need to choose
+    // between using compile-time logic
+    auto wrapped_operands = wrap_tuple(
+        operand_values, wraps, std::make_index_sequence<sizeof...(Bounds)>{});
+    const auto visitor_helper = [&function](auto... operands) {
+      CheckWrappedOperandsVisitor<Function, Is...> visitor{function};
+      std::visit(visitor, operands...);
+    };
+    std::apply(visitor_helper, wrapped_operands);
+  }
 }
 
 // Set of structs for choosing between execution paths when assembling the
@@ -727,7 +805,7 @@ void assemble_test_function_arguments_and_execute_tests(
                                     &i](const auto y) {
       using next_vector = typename decltype(y)::type;
       std::array<UseRefWrap, sizeof...(Operands) + 1_st> new_wraps;
-      for(size_t j = 0; j < sizeof...(Operands); ++j) {
+      for (size_t j = 0; j < sizeof...(Operands); ++j) {
         new_wraps[j] = wraps[j];
       }
       new_wraps[new_wraps.size() - 1] = WrapperList[i];
