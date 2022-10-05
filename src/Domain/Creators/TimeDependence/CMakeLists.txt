@@ -13,6 +13,7 @@ spectre_target_sources(
   ScalingAndZRotation.cpp
   RegisterDerivedWithCharm.cpp
   RotationAboutZAxis.cpp
+  Shape.cpp
   SphericalCompression.cpp
   UniformTranslation.cpp
   )
@@ -27,6 +28,7 @@ spectre_target_headers(
   RegisterDerivedWithCharm.hpp
   RotationAboutZAxis.hpp
   ScalingAndZRotation.hpp
+  Shape.hpp
   SphericalCompression.hpp
   TimeDependence.hpp
   UniformTranslation.hpp
@@ -40,6 +42,7 @@ target_link_libraries(
   Options
   Utilities
   PRIVATE
+  GeneralRelativitySolutions
   ErrorHandling
   INTERFACE
   Domain

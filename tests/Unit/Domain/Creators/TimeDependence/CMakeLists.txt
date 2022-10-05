@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_None.cpp
   Test_RotationAboutZAxis.cpp
   Test_ScalingAndZRotation.cpp
+  Test_Shape.cpp
   Test_SphericalCompression.cpp
   Test_UniformTranslation.cpp
   )

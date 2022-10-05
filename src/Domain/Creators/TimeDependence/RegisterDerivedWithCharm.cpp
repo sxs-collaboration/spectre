@@ -18,6 +18,7 @@
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/ScalingAndZRotation.hpp"
+#include "Domain/Creators/TimeDependence/Shape.hpp"
 #include "Domain/Creators/TimeDependence/SphericalCompression.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
