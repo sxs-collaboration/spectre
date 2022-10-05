@@ -12,10 +12,10 @@ ResourceInfo:
   Singletons:
     CharacteristicEvolution:
       Proc: Auto
-      Exclusive: false
+      Exclusive: False
     H5WorldtubeBoundary:
       Proc: Auto
-      Exclusive: false
+      Exclusive: False
 
 Observers:
   VolumeFileName: "CharacteristicExtractVolume"
@@ -27,7 +27,7 @@ Cce:
       AdamsBashforthN:
         Order: 3
     StepChoosers:
-      - Constant: 1.0
+      - Constant: 0.5
       - Increase:
           Factor: 2
       - ErrorControl(SwshVars):
@@ -45,7 +45,7 @@ Cce:
     StepController:
       BinaryFraction
 
-  LMax: 12
+  LMax: 20
   NumberOfRadialPoints: 12
   ObservationLMax: 8
 
@@ -63,7 +63,7 @@ Cce:
   StartTime: 0.0
   EndTime: 1000.0
   BoundaryDataFilename: CceR0257.h5
-  H5IsBondiData: false
+  H5IsBondiData: False
   H5Interpolator:
     BarycentricRationalSpanInterpolator:
       MinOrder: 10
@@ -76,7 +76,7 @@ Cce:
   Filtering:
     RadialFilterHalfPower: 24
     RadialFilterAlpha: 35.0
-    FilterLMax: 10
+    FilterLMax: 18
 
   ScriInterpOrder: 5
   ScriOutputDensity: 5

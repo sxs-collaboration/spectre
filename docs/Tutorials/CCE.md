@@ -13,10 +13,10 @@ CCE using external data are:
   `tests/InputFiles/Cce/CharacteristicExtract.yaml` from the spectre
   source tree can help you get started with writing your input file.
   There are a few important notes there:
-  - For resolution, the example input file has lmax (`Cce.LMax`) of 12, and
-    filter lmax (`Filtering.FilterLMax`) of 10; that'll run pretty fast but
-    might be a little low for full precision. lmax 16, filter 14 should be
-    pretty good, and typically precision doesn't improve above lmax 24,
+  - For resolution, the example input file has lmax (`Cce.LMax`) of 20, and
+    filter lmax (`Filtering.FilterLMax`) of 18; that may run a bit slow for
+    basic tests, but this value yields the best precision-to-run-time ratio
+    for a typical BBH system. Note that precision doesn't improve above lmax 24,
     filter 22 (be sure to update the filter as you update lmax -- it should
     generally be around 2 lower than the maximum l to reduce possible aliasing).
   - If you want to just run through the end of the provided worldtube data,
@@ -26,8 +26,9 @@ CCE using external data are:
     which is useful for finite-difference derivatives on the output data, but
     otherwise it'll just unnecessarily inflate the output files, so if you
     don't need the extra points, best just set it to 1.
-  - If you're extracting at 100M or less, best to reduce the `TargetStepSize`,
-    to around .5 at 100M and lower yet for nearer extraction.
+  - If you're extracting at 100M or less (which isn't currently recommended
+    due to the junk radiation being much worse), best to keep the `TargetStepSize`
+    as .5 for 100M and perhaps even lower yet for nearer extraction.
   - The `InitializeJ` in the example file uses `ConformalFactor` which has been
     found to perform better than the other schemes implemented so far.
     Other schemes for `InitializeJ` can be found in namespace
