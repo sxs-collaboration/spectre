@@ -38,6 +38,8 @@ class OrientationMap {
   /// The default orientation is the identity map on directions.
   /// The bool `is_aligned_` is correspondingly set to `true`.
   OrientationMap();
+  /// Mapped directions relative to the positive (`Side::Upper`) direction in
+  /// each logical direction.
   explicit OrientationMap(
       std::array<Direction<VolumeDim>, VolumeDim> mapped_directions);
   OrientationMap(

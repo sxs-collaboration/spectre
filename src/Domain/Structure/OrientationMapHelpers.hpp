@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -19,33 +20,25 @@ template <typename TagsList>
 class Variables;
 /// \endcond
 
-namespace OrientationMapHelpers_detail {
-template <typename T>
-void orient_each_component(gsl::not_null<gsl::span<T>*> oriented_variables,
-                           const gsl::span<const T>& variables, size_t num_pts,
-                           const std::vector<size_t>& oriented_offset);
+/// @{
+/// \ingroup ComputationalDomainGroup
+/// \brief Orient variables to the data-storage order of a neighbor element with
+/// the given orientation.
+///
+/// \warning The result is *not* resized and assumes to be of the correct size
+/// (`variables.size()`).
+template <size_t VolumeDim>
+void orient_variables(gsl::not_null<DataVector*> result,
+                      const DataVector& variables,
+                      const Index<VolumeDim>& extents,
+                      const OrientationMap<VolumeDim>& orientation_of_neighbor);
 
 template <size_t VolumeDim>
-std::vector<size_t> oriented_offset(
-    const Index<VolumeDim>& extents,
+void orient_variables_on_slice(
+    gsl::not_null<DataVector*> result, const DataVector& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor);
-
-inline std::vector<size_t> oriented_offset_on_slice(
-    const Index<0>& /*slice_extents*/, const size_t /*sliced_dim*/,
-    const OrientationMap<1>& /*orientation_of_neighbor*/) {
-  // There is only one point on a slice of a 1D mesh
-  return {0};
-}
-
-std::vector<size_t> oriented_offset_on_slice(
-    const Index<1>& slice_extents, size_t sliced_dim,
-    const OrientationMap<2>& orientation_of_neighbor);
-
-std::vector<size_t> oriented_offset_on_slice(
-    const Index<2>& slice_extents, size_t sliced_dim,
-    const OrientationMap<3>& orientation_of_neighbor);
-
-}  // namespace OrientationMapHelpers_detail
+/// @}
 
 /// @{
 /// \ingroup ComputationalDomainGroup
@@ -69,13 +62,11 @@ Variables<TagsList> orient_variables(
                 "  extents.product() = "
              << extents.product());
   Variables<TagsList> oriented_variables(number_of_grid_points);
-  const auto oriented_offset = OrientationMapHelpers_detail::oriented_offset(
+  DataVector result(oriented_variables.data(), oriented_variables.size());
+  orient_variables(
+      make_not_null(&result),
+      DataVector(const_cast<double*>(variables.data()), variables.size()),
       extents, orientation_of_neighbor);
-  auto oriented_vars_view = gsl::make_span(oriented_variables);
-  OrientationMapHelpers_detail::orient_each_component(
-      make_not_null(&oriented_vars_view), gsl::make_span(variables),
-      number_of_grid_points, oriented_offset);
-
   return oriented_variables;
 }
 
@@ -97,16 +88,14 @@ Variables<TagsList> orient_variables_on_slice(
              << "\n"
                 "  slice_extents.product() = "
              << slice_extents.product());
+
   Variables<TagsList> oriented_variables(number_of_grid_points);
-  const auto oriented_offset =
-      OrientationMapHelpers_detail::oriented_offset_on_slice(
-          slice_extents, sliced_dim, orientation_of_neighbor);
-
-  auto oriented_vars_view = gsl::make_span(oriented_variables);
-  OrientationMapHelpers_detail::orient_each_component(
-      make_not_null(&oriented_vars_view), gsl::make_span(variables_on_slice),
-      number_of_grid_points, oriented_offset);
-
+  DataVector result(oriented_variables.data(), oriented_variables.size());
+  orient_variables_on_slice(
+      make_not_null(&result),
+      DataVector(const_cast<double*>(variables_on_slice.data()),
+                 variables_on_slice.size()),
+      slice_extents, sliced_dim, orientation_of_neighbor);
   return oriented_variables;
 }
 /// @}
