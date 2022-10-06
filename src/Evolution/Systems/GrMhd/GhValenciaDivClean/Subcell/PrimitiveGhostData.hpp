@@ -8,6 +8,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -39,16 +40,8 @@ namespace grmhd::GhValenciaDivClean::subcell {
  */
 class PrimitiveGhostDataOnSubcells {
  private:
-  using tags_for_reconstruction =
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
-                 hydro::Tags::MagneticField<DataVector, 3>,
-                 hydro::Tags::DivergenceCleaningField<DataVector>,
-                 gr::Tags::SpacetimeMetric<3>,
-                 GeneralizedHarmonic::Tags::Phi<3>,
-                 GeneralizedHarmonic::Tags::Pi<3>>;
+  using tags_for_reconstruction = GhValenciaDivClean::Tags::
+      primitive_grmhd_and_spacetime_reconstruction_tags;
 
  public:
   using return_tags = tmpl::list<>;
@@ -86,16 +79,8 @@ class PrimitiveGhostDataOnSubcells {
  */
 class PrimitiveGhostDataToSlice {
  private:
-  using tags_for_reconstruction =
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
-                 hydro::Tags::MagneticField<DataVector, 3>,
-                 hydro::Tags::DivergenceCleaningField<DataVector>,
-                 gr::Tags::SpacetimeMetric<3>,
-                 GeneralizedHarmonic::Tags::Phi<3>,
-                 GeneralizedHarmonic::Tags::Pi<3>>;
+  using tags_for_reconstruction = GhValenciaDivClean::Tags::
+      primitive_grmhd_and_spacetime_reconstruction_tags;
 
  public:
   using return_tags = tmpl::list<>;

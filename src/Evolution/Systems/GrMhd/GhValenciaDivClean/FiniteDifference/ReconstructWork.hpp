@@ -86,9 +86,9 @@ void reconstruct_fd_neighbor_work(
     const ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags&
         spacetime_vars_for_grmhd,
     const Variables<PrimsTags>& subcell_volume_prims,
-    const Variables<tmpl::list<
-        gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-        GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_vars,
+    const Variables<
+        grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+        subcell_volume_spacetime_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<

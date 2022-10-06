@@ -35,6 +35,9 @@ struct System {
   using grmhd_system = grmhd::ValenciaDivClean::System;
   using gh_system = GeneralizedHarmonic::System<3_st>;
 
+  static_assert(std::is_same_v<Tags::spacetime_reconstruction_tags,
+                               typename gh_system::variables_tag::tags_list>);
+
   using variables_tag = ::Tags::Variables<
       tmpl::append<typename gh_system::variables_tag::tags_list,
                    typename grmhd_system::variables_tag::tags_list>>;

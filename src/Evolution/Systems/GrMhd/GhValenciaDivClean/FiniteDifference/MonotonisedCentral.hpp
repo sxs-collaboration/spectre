@@ -23,6 +23,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -120,9 +121,9 @@ class MonotonisedCentralPrim : public Reconstructor {
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<TagsList>*> vars_on_face,
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
-      const Variables<tmpl::list<
-          gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-          GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_metric,
+      const Variables<
+          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+          subcell_volume_spacetime_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
       const FixedHashMap<

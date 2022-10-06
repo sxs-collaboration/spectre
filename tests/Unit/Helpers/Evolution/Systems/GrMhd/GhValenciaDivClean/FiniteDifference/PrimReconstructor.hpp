@@ -27,6 +27,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -121,9 +122,8 @@ void test_prim_reconstructor_impl(
                        tmpl::size_t<3>, Frame::Inertial>;
   using prim_tags_for_reconstruction =
       tmpl::list<Rho, ElectronFraction, Pressure, VelocityW, MagField, Phi>;
-  using spacetime_tags = tmpl::list<gr::Tags::SpacetimeMetric<3>,
-                                    GeneralizedHarmonic::Tags::Phi<3>,
-                                    GeneralizedHarmonic::Tags::Pi<3>>;
+  using spacetime_tags =
+      ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
   const Mesh<3> subcell_mesh{points_per_dimension,
                              Spectral::Basis::FiniteDifference,

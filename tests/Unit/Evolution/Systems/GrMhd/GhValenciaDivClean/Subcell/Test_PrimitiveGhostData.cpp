@@ -17,6 +17,7 @@
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Subcell/PrimitiveGhostData.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
@@ -27,24 +28,15 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-using tags_for_reconstruction =
-    tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-               hydro::Tags::ElectronFraction<DataVector>,
-               hydro::Tags::Pressure<DataVector>,
-               hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
-               hydro::Tags::MagneticField<DataVector, 3>,
-               hydro::Tags::DivergenceCleaningField<DataVector>,
-               gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-               GeneralizedHarmonic::Tags::Pi<3>>;
 using copied_tags =
     tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                hydro::Tags::ElectronFraction<DataVector>,
                hydro::Tags::Pressure<DataVector>,
                hydro::Tags::MagneticField<DataVector, 3>,
                hydro::Tags::DivergenceCleaningField<DataVector>>;
-using gh_tags =
-    tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-               GeneralizedHarmonic::Tags::Pi<3>>;
+using gh_tags = grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
+using tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
+    primitive_grmhd_and_spacetime_reconstruction_tags;
 
 void test_primitive_ghost_data_on_subcells(
     const gsl::not_null<std::mt19937*> gen,

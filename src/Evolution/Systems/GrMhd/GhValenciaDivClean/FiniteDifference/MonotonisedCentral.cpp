@@ -115,9 +115,9 @@ template <size_t ThermodynamicDim, typename TagsList>
 void MonotonisedCentralPrim::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
-    const Variables<tmpl::list<
-        gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-        GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_metric,
+    const Variables<
+        grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+        subcell_volume_spacetime_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const FixedHashMap<
@@ -252,35 +252,35 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,         \
       evolution::dg::Actions::detail::NormalVector<3>>
 
-#define INSTANTIATION(r, data)                                                 \
-  template void MonotonisedCentralPrim::reconstruct(                           \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>                \
-          vars_on_lower_face,                                                  \
-      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>                \
-          vars_on_upper_face,                                                  \
-      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,            \
-      const Variables<typename System::variables_tag::type::tags_list>&        \
-          volume_spacetime_and_cons_vars,                                      \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
-      const Element<3>& element,                                               \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(3) + 1,                                  \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,          \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,  \
-      const Mesh<3>& subcell_mesh) const;                                      \
-  template void MonotonisedCentralPrim::reconstruct_fd_neighbor(               \
-      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                 \
-      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,    \
-      const Variables<tmpl::list<                                              \
-          gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,     \
-          GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_metric, \
-      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
-      const Element<3>& element,                                               \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(3) + 1,                                  \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,          \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,  \
-      const Mesh<3>& subcell_mesh,                                             \
+#define INSTANTIATION(r, data)                                                \
+  template void MonotonisedCentralPrim::reconstruct(                          \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_lower_face,                                                 \
+      gsl::not_null<std::array<Variables<TAGS_LIST(data)>, 3>*>               \
+          vars_on_upper_face,                                                 \
+      const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
+      const Variables<typename System::variables_tag::type::tags_list>&       \
+          volume_spacetime_and_cons_vars,                                     \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const FixedHashMap<                                                     \
+          maximum_number_of_neighbors(3) + 1,                                 \
+          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
+          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
+      const Mesh<3>& subcell_mesh) const;                                     \
+  template void MonotonisedCentralPrim::reconstruct_fd_neighbor(              \
+      gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
+      const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
+      const Variables<                                                        \
+          grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&    \
+          subcell_volume_spacetime_metric,                                    \
+      const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
+      const Element<3>& element,                                              \
+      const FixedHashMap<                                                     \
+          maximum_number_of_neighbors(3) + 1,                                 \
+          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
+          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
+      const Mesh<3>& subcell_mesh,                                            \
       const Direction<3> direction_to_reconstruct) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
