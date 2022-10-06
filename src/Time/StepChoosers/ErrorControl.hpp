@@ -87,8 +87,8 @@ struct PreviousStepError : db::SimpleTag {
  * \f[
  * h_{\text{new}} = h \cdot \min\left(F_{\text{max}},
  * \max\left(F_{\text{min}},
- * \frac{F_{\text{safety}}}{E^{0.7 / (q + 1)}
- *  E_{\text{prev}}^{0.4 / (q + 1)}}\right)\right),
+ * F_{\text{safety}} E^{-0.7 / (q + 1)}
+ * E_{\text{prev}}^{0.4 / (q + 1)}\right)\right),
  * \f]
  *
  * where \f$E_{\text{prev}}\f$ is the error computed in the previous step.
@@ -208,12 +208,11 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
       const double beta_factor = 0.4 / (stepper.error_estimate_order() + 1);
       new_step =
           previous_step *
-          std::clamp(
-              safety_factor_ *
-                  pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
-                  pow(1.0 / std::max(previous_step_error->value(), 1e-14),
-                      beta_factor),
-              min_factor_, max_factor_);
+          std::clamp(safety_factor_ *
+                         pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
+                         pow(std::max(previous_step_error->value(), 1e-14),
+                             beta_factor),
+                     min_factor_, max_factor_);
     }
     *previous_step_error = l_inf_error;
     return std::make_pair(new_step, l_inf_error <= 1.0);
