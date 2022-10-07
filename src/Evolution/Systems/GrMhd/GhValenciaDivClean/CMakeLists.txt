@@ -29,6 +29,7 @@ target_link_libraries(
   DataStructures
   DiscontinuousGalerkin
   DomainBoundaryConditions
+  FiniteDifference
   GeneralRelativity
   GeneralizedHarmonic
   Utilities

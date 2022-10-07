@@ -82,6 +82,89 @@ compute_neighbor_data(
   return neighbor_data;
 }
 
+inline Variables<::grmhd::GhValenciaDivClean::Tags::
+                     primitive_grmhd_and_spacetime_reconstruction_tags>
+compute_prim_solution(
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) {
+  using Rho = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
+  using Pressure = hydro::Tags::Pressure<DataVector>;
+  using MagField = hydro::Tags::MagneticField<DataVector, 3>;
+  using Phi = hydro::Tags::DivergenceCleaningField<DataVector>;
+  using VelocityW =
+      hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
+  Variables<::grmhd::GhValenciaDivClean::Tags::
+                primitive_grmhd_and_spacetime_reconstruction_tags>
+      vars{get<0>(coords).size(), 0.0};
+  for (size_t i = 0; i < 3; ++i) {
+    get(get<Rho>(vars)) += coords.get(i);
+    get(get<ElectronFraction>(vars)) += coords.get(i);
+    get(get<Pressure>(vars)) += coords.get(i);
+    get(get<Phi>(vars)) += coords.get(i);
+    for (size_t j = 0; j < 3; ++j) {
+      get<VelocityW>(vars).get(j) += coords.get(i);
+      get<MagField>(vars).get(j) += coords.get(i);
+    }
+  }
+  get(get<Rho>(vars)) += 2.0;
+  get(get<ElectronFraction>(vars)) += 15.0;
+  get(get<Pressure>(vars)) += 30.0;
+  get(get<Phi>(vars)) += 50.0;
+  for (size_t j = 0; j < 3; ++j) {
+    get<VelocityW>(vars).get(j) += 1.0e-2 * (j + 2.0) + 10.0;
+    get<MagField>(vars).get(j) += 1.0e-2 * (j + 2.0) + 60.0;
+  }
+  auto& spacetime_metric =
+      get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(vars);
+  spacetime_metric.get(0, 0) = -1.0;
+  for (size_t j = 1; j < 4; ++j) {
+    spacetime_metric.get(j, j) = 1.0;
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t k = 0; k <= j; ++k) {
+        spacetime_metric.get(j, k) += (k + 1) * j * 1.0e-3 * coords.get(i);
+      }
+    }
+  }
+  auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(vars);
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t b = a; b < 4; ++b) {
+        phi.get(i, a, b) = (10 * i + 50 * a + 1000 * b + 1) * coords.get(i);
+      }
+    }
+  }
+
+  auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(vars);
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = a; b < 4; ++b) {
+      pi.get(a, b) = (500 * a + 10000 * b + 1) * get<0>(coords);
+      for (size_t i = 1; i < 3; ++i) {
+        pi.get(a, b) += (500 * a + 10000 * b + 1 + i) * coords.get(i);
+      }
+    }
+  }
+  return vars;
+}
+
+inline Element<3> set_element() {
+  DirectionMap<3, Neighbors<3>> neighbors{};
+  for (size_t i = 0; i < 6; ++i) {
+    neighbors[gsl::at(Direction<3>::all_directions(), i)] =
+        Neighbors<3>{{ElementId<3>{i + 1, {}}}, {}};
+  }
+  return Element<3>{ElementId<3>{0, {}}, neighbors};
+}
+
+inline tnsr::I<DataVector, 3, Frame::ElementLogical> set_logical_coordinates(
+    const Mesh<3>& subcell_mesh) {
+  auto logical_coords = logical_coordinates(subcell_mesh);
+  // Make the logical coordinates different in each direction
+  for (size_t i = 1; i < 3; ++i) {
+    logical_coords.get(i) += 4.0 * i;
+  }
+  return logical_coords;
+}
+
 template <size_t ThermodynamicDim, typename Reconstructor>
 void test_prim_reconstructor_impl(
     const size_t points_per_dimension,
@@ -120,85 +203,21 @@ void test_prim_reconstructor_impl(
   using flux_tags =
       db::wrap_tags_in<::Tags::Flux, typename ghmhd::System::flux_variables,
                        tmpl::size_t<3>, Frame::Inertial>;
-  using prim_tags_for_reconstruction =
-      tmpl::list<Rho, ElectronFraction, Pressure, VelocityW, MagField, Phi>;
   using spacetime_tags =
       ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
   const Mesh<3> subcell_mesh{points_per_dimension,
                              Spectral::Basis::FiniteDifference,
                              Spectral::Quadrature::CellCentered};
-  auto logical_coords = logical_coordinates(subcell_mesh);
-  // Make the logical coordinates different in each direction
-  for (size_t i = 1; i < 3; ++i) {
-    logical_coords.get(i) += 4.0 * i;
-  }
-
-  DirectionMap<3, Neighbors<3>> neighbors{};
-  for (size_t i = 0; i < 2 * 3; ++i) {
-    neighbors[gsl::at(Direction<3>::all_directions(), i)] =
-        Neighbors<3>{{ElementId<3>{i + 1, {}}}, {}};
-  }
-  const Element<3> element{ElementId<3>{0, {}}, neighbors};
-  const auto compute_solution = [](const auto& coords) {
-    Variables<tmpl::append<prim_tags_for_reconstruction, spacetime_tags>> vars{
-        get<0>(coords).size(), 0.0};
-    for (size_t i = 0; i < 3; ++i) {
-      get(get<Rho>(vars)) += coords.get(i);
-      get(get<ElectronFraction>(vars)) += coords.get(i);
-      get(get<Pressure>(vars)) += coords.get(i);
-      get(get<Phi>(vars)) += coords.get(i);
-      for (size_t j = 0; j < 3; ++j) {
-        get<VelocityW>(vars).get(j) += coords.get(i);
-        get<MagField>(vars).get(j) += coords.get(i);
-      }
-    }
-    get(get<Rho>(vars)) += 2.0;
-    get(get<ElectronFraction>(vars)) += 15.0;
-    get(get<Pressure>(vars)) += 30.0;
-    get(get<Phi>(vars)) += 50.0;
-    for (size_t j = 0; j < 3; ++j) {
-      get<VelocityW>(vars).get(j) += 1.0e-2 * (j + 2.0) + 10.0;
-      get<MagField>(vars).get(j) += 1.0e-2 * (j + 2.0) + 60.0;
-    }
-    auto& spacetime_metric =
-        get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(vars);
-    spacetime_metric.get(0, 0) = -1.0;
-    for (size_t j = 1; j < 4; ++j) {
-      spacetime_metric.get(j, j) = 1.0;
-      for (size_t i = 0; i < 3; ++i) {
-        for (size_t k = 0; k <= j; ++k) {
-          spacetime_metric.get(j, k) += (k + 1) * j * 1.0e-3 * coords.get(i);
-        }
-      }
-    }
-    auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(vars);
-    for (size_t i = 0; i < 3; ++i) {
-      for (size_t a = 0; a < 4; ++a) {
-        for (size_t b = a; b < 4; ++b) {
-          phi.get(i, a, b) = (10 * i + 50 * a + 1000 * b + 1) * coords.get(i);
-        }
-      }
-    }
-
-    auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(vars);
-    for (size_t a = 0; a < 4; ++a) {
-      for (size_t b = a; b < 4; ++b) {
-        pi.get(a, b) = (500 * a + 10000 * b + 1) * get<0>(coords);
-        for (size_t i = 1; i < 3; ++i) {
-          pi.get(a, b) += (500 * a + 10000 * b + 1 + i) * coords.get(i);
-        }
-      }
-    }
-    return vars;
-  };
+  const auto logical_coords = set_logical_coordinates(subcell_mesh);
+  const Element<3> element = set_element();
 
   const FixedHashMap<maximum_number_of_neighbors(3),
                      std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),
-          reconstructor.ghost_zone_size(), compute_solution);
+          reconstructor.ghost_zone_size(), compute_prim_solution);
 
   const size_t reconstructed_num_pts =
       (subcell_mesh.extents(0) + 1) *
@@ -227,7 +246,7 @@ void test_prim_reconstructor_impl(
   Variables<spacetime_tags> volume_spacetime_vars{
       subcell_mesh.number_of_grid_points()};
   {
-    const auto volume_prims_for_recons = compute_solution(logical_coords);
+    const auto volume_prims_for_recons = compute_prim_solution(logical_coords);
     tmpl::for_each<tmpl::list<Rho, ElectronFraction, Pressure, MagField, Phi>>(
         [&volume_prims, &volume_prims_for_recons](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
@@ -279,7 +298,7 @@ void test_prim_reconstructor_impl(
     Variables<dg_package_data_argument_tags> expected_lower_face_values{
         face_centered_mesh.number_of_grid_points()};
     expected_lower_face_values.assign_subset(
-        compute_solution(logical_coords_face_centered));
+        compute_prim_solution(logical_coords_face_centered));
     if constexpr (ThermodynamicDim == 2) {
       get<SpecificInternalEnergy>(expected_lower_face_values) =
           eos.specific_internal_energy_from_density_and_pressure(

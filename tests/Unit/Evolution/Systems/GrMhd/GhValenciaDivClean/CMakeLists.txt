@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   BoundaryConditions/Test_ProductOfConditions.cpp
   BoundaryCorrections/Test_ProductOfCorrections.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
+  FiniteDifference/Test_Derivatives.cpp
   Subcell/Test_FixConservativesAndComputePrims.cpp
   Subcell/Test_InitialDataTci.cpp
   Subcell/Test_PrimitiveGhostData.cpp
