@@ -28,23 +28,75 @@
  * Given a real-valued, scalar function \f$g(\theta, \phi)\f$, SPHEREPACK
  * expands it as:
  *
- * \f{align*}
+ * \f{align}
  * g(\theta, \phi)
  * &=\frac{1}{2}\sum_{l=0}^{l_{\max}}\bar P_l^0(\cos\theta) a_{l0}
  * +\sum_{l=1}^{l_{\max}}\sum_{m=1}^{\min(l, m_{\max})}\bar P_l^m(\cos\theta)\{
- *   a_{lm}\cos m\phi -b_{lm}\sin m\phi\}\nonumber
+ *   a_{lm}\cos m\phi -b_{lm}\sin m\phi\}\label{eq:spherepack_expansion}
  * \f}
  *
- * where \f$a_{lm}\f$ and \f$b_{lm}\f$ are spectral coefficient arrays used by
+ * where \f$a_{lm}\f$ and \f$b_{lm}\f$ are real-valued
+ * spectral coefficient arrays used by
  * SPHEREPACK, \f$P_l^m(x)\f$ are defined as
  *
- * \f{align*}
+ * \f{align}
  * \bar P_l^m(x)&=\sqrt{\frac{(2l+1)(l-m)!}{2(l+m)!}}\;P_{lm}(x)
  * \f}
  *
- * and \f$P_{nm}(x)\f$ are the associated Legendre polynomials.
+ * and \f$P_{nm}(x)\f$ are the associated Legendre polynomials as defined,
+ * for example, in Jackson's "Classical Electrodynamics".
  *
- * Internally, SPHEREPACK can represent such an expansion in two ways which we
+ * #### Relationship to standard spherical harmonics
+ *
+ * The standard expansion of \f$g(\theta, \phi)\f$ in terms of scalar
+ * spherical harmonics is
+ * \f{align}
+ * g(\theta, \phi)
+ * &=
+ * \sum_{l=0}^{l_{\max}}\sum_{m=-\min(l, m_{\max})}^{\min(l, m_{\max})}
+ * A_{lm} Y_{lm}(\theta,\phi),
+ * \f}
+ * where \f$Y_{lm}(\theta,\phi)\f$ are the usual complex-valued scalar
+ * spherical harmonics (as defined, for example, in
+ * Jackson's "Classical Electrodynamics")
+ * and \f$A_{lm}\f$ are complex coefficients.
+ *
+ * The relationship between the complex coefficients \f$A_{lm}\f$ and
+ * SPHEREPACK's real-valued \f$a_{lm}\f$ and \f$b_{lm}\f$ is
+ * \f{align}
+ * a_{l0} & = \sqrt{\frac{2}{\pi}}A_{l0}&\qquad l\geq 0,\\
+ * a_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Re}(A_{lm})
+ * &\qquad l\geq 1, m\geq 1, \\
+ * b_{lm} & = (-1)^m\sqrt{\frac{2}{\pi}} \mathrm{Im}(A_{lm})
+ * &\qquad l\geq 1, m\geq 1.
+ * \f}
+ *
+ * \note If \f$g\f$ is real,
+ * \f$A_{lm} = (-1)^m A^\star_{l -m}\f$ (where \f${}^\star\f$ means
+ * a complex conjugate); this is why we don't need to consider \f$m<0\f$
+ * in the previous formulas or in SPHEREPACK's expansion.
+ *
+ * #### Relationship to real-valued spherical harmonics
+ *
+ * Sometimes it is useful to expand a real-valued function in the form
+ * \f{align}
+ * g(\theta, \phi)
+ * &= \sum_{l=0}^\infty\sum_{m=0}^l
+ * \left[
+ * c_{lm}\mathrm{Re}(Y_{lm}(\theta, \phi))+
+ * d_{nm}\mathrm{Im}(Y_{lm}(\theta, \phi))
+ * \right].
+ * \f}
+ * The coefficients here are therefore
+ * \f{align}
+ * c_{l0} &= A_{l0},\\
+ * c_{lm} &= 2\mathrm{Re}(A_{lm}) \qquad m\geq 1,\\
+ * d_{lm} &=-2\mathrm{Im}(A_{lm}).
+ * \f}
+ *
+ * #### Modal and nodal representations
+ *
+ * Internally, SPHEREPACK can represent its expansion in two ways which we
  * will refer to as modal and nodal representations:
  *
  * -# modal: The spectral coefficient arrays \f$a_{lm}\f$ and \f$b_{lm}\f$,
