@@ -188,4 +188,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
       "PreventRapidIncrease");
   TestHelpers::test_creation<std::unique_ptr<StepChooser<StepChooserUse::Slab>>,
                              Metavariables>("PreventRapidIncrease");
+
+  CHECK(not StepChoosers::PreventRapidIncrease<StepChooserUse::Slab>{}
+                .uses_local_data());
 }

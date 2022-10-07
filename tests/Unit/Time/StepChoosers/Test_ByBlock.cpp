@@ -90,4 +90,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
 
   test_by_block<StepChooserUse::LtsStep>();
   test_by_block<StepChooserUse::Slab>();
+
+  CHECK(StepChoosers::ByBlock<StepChooserUse::Slab, 1>{}.uses_local_data());
 }

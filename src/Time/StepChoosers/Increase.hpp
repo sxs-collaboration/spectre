@@ -53,6 +53,8 @@ class Increase : public StepChooser<StepChooserUse> {
     return std::make_pair(last_step_magnitude * factor_, true);
   }
 
+  bool uses_local_data() const override { return false; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | factor_; }
 

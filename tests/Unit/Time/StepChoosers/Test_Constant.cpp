@@ -70,6 +70,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
 
   test_use<StepChooserUse::LtsStep>();
   test_use<StepChooserUse::Slab>();
+
+  CHECK(not StepChoosers::Constant<StepChooserUse::Slab>{}.uses_local_data());
 }
 
 // [[OutputRegex, Requested step magnitude should be positive]]

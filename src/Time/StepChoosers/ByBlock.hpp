@@ -68,6 +68,8 @@ class ByBlock : public StepChooser<StepChooserUse> {
     return std::make_pair(sizes_[block], true);
   }
 
+  bool uses_local_data() const override { return true; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | sizes_; }
 

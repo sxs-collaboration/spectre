@@ -85,4 +85,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
                              Metavariables>(
       "Increase:\n"
       "  Factor: 5.0");
+
+  CHECK(not StepChoosers::Increase<StepChooserUse::Slab>{}.uses_local_data());
 }

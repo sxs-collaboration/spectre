@@ -101,6 +101,15 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
 
   WRAPPED_PUPable_abstract(StepChooser);  // NOLINT
 
+  /// Whether the result can differ on different elements, so
+  /// requiring communication to synchronize the result across the
+  /// domain.
+  ///
+  /// \note This is only used for slab-size changing, so the
+  /// `last_step_magnitude` passed to the call operator is *not*
+  /// considered local data.
+  virtual bool uses_local_data() const = 0;
+
   /// The `last_step_magnitude` parameter describes the slab size to be
   /// adjusted; It may be infinite if the appropriate size cannot be determined.
   ///
@@ -153,6 +162,11 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
   ~StepChooser() override = default;
 
   WRAPPED_PUPable_abstract(StepChooser);  // NOLINT
+
+  /// Ignored.  Required in order to match the interface of the other
+  /// specialization of StepChooser because derived classes cannot
+  /// conditionally override the base class function.
+  virtual bool uses_local_data() const = 0;
 
   /// The `last_step_magnitude` parameter describes the step size to be
   /// adjusted.  It may be the step size or the slab size, or may be

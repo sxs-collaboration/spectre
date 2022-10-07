@@ -149,4 +149,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
 
   test_use<StepChooserUse::LtsStep>();
   test_use<StepChooserUse::Slab>();
+
+  CHECK(StepChoosers::Cfl<StepChooserUse::Slab, frame, Metavariables::system>{}
+            .uses_local_data());
 }

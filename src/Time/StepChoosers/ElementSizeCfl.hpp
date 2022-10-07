@@ -90,6 +90,8 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
     return std::make_pair(step_size, last_step_magnitude <= step_size);
   }
 
+  bool uses_local_data() const override { return true; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | safety_factor_; }
 
