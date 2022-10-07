@@ -55,9 +55,6 @@ struct Metavariables {
 
 void run_events_and_triggers(const EventsAndTriggers& events_and_triggers,
                              const bool expected) {
-  // Test pup
-  Parallel::register_factory_classes_with_charm<Metavariables>();
-
   using my_component = Component<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)}};
@@ -84,16 +81,15 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 
   run_events_and_triggers(events_and_triggers, expected);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  {
-    const auto completion =
-        TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
-            "Completion");
-    CHECK(not completion->needs_evolved_variables());
-  }
+void test_completion() {
+  const auto completion =
+      TestHelpers::test_creation<std::unique_ptr<Event>, Metavariables>(
+          "Completion");
+  CHECK(not completion->needs_evolved_variables());
+}
 
+void test_basic_triggers() {
   check_trigger(true, "Always");
   check_trigger(false, "Not: Always");
   check_trigger(true,
@@ -145,8 +141,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
                 "  - Always");
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.creation",
-                  "[Unit][Evolution]") {
+void test_factory() {
   const auto events_and_triggers =
       TestHelpers::test_creation<EventsAndTriggers, Metavariables>(
           "- - Not: Always\n"
@@ -160,4 +155,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.creation",
           "  - - Completion\n");
 
   run_events_and_triggers(events_and_triggers, true);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
+  Parallel::register_factory_classes_with_charm<Metavariables>();
+
+  test_completion();
+  test_basic_triggers();
+  test_factory();
 }
