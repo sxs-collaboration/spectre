@@ -20,8 +20,8 @@ set(LIBRARY_SOURCES
   Test_InterpolationTargetSpecifiedPoints.cpp
   Test_InterpolationTargetSphere.cpp
   Test_InterpolationTargetWedgeSectionTorus.cpp
+  Test_InterpolatorReceiveAndDumpVolumeData.cpp
   Test_InterpolatorReceivePoints.cpp
-  Test_InterpolatorReceiveVolumeData.cpp
   Test_InterpolatorRegisterElement.cpp
   Test_ObserveTimeSeriesAndSurfaceData.cpp
   Test_ParallelInterpolator.cpp

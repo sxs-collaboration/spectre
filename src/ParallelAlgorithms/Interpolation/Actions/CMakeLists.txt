@@ -7,6 +7,7 @@ spectre_target_headers(
   HEADERS
   AddTemporalIdsToInterpolationTarget.hpp
   CleanUpInterpolator.hpp
+  DumpInterpolatorVolumeData.hpp
   ElementInitInterpPoints.hpp
   ElementReceiveInterpPoints.hpp
   InitializeInterpolationTarget.hpp
