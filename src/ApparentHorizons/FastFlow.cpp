@@ -234,7 +234,7 @@ FastFlow::iterate_horizon_finder(
 
   // Treat the case in which residual_mesh_norm is increasing
   if (residual_mesh_norm > divergence_tol_ * min_residual_mesh_norm_ and
-      iter_at_min_residual_mesh_norm_ <= current_iter_ - divergence_iter_) {
+      iter_at_min_residual_mesh_norm_ + divergence_iter_ <= current_iter_) {
     // clang-tidy: std::move of trivially-copyable type
     return std::make_pair(Status::DivergenceError,
                           std::move(iter_info));  // NOLINT
