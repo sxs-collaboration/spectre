@@ -1,9 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(ENABLE_PROFILING, "Enables various options to make profiling easier" OFF)
+option(ENABLE_PROFILING "Enables various options to make profiling easier" OFF)
 
-option(KEEP_FRAME_POINTER, "Add keep frame pointer for profiling" OFF)
+option(KEEP_FRAME_POINTER "Add keep frame pointer for profiling" OFF)
 
 add_library(Profiling::KeepFramePointer IMPORTED INTERFACE)
 add_library(Profiling::EnableProfiling IMPORTED INTERFACE)
