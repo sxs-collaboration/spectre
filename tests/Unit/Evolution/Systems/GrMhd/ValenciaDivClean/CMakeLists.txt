@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   FiniteDifference/Test_BoundaryConditionGhostData.cpp
   FiniteDifference/Test_MonotonicityPreserving5.cpp
   FiniteDifference/Test_MonotonisedCentral.cpp
+  FiniteDifference/Test_PositivityPreservingAdaptiveOrder.cpp
   FiniteDifference/Test_Tag.cpp
   FiniteDifference/Test_Wcns5z.cpp
   Subcell/Test_ComputeFluxes.cpp

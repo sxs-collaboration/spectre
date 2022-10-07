@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
+  PositivityPreservingAdaptiveOrder.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
   Wcns5z.cpp
@@ -20,6 +21,7 @@ spectre_target_headers(
   FiniteDifference.hpp
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
+  PositivityPreservingAdaptiveOrder.hpp
   Reconstructor.hpp
   ReconstructWork.hpp
   ReconstructWork.tpp
