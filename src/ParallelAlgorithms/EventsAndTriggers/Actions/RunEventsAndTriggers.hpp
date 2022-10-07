@@ -12,6 +12,12 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
+/// \cond
+namespace Tags {
+struct TimeStepId;
+}  // namespace Tags
+/// \endcond
+
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup EventsAndTriggersGroup
@@ -37,6 +43,17 @@ struct RunEventsAndTriggers {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const component) {
+    // Checking the slab status in this way will work for
+    // non-evolutions and does not require linking against any
+    // evolution-related libraries because everything is duck-typed
+    // off the DataBox.
+    if constexpr (db::tag_is_retrievable_v<Tags::TimeStepId,
+                                           db::DataBox<DbTags>>) {
+      if (not db::get<Tags::TimeStepId>(box).is_at_slab_boundary()) {
+        return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+      }
+    }
+
     Parallel::get<Tags::EventsAndTriggers>(cache).run_events(
         box, cache, array_index, component);
 
