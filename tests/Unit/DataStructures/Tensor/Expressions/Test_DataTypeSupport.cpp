@@ -15,6 +15,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/VectorImpl.hpp"
+#include "Helpers/DataStructures/CustomStaticSizeVector.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -25,6 +27,9 @@ using number_expression = tenex::NumberAsExpression<ValueType>;
 template <typename ValueType>
 using tensor_expression =
     tenex::TensorAsExpression<Scalar<ValueType>, tmpl::list<>>;
+
+constexpr size_t custom_vector_static_size =
+    CustomComplexStaticSizeVector::static_size;
 
 template <bool Expected, typename DataTypes>
 void test_is_supported_number_datatype() {
@@ -160,6 +165,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
   test_upcast_if_derived_vector_type<
       VectorImpl<std::complex<double>, ComplexModalVector>,
       VectorImpl<std::complex<double>, ComplexModalVector>>();
+  test_upcast_if_derived_vector_type<
+      CustomComplexStaticSizeVector,
+      VectorImpl<std::complex<double>, CustomComplexStaticSizeVector,
+                 custom_vector_static_size>>();
+  test_upcast_if_derived_vector_type<
+      VectorImpl<std::complex<double>, CustomComplexStaticSizeVector,
+                 custom_vector_static_size>,
+      VectorImpl<std::complex<double>, CustomComplexStaticSizeVector,
+                 custom_vector_static_size>>();
   test_upcast_if_derived_vector_type<ArbitraryType, ArbitraryType>();
 
   // Test that we correctly get the complex-valued partner type to another type
@@ -172,6 +186,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
   test_get_complex_datatype<std::complex<float>, NoSuchType>();
   test_get_complex_datatype<DataVector, ComplexDataVector>();
   test_get_complex_datatype<ComplexDataVector, NoSuchType>();
+  test_get_complex_datatype<CustomComplexStaticSizeVector, NoSuchType>();
   test_get_complex_datatype<ArbitraryType, NoSuchType>();
   test_get_complex_datatype<NoSuchType, NoSuchType>();
 
@@ -230,30 +245,44 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
   test_is_assignable<double, std::complex<double>>(false);
   test_is_assignable<double, DataVector>(false);
   test_is_assignable<double, ComplexDataVector>(false);
+  test_is_assignable<double, CustomComplexStaticSizeVector>(false);
   test_is_assignable<double, ArbitraryType>(false);
 
   test_is_assignable<std::complex<double>, double>(true);
   test_is_assignable<std::complex<double>, std::complex<double>>(true);
   test_is_assignable<std::complex<double>, DataVector>(false);
   test_is_assignable<std::complex<double>, ComplexDataVector>(false);
+  test_is_assignable<std::complex<double>, CustomComplexStaticSizeVector>(
+      false);
   test_is_assignable<std::complex<double>, ArbitraryType>(false);
 
   test_is_assignable<DataVector, double>(true);
   test_is_assignable<DataVector, std::complex<double>>(false);
   test_is_assignable<DataVector, DataVector>(true);
   test_is_assignable<DataVector, ComplexDataVector>(false);
+  test_is_assignable<DataVector, CustomComplexStaticSizeVector>(false);
   test_is_assignable<DataVector, ArbitraryType>(false);
 
   test_is_assignable<ComplexDataVector, double>(true);
   test_is_assignable<ComplexDataVector, std::complex<double>>(true);
   test_is_assignable<ComplexDataVector, DataVector>(true);
   test_is_assignable<ComplexDataVector, ComplexDataVector>(true);
+  test_is_assignable<ComplexDataVector, CustomComplexStaticSizeVector>(false);
   test_is_assignable<ComplexDataVector, ArbitraryType>(false);
+
+  test_is_assignable<CustomComplexStaticSizeVector, double>(true);
+  test_is_assignable<CustomComplexStaticSizeVector, std::complex<double>>(true);
+  test_is_assignable<CustomComplexStaticSizeVector, DataVector>(false);
+  test_is_assignable<CustomComplexStaticSizeVector, ComplexDataVector>(false);
+  test_is_assignable<CustomComplexStaticSizeVector,
+                     CustomComplexStaticSizeVector>(true);
+  test_is_assignable<CustomComplexStaticSizeVector, ArbitraryType>(false);
 
   test_is_assignable<ArbitraryType, double>(false);
   test_is_assignable<ArbitraryType, std::complex<double>>(false);
   test_is_assignable<ArbitraryType, DataVector>(false);
   test_is_assignable<ArbitraryType, ComplexDataVector>(false);
+  test_is_assignable<ArbitraryType, CustomComplexStaticSizeVector>(false);
   // true because is_assignable does not check if the types are supported types
   test_is_assignable<ArbitraryType, ArbitraryType>(true);
 
@@ -265,6 +294,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
                               std::complex<double>>();
   test_binop_datatype_support<double, DataVector, DataVector>();
   test_binop_datatype_support<double, ComplexDataVector, ComplexDataVector>();
+  test_binop_datatype_support<double, CustomComplexStaticSizeVector,
+                              CustomComplexStaticSizeVector>();
   test_binop_datatype_support<double, ArbitraryType, NoSuchType>();
   test_binop_datatype_support<double, NoSuchType, NoSuchType>();
 
@@ -276,6 +307,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
                               ComplexDataVector>();
   test_binop_datatype_support<std::complex<double>, ComplexDataVector,
                               ComplexDataVector>();
+  test_binop_datatype_support<std::complex<double>,
+                              CustomComplexStaticSizeVector,
+                              CustomComplexStaticSizeVector>();
   test_binop_datatype_support<std::complex<double>, ArbitraryType,
                               NoSuchType>();
   test_binop_datatype_support<std::complex<double>, NoSuchType, NoSuchType>();
@@ -286,6 +320,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
   test_binop_datatype_support<DataVector, DataVector, DataVector>();
   test_binop_datatype_support<DataVector, ComplexDataVector,
                               ComplexDataVector>();
+  test_binop_datatype_support<DataVector, CustomComplexStaticSizeVector,
+                              NoSuchType>();
   test_binop_datatype_support<DataVector, ArbitraryType, NoSuchType>();
   test_binop_datatype_support<DataVector, NoSuchType, NoSuchType>();
 
@@ -296,14 +332,35 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
                               ComplexDataVector>();
   test_binop_datatype_support<ComplexDataVector, ComplexDataVector,
                               ComplexDataVector>();
+  test_binop_datatype_support<ComplexDataVector, CustomComplexStaticSizeVector,
+                              NoSuchType>();
   test_binop_datatype_support<ComplexDataVector, ArbitraryType, NoSuchType>();
   test_binop_datatype_support<ComplexDataVector, NoSuchType, NoSuchType>();
+
+  test_binop_datatype_support<CustomComplexStaticSizeVector, double,
+                              CustomComplexStaticSizeVector>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector,
+                              std::complex<double>,
+                              CustomComplexStaticSizeVector>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector, DataVector,
+                              NoSuchType>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector, ComplexDataVector,
+                              NoSuchType>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector, ArbitraryType,
+                              NoSuchType>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector,
+                              CustomComplexStaticSizeVector,
+                              CustomComplexStaticSizeVector>();
+  test_binop_datatype_support<CustomComplexStaticSizeVector, NoSuchType,
+                              NoSuchType>();
 
   test_binop_datatype_support<ArbitraryType, double, NoSuchType>();
   test_binop_datatype_support<ArbitraryType, std::complex<double>,
                               NoSuchType>();
   test_binop_datatype_support<ArbitraryType, DataVector, NoSuchType>();
   test_binop_datatype_support<ArbitraryType, ComplexDataVector, NoSuchType>();
+  test_binop_datatype_support<ArbitraryType, CustomComplexStaticSizeVector,
+                              NoSuchType>();
   // ArbitraryType is result because get_binop_datatype_impl does not check if
   // the types are supported types
   test_binop_datatype_support<ArbitraryType, ArbitraryType, ArbitraryType>();
@@ -314,6 +371,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.DataTypeSupport",
   test_binop_datatype_support<NoSuchType, DataVector, NoSuchType>();
   test_binop_datatype_support<NoSuchType, ComplexDataVector, NoSuchType>();
   test_binop_datatype_support<NoSuchType, ArbitraryType, NoSuchType>();
+  test_binop_datatype_support<NoSuchType, CustomComplexStaticSizeVector,
+                              NoSuchType>();
   test_binop_datatype_support<NoSuchType, NoSuchType, NoSuchType>();
 
   // Test whether binary operations can be performed between two `Tensor`s with

@@ -172,22 +172,23 @@ template <typename X>
 struct is_assignable<std::complex<X>, X> : std::true_type {};
 /// Can assign the LHS `VectorImpl` to the RHS `VectorImpl` if `VectorImpl`
 /// allows it
-template <typename ValueType1, typename VectorType1, typename ValueType2,
-          typename VectorType2>
-struct is_assignable<VectorImpl<ValueType1, VectorType1>,
-                     VectorImpl<ValueType2, VectorType2>>
+template <typename ValueType1, typename VectorType1, size_t StaticSize1,
+          typename ValueType2, typename VectorType2, size_t StaticSize2>
+struct is_assignable<VectorImpl<ValueType1, VectorType1, StaticSize1>,
+                     VectorImpl<ValueType2, VectorType2, StaticSize2>>
     : ::VectorImpl_detail::is_assignable<VectorType1, VectorType2> {};
 /// Can assign a `VectorImpl` to its value type, e.g. can assign a `DataVector`
 /// to a `double`
-template <typename ValueType, typename VectorType>
-struct is_assignable<VectorImpl<ValueType, VectorType>, ValueType>
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct is_assignable<VectorImpl<ValueType, VectorType, StaticSize>, ValueType>
     : std::true_type {};
 /// Can assign a complex-valued `VectorImpl` to its real component's type, e.g.
 /// can assign a `ComplexDataVector` to a `double` because the underlying type
 /// of `ComplexDataVector` is `std::complex<double>`, whose real component is a
 /// `double`
-template <typename ValueType, typename VectorType>
-struct is_assignable<VectorImpl<std::complex<ValueType>, VectorType>, ValueType>
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct is_assignable<
+    VectorImpl<std::complex<ValueType>, VectorType, StaticSize>, ValueType>
     : std::true_type {};
 
 /// \brief Whether or not a given type is assignable to another within
@@ -230,9 +231,9 @@ struct get_binop_datatype_impl<X, X> {
 /// A binary operation between two `VectorImpl`s of the same type will
 /// yield the shared derived `VectorImpl`, e.g.
 /// `DataVector OP DataVector = DataVector`
-template <typename ValueType, typename VectorType>
-struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType>,
-                               VectorImpl<ValueType, VectorType>> {
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType, StaticSize>,
+                               VectorImpl<ValueType, VectorType, StaticSize>> {
   using type = VectorType;
 };
 /// @{
@@ -250,12 +251,14 @@ struct get_binop_datatype_impl<std::complex<T>, T> {
 /// @{
 /// A binary operation between a `VectorImpl` and its underlying value type
 /// yields the `VectorImpl`, e.g. `DataVector OP double = DataVector`
-template <typename ValueType, typename VectorType>
-struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType>, ValueType> {
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType, StaticSize>,
+                               ValueType> {
   using type = VectorType;
 };
-template <typename ValueType, typename VectorType>
-struct get_binop_datatype_impl<ValueType, VectorImpl<ValueType, VectorType>> {
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct get_binop_datatype_impl<ValueType,
+                               VectorImpl<ValueType, VectorType, StaticSize>> {
   using type = VectorType;
 };
 /// @}
@@ -263,14 +266,14 @@ struct get_binop_datatype_impl<ValueType, VectorImpl<ValueType, VectorType>> {
 /// A binary operation between a complex-valued `VectorImpl` and its real
 /// component's type yields the `VectorImpl`, e.g.
 /// `ComplexDataVector OP double = ComplexDataVector`
-template <typename ValueType, typename VectorType>
-struct get_binop_datatype_impl<VectorImpl<std::complex<ValueType>, VectorType>,
-                               ValueType> {
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct get_binop_datatype_impl<
+    VectorImpl<std::complex<ValueType>, VectorType, StaticSize>, ValueType> {
   using type = VectorType;
 };
-template <typename ValueType, typename VectorType>
+template <typename ValueType, typename VectorType, size_t StaticSize>
 struct get_binop_datatype_impl<
-    ValueType, VectorImpl<std::complex<ValueType>, VectorType>> {
+    ValueType, VectorImpl<std::complex<ValueType>, VectorType, StaticSize>> {
   using type = VectorType;
 };
 /// @}
@@ -289,14 +292,14 @@ struct get_binop_datatype_impl<
 /// disallow this type combination in their class definitions to prevent these
 /// operations. That way, if Blaze support is later added for e.g. division,
 /// we simply need to remove the assert in `Divide` that prevents it.
-template <typename ValueType, typename VectorType>
-struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType>,
+template <typename ValueType, typename VectorType, size_t StaticSize>
+struct get_binop_datatype_impl<VectorImpl<ValueType, VectorType, StaticSize>,
                                std::complex<ValueType>> {
   using type = typename get_complex_datatype<VectorType>::type;
 };
-template <typename ValueType, typename VectorType>
+template <typename ValueType, typename VectorType, size_t StaticSize>
 struct get_binop_datatype_impl<std::complex<ValueType>,
-                               VectorImpl<ValueType, VectorType>> {
+                               VectorImpl<ValueType, VectorType, StaticSize>> {
   using type = typename get_complex_datatype<VectorType>::type;
 };
 /// @}
