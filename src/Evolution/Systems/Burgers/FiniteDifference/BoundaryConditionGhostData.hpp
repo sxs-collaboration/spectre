@@ -125,76 +125,69 @@ void BoundaryConditionGhostData::apply(
     // Now apply subcell boundary conditions
     call_with_dynamic_type<void, derived_boundary_conditions_for_subcell>(
         &boundary_condition_at_direction,
-        [&boundary_condition_at_direction, &box, &direction,
-         &ghost_data_vars](const auto& derived_boundary_condition_v) {
-          using BoundaryCondition =
-              std::decay_t<decltype(*derived_boundary_condition_v)>;
-          if (const auto* boundary_condition =
-                  dynamic_cast<const BoundaryCondition*>(
-                      &boundary_condition_at_direction);
-              boundary_condition != nullptr) {
-            using bcondition_interior_evolved_vars_tags =
-                typename BoundaryCondition::fd_interior_evolved_variables_tags;
-            using bcondition_interior_temporary_tags =
-                typename BoundaryCondition::fd_interior_temporary_tags;
-            using bcondition_gridless_tags =
-                typename BoundaryCondition::fd_gridless_tags;
+        [&box, &direction, &ghost_data_vars](const auto* boundary_condition) {
+          using BoundaryCondition = std::decay_t<decltype(*boundary_condition)>;
+          using bcondition_interior_evolved_vars_tags =
+              typename BoundaryCondition::fd_interior_evolved_variables_tags;
+          using bcondition_interior_temporary_tags =
+              typename BoundaryCondition::fd_interior_temporary_tags;
+          using bcondition_gridless_tags =
+              typename BoundaryCondition::fd_gridless_tags;
 
-            using bcondition_interior_tags =
-                tmpl::append<bcondition_interior_evolved_vars_tags,
-                             bcondition_interior_temporary_tags,
-                             bcondition_gridless_tags>;
+          using bcondition_interior_tags =
+              tmpl::append<bcondition_interior_evolved_vars_tags,
+                           bcondition_interior_temporary_tags,
+                           bcondition_gridless_tags>;
 
-            if constexpr (BoundaryCondition::bc_type ==
-                          evolution::BoundaryConditions::Type::Ghost) {
-              const auto apply_fd_ghost =
-                  [&boundary_condition, &direction,
-                   &ghost_data_vars](const auto&... boundary_ghost_data_args) {
-                    (*boundary_condition)
-                        .fd_ghost(make_not_null(
-                                      &get<Burgers::Tags::U>(ghost_data_vars)),
-                                  direction, boundary_ghost_data_args...);
-                  };
-              apply_subcell_boundary_condition_impl(apply_fd_ghost, box,
-                                                    bcondition_interior_tags{});
-            } else if constexpr (BoundaryCondition::bc_type ==
-                                 evolution::BoundaryConditions::Type::Outflow) {
-              // Outflow boundary condition only checks if the characteristic
-              // speed is directed out of the element.
-              const auto& volume_mesh_velocity =
-                  db::get<domain::Tags::MeshVelocity<1, Frame::Inertial>>(*box);
-              if (volume_mesh_velocity.has_value()) {
-                ERROR("Subcell currently does not support moving mesh");
-              }
-
-              std::optional<tnsr::I<DataVector, 1>> face_mesh_velocity{};
-
-              const auto& normal_covector_and_magnitude =
-                  db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<1>>(
-                      *box);
-              const auto& outward_directed_normal_covector =
-                  get<evolution::dg::Tags::NormalCovector<1>>(
-                      normal_covector_and_magnitude.at(direction).value());
-              const auto apply_fd_outflow =
-                  [&boundary_condition, &direction, &face_mesh_velocity,
-                   &ghost_data_vars, &outward_directed_normal_covector](
-                      const auto&... boundary_ghost_data_args) {
-                    return (*boundary_condition)
-                        .fd_outflow(make_not_null(&get<Burgers::Tags::U>(
-                                        ghost_data_vars)),
-                                    direction, face_mesh_velocity,
-                                    outward_directed_normal_covector,
-                                    boundary_ghost_data_args...);
-                  };
-              apply_subcell_boundary_condition_impl(apply_fd_outflow, box,
-                                                    bcondition_interior_tags{});
-
-              return;
-            } else {
-              ERROR("Unsupported boundary condition "
-                    << pretty_type::short_name<BoundaryCondition>()
-                    << " when using finite-difference");
+          if constexpr (BoundaryCondition::bc_type ==
+                        evolution::BoundaryConditions::Type::Ghost) {
+            const auto apply_fd_ghost =
+                [&boundary_condition, &direction,
+                 &ghost_data_vars](const auto&... boundary_ghost_data_args) {
+                  (*boundary_condition)
+                      .fd_ghost(make_not_null(
+                                    &get<Burgers::Tags::U>(ghost_data_vars)),
+                                direction, boundary_ghost_data_args...);
+                };
+            apply_subcell_boundary_condition_impl(apply_fd_ghost, box,
+                                                  bcondition_interior_tags{});
+          } else if constexpr (BoundaryCondition::bc_type ==
+                               evolution::BoundaryConditions::Type::Outflow) {
+            // Outflow boundary condition only checks if the characteristic
+            // speed is directed out of the element.
+            const auto& volume_mesh_velocity =
+                db::get<domain::Tags::MeshVelocity<1, Frame::Inertial>>(*box);
+            if (volume_mesh_velocity.has_value()) {
+              ERROR("Subcell currently does not support moving mesh");
             }
+
+            std::optional<tnsr::I<DataVector, 1>> face_mesh_velocity{};
+
+            const auto& normal_covector_and_magnitude =
+                db::get<evolution::dg::Tags::NormalCovectorAndMagnitude<1>>(
+                    *box);
+            const auto& outward_directed_normal_covector =
+                get<evolution::dg::Tags::NormalCovector<1>>(
+                    normal_covector_and_magnitude.at(direction).value());
+            const auto apply_fd_outflow =
+                [&boundary_condition, &direction, &face_mesh_velocity,
+                 &ghost_data_vars, &outward_directed_normal_covector](
+                    const auto&... boundary_ghost_data_args) {
+                  return (*boundary_condition)
+                      .fd_outflow(make_not_null(
+                                      &get<Burgers::Tags::U>(ghost_data_vars)),
+                                  direction, face_mesh_velocity,
+                                  outward_directed_normal_covector,
+                                  boundary_ghost_data_args...);
+                };
+            apply_subcell_boundary_condition_impl(apply_fd_outflow, box,
+                                                  bcondition_interior_tags{});
+
+            return;
+          } else {
+            ERROR("Unsupported boundary condition "
+                  << pretty_type::short_name<BoundaryCondition>()
+                  << " when using finite-difference");
           }
         });
 
