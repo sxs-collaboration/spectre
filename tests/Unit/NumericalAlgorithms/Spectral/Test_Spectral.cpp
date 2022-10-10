@@ -90,8 +90,10 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
   CAPTURE(BasisType);
   CAPTURE(QuadratureType);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+       n <= Spectral ::maximum_number_of_points<BasisType>; n++) {
+    CAPTURE(n);
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
+      CAPTURE(p);
       const auto& collocation_pts =
           Spectral::collocation_points<BasisType, QuadratureType>(n);
       const auto& diff_matrix =
@@ -102,7 +104,13 @@ void test_exact_differentiation_impl(const Function& max_poly_deg) {
              1, 0.0, numeric_derivative.data(), 1);
       const auto analytic_derivative =
           unit_polynomial_derivative(p, collocation_pts);
-      CHECK_ITERABLE_APPROX(analytic_derivative, numeric_derivative);
+      if (BasisType == Spectral::Basis::FiniteDifference and n > 20) {
+        Approx local_approx = Approx::custom().epsilon(1.0e-13).scale(1.0);
+        CHECK_ITERABLE_CUSTOM_APPROX(analytic_derivative, numeric_derivative,
+                                     local_approx);
+      } else {
+        CHECK_ITERABLE_APPROX(analytic_derivative, numeric_derivative);
+      }
     }
   }
 }
@@ -180,6 +188,13 @@ void test_exact_differentiation_matrices() {
                             Spectral::Quadrature::Gauss>();
   test_weak_differentiation<Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto>();
+
+  // Test summation by parts cell-centered FD.
+  test_exact_differentiation_impl<Spectral::Basis::FiniteDifference,
+                                  Spectral::Quadrature::CellCentered>(
+      [](const size_t n) -> size_t {
+        return n >= 10 ? 5 : (n >= 7 ? 3 : (n == 6 ? 2 : (n == 1 ? 0 : 1)));
+      });
 }
 
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType>
