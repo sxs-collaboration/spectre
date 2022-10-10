@@ -65,7 +65,7 @@ void MonotonisedCentralPrim::reconstruct(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(dim) + 1,
+        maximum_number_of_neighbors(dim),
         std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh) const {
@@ -121,7 +121,7 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(dim) + 1,
+        maximum_number_of_neighbors(dim),
         std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh,
@@ -264,7 +264,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
       const FixedHashMap<                                                     \
-          maximum_number_of_neighbors(3) + 1,                                 \
+          maximum_number_of_neighbors(3),                                     \
           std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
           boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
       const Mesh<3>& subcell_mesh) const;                                     \
@@ -277,7 +277,7 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
       const FixedHashMap<                                                     \
-          maximum_number_of_neighbors(3) + 1,                                 \
+          maximum_number_of_neighbors(3),                                     \
           std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
           boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
       const Mesh<3>& subcell_mesh,                                            \

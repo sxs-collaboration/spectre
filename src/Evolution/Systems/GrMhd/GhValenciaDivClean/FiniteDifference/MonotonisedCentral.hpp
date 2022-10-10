@@ -110,7 +110,7 @@ class MonotonisedCentralPrim : public Reconstructor {
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(dim) + 1,
+          maximum_number_of_neighbors(dim),
           std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
@@ -127,7 +127,7 @@ class MonotonisedCentralPrim : public Reconstructor {
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
       const Element<dim>& element,
       const FixedHashMap<
-          maximum_number_of_neighbors(dim) + 1,
+          maximum_number_of_neighbors(dim),
           std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,

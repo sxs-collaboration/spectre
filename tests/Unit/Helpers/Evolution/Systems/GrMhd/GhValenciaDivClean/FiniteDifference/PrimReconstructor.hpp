@@ -47,7 +47,7 @@
 namespace TestHelpers::grmhd::GhValenciaDivClean::fd {
 namespace detail {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3) + 1,
+FixedHashMap<maximum_number_of_neighbors(3),
              std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
@@ -55,7 +55,7 @@ compute_neighbor_data(
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3) + 1,
+  FixedHashMap<maximum_number_of_neighbors(3),
                std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
@@ -193,7 +193,7 @@ void test_prim_reconstructor_impl(
     return vars;
   };
 
-  const FixedHashMap<maximum_number_of_neighbors(3) + 1,
+  const FixedHashMap<maximum_number_of_neighbors(3),
                      std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(
