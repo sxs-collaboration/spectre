@@ -734,9 +734,9 @@ class ProductOfConditions final : public BoundaryCondition {
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 void ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>::pup(
     PUP::er& p) {
+  BoundaryCondition::pup(p);
   p | derived_gh_condition_;
   p | derived_valencia_condition_;
-  BoundaryCondition::pup(p);
 }
 
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
