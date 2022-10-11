@@ -194,5 +194,8 @@ inline constexpr bool operator!=(const WrappedGr<SolutionType>& lhs,
                                  const WrappedGr<SolutionType>& rhs) {
   return not(lhs == rhs);
 }
+
+template <typename SolutionType>
+WrappedGr(SolutionType solution) -> WrappedGr<SolutionType>;
 }  // namespace Solutions
 }  // namespace GeneralizedHarmonic
