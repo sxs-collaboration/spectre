@@ -78,7 +78,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
        get_output(ExpansionDerivOrder));
   using metavars =
       TestHelpers::MockMetavars<TranslationDerivOrder, RotationDerivOrder,
-                                ExpansionDerivOrder>;
+                                ExpansionDerivOrder, 0>;
   using element_component = typename metavars::element_component;
   using translation_component = typename metavars::translation_component;
   using rotation_component = typename metavars::rotation_component;

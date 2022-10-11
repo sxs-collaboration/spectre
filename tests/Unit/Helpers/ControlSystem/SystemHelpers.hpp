@@ -20,11 +20,13 @@
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/ControlErrors/Expansion.hpp"
 #include "ControlSystem/ControlErrors/Rotation.hpp"
+#include "ControlSystem/ControlErrors/Shape.hpp"
 #include "ControlSystem/ControlErrors/Translation.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/DataVectorHelpers.hpp"
 #include "ControlSystem/Systems/Expansion.hpp"
 #include "ControlSystem/Systems/Rotation.hpp"
+#include "ControlSystem/Systems/Shape.hpp"
 #include "ControlSystem/Systems/Translation.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
@@ -45,12 +47,14 @@
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/OptionTags.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestingFramework.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
+#include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/CreateFromOptions.hpp"
@@ -58,6 +62,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -192,12 +197,12 @@ struct MockObserverWriter {
 };
 
 template <size_t TranslationDerivOrder, size_t RotationDerivOrder,
-          size_t ExpansionDerivOrder>
+          size_t ExpansionDerivOrder, size_t ShapeDerivOrder>
 struct MockMetavars {
   static constexpr size_t volume_dim = 3;
 
   using metavars = MockMetavars<TranslationDerivOrder, RotationDerivOrder,
-                                ExpansionDerivOrder>;
+                                ExpansionDerivOrder, ShapeDerivOrder>;
 
   using observed_reduction_data_tags = tmpl::list<>;
 
@@ -210,6 +215,7 @@ struct MockMetavars {
   static constexpr bool using_expansion = ExpansionDerivOrder != 0;
   static constexpr bool using_rotation = RotationDerivOrder != 0;
   static constexpr bool using_translation = TranslationDerivOrder != 0;
+  static constexpr bool using_shape = ShapeDerivOrder != 0;
 
   // Even if we aren't using certain control systems, we still need valid deriv
   // orders because everything is constructed by default in the SystemHelper.
@@ -221,6 +227,7 @@ struct MockMetavars {
       using_rotation ? RotationDerivOrder : 2;
   static constexpr size_t trans_deriv_order =
       using_translation ? TranslationDerivOrder : 2;
+  static constexpr size_t shape_deriv_order = using_shape ? ShapeDerivOrder : 2;
 
   using element_component = MockElementComponent<metavars>;
 
@@ -228,17 +235,20 @@ struct MockMetavars {
   using rotation_system = control_system::Systems::Rotation<rot_deriv_order>;
   using translation_system =
       control_system::Systems::Translation<trans_deriv_order>;
+  using shape_system =
+      control_system::Systems::Shape<::ah::ObjectLabel::A, shape_deriv_order>;
 
   using control_systems = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<using_expansion, expansion_system, tmpl::list<>>,
       tmpl::conditional_t<using_rotation, rotation_system, tmpl::list<>>,
-      tmpl::conditional_t<using_translation, translation_system,
-                          tmpl::list<>>>>;
+      tmpl::conditional_t<using_translation, translation_system, tmpl::list<>>,
+      tmpl::conditional_t<using_shape, shape_system, tmpl::list<>>>>;
 
   using expansion_component = MockControlComponent<metavars, expansion_system>;
   using rotation_component = MockControlComponent<metavars, rotation_system>;
   using translation_component =
       MockControlComponent<metavars, translation_system>;
+  using shape_component = MockControlComponent<metavars, shape_system>;
 
   using observer_component = MockObserverWriter<metavars>;
 
@@ -246,7 +256,8 @@ struct MockMetavars {
       tmpl::conditional_t<using_expansion, expansion_component, tmpl::list<>>,
       tmpl::conditional_t<using_rotation, rotation_component, tmpl::list<>>,
       tmpl::conditional_t<using_translation, translation_component,
-                          tmpl::list<>>>>;
+                          tmpl::list<>>,
+      tmpl::conditional_t<using_shape, shape_component, tmpl::list<>>>>;
 
   using component_list = tmpl::flatten<
       tmpl::list<observer_component, element_component, control_components>>;
@@ -455,6 +466,17 @@ struct SystemHelper {
     return System::name();
   }
 
+  void reset() {
+    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+    initial_functions_of_time_ =
+        clone_unique_ptrs(stored_initial_functions_of_time_);
+    initial_measurement_timescales_ =
+        clone_unique_ptrs(stored_initial_measurement_timescales_);
+    all_init_tags_ = stored_all_init_tags_;
+    horizon_a_ = {};
+    horizon_b_ = {};
+  }
+
   /*!
    * \brief Setup the test.
    *
@@ -514,27 +536,33 @@ struct SystemHelper {
     // member of a domain to get the centers. The names are chosen to match the
     // BinaryCompactObject domain, which the control errors were based on and
     // have these specific names hard-coded into them.
-    domain_ =
-        Domain<3>{{},
-                  {},
-                  {{"ObjectAExcisionSphere",
-                    ExcisionSphere<3>{excision_radius,
-                                      {{-0.5 * initial_separation, 0.0, 0.0}},
-                                      {{0, Direction<3>::lower_zeta()},
-                                       {1, Direction<3>::lower_zeta()},
-                                       {2, Direction<3>::lower_zeta()},
-                                       {3, Direction<3>::lower_zeta()},
-                                       {4, Direction<3>::lower_zeta()},
-                                       {5, Direction<3>::lower_zeta()}}}},
-                   {"ObjectBExcisionSphere",
-                    ExcisionSphere<3>{excision_radius,
-                                      {{+0.5 * initial_separation, 0.0, 0.0}},
-                                      {{0, Direction<3>::lower_zeta()},
-                                       {1, Direction<3>::lower_zeta()},
-                                       {2, Direction<3>::lower_zeta()},
-                                       {3, Direction<3>::lower_zeta()},
-                                       {4, Direction<3>::lower_zeta()},
-                                       {5, Direction<3>::lower_zeta()}}}}}};
+    stored_excision_spheres_ =
+        std::unordered_map<std::string, ExcisionSphere<3>>{
+            {"ObjectAExcisionSphere",
+             ExcisionSphere<3>{excision_radius,
+                               {{-0.5 * initial_separation, 0.0, 0.0}},
+                               {{0, Direction<3>::lower_zeta()},
+                                {1, Direction<3>::lower_zeta()},
+                                {2, Direction<3>::lower_zeta()},
+                                {3, Direction<3>::lower_zeta()},
+                                {4, Direction<3>::lower_zeta()},
+                                {5, Direction<3>::lower_zeta()}}}},
+            {"ObjectBExcisionSphere",
+             ExcisionSphere<3>{excision_radius,
+                               {{+0.5 * initial_separation, 0.0, 0.0}},
+                               {{0, Direction<3>::lower_zeta()},
+                                {1, Direction<3>::lower_zeta()},
+                                {2, Direction<3>::lower_zeta()},
+                                {3, Direction<3>::lower_zeta()},
+                                {4, Direction<3>::lower_zeta()},
+                                {5, Direction<3>::lower_zeta()}}}}};
+    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+
+    stored_initial_functions_of_time_ =
+        clone_unique_ptrs(initial_functions_of_time_);
+    stored_initial_measurement_timescales_ =
+        clone_unique_ptrs(initial_measurement_timescales_);
+    stored_all_init_tags_ = all_init_tags_;
   }
 
   /*!
@@ -623,7 +651,7 @@ struct SystemHelper {
     }
 
     // Get horizons at final time in grid frame
-    std::tie(horizon_a_, horizon_b_) = horizon_function(time);
+    std::tie(horizon_a_, horizon_b_) = horizon_function(final_time);
   }
 
  private:
@@ -667,8 +695,11 @@ struct SystemHelper {
               // system is updated
               LinkedMessageQueue<
                   double,
-                  tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
-                             QueueTags::Center<::ah::ObjectLabel::B>>>{}};
+                  tmpl::conditional_t<
+                      std::is_same_v<system, typename Metavars::shape_system>,
+                      tmpl::list<QueueTags::Strahlkorper<::Frame::Grid>>,
+                      tmpl::list<QueueTags::Center<::ah::ObjectLabel::A>,
+                                 QueueTags::Center<::ah::ObjectLabel::B>>>>{}};
     });
   }
 
@@ -687,5 +718,20 @@ struct SystemHelper {
   Strahlkorper<Frame::Grid> horizon_a_{};
   Strahlkorper<Frame::Grid> horizon_b_{};
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
+
+  // Initialization members. These are the values that will be used when the
+  // reset() function is called. We don't need the horizons because those are
+  // only used when the test is run, and we don't need initial time because
+  // that's never changed.
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      stored_initial_functions_of_time_{};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      stored_initial_measurement_timescales_{};
+  AllTags stored_all_init_tags_{};
+  // Can't copy Domain or Block so just create a duplicate using the excision
+  // spheres which are the only important part
+  std::unordered_map<std::string, ExcisionSphere<3>> stored_excision_spheres_{};
 };
 }  // namespace control_system::TestHelpers

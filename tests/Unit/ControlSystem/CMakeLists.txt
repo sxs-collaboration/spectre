@@ -35,11 +35,13 @@ add_test_library(
 target_link_libraries(
   ${LIBRARY}
   PRIVATE
+  ApparentHorizons
   ControlSystem
   EventsAndDenseTriggers
   FunctionsOfTime
   ObserverHelpers
   Parallel
   SizeControlErrors
+  SphericalHarmonics
   Utilities
 )

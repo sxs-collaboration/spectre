@@ -24,7 +24,7 @@ void test_rotation_control_error() {
   // Since we are only doing rotation, turn off the
   // other control systems by passing 0 for their deriv orders
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<0, deriv_order, 0>;
+  using metavars = TestHelpers::MockMetavars<0, deriv_order, 0, 0>;
   using element_component = typename metavars::element_component;
   using rotation_system = typename metavars::rotation_system;
   MAKE_GENERATOR(gen);

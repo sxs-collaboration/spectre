@@ -26,7 +26,7 @@ void test_translation_control_error() {
   // Since we are only doing translation, turn off the
   // other control systems by passing 0 for their deriv orders
   constexpr size_t deriv_order = 2;
-  using metavars = TestHelpers::MockMetavars<deriv_order, 0, 0>;
+  using metavars = TestHelpers::MockMetavars<deriv_order, 0, 0, 0>;
   using element_component = typename metavars::element_component;
   using translation_system = typename metavars::translation_system;
 
