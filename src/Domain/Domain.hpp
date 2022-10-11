@@ -35,6 +35,11 @@ class CoordinateMapBase;
 /// \endcond
 
 /*!
+ * \brief Holds entities related to the computational domain.
+ */
+namespace domain {}
+
+/*!
  *  \ingroup ComputationalDomainGroup
  *  \brief A wrapper around a vector of Blocks that represent the computational
  * domain.
