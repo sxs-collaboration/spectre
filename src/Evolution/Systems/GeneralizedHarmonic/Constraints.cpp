@@ -8,6 +8,7 @@
 #include "DataStructures/LeviCivitaIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/Christoffel.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -987,32 +988,11 @@ void gauge_constraint(
     const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) {
+  trace_christoffel(constraint, spacetime_normal_one_form,
+                    spacetime_normal_vector, inverse_spatial_metric,
+                    inverse_spacetime_metric, pi, phi);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    (*constraint).get(a) = gauge_function.get(a);
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      for (size_t j = 0; j < SpatialDim; ++j) {
-        (*constraint).get(a) +=
-            inverse_spatial_metric.get(i, j) * phi.get(i, j + 1, a);
-      }
-    }
-    for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      (*constraint).get(a) += spacetime_normal_vector.get(b) * pi.get(b, a);
-      for (size_t c = 0; c < SpatialDim + 1; ++c) {
-        (*constraint).get(a) -= 0.5 * spacetime_normal_one_form.get(a) *
-                                pi.get(b, c) *
-                                inverse_spacetime_metric.get(b, c);
-        if (a > 0) {
-          (*constraint).get(a) -=
-              0.5 * phi.get(a - 1, b, c) * inverse_spacetime_metric.get(b, c);
-        }
-        for (size_t i = 0; i < SpatialDim; ++i) {
-          (*constraint).get(a) -= 0.5 * spacetime_normal_one_form.get(a) *
-                                  spacetime_normal_vector.get(i + 1) *
-                                  phi.get(i, b, c) *
-                                  inverse_spacetime_metric.get(b, c);
-        }
-      }
-    }
+    (*constraint).get(a) += gauge_function.get(a);
   }
 }
 

@@ -62,6 +62,8 @@
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalOneForm.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/SpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -173,6 +175,8 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
                               dt_spatial_metric, deriv_spatial_metric);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
+  const auto spacetime_normal_one_form =
+      gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
   const auto phi =
       GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
                                spatial_metric, deriv_spatial_metric);
@@ -201,6 +205,31 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
       gr::christoffel_first_kind(deriv_spatial_metric), inverse_spatial_metric);
 
   CHECK_ITERABLE_APPROX(christoffel_second_kind, christoffel_second_kind_test);
+
+  // Test Christoffel trace
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+  const auto trace_christoffel = GeneralizedHarmonic::trace_christoffel(
+      spacetime_normal_one_form, spacetime_normal_vector,
+      inverse_spatial_metric, inverse_spacetime_metric, pi, phi);
+  tnsr::abb<T, Dim, Frame::Inertial> d4_spacetime_metric;
+  ::GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
+  const auto expected_trace_christoffel =
+      trace_last_indices(gr::christoffel_first_kind(d4_spacetime_metric),
+                         inverse_spacetime_metric);
+  CHECK_ITERABLE_APPROX(trace_christoffel, expected_trace_christoffel);
+  tnsr::a<T, Dim, Frame::Inertial> (*f_trace_christoffel)(
+      const tnsr::a<T, Dim, Frame::Inertial>&,
+      const tnsr::A<T, Dim, Frame::Inertial>&,
+      const tnsr::II<T, Dim, Frame::Inertial>&,
+      const tnsr::AA<T, Dim, Frame::Inertial>&,
+      const tnsr::aa<T, Dim, Frame::Inertial>&,
+      const tnsr::iaa<T, Dim, Frame::Inertial>&) =
+      &GeneralizedHarmonic::trace_christoffel<Dim, Frame::Inertial, T>;
+  pypp::check_with_random_values<1>(
+      f_trace_christoffel, "GeneralRelativity.ComputeGhQuantities",
+      "trace_christoffel", {{{-1., 1.}}}, used_for_size, 1.e-11);
 }
 
 template <typename DataType, size_t SpatialDim, typename Frame>

@@ -203,3 +203,17 @@ def gh_spatial_ricci_tensor(phi, deriv_phi, inverse_spatial_metric):
             "ikl,jlk->ij", spatial_phi_ijK, spatial_phi_ijK) + 2 * np.einsum(
                 "kil,kjl->ij", spatial_phi_Ijj, spatial_phi_ijK
             ) - 2 * np.einsum("kli,lkj->ij", spatial_phi_Ijj, spatial_phi_Ijj)
+
+
+def trace_christoffel(spacetime_normal_one_form, spacetime_normal_vector,
+                      inverse_spatial_metric, inverse_spacetime_metric, pi,
+                      phi):
+    spatial_normal_vector = spacetime_normal_vector[1:]
+    # everything except delta^i_a term
+    result = (
+        np.einsum("ij,ija->a", inverse_spatial_metric, phi[:, 1:, :]) +
+        np.einsum("b,ba->a", spacetime_normal_vector, pi) - 0.5 * np.einsum(
+            "a,bc,bc->a", spacetime_normal_one_form, inverse_spacetime_metric,
+            np.einsum("i,ibc->bc", spatial_normal_vector, phi) + pi))
+    result[1:] -= 0.5 * np.einsum("bc,ibc->i", inverse_spacetime_metric, phi)
+    return result
