@@ -119,9 +119,9 @@ struct const_item_type_impl<Tag, TagsList, true> {
   using type = typename db::detail::ConvertToConst<std::decay_t<
       typename db::detail::first_matching_tag<TagsList, Tag>::type>>::type;
 };
+}  // namespace detail
 
 template <typename Tag, typename TagsList>
-using const_item_type = typename const_item_type_impl<Tag, TagsList>::type;
-
-}  // namespace detail
+using const_item_type =
+    typename detail::const_item_type_impl<Tag, TagsList>::type;
 }  // namespace db
