@@ -20,10 +20,6 @@ SPECTRE_ALWAYS_INLINE constexpr void mutate_assign_impl(
                 "The number of arguments passed to `mutate_assign` must be "
                 "equal to the number of tags passed.");
   db::mutate<MutateTags...>(box, [&args...](const auto... box_args) {
-    // silence unused capture warnings when there are zero args.
-    // This function still gets instantiated despite the `static_assert` in the
-    // parent function.
-    EXPAND_PACK_LEFT_TO_RIGHT((void)args);
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     EXPAND_PACK_LEFT_TO_RIGHT((*box_args = std::forward<Args>(args)));
   });
@@ -39,10 +35,14 @@ template <typename MutateTagList, typename BoxTags, typename... Args>
 SPECTRE_ALWAYS_INLINE constexpr void mutate_assign(
     // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const gsl::not_null<db::DataBox<BoxTags>*> box, Args&&... args) {
-  static_assert(
-      tmpl::size<MutateTagList>::value > 0,
-      "At least one tag must be passed to `Initialization::mutate_assign`, but "
-      "received 0 tags to mutate.");
-  detail::mutate_assign_impl(box, MutateTagList{}, std::forward<Args>(args)...);
+  // The impl works for zero tags, but we can skip it to improve
+  // compilation performance.
+  if constexpr (tmpl::size<MutateTagList>::value != 0) {
+    detail::mutate_assign_impl(box, MutateTagList{},
+                               std::forward<Args>(args)...);
+  } else {
+    (void)box;
+    expand_pack(args...);
+  }
 }
 }  // namespace Initialization
