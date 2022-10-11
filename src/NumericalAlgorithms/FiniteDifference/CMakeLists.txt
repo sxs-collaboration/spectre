@@ -13,6 +13,7 @@ spectre_target_sources(
   Minmod.cpp
   MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
+  PartialDerivatives.cpp
   PositivityPreservingAdaptiveOrder.cpp
   Unlimited.cpp
   Wcns5z.cpp
@@ -29,6 +30,8 @@ spectre_target_headers(
   MonotonicityPreserving5.hpp
   MonotonisedCentral.hpp
   NeighborDataAsVariables.hpp
+  PartialDerivatives.hpp
+  PartialDerivatives.tpp
   PositivityPreservingAdaptiveOrder.hpp
   Reconstruct.hpp
   Reconstruct.tpp
