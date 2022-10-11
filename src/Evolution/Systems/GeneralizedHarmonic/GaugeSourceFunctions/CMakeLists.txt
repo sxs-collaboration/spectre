@@ -11,7 +11,10 @@ spectre_target_sources(
   DampedHarmonic.cpp
   DampedWaveHelpers.cpp
   DhGaugeParameters.cpp
+  Gauges.cpp
+  Harmonic.cpp
   InitializeDampedHarmonic.cpp
+  RegisterDerived.cpp
   )
 
 spectre_target_headers(
@@ -21,8 +24,11 @@ spectre_target_headers(
   DampedHarmonic.hpp
   DampedWaveHelpers.hpp
   DhGaugeParameters.hpp
+  Factory.hpp
   Gauges.hpp
+  Harmonic.hpp
   InitializeDampedHarmonic.hpp
+  RegisterDerived.hpp
   )
 
 target_link_libraries(
