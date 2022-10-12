@@ -4,6 +4,8 @@
 
 #include <cstddef>
 
+#include "Domain/Structure/Side.hpp"
+
 /// \cond
 class DataVector;
 template <size_t Dim>
@@ -73,4 +75,20 @@ const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents);
 template <size_t Dim>
 const Matrix& reconstruction_matrix(const Mesh<Dim>& dg_mesh,
                                     const Index<Dim>& subcell_extents);
+
+/*!
+ * \ingroup DgSubcellGroup
+ * \brief Computes the projection matrix in 1 dimension going from a DG
+ * mesh to a conservative finite difference subcell mesh for only the ghost
+ * zones.
+ *
+ * This is used when a neighbor sends DG volume data and we need to switch to
+ * FD. In this case we need to project the DG volume data onto the ghost zone
+ * cells.
+ *
+ * \note Currently assumes a max ghost zone size of `5` and a minimum ghost zone
+ * size of 2.
+ */
+const Matrix& projection_matrix(const Mesh<1>& dg_mesh, size_t subcell_extents,
+                                size_t ghost_zone_size, Side side);
 }  // namespace evolution::dg::subcellfd

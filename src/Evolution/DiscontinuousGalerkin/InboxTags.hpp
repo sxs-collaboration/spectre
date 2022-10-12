@@ -114,7 +114,6 @@ struct BoundaryCorrectionAndGhostCellsInbox {
     auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
            boundary_data, boundary_data_validity_range] = data.second;
     (void)ghost_cell_data;
-    (void)volume_mesh_of_ghost_cell_data; // Need to use when optimizing subcell
 
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
@@ -144,6 +143,14 @@ struct BoundaryCorrectionAndGhostCellsInbox {
              "The mesh being received for the fluxes is different than the "
              "mesh received for the ghost cells. Mesh for fluxes: "
                  << face_mesh << " mesh for ghost cells " << current_face_mesh);
+      ASSERT(current_volume_mesh_of_ghost_cell_data ==
+                 volume_mesh_of_ghost_cell_data,
+             "The mesh being received for the ghost cell data is different "
+             "than the mesh received previously. Mesh for received when we got "
+             "fluxes: "
+                 << volume_mesh_of_ghost_cell_data
+                 << " mesh received when we got ghost cells "
+                 << current_volume_mesh_of_ghost_cell_data);
 
       // We always move here since we take ownership of the data and moves
       // implicitly decay to copies

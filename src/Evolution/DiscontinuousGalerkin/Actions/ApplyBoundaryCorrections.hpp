@@ -18,6 +18,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
@@ -25,6 +26,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/NormalVectorTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/UsingSubcell.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -117,7 +119,8 @@ bool receive_boundary_data_global_time_stepping(
   }
 
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
-             evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+             evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
+             evolution::dg::Tags::NeighborMesh<volume_dim>>(
       box,
       [&received_temporal_id_and_data](
           const gsl::not_null<std::unordered_map<
@@ -125,7 +128,15 @@ bool receive_boundary_data_global_time_stepping(
               mortar_data,
           const gsl::not_null<
               std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-              mortar_next_time_step_id) {
+              mortar_next_time_step_id,
+          const gsl::not_null<FixedHashMap<
+              maximum_number_of_neighbors(volume_dim),
+              std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+              Mesh<volume_dim>,
+              boost::hash<
+                  std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>*>
+              neighbor_mesh) {
+        neighbor_mesh->clear();
         for (auto& received_mortar_data :
              received_temporal_id_and_data->second) {
           const auto& mortar_id = received_mortar_data.first;
@@ -136,6 +147,8 @@ bool receive_boundary_data_global_time_stepping(
                      << mortar_next_time_step_id->at(mortar_id)
                      << " but actually received at time "
                      << received_temporal_id_and_data->first);
+          neighbor_mesh->insert_or_assign(
+              mortar_id, std::get<0>(received_mortar_data.second));
           mortar_next_time_step_id->at(mortar_id) =
               std::get<4>(received_mortar_data.second);
           ASSERT(using_subcell_v<Metavariables> or
@@ -206,7 +219,8 @@ bool receive_boundary_data_local_time_stepping(
   const bool have_all_intermediate_messages =
       db::mutate<evolution::dg::Tags::MortarDataHistory<
                      volume_dim, typename dt_variables_tag::type>,
-                 evolution::dg::Tags::MortarNextTemporalId<volume_dim>>(
+                 evolution::dg::Tags::MortarNextTemporalId<volume_dim>,
+                 evolution::dg::Tags::NeighborMesh<volume_dim>>(
           box,
           [&inbox, &needed_time](
               const gsl::not_null<
@@ -219,7 +233,18 @@ bool receive_boundary_data_local_time_stepping(
                   boundary_data_history,
               const gsl::not_null<
                   std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-                  mortar_next_time_step_id) {
+                  mortar_next_time_step_id,
+              const gsl::not_null<FixedHashMap<
+                  maximum_number_of_neighbors(volume_dim),
+                  std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+                  Mesh<volume_dim>,
+                  boost::hash<std::pair<Direction<volume_dim>,
+                                        ElementId<volume_dim>>>>*>
+                  neighbor_mesh,
+              const Element<volume_dim>& element) {
+            // Remove neighbor meshes for neighbors that don't exist anymore
+            domain::remove_nonexistent_neighbors(neighbor_mesh, element);
+
             // Move received boundary data into boundary history.
             for (auto received_data = inbox.begin();
                  received_data != inbox.end() and
@@ -257,6 +282,8 @@ bool receive_boundary_data_local_time_stepping(
                   // order they were sent.
                   return false;
                 }
+                neighbor_mesh->insert_or_assign(
+                    mortar_id, std::get<0>(received_mortar_data->second));
                 mortar_next_time_step_id->at(mortar_id) =
                     std::get<4>(received_mortar_data->second);
                 neighbor_mortar_data.insert_neighbor_mortar_data(
@@ -268,7 +295,8 @@ bool receive_boundary_data_local_time_stepping(
               }
             }
             return true;
-          });
+          },
+          db::get<::domain::Tags::Element<volume_dim>>(*box));
 
   if (not have_all_intermediate_messages) {
     return false;

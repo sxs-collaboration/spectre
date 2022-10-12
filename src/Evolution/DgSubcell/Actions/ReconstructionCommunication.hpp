@@ -28,6 +28,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
+#include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
@@ -41,6 +42,7 @@
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -284,7 +286,8 @@ struct ReceiveDataForReconstruction {
     inbox.erase(current_time_step_id);
     db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
-               evolution::dg::Tags::MortarNextTemporalId<Dim>>(
+               evolution::dg::Tags::MortarNextTemporalId<Dim>,
+               evolution::dg::Tags::NeighborMesh<Dim>>(
         make_not_null(&box),
         [&current_time_step_id, &element, &received_data](
             const gsl::not_null<FixedHashMap<
@@ -298,7 +301,15 @@ struct ReceiveDataForReconstruction {
                 mortar_data,
             const gsl::not_null<
                 std::unordered_map<Key, TimeStepId, boost::hash<Key>>*>
-                mortar_next_time_step_id) {
+                mortar_next_time_step_id,
+            const gsl::not_null<FixedHashMap<
+                maximum_number_of_neighbors(Dim),
+                std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
+                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+                neighbor_mesh) {
+          // Remove neighbor meshes for neighbors that don't exist anymore
+          domain::remove_nonexistent_neighbors(neighbor_mesh, element);
+
           // Get the next time step id, and also the fluxes data if the neighbor
           // is doing DG.
           for (auto& received_mortar_data : received_data) {
@@ -318,6 +329,9 @@ struct ReceiveDataForReconstruction {
                   std::get<1>(received_mortar_data.second),
                   std::move(*std::get<3>(received_mortar_data.second)));
             }
+            // Set new neighbor mesh
+            neighbor_mesh->insert_or_assign(
+                mortar_id, std::get<0>(received_mortar_data.second));
           }
 
           ASSERT(neighbor_data_ptr->empty(),

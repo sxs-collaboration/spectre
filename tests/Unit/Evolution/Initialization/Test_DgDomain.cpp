@@ -228,6 +228,11 @@ void test(const Spectral::Quadrature quadrature) {
   CHECK(ActionTesting::get_next_action_index<component>(runner, self_id) == 0);
   ActionTesting::next_action<component>(make_not_null(&runner), self_id);
 
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       evolution::dg::Tags::NeighborMesh<Dim>>(
+            runner, self_id)
+            .empty());
+
   // Set up data to be used for checking correctness
   const auto logical_to_grid_map =
       create_affine_map<Dim, Frame::ElementLogical, Frame::Grid>();

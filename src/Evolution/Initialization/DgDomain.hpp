@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -13,6 +14,7 @@
 
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
@@ -22,11 +24,14 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/TagsDomain.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -37,8 +42,6 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-template <size_t VolumeDim>
-class ElementId;
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
@@ -66,6 +69,7 @@ namespace Initialization {
  *   - `domain::Tags::ElementMap<Dim, Frame::Inertial>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
  *      Frame::Inertial>`
+ *   - `evolution::dg::Tags::NeighborMesh`
  *   - `domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
  *      CoordinateMap<Dim, Frame::Grid, Frame::Inertial>>`
  *   - `domain::Tags::Coordinates<Dim, Frame::ElementLogical>`
@@ -100,8 +104,9 @@ struct Domain {
   using simple_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 ::domain::CoordinateMaps::Tags::CoordinateMap<
-                     Dim, Frame::Grid, Frame::Inertial>>;
+                 ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                               Frame::Inertial>,
+                 evolution::dg::Tags::NeighborMesh<Dim>>;
 
   using compute_tags = tmpl::list<
       ::domain::Tags::LogicalCoordinates<Dim>,
@@ -168,7 +173,8 @@ struct Domain {
     }
     ::Initialization::mutate_assign<simple_tags>(
         make_not_null(&box), std::move(mesh), std::move(element),
-        std::move(element_map), std::move(grid_to_inertial_map));
+        std::move(element_map), std::move(grid_to_inertial_map),
+        typename evolution::dg::Tags::NeighborMesh<Dim>::type{});
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

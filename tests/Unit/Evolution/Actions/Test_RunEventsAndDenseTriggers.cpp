@@ -23,7 +23,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Actions/RunEventsAndDenseTriggers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Evolution/EventsAndDenseTriggers/DenseTrigger.hpp"
 #include "Evolution/EventsAndDenseTriggers/EventsAndDenseTriggers.hpp"
 #include "Evolution/EventsAndDenseTriggers/Tags.hpp"
@@ -251,7 +253,9 @@ struct Component {
       tmpl::push_front<extra_data, Tags::TimeStepId, Tags::TimeStep, Tags::Time,
                        evolution::Tags::PreviousTriggerTime, variables_tag,
                        Tags::HistoryEvolvedVariables<variables_tag>,
-                       evolution::Tags::EventsAndDenseTriggers>;
+                       evolution::Tags::EventsAndDenseTriggers,
+                       evolution::dg::Tags::NeighborMesh<1>,
+                       domain::Tags::Element<1>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Testing,
@@ -351,6 +355,8 @@ void test(const bool time_runs_forward) {
               std::optional<double>{}, initial_vars, std::move(history),
               evolution::EventsAndDenseTriggers(
                   std::move(events_and_dense_triggers)),
+              typename evolution::dg::Tags::NeighborMesh<1>::type{},
+              Element<1>{ElementId<1>{0}, {}},
               get<tmpl::type_from<decltype(tags_v)>>(initial_extra_data)...);
         });
         ActionTesting::set_phase(runner, Parallel::Phase::Testing);

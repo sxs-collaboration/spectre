@@ -356,7 +356,8 @@ struct GhValenciaDivCleanTemplateBase<
       detail::make_default_phase_order<initial_data>();
 
   using step_actions = tmpl::flatten<tmpl::list<
-      evolution::dg::Actions::ComputeTimeDerivative<derived_metavars>,
+      evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
+                                                    AllStepChoosers>,
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
