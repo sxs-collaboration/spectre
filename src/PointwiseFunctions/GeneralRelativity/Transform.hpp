@@ -32,21 +32,150 @@ namespace transform {
  * Note that `Jacobian<DestFrame,SrcFrame>` is the same type as
  * `InverseJacobian<SrcFrame,DestFrame>` and represents
  * \f$\partial x^i/\partial x^{\bar{\jmath}}\f$.
- *
- * In principle `to_different_frame` can be extended/generalized to
- * other tensor types if needed.
  */
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
 void to_different_frame(
-    const gsl::not_null<tnsr::ii<DataVector, VolumeDim, DestFrame>*> dest,
-    const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian);
+    const gsl::not_null<tnsr::ii<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::ii<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian);
 
-template <size_t VolumeDim, typename SrcFrame, typename DestFrame>
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
 auto to_different_frame(
-    const tnsr::ii<DataVector, VolumeDim, SrcFrame>& src,
-    const Jacobian<DataVector, VolumeDim, DestFrame, SrcFrame>& jacobian)
-    -> tnsr::ii<DataVector, VolumeDim, DestFrame>;
+    const tnsr::ii<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian)
+    -> tnsr::ii<DataType, VolumeDim, DestFrame>;
+/// @}
+
+/// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Transforms a tensor to a different frame.
+ *
+ * The tensor being transformed is always assumed to have density zero. In
+ * particular `Scalar` is assumed to be invariant under transformations.
+ *
+ * \warning The \p jacobian argument is the derivative of the *source*
+ * coordinates with respect to the *destination* coordinates.
+ */
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<Scalar<DataType>*> dest, const Scalar<DataType>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    Scalar<DataType> src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> Scalar<DataType>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::I<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::I<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::I<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::I<DataType, VolumeDim, DestFrame>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::i<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::i<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::i<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::i<DataType, VolumeDim, DestFrame>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::iJ<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::iJ<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::iJ<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::iJ<DataType, VolumeDim, DestFrame>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::ii<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::ii<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::ii<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::ii<DataType, VolumeDim, DestFrame>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::II<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::II<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::II<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::II<DataType, VolumeDim, DestFrame>;
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+void to_different_frame(
+    const gsl::not_null<tnsr::ijj<DataType, VolumeDim, DestFrame>*> dest,
+    const tnsr::ijj<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian);
+
+template <typename DataType, size_t VolumeDim, typename SrcFrame,
+          typename DestFrame>
+auto to_different_frame(
+    const tnsr::ijj<DataType, VolumeDim, SrcFrame>& src,
+    const Jacobian<DataType, VolumeDim, DestFrame, SrcFrame>& jacobian,
+    const InverseJacobian<DataType, VolumeDim, DestFrame, SrcFrame>&
+        inv_jacobian) -> tnsr::ijj<DataType, VolumeDim, DestFrame>;
 /// @}
 
 /// @{

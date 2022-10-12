@@ -16,13 +16,6 @@
 namespace {
 template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
 void test_transform_to_different_frame(const DataType& used_for_size) {
-  tnsr::ii<DataType, Dim, DestFrame> (*f)(
-      const tnsr::ii<DataType, Dim, SrcFrame>&,
-      const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
-      transform::to_different_frame<Dim, SrcFrame, DestFrame>;
-  pypp::check_with_random_values<1>(f, "Transform", "to_different_frame",
-                                    {{{-10., 10.}}}, used_for_size);
-
   // Transform src->dest and then dest->src and ensure we recover
   // what we started with.
   MAKE_GENERATOR(gen);
@@ -51,23 +44,60 @@ void test_transform_to_different_frame(const DataType& used_for_size) {
   const auto expected_src_tensor = transform::to_different_frame(
       dest_tensor, determinant_and_inverse(jacobian).second);
   CHECK_ITERABLE_APPROX(expected_src_tensor, src_tensor);
+
+  // check transformation of tensor
+  tnsr::ii<DataType, Dim, DestFrame> (*f)(
+      const tnsr::ii<DataType, Dim, SrcFrame>&,
+      const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
+      transform::to_different_frame;
+  pypp::check_with_random_values<1>(f, "Transform", "to_different_frame",
+                                    {{{-10., 10.}}}, used_for_size);
+
+  // check with different overloads
+  const auto test_transform = [&used_for_size](auto transform_type,
+                                               const std::string& suffix) {
+    pypp::check_with_random_values<1>(
+        +[](const decltype(transform_type)& tensor,
+            const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>& jac) {
+          return transform::to_different_frame(
+              tensor, jac, determinant_and_inverse(jac).second);
+        },
+        "Transform", "to_different_frame_" + suffix, {{{-10., 10.}}},
+        used_for_size);
+  };
+  test_transform(Scalar<DataType>{}, "Scalar");
+  test_transform(tnsr::I<DataType, Dim, SrcFrame>{}, "I");
+  test_transform(tnsr::i<DataType, Dim, SrcFrame>{}, "i");
+  test_transform(tnsr::iJ<DataType, Dim, SrcFrame>{}, "iJ");
+  test_transform(tnsr::ii<DataType, Dim, SrcFrame>{}, "ii");
+  test_transform(tnsr::II<DataType, Dim, SrcFrame>{}, "II");
+  test_transform(tnsr::ijj<DataType, Dim, SrcFrame>{}, "ijj");
+
+  // special test case for the Scalar using not_null.
+  const auto src_scalar = make_with_random_values<Scalar<DataType>>(
+      nn_generator, nn_interval_dis, used_for_size);
+  auto dest_scalar = make_with_value<Scalar<DataType>>(
+      src_scalar, std::numeric_limits<double>::signaling_NaN());
+  transform::to_different_frame(make_not_null(&dest_scalar), src_scalar,
+                                jacobian,
+                                determinant_and_inverse(jacobian).second);
+  CHECK_ITERABLE_APPROX(dest_scalar, src_scalar);
 }
 
-  template <size_t Dim, typename SrcFrame, typename DestFrame,
-            typename DataType>
-  void test_transform_first_index_to_different_frame(
-      const DataType& used_for_size) {
-    tnsr::ijj<DataType, Dim, DestFrame> (*f)(
-        const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
-                     index_list<SpatialIndex<Dim, UpLo::Lo, SrcFrame>,
-                                SpatialIndex<Dim, UpLo::Lo, DestFrame>,
-                                SpatialIndex<Dim, UpLo::Lo, DestFrame>>>&,
-        const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
-        transform::first_index_to_different_frame<Dim, SrcFrame, DestFrame>;
-    pypp::check_with_random_values<1>(f, "Transform",
-                                      "first_index_to_different_frame",
-                                      {{{-10., 10.}}}, used_for_size);
-  }
+template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
+void test_transform_first_index_to_different_frame(
+    const DataType& used_for_size) {
+  tnsr::ijj<DataType, Dim, DestFrame> (*f)(
+      const Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1, 1>,
+                   index_list<SpatialIndex<Dim, UpLo::Lo, SrcFrame>,
+                              SpatialIndex<Dim, UpLo::Lo, DestFrame>,
+                              SpatialIndex<Dim, UpLo::Lo, DestFrame>>>&,
+      const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
+      transform::first_index_to_different_frame<Dim, SrcFrame, DestFrame>;
+  pypp::check_with_random_values<1>(f, "Transform",
+                                    "first_index_to_different_frame",
+                                    {{{-10., 10.}}}, used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
@@ -75,6 +105,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Transform",
   pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/GeneralRelativity/");
   const DataVector dv(5);
+  test_transform_to_different_frame<1, Frame::Grid, Frame::Inertial>(double{});
+  test_transform_to_different_frame<2, Frame::Grid, Frame::Inertial>(double{});
+  test_transform_to_different_frame<3, Frame::Grid, Frame::Inertial>(double{});
   test_transform_to_different_frame<1, Frame::Grid, Frame::Inertial>(dv);
   test_transform_to_different_frame<2, Frame::Grid, Frame::Inertial>(dv);
   test_transform_to_different_frame<3, Frame::Grid, Frame::Inertial>(dv);
