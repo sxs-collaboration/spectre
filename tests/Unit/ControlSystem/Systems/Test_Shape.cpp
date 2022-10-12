@@ -353,7 +353,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
                          std::numeric_limits<double>::infinity()};
     test_shape_control(generator, make_not_null(&system_helper), initial_time,
                        final_time, l_max, expected_ah_coefs, looser_eps,
-                       stricter_eps);
+                       looser_eps);
   }
   system_helper.reset();
   {
