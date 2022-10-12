@@ -4,11 +4,14 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 
+#include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace control_system {
@@ -33,19 +36,22 @@ namespace control_system {
  * the same protection so if this does happen, then something is most likely
  * wrong with your initial parameters for the control system.
  */
-template <typename... OptionHolders>
+template <size_t Dim, typename... OptionHolders>
 std::unordered_map<std::string, double> initial_expiration_times(
     const double initial_time, const double initial_time_step,
+    const std::unique_ptr<::DomainCreator<Dim>>& domain_creator,
     const OptionHolders&... option_holders) {
   std::unordered_map<std::string, double> initial_expiration_times{};
 
   [[maybe_unused]] const auto gather_initial_expiration_times =
-      [&initial_time, &initial_time_step,
+      [&initial_time, &initial_time_step, &domain_creator,
        &initial_expiration_times](const auto& option_holder) {
         const auto& controller = option_holder.controller;
         const std::string& name =
             std::decay_t<decltype(option_holder)>::control_system::name();
-        const auto& tuner = option_holder.tuner;
+        auto tuner = option_holder.tuner;
+        Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
+                                       initial_time, name);
 
         const double update_fraction = controller.get_update_fraction();
         const double curr_timescale = min(tuner.current_timescale());
