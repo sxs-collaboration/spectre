@@ -144,4 +144,6 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       "  Times:\n"
       "    Specified:\n"
       "      Values: [5.0, 3.0, 6.0]");
+
+  CHECK(not StepChoosers::StepToTimes{}.uses_local_data());
 }

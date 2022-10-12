@@ -218,6 +218,8 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
     return std::make_pair(new_step, l_inf_error <= 1.0);
   }
 
+  bool uses_local_data() const override { return true; }
+
   void pup(PUP::er& p) override {  // NOLINT
     p | absolute_tolerance_;
     p | relative_tolerance_;

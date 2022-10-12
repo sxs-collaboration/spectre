@@ -39,7 +39,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
-#include "Time/StepChoosers/Factory.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -174,10 +173,8 @@ struct test_metavariables {
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
-    using factory_classes = tmpl::map<tmpl::pair<
-        StepChooser<StepChooserUse::LtsStep>,
-        tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>,
-                   StepChoosers::Increase<StepChooserUse::LtsStep>>>>;
+    using factory_classes = tmpl::map<
+        tmpl::pair<StepChooser<StepChooserUse::LtsStep>, tmpl::list<>>>;
   };
 
   using const_global_cache_tags = tmpl::list<Tags::SpecifiedStartTime>;

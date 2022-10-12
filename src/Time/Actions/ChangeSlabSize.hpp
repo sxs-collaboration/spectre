@@ -279,12 +279,19 @@ class ChangeSlabSize : public Event {
         next_changable_slab + static_cast<int64_t>(delay_change_);
 
     double desired_slab_size = std::numeric_limits<double>::infinity();
+    bool synchronization_required = false;
     for (const auto& step_chooser : step_choosers_) {
       desired_slab_size =
           std::min(desired_slab_size,
                    step_chooser->desired_slab(
                        time_step_id.step_time().slab().duration().value(),
                        box_for_step_choosers, cache));
+      // We must synchronize if any step chooser requires it, not just
+      // the limiting one, because choosers requiring synchronization
+      // can be limiting on some processors and not others.
+      if (not synchronization_required) {
+        synchronization_required = step_chooser->uses_local_data();
+      }
     }
 
     const auto& component_proxy =
@@ -296,9 +303,15 @@ class ChangeSlabSize : public Event {
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox>(
         *Parallel::local(self_proxy), slab_to_change,
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox::NoData{});
-    Parallel::contribute_to_reduction<ChangeSlabSize_detail::StoreNewSlabSize>(
-        ReductionData(slab_to_change, desired_slab_size), self_proxy,
-        component_proxy);
+    if (synchronization_required) {
+      Parallel::contribute_to_reduction<
+          ChangeSlabSize_detail::StoreNewSlabSize>(
+          ReductionData(slab_to_change, desired_slab_size), self_proxy,
+          component_proxy);
+    } else {
+      Parallel::receive_data<ChangeSlabSize_detail::NewSlabSizeInbox>(
+          *Parallel::local(self_proxy), slab_to_change, desired_slab_size);
+    }
   }
 
   using is_ready_argument_tags = tmpl::list<>;

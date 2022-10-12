@@ -180,4 +180,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ElementSizeCfl", "[Unit][Time]") {
       std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>, Metavariables<3>>(
       "ElementSizeCfl:\n"
       "  SafetyFactor: 5.0");
+
+  CHECK(StepChoosers::ElementSizeCfl<StepChooserUse::Slab, 1,
+                                     Metavariables<1>::system>{}
+            .uses_local_data());
 }

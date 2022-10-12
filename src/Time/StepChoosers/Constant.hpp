@@ -49,6 +49,8 @@ class Constant : public StepChooser<StepChooserUse> {
     return std::make_pair(value_, true);
   }
 
+  bool uses_local_data() const override { return false; }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | value_; }
 

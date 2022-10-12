@@ -293,6 +293,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       "  MaxFactor: 2.1\n"
       "  MinFactor: 0.5");
 
+  CHECK(StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>{}
+            .uses_local_data());
+
   // Test `IsUsingTimeSteppingErrorControl` tag:
   {
     INFO("IsUsingTimeSteppingErrorControl tag test");

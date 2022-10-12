@@ -71,6 +71,8 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
     // no restriction on the chosen step.
     return std::make_pair(std::numeric_limits<double>::infinity(), true);
   }
+
+  bool uses_local_data() const override { return false; }
 };
 
 /// \cond

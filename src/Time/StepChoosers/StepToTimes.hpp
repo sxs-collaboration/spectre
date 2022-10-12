@@ -31,10 +31,7 @@ namespace StepChoosers {
 /// Suggests step sizes to place steps at specific times.
 ///
 /// The suggestion provided depends on the current time, so it should
-/// be applied immediately, rather than delayed several slabs.  As
-/// changing immediately is inefficient, it may be best to use
-/// triggers to only activate this check near (within a few slabs of)
-/// the desired time.
+/// be applied immediately, rather than delayed several slabs.
 class StepToTimes : public StepChooser<StepChooserUse::Slab> {
  public:
   /// \cond
@@ -53,10 +50,7 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
       "Suggests step sizes to place steps at specific times.\n"
       "\n"
       "The suggestion provided depends on the current time, so it should\n"
-      "be applied immediately, rather than delayed several slabs.  As\n"
-      "changing immediately is inefficient, it may be best to use\n"
-      "triggers to only activate this check near (within a few slabs of)\n"
-      "the desired time.\n";
+      "be applied immediately, rather than delayed several slabs.";
   using options = tmpl::list<Times>;
 
   explicit StepToTimes(std::unique_ptr<TimeSequence<double>> times)
@@ -114,6 +108,8 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
       return std::make_pair(2.0 / 3.0 * distance_to_next_goal, true);
     }
   }
+
+  bool uses_local_data() const override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override { p | times_; }

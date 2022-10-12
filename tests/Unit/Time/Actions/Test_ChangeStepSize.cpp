@@ -58,6 +58,9 @@ struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     return {last_step_magnitude, false};
   }
+
+  bool uses_local_data() const override { return false; }
+
   void pup(PUP::er& /*p*/) override {}
 };
 
