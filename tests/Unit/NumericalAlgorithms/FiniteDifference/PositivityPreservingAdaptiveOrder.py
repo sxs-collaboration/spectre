@@ -131,7 +131,7 @@ def _adaptive_order_5(q, keep_positive, low_order_recons, use_9th_order,
          1.6356130125661377 * q[j]) + q[j - 2] *
         (0.6699388830329586 * q[j - 2] + 0.927411437665344 * q[j]) +
         1.4061182415674602 * q[j]**2)
-    if (four_to_the_alpha_5 * norm_top <= norm_full):
+    if ((four_to_the_alpha_5)**2 * norm_top <= norm_full):
         result = [
             -0.15625 * q[j + 1] + 0.0234375 * q[j + 2] + 0.46875 * q[j - 1] -
             0.0390625 * q[j - 2] + 0.703125 * q[j],
