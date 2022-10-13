@@ -105,7 +105,9 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<volume_dim>,
+                 Parallel::Tags::ResourceInfo<Metavariables>>;
 
   using array_allocation_tags =
       typename ElementsAllocator::template array_allocation_tags<
