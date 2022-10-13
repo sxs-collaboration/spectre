@@ -180,6 +180,8 @@ void test_tags() {
   TestHelpers::db::test_simple_tag<
       Tags::SingletonInfo<FakeSingleton<metavars, 0>>>("FakeSingleton0");
   TestHelpers::db::test_simple_tag<Tags::AvoidGlobalProc0>("AvoidGlobalProc0");
+  TestHelpers::db::test_simple_tag<Tags::ResourceInfo<metavars>>(
+      "ResourceInfo");
 
   Parallel::MutableGlobalCache<metavars> mutable_cache{};
   Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
@@ -194,8 +196,10 @@ void test_tags() {
 
   const auto tag_info_holder = Tags::SingletonInfo<
       FakeSingleton<metavars, 0>>::create_from_options<metavars>(resource_info);
-  CHECK(info_holder.proc() == tag_info_holder.proc());
-  CHECK(info_holder.is_exclusive() == tag_info_holder.is_exclusive());
+  CHECK(tag_info_holder == info_holder);
+
+  CHECK(Tags::ResourceInfo<metavars>::create_from_options<metavars>(
+            resource_info) == Parallel::ResourceInfo<metavars>{});
 }
 
 void test_single_core() {
