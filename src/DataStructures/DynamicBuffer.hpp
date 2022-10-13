@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "Utilities/TypeTraits/GetFundamentalType.hpp"
 
 /// \cond
 namespace PUP {
@@ -28,14 +27,14 @@ class er;
  * size of the vector is known at compile time, a `TempBuffer` object should be
  * used instead.
  *
- * If needed it should be fairly straightforward to generalize to
- * `ComplexDataVector`.
+ * Currently this can only be used for `DataVector`s, but if needed, it should
+ * be fairly straightforward to generalize to `ComplexDataVector`.
  */
 template <typename T>
 class DynamicBuffer {
  public:
-  static constexpr bool is_data_vector_type =
-      std::is_base_of_v<VectorImpl<tt::get_fundamental_type_t<T>, T>, T>;
+  // Only vector type supported is DataVector
+  static constexpr bool is_data_vector_type = std::is_same_v<DataVector, T>;
 
   DynamicBuffer() = default;
 

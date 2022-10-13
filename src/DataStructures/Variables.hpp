@@ -53,7 +53,7 @@ template <typename X, typename Symm, typename IndexList>
 class Tensor;
 template <typename TagsList>
 class Variables;
-template <typename T, typename VectorType>
+template <typename T, typename VectorType, size_t StaticSize>
 class VectorImpl;
 namespace Tags {
 template <typename TagsList>
@@ -376,10 +376,10 @@ class Variables<tmpl::list<Tags...>> {
 
   // Prevent the previous two declarations from implicitly converting
   // DataVectors and similar to Variables.
-  template <typename T, typename VectorType>
-  Variables(const VectorImpl<T, VectorType>&) = delete;
-  template <typename T, typename VectorType>
-  Variables& operator=(const VectorImpl<T, VectorType>&) = delete;
+  template <typename T, typename VectorType, size_t StaticSize>
+  Variables(const VectorImpl<T, VectorType, StaticSize>&) = delete;
+  template <typename T, typename VectorType, size_t StaticSize>
+  Variables& operator=(const VectorImpl<T, VectorType, StaticSize>&) = delete;
 
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all<std::is_same_v<

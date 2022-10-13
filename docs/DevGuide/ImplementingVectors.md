@@ -32,18 +32,22 @@ high-performance arithmetic library
 vectors gracefully make use of the math functions defined for the Blaze types,
 but can be customized for the specific needs in SpECTRE computations.
 
-The pair of template parameters for `VectorImpl` are the type of the stored data
-(e.g. `double` for `DataVector`), and the result type for mathematical
-operations. The result type is used by Blaze to ensure that only compatible
-vector types are used together in mathematical expressions. For example, a
-vector representing `double` data on a grid (`DataVector`) cannot be added to a
-vector representing spectral coefficients (`ModalVector`). This avoids subtle
-bugs that arise when vector types are unintentionally mixed.  In nearly all
-cases the result type will be the vector type that is being defined, so, for
-instance, `DataVector` is a derived class of `VectorImpl<double,
-DataVector>`. This template pattern is known as the
-["Curiously Recurring Template Pattern"]
-(https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) (CRTP).
+The trio of template parameters for `VectorImpl` are the type of the stored data
+(e.g. `double` for `DataVector`), the result type for mathematical operations,
+and the static size. The result type is used by Blaze to ensure that only
+compatible vector types are used together in mathematical expressions. For
+example, a vector representing `double` data on a grid (`DataVector`) cannot be
+added to a vector representing spectral coefficients (`ModalVector`). This
+avoids subtle bugs that arise when vector types are unintentionally mixed.
+In nearly all cases the result type will be the vector type that is being
+defined, so, for instance, `DataVector` is a derived class of
+`VectorImpl<double, DataVector, 5>`. This template pattern is known as the
+["Curiously Recurring Template Pattern"](https://en.wikipedia.org/wiki/
+Curiously_recurring_template_pattern) (CRTP).
+The static size is used as an optimization for small vector sizes. If your
+vector is small, rather than doing heap allocations, it will use stack
+allocations in order to be efficient. The default static size is set by a global
+constexpr bool `default_vector_impl_static_size`.
 
 For the Blaze system to use the CRTP inheritance appropriately, it requires the
 specification of separate type traits in the `blaze` namespace.
@@ -66,14 +70,14 @@ will be implicitly inherited from `VectorImpl`. The assignment and constructors
 may be inherited calling the following alias code in the vector class
 definition:
 ```
-using VectorImpl<T,VectorType>::operator=;
-using VectorImpl<T,VectorType>::VectorImpl;
+using VectorImpl<T,VectorType,StaticSize>::operator=;
+using VectorImpl<T,VectorType,StaticSize>::VectorImpl;
 ```
 
 Only the mathematical operations supported on the base Blaze types are supported
 by default. Those operations are determined by the storage type `T` and by the
-Blaze library. See [blaze-wiki/Vector_Operations]
-(https://bitbucket.org/blaze-lib/blaze/wiki/Vector%20Operations).
+Blaze library. See [blaze-wiki/Vector_Operations](https://bitbucket.org/
+blaze-lib/blaze/wiki/Vector%20Operations).
 
 # Allowed operator specification {#blaze_definitions}
 
@@ -324,25 +328,37 @@ memory. Non-owning vectors do not manage memory, nor can they change size. The
 two cases of data ownership cause the underlying data to be handled fairly
 differently, so we will discuss each in turn.
 
-When a SpECTRE vector is constructed as owning, or becomes owning, it allocates
-its own block of memory of appropriate size, and stores a pointer to that memory
-in a `std::unique_ptr` named `owned_data_`. The `std::unique_ptr` ensures that
-the SpECTRE vector needs to perform no further direct memory management, and
-that the memory will be appropriately managed whenever the
-`std::unique_ptr owned_data_` member is deleted or moved. The base
-`blaze::CustomVector` must also be told about the pointer, which is always
-accomplished by calling the protected function
+When a SpECTRE vector is constructed as owning, or becomes owning, its memory
+is allocated in one of two ways.
+
+1. The size of the vector is larger than the `StaticSize` template parameter to
+   `VectorImpl`. In that case, it allocates its own block of memory of
+   appropriate size, and stores a pointer to that memory in a `std::unique_ptr`
+   named `owned_data_`. The `std::unique_ptr` ensures that the SpECTRE vector
+   needs to perform no further direct memory management, and that the memory
+   will be appropriately managed whenever the `std::unique_ptr owned_data_`
+   member is deleted or moved.
+2. The size of the vector is less than or equal to the `StaticSize` template. In
+   this case, the data is stored on the stack in a `std::array<T, StaticSize>`
+   member variable called `static_owned_data_`. Since it is on the stack, this
+   doesn't require any memory management by the user.
+
+In either case, the base `blaze::CustomVector` must also be told about the
+pointer, which is always accomplished by calling the protected function
 `VectorImpl.reset_pointer_vector(const size_t set_size)`, which sets the
-`blaze::CustomVector` internal pointer to the pointer obtained by
-`std::unique_pointer.get()`.
+`blaze::CustomVector` internal pointer to either the pointer obtained by
+`std::unique_pointer.get()` or the pointer obtained by `std::array.data()`
+depending on the size of the vector.
 
 When a SpECTRE vector is constructed as non-owning by the `VectorImpl(ValueType*
 start, size_t set_size)` constructor, or becomes non-owning by the
-`set_data_ref` function, the internal `std::unique_ptr` named `owned_data_` no
-longer points to the data represented by the vector and can be thought of as
+`set_data_ref` function, neither the internal `std::unique_ptr` named
+`owned_data_` nor the internal `std::array` named `static_owned_data_`
+points to the data represented by the vector and both can be thought of as
 "inactive" for the purposes of computation and memory management. This behavior
 is desirable, because otherwise the `std::unique_ptr` would attempt to free
 memory that is presumed to be also used elsewhere, causing difficult to diagnose
-memory errors. The non-owning SpECTRE vector updates the base
+memory errors. And we needn't worry about the `std::array` because it's
+allocated on the stack. The non-owning SpECTRE vector updates the base
 `blaze::CustomVector` pointer directly by calling `blaze::CustomVector.reset`
 from the derived class (on itself).
