@@ -21,6 +21,7 @@ target_link_libraries(
   Domain
   GeneralizedHarmonic
   GeneralRelativity
+  GeneralRelativitySolutions
   LinearOperators
   Spectral
   Utilities

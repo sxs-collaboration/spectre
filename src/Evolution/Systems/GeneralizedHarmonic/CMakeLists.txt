@@ -33,13 +33,16 @@ spectre_target_headers(
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
+  CoordinateMaps
   DataStructures
   Domain
   DomainBoundaryConditions
   ErrorHandling
+  FunctionsOfTime
   GeneralRelativity
   GeneralRelativitySolutions
   IO
+  Initialization
   LinearOperators
   Options
   Spectral

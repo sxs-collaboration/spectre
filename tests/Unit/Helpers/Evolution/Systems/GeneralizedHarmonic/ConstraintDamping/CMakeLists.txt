@@ -18,7 +18,7 @@ target_link_libraries(
   DataStructures
   DataStructuresHelpers
   FunctionsOfTime
-  GhConstraintDamping
+  GeneralizedHarmonic
   Parallel
   Utilities
   )
