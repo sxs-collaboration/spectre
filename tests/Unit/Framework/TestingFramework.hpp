@@ -6,6 +6,8 @@
 
 #pragma once
 
+#define CATCH_CONFIG_ENABLE_ALL_STRINGMAKERS
+
 #include <blaze/math/typetraits/IsColumnMajorMatrix.h>
 #include <blaze/math/typetraits/IsDenseMatrix.h>
 #include <catch.hpp>
