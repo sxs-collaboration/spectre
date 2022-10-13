@@ -70,8 +70,7 @@ struct MetavariablesAvoidGlobalProc0 {
       tmpl::list<FakeSingletonAvoidGlobalProc0<MetavariablesAvoidGlobalProc0>>;
 };
 
-struct EmptyMetavars {
-};
+struct EmptyMetavars {};
 
 template <size_t Index>
 using fake_singleton = FakeSingleton<EmptyMetavars, Index>;
@@ -89,8 +88,7 @@ void test_singleton_info() {
   CHECK_FALSE(info_holder.is_exclusive());
 
   auto serialized_info_holder = serialize_and_deserialize(info_holder);
-  CHECK(info_holder.proc().value() == serialized_info_holder.proc().value());
-  CHECK(info_holder.is_exclusive() == serialized_info_holder.is_exclusive());
+  CHECK(serialized_info_holder == info_holder);
 
   info_holder = TestHelpers::test_creation<
       Parallel::SingletonInfoHolder<fake_singleton<0>>>(
@@ -99,12 +97,15 @@ void test_singleton_info() {
   CHECK(info_holder.proc() == std::nullopt);
   CHECK_FALSE(info_holder.is_exclusive());
 
-  info_holder = TestHelpers::test_creation<
+  const auto info_holder2 = TestHelpers::test_creation<
       Parallel::SingletonInfoHolder<fake_singleton<0>>>(
       "Proc: 4\n"
       "Exclusive: true\n");
-  CHECK(info_holder.proc().value() == 4);
-  CHECK(info_holder.is_exclusive());
+  CHECK(info_holder2.proc().value() == 4);
+  CHECK(info_holder2.is_exclusive());
+
+  CHECK_FALSE(info_holder == info_holder2);
+  CHECK(info_holder != info_holder2);
 
   CHECK_THROWS_WITH(([]() {
                       auto info_holder_error = TestHelpers::test_creation<
@@ -156,16 +157,9 @@ void test_singleton_pack() {
   CHECK(info2.is_exclusive() == pack_info2.is_exclusive());
 
   const auto serialized_pack = serialize_and_deserialize(singleton_pack);
-  const auto& serialized_pack_info0 = serialized_pack.get<fake_singleton<0>>();
-  const auto& serialized_pack_info1 = serialized_pack.get<fake_singleton<1>>();
-  const auto& serialized_pack_info2 = serialized_pack.get<fake_singleton<2>>();
 
-  CHECK(serialized_pack_info0.proc() == pack_info0.proc());
-  CHECK(serialized_pack_info0.is_exclusive() == pack_info0.is_exclusive());
-  CHECK(serialized_pack_info1.proc() == pack_info1.proc());
-  CHECK(serialized_pack_info1.is_exclusive() == pack_info1.is_exclusive());
-  CHECK(serialized_pack_info2.proc() == pack_info2.proc());
-  CHECK(serialized_pack_info2.is_exclusive() == pack_info2.is_exclusive());
+  CHECK(serialized_pack == singleton_pack);
+  CHECK_FALSE(serialized_pack != singleton_pack);
 
   CHECK_THROWS_WITH(
       ([]() {
@@ -228,6 +222,9 @@ void test_single_core() {
 
     resource_info_0.build_singleton_map(cache);
     resource_info_auto.build_singleton_map(cache);
+
+    CHECK_FALSE(resource_info_0 == resource_info_auto);
+    CHECK(resource_info_0 != resource_info_auto);
 
     CHECK_FALSE(resource_info_0.avoid_global_proc_0());
     CHECK_FALSE(resource_info_auto.avoid_global_proc_0());
@@ -425,6 +422,21 @@ void test_errors() {
                 "  FakeSingleton0:\n"
                 "    Proc: 0\n"
                 "    Exclusive: false\n");
+        [[maybe_unused]] const auto& procs_to_ignore =
+            resource_info.procs_available_for_elements();
+      })(),
+      Catch::Contains("The singleton map has not been built yet. You must call "
+                      "build_singleton_map() before you call this function."));
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        auto resource_info =
+            TestHelpers::test_option_tag<OptionTags::ResourceInfo<metavars>>(
+                "AvoidGlobalProc0: true\n"
+                "Singletons:\n"
+                "  FakeSingleton0:\n"
+                "    Proc: 0\n"
+                "    Exclusive: false\n");
         [[maybe_unused]] const auto singleton_info =
             resource_info.get_singleton_info<FakeSingleton<metavars, 0>>();
       })(),
@@ -465,8 +477,10 @@ void check_resource_info(
   auto resource_info =
       create_resource_info<metavars>(avoid_global_proc_0, singletons);
   resource_info.build_singleton_map(cache);
+  const size_t num_procs = Parallel::number_of_procs<size_t>(cache);
 
   std::unordered_set<size_t> expected_exclusive_procs{};
+  std::set<size_t> expected_procs_available_for_elements{};
   for (auto& exclusive_and_proc : expected_singletons) {
     if (exclusive_and_proc.first) {
       expected_exclusive_procs.insert(
@@ -478,13 +492,27 @@ void check_resource_info(
     expected_exclusive_procs.insert(0);
   }
 
+  // Construct the expected procs with elements slightly differently than inside
+  // ResourceInfo just to check we did it correctly. They should be equivalent
+  for (size_t i = 0; i < num_procs; i++) {
+    expected_procs_available_for_elements.insert(i);
+  }
+  for (size_t proc : expected_exclusive_procs) {
+    expected_procs_available_for_elements.erase(proc);
+  }
+
   const auto& procs_to_ignore = resource_info.procs_to_ignore();
+  const auto& procs_available_for_elements =
+      resource_info.procs_available_for_elements();
 
   CHECK(resource_info.avoid_global_proc_0() == avoid_global_proc_0);
   CHECK(procs_to_ignore.size() == expected_exclusive_procs.size());
   for (auto& exclusive_proc : expected_exclusive_procs) {
     CHECK(procs_to_ignore.count(exclusive_proc) == 1);
   }
+  CHECK(procs_available_for_elements.size() ==
+        num_procs - expected_exclusive_procs.size());
+  CHECK(procs_available_for_elements == expected_procs_available_for_elements);
 
   tmpl::for_each<tmpl::range<size_t, 0, num_singletons>>(
       [&expected_singletons, &resource_info](const auto size_holder) {

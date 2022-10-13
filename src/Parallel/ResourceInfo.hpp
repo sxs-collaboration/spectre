@@ -8,6 +8,7 @@
 #include <ios>
 #include <optional>
 #include <pup.h>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_set>
@@ -108,12 +109,27 @@ struct SingletonInfoHolder {
   bool is_exclusive() const { return exclusive_; }
 
  private:
+  template <typename ParallelComponent>
+  friend bool operator==(const SingletonInfoHolder<ParallelComponent>& lhs,
+                         const SingletonInfoHolder<ParallelComponent>& rhs);
   // We use size_t here because we want a non-negative integer, but we use int
   // in the option because we want to protect against negative numbers. And a
   // negative size_t is actually a really large value (it wraps around)
   std::optional<size_t> proc_{std::nullopt};
   bool exclusive_{false};
 };
+
+template <typename ParallelComponent>
+bool operator==(const SingletonInfoHolder<ParallelComponent>& lhs,
+                const SingletonInfoHolder<ParallelComponent>& rhs) {
+  return lhs.proc_ == rhs.proc_ and lhs.exclusive_ == rhs.exclusive_;
+}
+
+template <typename ParallelComponent>
+bool operator!=(const SingletonInfoHolder<ParallelComponent>& lhs,
+                const SingletonInfoHolder<ParallelComponent>& rhs) {
+  return not(lhs == rhs);
+}
 
 template <typename ParallelComponents>
 struct SingletonPack;
@@ -206,8 +222,24 @@ struct SingletonPack<tmpl::list<ParallelComponents...>> {
   }
 
  private:
+  template <typename... Components>
+  friend bool operator==(const SingletonPack<tmpl::list<Components...>>& lhs,
+                         const SingletonPack<tmpl::list<Components...>>& rhs);
+
   tuples::tagged_tuple_from_typelist<local_tags> procs_{};
 };
+
+template <typename... Components>
+bool operator==(const SingletonPack<tmpl::list<Components...>>& lhs,
+                const SingletonPack<tmpl::list<Components...>>& rhs) {
+  return lhs.procs_ == rhs.procs_;
+}
+
+template <typename... Components>
+bool operator!=(const SingletonPack<tmpl::list<Components...>>& lhs,
+                const SingletonPack<tmpl::list<Components...>>& rhs) {
+  return not(lhs == rhs);
+}
 
 namespace detail {
 template <typename Component>
@@ -426,6 +458,10 @@ struct ResourceInfo {
   /// `allocate_array` function of the array component
   const std::unordered_set<size_t>& procs_to_ignore() const;
 
+  /// Returns a `std::set<size_t>` that has all processors available to put
+  /// elements on, meaning processors that aren't ignored.
+  const std::set<size_t>& procs_available_for_elements() const;
+
   /// Returns the proc that the singleton `Component` should be placed on.
   template <typename Component>
   size_t proc_for() const;
@@ -446,6 +482,10 @@ struct ResourceInfo {
   void build_singleton_map(const Parallel::GlobalCache<Metavariables>& cache);
 
  private:
+  template <typename Metavars>
+  friend bool operator==(const ResourceInfo<Metavars>& lhs,
+                         const ResourceInfo<Metavars>& rhs);
+
   void singleton_map_not_built() const {
     ERROR(
         "The singleton map has not been built yet. You must call "
@@ -462,6 +502,7 @@ struct ResourceInfo {
   std::unordered_multiset<size_t> requested_nonexclusive_procs_{};
   // Procs that are exclusive. These may or may not be specifically requested
   std::unordered_set<size_t> procs_to_ignore_{};
+  std::set<size_t> procs_available_for_elements_{};
   // For each singleton (whether it has a SingletonInfo or not), maps whether
   // it's exclusive and what proc it is on.
   tuples::tagged_tuple_from_typelist<local_tags> singleton_map_{};
@@ -589,6 +630,7 @@ void ResourceInfo<Metavariables>::pup(PUP::er& p) {
   p | num_requested_nonexclusive_singletons_;
   p | requested_nonexclusive_procs_;
   p | procs_to_ignore_;
+  p | procs_available_for_elements_;
   p | singleton_map_;
 }
 
@@ -614,12 +656,46 @@ const std::unordered_set<size_t>& ResourceInfo<Metavariables>::procs_to_ignore()
 }
 
 template <typename Metavariables>
+const std::set<size_t>&
+ResourceInfo<Metavariables>::procs_available_for_elements() const {
+  if (not singleton_map_has_been_set_) {
+    singleton_map_not_built();
+  }
+  return procs_available_for_elements_;
+}
+
+template <typename Metavariables>
 template <typename Component>
 size_t ResourceInfo<Metavariables>::proc_for() const {
   if (not singleton_map_has_been_set_) {
     singleton_map_not_built();
   }
   return *tuples::get<LocalTag<Component>>(singleton_map_).second;
+}
+
+template <typename Metavars>
+bool operator==(const ResourceInfo<Metavars>& lhs,
+                const ResourceInfo<Metavars>& rhs) {
+  return lhs.avoid_global_proc_0_ == rhs.avoid_global_proc_0_ and
+         lhs.singleton_map_has_been_set_ == rhs.singleton_map_has_been_set_ and
+         lhs.num_exclusive_singletons_ == rhs.num_exclusive_singletons_ and
+         lhs.num_procs_to_ignore_ == rhs.num_procs_to_ignore_ and
+         lhs.num_requested_exclusive_singletons_ ==
+             rhs.num_requested_exclusive_singletons_ and
+         lhs.num_requested_nonexclusive_singletons_ ==
+             rhs.num_requested_nonexclusive_singletons_ and
+         lhs.requested_nonexclusive_procs_ ==
+             rhs.requested_nonexclusive_procs_ and
+         lhs.procs_to_ignore_ == rhs.procs_to_ignore_ and
+         lhs.procs_available_for_elements_ ==
+             rhs.procs_available_for_elements_ and
+         lhs.singleton_map_ == rhs.singleton_map_;
+}
+
+template <typename Metavars>
+bool operator!=(const ResourceInfo<Metavars>& lhs,
+                const ResourceInfo<Metavars>& rhs) {
+  return not(lhs == rhs);
 }
 
 template <typename Metavariables>
@@ -764,6 +840,14 @@ break_auto_exclusive_loops:
          "Not all auto exclusive singletons have been allocated. The remaining "
          "number of auto exclusive singletons to be allocated is "
              << alg::accumulate(auto_exclusive_singletons_on_each_node, 0_st));
+
+  // procs_to_ignore_ is now complete. Now construct
+  // procs_available_for_elements_
+  for (size_t i = 0; i < num_procs; i++) {
+    if (procs_to_ignore_.find(i) == procs_to_ignore_.end()) {
+      procs_available_for_elements_.insert(i);
+    }
+  }
 
   // At this point, all auto exclusive singletons have been allocated. Now the
   // only singletons left are auto non-exclusive. We use vectors of
