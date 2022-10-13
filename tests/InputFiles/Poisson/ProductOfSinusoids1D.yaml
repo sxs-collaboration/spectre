@@ -3,6 +3,7 @@
 
 # Executable: SolvePoisson1D
 # Check: parse;execute_check_output
+# Timeout: 10
 # ExpectedOutput:
 #   PoissonProductOfSinusoids1DReductions.h5
 #   PoissonProductOfSinusoids1DVolume0.h5
