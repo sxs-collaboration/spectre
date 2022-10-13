@@ -6,6 +6,7 @@ module GlobalCache {
   include "optional";
   include "Parallel/GlobalCacheDeclare.hpp";
   include "Parallel/ParallelComponentHelpers.hpp";
+  include "Parallel/ResourceInfo.hpp";
   include "Utilities/TaggedTuple.hpp";
   include "Parallel/Main.decl.h";
 
@@ -37,6 +38,8 @@ module GlobalCache {
     template <typename GlobalCacheTag, typename Function, typename... Args>
     entry void mutate(std::tuple<Args...> & args);
     entry void compute_size_for_memory_monitor(double time);
+    entry void set_resource_info(
+        const Parallel::ResourceInfo<Metavariables>& resource_info);
   }
   }  // namespace Parallel
 }

@@ -70,6 +70,12 @@ struct MetavariablesAvoidGlobalProc0 {
       tmpl::list<FakeSingletonAvoidGlobalProc0<MetavariablesAvoidGlobalProc0>>;
 };
 
+struct MetavariablesResourceInfoOnly {
+  using get_const_global_cache_tags =
+      tmpl::list<Parallel::Tags::ResourceInfo<MetavariablesResourceInfoOnly>>;
+  using component_list = tmpl::list<>;
+};
+
 struct EmptyMetavars {};
 
 template <size_t Index>
@@ -308,6 +314,14 @@ void test_single_core() {
         "AvoidGlobalProc0: false\n");
 
     CHECK_FALSE(resource_info.avoid_global_proc_0());
+  }
+  {
+    INFO("Only ResourceInfo tag");
+    const auto resource_info = TestHelpers::test_option_tag<
+        OptionTags::ResourceInfo<MetavariablesResourceInfoOnly>>("");
+
+    CHECK(resource_info ==
+          Parallel::ResourceInfo<MetavariablesResourceInfoOnly>{});
   }
 }
 

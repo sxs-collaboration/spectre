@@ -86,11 +86,28 @@ void test_mem_monitor_entry_method_error() {
           "metavariables.\n"));
 }
 
+void test_resource_info_error() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(
+      ([]() {
+        MutableGlobalCache<EmptyMetavars> mutable_cache{
+            tuples::TaggedTuple<>{}};
+        GlobalCache<EmptyMetavars> empty_cache{tuples::TaggedTuple<>{},
+                                               &mutable_cache};
+
+        empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
+        empty_cache.set_resource_info(ResourceInfo<EmptyMetavars>{});
+      })(),
+      Catch::Contains("Can only set the resource info once"));
+#endif
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   test_mutable_cache_proxy_error();
   test_mem_monitor_entry_method_error();
+  test_resource_info_error();
 
   tuples::TaggedTuple<Tags::IntegerList, Tags::UniquePtrIntegerList> tuple{};
   tuples::get<Tags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
@@ -98,12 +115,11 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}});
   MutableGlobalCache<Metavars> mutable_cache{tuples::TaggedTuple<>{}};
   GlobalCache<Metavars> cache{std::move(tuple), &mutable_cache};
-  auto box =
-      db::create<db::AddSimpleTags<Tags::GlobalCacheImpl<Metavars>>,
-                 db::AddComputeTags<
-                     Tags::FromGlobalCache<Tags::IntegerList>,
-                     Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>>(
-          &cache);
+  auto box = db::create<
+      db::AddSimpleTags<Tags::GlobalCacheImpl<Metavars>>,
+      db::AddComputeTags<Tags::FromGlobalCache<Tags::IntegerList>,
+                         Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>>(
+      &cache);
   CHECK(db::get<Tags::GlobalCache>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
@@ -125,8 +141,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   GlobalCache<Metavars> cache2{std::move(tuple2), &mutable_cache2};
   db::mutate<Tags::GlobalCache>(
       make_not_null(&box),
-      [&cache2](
-          const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
+      [&cache2](const gsl::not_null<Parallel::GlobalCache<Metavars>**> t) {
         *t = std::addressof(cache2);
       });
 

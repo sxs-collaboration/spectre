@@ -468,6 +468,14 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   resource_info_.build_singleton_map(
       *Parallel::local_branch(global_cache_proxy_));
 
+  // Now that the singleton map has been built, set the resource info in the
+  // GlobalCache (if the tags exist). Since this info will be constant
+  // throughout a simulation, we opt for directly editing the tags in the const
+  // GlobalCache before we pass it to any other parallel component rather than
+  // having the tags in the MutableGlobalCache and using a mutate call to set
+  // them.
+  global_cache_proxy_.set_resource_info(resource_info_);
+
   // Now that the singleton map has been built, we have to replace the
   // ResourceInfo that was created from options with the one that has all the
   // correct singleton assignments so simple tags can be created from options
