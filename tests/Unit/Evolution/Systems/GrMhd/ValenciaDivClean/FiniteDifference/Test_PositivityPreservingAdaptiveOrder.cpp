@@ -15,34 +15,85 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Fd.PpaoPrim",
   namespace helpers = TestHelpers::grmhd::ValenciaDivClean::fd;
   auto mc = fd::reconstruction::FallbackReconstructorType::MonotonisedCentral;
 
-  const grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim
-      PositivityPreservingAdaptiveOrder_recons{4.0, mc};
-  helpers::test_prim_reconstructor(4, PositivityPreservingAdaptiveOrder_recons);
+  helpers::test_prim_reconstructor(
+      6, grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+             4.0, 4.0, std::nullopt, mc});
+  helpers::test_prim_reconstructor(
+      8, grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+             4.0, std::nullopt, 4.0, mc});
+  helpers::test_prim_reconstructor(
+      8, grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim{
+             4.0, 4.0, 4.0, mc});
 
-  const auto PositivityPreservingAdaptiveOrder_from_options_base =
-      TestHelpers::test_factory_creation<
-          grmhd::ValenciaDivClean::fd::Reconstructor,
-          grmhd::ValenciaDivClean::fd::OptionTags::Reconstructor>(
-          "PositivityPreservingAdaptiveOrderPrim:\n"
-          "  Alpha5: 4.0\n"
-          "  LowOrderReconstructor: MonotonisedCentral\n");
-  auto* const PositivityPreservingAdaptiveOrder_from_options =
+  const grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim
+      ppao_recons{4.0, std::nullopt, std::nullopt, mc};
+  helpers::test_prim_reconstructor(4, ppao_recons);
+
+  const auto ppao_from_options_base = TestHelpers::test_factory_creation<
+      grmhd::ValenciaDivClean::fd::Reconstructor,
+      grmhd::ValenciaDivClean::fd::OptionTags::Reconstructor>(
+      "PositivityPreservingAdaptiveOrderPrim:\n"
+      "  Alpha5: 4.0\n"
+      "  Alpha7: None\n"
+      "  Alpha9: None\n"
+      "  LowOrderReconstructor: MonotonisedCentral\n");
+  auto* const ppao_from_options =
       dynamic_cast<const grmhd::ValenciaDivClean::fd::
                        PositivityPreservingAdaptiveOrderPrim*>(
-          PositivityPreservingAdaptiveOrder_from_options_base.get());
-  REQUIRE(PositivityPreservingAdaptiveOrder_from_options != nullptr);
-  CHECK(*PositivityPreservingAdaptiveOrder_from_options ==
-        PositivityPreservingAdaptiveOrder_recons);
+          ppao_from_options_base.get());
+  REQUIRE(ppao_from_options != nullptr);
+  CHECK(*ppao_from_options == ppao_recons);
 
-  CHECK(PositivityPreservingAdaptiveOrder_recons !=
-        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(4.5,
-                                                                           mc));
-  CHECK(PositivityPreservingAdaptiveOrder_recons !=
+  CHECK(ppao_recons !=
         grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
-            4.0, fd::reconstruction::FallbackReconstructorType::Minmod));
+            4.5, std::nullopt, std::nullopt, mc));
+  CHECK(ppao_recons !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, 4.0, std::nullopt, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, 4.0, std::nullopt, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, 4.1, std::nullopt, mc));
+  CHECK(ppao_recons !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, std::nullopt, 4.0, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, std::nullopt, 4.0, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, std::nullopt, 4.1, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, std::nullopt, 4.0, mc) ==
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, std::nullopt, 4.0, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc) ==
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.1, 6.0, 4.0, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.1, 4.0, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.1, mc));
+  CHECK(grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0, mc) !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            5.0, 6.0, 4.0,
+            fd::reconstruction::FallbackReconstructorType::Minmod));
+  CHECK(ppao_recons !=
+        grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
+            4.0, std::nullopt, std::nullopt,
+            fd::reconstruction::FallbackReconstructorType::Minmod));
 
   CHECK_THROWS_WITH(
       grmhd::ValenciaDivClean::fd::PositivityPreservingAdaptiveOrderPrim(
-          4.5, fd::reconstruction::FallbackReconstructorType::None),
+          4.5, std::nullopt, std::nullopt,
+          fd::reconstruction::FallbackReconstructorType::None),
       Catch::Contains("None is not an allowed low-order reconstructor."));
 }

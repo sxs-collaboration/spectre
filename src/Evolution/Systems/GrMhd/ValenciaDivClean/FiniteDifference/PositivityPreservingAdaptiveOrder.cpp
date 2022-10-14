@@ -39,7 +39,8 @@
 namespace grmhd::ValenciaDivClean::fd {
 
 PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
-    const double alpha_5,
+    const double alpha_5, const std::optional<double> alpha_7,
+    const std::optional<double> alpha_9,
     const ::fd::reconstruction::FallbackReconstructorType
         low_order_reconstructor,
     const Options::Context& context)
@@ -49,14 +50,22 @@ PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
       ::fd::reconstruction::FallbackReconstructorType::None) {
     PARSE_ERROR(context, "None is not an allowed low-order reconstructor.");
   }
+  if (alpha_7.has_value()) {
+    six_to_the_alpha_7_ = pow(6.0, alpha_7.value());
+  }
+  if (alpha_9.has_value()) {
+    eight_to_the_alpha_9_ = pow(8.0, alpha_9.value());
+  }
   std::tie(reconstruct_, reconstruct_lower_neighbor_,
            reconstruct_upper_neighbor_) = ::fd::reconstruction::
       positivity_preserving_adaptive_order_function_pointers<3>(
-          false, low_order_reconstructor_);
+          false, eight_to_the_alpha_9_.has_value(),
+          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
   std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
            pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
       positivity_preserving_adaptive_order_function_pointers<3>(
-          true, low_order_reconstructor_);
+          true, eight_to_the_alpha_9_.has_value(),
+          six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
 }
 
 PositivityPreservingAdaptiveOrderPrim::PositivityPreservingAdaptiveOrderPrim(
@@ -71,16 +80,20 @@ PositivityPreservingAdaptiveOrderPrim::get_clone() const {
 void PositivityPreservingAdaptiveOrderPrim::pup(PUP::er& p) {
   Reconstructor::pup(p);
   p | four_to_the_alpha_5_;
+  p | six_to_the_alpha_7_;
+  p | eight_to_the_alpha_9_;
   p | low_order_reconstructor_;
   if (p.isUnpacking()) {
     std::tie(reconstruct_, reconstruct_lower_neighbor_,
              reconstruct_upper_neighbor_) = ::fd::reconstruction::
         positivity_preserving_adaptive_order_function_pointers<3>(
-            false, low_order_reconstructor_);
+            false, eight_to_the_alpha_9_.has_value(),
+            six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
     std::tie(pp_reconstruct_, pp_reconstruct_lower_neighbor_,
              pp_reconstruct_upper_neighbor_) = ::fd::reconstruction::
         positivity_preserving_adaptive_order_function_pointers<3>(
-            true, low_order_reconstructor_);
+            true, eight_to_the_alpha_9_.has_value(),
+            six_to_the_alpha_7_.has_value(), low_order_reconstructor_);
   }
 }
 
@@ -115,7 +128,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
              const auto& subcell_extents, const size_t number_of_variables) {
         pp_reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
                         ghost_cell_vars, subcell_extents, number_of_variables,
-                        four_to_the_alpha_5_);
+                        four_to_the_alpha_5_,
+                        six_to_the_alpha_7_.value_or(
+                            std::numeric_limits<double>::signaling_NaN()),
+                        eight_to_the_alpha_9_.value_or(
+                            std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
       ghost_zone_size(), false);
@@ -126,7 +143,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct(
              const auto& subcell_extents, const size_t number_of_variables) {
         reconstruct_(upper_face_vars_ptr, lower_face_vars_ptr, volume_vars,
                      ghost_cell_vars, subcell_extents, number_of_variables,
-                     four_to_the_alpha_5_);
+                     four_to_the_alpha_5_,
+                     six_to_the_alpha_7_.value_or(
+                         std::numeric_limits<double>::signaling_NaN()),
+                     eight_to_the_alpha_9_.value_or(
+                         std::numeric_limits<double>::signaling_NaN()));
       },
       volume_prims, eos, element, neighbor_variables_data, subcell_mesh,
       ghost_zone_size(), true);
@@ -156,7 +177,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         pp_reconstruct_lower_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_);
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
       },
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
@@ -167,7 +192,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         pp_reconstruct_upper_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_);
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
       },
       subcell_volume_prims, eos, element, neighbor_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size(), false);
@@ -182,7 +211,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         reconstruct_lower_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_);
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
       },
       [this](const auto tensor_component_on_face_ptr,
              const auto& tensor_component_volume,
@@ -193,7 +226,11 @@ void PositivityPreservingAdaptiveOrderPrim::reconstruct_fd_neighbor(
         reconstruct_upper_neighbor_(
             tensor_component_on_face_ptr, tensor_component_volume,
             tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct, four_to_the_alpha_5_);
+            local_direction_to_reconstruct, four_to_the_alpha_5_,
+            six_to_the_alpha_7_.value_or(
+                std::numeric_limits<double>::signaling_NaN()),
+            eight_to_the_alpha_9_.value_or(
+                std::numeric_limits<double>::signaling_NaN()));
       },
       subcell_volume_prims, eos, element, neighbor_data, subcell_mesh,
       direction_to_reconstruct, ghost_zone_size(), true);
@@ -204,6 +241,8 @@ bool operator==(const PositivityPreservingAdaptiveOrderPrim& lhs,
   // Don't check function pointers since they are set from
   // low_order_reconstructor_
   return lhs.four_to_the_alpha_5_ == rhs.four_to_the_alpha_5_ and
+         lhs.six_to_the_alpha_7_ == rhs.six_to_the_alpha_7_ and
+         lhs.eight_to_the_alpha_9_ == rhs.eight_to_the_alpha_9_ and
          lhs.low_order_reconstructor_ == rhs.low_order_reconstructor_;
 }
 

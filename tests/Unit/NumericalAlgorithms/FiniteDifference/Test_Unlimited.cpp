@@ -18,7 +18,7 @@
 namespace {
 
 template <size_t Degree, size_t Dim>
-void test() {
+void test_impl() {
   CAPTURE(Degree);
   CAPTURE(Dim);
   const auto recons =
@@ -60,14 +60,19 @@ void test() {
   // coefficients are correct because there are non-linear terms to deal with
   // shocks.
 }
+
+template <size_t Degree>
+void test() {
+  test_impl<Degree, 1>();
+  test_impl<Degree, 2>();
+  test_impl<Degree, 3>();
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.FiniteDifference.Unlimited",
                   "[Unit][NumericalAlgorithms]") {
-  test<2, 1>();
-  test<2, 2>();
-  test<2, 3>();
-  test<4, 1>();
-  test<4, 2>();
-  test<4, 3>();
+  test<2>();
+  test<4>();
+  test<6>();
+  test<8>();
 }
