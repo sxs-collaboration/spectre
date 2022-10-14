@@ -21,7 +21,8 @@ PhaseChangeAndTriggers:
 
 Evolution:
   InitialTime: 0.0
-  InitialTimeStep: 0.001
+  # Test backwards evolution in an integration test
+  InitialTimeStep: -0.001
   InitialSlabSize: 0.01
   TimeStepper:
     AdamsBashforth:
@@ -56,10 +57,20 @@ SpatialDiscretization:
 #     HalfPower: 32
 
 EventsAndTriggers:
-  - - Slabs:
+  - - Times:
         Specified:
-          Values: [5]
+          Values: [&final_time -0.05]
     - - Completion
+  - - Always
+    - - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Increase:
+                Factor: 1.1
+            - StepToTimes:
+                Times:
+                  Specified:
+                    Values: [*final_time]
 
 EventsAndDenseTriggers:
 
