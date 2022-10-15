@@ -27,8 +27,6 @@ class Index;
 
 namespace fd::reconstruction {
 namespace detail {
-
-namespace {
 // pointwise reconstruction routine for the original Wcns5z scheme
 template <size_t NonlinearWeightExponent>
 struct Wcns5zWork {
@@ -93,7 +91,6 @@ struct Wcns5zWork {
                  alpha_norm_upper}};
   }
 };
-}  // namespace
 
 template <size_t NonlinearWeightExponent, class FallbackReconstructor>
 struct Wcns5zReconstructor {

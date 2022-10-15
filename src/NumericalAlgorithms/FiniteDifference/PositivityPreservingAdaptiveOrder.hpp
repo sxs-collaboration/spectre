@@ -198,7 +198,7 @@ struct PositivityPreservingAdaptiveOrderReconstructor {
            u[-2 * stride] * (0.6699388830329586 * u[-2 * stride] +
                              0.927411437665344 * u[0]) +
            1.4061182415674602 * square(u[0]));
-      if (four_to_the_alpha_5 * order_5_norm_of_top_modal_coefficient <=
+      if (square(four_to_the_alpha_5) * order_5_norm_of_top_modal_coefficient <=
           order_5_norm_of_polynomial) {
         return order_5_result;
       }
