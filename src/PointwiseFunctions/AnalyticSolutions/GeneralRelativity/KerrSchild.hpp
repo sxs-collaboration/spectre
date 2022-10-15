@@ -240,7 +240,7 @@ class KerrSchild : public AnalyticSolution<3_st>,
              const std::array<double, 3>& center,
              const Options::Context& context = {});
 
-  explicit KerrSchild(CkMigrateMessage* /*unused*/) {}
+  explicit KerrSchild(CkMigrateMessage* /*msg*/);
 
   template <typename DataType, typename Frame = Frame::Inertial>
   using tags = tmpl::flatten<tmpl::list<

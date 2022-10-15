@@ -12,6 +12,8 @@
 // IWYU pragma: no_forward_declare ::Tags::deriv
 
 namespace gr::Solutions {
+template <size_t Dim>
+Minkowski<Dim>::Minkowski(CkMigrateMessage* /*msg*/) {}
 
 template <size_t Dim>
 template <typename DataType>
@@ -324,6 +326,13 @@ Minkowski<Dim>::variables(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
 
-#undef DIM
-#undef DTYPE
 #undef INSTANTIATE
+
+#undef DTYPE
+
+#define INSTANTIATE(_, data) template class gr::Solutions::Minkowski<DIM(data)>;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM

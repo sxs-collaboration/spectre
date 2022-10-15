@@ -124,6 +124,8 @@ class GaugeWave : public AnalyticSolution<Dim>, public MarkAsAnalyticSolution {
   GaugeWave& operator=(GaugeWave&& /*rhs*/) = default;
   ~GaugeWave() = default;
 
+  explicit GaugeWave(CkMigrateMessage* /*msg*/);
+
   template <typename DataType>
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
                                    tmpl::size_t<volume_dim>, Frame::Inertial>;

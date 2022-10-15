@@ -36,6 +36,8 @@ HarmonicSchwarzschild::HarmonicSchwarzschild(
   }
 }
 
+HarmonicSchwarzschild::HarmonicSchwarzschild(CkMigrateMessage* /*msg*/) {}
+
 void HarmonicSchwarzschild::pup(PUP::er& p) {
   p | mass_;
   p | center_;

@@ -36,6 +36,9 @@ DataType gauge_wave_deriv_h(const tnsr::I<DataType, Dim>& x, const double t,
 
 namespace gr::Solutions {
 template <size_t Dim>
+GaugeWave<Dim>::GaugeWave(CkMigrateMessage* /*msg*/) {}
+
+template <size_t Dim>
 GaugeWave<Dim>::GaugeWave(const double amplitude, const double wavelength,
                           const Options::Context& context)
     : amplitude_(amplitude), wavelength_(wavelength) {
