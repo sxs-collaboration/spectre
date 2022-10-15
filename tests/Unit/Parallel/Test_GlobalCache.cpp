@@ -286,10 +286,9 @@ void TestArrayChare<Metavariables>::run_test_two() {
           *Parallel::local_branch(global_cache_proxy_),
           [&callback](
               const double& weight_l) -> std::unique_ptr<Parallel::Callback> {
-            return weight_l == 150
-                       ? std::unique_ptr<Parallel::Callback>{}
-                       : std::unique_ptr<Parallel::Callback>(
-                             new UseCkCallbackAsCallback(callback));
+            return weight_l == 150 ? std::unique_ptr<Parallel::Callback>{}
+                                   : std::unique_ptr<Parallel::Callback>(
+                                         new UseCkCallbackAsCallback(callback));
           })) {
     auto& local_cache = *Parallel::local_branch(global_cache_proxy_);
     SPECTRE_PARALLEL_REQUIRE(150 == Parallel::get<weight>(local_cache));
