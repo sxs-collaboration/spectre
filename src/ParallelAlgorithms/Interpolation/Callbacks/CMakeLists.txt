@@ -11,5 +11,4 @@ spectre_target_headers(
   IgnoreFailedApparentHorizon.hpp
   ObserveSurfaceData.hpp
   ObserveTimeSeriesOnSurface.hpp
-  SendGhWorldtubeData.hpp
   )
