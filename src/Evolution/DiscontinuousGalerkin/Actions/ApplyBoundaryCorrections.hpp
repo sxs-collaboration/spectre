@@ -408,10 +408,14 @@ struct ApplyBoundaryCorrections {
                dense_output_time, {});
   }
 
-  template <typename DbTagsList, typename... InboxTags>
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ParallelComponent>
   static bool is_ready(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
-      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes) {
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*component*/) {
     if constexpr (local_time_stepping) {
       return receive_boundary_data_local_time_stepping<Metavariables,
                                                        DenseOutput>(box,

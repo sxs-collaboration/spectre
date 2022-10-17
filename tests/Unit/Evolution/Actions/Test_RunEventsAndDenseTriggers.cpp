@@ -519,10 +519,14 @@ struct SetDouble {
   }
 
   // Test is_ready
-  template <typename DbTagsList, typename... InboxTags>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
   static bool is_ready(
       const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
-      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/) {
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*component*/) {
     return true;
   }
 };
@@ -552,10 +556,14 @@ struct NotReady {
   using argument_tags = tmpl::list<>;
   static void apply() {}
 
-  template <typename DbTagsList, typename... InboxTags>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
   static bool is_ready(
       const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
-      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/) {
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*component*/) {
     return false;
   }
 };
