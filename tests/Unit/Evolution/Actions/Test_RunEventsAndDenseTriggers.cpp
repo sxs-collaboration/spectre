@@ -588,7 +588,8 @@ struct NotReady {
 };
 
 struct PostprocessA {
-  using postprocessors = tmpl::list<test_postprocessors::SetA>;
+  using postprocessors =
+      tmpl::list<AlwaysReadyPostprocessor<test_postprocessors::SetA>>;
   using metavariables = Metavariables<postprocessors>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   static void check_dense(
@@ -604,10 +605,11 @@ struct PostprocessA {
 
 struct PostprocessAll {
   // Test setting the same thing multiple times
-  using postprocessors =
-      tmpl::list<test_postprocessors::SetAB, test_postprocessors::SetA,
-                 test_postprocessors::SetDoubleAndString,
-                 test_postprocessors::SetDouble>;
+  using postprocessors = tmpl::list<
+      AlwaysReadyPostprocessor<test_postprocessors::SetAB>,
+      AlwaysReadyPostprocessor<test_postprocessors::SetA>,
+      AlwaysReadyPostprocessor<test_postprocessors::SetDoubleAndString>,
+      test_postprocessors::SetDouble>;
   using metavariables = Metavariables<postprocessors>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   static void check_dense(
@@ -629,7 +631,8 @@ struct PostprocessAll {
 
 struct PostprocessEvolved {
   using postprocessors =
-      tmpl::list<test_postprocessors::ModifyEvolved, test_postprocessors::SetA>;
+      tmpl::list<AlwaysReadyPostprocessor<test_postprocessors::ModifyEvolved>,
+                 AlwaysReadyPostprocessor<test_postprocessors::SetA>>;
   using metavariables = Metavariables<postprocessors>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   static void check_dense(

@@ -334,6 +334,11 @@ struct EvolutionMetavars {
         grmhd::ValenciaDivClean::subcell::PrimitiveGhostDataToSlice;
   };
 
+  using events_and_dense_triggers_subcell_postprocessors =
+      tmpl::list<AlwaysReadyPostprocessor<
+          grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
+              ordered_list_of_primitive_recovery_schemes>>>;
+
   using dg_step_actions = tmpl::flatten<tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
                                                     AllStepChoosers>,
@@ -373,10 +378,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<Actions::RecordTimeStepperData<>,
-                     evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-                         grmhd::ValenciaDivClean::subcell::
-                             FixConservativesAndComputePrims<
-                                 ordered_list_of_primitive_recovery_schemes>>>,
+                     evolution::Actions::RunEventsAndDenseTriggers<
+                         events_and_dense_triggers_subcell_postprocessors>,
                      Actions::UpdateU<>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
@@ -400,9 +403,8 @@ struct EvolutionMetavars {
       evolution::dg::subcell::fd::Actions::TakeTimeStep<
           grmhd::ValenciaDivClean::subcell::TimeDerivative>,
       Actions::RecordTimeStepperData<>,
-      evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
-          grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
-              ordered_list_of_primitive_recovery_schemes>>>,
+      evolution::Actions::RunEventsAndDenseTriggers<
+          events_and_dense_triggers_subcell_postprocessors>,
       Actions::UpdateU<>,
       Actions::MutateApply<
           grmhd::ValenciaDivClean::subcell::FixConservativesAndComputePrims<
