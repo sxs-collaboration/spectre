@@ -140,7 +140,7 @@ struct InitializeCharacteristicEvolutionVariables {
         number_of_radial_points *
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
     const bool is_using_error_control =
-        db::get<::Tags::IsUsingTimeSteppingErrorControlBase>(box);
+        db::get<::Tags::IsUsingTimeSteppingErrorControl>(box);
     Initialization::mutate_assign<simple_tags_for_evolution>(
         make_not_null(&box),
         typename boundary_value_variables_tag::type{boundary_size},

@@ -104,7 +104,7 @@ void test_gts() {
       EvolvedVariable, Tags::dt<EvolvedVariable>,
       Tags::HistoryEvolvedVariables<EvolvedVariable>,
       Tags::TimeStepper<LtsTimeStepper>,
-      ::Tags::IsUsingTimeSteppingErrorControl<>>>(
+      ::Tags::IsUsingTimeSteppingErrorControl>>(
       Metavariables<false>{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
@@ -169,7 +169,7 @@ void test_lts() {
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
           domain::Tags::MinimumGridSpacing<1, Frame::Inertial>,
-          Tags::StepController, ::Tags::IsUsingTimeSteppingErrorControl<>,
+          Tags::StepController, ::Tags::IsUsingTimeSteppingErrorControl,
           Tags::StepperErrorUpdated>,
       db::AddComputeTags<typename Metavariables<
           true>::system::compute_largest_characteristic_speed>>(

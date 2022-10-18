@@ -86,27 +86,26 @@ struct TimeAndTimeStep {
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>,
                  tmpl::conditional_t<
                      Metavariables::local_time_stepping,
-                     tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
-                                ::Tags::TimeStepper<LtsTimeStepper>,
+                     tmpl::list<::Tags::TimeStepper<LtsTimeStepper>,
                                 ::Tags::StepChoosers, ::Tags::StepController>,
-                     tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
-                                ::Tags::TimeStepper<TimeStepper>>>>>;
+                     tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
 
   using initialization_tags_to_keep =
       tmpl::flatten<tmpl::list<tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
-                     ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
+          tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
                      ::Tags::StepController, Tags::InitialTime>,
-          tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
-                     ::Tags::TimeStepper<TimeStepper>, Tags::InitialTime>>>>;
+          tmpl::list<::Tags::TimeStepper<TimeStepper>, Tags::InitialTime>>>>;
 
-  using simple_tags =
-      tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
-                      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                      ::Tags::Time, ::Tags::TimeStep,
-                      ::Tags::Next<::Tags::TimeStep>>;
-  using compute_tags = tmpl::list<>;
+  using simple_tags = tmpl::push_back<
+      StepChoosers::step_chooser_simple_tags<Metavariables>, ::Tags::TimeStepId,
+      ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time, ::Tags::TimeStep,
+      ::Tags::Next<::Tags::TimeStep>,
+      tmpl::conditional_t<Metavariables::local_time_stepping, tmpl::list<>,
+                          ::Tags::IsUsingTimeSteppingErrorControl>>;
+  using compute_tags = tmpl::list<tmpl::conditional_t<
+      Metavariables::local_time_stepping,
+      ::Tags::IsUsingTimeSteppingErrorControlCompute, tmpl::list<>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
@@ -148,6 +147,11 @@ struct TimeAndTimeStep {
         ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
         make_not_null(&box), TimeStepId{}, time_id, initial_time.value(),
         initial_dt, initial_dt);
+    if constexpr (not Metavariables::local_time_stepping) {
+      Initialization::mutate_assign<
+          tmpl::list<::Tags::IsUsingTimeSteppingErrorControl>>(
+          make_not_null(&box), false);
+    }
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -203,7 +207,7 @@ struct TimeStepperHistory {
       starting_order};
     ErrorVars error_vars;
     // only bother allocating if the error vars are going to be used
-    if (db::get<::Tags::IsUsingTimeSteppingErrorControlBase>(box)) {
+    if (db::get<::Tags::IsUsingTimeSteppingErrorControl>(box)) {
       error_vars = ErrorVars{num_grid_points};
     }
 

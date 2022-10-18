@@ -63,7 +63,7 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using simple_tags = tmpl::append<
-      tmpl::list<Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl<>>,
+      tmpl::list<Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl>,
       SimpleTags>;
 
   using phase_dependent_action_list =

@@ -183,7 +183,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::set_phase(make_not_null(&runner),
                            Parallel::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size * 0.75, false,
+      &runner, 0, target_step_size * 0.75,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
