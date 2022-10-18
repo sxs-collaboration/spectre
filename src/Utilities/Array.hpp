@@ -96,7 +96,7 @@ struct array {
 };
 namespace detail {
 template <typename T = void>
-struct Equal : std::binary_function<T, T, bool> {
+struct Equal {
   constexpr bool inline operator()(const T& lhs, const T& rhs) const {
     return lhs == rhs;
   }
