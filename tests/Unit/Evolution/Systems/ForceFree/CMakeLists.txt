@@ -4,6 +4,7 @@
 set(LIBRARY Test_ForceFree)
 
 set(LIBRARY_SOURCES
+  BoundaryConditions/Test_Periodic.cpp
   Test_Characteristics.cpp
   Test_Fluxes.cpp
   Test_Tags.cpp
