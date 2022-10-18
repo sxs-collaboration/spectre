@@ -55,23 +55,30 @@ struct Metavariables {
 
 };
 
-void check_rk3(const Time& start, const TimeDelta& time_step) {
-  const std::array<TimeDelta, 3> substep_offsets{
-      {time_step * 0, time_step, time_step / 2}};
+void check(std::unique_ptr<TimeStepper> time_stepper,
+           const std::vector<Rational>& substeps, const Time& start,
+           const TimeDelta& time_step) {
+  std::vector<TimeDelta> substep_offsets{};
+  substep_offsets.reserve(substeps.size());
+  for (const auto& substep : substeps) {
+    substep_offsets.push_back(substep * time_step);
+  }
 
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  MockRuntimeSystem runner{{std::move(time_stepper)}};
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {TimeStepId(time_step.is_positive(), 8, start),
-       TimeStepId(time_step.is_positive(), 8, start, 1,
-                  start + substep_offsets[1]),
+       substeps.size() == 1
+           ? TimeStepId(time_step.is_positive(), 8, start + time_step)
+           : TimeStepId(time_step.is_positive(), 8, start, 1,
+                        start + substep_offsets[1]),
        time_step, time_step, start.value()});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
-    for (size_t substep = 0; substep < 3; ++substep) {
+    for (size_t substep = 0; substep < substep_offsets.size(); ++substep) {
       const auto& box = ActionTesting::get_databox<component>(runner, 0);
       const Time substep_time = step_start + gsl::at(substep_offsets, substep);
       CHECK(db::get<Tags::TimeStepId>(box) ==
@@ -93,46 +100,18 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time().value());
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
 }
-
-void check_abn(const Time& start, const TimeDelta& time_step) {
-  using component = Component<Metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
-  ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0,
-      {TimeStepId(time_step.is_positive(), 8, start),
-       TimeStepId(time_step.is_positive(), 8, start + time_step), time_step,
-       time_step, start.value()});
-  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-
-  for (const auto& step_start : {start, start + time_step}) {
-    const auto& box = ActionTesting::get_databox<component>(runner, 0);
-    CHECK(db::get<Tags::TimeStepId>(box) ==
-          TimeStepId(time_step.is_positive(), 8, step_start));
-    CHECK(db::get<Tags::TimeStep>(box) == time_step);
-    CHECK(db::get<Tags::Time>(box) ==
-          db::get<Tags::TimeStepId>(box).substep_time().value());
-    runner.next_action<component>(0);
-  }
-
-  const auto& box = ActionTesting::get_databox<component>(runner, 0);
-  const auto& final_time_id = db::get<Tags::TimeStepId>(box);
-  const auto expected_slab = start.slab().advance_towards(time_step);
-  CHECK(final_time_id.step_time().slab() == expected_slab);
-  CHECK(final_time_id ==
-        TimeStepId(time_step.is_positive(), 8, start + 2 * time_step));
-  CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time().value());
-  CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.AdvanceTime", "[Unit][Time][Actions]") {
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
                                         TimeSteppers::RungeKutta3>();
   const Slab slab(0., 1.);
-  check_rk3(slab.start(), slab.duration() / 2);
-  check_rk3(slab.end(), -slab.duration() / 2);
-  check_abn(slab.start(), slab.duration() / 2);
-  check_abn(slab.end(), -slab.duration() / 2);
+  check(std::make_unique<TimeSteppers::RungeKutta3>(), {0, 1, {1, 2}},
+        slab.start(), slab.duration() / 2);
+  check(std::make_unique<TimeSteppers::RungeKutta3>(), {0, 1, {1, 2}},
+        slab.end(), -slab.duration() / 2);
+  check(std::make_unique<TimeSteppers::AdamsBashforthN>(1), {0}, slab.start(),
+        slab.duration() / 2);
+  check(std::make_unique<TimeSteppers::AdamsBashforthN>(1), {0}, slab.end(),
+        -slab.duration() / 2);
 }
