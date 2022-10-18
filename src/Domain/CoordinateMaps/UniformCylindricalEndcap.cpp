@@ -7,6 +7,7 @@
 #include <limits>
 #include <optional>
 #include <pup.h>
+#include <sstream>
 #include <utility>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -147,8 +148,11 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
         // so the ASSERT may trigger in the case where we really
         // want an entire domain that is very small.
         ASSERT(not equal_within_roundoff(radius_one, 0.0),
-               "Cannot have zero radius_one");
-        ASSERT(radius_one > 0.0, "Cannot have negative radius_one");
+               "Cannot have zero radius_one; you specified radius_one="
+                   << radius_one);
+        ASSERT(radius_one > 0.0,
+               "Cannot have negative radius_one; you specified radius_one="
+                   << radius_one);
         return radius_one;
       }()),
       radius_two_([&radius_two]() {
@@ -156,8 +160,11 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
         // so the ASSERT may trigger in the case where we really
         // want an entire domain that is very small.
         ASSERT(not equal_within_roundoff(radius_two, 0.0),
-               "Cannot have zero radius_two");
-        ASSERT(radius_two > 0.0, "Cannot have negative radius_two");
+               "Cannot have zero radius_two; you specified radius_two="
+                   << radius_two);
+        ASSERT(radius_two > 0.0,
+               "Cannot have negative radius_two; you specified radius_two="
+                   << radius_two);
         return radius_two;
       }()),
       z_plane_one_(z_plane_one),
@@ -167,7 +174,10 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
         ASSERT(abs(cos_theta_max) < 1.0,
                "Plane one must intersect sphere_one, and at more than one "
                "point. You probably specified a bad value of z_plane_one, "
-               "radius_one, or the z component of center_one.");
+               "radius_one, or the z component of center_one."
+               "\nz_plane_one="
+                   << z_plane_one << "\nradius_one=" << radius_one
+                   << "\ncenter_one=" << center_one);
         return acos(cos_theta_max);
       }()),
       theta_max_two_([&center_two, &radius_two, &z_plane_two]() {
@@ -175,43 +185,58 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
         ASSERT(abs(cos_theta_max) < 1.0,
                "Plane two must intersect sphere_two, and at more than one "
                "point. You probably specified a bad value of z_plane_two, "
-               "radius_two, or the z component of center_two.");
+               "radius_two, or the z component of center_two."
+               "\nz_plane_two="
+                   << z_plane_two << "\nradius_two=" << radius_two
+                   << "\ncenter_two=" << center_two);
         return acos(cos_theta_max);
       }()) {
+  // The code below defines several variables that are used only in ASSERTs.
+  // We put that code in a #ifdef SPECTRE_DEBUG to avoid clang-tidy complaining
+  // about unused variables in release mode.
+#ifdef SPECTRE_DEBUG
+
+  // For some reason, codecov thinks that the following lambda never
+  // gets called, even though it is in all of the ASSERT messages below.
+  // LCOV_EXCL_START
+  const auto param_string = [this]() -> std::string {
+    std::ostringstream buffer;
+    buffer << "\nParameters to UniformCylindricalEndcap:\nradius_one="
+           << radius_one_ << "\nradius_two=" << radius_two_
+           << "\ncenter_one=" << center_one_ << "\ncenter_two=" << center_two_
+           << "\nz_plane_one=" << z_plane_one_
+           << "\nz_plane_two=" << z_plane_two_;
+    return buffer.str();
+  };
+  // LCOV_EXCL_STOP
+
   // Assumptions made in the map.  Some of these can be relaxed,
   // as long as the unit test is changed to test them.
   ASSERT(z_plane_two >= z_plane_one + 0.04 * radius_two,
          "z_plane_two must be >= z_plane_one + 0.04 * radius_two, not "
              << z_plane_two << " " << z_plane_one << " "
-             << z_plane_one + 0.04 * radius_two);
+             << z_plane_one + 0.04 * radius_two << param_string());
   ASSERT(theta_max_one_ < M_PI * 0.45,
          "z_plane_one is too close to the center of sphere_one: theta/pi = "
-             << theta_max_one_ / M_PI);
+             << theta_max_one_ / M_PI << param_string());
   ASSERT(theta_max_one_ > M_PI * 0.075,
          "z_plane_one is too far from the center of sphere_one: theta/pi = "
-             << theta_max_one_ / M_PI);
+             << theta_max_one_ / M_PI << param_string());
   ASSERT(theta_max_two_ < M_PI * 0.45,
          "z_plane_two is too close to the center of sphere_two: theta/pi = "
-             << theta_max_two_ / M_PI);
+             << theta_max_two_ / M_PI << param_string());
   ASSERT(theta_max_two_ > M_PI * 0.075,
          "z_plane_two is too far from the center of sphere_two: theta/pi = "
-             << theta_max_two_ / M_PI);
-
+             << theta_max_two_ / M_PI << param_string());
 
   ASSERT(is_uniform_cylindrical_endcap_invertible_on_sphere_one(
              center_one_, center_two_, radius_one_, radius_two_, theta_max_one_,
              theta_max_two_),
          "The map is not invertible at at least one point on sphere_one."
-         " center_one = "
-             << center_one_ << " center_two = " << center_two_
-             << " radius_one = " << radius_one_ << " radius_two = "
-             << radius_two_ << " theta_max_one = " << theta_max_one_
-             << " theta_max_two = " << theta_max_two_);
+         " theta_max_one = "
+             << theta_max_one_ << " theta_max_two = " << theta_max_two_
+             << param_string());
 
-  // The code below defines several variables that are used only in ASSERTs.
-  // We put that code in a #ifdef SPECTRE_DEBUG to avoid clang-tidy complaining
-  // about unused variables in release mode.
-#ifdef SPECTRE_DEBUG
   const double dist_spheres = sqrt(square(center_one[0] - center_two[0]) +
                                    square(center_one[1] - center_two[1]) +
                                    square(center_one[2] - center_two[2]));
@@ -223,7 +248,7 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
              << radius_one << ", radius_two = " << radius_two
              << ", dist_spheres = " << dist_spheres
              << ", (dist_spheres+radius_one)/radius_two="
-             << (dist_spheres + radius_one) / radius_two);
+             << (dist_spheres + radius_one) / radius_two << param_string());
 
   const double horizontal_dist_spheres =
       sqrt(square(center_one[0] - center_two[0]) +
@@ -243,7 +268,8 @@ UniformCylindricalEndcap::UniformCylindricalEndcap(
              << ", theta_max_two = " << theta_max_two_
              << ", max_horizontal_dist_between_circles = "
              << max_horizontal_dist_between_circles
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres);
+             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+             << param_string());
 #endif
 }
 
