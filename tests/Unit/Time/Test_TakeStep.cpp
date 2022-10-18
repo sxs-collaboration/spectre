@@ -19,7 +19,6 @@
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"

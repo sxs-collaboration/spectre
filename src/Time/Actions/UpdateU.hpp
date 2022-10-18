@@ -13,7 +13,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"

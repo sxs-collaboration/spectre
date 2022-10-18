@@ -294,13 +294,6 @@ PUP::able::PUP_ID
 
 namespace Tags {
 /// \ingroup TimeGroup
-/// \brief Tag for reporting whether the `ErrorControl` step chooser is in
-/// use.
-struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
-  using type = bool;
-};
-
-/// \ingroup TimeGroup
 /// \brief A tag that is true if the `ErrorControl` step chooser is one of the
 /// option-created `Event`s.
 struct IsUsingTimeSteppingErrorControlCompute

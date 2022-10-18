@@ -61,7 +61,6 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/StepControllers/StepController.hpp"

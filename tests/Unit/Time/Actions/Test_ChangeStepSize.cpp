@@ -19,7 +19,6 @@
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
