@@ -461,6 +461,12 @@ class RotatingStar : public MarkAsAnalyticSolution, public AnalyticSolution<3> {
   template <typename DataType>
   auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
                  const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
+  auto variables(gsl::not_null<IntermediateVariables<DataType>*> vars,
+                 const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 

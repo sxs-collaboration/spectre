@@ -12,6 +12,12 @@ def rest_mass_density(x, bh_mass, bh_dimless_spin, rest_mass_density,
     return rest_mass_density
 
 
+def electron_fraction(x, bh_mass, bh_dimless_spin, rest_mass_density,
+                      flow_speed, mag_field_strength, polytropic_constant,
+                      polytropic_exponent):
+    return 0.1
+
+
 def spatial_velocity(x, bh_mass, bh_dimless_spin, rest_mass_density,
                      flow_speed, mag_field_strength, polytropic_constant,
                      polytropic_exponent):

@@ -21,6 +21,7 @@ struct PrimitiveRecoveryData {
   double lorentz_factor;
   double pressure;
   double rho_h_w_squared;
+  double electron_fraction;
 };
 }  // namespace PrimitiveRecoverySchemes
 }  // namespace ValenciaDivClean

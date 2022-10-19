@@ -42,12 +42,14 @@ PUP::able::PUP_ID FreeOutflow::my_PUP_ID = 0;
 
 std::optional<std::string> FreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
+    const gsl::not_null<Scalar<DataVector>*> tilde_ye,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
     const gsl::not_null<Scalar<DataVector>*> tilde_phi,
 
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
@@ -68,6 +70,7 @@ std::optional<std::string> FreeOutflow::dg_ghost(
         outward_directed_normal_vector,
 
     const Scalar<DataVector>& interior_rest_mass_density,
+    const Scalar<DataVector>& interior_electron_fraction,
     const Scalar<DataVector>& interior_specific_internal_energy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
@@ -144,25 +147,27 @@ std::optional<std::string> FreeOutflow::dg_ghost(
   get(exterior_divergence_cleaning_field) = 0.0;
 
   ConservativeFromPrimitive::apply(
-      tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi,
-      interior_rest_mass_density, interior_specific_internal_energy,
-      interior_specific_enthalpy, interior_pressure, exterior_spatial_velocity,
-      interior_lorentz_factor, interior_magnetic_field,
-      interior_sqrt_det_spatial_metric, interior_spatial_metric,
-      exterior_divergence_cleaning_field);
+      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+      interior_rest_mass_density, interior_electron_fraction,
+      interior_specific_internal_energy, interior_specific_enthalpy,
+      interior_pressure, exterior_spatial_velocity, interior_lorentz_factor,
+      interior_magnetic_field, interior_sqrt_det_spatial_metric,
+      interior_spatial_metric, exterior_divergence_cleaning_field);
 
-  ComputeFluxes::apply(
-      tilde_d_flux, tilde_tau_flux, tilde_s_flux, tilde_b_flux, tilde_phi_flux,
-      *tilde_d, *tilde_tau, *tilde_s, *tilde_b, *tilde_phi, *lapse, *shift,
-      interior_sqrt_det_spatial_metric, interior_spatial_metric,
-      *inv_spatial_metric, interior_pressure, exterior_spatial_velocity,
-      interior_lorentz_factor, interior_magnetic_field);
+  ComputeFluxes::apply(tilde_d_flux, tilde_ye_flux, tilde_tau_flux,
+                       tilde_s_flux, tilde_b_flux, tilde_phi_flux, *tilde_d,
+                       *tilde_ye, *tilde_tau, *tilde_s, *tilde_b, *tilde_phi,
+                       *lapse, *shift, interior_sqrt_det_spatial_metric,
+                       interior_spatial_metric, *inv_spatial_metric,
+                       interior_pressure, exterior_spatial_velocity,
+                       interior_lorentz_factor, interior_magnetic_field);
 
   return {};
 }
 
 void FreeOutflow::fd_ghost(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         lorentz_factor_times_spatial_velocity,
@@ -177,6 +182,7 @@ void FreeOutflow::fd_ghost(
 
     // fd_interior_primitive_variables_tags
     const Scalar<DataVector>& interior_rest_mass_density,
+    const Scalar<DataVector>& interior_electron_fraction,
     const Scalar<DataVector>& interior_pressure,
     const Scalar<DataVector>& interior_lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
@@ -192,13 +198,13 @@ void FreeOutflow::fd_ghost(
       subcell_extents.slice_away(dim_direction).product()};
 
   using prim_tags_without_cleaning_field =
-      tmpl::list<RestMassDensity, Pressure, LorentzFactorTimesSpatialVelocity,
-                 MagneticField>;
+      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                 LorentzFactorTimesSpatialVelocity, MagneticField>;
 
   // Create a single large DV to reduce the number of Variables allocations
   const size_t buffer_size_per_grid_pts =
-      (*rest_mass_density).size() + (*pressure).size() +
-      (*lorentz_factor_times_spatial_velocity).size() +
+      (*rest_mass_density).size() + (*electron_fraction).size() +
+      (*pressure).size() + (*lorentz_factor_times_spatial_velocity).size() +
       (*magnetic_field).size();
   DataVector buffer_for_vars{
       num_face_pts * ((1 + ghost_zone_size) * buffer_size_per_grid_pts), 0.0};
@@ -222,6 +228,8 @@ void FreeOutflow::fd_ghost(
         get_boundary_val(interior_rest_mass_density);
 
     get<Pressure>(outermost_prim_vars) = get_boundary_val(interior_pressure);
+    get<ElectronFraction>(outermost_prim_vars) =
+        get_boundary_val(interior_electron_fraction);
 
     // Kill ingoing components of spatial velocity and compute Wv^i
     //
@@ -263,6 +271,7 @@ void FreeOutflow::fd_ghost(
   }
 
   *rest_mass_density = get<RestMassDensity>(ghost_prim_vars);
+  *electron_fraction = get<ElectronFraction>(ghost_prim_vars);
   *pressure = get<Pressure>(ghost_prim_vars);
   *lorentz_factor_times_spatial_velocity =
       get<LorentzFactorTimesSpatialVelocity>(ghost_prim_vars);

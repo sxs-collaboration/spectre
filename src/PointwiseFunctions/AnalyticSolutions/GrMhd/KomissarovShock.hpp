@@ -69,6 +69,23 @@ class KomissarovShock : public evolution::initial_data::InitialData,
         "Fluid rest mass density in the right half-domain"};
     static type lower_bound() { return 0.0; }
   };
+
+  struct LeftElectronFraction {
+    using type = double;
+    static std::string name() { return "LeftElectronFraction"; };
+    static constexpr Options::String help = {
+        "Fluid electron fraction in the left half-domain"};
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
+  };
+  struct RightElectronFraction {
+    using type = double;
+    static std::string name() { return "RightElectronFraction"; };
+    static constexpr Options::String help = {
+        "Fluid electron fraction in the right half-domain"};
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
+  };
   struct LeftPressure {
     using type = double;
     static constexpr Options::String help = {
@@ -108,10 +125,11 @@ class KomissarovShock : public evolution::initial_data::InitialData,
     static constexpr Options::String help = {"Propagation speed of the shock"};
   };
 
-  using options = tmpl::list<AdiabaticIndex, LeftRestMassDensity,
-                             RightRestMassDensity, LeftPressure, RightPressure,
-                             LeftSpatialVelocity, RightSpatialVelocity,
-                             LeftMagneticField, RightMagneticField, ShockSpeed>;
+  using options =
+      tmpl::list<AdiabaticIndex, LeftRestMassDensity, RightRestMassDensity,
+                 LeftElectronFraction, RightElectronFraction, LeftPressure,
+                 RightPressure, LeftSpatialVelocity, RightSpatialVelocity,
+                 LeftMagneticField, RightMagneticField, ShockSpeed>;
 
   static constexpr Options::String help = {
       "Analytic initial data for a Komissarov shock test. The fluid variables "
@@ -126,7 +144,8 @@ class KomissarovShock : public evolution::initial_data::InitialData,
   ~KomissarovShock() = default;
 
   KomissarovShock(double adiabatic_index, double left_rest_mass_density,
-                  double right_rest_mass_density, double left_pressure,
+                  double right_rest_mass_density, double left_electron_fraction,
+                  double right_electron_fraction, double left_pressure,
                   double right_pressure,
                   const std::array<double, 3>& left_spatial_velocity,
                   const std::array<double, 3>& right_spatial_velocity,
@@ -146,6 +165,11 @@ class KomissarovShock : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   auto variables(
@@ -217,6 +241,9 @@ class KomissarovShock : public evolution::initial_data::InitialData,
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   double left_rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
   double right_rest_mass_density_ =
+      std::numeric_limits<double>::signaling_NaN();
+  double left_electron_fraction_ = std::numeric_limits<double>::signaling_NaN();
+  double right_electron_fraction_ =
       std::numeric_limits<double>::signaling_NaN();
   double left_pressure_ = std::numeric_limits<double>::signaling_NaN();
   double right_pressure_ = std::numeric_limits<double>::signaling_NaN();

@@ -35,6 +35,15 @@ OrszagTangVortex::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+OrszagTangVortex::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  // FIXME Need to add proper EoS call to Ye
+  return {make_with_value<Scalar<DataType>>(x, 0.1)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 OrszagTangVortex::variables(
     const tnsr::I<DataType, 3>& x,
@@ -124,11 +133,11 @@ bool operator!=(const OrszagTangVortex& lhs, const OrszagTangVortex& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                      \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> > \
-      OrszagTangVortex::variables(                        \
-          const tnsr::I<DTYPE(data), 3>& x,               \
-          tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) const;
+#define INSTANTIATE_SCALARS(_, data)                     \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
+      OrszagTangVortex::variables(                       \
+          const tnsr::I<DTYPE(data), 3>& x,              \
+          tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
@@ -136,11 +145,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> > \
-      OrszagTangVortex::variables(                           \
-          const tnsr::I<DTYPE(data), 3>& x,                  \
-          tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) const;
+#define INSTANTIATE_VECTORS(_, data)                        \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>> \
+      OrszagTangVortex::variables(                          \
+          const tnsr::I<DTYPE(data), 3>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
                         (hydro::Tags::SpatialVelocity,

@@ -95,6 +95,7 @@ namespace ValenciaDivClean {
 template <size_t ThermodynamicDim>
 std::array<DataVector, 9> characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -110,6 +111,7 @@ template <size_t ThermodynamicDim>
 void characteristic_speeds(
     gsl::not_null<std::array<DataVector, 9>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
@@ -133,6 +135,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
   using base = Tags::CharacteristicSpeeds;
   using argument_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3>,
@@ -150,6 +153,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
   static constexpr void function(
       const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& /* electron_fraction */,
       const Scalar<DataVector>& specific_internal_energy,
       const Scalar<DataVector>& specific_enthalpy,
       const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,

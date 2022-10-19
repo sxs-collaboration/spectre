@@ -150,6 +150,11 @@ class MagneticRotor : public evolution::initial_data::InitialData,
       const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
 
   template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const

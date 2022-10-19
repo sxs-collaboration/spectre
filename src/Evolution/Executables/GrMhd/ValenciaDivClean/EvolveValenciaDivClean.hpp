@@ -215,6 +215,7 @@ struct EvolutionMetavars {
   // Do not limit the divergence-cleaning field Phi
   using limiter = Tags::Limiter<
       Limiters::Minmod<3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                                     grmhd::ValenciaDivClean::Tags::TildeYe,
                                      grmhd::ValenciaDivClean::Tags::TildeTau,
                                      grmhd::ValenciaDivClean::Tags::TildeS<>,
                                      grmhd::ValenciaDivClean::Tags::TildeB<>>>>;

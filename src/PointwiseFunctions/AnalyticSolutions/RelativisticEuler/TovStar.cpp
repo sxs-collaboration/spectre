@@ -218,6 +218,18 @@ void TovVariables<DataType, Region>::operator()(
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
+    const gsl::not_null<Scalar<DataType>*> electron_fraction,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    hydro::Tags::ElectronFraction<DataType> /*meta*/) const {
+  if constexpr (Region == StarRegion::Exterior) {
+    get(*electron_fraction) = 0.45;
+  } else {
+    get(*electron_fraction) = 0.1;  // FIXME Need EOS call here
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> pressure,
     [[maybe_unused]] const gsl::not_null<Cache*> cache,
     hydro::Tags::Pressure<DataType> /*meta*/) const {

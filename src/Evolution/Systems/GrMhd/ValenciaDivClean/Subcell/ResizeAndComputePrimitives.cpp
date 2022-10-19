@@ -29,7 +29,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
     const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> prim_vars,
     const evolution::dg::subcell::ActiveGrid active_grid,
     const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
@@ -63,6 +64,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
         PrimitiveFromConservative<OrderedListOfRecoverySchemes, true>::apply(
             make_not_null(
                 &get<hydro::Tags::RestMassDensity<DataVector>>(*prim_vars)),
+            make_not_null(
+                &get<hydro::Tags::ElectronFraction<DataVector>>(*prim_vars)),
             make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
                 *prim_vars)),
             make_not_null(
@@ -77,8 +80,8 @@ void ResizeAndComputePrims<OrderedListOfRecoverySchemes>::apply(
             make_not_null(&get<hydro::Tags::Pressure<DataVector>>(*prim_vars)),
             make_not_null(
                 &get<hydro::Tags::SpecificEnthalpy<DataVector>>(*prim_vars)),
-            tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, spatial_metric,
-            inv_spatial_metric, sqrt_det_spatial_metric, eos);
+            tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+            spatial_metric, inv_spatial_metric, sqrt_det_spatial_metric, eos);
   }
 }
 
@@ -94,20 +97,21 @@ using KastaunThenNewmanThenPalenzuela =
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATION(r, data)                                                \
-  template void                                                               \
-  ResizeAndComputePrims<RECOVERY(data)>::apply<THERMO_DIM(data)>(             \
-      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>          \
-          prim_vars,                                                          \
-      const evolution::dg::subcell::ActiveGrid active_grid,                   \
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                    \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                 \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                 \
-      const Scalar<DataVector>& tilde_phi,                                    \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,         \
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,     \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
+#define INSTANTIATION(r, data)                                               \
+  template void                                                              \
+  ResizeAndComputePrims<RECOVERY(data)>::apply<THERMO_DIM(data)>(            \
+      const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>         \
+          prim_vars,                                                         \
+      const evolution::dg::subcell::ActiveGrid active_grid,                  \
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,                   \
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye, \
+      const Scalar<DataVector>& tilde_tau,                                   \
+      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,                \
+      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,                \
+      const Scalar<DataVector>& tilde_phi,                                   \
+      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,        \
+      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,    \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                     \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos);
 GENERATE_INSTANTIATIONS(INSTANTIATION,
                         (tmpl::list<PrimitiveRecoverySchemes::KastaunEtAl>,

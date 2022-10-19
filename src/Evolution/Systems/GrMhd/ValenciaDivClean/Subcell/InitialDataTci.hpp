@@ -28,10 +28,11 @@ class Variables;
 namespace grmhd::ValenciaDivClean::subcell {
 namespace detail {
 std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
-    const Scalar<DataVector>& dg_tilde_d,
+    const Scalar<DataVector>& dg_tilde_d, const Scalar<DataVector>& dg_tilde_ye,
     const Scalar<DataVector>& dg_tilde_tau,
     const Scalar<DataVector>& dg_tilde_b_magnitude,
     const Scalar<DataVector>& subcell_tilde_d,
+    const Scalar<DataVector>& subcell_tilde_ye,
     const Scalar<DataVector>& subcell_tilde_tau,
     const Scalar<DataVector>& subcell_tilde_b_magnitude,
     const double persson_exponent, const Mesh<3>& dg_mesh,
@@ -94,9 +95,10 @@ struct DgInitialDataTci {
 
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       const Variables<tmpl::list<
-          ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
-          ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
-          ValenciaDivClean::Tags::TildePhi>>& dg_vars,
+          ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
+          ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeS<>,
+          ValenciaDivClean::Tags::TildeB<>, ValenciaDivClean::Tags::TildePhi>>&
+          dg_vars,
       double rdmp_delta0, double rdmp_epsilon, double persson_exponent,
       const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
       const TciOptions& tci_options);
@@ -106,15 +108,16 @@ struct DgInitialDataTci {
 ///
 /// Used on the subcells after the TCI marked the DG solution as inadmissible.
 struct SetInitialRdmpData {
-  using argument_tags = tmpl::list<ValenciaDivClean::Tags::TildeD,
-                                   ValenciaDivClean::Tags::TildeTau,
-                                   ValenciaDivClean::Tags::TildeB<>,
-                                   evolution::dg::subcell::Tags::ActiveGrid>;
+  using argument_tags = tmpl::list<
+      ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
+      ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeB<>,
+      evolution::dg::subcell::Tags::ActiveGrid>;
   using return_tags = tmpl::list<evolution::dg::subcell::Tags::DataForRdmpTci>;
 
   static void apply(
       gsl::not_null<evolution::dg::subcell::RdmpTciData*> rdmp_tci_data,
       const Scalar<DataVector>& subcell_tilde_d,
+      const Scalar<DataVector>& subcell_tilde_ye,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
       const evolution::dg::subcell::ActiveGrid active_grid);

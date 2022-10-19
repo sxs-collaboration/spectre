@@ -93,6 +93,7 @@ void BoundaryConditionGhostData::apply(
 
   // Tags and tags list for FD reconstruction
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
+  using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
   using Pressure = hydro::Tags::Pressure<DataVector>;
   using LorentzFactorTimesSpatialVelocity =
       hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
@@ -101,8 +102,9 @@ void BoundaryConditionGhostData::apply(
       hydro::Tags::DivergenceCleaningField<DataVector>;
 
   using prims_for_reconstruction =
-      tmpl::list<RestMassDensity, Pressure, LorentzFactorTimesSpatialVelocity,
-                 MagneticField, DivergenceCleaningField>;
+      tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                 LorentzFactorTimesSpatialVelocity, MagneticField,
+                 DivergenceCleaningField>;
 
   size_t num_prims_tensor_components = 0;
   tmpl::for_each<prims_for_reconstruction>([&num_prims_tensor_components](
@@ -177,6 +179,8 @@ void BoundaryConditionGhostData::apply(
                         .fd_ghost(
                             make_not_null(
                                 &get<RestMassDensity>(ghost_data_vars)),
+                            make_not_null(
+                                &get<ElectronFraction>(ghost_data_vars)),
                             make_not_null(&get<Pressure>(ghost_data_vars)),
                             make_not_null(
                                 &get<LorentzFactorTimesSpatialVelocity>(
@@ -215,6 +219,8 @@ void BoundaryConditionGhostData::apply(
                         .fd_outflow(
                             make_not_null(
                                 &get<RestMassDensity>(ghost_data_vars)),
+                            make_not_null(
+                                &get<ElectronFraction>(ghost_data_vars)),
                             make_not_null(&get<Pressure>(ghost_data_vars)),
                             make_not_null(
                                 &get<LorentzFactorTimesSpatialVelocity>(

@@ -39,6 +39,15 @@ struct TciOptions {
         "Minimum value of rest-mass density times Lorentz factor before we "
         "switch to subcell."};
   };
+  /// \brief Minimum value of \f$Y_e\f$ before we switch to subcell.
+  /// Used to identify places where the electron fraction has suddenly become
+  //  negative
+  struct MinimumValueOfYe {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "Minimum value of Y_e before we switch to subcell."};
+  };
   /// \brief Minimum value of \f$\tilde{\tau}\f$ before we switch to subcell.
   /// Used to identify places where the energy has suddenly become negative
   struct MinimumValueOfTildeTau {
@@ -82,8 +91,8 @@ struct TciOptions {
   };
 
   using options =
-      tmpl::list<MinimumValueOfD, MinimumValueOfTildeTau, AtmosphereDensity,
-                 SafetyFactorForB, MagneticFieldCutoff>;
+      tmpl::list<MinimumValueOfD, MinimumValueOfYe, MinimumValueOfTildeTau,
+                 AtmosphereDensity, SafetyFactorForB, MagneticFieldCutoff>;
   static constexpr Options::String help = {
       "Options for the troubled-cell indicator."};
 
@@ -92,6 +101,7 @@ struct TciOptions {
 
   double minimum_rest_mass_density_times_lorentz_factor{
       std::numeric_limits<double>::signaling_NaN()};
+  double minimum_ye{std::numeric_limits<double>::signaling_NaN()};
   double minimum_tilde_tau{std::numeric_limits<double>::signaling_NaN()};
   double atmosphere_density{std::numeric_limits<double>::signaling_NaN()};
   double safety_factor_for_magnetic_field{

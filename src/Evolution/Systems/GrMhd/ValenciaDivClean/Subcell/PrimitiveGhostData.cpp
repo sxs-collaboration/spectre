@@ -20,6 +20,8 @@ auto PrimitiveGhostDataOnSubcells::apply(
       prims.number_of_grid_points());
   get<hydro::Tags::RestMassDensity<DataVector>>(vars_to_reconstruct) =
       get<hydro::Tags::RestMassDensity<DataVector>>(prims);
+  get<hydro::Tags::ElectronFraction<DataVector>>(vars_to_reconstruct) =
+      get<hydro::Tags::ElectronFraction<DataVector>>(prims);
   get<hydro::Tags::Pressure<DataVector>>(vars_to_reconstruct) =
       get<hydro::Tags::Pressure<DataVector>>(prims);
   get<hydro::Tags::MagneticField<DataVector, 3>>(vars_to_reconstruct) =

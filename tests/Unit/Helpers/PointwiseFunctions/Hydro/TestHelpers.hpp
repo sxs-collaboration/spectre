@@ -38,6 +38,10 @@ Scalar<DataType> random_temperature(gsl::not_null<std::mt19937*> generator,
                                     const DataType& used_for_size);
 
 template <typename DataType>
+Scalar<DataType> random_electron_fraction(
+    gsl::not_null<std::mt19937*> generator, const DataType& used_for_size);
+
+template <typename DataType>
 Scalar<DataType> random_specific_internal_energy(
     gsl::not_null<std::mt19937*> generator, const DataType& used_for_size);
 

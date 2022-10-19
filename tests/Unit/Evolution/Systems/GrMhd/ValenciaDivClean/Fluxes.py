@@ -26,14 +26,22 @@ def spatial_velocity_one_form(spatial_velocity, spatial_metric):
     return np.einsum("a, ia", spatial_velocity, spatial_metric)
 
 
-def tilde_d_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
-                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric,
-                 pressure, spatial_velocity, lorentz_factor, magnetic_field):
+def tilde_d_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric, pressure, spatial_velocity,
+                 lorentz_factor, magnetic_field):
     return tilde_d * (lapse * spatial_velocity - shift)
 
 
-def tilde_tau_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
-                   shift, sqrt_det_spatial_metric, spatial_metric,
+def tilde_ye_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                  lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                  inv_spatial_metric, pressure, spatial_velocity,
+                  lorentz_factor, magnetic_field):
+    return tilde_ye * (lapse * spatial_velocity - shift)
+
+
+def tilde_tau_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                   lapse, shift, sqrt_det_spatial_metric, spatial_metric,
                    inv_spatial_metric, pressure, spatial_velocity,
                    lorentz_factor, magnetic_field):
     b_dot_v_ = b_dot_v(magnetic_field, spatial_velocity, spatial_metric)
@@ -44,9 +52,10 @@ def tilde_tau_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
         (lapse * spatial_velocity - shift) - lapse * b_dot_v_ * tilde_b)
 
 
-def tilde_s_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
-                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric,
-                 pressure, spatial_velocity, lorentz_factor, magnetic_field):
+def tilde_s_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric, pressure, spatial_velocity,
+                 lorentz_factor, magnetic_field):
     b_dot_v_ = b_dot_v(magnetic_field, spatial_velocity, spatial_metric)
     b_i = (magnetic_field_one_form(magnetic_field, spatial_metric) /
            lorentz_factor +
@@ -61,17 +70,18 @@ def tilde_s_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
     return result
 
 
-def tilde_b_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse, shift,
-                 sqrt_det_spatial_metric, spatial_metric, inv_spatial_metric,
-                 pressure, spatial_velocity, lorentz_factor, magnetic_field):
+def tilde_b_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                 lapse, shift, sqrt_det_spatial_metric, spatial_metric,
+                 inv_spatial_metric, pressure, spatial_velocity,
+                 lorentz_factor, magnetic_field):
     result = np.outer(lapse * spatial_velocity - shift, tilde_b)
     result += lapse * inv_spatial_metric * tilde_phi
     result -= lapse * np.outer(tilde_b, spatial_velocity)
     return result
 
 
-def tilde_phi_flux(tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
-                   shift, sqrt_det_spatial_metric, spatial_metric,
+def tilde_phi_flux(tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                   lapse, shift, sqrt_det_spatial_metric, spatial_metric,
                    inv_spatial_metric, pressure, spatial_velocity,
                    lorentz_factor, magnetic_field):
     return lapse * tilde_b - tilde_phi * shift

@@ -38,6 +38,9 @@ SPECTRE_TEST_CASE(
       make_not_null(&get<::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
                                       tmpl::size_t<3>, Frame::Inertial>>(
           expected_fluxes)),
+      make_not_null(&get<::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeYe,
+                                      tmpl::size_t<3>, Frame::Inertial>>(
+          expected_fluxes)),
       make_not_null(&get<::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
                                       tmpl::size_t<3>, Frame::Inertial>>(
           expected_fluxes)),
@@ -51,6 +54,7 @@ SPECTRE_TEST_CASE(
                                       tmpl::size_t<3>, Frame::Inertial>>(
           expected_fluxes)),
       get<grmhd::ValenciaDivClean::Tags::TildeD>(vars),
+      get<grmhd::ValenciaDivClean::Tags::TildeYe>(vars),
       get<grmhd::ValenciaDivClean::Tags::TildeTau>(vars),
       get<grmhd::ValenciaDivClean::Tags::TildeS<>>(vars),
       get<grmhd::ValenciaDivClean::Tags::TildeB<>>(vars),

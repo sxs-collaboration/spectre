@@ -25,12 +25,14 @@ namespace grmhd::Solutions {
 
 AlfvenWave::AlfvenWave(const double wavenumber, const double pressure,
                        const double rest_mass_density,
+                       const double electron_fraction,
                        const double adiabatic_index,
                        const std::array<double, 3>& background_magnetic_field,
                        const std::array<double, 3>& wave_magnetic_field)
     : wavenumber_(wavenumber),
       pressure_(pressure),
       rest_mass_density_(rest_mass_density),
+      electron_fraction_(electron_fraction),
       adiabatic_index_(adiabatic_index),
       background_magnetic_field_(background_magnetic_field),
       wave_magnetic_field_(wave_magnetic_field),
@@ -79,6 +81,7 @@ void AlfvenWave::pup(PUP::er& p) {
   p | wavenumber_;
   p | pressure_;
   p | rest_mass_density_;
+  p | electron_fraction_;
   p | adiabatic_index_;
   p | background_magnetic_field_;
   p | wave_magnetic_field_;
@@ -111,6 +114,14 @@ AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return {make_with_value<Scalar<DataType>>(x, rest_mass_density_)};
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  return {make_with_value<Scalar<DataType>>(x, electron_fraction_)};
 }
 
 template <typename DataType>
@@ -199,6 +210,7 @@ bool operator==(const AlfvenWave& lhs, const AlfvenWave& rhs) {
   return lhs.wavenumber_ == rhs.wavenumber_ and
          lhs.pressure_ == rhs.pressure_ and
          lhs.rest_mass_density_ == rhs.rest_mass_density_ and
+         lhs.electron_fraction_ == rhs.electron_fraction_ and
          lhs.adiabatic_index_ == rhs.adiabatic_index_ and
          lhs.background_magnetic_field_ == rhs.background_magnetic_field_ and
          lhs.wave_magnetic_field_ == rhs.wave_magnetic_field_ and
@@ -223,22 +235,23 @@ bool operator!=(const AlfvenWave& lhs, const AlfvenWave& rhs) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                                        \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                   \
-      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,     \
-                            tmpl::list<TAG(data) < DTYPE(data)> > /*meta*/) \
+#define INSTANTIATE_SCALARS(_, data)                                       \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                   \
+      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,    \
+                            tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
           const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
-     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+    (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
+     hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
+     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
+     hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                           \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> >                   \
-      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,        \
-                            tmpl::list<TAG(data) < DTYPE(data), 3> > /*meta*/) \
+#define INSTANTIATE_VECTORS(_, data)                                          \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                   \
+      AlfvenWave::variables(const tnsr::I<DTYPE(data), 3>& x, double t,       \
+                            tmpl::list<TAG(data) < DTYPE(data), 3>> /*meta*/) \
           const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

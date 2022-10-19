@@ -33,6 +33,22 @@ Scalar<DataType> random_density(const gsl::not_null<std::mt19937*> generator,
 }
 
 template <typename DataType>
+Scalar<DataType> random_electron_fraction(
+    const gsl::not_null<std::mt19937*> generator,
+    const DataType& used_for_size) {
+  // 1 g/cm^3 = 1.62e-18 in geometric units
+  // Most tests will work fine for any positive density, the exception being
+  // tests for primitive inversions in GR hydro and MHD, for which the tolerance
+  // would have to be loosened in order to allow for smaller densities.
+  constexpr double minimum_ye = 0.01;
+  constexpr double maximum_ye = 0.5;
+  std::uniform_real_distribution<> distribution(minimum_ye, maximum_ye);
+
+  return Scalar<DataType>{make_with_random_values<DataType>(
+      generator, make_not_null(&distribution), used_for_size)};
+}
+
+template <typename DataType>
 Scalar<DataType> random_lorentz_factor(
     const gsl::not_null<std::mt19937*> generator,
     const DataType& used_for_size) {
@@ -115,6 +131,9 @@ Scalar<DataType> random_divergence_cleaning_field(
 
 #define INSTANTIATE_SCALARS(_, data)                             \
   template Scalar<DTYPE(data)> random_density(                   \
+      const gsl::not_null<std::mt19937*> generator,              \
+      const DTYPE(data) & used_for_size);                        \
+  template Scalar<DTYPE(data)> random_electron_fraction(         \
       const gsl::not_null<std::mt19937*> generator,              \
       const DTYPE(data) & used_for_size);                        \
   template Scalar<DTYPE(data)> random_lorentz_factor(            \

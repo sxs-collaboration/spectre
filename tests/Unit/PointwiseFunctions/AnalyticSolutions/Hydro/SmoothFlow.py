@@ -11,6 +11,11 @@ def rest_mass_density(x, t, mean_velocity, wave_vector, pressure,
                np.asarray(x) - np.asarray(mean_velocity) * t))))
 
 
+def electron_fraction(x, t, mean_velocity, wave_vector, pressure,
+                      adiabatic_index, density_amplitude):
+    return 0.1
+
+
 def spatial_velocity(x, t, mean_velocity, wave_vector, pressure,
                      adiabatic_index, density_amplitude):
     return np.asarray(mean_velocity)

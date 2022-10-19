@@ -150,14 +150,28 @@ FishboneMoncriefDisk::variables(
       variables(x, tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>>{}, vars,
                 index));
   auto rest_mass_density = make_with_value<Scalar<DataType>>(x, 0.0);
-  variables_impl(
-      vars, [&rest_mass_density, &specific_enthalpy, this](
-                const size_t s, const double /*potential_at_s*/) {
-        get_element(get(rest_mass_density), s) =
-            get(equation_of_state_.rest_mass_density_from_enthalpy(
-                Scalar<double>{get_element(get(specific_enthalpy), s)}));
-      });
+  variables_impl(vars, [&rest_mass_density, &specific_enthalpy, this](
+                           const size_t s, const double /*potential_at_s*/) {
+    get_element(get(rest_mass_density), s) =
+        get(equation_of_state_.rest_mass_density_from_enthalpy(
+            Scalar<double>{get_element(get(specific_enthalpy), s)}));
+  });
   return {std::move(rest_mass_density)};
+}
+
+template <typename DataType, bool NeedSpacetime>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+FishboneMoncriefDisk::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+    const IntermediateVariables<DataType, NeedSpacetime>& /* vars */,
+    const size_t /* index */) const {
+  // Need to add EoS call to get correct electron fraction
+  // when using tables
+
+  auto ye = make_with_value<Scalar<DataType>>(x, 0.1);
+
+  return {std::move(ye)};
 }
 
 template <typename DataType, bool NeedSpacetime>
@@ -189,13 +203,12 @@ FishboneMoncriefDisk::variables(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars,
                 index));
   auto pressure = make_with_value<Scalar<DataType>>(x, 0.0);
-  variables_impl(
-      vars, [&pressure, &rest_mass_density, this](
-                const size_t s, const double /*potential_at_s*/) {
-        get_element(get(pressure), s) =
-            get(equation_of_state_.pressure_from_density(
-                Scalar<double>{get_element(get(rest_mass_density), s)}));
-      });
+  variables_impl(vars, [&pressure, &rest_mass_density, this](
+                           const size_t s, const double /*potential_at_s*/) {
+    get_element(get(pressure), s) =
+        get(equation_of_state_.pressure_from_density(
+            Scalar<double>{get_element(get(rest_mass_density), s)}));
+  });
   return {std::move(pressure)};
 }
 
@@ -210,13 +223,12 @@ FishboneMoncriefDisk::variables(
       variables(x, tmpl::list<hydro::Tags::RestMassDensity<DataType>>{}, vars,
                 index));
   auto specific_internal_energy = make_with_value<Scalar<DataType>>(x, 0.0);
-  variables_impl(
-      vars, [&specific_internal_energy, &rest_mass_density, this](
-                const size_t s, const double /*potential_at_s*/) {
-        get_element(get(specific_internal_energy), s) =
-            get(equation_of_state_.specific_internal_energy_from_density(
-                Scalar<double>{get_element(get(rest_mass_density), s)}));
-      });
+  variables_impl(vars, [&specific_internal_energy, &rest_mass_density, this](
+                           const size_t s, const double /*potential_at_s*/) {
+    get_element(get(specific_internal_energy), s) =
+        get(equation_of_state_.specific_internal_energy_from_density(
+            Scalar<double>{get_element(get(rest_mass_density), s)}));
+  });
   return {std::move(specific_internal_energy)};
 }
 
@@ -341,6 +353,13 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
   FishboneMoncriefDisk::variables(                                            \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,         \
+      const FishboneMoncriefDisk::IntermediateVariables<                      \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
+      const size_t) const;                                                    \
+  template tuples::TaggedTuple<hydro::Tags::ElectronFraction<DTYPE(data)>>    \
+  FishboneMoncriefDisk::variables(                                            \
+      const tnsr::I<DTYPE(data), 3>& x,                                       \
+      tmpl::list<hydro::Tags::ElectronFraction<DTYPE(data)>> /*meta*/,        \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
       const size_t) const;                                                    \

@@ -56,28 +56,30 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
   const auto flattener = serialize_and_deserialize(
       grmhd::ValenciaDivClean::Flattener<tmpl::list<
           grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
-          true, false, true});
+          true, true, false, true});
   CHECK(flattener ==
         grmhd::ValenciaDivClean::Flattener<tmpl::list<
             grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
-            true, false, true});
+            true, true, false, true});
   CHECK(flattener !=
         grmhd::ValenciaDivClean::Flattener<tmpl::list<
             grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
-            false, false, true});
+            false, true, false, true});
   CHECK(flattener !=
         grmhd::ValenciaDivClean::Flattener<tmpl::list<
             grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
-            true, true, true});
+            true, true, true, true});
   CHECK(flattener !=
         grmhd::ValenciaDivClean::Flattener<tmpl::list<
             grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::KastaunEtAl>>{
-            true, false, false});
+            true, true, false, false});
 
   {
     INFO("Case: NoOp");
     Scalar<DataVector> tilde_d(
         DataVector{{1.4, 1.3, 1.2, 1.6, 1.8, 1.7, 1.3, 1.4}});
+    Scalar<DataVector> tilde_ye(
+        DataVector{{0.14, 0.13, 0.12, 0.16, 0.18, 0.17, 0.13, 0.14}});
     Scalar<DataVector> tilde_tau(
         DataVector{{3.1, 3.3, 4.3, 3.5, 2.9, 2.8, 2.6, 2.7}});
     tnsr::i<DataVector, 3> tilde_s;
@@ -87,18 +89,20 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
         DataVector{{-0.3, -0.2, -0.4, -0.3, -0.8, -0.2, -0.3, -0.1}};
 
     const auto expected_tilde_d = tilde_d;
+    const auto expected_tilde_ye = tilde_ye;
     const auto expected_tilde_tau = tilde_tau;
     const auto expected_tilde_s = tilde_s;
 
     Variables<hydro::grmhd_tags<DataVector>> prims(num_points, 0.);
 
-    flattener(make_not_null(&tilde_d), make_not_null(&tilde_tau),
-              make_not_null(&tilde_s), make_not_null(&prims), tilde_b,
-              tilde_phi, sqrt_det_spatial_metric, spatial_metric,
-              inverse_spatial_metric, mesh, det_logical_to_inertial_jacobian,
-              ideal_fluid);
+    flattener(make_not_null(&tilde_d), make_not_null(&tilde_ye),
+              make_not_null(&tilde_tau), make_not_null(&tilde_s),
+              make_not_null(&prims), tilde_b, tilde_phi,
+              sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
 
     CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
+    CHECK_ITERABLE_APPROX(tilde_ye, expected_tilde_ye);
     CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);
     CHECK_ITERABLE_APPROX(tilde_s, expected_tilde_s);
   }
@@ -108,6 +112,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
     constexpr double safety = 0.95;
     Scalar<DataVector> tilde_d(
         DataVector{{1.4, 1.3, 1.2, 1.6, -1.6, 1.7, 1.3, 1.4}});
+    Scalar<DataVector> tilde_ye(
+        DataVector{{0.14, 0.13, 0.12, 0.16, -0.16, 0.17, 0.13, 0.14}});
     Scalar<DataVector> tilde_tau(
         DataVector{{2.1, 2.3, 4.3, 3.5, 2.9, 1.8, 2.6, 2.9}});
     tnsr::i<DataVector, 3> tilde_s;
@@ -150,14 +156,15 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
 
     Variables<hydro::grmhd_tags<DataVector>> prims(num_points, 0.);
 
-    flattener(make_not_null(&tilde_d), make_not_null(&tilde_tau),
-              make_not_null(&tilde_s), make_not_null(&prims), tilde_b,
-              tilde_phi, sqrt_det_spatial_metric, spatial_metric,
-              inverse_spatial_metric, mesh, det_logical_to_inertial_jacobian,
-              ideal_fluid);
+    flattener(make_not_null(&tilde_d), make_not_null(&tilde_ye),
+              make_not_null(&tilde_tau), make_not_null(&tilde_s),
+              make_not_null(&prims), tilde_b, tilde_phi,
+              sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
 
     // check 1) action, 2) positive tilde_d, 3) all fields changed
     CHECK(min(get(tilde_d)) > 0.);
+    CHECK(min(get(tilde_ye)) > 0.);
     CHECK(definite_integral(
               get(det_logical_to_inertial_jacobian) * get(tilde_d), mesh) /
               volume_of_cell ==
@@ -183,6 +190,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
     INFO("Case: SetSolutionToMean because of too-small TildeTau");
     Scalar<DataVector> tilde_d(
         DataVector{{1.4, 1.3, 1.2, 1.6, 1.8, 1.7, 1.3, 1.4}});
+    Scalar<DataVector> tilde_ye(
+        DataVector{{0.14, 0.13, 0.12, 0.16, 0.18, 0.17, 0.13, 0.14}});
     Scalar<DataVector> tilde_tau(
         DataVector{{3.1, 3.3, 4.3, 3.5, 2.9, 2.8, 2.6, 9.e-3}});
     tnsr::i<DataVector, 3> tilde_s;
@@ -225,11 +234,11 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Flattener", "[Unit][GrMhd]") {
     const Scalar<DataVector> expected_tilde_d = tilde_d;
     const tnsr::i<DataVector, 3, Frame::Inertial> expected_tilde_s = tilde_s;
 
-    flattener(make_not_null(&tilde_d), make_not_null(&tilde_tau),
-              make_not_null(&tilde_s), make_not_null(&prims), tilde_b,
-              tilde_phi, sqrt_det_spatial_metric, spatial_metric,
-              inverse_spatial_metric, mesh, det_logical_to_inertial_jacobian,
-              ideal_fluid);
+    flattener(make_not_null(&tilde_d), make_not_null(&tilde_ye),
+              make_not_null(&tilde_tau), make_not_null(&tilde_s),
+              make_not_null(&prims), tilde_b, tilde_phi,
+              sqrt_det_spatial_metric, spatial_metric, inverse_spatial_metric,
+              mesh, det_logical_to_inertial_jacobian, ideal_fluid);
 
     CHECK(definite_integral(
               get(det_logical_to_inertial_jacobian) * get(tilde_d), mesh) /

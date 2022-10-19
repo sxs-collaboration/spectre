@@ -92,7 +92,8 @@ void sources_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>&
         trace_spatial_christoffel_second,
 
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& /* tilde_ye */,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
@@ -106,6 +107,7 @@ void sources_impl(
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
 
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& /* electron_fraction */,
     const Scalar<DataVector>& specific_enthalpy,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) {
@@ -173,13 +175,15 @@ void ComputeSources::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         source_tilde_b,
     const gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
     const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
@@ -255,11 +259,11 @@ void ComputeSources::apply(
       magnetic_field_dot_spatial_velocity, magnetic_field_squared,
       one_over_w_squared, pressure_star, trace_spatial_christoffel_second,
 
-      tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
+      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
       sqrt_det_spatial_metric, inv_spatial_metric, d_lapse, d_shift,
       d_spatial_metric, spatial_velocity, lorentz_factor, magnetic_field,
 
-      rest_mass_density, specific_enthalpy, extrinsic_curvature,
-      constraint_damping_parameter);
+      rest_mass_density, electron_fraction, specific_enthalpy,
+      extrinsic_curvature, constraint_damping_parameter);
 }
 }  // namespace grmhd::ValenciaDivClean

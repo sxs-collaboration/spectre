@@ -35,6 +35,7 @@ struct MagneticFieldLoopProxy : grmhd::AnalyticData::MagneticFieldLoop {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>,
                  hydro::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
@@ -128,7 +129,7 @@ void test_variables(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &MagneticFieldLoopProxy::hydro_variables<DataType>, magnetic_field_loop,
       "MagneticFieldLoop",
-      {"compute_rest_mass_density", "spatial_velocity",
+      {"compute_rest_mass_density", "electron_fraction", "spatial_velocity",
        "specific_internal_energy", "compute_pressure", "lorentz_factor",
        "specific_enthalpy"},
       {{{-1.0, 1.0}}}, member_variables, used_for_size);
@@ -136,7 +137,7 @@ void test_variables(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &MagneticFieldLoopProxy::grmhd_variables<DataType>, magnetic_field_loop,
       "MagneticFieldLoop",
-      {"compute_rest_mass_density", "spatial_velocity",
+      {"compute_rest_mass_density", "electron_fraction", "spatial_velocity",
        "specific_internal_energy", "compute_pressure", "lorentz_factor",
        "specific_enthalpy", "magnetic_field", "divergence_cleaning_field"},
       {{{-1.0, 1.0}}}, member_variables, used_for_size);

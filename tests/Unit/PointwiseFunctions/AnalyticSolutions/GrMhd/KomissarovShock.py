@@ -8,12 +8,13 @@ import numpy as np
 
 def parse_vars(*args, **kwargs):
     assert not kwargs, "Found unexpected labeled arguments:\n{}".format(kwargs)
-    assert len(args) is 10, "Expected 10 arguments, but got {}".format(
+    assert len(args) is 12, "Expected 12 arguments, but got {}".format(
         len(args))
     return dict(
         zip([
             'adiabatic_index', 'left_rest_mass_density',
-            'right_rest_mass_density', 'left_pressure', 'right_pressure',
+            'right_rest_mass_density', 'left_electron_fraction',
+            'right_electron_fraction', 'left_pressure', 'right_pressure',
             'left_spatial_velocity', 'right_spatial_velocity',
             'left_magnetic_field', 'right_magnetic_field', 'shock_speed'
         ], args))
@@ -28,6 +29,13 @@ def rest_mass_density(x, t, *args, **kwargs):
     return piecewise(x, t * vars['shock_speed'],
                      vars['left_rest_mass_density'],
                      vars['right_rest_mass_density'])
+
+
+def electron_fraction(x, t, *args, **kwargs):
+    vars = parse_vars(*args, **kwargs)
+    return piecewise(x, t * vars['shock_speed'],
+                     vars['left_electron_fraction'],
+                     vars['right_electron_fraction'])
 
 
 def spatial_velocity(x, t, *args, **kwargs):

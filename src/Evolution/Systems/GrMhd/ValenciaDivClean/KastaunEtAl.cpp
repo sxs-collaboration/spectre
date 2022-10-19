@@ -114,6 +114,7 @@ class FunctionOfMu {
                const double momentum_density_dot_magnetic_field,
                const double magnetic_field_squared,
                const double rest_mass_density_times_lorentz_factor,
+               const double electron_fraction,
                const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
                    equation_of_state)
       : q_(total_energy_density / rest_mass_density_times_lorentz_factor - 1.0),
@@ -125,6 +126,7 @@ class FunctionOfMu {
                          cube(rest_mass_density_times_lorentz_factor)),
         rest_mass_density_times_lorentz_factor_(
             rest_mass_density_times_lorentz_factor),
+        electron_fraction_(electron_fraction),
         equation_of_state_(equation_of_state),
         h_0_(equation_of_state_.specific_enthalpy_lower_bound()),
         v_0_squared_(compute_v_0_squared(r_squared_, h_0_)) {}
@@ -143,6 +145,7 @@ class FunctionOfMu {
   const double b_squared_;
   const double r_dot_b_squared_;
   const double rest_mass_density_times_lorentz_factor_;
+  const double electron_fraction_;
   const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
       equation_of_state_;
   const double h_0_;
@@ -260,13 +263,15 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
   } else if constexpr (ThermodynamicDim == 2) {
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
+  } else if constexpr (ThermodynamicDim == 3) {
+    ERROR("3d EOS not implemented");
   }
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared};
 }
 
 template <size_t ThermodynamicDim>
 double FunctionOfMu<ThermodynamicDim>::operator()(const double mu) const {
-  const auto [rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
+  const auto[rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared] =
       primitives(mu);
   // Equation (43)
   const double a_hat = p_hat / (rho_hat * (1.0 + epsilon_hat));
@@ -286,6 +291,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
+    const double electron_fraction,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) {
   // Master function see Equation (44)
@@ -295,6 +301,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
                                      momentum_density_dot_magnetic_field,
                                      magnetic_field_squared,
                                      rest_mass_density_times_lorentz_factor,
+                                     electron_fraction,
                                      equation_of_state};
 
   // mu is 1 / (h W) see Equation (26)
@@ -302,7 +309,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       std::numeric_limits<double>::signaling_NaN();
   try {
     // Bracket for master function, see Sec. II.F
-    const auto [lower_bound, upper_bound] = f_of_mu.root_bracket(
+    const auto[lower_bound, upper_bound] = f_of_mu.root_bracket(
         rest_mass_density_times_lorentz_factor, absolute_tolerance_,
         relative_tolerance_, max_iterations_);
 
@@ -316,8 +323,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
     return std::nullopt;
   }
 
-  const auto [rest_mass_density, lorentz_factor, pressure,
-              specific_internal_energy, q_bar, r_bar_squared] =
+  const auto[rest_mass_density, lorentz_factor, pressure,
+             specific_internal_energy, q_bar, r_bar_squared] =
       f_of_mu.primitives(one_over_specific_enthalpy_times_lorentz_factor);
 
   (void)(specific_internal_energy);
@@ -327,7 +334,8 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
   return PrimitiveRecoveryData{
       rest_mass_density, lorentz_factor, pressure,
       rest_mass_density_times_lorentz_factor /
-          one_over_specific_enthalpy_times_lorentz_factor};
+          one_over_specific_enthalpy_times_lorentz_factor,
+      electron_fraction};
 }
 }  // namespace grmhd::ValenciaDivClean::PrimitiveRecoverySchemes
 
@@ -342,6 +350,7 @@ std::optional<PrimitiveRecoveryData> KastaunEtAl::apply(
       const double momentum_density_dot_magnetic_field,                       \
       const double magnetic_field_squared,                                    \
       const double rest_mass_density_times_lorentz_factor,                    \
+      const double electron_fraction,                                         \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&         \
           equation_of_state);
 

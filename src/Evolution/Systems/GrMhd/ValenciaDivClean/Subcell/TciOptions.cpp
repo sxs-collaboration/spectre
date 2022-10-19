@@ -10,6 +10,7 @@
 namespace grmhd::ValenciaDivClean::subcell {
 void TciOptions::pup(PUP::er& p) {
   p | minimum_rest_mass_density_times_lorentz_factor;
+  p | minimum_ye;
   p | minimum_tilde_tau;
   p | atmosphere_density;
   p | safety_factor_for_magnetic_field;

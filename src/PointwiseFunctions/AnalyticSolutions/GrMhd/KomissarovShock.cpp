@@ -47,7 +47,8 @@ namespace grmhd::Solutions {
 
 KomissarovShock::KomissarovShock(
     const double adiabatic_index, const double left_rest_mass_density,
-    const double right_rest_mass_density, const double left_pressure,
+    const double right_rest_mass_density, const double left_electron_fraction,
+    const double right_electron_fraction, const double left_pressure,
     const double right_pressure,
     const std::array<double, 3>& left_spatial_velocity,
     const std::array<double, 3>& right_spatial_velocity,
@@ -57,6 +58,8 @@ KomissarovShock::KomissarovShock(
       adiabatic_index_(adiabatic_index),
       left_rest_mass_density_(left_rest_mass_density),
       right_rest_mass_density_(right_rest_mass_density),
+      left_electron_fraction_(left_electron_fraction),
+      right_electron_fraction_(right_electron_fraction),
       left_pressure_(left_pressure),
       right_pressure_(right_pressure),
       left_spatial_velocity_(left_spatial_velocity),
@@ -72,6 +75,8 @@ void KomissarovShock::pup(PUP::er& p) {
   p | adiabatic_index_;
   p | left_rest_mass_density_;
   p | right_rest_mass_density_;
+  p | left_electron_fraction_;
+  p | right_electron_fraction_;
   p | left_pressure_;
   p | right_pressure_;
   p | left_spatial_velocity_;
@@ -90,6 +95,15 @@ KomissarovShock::variables(
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const {
   return compute_piecewise(x, t * shock_speed_, left_rest_mass_density_,
                            right_rest_mass_density_);
+}
+
+template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+KomissarovShock::variables(
+    const tnsr::I<DataType, 3>& x, const double t,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
+  return compute_piecewise(x, t * shock_speed_, left_electron_fraction_,
+                           right_electron_fraction_);
 }
 
 template <typename DataType>
@@ -170,6 +184,8 @@ bool operator==(const KomissarovShock& lhs, const KomissarovShock& rhs) {
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
          lhs.left_rest_mass_density_ == rhs.left_rest_mass_density_ and
          lhs.right_rest_mass_density_ == rhs.right_rest_mass_density_ and
+         lhs.left_electron_fraction_ == rhs.left_electron_fraction_ and
+         lhs.right_electron_fraction_ == rhs.right_electron_fraction_ and
          lhs.left_pressure_ == rhs.left_pressure_ and
          lhs.right_pressure_ == rhs.right_pressure_ and
          lhs.left_spatial_velocity_ == rhs.left_spatial_velocity_ and
@@ -187,20 +203,21 @@ bool operator!=(const KomissarovShock& lhs, const KomissarovShock& rhs) {
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
 #define INSTANTIATE_SCALARS(_, data)                                     \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)> >                \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                 \
       KomissarovShock::variables(const tnsr::I<DTYPE(data), 3>&, double, \
-                                 tmpl::list<TAG(data) < DTYPE(data)> >) const;
+                                 tmpl::list<TAG(data) < DTYPE(data)>>) const;
 
 GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
-     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+    (hydro::Tags::RestMassDensity, hydro::Tags::ElectronFraction,
+     hydro::Tags::SpecificInternalEnergy, hydro::Tags::Pressure,
+     hydro::Tags::DivergenceCleaningField, hydro::Tags::LorentzFactor,
+     hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                       \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3> >               \
-      KomissarovShock::variables(const tnsr::I<DTYPE(data), 3>&, double,   \
-                                 tmpl::list<TAG(data) < DTYPE(data), 3> >) \
+#define INSTANTIATE_VECTORS(_, data)                                      \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>               \
+      KomissarovShock::variables(const tnsr::I<DTYPE(data), 3>&, double,  \
+                                 tmpl::list<TAG(data) < DTYPE(data), 3>>) \
           const;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

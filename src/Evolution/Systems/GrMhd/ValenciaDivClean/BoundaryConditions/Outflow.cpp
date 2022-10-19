@@ -78,6 +78,7 @@ std::optional<std::string> Outflow::dg_outflow(
 
 void Outflow::fd_outflow(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         lorentz_factor_times_spatial_velocity,
@@ -99,6 +100,7 @@ void Outflow::fd_outflow(
 
     // fd_interior_primitive_variables_tags
     const Scalar<DataVector>& interior_rest_mass_density,
+    const Scalar<DataVector>& interior_electron_fraction,
     const Scalar<DataVector>& interior_pressure,
     const Scalar<DataVector>& interior_lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
@@ -162,6 +164,7 @@ void Outflow::fd_outflow(
     // data.
 
     using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
+    using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
     using Pressure = hydro::Tags::Pressure<DataVector>;
     using LorentzFactorTimesSpatialVelocity =
         hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>;
@@ -170,13 +173,14 @@ void Outflow::fd_outflow(
         hydro::Tags::DivergenceCleaningField<DataVector>;
 
     using prim_tags_for_reconstruction =
-        tmpl::list<RestMassDensity, Pressure, LorentzFactorTimesSpatialVelocity,
-                   MagneticField, DivergenceCleaningField>;
+        tmpl::list<RestMassDensity, ElectronFraction, Pressure,
+                   LorentzFactorTimesSpatialVelocity, MagneticField,
+                   DivergenceCleaningField>;
 
     // Create a single large DV to reduce the number of Variables allocations
     const size_t buffer_size_per_grid_pts =
-        (*rest_mass_density).size() + (*pressure).size() +
-        (*lorentz_factor_times_spatial_velocity).size() +
+        (*rest_mass_density).size() + (*electron_fraction).size() +
+        (*pressure).size() + (*lorentz_factor_times_spatial_velocity).size() +
         (*magnetic_field).size() + (*divergence_cleaning_field).size();
     DataVector buffer_for_boundary_and_ghost_vars{
         buffer_size_per_grid_pts * num_face_pts * (1 + ghost_zone_size), 0.0};
@@ -198,6 +202,8 @@ void Outflow::fd_outflow(
 
     get<RestMassDensity>(boundary_vars) =
         get_boundary_val(interior_rest_mass_density);
+    get<ElectronFraction>(boundary_vars) =
+        get_boundary_val(interior_electron_fraction);
     get<Pressure>(boundary_vars) = get_boundary_val(interior_pressure);
     // Note : 'lorentz factor times spatial velocity' needs to be in the FD
     // ghost data for reconstruction, instead of lorentz factor and spatial
@@ -222,6 +228,7 @@ void Outflow::fd_outflow(
     }
 
     *rest_mass_density = get<RestMassDensity>(ghost_vars);
+    *electron_fraction = get<ElectronFraction>(ghost_vars);
     *pressure = get<Pressure>(ghost_vars);
     *lorentz_factor_times_spatial_velocity =
         get<LorentzFactorTimesSpatialVelocity>(ghost_vars);

@@ -112,7 +112,7 @@ auto face_centered_gr_tags(
   return face_centered_gr_vars;
 }
 
-std::array<double, 4> test(const size_t num_dg_pts) {
+std::array<double, 5> test(const size_t num_dg_pts) {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
@@ -162,6 +162,7 @@ std::array<double, 4> test(const size_t num_dg_pts) {
       neighbor_data{};
   using prims_to_reconstruct_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -178,6 +179,8 @@ std::array<double, 4> test(const size_t num_dg_pts) {
         subcell_mesh.number_of_grid_points()};
     get<hydro::Tags::RestMassDensity<DataVector>>(prims_to_reconstruct) =
         get<hydro::Tags::RestMassDensity<DataVector>>(neighbor_prims);
+    get<hydro::Tags::ElectronFraction<DataVector>>(prims_to_reconstruct) =
+        get<hydro::Tags::ElectronFraction<DataVector>>(neighbor_prims);
     get<hydro::Tags::Pressure<DataVector>>(prims_to_reconstruct) =
         get<hydro::Tags::Pressure<DataVector>>(neighbor_prims);
     get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
@@ -290,6 +293,7 @@ std::array<double, 4> test(const size_t num_dg_pts) {
 
   const auto& dt_vars = db::get<dt_variables_tag>(box);
   return {{max(abs(get(get<::Tags::dt<Tags::TildeD>>(dt_vars)))),
+           max(abs(get(get<::Tags::dt<Tags::TildeYe>>(dt_vars)))),
            max(abs(get(get<::Tags::dt<Tags::TildeTau>>(dt_vars)))),
            max(get(magnitude(get<::Tags::dt<Tags::TildeS<>>>(dt_vars)))),
            max(get(magnitude(get<::Tags::dt<Tags::TildeB<>>>(dt_vars))))}};

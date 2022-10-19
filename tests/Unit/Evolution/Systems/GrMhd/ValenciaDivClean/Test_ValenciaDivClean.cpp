@@ -16,6 +16,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Tags",
       "CharacteristicSpeeds");
   TestHelpers::db::test_simple_tag<grmhd::ValenciaDivClean::Tags::TildeD>(
       "TildeD");
+  TestHelpers::db::test_simple_tag<grmhd::ValenciaDivClean::Tags::TildeYe>(
+      "TildeYe");
   TestHelpers::db::test_simple_tag<grmhd::ValenciaDivClean::Tags::TildeTau>(
       "TildeTau");
   TestHelpers::db::test_simple_tag<

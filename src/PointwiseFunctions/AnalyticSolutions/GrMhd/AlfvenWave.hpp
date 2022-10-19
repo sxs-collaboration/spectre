@@ -116,6 +116,15 @@ class AlfvenWave : public evolution::initial_data::InitialData,
     static type lower_bound() { return 0.0; }
   };
 
+  /// The constant electron fraction throughout the fluid.
+  struct ElectronFraction {
+    using type = double;
+    static constexpr Options::String help = {
+        "The constant electron fraction throughout the fluid."};
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
+  };
+
   /// The adiabatic index for the ideal fluid.
   struct AdiabaticIndex {
     using type = double;
@@ -142,8 +151,8 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   };
 
   using options =
-      tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticIndex,
-                 BackgroundMagneticField, WaveMagneticField>;
+      tmpl::list<WaveNumber, Pressure, RestMassDensity, ElectronFraction,
+                 AdiabaticIndex, BackgroundMagneticField, WaveMagneticField>;
   static constexpr Options::String help = {
       "Circularly polarized Alfven wave in Minkowski spacetime."};
 
@@ -155,7 +164,7 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   ~AlfvenWave() = default;
 
   AlfvenWave(double wavenumber, double pressure, double rest_mass_density,
-             double adiabatic_index,
+             double electron_fraction, double adiabatic_index,
              const std::array<double, 3>& background_magnetic_field,
              const std::array<double, 3>& wave_magnetic_field);
 
@@ -171,6 +180,11 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double t,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   auto variables(
@@ -244,6 +258,7 @@ class AlfvenWave : public evolution::initial_data::InitialData,
   double wavenumber_ = std::numeric_limits<double>::signaling_NaN();
   double pressure_ = std::numeric_limits<double>::signaling_NaN();
   double rest_mass_density_ = std::numeric_limits<double>::signaling_NaN();
+  double electron_fraction_ = std::numeric_limits<double>::signaling_NaN();
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   std::array<double, 3> background_magnetic_field_{
       {std::numeric_limits<double>::signaling_NaN(),

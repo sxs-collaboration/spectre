@@ -158,21 +158,21 @@ struct NeighborPackagedData {
               gr::Tags::SpatialMetric<3>,
               gr::Tags::SqrtDetSpatialMetric<DataVector>,
               gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
-          tmpl::for_each<spacetime_vars_to_copy>(
-              [&direction, &extents, &vars_on_face,
-               &spacetime_vars_on_faces =
-                   db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
-                       typename System::flux_spacetime_variables_tag, 3>>(box)](
-                  auto tag_v) {
-                using tag = tmpl::type_from<decltype(tag_v)>;
-                data_on_slice(make_not_null(&get<tag>(vars_on_face)),
-                              get<tag>(gsl::at(spacetime_vars_on_faces,
-                                               direction.dimension())),
-                              extents, direction.dimension(),
-                              direction.side() == Side::Lower
-                                  ? 0
-                                  : extents[direction.dimension()] - 1);
-              });
+          tmpl::for_each<spacetime_vars_to_copy>([
+            &direction, &extents, &vars_on_face,
+            &spacetime_vars_on_faces =
+                db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
+                    typename System::flux_spacetime_variables_tag, 3>>(box)
+          ](auto tag_v) {
+            using tag = tmpl::type_from<decltype(tag_v)>;
+            data_on_slice(make_not_null(&get<tag>(vars_on_face)),
+                          get<tag>(gsl::at(spacetime_vars_on_faces,
+                                           direction.dimension())),
+                          extents, direction.dimension(),
+                          direction.side() == Side::Lower
+                              ? 0
+                              : extents[direction.dimension()] - 1);
+          });
 
           call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(

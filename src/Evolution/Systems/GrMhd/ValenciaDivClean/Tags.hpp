@@ -32,6 +32,11 @@ struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+/// The densitized electron_fraction \f${\tilde Ye}\f$
+struct TildeYe : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
 /// The densitized energy density \f${\tilde \tau}\f$
 struct TildeTau : db::SimpleTag {
   using type = Scalar<DataVector>;

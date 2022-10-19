@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <array>
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -76,6 +75,11 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution,
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/)
       const -> tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>;
+
+  template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/)
+      const -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   auto variables(

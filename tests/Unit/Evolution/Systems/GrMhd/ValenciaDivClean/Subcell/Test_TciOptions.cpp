@@ -12,6 +12,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Subcell.TciOptions",
   const auto tci_options_from_opts = TestHelpers::test_option_tag<
       grmhd::ValenciaDivClean::subcell::OptionTags::TciOptions>(
       "MinimumValueOfD: 1.0e-18\n"
+      "MinimumValueOfYe: 1.0e-3\n"
       "MinimumValueOfTildeTau: 1.0e-38\n"
       "AtmosphereDensity: 1.1e-12\n"
       "SafetyFactorForB: 1.0e-12\n"
@@ -20,6 +21,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Subcell.TciOptions",
   CHECK(tci_options.minimum_rest_mass_density_times_lorentz_factor == 1.0e-18);
   CHECK(tci_options.minimum_tilde_tau == 1.0e-38);
   CHECK(tci_options.atmosphere_density == 1.1e-12);
+  CHECK(tci_options.minimum_ye == 1.e-3);
   CHECK(tci_options.safety_factor_for_magnetic_field == 1.0e-12);
   CHECK(tci_options.magnetic_field_cutoff.value() == 0.01);
 }

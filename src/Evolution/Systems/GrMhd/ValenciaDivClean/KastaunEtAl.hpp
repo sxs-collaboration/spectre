@@ -54,7 +54,7 @@ class KastaunEtAl {
       double initial_guess_pressure, double total_energy_density,
       double momentum_density_squared,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
-      double rest_mass_density_times_lorentz_factor,
+      double rest_mass_density_times_lorentz_factor, double electron_fraction,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state);
 

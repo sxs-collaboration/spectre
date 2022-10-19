@@ -20,9 +20,10 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
         gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
         GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
         GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-        ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeTau,
-        ValenciaDivClean::Tags::TildeS<>, ValenciaDivClean::Tags::TildeB<>,
-        ValenciaDivClean::Tags::TildePhi>>& dg_vars,
+        ValenciaDivClean::Tags::TildeD, ValenciaDivClean::Tags::TildeYe,
+        ValenciaDivClean::Tags::TildeTau, ValenciaDivClean::Tags::TildeS<>,
+        ValenciaDivClean::Tags::TildeB<>, ValenciaDivClean::Tags::TildePhi>>&
+        dg_vars,
     const double rdmp_delta0, const double rdmp_epsilon,
     const double persson_exponent, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh,
@@ -36,13 +37,15 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> DgInitialDataTci::apply(
 
   auto result = grmhd::ValenciaDivClean::subcell::detail::initial_data_tci_work(
       get<ValenciaDivClean::Tags::TildeD>(dg_vars),
+      get<ValenciaDivClean::Tags::TildeYe>(dg_vars),
       get<ValenciaDivClean::Tags::TildeTau>(dg_vars), dg_tilde_b_magnitude,
       get<ValenciaDivClean::Tags::TildeD>(subcell_vars),
+      get<ValenciaDivClean::Tags::TildeYe>(subcell_vars),
       get<ValenciaDivClean::Tags::TildeTau>(subcell_vars),
       subcell_tilde_b_magnitude, persson_exponent, dg_mesh, tci_options);
-  return {std::get<0>(result) or
-              evolution::dg::subcell::two_mesh_rdmp_tci(
-                  dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon),
+  return {static_cast<bool>(std::get<0>(result)) or
+              static_cast<bool>(evolution::dg::subcell::two_mesh_rdmp_tci(
+                  dg_vars, subcell_vars, rdmp_delta0, rdmp_epsilon)),
           std::move(std::get<1>(result))};
 }
 }  // namespace grmhd::GhValenciaDivClean::subcell

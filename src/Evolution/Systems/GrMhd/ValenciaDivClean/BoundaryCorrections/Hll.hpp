@@ -114,9 +114,10 @@ class Hll final : public BoundaryCorrection {
   std::unique_ptr<BoundaryCorrection> get_clone() const override;
 
   using dg_package_field_tags =
-      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Frame::Inertial>,
-                 Tags::TildeB<Frame::Inertial>, Tags::TildePhi,
-                 ::Tags::NormalDotFlux<Tags::TildeD>,
+      tmpl::list<Tags::TildeD, Tags::TildeYe, Tags::TildeTau,
+                 Tags::TildeS<Frame::Inertial>, Tags::TildeB<Frame::Inertial>,
+                 Tags::TildePhi, ::Tags::NormalDotFlux<Tags::TildeD>,
+                 ::Tags::NormalDotFlux<Tags::TildeYe>,
                  ::Tags::NormalDotFlux<Tags::TildeTau>,
                  ::Tags::NormalDotFlux<Tags::TildeS<Frame::Inertial>>,
                  ::Tags::NormalDotFlux<Tags::TildeB<Frame::Inertial>>,
@@ -130,11 +131,13 @@ class Hll final : public BoundaryCorrection {
 
   static double dg_package_data(
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_d,
+      gsl::not_null<Scalar<DataVector>*> packaged_tilde_ye,
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_tau,
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> packaged_tilde_s,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> packaged_tilde_b,
       gsl::not_null<Scalar<DataVector>*> packaged_tilde_phi,
       gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_tilde_d,
+      gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_tilde_ye,
       gsl::not_null<Scalar<DataVector>*> packaged_normal_dot_flux_tilde_tau,
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
           packaged_normal_dot_flux_tilde_s,
@@ -144,12 +147,14 @@ class Hll final : public BoundaryCorrection {
       gsl::not_null<Scalar<DataVector>*> packaged_largest_outgoing_char_speed,
       gsl::not_null<Scalar<DataVector>*> packaged_largest_ingoing_char_speed,
 
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+      const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_phi,
 
       const tnsr::I<DataVector, 3, Frame::Inertial>& flux_tilde_d,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& flux_tilde_ye,
       const tnsr::I<DataVector, 3, Frame::Inertial>& flux_tilde_tau,
       const tnsr::Ij<DataVector, 3, Frame::Inertial>& flux_tilde_s,
       const tnsr::IJ<DataVector, 3, Frame::Inertial>& flux_tilde_b,
@@ -166,6 +171,7 @@ class Hll final : public BoundaryCorrection {
 
   static void dg_boundary_terms(
       gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_d,
+      gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_ye,
       gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_tau,
       gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
           boundary_correction_tilde_s,
@@ -173,11 +179,13 @@ class Hll final : public BoundaryCorrection {
           boundary_correction_tilde_b,
       gsl::not_null<Scalar<DataVector>*> boundary_correction_tilde_phi,
       const Scalar<DataVector>& tilde_d_int,
+      const Scalar<DataVector>& tilde_ye_int,
       const Scalar<DataVector>& tilde_tau_int,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s_int,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b_int,
       const Scalar<DataVector>& tilde_phi_int,
       const Scalar<DataVector>& normal_dot_flux_tilde_d_int,
+      const Scalar<DataVector>& normal_dot_flux_tilde_ye_int,
       const Scalar<DataVector>& normal_dot_flux_tilde_tau_int,
       const tnsr::i<DataVector, 3, Frame::Inertial>&
           normal_dot_flux_tilde_s_int,
@@ -187,11 +195,13 @@ class Hll final : public BoundaryCorrection {
       const Scalar<DataVector>& largest_outgoing_char_speed_int,
       const Scalar<DataVector>& largest_ingoing_char_speed_int,
       const Scalar<DataVector>& tilde_d_ext,
+      const Scalar<DataVector>& tilde_ye_ext,
       const Scalar<DataVector>& tilde_tau_ext,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s_ext,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b_ext,
       const Scalar<DataVector>& tilde_phi_ext,
       const Scalar<DataVector>& normal_dot_flux_tilde_d_ext,
+      const Scalar<DataVector>& normal_dot_flux_tilde_ye_ext,
       const Scalar<DataVector>& normal_dot_flux_tilde_tau_ext,
       const tnsr::i<DataVector, 3, Frame::Inertial>&
           normal_dot_flux_tilde_s_ext,

@@ -29,6 +29,13 @@ def rest_mass_density(x, inner_radius, outer_radius, inner_density,
                              outer_density, is_cylindrical)
 
 
+def electron_fraction(x, inner_radius, outer_radius, inner_density,
+                      outer_density, inner_pressure, outer_pressure,
+                      magnetic_field, adiabatic_index, is_cylindrical):
+    return compute_piecewise(x, inner_radius, outer_radius, 0.1, 0.4,
+                             is_cylindrical)
+
+
 def spatial_velocity(x, inner_radius, outer_radius, inner_density,
                      outer_density, inner_pressure, outer_pressure,
                      magnetic_field, adiabatic_index, is_cylindrical):

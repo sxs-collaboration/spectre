@@ -54,6 +54,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
 
   *needed_fixing = fix_conservatives(
       make_not_null(&get<ValenciaDivClean::Tags::TildeD>(*conserved_vars_ptr)),
+      make_not_null(&get<ValenciaDivClean::Tags::TildeYe>(*conserved_vars_ptr)),
       make_not_null(
           &get<ValenciaDivClean::Tags::TildeTau>(*conserved_vars_ptr)),
       make_not_null(&get<ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(
@@ -63,6 +64,8 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
   grmhd::ValenciaDivClean::
       PrimitiveFromConservative<OrderedListOfRecoverySchemes, true>::apply(
           make_not_null(&get<hydro::Tags::RestMassDensity<DataVector>>(
+              *primitive_vars_ptr)),
+          make_not_null(&get<hydro::Tags::ElectronFraction<DataVector>>(
               *primitive_vars_ptr)),
           make_not_null(&get<hydro::Tags::SpecificInternalEnergy<DataVector>>(
               *primitive_vars_ptr)),
@@ -79,6 +82,7 @@ void FixConservativesAndComputePrims<OrderedListOfRecoverySchemes>::apply(
           make_not_null(&get<hydro::Tags::SpecificEnthalpy<DataVector>>(
               *primitive_vars_ptr)),
           get<ValenciaDivClean::Tags::TildeD>(*conserved_vars_ptr),
+          get<ValenciaDivClean::Tags::TildeYe>(*conserved_vars_ptr),
           get<ValenciaDivClean::Tags::TildeTau>(*conserved_vars_ptr),
           get<ValenciaDivClean::Tags::TildeS<Frame::Inertial>>(
               *conserved_vars_ptr),

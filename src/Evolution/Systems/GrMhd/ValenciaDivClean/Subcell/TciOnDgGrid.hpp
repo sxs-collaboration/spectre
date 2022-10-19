@@ -128,6 +128,7 @@ class TciOnDgGrid {
       tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>>;
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                 grmhd::ValenciaDivClean::Tags::TildeYe,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -142,7 +143,8 @@ class TciOnDgGrid {
   template <size_t ThermodynamicDim>
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*> dg_prim_vars,
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+      const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_phi,

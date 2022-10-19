@@ -31,6 +31,8 @@ void test_variable_fixer(
   // [3]:  all values are good, no changes
 
   Scalar<DataVector> tilde_d{DataVector{2.e-12, 1.0, 1.0, 1.0}};
+  // We assume that ye = 0.1
+  Scalar<DataVector> tilde_ye{DataVector{2.e-13, 1.0, 1.0, 1.0}};
   Scalar<DataVector> tilde_tau{DataVector{4.5, 1.5, 4.5, 4.5}};
   auto tilde_s =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
@@ -43,6 +45,8 @@ void test_variable_fixer(
 
   auto expected_tilde_d = tilde_d;
   get(expected_tilde_d)[0] = 1.e-12;
+  auto expected_tilde_ye = tilde_ye;
+  get(expected_tilde_ye)[0] = 1.e-13;
   auto expected_tilde_tau = tilde_tau;
   get(expected_tilde_tau)[1] = 2.0;
   auto expected_tilde_s = tilde_s;
@@ -59,10 +63,12 @@ void test_variable_fixer(
     inv_spatial_metric.get(d, d) = get(sqrt_det_spatial_metric);
   }
 
-  CHECK(variable_fixer(&tilde_d, &tilde_tau, &tilde_s, tilde_b, spatial_metric,
-                       inv_spatial_metric, sqrt_det_spatial_metric));
+  CHECK(variable_fixer(&tilde_d, &tilde_ye, &tilde_tau, &tilde_s, tilde_b,
+                       spatial_metric, inv_spatial_metric,
+                       sqrt_det_spatial_metric));
 
   CHECK_ITERABLE_APPROX(tilde_d, expected_tilde_d);
+  CHECK_ITERABLE_APPROX(tilde_ye, expected_tilde_ye);
   CHECK_ITERABLE_APPROX(tilde_tau, expected_tilde_tau);
   CHECK_ITERABLE_APPROX(tilde_s, expected_tilde_s);
 }

@@ -25,6 +25,7 @@ namespace grmhd::ValenciaDivClean {
 namespace detail {
 void fluxes_impl(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
@@ -39,7 +40,8 @@ void fluxes_impl(
     const Scalar<DataVector>& pressure_star_lapse_sqrt_det_spatial_metric,
 
     // Extra args
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
@@ -50,6 +52,7 @@ void fluxes_impl(
   for (size_t i = 0; i < 3; ++i) {
     transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
     tilde_d_flux->get(i) = get(tilde_d) * transport_velocity_I;
+    tilde_ye_flux->get(i) = get(tilde_ye) * transport_velocity_I;
     tilde_tau_flux->get(i) =
         get(tilde_tau) * transport_velocity_I +
         get(pressure_star_lapse_sqrt_det_spatial_metric) *
@@ -72,13 +75,15 @@ void fluxes_impl(
 
 void ComputeFluxes::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
     const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_phi_flux,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
@@ -138,14 +143,14 @@ void ComputeFluxes::apply(
   }
 
   // Outside the loop to save allocations
-  detail::fluxes_impl(tilde_d_flux, tilde_tau_flux, tilde_s_flux, tilde_b_flux,
-                      tilde_phi_flux,
+  detail::fluxes_impl(tilde_d_flux, tilde_ye_flux, tilde_tau_flux, tilde_s_flux,
+                      tilde_b_flux, tilde_phi_flux,
                       // Temporaries
                       make_not_null(&get<::Tags::TempScalar<2>>(temp_tensors)),
                       lapse_b_over_w, magnetic_field_dot_spatial_velocity,
                       pressure_star_lapse_sqrt_det_spatial_metric,
                       // Extra args
-                      tilde_d, tilde_tau, tilde_s, tilde_b, tilde_phi, lapse,
-                      shift, inv_spatial_metric, spatial_velocity);
+                      tilde_d, tilde_ye, tilde_tau, tilde_s, tilde_b, tilde_phi,
+                      lapse, shift, inv_spatial_metric, spatial_velocity);
 }
 }  // namespace grmhd::ValenciaDivClean

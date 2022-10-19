@@ -41,6 +41,7 @@ class PrimitiveGhostDataOnSubcells {
  private:
   using tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,
@@ -87,6 +88,7 @@ class PrimitiveGhostDataToSlice {
  private:
   using tags_for_reconstruction =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::ElectronFraction<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
                  hydro::Tags::MagneticField<DataVector, 3>,

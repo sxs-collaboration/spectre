@@ -51,6 +51,12 @@ struct DivergenceCleaningField : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The electron fraction \f$Y_e\f$.
+template <typename DataType>
+struct ElectronFraction : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// Base tag for the equation of state
 struct EquationOfStateBase : db::BaseTag {};
 

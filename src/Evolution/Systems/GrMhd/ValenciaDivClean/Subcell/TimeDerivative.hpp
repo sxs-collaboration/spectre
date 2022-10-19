@@ -150,20 +150,20 @@ struct TimeDerivative {
             gr::Tags::SpatialMetric<3>,
             gr::Tags::SqrtDetSpatialMetric<DataVector>,
             gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
-        tmpl::for_each<spacetime_vars_to_copy>(
-            [&package_data_argvars_lower_face, &package_data_argvars_upper_face,
-             &spacetime_vars_on_face =
-                 db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
-                     typename System::flux_spacetime_variables_tag, 3>>(*box)](
-                auto tag_v) {
-              using tag = tmpl::type_from<decltype(tag_v)>;
-              for (size_t d = 0; d < 3; ++d) {
-                get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
-                    get<tag>(gsl::at(spacetime_vars_on_face, d));
-                get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
-                    get<tag>(gsl::at(spacetime_vars_on_face, d));
-              }
-            });
+        tmpl::for_each<spacetime_vars_to_copy>([
+          &package_data_argvars_lower_face, &package_data_argvars_upper_face,
+          &spacetime_vars_on_face =
+              db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
+                  typename System::flux_spacetime_variables_tag, 3>>(*box)
+        ](auto tag_v) {
+          using tag = tmpl::type_from<decltype(tag_v)>;
+          for (size_t d = 0; d < 3; ++d) {
+            get<tag>(gsl::at(package_data_argvars_lower_face, d)) =
+                get<tag>(gsl::at(spacetime_vars_on_face, d));
+            get<tag>(gsl::at(package_data_argvars_upper_face, d)) =
+                get<tag>(gsl::at(spacetime_vars_on_face, d));
+          }
+        });
 
         // Reconstruct data to the face
         call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
@@ -278,6 +278,7 @@ struct TimeDerivative {
         tmpl::list<dt_variables_tag>,
         tmpl::list<
             grmhd::ValenciaDivClean::Tags::TildeD,
+            grmhd::ValenciaDivClean::Tags::TildeYe,
             grmhd::ValenciaDivClean::Tags::TildeTau,
             grmhd::ValenciaDivClean::Tags::TildeS<>,
             grmhd::ValenciaDivClean::Tags::TildeB<>,
@@ -285,6 +286,7 @@ struct TimeDerivative {
             hydro::Tags::SpatialVelocity<DataVector, 3>,
             hydro::Tags::MagneticField<DataVector, 3>,
             hydro::Tags::RestMassDensity<DataVector>,
+            hydro::Tags::ElectronFraction<DataVector>,
             hydro::Tags::SpecificEnthalpy<DataVector>,
             hydro::Tags::LorentzFactor<DataVector>,
             hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<>,
@@ -304,12 +306,14 @@ struct TimeDerivative {
             const auto dt_vars_ptr, const auto&... source_args) {
           dt_vars_ptr->initialize(num_pts, 0.0);
           using TildeD = grmhd::ValenciaDivClean::Tags::TildeD;
+          using TildeYe = grmhd::ValenciaDivClean::Tags::TildeYe;
           using TildeTau = grmhd::ValenciaDivClean::Tags::TildeTau;
           using TildeS = grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>;
           using TildeB = grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>;
           using TildePhi = grmhd::ValenciaDivClean::Tags::TildePhi;
 
           auto& dt_tilde_d = get<::Tags::dt<TildeD>>(*dt_vars_ptr);
+          auto& dt_tilde_ye = get<::Tags::dt<TildeYe>>(*dt_vars_ptr);
           auto& dt_tilde_tau = get<::Tags::dt<TildeTau>>(*dt_vars_ptr);
           auto& dt_tilde_s = get<::Tags::dt<TildeS>>(*dt_vars_ptr);
           auto& dt_tilde_b = get<::Tags::dt<TildeB>>(*dt_vars_ptr);
@@ -323,6 +327,8 @@ struct TimeDerivative {
           for (size_t dim = 0; dim < 3; ++dim) {
             Scalar<DataVector>& tilde_d_density_correction =
                 get<TildeD>(gsl::at(boundary_corrections, dim));
+            Scalar<DataVector>& tilde_ye_density_correction =
+                get<TildeYe>(gsl::at(boundary_corrections, dim));
             Scalar<DataVector>& tilde_tau_density_correction =
                 get<TildeTau>(gsl::at(boundary_corrections, dim));
             tnsr::i<DataVector, 3, Frame::Inertial>&
@@ -338,6 +344,11 @@ struct TimeDerivative {
                 gsl::at(one_over_delta_xi, dim),
                 cell_centered_logical_to_grid_inv_jacobian.get(dim, dim),
                 get(tilde_d_density_correction), subcell_mesh.extents(), dim);
+            evolution::dg::subcell::add_cartesian_flux_divergence(
+                make_not_null(&get(dt_tilde_ye)),
+                gsl::at(one_over_delta_xi, dim),
+                cell_centered_logical_to_grid_inv_jacobian.get(dim, dim),
+                get(tilde_ye_density_correction), subcell_mesh.extents(), dim);
             evolution::dg::subcell::add_cartesian_flux_divergence(
                 make_not_null(&get(dt_tilde_tau)),
                 gsl::at(one_over_delta_xi, dim),

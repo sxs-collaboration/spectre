@@ -64,6 +64,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const double persson_exponent = 4.0;
   PrimVars prim_vars{mesh.number_of_grid_points(), 0.0};
   get(get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars)) = 1.0;
+  get(get<hydro::Tags::ElectronFraction<DataVector>>(prim_vars)) = 0.1;
   if (test_this == TestThis::InAtmosphere) {
     get(get<hydro::Tags::RestMassDensity<DataVector>>(prim_vars)) = 1.0e-12;
   }
@@ -97,7 +98,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
                                                    1.0};
 
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-20, 1.0e-40, 1.1e-12, 1.0e-12,
+      1.0e-20,
+      1.e-3,
+      1.0e-40,
+      1.1e-12,
+      1.0e-12,
       test_this == TestThis::PerssonTildeB ? std::optional<double>{1.0e-2}
                                            : std::nullopt};
 
@@ -215,6 +220,10 @@ void test(const TestThis test_this, const int expected_tci_status) {
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
               subcell_mesh.extents()))),
+      max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
+          max(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
+              subcell_mesh.extents()))),
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
@@ -226,6 +235,10 @@ void test(const TestThis test_this, const int expected_tci_status) {
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           min(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
+              subcell_mesh.extents()))),
+      min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
+          min(evolution::dg::subcell::fd::project(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
               subcell_mesh.extents()))),
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           min(evolution::dg::subcell::fd::project(

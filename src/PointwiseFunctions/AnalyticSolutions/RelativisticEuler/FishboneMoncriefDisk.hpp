@@ -323,6 +323,13 @@ class FishboneMoncriefDisk
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType, NeedSpacetime>& vars,
+                 size_t index) const
+      -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType, bool NeedSpacetime>
+  auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, NeedSpacetime>& vars,
                  size_t index) const

@@ -43,7 +43,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(mesh);
   const double persson_exponent = 5.0;
   const grmhd::ValenciaDivClean::subcell::TciOptions tci_options{
-      1.0e-12, 1.0e-40, 1.0e-11, 1.0e-12,
+      1.0e-12,
+      1.e-3,
+      1.0e-40,
+      1.0e-11,
+      1.0e-12,
       test_this == TestThis::PerssonTildeB ? std::optional<double>{1.0e-2}
                                            : std::nullopt};
 
@@ -59,6 +63,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
 
   auto box = db::create<db::AddSimpleTags<
       grmhd::ValenciaDivClean::Tags::TildeD,
+      grmhd::ValenciaDivClean::Tags::TildeYe,
       grmhd::ValenciaDivClean::Tags::TildeTau,
       grmhd::ValenciaDivClean::Tags::TildeB<>, gr::Tags::SqrtDetSpatialMetric<>,
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
@@ -67,6 +72,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
       evolution::dg::subcell::Tags::SubcellOptions,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(
       Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
+      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 0.1),
       Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
       tnsr::I<DataVector, 3, Frame::Inertial>(
           subcell_mesh.number_of_grid_points(), 1.0),
@@ -127,6 +133,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
               subcell_mesh.extents(),
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
+      max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
+          max(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
+              subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           max(evolution::dg::subcell::fd::reconstruct(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
@@ -142,6 +153,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
               subcell_mesh.extents(),
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
+      min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
+          min(evolution::dg::subcell::fd::reconstruct(
+              get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box)), mesh,
+              subcell_mesh.extents(),
+              evolution::dg::subcell::fd::ReconstructionMethod::DimByDim))),
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
           min(evolution::dg::subcell::fd::reconstruct(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box)), mesh,
@@ -155,10 +171,12 @@ void test(const TestThis test_this, const int expected_tci_status) {
   evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data{};
   expected_rdmp_tci_data.max_variables_values = std::vector<double>{
       max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
+      max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
       max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
       max(get(magnitude_tilde_b))};
   expected_rdmp_tci_data.min_variables_values = std::vector<double>{
       min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
+      min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
       min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
       min(get(magnitude_tilde_b))};
 

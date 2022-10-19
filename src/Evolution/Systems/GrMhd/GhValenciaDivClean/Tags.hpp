@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 
 namespace grmhd::GhValenciaDivClean {
