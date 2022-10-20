@@ -109,4 +109,29 @@ struct CheckFunctionsOfTimeAreReady {
   }
 };
 }  // namespace Actions
+
+/// \ingroup ComputationalDomainGroup Dense-output postprocessor to
+/// check that functions of time are up-to-date.
+///
+/// Check that all functions of time in
+/// `domain::Tags::FunctionsOfTime` are ready at `::Tags::Time`.  This
+/// ensures that the coordinates can be safely accessed in later
+/// actions without first verifying the state of the time-dependent
+/// maps.  This postprocessor does not actually modify anything.
+struct CheckFunctionsOfTimeAreReadyPostprocessor {
+  using return_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<>;
+  static void apply() {}
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
+  static bool is_ready(
+      const gsl::not_null<db::DataBox<DbTagsList>*> box,
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ParallelComponent* component) {
+    return functions_of_time_are_ready<domain::Tags::FunctionsOfTime>(
+        cache, array_index, component, db::get<::Tags::Time>(*box));
+  }
+};
 }  // namespace domain

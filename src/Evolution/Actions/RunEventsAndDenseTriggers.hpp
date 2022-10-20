@@ -42,11 +42,13 @@ namespace evolution::Actions {
 /// If dense output is required, each `postprocessor` in the \p
 /// Postprocessors list will be called as
 /// `postprocessor::is_ready(make_not_null(&box),
-/// make_not_null(&inboxes))` if that is a valid expression.  If it
+/// make_not_null(&inboxes), cache, array_index, component)`.  If it
 /// returns false, the algorithm will be stopped to wait for more
 /// data.  After performing dense output, each of the \p
 /// Postprocessors will be passed to `db::mutate_apply` on the
-/// DataBox.
+/// DataBox.  The wrapper struct `AlwaysReadyPostprocessor` is
+/// provided for convenience to provide an `is_ready` function when a
+/// pure mutate-apply is desired.
 ///
 /// At the end of the action, the values of the time, evolved
 /// variables, and anything appearing in the `return_tags` of the \p
@@ -158,9 +160,6 @@ struct RunEventsAndDenseTriggers {
     using type = typename T::return_tags;
   };
 
-  CREATE_IS_CALLABLE(is_ready)
-  CREATE_IS_CALLABLE_V(is_ready)
-
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -234,14 +233,11 @@ struct RunEventsAndDenseTriggers {
             bool ready = true;
             tmpl::for_each<Postprocessors>([&](auto postprocessor_v) {
               using postprocessor = tmpl::type_from<decltype(postprocessor_v)>;
-              if constexpr (is_is_ready_callable_v<
-                                postprocessor, decltype(make_not_null(&box)),
-                                decltype(make_not_null(&inboxes))>) {
-                if (ready) {
-                  if (not postprocessor::is_ready(make_not_null(&box),
-                                                  make_not_null(&inboxes))) {
-                    ready = false;
-                  }
+              if (ready) {
+                if (not postprocessor::is_ready(make_not_null(&box),
+                                                make_not_null(&inboxes), cache,
+                                                array_index, component)) {
+                  ready = false;
                 }
               }
             });
@@ -313,3 +309,21 @@ struct InitializeRunEventsAndDenseTriggers {
   }
 };
 }  // namespace evolution::Actions
+
+/// A wrapper adding an always-true `is_ready` function for a
+/// `RunEventsAndDenseTriggers` postprocessor.  This allows structs
+/// designed as mutate_apply arguments to be used without
+/// modification.
+template <typename T>
+struct AlwaysReadyPostprocessor : T {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
+  static bool is_ready(
+      const gsl::not_null<db::DataBox<DbTagsList>*> /*box*/,
+      const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*component*/) {
+    return true;
+  }
+};

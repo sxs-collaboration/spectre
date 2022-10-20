@@ -209,7 +209,8 @@ struct EvolutionMetavars {
           tmpl::list<evolution::Actions::RunEventsAndDenseTriggers<tmpl::list<
                          evolution::dg::ApplyBoundaryCorrections<
                              EvolutionMetavars, true>,
-                         typename system::primitive_from_conservative>>,
+                         AlwaysReadyPostprocessor<
+                             typename system::primitive_from_conservative>>>,
                      evolution::dg::Actions::ApplyLtsBoundaryCorrections<
                          EvolutionMetavars>>,
           tmpl::list<
@@ -217,7 +218,8 @@ struct EvolutionMetavars {
                   EvolutionMetavars>,
               Actions::RecordTimeStepperData<>,
               evolution::Actions::RunEventsAndDenseTriggers<
-                  tmpl::list<typename system::primitive_from_conservative>>,
+                  tmpl::list<AlwaysReadyPostprocessor<
+                      typename system::primitive_from_conservative>>>,
               Actions::UpdateU<>>>,
       Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
