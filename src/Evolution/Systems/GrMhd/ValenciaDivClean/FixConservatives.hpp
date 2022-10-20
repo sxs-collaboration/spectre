@@ -27,6 +27,9 @@ namespace ValenciaDivClean {
  * \brief Fix conservative variables using method developed by Foucart.
  *
  * Adjusts the conservative variables as follows:
+ * - If the electron fraction \f$Y_e\f$ is below the value of the option
+ *   `CutoffYe`, change \f$\tilde{Y}_e\f$ to \f$\tilde{D}\f$ times the value of
+ *   the option `MinimumValueOfYe`.
  * - Changes \f${\tilde D}\f$, the generalized mass-energy density, such
  *   that \f$D\f$, the product of the rest mass density \f$\rho\f$ and the
  *   Lorentz factor \f$W\f$, is set to value of the option `MinimumValueOfD`,
@@ -102,7 +105,20 @@ class FixConservatives {
     static constexpr Options::String help = {
         "Cutoff below which D is set to MinimumValueOfD"};
   };
-
+  /// \brief Minimum value of electron fraction \f$Y_e\f$
+  struct MinimumValueOfYe {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "Minimum value of electron fraction"};
+  };
+  /// \brief Cutoff below which \f$Y_e\f$ is set to MinimumValueOfYe
+  struct CutoffYe {
+    using type = double;
+    static type lower_bound() { return 0.0; }
+    static constexpr Options::String help = {
+        "Cutoff below which Y_e is set to MinimumValueOfYe"};
+  };
   /// \brief Safety factor \f$\epsilon_B\f$.
   struct SafetyFactorForB {
     using type = double;
@@ -117,13 +133,15 @@ class FixConservatives {
     static constexpr Options::String help = {
         "Safety factor for momentum density bound."};
   };
-  using options =
-      tmpl::list<MinimumValueOfD, CutoffD, SafetyFactorForB, SafetyFactorForS>;
+  using options = tmpl::list<MinimumValueOfD, CutoffD, MinimumValueOfYe,
+                             CutoffYe, SafetyFactorForB, SafetyFactorForS>;
   static constexpr Options::String help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
   FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
                    double rest_mass_density_times_lorentz_factor_cutoff,
+                   double minimum_electron_fraction,
+                   double electron_fraction_cutoff,
                    double safety_factor_for_magnetic_field,
                    double safety_factor_for_momentum_density,
                    const Options::Context& context = {});
@@ -165,6 +183,10 @@ class FixConservatives {
   double minimum_rest_mass_density_times_lorentz_factor_{
       std::numeric_limits<double>::signaling_NaN()};
   double rest_mass_density_times_lorentz_factor_cutoff_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double minimum_electron_fraction_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double electron_fraction_cutoff_{
       std::numeric_limits<double>::signaling_NaN()};
   double one_minus_safety_factor_for_magnetic_field_{
       std::numeric_limits<double>::signaling_NaN()};
