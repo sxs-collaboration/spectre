@@ -140,17 +140,17 @@ class StaticCache {
                                    Is + IndexOffset>>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 13
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
-        // < 12
+        // < 13
     return (this->*gsl::at(cache, std::get<0>(parameter0) - IndexOffset))(
         parameters...);
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 13
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
-        // < 12
+        // < 13
   }
 
   template <typename... IntegralConstantValues, typename EnumType,
@@ -181,16 +181,16 @@ class StaticCache {
             std::integral_constant<EnumType, EnumValues>>...}};
     // The array `cache` holds pointers to member functions, so we dereference
     // the pointer and invoke it on `this`.
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 13
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
-        // < 12
+        // < 13
     return (this->*gsl::at(cache, array_location))(parameters...);
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 12
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__ < 13
 #pragma GCC diagnostic pop
 #endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ > 10 && __GNUC__
-        // < 12
+        // < 13
   }
 
   const Generator generator_;
@@ -200,8 +200,8 @@ class StaticCache {
 /// Create a StaticCache, inferring the cached type from the generator.
 template <typename... Ranges, typename Generator>
 auto make_static_cache(Generator&& generator) {
-  using CachedType = std::remove_cv_t<decltype(
-      generator(std::declval<typename Ranges::value_type>()...))>;
+  using CachedType = std::remove_cv_t<decltype(generator(
+      std::declval<typename Ranges::value_type>()...))>;
   return StaticCache<std::remove_cv_t<Generator>, CachedType, Ranges...>(
       std::forward<Generator>(generator));
 }
