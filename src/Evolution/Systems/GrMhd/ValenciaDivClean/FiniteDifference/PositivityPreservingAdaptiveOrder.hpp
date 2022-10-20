@@ -53,7 +53,7 @@ namespace grmhd::ValenciaDivClean::fd {
  * \brief Positivity-preserving adaptive order reconstruction. See
  * ::fd::reconstruction::positivity_preserving_adaptive_order() for details.
  *
- * The rest mass density and the pressure are kept positive.
+ * The rest mass density, electron fraction, and the pressure are kept positive.
  */
 class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
  private:

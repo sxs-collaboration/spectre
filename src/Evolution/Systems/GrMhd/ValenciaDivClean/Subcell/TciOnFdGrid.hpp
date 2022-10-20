@@ -44,12 +44,15 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <td> `+1`
  *
  * <tr><td> if `min(tilde_d)` is less than
- *   `tci_options.minimum_rest_mass_density_times_lorentz_factor` or if
- *   `min(tilde_tau)` is less than `tci_options.minimum_tilde_tau` then the we
- *   remain on FD.
+ *  `tci_options.minimum_rest_mass_density_times_lorentz_factor`, or if
+ *  `min(tilde_ye)` is less than
+ *  `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
+ *  `tci_options.minimum_ye`, or if `min(tilde_tau)` is less than
+ *  `tci_options.minimum_tilde_tau`, then the we remain on FD.
  * <td> `+2`
  *
- * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$ and \f$\tilde{\tau}\f$
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$, \f$\tilde{Y}_e\f$, and
+ * \f$\tilde{\tau}\f$
  * <td> `+3`
  *
  * <tr><td> apply the RDMP TCI to `TildeD`

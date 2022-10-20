@@ -32,7 +32,8 @@ struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-/// The densitized electron_fraction \f${\tilde Ye}\f$
+/// The densitized electron number density times the baryon mass
+/// \f$\tilde{Y}_e = {\tilde D} Y_e\f$
 struct TildeYe : db::SimpleTag {
   using type = Scalar<DataVector>;
 };

@@ -35,6 +35,7 @@ namespace ValenciaDivClean {
  *
  * \f{align*}
  * F^i({\tilde D}) = &~ {\tilde D} v^i_{tr} \\
+ * F^i({\tilde Y}_e) = &~ {\tilde Y}_e v^i_{tr} \\
  * F^i({\tilde S}_j) = &~  {\tilde S}_j v^i_{tr} + \sqrt{\gamma} \alpha \left( p
  * + p_m \right) \delta^i_j - \frac{B_j {\tilde B}^i}{W^2} - v_j {\tilde B}^i
  * B^m v_m\\
@@ -45,13 +46,14 @@ namespace ValenciaDivClean {
  * F^i({\tilde \Phi}) = &~ \alpha {\tilde B^i} - \beta^i {\tilde \Phi}
  * \f}
  *
- * where the conserved variables \f${\tilde D}\f$, \f${\tilde S}_i\f$,
- * \f${\tilde \tau}\f$, \f${\tilde B}^i\f$, and \f${\tilde \Phi}\f$ are a
- * generalized mass-energy density, momentum density, specific internal energy
- * density, magnetic field, and divergence cleaning field.  Furthermore,
- * \f$v^i_{tr} = \alpha v^i - \beta^i\f$ is the transport velocity, \f$\alpha\f$
- * is the lapse, \f$\beta^i\f$ is the shift, \f$\gamma\f$ is the determinant of
- * the spatial metric \f$\gamma_{ij}\f$,  \f$v^i\f$ is the spatial velocity,
+ * where the conserved variables \f${\tilde D}\f$, \f${\tilde Y}_e\f$,
+ * \f${\tilde S}_i\f$, \f${\tilde \tau}\f$, \f${\tilde B}^i\f$, and \f${\tilde
+ * \Phi}\f$ are a generalized mass-energy density, electron fraction, momentum
+ * density, specific internal energy density, magnetic field, and divergence
+ * cleaning field. Furthermore, \f$v^i_{tr} = \alpha v^i - \beta^i\f$ is the
+ * transport velocity, \f$\alpha\f$ is the lapse, \f$\beta^i\f$ is the shift,
+ * \f$\gamma\f$ is the determinant of the spatial metric \f$\gamma_{ij}\f$,
+ * \f$Y_e\f$ is the electron fraction, \f$v^i\f$ is the spatial velocity,
  * \f$B^i\f$ is the spatial magnetic field measured by an Eulerian observer,
  * \f$p\f$ is the fluid pressure, and \f$p_m = \frac{1}{2} \left[ \left( B^n v_n
  * \right)^2 + B^n B_n / W^2 \right]\f$ is the magnetic pressure.

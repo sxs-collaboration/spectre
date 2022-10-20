@@ -21,14 +21,18 @@
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to general relativistic magnetohydrodynamics (GRMHD)
 namespace grmhd {
-/// The Valencia formulation of ideal GRMHD with divergence cleaning.
+/// The Valencia formulation of ideal GRMHD with divergence cleaning coupled
+/// with electron fraction.
 ///
 /// References:
-/// - [Numerical 3+1 General Relativistic Magnetohydrodynamics: A Local
-/// Characteristic Approach](http://iopscience.iop.org/article/10.1086/498238)
-/// - [GRHydro: a new open-source general-relativistic magnetohydrodynamics code
-/// for the Einstein toolkit]
-/// (http://iopscience.iop.org/article/10.1088/0264-9381/31/1/015005)
+/// - Numerical 3+1 General Relativistic Magnetohydrodynamics: A Local
+/// Characteristic Approach \cite Anton2006
+/// - GRHydro: a new open-source general-relativistic magnetohydrodynamics code
+/// for the Einstein toolkit \cite Moesta2014
+/// - Black hole-neutron star mergers with a hot nuclear equation of state:
+/// outflow and neutrino-cooled disk for a low-mass, high-spin case
+/// \cite Deaton2013
+///
 namespace ValenciaDivClean {
 
 struct System {
