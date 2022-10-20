@@ -39,7 +39,10 @@ if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
       $<$<COMPILE_LANGUAGE:Fortran>:-march=${OVERRIDE_ARCH} -mno-avx512f>)
 else()
   # Apple Silicon Macs do not support the -march flag or the -mno-avx512f flag
-  if(NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+  if((NOT APPLE OR NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+    # sometimes ARM architectures use the name "aarch64"
+    AND NOT "${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "aarch64"
+    )
     set_property(TARGET SpectreFlags
         APPEND PROPERTY
         INTERFACE_COMPILE_OPTIONS
