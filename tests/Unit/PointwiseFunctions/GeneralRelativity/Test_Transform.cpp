@@ -14,6 +14,17 @@
 #include "PointwiseFunctions/GeneralRelativity/Transform.hpp"
 
 namespace {
+
+template <typename SrcTensorType, typename DestTensorType, typename DataType,
+          size_t Dim, typename DestFrame, typename SrcFrame>
+DestTensorType tensor_transformed_by_python(
+    const SrcTensorType& src_tensor, const DestTensorType& /*dest_tensor*/,
+    const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>& jacobian,
+    const std::string& suffix) {
+  return pypp::call<DestTensorType>("Transform", "to_different_frame" + suffix,
+                                    src_tensor, jacobian);
+}
+
 template <size_t Dim, typename SrcFrame, typename DestFrame, typename DataType>
 void test_transform_to_different_frame(const DataType& used_for_size) {
   // Transform src->dest and then dest->src and ensure we recover
@@ -45,25 +56,22 @@ void test_transform_to_different_frame(const DataType& used_for_size) {
       dest_tensor, determinant_and_inverse(jacobian).second);
   CHECK_ITERABLE_APPROX(expected_src_tensor, src_tensor);
 
-  // check transformation of tensor
-  tnsr::ii<DataType, Dim, DestFrame> (*f)(
-      const tnsr::ii<DataType, Dim, SrcFrame>&,
-      const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>&) =
-      transform::to_different_frame;
-  pypp::check_with_random_values<1>(f, "Transform", "to_different_frame",
-                                    {{{-10., 10.}}}, used_for_size);
+  // check transformation of tensor with python test
+  CHECK_ITERABLE_APPROX(
+      dest_tensor,
+      tensor_transformed_by_python(src_tensor, dest_tensor, jacobian, ""));
 
   // check with different overloads
-  const auto test_transform = [&used_for_size](auto transform_type,
+  const auto test_transform = [&jacobian, &nn_generator, &nn_interval_dis,
+                               &used_for_size](auto transform_type,
                                                const std::string& suffix) {
-    pypp::check_with_random_values<1>(
-        +[](const decltype(transform_type)& tensor,
-            const ::Jacobian<DataType, Dim, DestFrame, SrcFrame>& jac) {
-          return transform::to_different_frame(
-              tensor, jac, determinant_and_inverse(jac).second);
-        },
-        "Transform", "to_different_frame_" + suffix, {{{-10., 10.}}},
-        used_for_size);
+    const auto src_tnsr = make_with_random_values<decltype(transform_type)>(
+        nn_generator, nn_interval_dis, used_for_size);
+    const auto dest_tnsr = transform::to_different_frame(
+        src_tnsr, jacobian, determinant_and_inverse(jacobian).second);
+    const auto dest_tnsr_py = tensor_transformed_by_python(
+        src_tnsr, dest_tnsr, jacobian, "_" + suffix);
+    CHECK_ITERABLE_APPROX(dest_tnsr, dest_tnsr_py);
   };
   test_transform(Scalar<DataType>{}, "Scalar");
   test_transform(tnsr::I<DataType, Dim, SrcFrame>{}, "I");
