@@ -43,6 +43,7 @@ spectre_target_headers(
   ReducedWorldtubeModeRecorder.hpp
   ScriPlusInterpolationManager.hpp
   ScriPlusValues.hpp
+  SendGhWorldtubeData.hpp
   SpecBoundaryData.hpp
   SwshDerivatives.hpp
   System.hpp

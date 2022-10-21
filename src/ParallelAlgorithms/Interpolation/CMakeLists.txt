@@ -50,7 +50,6 @@ target_link_libraries(
   Time
   Utilities
   INTERFACE
-  Cce
   DgSubcell
   EventsAndTriggers
   GeneralizedHarmonic
