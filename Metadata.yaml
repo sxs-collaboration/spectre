@@ -67,6 +67,12 @@ Affiliations:
   - &umiss
     Department of Physics and Astronomy, University of Mississippi,
     University, Mississippi 38677, USA
+  - &princeton
+    Princeton Center for Theoretical Science and Gravity Initiative, Princeton
+    University, Princeton, NJ 08544, USA
+  - &ias
+    School of Natural Sciences, Institute for Advanced Study, Princeton, NJ
+    08540, USA
 
 Authors:
   Description: |
@@ -305,6 +311,10 @@ Authors:
         Orcid: 0000-0002-0593-4318
         Affiliations: [*fullerton]
         GitHub: MarloMo
+      - Name: Most, Elias R.
+        Orcid: 0000-0002-0491-1210
+        Affiliations: [*princeton, *ias]
+        GitHub: ermost
       - Name: Pajkos, Michael A.
         Orcid: 0000-0002-4983-4589
         Affiliations: [*caltech]
