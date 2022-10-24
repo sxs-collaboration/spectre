@@ -28,10 +28,6 @@ namespace StepChoosers {
 /// time-stepper history are the same size.  If there have been recent
 /// step size changes the new size bound is the size of the most
 /// recent step, otherwise it is infinite (no restriction is imposed).
-///
-/// Changes in step size resulting from a slab size change are not
-/// taken into account.  In practice, this should not be an issue as
-/// long as there are many steps between slab size changes.
 template <typename StepChooserUse>
 class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
