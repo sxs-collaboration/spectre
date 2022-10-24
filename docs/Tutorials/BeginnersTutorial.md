@@ -41,7 +41,7 @@ For both a terminal and VSCode, create the container in a terminal and start it.
 
 ```
 docker create --rm --name spectre_demo -p 11111:11111 \
-    -t sxscollaboration/spectre:demo /bin/bash
+    -i -t sxscollaboration/spectre:demo /bin/bash
 ```
 ```
 docker start spectre_demo
