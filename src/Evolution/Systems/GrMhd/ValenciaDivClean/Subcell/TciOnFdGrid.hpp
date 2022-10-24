@@ -59,14 +59,18 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <tr><td> apply the RDMP TCI to `TildeD`
  * <td> `+4`
  *
- * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <tr><td> apply the RDMP TCI to `TildeYe`
  * <td> `+5`
  *
- * <tr><td> apply the RDMP TCI to `TildeB`
+ * <tr><td> apply the RDMP TCI to `TildeTau`
  * <td> `+6`
  *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `+7`
+ *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
- * its magnitude is greater than `tci_options.magnetic_field_cutoff`. <td> `+7`
+ * its magnitude is greater than `tci_options.magnetic_field_cutoff`.
+ * <td> `+8`
  *
  * </table>
  *

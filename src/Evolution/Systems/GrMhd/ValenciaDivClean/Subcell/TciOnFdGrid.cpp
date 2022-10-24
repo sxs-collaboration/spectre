@@ -151,7 +151,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       (max(get(dg_mag_tilde_b)) > tci_options.magnetic_field_cutoff.value() and
        evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
                                            persson_exponent))) {
-    return {+7, rdmp_tci_data};
+    return {+8, rdmp_tci_data};
   }
 
   return {false, rdmp_tci_data};

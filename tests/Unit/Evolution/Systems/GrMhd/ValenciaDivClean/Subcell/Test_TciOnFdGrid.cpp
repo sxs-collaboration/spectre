@@ -29,11 +29,14 @@ enum class TestThis {
   Atmosphere,
   NeededFixing,
   PerssonTildeD,
+  PerssonTildeYe,
   PerssonPressure,
   PerssonTildeB,
   NegativeTildeD,
+  NegativeTildeYe,
   NegativeTildeTau,
   RdmpTildeD,
+  RdmpTildeYe,
   RdmpTildeTau,
   RdmpMagnitudeTildeB
 };
@@ -94,6 +97,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
         });
+  } else if (test_this == TestThis::PerssonTildeYe) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeYe>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] *= 2.0;
+        });
   } else if (test_this == TestThis::PerssonTildeB) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<>>(
         make_not_null(&box), [point_to_change](const auto tilde_b_ptr) {
@@ -103,6 +111,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
         });
   } else if (test_this == TestThis::NegativeTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
+  } else if (test_this == TestThis::NegativeTildeYe) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeYe>(
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
         });
@@ -191,12 +204,15 @@ void test(const TestThis test_this, const int expected_tci_status) {
         if (test_this == TestThis::RdmpTildeD) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[0] *= 1.01;
-        } else if (test_this == TestThis::RdmpTildeTau) {
+        } else if (test_this == TestThis::RdmpTildeYe) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
-        } else if (test_this == TestThis::RdmpMagnitudeTildeB) {
+        } else if (test_this == TestThis::RdmpTildeTau) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
+        } else if (test_this == TestThis::RdmpMagnitudeTildeB) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[3] *= 1.01;
         }
       });
 
@@ -219,11 +235,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
   test(TestThis::Atmosphere, 0);
   test(TestThis::NeededFixing, 1);
   test(TestThis::NegativeTildeD, 2);
+  test(TestThis::NegativeTildeYe, 2);
   test(TestThis::NegativeTildeTau, 2);
   test(TestThis::PerssonTildeD, 3);
+  test(TestThis::PerssonTildeYe, 3);
   test(TestThis::PerssonPressure, 3);
   test(TestThis::RdmpTildeD, 4);
-  test(TestThis::RdmpTildeTau, 5);
-  test(TestThis::RdmpMagnitudeTildeB, 6);
-  test(TestThis::PerssonTildeB, 7);
+  test(TestThis::RdmpTildeYe, 5);
+  test(TestThis::RdmpTildeTau, 6);
+  test(TestThis::RdmpMagnitudeTildeB, 7);
+  test(TestThis::PerssonTildeB, 8);
 }
