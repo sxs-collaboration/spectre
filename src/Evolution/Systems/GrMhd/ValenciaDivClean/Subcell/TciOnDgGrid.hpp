@@ -89,7 +89,7 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <td> `0`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$,
- * \f$\tilde{Y}_e^{n+1}\f$, and \f$\tilde{\tau}^{n+1}\f$
+ * \f$\tilde{Y}_e^{n+1}\f$, and pressure \f$p^{n+1}\f$
  * <td> `-5`
  *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if

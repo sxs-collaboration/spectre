@@ -30,6 +30,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -40,7 +41,7 @@ enum class TestThis {
   TildeB2TooBig,
   PrimRecoveryFailed,
   PerssonTildeD,
-  PerssonTildeTau,
+  PerssonPressure,
   PerssonTildeB,
   NegativeTildeDSubcell,
   NegativeTildeTauSubcell,
@@ -156,9 +157,9 @@ void test(const TestThis test_this, const int expected_tci_status) {
     // Make sure the PerssonTCI would trigger in the atmosphere to verify that
     // the reason we didn't mark the cell as troubled is because we're in
     // atmosphere.
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
-          get(*tilde_tau_ptr)[point_to_change] *= 1.5;
+    db::mutate<hydro::Tags::Pressure<DataVector>>(
+        make_not_null(&box), [point_to_change](const auto pressure_ptr) {
+          get(*pressure_ptr)[point_to_change] *= 1.5;
         });
   } else if (test_this == TestThis::TildeB2TooBig) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>(
@@ -174,10 +175,10 @@ void test(const TestThis test_this, const int expected_tci_status) {
           // way so that primitive recovery fails.
           get<0>(*tilde_s_ptr)[point_to_change] = 1e3;
         });
-  } else if (test_this == TestThis::PerssonTildeTau) {
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
-          get(*tilde_tau_ptr)[point_to_change] *= 2.0;
+  } else if (test_this == TestThis::PerssonPressure) {
+    db::mutate<hydro::Tags::Pressure<DataVector>>(
+        make_not_null(&box), [point_to_change](const auto pressure_ptr) {
+          get(*pressure_ptr)[point_to_change] *= 2.0;
         });
   } else if (test_this == TestThis::PerssonTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
@@ -299,7 +300,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
   test(TestThis::TildeB2TooBig, -3);
   test(TestThis::PrimRecoveryFailed, -4);
   test(TestThis::PerssonTildeD, -5);
-  test(TestThis::PerssonTildeTau, -5);
+  test(TestThis::PerssonPressure, -5);
   test(TestThis::PerssonTildeB, -6);
   test(TestThis::RdmpTildeD, -7);
   test(TestThis::RdmpTildeTau, -8);

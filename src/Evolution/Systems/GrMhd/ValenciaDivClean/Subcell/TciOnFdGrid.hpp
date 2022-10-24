@@ -16,6 +16,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -52,7 +53,7 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <td> `+2`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$, \f$\tilde{Y}_e\f$, and
- * \f$\tilde{\tau}\f$
+ * pressure.
  * <td> `+3`
  *
  * <tr><td> apply the RDMP TCI to `TildeD`
@@ -90,6 +91,7 @@ struct TciOnFdGrid {
                  grmhd::ValenciaDivClean::Tags::TildeYe,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 hydro::Tags::Pressure<DataVector>,
                  gr::Tags::SqrtDetSpatialMetric<>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
@@ -100,6 +102,7 @@ struct TciOnFdGrid {
       const Scalar<DataVector>& subcell_tilde_ye,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
+      const Scalar<DataVector>& subcell_pressure,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       bool vars_needed_fixing, const Mesh<3>& dg_mesh,
       const Mesh<3>& subcell_mesh,

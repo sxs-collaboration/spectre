@@ -20,6 +20,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const Scalar<DataVector>& subcell_tilde_ye,
     const Scalar<DataVector>& subcell_tilde_tau,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
+    const Scalar<DataVector>& subcell_pressure,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const bool vars_needed_fixing, const Mesh<3>& dg_mesh,
     const Mesh<3>& subcell_mesh,
@@ -29,7 +30,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const double persson_exponent) {
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
   const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
-  DataVector temp_buffer{num_subcell_pts + 5 * num_dg_pts};
+  DataVector temp_buffer{num_subcell_pts + 6 * num_dg_pts};
   size_t offset_into_temp_buffer = 0;
   const auto assign_data =
       [&temp_buffer, &offset_into_temp_buffer](
@@ -94,15 +95,22 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       min(get(dg_tilde_ye)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor *
               tci_options.minimum_ye or
-      min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau ) {
+      min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau) {
     return {+2, rdmp_tci_data};
   }
+
+  Scalar<DataVector> dg_pressure{};
+  assign_data(make_not_null(&dg_pressure), num_dg_pts);
+  evolution::dg::subcell::fd::reconstruct(
+      make_not_null(&get(dg_pressure)), get(subcell_pressure), dg_mesh,
+      subcell_mesh.extents(),
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
   if (evolution::dg::subcell::persson_tci(dg_tilde_d, dg_mesh,
                                           persson_exponent) or
       evolution::dg::subcell::persson_tci(dg_tilde_ye, dg_mesh,
                                           persson_exponent) or
-      evolution::dg::subcell::persson_tci(dg_tilde_tau, dg_mesh,
+      evolution::dg::subcell::persson_tci(dg_pressure, dg_mesh,
                                           persson_exponent)) {
     return {+3, rdmp_tci_data};
   }

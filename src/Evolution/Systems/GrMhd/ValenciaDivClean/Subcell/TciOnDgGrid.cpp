@@ -208,12 +208,13 @@ TciOnDgGrid<RecoveryScheme>::apply(
     return {false, std::move(rdmp_tci_data)};
   }
 
-  // Check that tilde_d and tilde_tau satisfy the Persson TCI
+  // Check that tilde_d, tilde_ye, and pressure satisfy the Persson TCI
   if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent) or
       evolution::dg::subcell::persson_tci(tilde_ye, dg_mesh,
                                           persson_exponent) or
-      evolution::dg::subcell::persson_tci(tilde_tau, dg_mesh,
-                                          persson_exponent)) {
+      evolution::dg::subcell::persson_tci(
+          get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars), dg_mesh,
+          persson_exponent)) {
     return {-5, std::move(rdmp_tci_data)};
   }
   // Check Cartesian magnitude of magnetic field satisfies the Persson TCI
@@ -248,7 +249,7 @@ GENERATE_INSTANTIATIONS(
 
 #define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define INSTANTIATION(r, data)                                               \
-  template std::tuple<int, evolution::dg::subcell::RdmpTciData>             \
+  template std::tuple<int, evolution::dg::subcell::RdmpTciData>              \
   TciOnDgGrid<RECOVERY(data)>::apply<THERMO_DIM(data)>(                      \
       const gsl::not_null<Variables<hydro::grmhd_tags<DataVector>>*>         \
           dg_prim_vars,                                                      \
