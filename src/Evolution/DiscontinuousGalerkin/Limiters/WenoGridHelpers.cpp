@@ -4,10 +4,10 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Element.hpp"    // IWYU pragma: keep
 #include "Domain/Structure/Side.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"  // IWYU pragma: keep
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

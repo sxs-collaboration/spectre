@@ -24,7 +24,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  //IWYU pragma: keep
 #include "Framework/CheckWithRandomValues.hpp"
@@ -34,6 +33,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/DataStructures/RandomUnitNormal.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"

@@ -5,10 +5,10 @@
 
 #include <memory>
 
-#include "Domain/LogicalCoordinates.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"

@@ -20,7 +20,7 @@ set(LIBRARY_SOURCES
   Test_FaceNormal.cpp
   Test_InterfaceHelpers.cpp
   Test_InterfaceItems.cpp
-  Test_LogicalCoordinates.cpp
+  Test_InterfaceLogicalCoordinates.cpp
   Test_MinimumGridSpacing.cpp
   Test_Protocols.cpp
   Test_SizeOfElement.cpp

@@ -17,7 +17,6 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Elliptic/Systems/Elasticity/Equations.hpp"
 #include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Elasticity/Tags.hpp"  // IWYU pragma: keep
@@ -27,6 +26,7 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/IsotropicHomogeneous.hpp"

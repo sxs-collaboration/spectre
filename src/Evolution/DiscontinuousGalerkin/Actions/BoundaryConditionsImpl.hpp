@@ -26,6 +26,7 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"

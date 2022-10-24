@@ -32,7 +32,7 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/InterfaceComputeTags.hpp"
-#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"

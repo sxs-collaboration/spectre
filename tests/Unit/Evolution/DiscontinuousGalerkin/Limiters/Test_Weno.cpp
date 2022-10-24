@@ -16,7 +16,6 @@
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/ElementId.hpp"
@@ -32,6 +31,7 @@
 #include "Helpers/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"

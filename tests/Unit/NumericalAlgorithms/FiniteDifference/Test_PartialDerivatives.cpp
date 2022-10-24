@@ -9,7 +9,6 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Evolution/DgSubcell/SliceData.hpp"
@@ -18,6 +17,7 @@
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/FiniteDifference/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"

@@ -17,7 +17,7 @@ spectre_target_sources(
   ElementLogicalCoordinates.cpp
   ElementMap.cpp
   FaceNormal.cpp
-  LogicalCoordinates.cpp
+  InterfaceLogicalCoordinates.cpp
   MinimumGridSpacing.cpp
   SizeOfElement.cpp
   Tags.cpp
@@ -39,7 +39,7 @@ spectre_target_headers(
   FaceNormal.hpp
   InterfaceComputeTags.hpp
   InterfaceHelpers.hpp
-  LogicalCoordinates.hpp
+  InterfaceLogicalCoordinates.hpp
   MinimumGridSpacing.hpp
   OptionTags.hpp
   SizeOfElement.hpp

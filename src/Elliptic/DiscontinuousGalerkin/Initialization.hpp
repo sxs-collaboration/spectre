@@ -18,7 +18,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
-#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Domain/Structure/CreateInitialMesh.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"

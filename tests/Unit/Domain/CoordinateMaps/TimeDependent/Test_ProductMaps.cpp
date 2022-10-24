@@ -19,8 +19,8 @@
 #include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 

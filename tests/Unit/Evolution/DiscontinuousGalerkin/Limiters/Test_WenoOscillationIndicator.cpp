@@ -7,8 +7,8 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"

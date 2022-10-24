@@ -15,7 +15,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/KerrHorizonConforming.hpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
-#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/InterfaceLogicalCoordinates.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Helpers/Domain/CoordinateMaps/TestMapHelpers.hpp"

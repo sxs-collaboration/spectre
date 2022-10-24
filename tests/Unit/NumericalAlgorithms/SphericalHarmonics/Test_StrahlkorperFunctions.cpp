@@ -346,6 +346,126 @@ void test_normals() {
           StrahlkorperFunctions::rhat(
               StrahlkorperFunctions::theta_phi(strahlkorper))));
 }
+
+void test_fit_ylm_coeffs_same() {
+  const double l_max = 2;
+  const double m_max = l_max;
+  const double radius = 2.0;
+  const std::array<double, 3> center = {{0.0, 0.0, 0.0}};
+  const double y00 = radius * sqrt(8.0);
+  const auto strahlkorper0 =
+      Strahlkorper<Frame::Inertial>(l_max, m_max, radius, center);
+  const auto strahlkorper1 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 1.0, -1.0, -5.0, 12.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.01},
+      strahlkorper0);
+  const auto strahlkorper2 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 2.0, -3.0, -3.0, 17.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.04},
+      strahlkorper0);
+  const auto strahlkorper3 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 3.0, -7.0, -1.0, 17.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.09},
+      strahlkorper0);
+  const auto strahlkorper4 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 4.0, -13.0, 1.0, 12.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.16},
+      strahlkorper0);
+
+  const DataVector times{0.0, 0.1, 0.2, 0.3, 0.4};
+  std::vector<Strahlkorper<Frame::Inertial>> strahlkorpers{
+      strahlkorper0, strahlkorper1, strahlkorper2, strahlkorper3,
+      strahlkorper4};
+  std::vector<std::array<double, 4>> result =
+      StrahlkorperFunctions::fit_ylm_coeffs<Frame::Inertial>(times,
+                                                             strahlkorpers);
+  const std::vector<std::array<double, 4>> expected_result = {
+      {y00, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 10.0, 0.0, 0.0},
+      {-1.0 / 70.0, -4.88095238095232631, -35.71428571428607768, -250.0 / 3.0},
+      {-0.1, -505.0 / 6.0, 450.0, -1750.0 / 3.0},
+      {0.02857142857142869, 154.76190476190464551, -378.57142857142787307,
+       500.0 / 3.0},
+      {0.0142857142857146, 14.88095238095235473, -64.28571428571413549,
+       250.0 / 3.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 1.0, 0.0}};
+  Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(result, expected_result, custom_approx);
+}
+
+void test_fit_ylm_coeffs_diff() {
+  const double l_max = 3;
+  const double m_max = 2;
+  const double radius = 2.0;
+  const std::array<double, 3> center = {{0.0, 0.0, 0.0}};
+  const double y00 = radius * sqrt(8.0);
+  const auto strahlkorper0 =
+      Strahlkorper<Frame::Inertial>(l_max, m_max, radius, center);
+  const auto strahlkorper1 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 1.0, -1.0, -5.0, 12.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.01},
+      strahlkorper0);
+  const auto strahlkorper2 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 2.0, -3.0, -3.0, 17.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.04},
+      strahlkorper0);
+  const auto strahlkorper3 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 3.0, -7.0, -1.0, 17.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.09},
+      strahlkorper0);
+  const auto strahlkorper4 = Strahlkorper<Frame::Inertial>(
+      {y00, 0.0, 4.0, -13.0, 1.0, 12.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+       0.0, 0.0, 0.0, 0.0,   0.0, 0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.16},
+      strahlkorper0);
+
+  const DataVector times{0.0, 0.1, 0.2, 0.3, 0.4};
+  std::vector<Strahlkorper<Frame::Inertial>> strahlkorpers{
+      strahlkorper0, strahlkorper1, strahlkorper2, strahlkorper3,
+      strahlkorper4};
+  std::vector<std::array<double, 4>> result =
+      StrahlkorperFunctions::fit_ylm_coeffs<Frame::Inertial>(times,
+                                                             strahlkorpers);
+  const std::vector<std::array<double, 4>> expected_result = {
+      {y00, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 10.0, 0.0, 0.0},
+      {-1.0 / 70.0, -4.88095238095232631, -35.71428571428607768, -250.0 / 3.0},
+      {-0.1, -505.0 / 6.0, 450.0, -1750.0 / 3.0},
+      {0.02857142857142869, 154.76190476190464551, -378.57142857142787307,
+       500.0 / 3.0},
+      {0.0142857142857146, 14.88095238095235473, -64.28571428571413549,
+       250.0 / 3.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0, 0.0},
+      {0.0, 0.0, 1.0, 0.0}};
+  Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(result, expected_result, custom_approx);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
@@ -355,4 +475,6 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperFunctions",
   test_cartesian_coords();
   test_radius_and_derivs();
   test_normals();
+  test_fit_ylm_coeffs_same();
+  test_fit_ylm_coeffs_diff();
 }

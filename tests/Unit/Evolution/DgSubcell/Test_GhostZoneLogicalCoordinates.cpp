@@ -8,11 +8,11 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Slice.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
 #include "Evolution/DgSubcell/SliceTensor.hpp"
+#include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 

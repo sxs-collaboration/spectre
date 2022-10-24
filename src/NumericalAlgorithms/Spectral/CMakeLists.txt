@@ -13,6 +13,7 @@ spectre_target_sources(
   Filtering.cpp
   FiniteDifference.cpp
   Legendre.cpp
+  LogicalCoordinates.cpp
   Mesh.cpp
   Projection.cpp
   Spectral.cpp
@@ -31,6 +32,7 @@ spectre_target_headers(
   HEADERS
   ComplexDataView.hpp
   Filtering.hpp
+  LogicalCoordinates.hpp
   Mesh.hpp
   Projection.hpp
   Spectral.hpp
