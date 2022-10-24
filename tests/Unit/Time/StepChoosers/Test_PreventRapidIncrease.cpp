@@ -162,6 +162,29 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
     }
   }
 }
+
+void check_substep_methods() {
+  const Parallel::GlobalCache<Metavariables> cache{};
+
+  const Slab slab(0.25, 1.5);
+
+  struct Tag : db::SimpleTag {
+    using type = double;
+  };
+  using history_tag = Tags::HistoryEvolvedVariables<Tag>;
+  typename history_tag::type history{};
+
+  history.insert(TimeStepId(true, 0, slab.start()), 0.0);
+  history.insert(
+      TimeStepId(true, 0, slab.start(), 1, slab.start() + slab.duration() / 3),
+      0.0);
+  history.insert(
+      TimeStepId(true, 0, slab.start(), 2, slab.start() + slab.duration() / 2),
+      0.0);
+  const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
+  CHECK(relax(history, 3.14, cache) ==
+        std::make_pair(std::numeric_limits<double>::infinity(), true));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
@@ -182,6 +205,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
 
   // Cause roundoff errors
   check_case(-1, {{1, 3}, {2, 3}, {3, 3}});
+
+  check_substep_methods();
 
   TestHelpers::test_creation<
       std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>, Metavariables>(
