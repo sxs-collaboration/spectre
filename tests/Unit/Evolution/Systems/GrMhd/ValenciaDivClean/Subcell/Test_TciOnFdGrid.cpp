@@ -70,7 +70,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       grmhd::ValenciaDivClean::Tags::TildeYe,
       grmhd::ValenciaDivClean::Tags::TildeTau,
       grmhd::ValenciaDivClean::Tags::TildeB<>,
-      hydro::Tags::Pressure<DataVector>, gr::Tags::SqrtDetSpatialMetric<>,
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::Pressure<DataVector>,
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       domain::Tags::Mesh<3>, ::evolution::dg::subcell::Tags::Mesh<3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
@@ -125,12 +126,12 @@ void test(const TestThis test_this, const int expected_tci_status) {
           get(*tilde_tau_ptr)[point_to_change] = -1.0e-20;
         });
   } else if (test_this == TestThis::Atmosphere) {
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeD,
+    db::mutate<hydro::Tags::RestMassDensity<DataVector>,
                grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(
-        make_not_null(&box),
-        [](const auto tilde_d_ptr, const auto variables_needed_fixing_ptr) {
+        make_not_null(&box), [](const auto rest_mass_density_ptr,
+                                const auto variables_needed_fixing_ptr) {
           *variables_needed_fixing_ptr = true;
-          get(*tilde_d_ptr) =
+          get(*rest_mass_density_ptr) =
               5.0e-12;  // smaller than atmosphere density but
                         // bigger than the Min(TildeD) TCI option
         });
@@ -233,10 +234,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   test(TestThis::AllGood, 0);
   test(TestThis::Atmosphere, 0);
-  test(TestThis::NeededFixing, 1);
-  test(TestThis::NegativeTildeD, 2);
-  test(TestThis::NegativeTildeYe, 2);
-  test(TestThis::NegativeTildeTau, 2);
+  test(TestThis::NegativeTildeD, 1);
+  test(TestThis::NegativeTildeYe, 1);
+  test(TestThis::NegativeTildeTau, 1);
+  test(TestThis::NeededFixing, 2);
   test(TestThis::PerssonTildeD, 3);
   test(TestThis::PerssonTildeYe, 3);
   test(TestThis::PerssonPressure, 3);
