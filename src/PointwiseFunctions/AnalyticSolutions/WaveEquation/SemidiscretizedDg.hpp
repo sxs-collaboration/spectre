@@ -62,6 +62,10 @@ class SemidiscretizedDg : public evolution::initial_data::InitialData,
   SemidiscretizedDg(int harmonic, const std::array<double, 4>& amplitudes);
 
   SemidiscretizedDg() = default;
+  ~SemidiscretizedDg() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit SemidiscretizedDg(CkMigrateMessage* msg);
@@ -96,7 +100,7 @@ class SemidiscretizedDg : public evolution::initial_data::InitialData,
   /// \endcond
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   int harmonic_{std::numeric_limits<int>::max()};

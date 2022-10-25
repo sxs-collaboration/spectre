@@ -75,7 +75,8 @@ void test_create_from_options() {
           "  RightVelocity: [0.0, 0.0, 0.0]\n"
           "  RightMagneticField: [0.5, -1.0, 0.0]\n"
           "  Lapse: 2.0\n"
-          "  ShiftX: 0.4\n");
+          "  ShiftX: 0.4\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& riemann_problem =

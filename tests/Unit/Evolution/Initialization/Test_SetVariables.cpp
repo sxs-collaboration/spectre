@@ -34,6 +34,8 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -61,7 +63,24 @@ struct EquationOfStateTag : db::SimpleTag {
   using type = std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>;
 };
 
-struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
+struct SystemAnalyticSolution : public MarkAsAnalyticSolution,
+                                public evolution::initial_data::InitialData {
+  SystemAnalyticSolution() = default;
+  ~SystemAnalyticSolution() override = default;
+
+  explicit SystemAnalyticSolution(CkMigrateMessage* msg)
+      : evolution::initial_data::InitialData(msg) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(SystemAnalyticSolution);
+#pragma GCC diagnostic pop
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<SystemAnalyticSolution>(*this);
+  }
+
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x, const double t,
@@ -113,11 +132,32 @@ struct SystemAnalyticSolution : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
-  // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override {
+    evolution::initial_data::InitialData::pup(p);
+  }
 };
 
-struct SystemAnalyticData : public MarkAsAnalyticData {
+PUP::able::PUP_ID SystemAnalyticSolution::my_PUP_ID = 0;
+
+struct SystemAnalyticData : public MarkAsAnalyticData,
+                            public evolution::initial_data::InitialData {
+  SystemAnalyticData() = default;
+  ~SystemAnalyticData() override = default;
+
+  explicit SystemAnalyticData(CkMigrateMessage* msg)
+      : evolution::initial_data::InitialData(msg) {}
+  using PUP::able::register_constructor;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+  WRAPPED_PUPable_decl_template(SystemAnalyticData);
+#pragma GCC diagnostic pop
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override {
+    return std::make_unique<SystemAnalyticData>(*this);
+  }
+
   template <size_t Dim>
   tuples::TaggedTuple<Var, NonConservativeVar> variables(
       const tnsr::I<DataVector, Dim>& x,
@@ -164,9 +204,11 @@ struct SystemAnalyticData : public MarkAsAnalyticData {
   // EoS just needs to be a dummy place holder
   const auto& equation_of_state() { return equation_of_state_; }
 
-  // clang-tidy: do not use references
-  void pup(PUP::er& /*p*/) {}  // NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override { InitialData::pup(p); }
 };
+
+PUP::able::PUP_ID SystemAnalyticData::my_PUP_ID = 0;
 
 template <size_t Dim, bool HasPrimitiveAndConservativeVars>
 struct System {
@@ -247,7 +289,7 @@ auto emplace_component(
       initial_time, functions_of_time);
 }
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
 struct MetavariablesAnalyticSolution {
   static constexpr size_t volume_dim = Dim;
   using analytic_solution = SystemAnalyticSolution;
@@ -260,16 +302,32 @@ struct MetavariablesAnalyticSolution {
                           typename system::primitive_variables_tag::tags_list,
                           typename system::variables_tag::tags_list>;
   using temporal_id = TimeId;
-  using const_global_cache_tags =
-      tmpl::list<Tags::AnalyticSolution<analytic_solution>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<SystemAnalyticSolution>>>;
+  };
+  using const_global_cache_tags = tmpl::list<tmpl::conditional_t<
+      UseInitialDataTag, evolution::initial_data::Tags::InitialData,
+      Tags::AnalyticSolution<analytic_solution>>>;
 };
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
 void test_analytic_solution() {
-  using metavars = MetavariablesAnalyticSolution<Dim, HasPrimitives>;
+  using metavars =
+      MetavariablesAnalyticSolution<Dim, HasPrimitives, UseInitialDataTag>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{SystemAnalyticSolution{}}};
+  MockRuntimeSystem runner = []() {
+    if constexpr (UseInitialDataTag) {
+      return MockRuntimeSystem{
+          {std::unique_ptr<evolution::initial_data::InitialData>(
+              std::make_unique<SystemAnalyticSolution>())}};
+    } else {
+      return MockRuntimeSystem{{SystemAnalyticSolution{}}};
+    }
+  }();
   const double initial_time = 1.3;
   const double expiration_time = 2.5;
   const auto inertial_coords = emplace_component<Dim>(
@@ -297,7 +355,7 @@ void test_analytic_solution() {
         get<PrimVar>(prim_var));
 }
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
 struct MetavariablesAnalyticData {
   static constexpr size_t volume_dim = Dim;
   using analytic_data = SystemAnalyticData;
@@ -309,15 +367,33 @@ struct MetavariablesAnalyticData {
                           typename system::primitive_variables_tag::tags_list,
                           typename system::variables_tag::tags_list>;
   using temporal_id = TimeId;
-  using const_global_cache_tags = tmpl::list<Tags::AnalyticData<analytic_data>>;
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes =
+        tmpl::map<tmpl::pair<evolution::initial_data::InitialData,
+                             tmpl::list<SystemAnalyticData>>>;
+  };
+  using const_global_cache_tags =
+      tmpl::list<tmpl::conditional_t<UseInitialDataTag,
+                                     evolution::initial_data::Tags::InitialData,
+                                     Tags::AnalyticData<analytic_data>>>;
 };
 
-template <size_t Dim, bool HasPrimitives>
+template <size_t Dim, bool HasPrimitives, bool UseInitialDataTag>
 void test_analytic_data() {
-  using metavars = MetavariablesAnalyticData<Dim, HasPrimitives>;
+  using metavars =
+      MetavariablesAnalyticData<Dim, HasPrimitives, UseInitialDataTag>;
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{SystemAnalyticData{}}};
+  MockRuntimeSystem runner = []() {
+    if constexpr (UseInitialDataTag) {
+      return MockRuntimeSystem{
+          {std::unique_ptr<evolution::initial_data::InitialData>(
+              std::make_unique<SystemAnalyticData>())}};
+    } else {
+      return MockRuntimeSystem{{SystemAnalyticData{}}};
+    }
+  }();
   const double initial_time = 1.3;
   const double expiration_time = 2.5;
   const auto inertial_coords = emplace_component<Dim>(
@@ -345,40 +421,36 @@ void test_analytic_data() {
         get<PrimVar>(prim_var));
 }
 
+template <size_t Dim, bool HasPrimitives>
+void test_impl() {
+  // Test setting variables from analytic solution
+  test_analytic_solution<Dim, HasPrimitives, true>();
+  test_analytic_solution<Dim, HasPrimitives, false>();
+  // Test setting variables from analytic data
+  test_analytic_data<Dim, HasPrimitives, true>();
+  test_analytic_data<Dim, HasPrimitives, false>();
+}
+
+template <size_t Dim>
+void test() {
+  Parallel::register_classes_with_charm<
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
+                            domain::CoordinateMaps::Identity<Dim>>,
+      domain::CoordinateMap<
+          Frame::Grid, Frame::Inertial,
+          domain::CoordinateMaps::TimeDependent::CubicScale<Dim>>>();
+
+  test_impl<Dim, true>();
+  test_impl<Dim, false>();
+}
+
 SPECTRE_TEST_CASE("Unit.Evolution.Initialization.SetVariables",
                   "[Unit][Evolution][Actions]") {
   domain::FunctionsOfTime::register_derived_with_charm();
-  Parallel::register_classes_with_charm<
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
-                            domain::CoordinateMaps::Identity<1>>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
-                            domain::CoordinateMaps::Identity<2>>,
-      domain::CoordinateMap<Frame::BlockLogical, Frame::Grid,
-                            domain::CoordinateMaps::Identity<3>>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<1>>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<2>>,
-      domain::CoordinateMap<
-          Frame::Grid, Frame::Inertial,
-          domain::CoordinateMaps::TimeDependent::CubicScale<3>>>();
-
-  // Test setting variables from analytic solution
-  test_analytic_solution<1, false>();
-  test_analytic_solution<1, true>();
-  test_analytic_solution<2, false>();
-  test_analytic_solution<2, true>();
-  test_analytic_solution<3, false>();
-  test_analytic_solution<3, true>();
-
-  // Test setting variables from analytic data
-  test_analytic_data<1, false>();
-  test_analytic_data<1, true>();
-  test_analytic_data<2, false>();
-  test_analytic_data<2, true>();
-  test_analytic_data<3, false>();
-  test_analytic_data<3, true>();
+  Parallel::register_classes_with_charm<SystemAnalyticData,
+                                        SystemAnalyticSolution>();
+  test<1>();
+  test<2>();
+  test<3>();
 }
 }  // namespace

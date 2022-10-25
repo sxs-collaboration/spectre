@@ -99,7 +99,8 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
           "    Gaussian:\n"
           "      Amplitude: 1.\n"
           "      Width: 1.\n"
-          "      Center: 0.\n");
+          "      Center: 0.\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& created_solution =

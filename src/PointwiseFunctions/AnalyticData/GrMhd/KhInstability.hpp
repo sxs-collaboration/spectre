@@ -175,7 +175,7 @@ class KhInstability : public evolution::initial_data::InitialData,
   KhInstability& operator=(const KhInstability& /*rhs*/) = default;
   KhInstability(KhInstability&& /*rhs*/) = default;
   KhInstability& operator=(KhInstability&& /*rhs*/) = default;
-  ~KhInstability() = default;
+  ~KhInstability() override = default;
 
   KhInstability(double adiabatic_index, double strip_bimedian_height,
                 double strip_thickness, double strip_density,
@@ -183,6 +183,9 @@ class KhInstability : public evolution::initial_data::InitialData,
                 double background_velocity, double pressure,
                 double perturbation_amplitude, double perturbation_width,
                 const std::array<double, 3>& magnetic_field);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit KhInstability(CkMigrateMessage* msg);
@@ -262,8 +265,8 @@ class KhInstability : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();

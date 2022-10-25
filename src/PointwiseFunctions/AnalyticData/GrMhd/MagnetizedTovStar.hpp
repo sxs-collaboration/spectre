@@ -233,7 +233,8 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
   MagnetizedTovStar& operator=(const MagnetizedTovStar& /*rhs*/) = default;
   MagnetizedTovStar(MagnetizedTovStar&& /*rhs*/) = default;
   MagnetizedTovStar& operator=(MagnetizedTovStar&& /*rhs*/) = default;
-  ~MagnetizedTovStar() = default;
+  ~MagnetizedTovStar() override = default;
+
   MagnetizedTovStar(
       double central_rest_mass_density,
       std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
@@ -241,6 +242,9 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
       RelativisticEuler::Solutions::TovCoordinates coordinate_system,
       size_t pressure_exponent, double cutoff_pressure_fraction,
       double vector_potential_amplitude);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit MagnetizedTovStar(CkMigrateMessage* msg);
@@ -260,7 +264,8 @@ class MagnetizedTovStar : public virtual evolution::initial_data::InitialData,
         vector_potential_amplitude_);
   }
 
-  void pup(PUP::er& p);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
 
  private:
   friend bool operator==(const MagnetizedTovStar& lhs,

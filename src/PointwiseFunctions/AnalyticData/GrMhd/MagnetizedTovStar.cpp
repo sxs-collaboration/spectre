@@ -38,6 +38,11 @@ MagnetizedTovStar::MagnetizedTovStar(
                            Scalar<double>{central_rest_mass_density}))),
       vector_potential_amplitude_(vector_potential_amplitude) {}
 
+std::unique_ptr<evolution::initial_data::InitialData>
+MagnetizedTovStar::get_clone() const {
+  return std::make_unique<MagnetizedTovStar>(*this);
+}
+
 MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
 
 void MagnetizedTovStar::pup(PUP::er& p) {

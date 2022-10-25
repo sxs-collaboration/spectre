@@ -72,7 +72,8 @@ void test(const DataType& used_for_size) {
           "  Pressure: 1.1\n"
           "  PerturbAmplitude: 0.1\n"
           "  PerturbWidth: 0.01\n"
-          "  MagneticField: [1.0e-3, 0.0, 0.0]\n");
+          "  MagneticField: [1.0e-3, 0.0, 0.0]\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& kh_instability =

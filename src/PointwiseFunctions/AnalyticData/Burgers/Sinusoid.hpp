@@ -102,7 +102,10 @@ class Sinusoid : public evolution::initial_data::InitialData,
   Sinusoid& operator=(const Sinusoid&) = default;
   Sinusoid(Sinusoid&&) = default;
   Sinusoid& operator=(Sinusoid&&) = default;
-  ~Sinusoid() = default;
+  ~Sinusoid() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit Sinusoid(CkMigrateMessage* msg);
@@ -117,7 +120,7 @@ class Sinusoid : public evolution::initial_data::InitialData,
                                          tmpl::list<Tags::U> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 };
 
 bool operator==(const Sinusoid& /*lhs*/, const Sinusoid& /*rhs*/);

@@ -43,6 +43,12 @@ PlaneWave<Dim>& PlaneWave<Dim>::operator=(const PlaneWave& other) {
 }
 
 template <size_t Dim>
+std::unique_ptr<evolution::initial_data::InitialData>
+PlaneWave<Dim>::get_clone() const {
+  return std::make_unique<PlaneWave<Dim>>(*this);
+}
+
+template <size_t Dim>
 PlaneWave<Dim>::PlaneWave(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <size_t Dim>

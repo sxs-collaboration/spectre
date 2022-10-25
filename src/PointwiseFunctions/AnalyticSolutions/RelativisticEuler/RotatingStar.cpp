@@ -356,7 +356,15 @@ RotatingStar::RotatingStar(std::string rot_ns_filename,
       polytropic_exponent_{1.0 + 1.0 / cst_solution_.polytropic_index()},
       equation_of_state_(polytropic_constant_, polytropic_exponent_) {}
 
+RotatingStar::RotatingStar(CkMigrateMessage* msg) : InitialData(msg) {}
+
+std::unique_ptr<evolution::initial_data::InitialData> RotatingStar::get_clone()
+    const {
+  return std::make_unique<RotatingStar>(*this);
+}
+
 void RotatingStar::pup(PUP::er& p) {
+  InitialData::pup(p);
   p | rot_ns_filename_;
   p | cst_solution_;
   p | polytropic_constant_;
@@ -861,6 +869,8 @@ auto RotatingStar::variables(
       get<DerivSpatialMetric<DataType>>(
           variables(vars, x, tmpl::list<DerivSpatialMetric<DataType>>{})));
 }
+
+PUP::able::PUP_ID RotatingStar::my_PUP_ID = 0;
 
 bool operator==(const RotatingStar& lhs, const RotatingStar& rhs) {
   // The equation of state and CST solution aren't explicitly checked. However,

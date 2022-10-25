@@ -128,13 +128,16 @@ class MagneticRotor : public evolution::initial_data::InitialData,
   MagneticRotor& operator=(const MagneticRotor& /*rhs*/) = default;
   MagneticRotor(MagneticRotor&& /*rhs*/) = default;
   MagneticRotor& operator=(MagneticRotor&& /*rhs*/) = default;
-  ~MagneticRotor() = default;
+  ~MagneticRotor() override = default;
 
   MagneticRotor(double rotor_radius, double rotor_density,
                 double background_density, double pressure,
                 double angular_velocity,
                 const std::array<double, 3>& magnetic_field,
                 double adiabatic_index, const Options::Context& context = {});
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit MagneticRotor(CkMigrateMessage* msg);
@@ -214,8 +217,8 @@ class MagneticRotor : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   double rotor_radius_ = std::numeric_limits<double>::signaling_NaN();

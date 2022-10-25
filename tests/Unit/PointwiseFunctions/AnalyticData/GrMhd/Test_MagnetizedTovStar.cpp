@@ -104,7 +104,8 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
           "\n"
           "  PressureExponent: 2\n"
           "  VectorPotentialAmplitude: 2500\n"
-          "  CutoffPressureFraction: 0.04\n");
+          "  CutoffPressureFraction: 0.04\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& mag_tov =

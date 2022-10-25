@@ -42,7 +42,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Linear",
           evolution::initial_data::OptionTags::InitialData,
           Burgers::Solutions::Linear>(
           "Linear:\n"
-          "  ShockTime: 1.5\n");
+          "  ShockTime: 1.5\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& created_solution =

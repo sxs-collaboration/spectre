@@ -91,7 +91,10 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
   RegularSphericalWave& operator=(const RegularSphericalWave& other);
   RegularSphericalWave(RegularSphericalWave&&) = default;
   RegularSphericalWave& operator=(RegularSphericalWave&&) = default;
-  ~RegularSphericalWave() = default;
+  ~RegularSphericalWave() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit RegularSphericalWave(CkMigrateMessage* msg);
@@ -110,7 +113,7 @@ class RegularSphericalWave : public evolution::initial_data::InitialData,
                        ::Tags::dt<Tags::Phi<3>>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   // NOLINTNEXTLINE(readability-redundant-declaration)

@@ -19,6 +19,11 @@ namespace grmhd::AnalyticData {
 
 OrszagTangVortex::OrszagTangVortex() = default;
 
+std::unique_ptr<evolution::initial_data::InitialData>
+OrszagTangVortex::get_clone() const {
+  return std::make_unique<OrszagTangVortex>(*this);
+}
+
 OrszagTangVortex::OrszagTangVortex(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void OrszagTangVortex::pup(PUP::er& p) {

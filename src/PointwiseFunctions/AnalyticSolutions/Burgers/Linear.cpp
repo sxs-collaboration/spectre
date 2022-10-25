@@ -16,6 +16,11 @@ namespace Burgers::Solutions {
 
 Linear::Linear(const double shock_time) : shock_time_(shock_time) {}
 
+std::unique_ptr<evolution::initial_data::InitialData> Linear::get_clone()
+    const {
+  return std::make_unique<Linear>(*this);
+}
+
 Linear::Linear(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <typename T>

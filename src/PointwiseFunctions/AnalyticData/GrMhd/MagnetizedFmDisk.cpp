@@ -115,6 +115,11 @@ MagnetizedFmDisk::MagnetizedFmDisk(
            inverse_plasma_beta_ / b_squared_max);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData>
+MagnetizedFmDisk::get_clone() const {
+  return std::make_unique<MagnetizedFmDisk>(*this);
+}
+
 MagnetizedFmDisk::MagnetizedFmDisk(CkMigrateMessage* msg)
     : FishboneMoncriefDisk(msg) {}
 

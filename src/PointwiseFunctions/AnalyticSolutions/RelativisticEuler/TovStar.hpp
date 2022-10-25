@@ -349,12 +349,15 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   TovStar& operator=(const TovStar& /*rhs*/);
   TovStar(TovStar&& /*rhs*/) = default;
   TovStar& operator=(TovStar&& /*rhs*/) = default;
-  ~TovStar() = default;
+  ~TovStar() override = default;
   TovStar(double central_rest_mass_density,
           std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
               equation_of_state,
           const RelativisticEuler::Solutions::TovCoordinates coordinate_system =
               RelativisticEuler::Solutions::TovCoordinates::Schwarzschild);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit TovStar(CkMigrateMessage* msg);
@@ -371,7 +374,7 @@ class TovStar : public virtual evolution::initial_data::InitialData,
   }
 
   /// NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/);
+  void pup(PUP::er& /*p*/) override;
 
   const EquationsOfState::EquationOfState<true, 1>& equation_of_state() const {
     return *equation_of_state_;

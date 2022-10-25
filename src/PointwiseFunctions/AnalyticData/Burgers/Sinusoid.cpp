@@ -20,6 +20,11 @@ Scalar<T> Sinusoid::u(const tnsr::I<T, 1>& x) const {
   return Scalar<T>{sin(get<0>(x))};
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> Sinusoid::get_clone()
+    const {
+  return std::make_unique<Sinusoid>(*this);
+}
+
 Sinusoid::Sinusoid(CkMigrateMessage* msg) : InitialData(msg) {}
 
 tuples::TaggedTuple<Tags::U> Sinusoid::variables(

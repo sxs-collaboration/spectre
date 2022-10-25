@@ -73,7 +73,8 @@ void test_create_from_options() {
           "  Pressure: 1.0\n"
           "  AngularVelocity: 9.95\n"
           "  MagneticField: [3.5449077018, 0.0, 0.0]\n"
-          "  AdiabaticIndex: 1.6666666666666666");
+          "  AdiabaticIndex: 1.6666666666666666")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& magnetic_rotor =

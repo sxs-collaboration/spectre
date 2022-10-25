@@ -132,7 +132,7 @@ class MagnetizedFmDisk
   MagnetizedFmDisk& operator=(const MagnetizedFmDisk& /*rhs*/) = default;
   MagnetizedFmDisk(MagnetizedFmDisk&& /*rhs*/) = default;
   MagnetizedFmDisk& operator=(MagnetizedFmDisk&& /*rhs*/) = default;
-  ~MagnetizedFmDisk() = default;
+  ~MagnetizedFmDisk() override = default;
 
   MagnetizedFmDisk(
       double bh_mass, double bh_dimless_spin, double inner_edge_radius,
@@ -140,6 +140,9 @@ class MagnetizedFmDisk
       double polytropic_exponent, double threshold_density,
       double inverse_plasma_beta,
       size_t normalization_grid_res = BFieldNormGridRes::suggested_value());
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit MagnetizedFmDisk(CkMigrateMessage* msg);
@@ -199,8 +202,8 @@ class MagnetizedFmDisk
   }
   /// @}
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   template <typename DataType, bool NeedSpacetime>

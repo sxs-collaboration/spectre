@@ -58,7 +58,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Step",
           "Step:\n"
           "  LeftValue: 2.3\n"
           "  RightValue: 1.2\n"
-          "  InitialPosition: -0.5\n");
+          "  InitialPosition: -0.5\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& created_solution = dynamic_cast<const Burgers::Solutions::Step&>(

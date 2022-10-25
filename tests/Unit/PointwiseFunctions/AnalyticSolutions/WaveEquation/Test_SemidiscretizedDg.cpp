@@ -304,7 +304,7 @@ SPECTRE_TEST_CASE(
           "  Harmonic: 1\n"
           "  Amplitudes: [1.2, 2.3, 3.4, 4.5]\n");
   const auto deserialized_option_solution =
-      serialize_and_deserialize(option_solution);
+      serialize_and_deserialize(option_solution->get_clone());
   const auto& solution =
       dynamic_cast<const ScalarWave::Solutions::SemidiscretizedDg&>(
           *deserialized_option_solution);

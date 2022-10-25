@@ -77,6 +77,9 @@ class SmoothFlow : public evolution::initial_data::InitialData,
              const std::array<double, Dim>& wavevector, double pressure,
              double adiabatic_index, double perturbation_size);
 
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
   /// \cond
   explicit SmoothFlow(CkMigrateMessage* msg);
   using PUP::able::register_constructor;
@@ -118,8 +121,8 @@ class SmoothFlow : public evolution::initial_data::InitialData,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/)
       const;
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   template <size_t SpatialDim>

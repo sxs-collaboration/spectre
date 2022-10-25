@@ -66,7 +66,10 @@ class Kuzmin : public evolution::initial_data::InitialData,
   Kuzmin& operator=(const Kuzmin&) = default;
   Kuzmin(Kuzmin&&) = default;
   Kuzmin& operator=(Kuzmin&&) = default;
-  ~Kuzmin() = default;
+  ~Kuzmin() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   template <typename DataType>
   tuples::TaggedTuple<ScalarAdvection::Tags::U> variables(
@@ -74,7 +77,7 @@ class Kuzmin : public evolution::initial_data::InitialData,
       tmpl::list<ScalarAdvection::Tags::U> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
   /// \cond
   explicit Kuzmin(CkMigrateMessage* msg);

@@ -21,6 +21,11 @@ SmoothFlow::SmoothFlow(const std::array<double, 3>& mean_velocity,
                                                   pressure, adiabatic_index,
                                                   perturbation_size) {}
 
+std::unique_ptr<evolution::initial_data::InitialData> SmoothFlow::get_clone()
+    const {
+  return std::make_unique<SmoothFlow>(*this);
+}
+
 SmoothFlow::SmoothFlow(CkMigrateMessage* msg)
     : RelativisticEuler::Solutions::SmoothFlow<3>(msg) {}
 

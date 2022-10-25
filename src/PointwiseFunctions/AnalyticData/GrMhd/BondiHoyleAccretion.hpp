@@ -144,12 +144,15 @@ class BondiHoyleAccretion : public evolution::initial_data::InitialData,
   BondiHoyleAccretion& operator=(const BondiHoyleAccretion& /*rhs*/) = default;
   BondiHoyleAccretion(BondiHoyleAccretion&& /*rhs*/) = default;
   BondiHoyleAccretion& operator=(BondiHoyleAccretion&& /*rhs*/) = default;
-  ~BondiHoyleAccretion() = default;
+  ~BondiHoyleAccretion() override = default;
 
   BondiHoyleAccretion(double bh_mass, double bh_dimless_spin,
                       double rest_mass_density, double flow_speed,
                       double magnetic_field_strength,
                       double polytropic_constant, double polytropic_exponent);
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit BondiHoyleAccretion(CkMigrateMessage* msg);
@@ -228,8 +231,8 @@ class BondiHoyleAccretion : public evolution::initial_data::InitialData,
         x, dummy_time, gr::Solutions::KerrSchild::tags<DataType>{})))};
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
   const EquationsOfState::PolytropicFluid<true>& equation_of_state() const {
     return equation_of_state_;

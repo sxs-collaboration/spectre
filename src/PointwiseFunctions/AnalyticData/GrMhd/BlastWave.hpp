@@ -142,12 +142,15 @@ class BlastWave : public evolution::initial_data::InitialData,
   BlastWave& operator=(const BlastWave& /*rhs*/) = default;
   BlastWave(BlastWave&& /*rhs*/) = default;
   BlastWave& operator=(BlastWave&& /*rhs*/) = default;
-  ~BlastWave() = default;
+  ~BlastWave() override = default;
 
   BlastWave(double inner_radius, double outer_radius, double inner_density,
             double outer_density, double inner_pressure, double outer_pressure,
             const std::array<double, 3>& magnetic_field, double adiabatic_index,
             Geometry geometry, const Options::Context& context = {});
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit BlastWave(CkMigrateMessage* msg);
@@ -227,8 +230,8 @@ class BlastWave : public evolution::initial_data::InitialData,
     return equation_of_state_;
   }
 
-  // clang-tidy: no runtime references
-  void pup(PUP::er& /*p*/);  //  NOLINT
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& /*p*/) override;
 
  private:
   double inner_radius_ = std::numeric_limits<double>::signaling_NaN();

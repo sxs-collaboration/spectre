@@ -47,6 +47,11 @@ TovStar& TovStar::operator=(const TovStar& rhs) {
   return *this;
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> TovStar::get_clone()
+    const {
+  return std::make_unique<TovStar>(*this);
+}
+
 void TovStar::pup(PUP::er& p) {
   InitialData::pup(p);
   p | central_rest_mass_density_;

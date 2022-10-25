@@ -27,6 +27,10 @@ Step::Step(const double left_value, const double right_value,
 
 Step::Step(CkMigrateMessage* msg) : InitialData(msg) {}
 
+std::unique_ptr<evolution::initial_data::InitialData> Step::get_clone() const {
+  return std::make_unique<Step>(*this);
+}
+
 template <typename T>
 Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const {
   const double current_shock_position =

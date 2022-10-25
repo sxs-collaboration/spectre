@@ -58,6 +58,11 @@ FishboneMoncriefDisk::FishboneMoncriefDisk(const double bh_mass,
        (rmax - 3.0 * bh_mass_) * rmax_squared);
 }
 
+std::unique_ptr<evolution::initial_data::InitialData>
+FishboneMoncriefDisk::get_clone() const {
+  return std::make_unique<FishboneMoncriefDisk>(*this);
+}
+
 void FishboneMoncriefDisk::pup(PUP::er& p) {
   InitialData::pup(p);
   p | bh_mass_;

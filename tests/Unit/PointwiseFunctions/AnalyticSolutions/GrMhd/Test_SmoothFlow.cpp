@@ -170,7 +170,8 @@ void test_solution() {
           "  WaveVector: [-0.13, -0.54, 0.04]\n"
           "  Pressure: 1.23\n"
           "  AdiabaticIndex: 1.4\n"
-          "  PerturbationSize: 0.75\n");
+          "  PerturbationSize: 0.75\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution = dynamic_cast<const grmhd::Solutions::SmoothFlow&>(

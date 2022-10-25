@@ -215,7 +215,8 @@ void test_solution() {
           "  RightVelocity: [0.62, -0.44, 0.]\n"
           "  LeftMagneticField: [10., 18.28, 0.]\n"
           "  RightMagneticField: [10., 14.49, 0.]\n"
-          "  ShockSpeed: 0.5\n");
+          "  ShockSpeed: 0.5\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& solution = dynamic_cast<const grmhd::Solutions::KomissarovShock&>(

@@ -75,7 +75,8 @@ void test_create_from_options() {
           "  AdvectionVelocity: [0.5, 0.04166666666666667, 0.0]\n"
           "  MagFieldStrength: 0.001\n"
           "  InnerRadius: 0.06\n"
-          "  OuterRadius: 0.3\n");
+          "  OuterRadius: 0.3\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& magnetic_field_loop =

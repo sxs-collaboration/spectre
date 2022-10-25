@@ -59,6 +59,11 @@ MagneticRotor::MagneticRotor(
   }
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> MagneticRotor::get_clone()
+    const {
+  return std::make_unique<MagneticRotor>(*this);
+}
+
 MagneticRotor::MagneticRotor(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void MagneticRotor::pup(PUP::er& p) {

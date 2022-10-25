@@ -80,6 +80,11 @@ BlastWave::BlastWave(const double inner_radius, const double outer_radius,
   }
 }
 
+std::unique_ptr<evolution::initial_data::InitialData> BlastWave::get_clone()
+    const {
+  return std::make_unique<BlastWave>(*this);
+}
+
 BlastWave::BlastWave(CkMigrateMessage* msg) : InitialData(msg) {}
 
 void BlastWave::pup(PUP::er& p) {

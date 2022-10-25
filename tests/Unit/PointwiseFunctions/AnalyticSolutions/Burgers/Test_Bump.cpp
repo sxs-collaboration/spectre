@@ -48,7 +48,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Bump",
           "Bump:\n"
           "  HalfWidth: 5.\n"
           "  Height: 3.\n"
-          "  Center: -8.\n");
+          "  Center: -8.\n")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& created_solution = dynamic_cast<const Burgers::Solutions::Bump&>(

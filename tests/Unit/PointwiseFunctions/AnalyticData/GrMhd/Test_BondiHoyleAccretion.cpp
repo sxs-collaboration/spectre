@@ -72,7 +72,8 @@ void test_create_from_options() {
           "  FlowSpeed: 0.34\n"
           "  MagFieldStrength: 5.76\n"
           "  PolytropicConstant: 30.0\n"
-          "  PolytropicExponent: 1.5");
+          "  PolytropicExponent: 1.5")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& accretion =

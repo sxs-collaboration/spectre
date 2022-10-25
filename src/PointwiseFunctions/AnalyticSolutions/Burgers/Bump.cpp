@@ -18,6 +18,10 @@ namespace Burgers::Solutions {
 Bump::Bump(const double half_width, const double height, const double center)
     : half_width_(half_width), height_(height), center_(center) {}
 
+std::unique_ptr<evolution::initial_data::InitialData> Bump::get_clone() const {
+  return std::make_unique<Bump>(*this);
+}
+
 Bump::Bump(CkMigrateMessage* msg) : InitialData(msg) {}
 
 template <typename T>

@@ -66,7 +66,10 @@ class Step : public evolution::initial_data::InitialData,
   Step& operator=(const Step&) = default;
   Step(Step&&) = default;
   Step& operator=(Step&&) = default;
-  ~Step() = default;
+  ~Step() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
   /// \cond
   explicit Step(CkMigrateMessage* msg);
@@ -89,7 +92,7 @@ class Step : public evolution::initial_data::InitialData,
       tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
+  void pup(PUP::er& p) override;
 
  private:
   double left_value_ = std::numeric_limits<double>::signaling_NaN();

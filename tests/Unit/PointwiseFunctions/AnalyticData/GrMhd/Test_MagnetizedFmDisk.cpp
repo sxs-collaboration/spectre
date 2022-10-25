@@ -85,7 +85,8 @@ void test_create_from_options() {
           "  PolytropicExponent: 1.654\n"
           "  ThresholdDensity: 0.42\n"
           "  InversePlasmaBeta: 85.0\n"
-          "  BFieldNormGridRes: 6");
+          "  BFieldNormGridRes: 6")
+          ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
   const auto& disk = dynamic_cast<const grmhd::AnalyticData::MagnetizedFmDisk&>(
