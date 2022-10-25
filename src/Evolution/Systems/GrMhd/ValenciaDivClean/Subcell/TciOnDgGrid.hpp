@@ -56,9 +56,12 @@ namespace grmhd::ValenciaDivClean::subcell {
  *
  * <tr><td> if \f$\min(\tilde{D}^{n+1}/\textrm{avg}(\sqrt{\gamma^{n}}))\f$
  * is less than `tci_options.minimum_rest_mass_density_times_lorentz_factor`
- * then we have a negative (or extremely small) density and the cell is
- * troubled. Note that if this `tci_option` is approximately equal to or larger
- * than the `atmosphere_density`, the atmosphere will be flagged as troubled.
+ * or if \f$\min(\tilde{Y}_e^{n+1}/\textrm{avg}(\sqrt{\gamma^{n}}))\f$ is less
+ * than `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
+ * `tci_options.minimum_ye`, we have a negative (or extremely small) density or
+ * electron fraction and the cell is troubled. Note that if this `tci_option` is
+ * approximately equal to or larger than the `atmosphere_density`, the
+ * atmosphere will be flagged as troubled.
  * <td> `-1`
  *
  * <tr><td> if \f$\tilde{\tau}\f$ is less than `tci_options.minimum_tilde_tau`
@@ -85,8 +88,8 @@ namespace grmhd::ValenciaDivClean::subcell {
  * magnetic field is still freely evolved.
  * <td> `0`
  *
- * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$ and
- * \f$\tilde{\tau}^{n+1}\f$
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$,
+ * \f$\tilde{Y}_e^{n+1}\f$, and \f$\tilde{\tau}^{n+1}\f$
  * <td> `-5`
  *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if

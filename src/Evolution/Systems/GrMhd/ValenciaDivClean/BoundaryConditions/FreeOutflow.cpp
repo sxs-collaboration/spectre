@@ -226,10 +226,9 @@ void FreeOutflow::fd_ghost(
 
     get<RestMassDensity>(outermost_prim_vars) =
         get_boundary_val(interior_rest_mass_density);
-
-    get<Pressure>(outermost_prim_vars) = get_boundary_val(interior_pressure);
     get<ElectronFraction>(outermost_prim_vars) =
         get_boundary_val(interior_electron_fraction);
+    get<Pressure>(outermost_prim_vars) = get_boundary_val(interior_pressure);
 
     // Kill ingoing components of spatial velocity and compute Wv^i
     //

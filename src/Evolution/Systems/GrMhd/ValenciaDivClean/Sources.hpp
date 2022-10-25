@@ -32,8 +32,8 @@ namespace ValenciaDivClean {
 
 /*!
  * \brief Compute the source terms for the flux-conservative Valencia
- * formulation of GRMHD with divergence cleaning.
- *
+ * formulation of GRMHD with divergence cleaning, coupled with electron
+ * fraction.
  *
  * A flux-conservative system has the generic form:
  * \f[
@@ -80,6 +80,12 @@ namespace ValenciaDivClean {
  * \f$K_{ij}\f$, and \f$\kappa\f$ is a damping parameter that damps violations
  * of the divergence-free (no-monopole) condition \f$\Phi = \partial_i {\tilde
  * B}^i = 0\f$ .
+ *
+ * \note For the electron fraction side, the source term is currently set to
+ * \f$S(\tilde{Y}_e) = 0\f$ where the conserved variable \f$\tilde{Y}_e\f$ is a
+ * generalized electron fraction. Implementing the source term using neutrino
+ * scheme is in progress (Last update : Oct 2022).
+ *
  */
 struct ComputeSources {
   using return_tags =

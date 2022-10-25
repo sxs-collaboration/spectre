@@ -32,6 +32,7 @@ namespace ValenciaDivClean {
  *
  * \f{align*}
  * {\tilde D} = & \sqrt{\gamma} \rho W \\
+ * {\tilde Y}_e = & \sqrt{\gamma} \rho Y_e W \\
  * {\tilde S}_i = & \sqrt{\gamma} \left( \rho h W^2 v_i + B^m B_m v_i - B^m v_m
  * B_i \right) \\
  * {\tilde \tau} = & \sqrt{\gamma} \left[ \rho h W^2 - p - \rho W - \frac{1}{2}
@@ -40,15 +41,16 @@ namespace ValenciaDivClean {
  * {\tilde \Phi} = & \sqrt{\gamma} \Phi
  * \f}
  *
- * where the conserved variables \f${\tilde D}\f$, \f${\tilde S}_i\f$,
- * \f${\tilde \tau}\f$, \f${\tilde B}^i\f$, and \f${\tilde \Phi}\f$ are a
- * generalized mass-energy density, momentum density, specific internal energy
- * density, magnetic field, and divergence cleaning field.  Furthermore
- * \f$\gamma\f$ is the determinant of the spatial metric, \f$\rho\f$ is the rest
- * mass density, \f$W = 1/\sqrt{1-v_i v^i}\f$ is the Lorentz factor, \f$h = 1 +
- * \epsilon + \frac{p}{\rho}\f$ is the specific enthalpy, \f$v^i\f$ is the
- * spatial velocity, \f$\epsilon\f$ is the specific internal energy, \f$p\f$ is
- * the pressure, \f$B^i\f$ is the spatial magnetic field measured by an Eulerian
+ * where the conserved variables \f${\tilde D}\f$, \f$\tilde{Y}_e\f$, \f${\tilde
+ * S}_i\f$, \f${\tilde \tau}\f$, \f${\tilde B}^i\f$, and \f${\tilde \Phi}\f$ are
+ * a generalized mass-energy density, electron fraction, momentum density,
+ * specific internal energy density, magnetic field, and divergence cleaning
+ * field.  Furthermore \f$\gamma\f$ is the determinant of the spatial metric,
+ * \f$\rho\f$ is the rest mass density, \f$Y_e\f$ is the electron fraction,
+ * \f$W = 1/\sqrt{1-v_i v^i}\f$ is the Lorentz factor, \f$h = 1 + \epsilon +
+ * \frac{p}{\rho}\f$ is the specific enthalpy, \f$v^i\f$ is the spatial
+ * velocity, \f$\epsilon\f$ is the specific internal energy, \f$p\f$ is the
+ * pressure, \f$B^i\f$ is the spatial magnetic field measured by an Eulerian
  * observer, and \f$\Phi\f$ is a divergence cleaning field.
  *
  * The quantity \f${\tilde \tau}\f$ is rewritten as in `RelativisticEuler`

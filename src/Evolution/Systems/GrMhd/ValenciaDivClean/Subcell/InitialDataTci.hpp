@@ -49,10 +49,11 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> initial_data_tci_work(
  * <caption>List of checks</caption>
  * <tr><th> Description <th> TCI status
  *
- * <tr><td> if `TildeD` on the DG or subcell grid (projected from the DG grid,
- * not initialized to the initial data) is less than
- * `tci_options.minimum_rest_mass_density_times_lorentz_factor` then the element
- * is flagged as troubled.
+ * <tr><td> if `TildeD` and `TildeYe` on the DG or subcell grid (projected from
+ * the DG grid, not initialized to the initial data) is less than
+ * `tci_options.minimum_rest_mass_density_times_lorentz_factor` and
+ * `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
+ * `tci_options.minimum_ye`, respectively, the element is flagged as troubled.
  * <td> `-1`
  *
  * <tr><td> if `TildeTau` on the DG or subcell grid (projected from

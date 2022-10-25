@@ -19,10 +19,10 @@ class Variables;
 
 namespace grmhd::ValenciaDivClean::subcell {
 /*!
- * \brief Computes the rest mass density \f$\rho\f$, pressure \f$p\f$,
- * Lorentz factor times the spatial velocity \f$W v^i\f$, magnetic field
- * \f$B^i\f$, and the divergence cleaning field \f$\Phi\f$ on the subcells so
- * they can be used for reconstruction.
+ * \brief Computes the rest mass density \f$\rho\f$, electron fraction
+ * \f$Y_e\f$, pressure \f$p\f$, Lorentz factor times the spatial velocity \f$W
+ * v^i\f$, magnetic field \f$B^i\f$, and the divergence cleaning field
+ * \f$\Phi\f$ on the subcells so they can be used for reconstruction.
  *
  * The computation copies the data from the primitive variables to a new
  * Variables and computes \f$W v^i\f$. In the future we will likely want to
@@ -51,10 +51,11 @@ class PrimitiveGhostDataOnSubcells {
 };
 
 /*!
- * \brief Projects the rest mass density \f$\rho\f$, pressure \f$p\f$, Lorentz
- * factor times the spatial velocity \f$W v^i\f$, magnetic field \f$B^i\f$, and
- * the divergence cleaning field \f$\Phi\f$ so they can be projected to the
- * subcells and sent to neighbors for subcell reconstruction.
+ * \brief Projects the rest mass density \f$\rho\f$, electron fraction
+ * \f$Y_e\f$, pressure \f$p\f$, Lorentz factor times the spatial velocity \f$W
+ * v^i\f$, magnetic field \f$B^i\f$, and the divergence cleaning field
+ * \f$\Phi\f$ so they can be projected to the subcells and sent to neighbors for
+ * subcell reconstruction.
  *
  * The computation copies the data from the primitive variables to a new
  * Variables and computes \f$W v^i\f$, then does the projection. In the future
