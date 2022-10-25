@@ -144,3 +144,9 @@ class ElementMap {
   std::array<double, Dim> jacobian_{map_slope_};
   std::array<double, Dim> inverse_jacobian_{map_inverse_slope_};
 };
+
+template <size_t Dim, typename TargetFrame>
+ElementMap(ElementId<Dim> element_id,
+           std::unique_ptr<
+               domain::CoordinateMapBase<Frame::BlockLogical, TargetFrame, Dim>>
+               block_map) -> ElementMap<Dim, TargetFrame>;
