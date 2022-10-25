@@ -734,9 +734,9 @@ class ProductOfConditions final : public BoundaryCondition {
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 void ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>::pup(
     PUP::er& p) {
+  BoundaryCondition::pup(p);
   p | derived_gh_condition_;
   p | derived_valencia_condition_;
-  BoundaryCondition::pup(p);
 }
 
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
@@ -752,4 +752,9 @@ PUP::able::PUP_ID ProductOfConditions<DerivedGhCondition,
                                       DerivedValenciaCondition>::my_PUP_ID =
     0;  // NOLINT
 /// \endcond
+
+template <typename DerivedGhCondition, typename DerivedValenciaCondition>
+ProductOfConditions(DerivedGhCondition gh_condition,
+                    DerivedValenciaCondition valencia_condition)
+    -> ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>;
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions
