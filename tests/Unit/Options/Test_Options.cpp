@@ -954,19 +954,6 @@ SPECTRE_TEST_CASE("Unit.Options.Format.UnorderedMap.Error", "[Unit][Options]") {
   opts.get<FormatUnorderedMap>();
 }
 
-// At line 3 column 1:.Unable to correctly parse the
-// input file because of a syntax error]]
-SPECTRE_TEST_CASE("Unit.Options.bad_colon", "[Unit][Options]") {
-  CHECK_THROWS_WITH(
-      []() {
-        Options::Parser<tmpl::list<>> opts("");
-        opts.parse("\n\n:");
-      }(),
-      Catch::Contains("At line 3 column 1:\nUnable to correctly parse the "
-                      "input file because of "
-                      "a syntax error"));
-}
-
 struct ExplicitObject {
   explicit ExplicitObject() = default;
 };
