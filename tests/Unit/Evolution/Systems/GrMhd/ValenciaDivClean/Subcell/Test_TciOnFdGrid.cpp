@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace {
@@ -28,7 +29,7 @@ enum class TestThis {
   Atmosphere,
   NeededFixing,
   PerssonTildeD,
-  PerssonTildeTau,
+  PerssonPressure,
   PerssonTildeB,
   NegativeTildeD,
   NegativeTildeTau,
@@ -65,7 +66,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       grmhd::ValenciaDivClean::Tags::TildeD,
       grmhd::ValenciaDivClean::Tags::TildeYe,
       grmhd::ValenciaDivClean::Tags::TildeTau,
-      grmhd::ValenciaDivClean::Tags::TildeB<>, gr::Tags::SqrtDetSpatialMetric<>,
+      grmhd::ValenciaDivClean::Tags::TildeB<>,
+      hydro::Tags::Pressure<DataVector>, gr::Tags::SqrtDetSpatialMetric<>,
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       domain::Tags::Mesh<3>, ::evolution::dg::subcell::Tags::Mesh<3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
@@ -77,14 +79,15 @@ void test(const TestThis test_this, const int expected_tci_status) {
       tnsr::I<DataVector, 3, Frame::Inertial>(
           subcell_mesh.number_of_grid_points(), 1.0),
       Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
+      Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
       test_this == TestThis::NeededFixing, mesh, subcell_mesh, tci_options,
       subcell_options, evolution::dg::subcell::RdmpTciData{});
 
   const size_t point_to_change = mesh.number_of_grid_points() / 2;
-  if (test_this == TestThis::PerssonTildeTau) {
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
-        make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
-          get(*tilde_tau_ptr)[point_to_change] *= 2.0;
+  if (test_this == TestThis::PerssonPressure) {
+    db::mutate<hydro::Tags::Pressure<DataVector>>(
+        make_not_null(&box), [point_to_change](const auto pressure_ptr) {
+          get(*pressure_ptr)[point_to_change] *= 2.0;
         });
   } else if (test_this == TestThis::PerssonTildeD) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeD>(
@@ -218,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
   test(TestThis::NegativeTildeD, 2);
   test(TestThis::NegativeTildeTau, 2);
   test(TestThis::PerssonTildeD, 3);
-  test(TestThis::PerssonTildeTau, 3);
+  test(TestThis::PerssonPressure, 3);
   test(TestThis::RdmpTildeD, 4);
   test(TestThis::RdmpTildeTau, 5);
   test(TestThis::RdmpMagnitudeTildeB, 6);
