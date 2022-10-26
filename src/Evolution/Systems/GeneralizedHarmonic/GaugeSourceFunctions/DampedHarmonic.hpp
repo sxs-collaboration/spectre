@@ -4,10 +4,12 @@
 #pragma once
 
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Time/Tags.hpp"
@@ -195,5 +197,91 @@ void damped_harmonic(
     const tnsr::I<DataVector, SpatialDim, Frame>& coords, double amp_coef_L1,
     double amp_coef_L2, double amp_coef_S, int exp_L1, int exp_L2, int exp_S,
     double sigma_r);
+
+/*!
+ * \brief Impose damped harmonic gauge.
+ *
+ * \see `damped_harmonic()`
+ */
+class DampedHarmonic final : public GaugeCondition {
+ public:
+  /// The width of the Gaussian for the spatial decay of the damped harmonic
+  /// gauge.
+  struct SpatialDecayWidth {
+    using type = double;
+    static constexpr Options::String help{
+        "Spatial width (sigma_r) of weight function (W(x^i)) used in the "
+        "damped harmonic gauge."};
+  };
+  /// The amplitudes for the L1, L2, and S terms, respectively, for the damped
+  /// harmonic gauge.
+  struct Amplitudes {
+    using type = std::array<double, 3>;
+    static constexpr Options::String help{
+        "Amplitudes [A_{L1}, A_{L2}, A_{S}] for the damped harmonic gauge."};
+  };
+  /// The exponents for the L1, L2, and S terms, respectively, for the damped
+  /// harmonic gauge.
+  struct Exponents {
+    using type = std::array<int, 3>;
+    static constexpr Options::String help{
+        "Exponents [e_{L1}, e_{L2}, e_{S}] for the damped harmonic gauge."};
+  };
+
+  static constexpr Options::String help{
+      "Apply damped harmonic/damped wave gauge."};
+
+  using options = tmpl::list<SpatialDecayWidth, Amplitudes, Exponents>;
+
+  DampedHarmonic(double width, const std::array<double, 3>& amps,
+                 const std::array<int, 3>& exps);
+
+  DampedHarmonic() = default;
+  DampedHarmonic(const DampedHarmonic&) = default;
+  DampedHarmonic& operator=(const DampedHarmonic&) = default;
+  DampedHarmonic(DampedHarmonic&&) = default;
+  DampedHarmonic& operator=(DampedHarmonic&&) = default;
+  ~DampedHarmonic() override = default;
+
+  /// \cond
+  explicit DampedHarmonic(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(DampedHarmonic);  // NOLINT
+  /// \endcond
+
+  std::unique_ptr<GaugeCondition> get_clone() const override;
+
+  template <size_t SpatialDim>
+  void gauge_and_spacetime_derivative(
+      gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame::Inertial>*> gauge_h,
+      gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>*>
+          d4_gauge_h,
+      const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& shift,
+      const tnsr::a<DataVector, SpatialDim, Frame::Inertial>&
+          spacetime_unit_normal_one_form,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
+          inverse_spatial_metric,
+      const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& spacetime_metric,
+      const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& pi,
+      const tnsr::iaa<DataVector, SpatialDim, Frame::Inertial>& phi,
+      double time,
+      const tnsr::I<DataVector, SpatialDim, Frame::Inertial>& inertial_coords)
+      const;
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
+
+ private:
+  double spatial_decay_width_{std::numeric_limits<double>::signaling_NaN()};
+  std::array<double, 3> amplitudes_{
+      {std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN(),
+       std::numeric_limits<double>::signaling_NaN()}};
+  std::array<int, 3> exponents_{{std::numeric_limits<int>::max(),
+                                 std::numeric_limits<int>::max(),
+                                 std::numeric_limits<int>::max()}};
+};
 }  // namespace gauges
 }  // namespace GeneralizedHarmonic

@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_DampedWaveHelpers.cpp
   Test_Harmonic.cpp
   Test_InitializeDampedHarmonic.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
