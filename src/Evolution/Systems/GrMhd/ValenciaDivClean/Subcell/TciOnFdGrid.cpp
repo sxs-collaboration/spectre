@@ -20,17 +20,16 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const Scalar<DataVector>& subcell_tilde_ye,
     const Scalar<DataVector>& subcell_tilde_tau,
     const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
-    const Scalar<DataVector>& subcell_pressure,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const bool vars_needed_fixing, const Mesh<3>& dg_mesh,
-    const Mesh<3>& subcell_mesh,
+    const Scalar<DataVector>& subcell_rest_mass_density,
+    const Scalar<DataVector>& subcell_pressure, const bool vars_needed_fixing,
+    const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
     const double persson_exponent) {
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
   const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
-  DataVector temp_buffer{num_subcell_pts + 6 * num_dg_pts};
+  DataVector temp_buffer{num_subcell_pts + 5 * num_dg_pts};
   size_t offset_into_temp_buffer = 0;
   const auto assign_data =
       [&temp_buffer, &offset_into_temp_buffer](
@@ -75,27 +74,19 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       subcell_mesh.extents(),
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
-  Scalar<DataVector> dg_sqrt_det_spatial_metric{};
-  assign_data(make_not_null(&dg_sqrt_det_spatial_metric), num_dg_pts);
-  evolution::dg::subcell::fd::reconstruct(
-      make_not_null(&get(dg_sqrt_det_spatial_metric)),
-      get(sqrt_det_spatial_metric), dg_mesh, subcell_mesh.extents(),
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
-
-  if (vars_needed_fixing and
-      (max(get(dg_tilde_d) / get(dg_sqrt_det_spatial_metric)) >
-       tci_options.atmosphere_density) and
-      (max(get(subcell_tilde_d) / get(sqrt_det_spatial_metric)) >
-       tci_options.atmosphere_density)) {
-    return {+1, rdmp_tci_data};
-  }
-
   if (min(get(dg_tilde_d)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor or
       min(get(dg_tilde_ye)) <
           tci_options.minimum_rest_mass_density_times_lorentz_factor *
               tci_options.minimum_ye or
       min(get(dg_tilde_tau)) < tci_options.minimum_tilde_tau) {
+    return {+1, rdmp_tci_data};
+  }
+
+  const bool in_atmosphere =
+      max(get(subcell_rest_mass_density)) < tci_options.atmosphere_density;
+
+  if (not(in_atmosphere) and vars_needed_fixing) {
     return {+2, rdmp_tci_data};
   }
 
@@ -106,12 +97,12 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       subcell_mesh.extents(),
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
-  if (evolution::dg::subcell::persson_tci(dg_tilde_d, dg_mesh,
-                                          persson_exponent) or
-      evolution::dg::subcell::persson_tci(dg_tilde_ye, dg_mesh,
-                                          persson_exponent) or
-      evolution::dg::subcell::persson_tci(dg_pressure, dg_mesh,
-                                          persson_exponent)) {
+  if (not(in_atmosphere) and (evolution::dg::subcell::persson_tci(
+                                  dg_tilde_d, dg_mesh, persson_exponent) or
+                              evolution::dg::subcell::persson_tci(
+                                  dg_tilde_ye, dg_mesh, persson_exponent) or
+                              evolution::dg::subcell::persson_tci(
+                                  dg_pressure, dg_mesh, persson_exponent))) {
     return {+3, rdmp_tci_data};
   }
 
@@ -151,7 +142,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       (max(get(dg_mag_tilde_b)) > tci_options.magnetic_field_cutoff.value() and
        evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
                                            persson_exponent))) {
-    return {+7, rdmp_tci_data};
+    return {+8, rdmp_tci_data};
   }
 
   return {false, rdmp_tci_data};

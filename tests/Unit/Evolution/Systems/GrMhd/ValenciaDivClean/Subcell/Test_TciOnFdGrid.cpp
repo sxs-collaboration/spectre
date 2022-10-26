@@ -29,11 +29,14 @@ enum class TestThis {
   Atmosphere,
   NeededFixing,
   PerssonTildeD,
+  PerssonTildeYe,
   PerssonPressure,
   PerssonTildeB,
   NegativeTildeD,
+  NegativeTildeYe,
   NegativeTildeTau,
   RdmpTildeD,
+  RdmpTildeYe,
   RdmpTildeTau,
   RdmpMagnitudeTildeB
 };
@@ -67,7 +70,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       grmhd::ValenciaDivClean::Tags::TildeYe,
       grmhd::ValenciaDivClean::Tags::TildeTau,
       grmhd::ValenciaDivClean::Tags::TildeB<>,
-      hydro::Tags::Pressure<DataVector>, gr::Tags::SqrtDetSpatialMetric<>,
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::Pressure<DataVector>,
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       domain::Tags::Mesh<3>, ::evolution::dg::subcell::Tags::Mesh<3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
@@ -94,6 +98,11 @@ void test(const TestThis test_this, const int expected_tci_status) {
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] *= 2.0;
         });
+  } else if (test_this == TestThis::PerssonTildeYe) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeYe>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] *= 2.0;
+        });
   } else if (test_this == TestThis::PerssonTildeB) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeB<>>(
         make_not_null(&box), [point_to_change](const auto tilde_b_ptr) {
@@ -106,18 +115,23 @@ void test(const TestThis test_this, const int expected_tci_status) {
         make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
           get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
         });
+  } else if (test_this == TestThis::NegativeTildeYe) {
+    db::mutate<grmhd::ValenciaDivClean::Tags::TildeYe>(
+        make_not_null(&box), [point_to_change](const auto tilde_d_ptr) {
+          get(*tilde_d_ptr)[point_to_change] = -1.0e-20;
+        });
   } else if (test_this == TestThis::NegativeTildeTau) {
     db::mutate<grmhd::ValenciaDivClean::Tags::TildeTau>(
         make_not_null(&box), [point_to_change](const auto tilde_tau_ptr) {
           get(*tilde_tau_ptr)[point_to_change] = -1.0e-20;
         });
   } else if (test_this == TestThis::Atmosphere) {
-    db::mutate<grmhd::ValenciaDivClean::Tags::TildeD,
+    db::mutate<hydro::Tags::RestMassDensity<DataVector>,
                grmhd::ValenciaDivClean::Tags::VariablesNeededFixing>(
-        make_not_null(&box),
-        [](const auto tilde_d_ptr, const auto variables_needed_fixing_ptr) {
+        make_not_null(&box), [](const auto rest_mass_density_ptr,
+                                const auto variables_needed_fixing_ptr) {
           *variables_needed_fixing_ptr = true;
-          get(*tilde_d_ptr) =
+          get(*rest_mass_density_ptr) =
               5.0e-12;  // smaller than atmosphere density but
                         // bigger than the Min(TildeD) TCI option
         });
@@ -191,12 +205,15 @@ void test(const TestThis test_this, const int expected_tci_status) {
         if (test_this == TestThis::RdmpTildeD) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[0] *= 1.01;
-        } else if (test_this == TestThis::RdmpTildeTau) {
+        } else if (test_this == TestThis::RdmpTildeYe) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[1] *= 1.01;
-        } else if (test_this == TestThis::RdmpMagnitudeTildeB) {
+        } else if (test_this == TestThis::RdmpTildeTau) {
           // Assumes min is positive, increase it so we fail the TCI
           rdmp_tci_data_ptr->min_variables_values[2] *= 1.01;
+        } else if (test_this == TestThis::RdmpMagnitudeTildeB) {
+          // Assumes min is positive, increase it so we fail the TCI
+          rdmp_tci_data_ptr->min_variables_values[3] *= 1.01;
         }
       });
 
@@ -217,13 +234,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
                   "[Unit][Evolution]") {
   test(TestThis::AllGood, 0);
   test(TestThis::Atmosphere, 0);
-  test(TestThis::NeededFixing, 1);
-  test(TestThis::NegativeTildeD, 2);
-  test(TestThis::NegativeTildeTau, 2);
+  test(TestThis::NegativeTildeD, 1);
+  test(TestThis::NegativeTildeYe, 1);
+  test(TestThis::NegativeTildeTau, 1);
+  test(TestThis::NeededFixing, 2);
   test(TestThis::PerssonTildeD, 3);
+  test(TestThis::PerssonTildeYe, 3);
   test(TestThis::PerssonPressure, 3);
   test(TestThis::RdmpTildeD, 4);
-  test(TestThis::RdmpTildeTau, 5);
-  test(TestThis::RdmpMagnitudeTildeB, 6);
-  test(TestThis::PerssonTildeB, 7);
+  test(TestThis::RdmpTildeYe, 5);
+  test(TestThis::RdmpTildeTau, 6);
+  test(TestThis::RdmpMagnitudeTildeB, 7);
+  test(TestThis::PerssonTildeB, 8);
 }

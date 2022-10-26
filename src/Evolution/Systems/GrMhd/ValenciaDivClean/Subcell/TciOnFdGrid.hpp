@@ -39,34 +39,39 @@ namespace grmhd::ValenciaDivClean::subcell {
  * <caption>List of checks</caption>
  * <tr><th> Description <th> TCI status
  *
- * <tr><td> if `grmhd::ValenciaDivClean::Tags::VariablesNeededFixing` is `true`
- *  and the maximum of \f$\tilde{D}/\sqrt{\gamma}\f$ is greater than
- * `tci_options.atmosphere_density` on DG and FD grid, then we remain on FD.
- * <td> `+1`
- *
  * <tr><td> if `min(tilde_d)` is less than
  *  `tci_options.minimum_rest_mass_density_times_lorentz_factor`, or if
  *  `min(tilde_ye)` is less than
  *  `tci_options.minimum_rest_mass_density_times_lorentz_factor` times
  *  `tci_options.minimum_ye`, or if `min(tilde_tau)` is less than
  *  `tci_options.minimum_tilde_tau`, then the we remain on FD.
+ * <td> `+1`
+ *
+ * <tr><td> if `grmhd::ValenciaDivClean::Tags::VariablesNeededFixing` is `true`
+ *  and the maximum of rest mass density on FD grid is greater than
+ * `tci_options.atmosphere_density`, then we remain on FD.
  * <td> `+2`
  *
  * <tr><td> apply the Persson TCI to \f$\tilde{D}\f$, \f$\tilde{Y}_e\f$, and
- * pressure.
+ * pressure if the maximum of rest mass density on FD grid is greater than
+ * `tci_options.atmosphere_density`.
  * <td> `+3`
  *
  * <tr><td> apply the RDMP TCI to `TildeD`
  * <td> `+4`
  *
- * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <tr><td> apply the RDMP TCI to `TildeYe`
  * <td> `+5`
  *
- * <tr><td> apply the RDMP TCI to `TildeB`
+ * <tr><td> apply the RDMP TCI to `TildeTau`
  * <td> `+6`
  *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `+7`
+ *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
- * its magnitude is greater than `tci_options.magnetic_field_cutoff`. <td> `+7`
+ * its magnitude is greater than `tci_options.magnetic_field_cutoff`.
+ * <td> `+8`
  *
  * </table>
  *
@@ -91,8 +96,8 @@ struct TciOnFdGrid {
                  grmhd::ValenciaDivClean::Tags::TildeYe,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
+                 hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 gr::Tags::SqrtDetSpatialMetric<>,
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
@@ -102,10 +107,9 @@ struct TciOnFdGrid {
       const Scalar<DataVector>& subcell_tilde_ye,
       const Scalar<DataVector>& subcell_tilde_tau,
       const tnsr::I<DataVector, 3, Frame::Inertial>& subcell_tilde_b,
-      const Scalar<DataVector>& subcell_pressure,
-      const Scalar<DataVector>& sqrt_det_spatial_metric,
-      bool vars_needed_fixing, const Mesh<3>& dg_mesh,
-      const Mesh<3>& subcell_mesh,
+      const Scalar<DataVector>& subcell_rest_mass_density,
+      const Scalar<DataVector>& subcell_pressure, bool vars_needed_fixing,
+      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const TciOptions& tci_options,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
