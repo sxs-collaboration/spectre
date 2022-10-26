@@ -5,6 +5,7 @@ set(LIBRARY Test_ForceFree)
 
 set(LIBRARY_SOURCES
   Test_Fluxes.cpp
+  Test_Sources.cpp
   Test_Tags.cpp
   )
 
