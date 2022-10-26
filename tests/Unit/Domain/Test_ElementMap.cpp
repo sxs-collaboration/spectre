@@ -43,12 +43,11 @@ void test_element_impl(
       make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
           affine_map, first_map, second_map);
 
-  ElementMap<Dim, Frame::Inertial> element_map{
+  ElementMap element_map{
       element_id,
       make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           first_map, second_map)};
-  ElementMap<Dim, Frame::Inertial> element_map_deserialized =
-      serialize_and_deserialize(element_map);
+  ElementMap element_map_deserialized = serialize_and_deserialize(element_map);
 
   CHECK(element_map(logical_point_dv) == composed_map(logical_point_dv));
   CHECK(element_map(logical_point_double) ==
