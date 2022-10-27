@@ -99,6 +99,7 @@ namespace grmhd::ValenciaDivClean {
 FixConservatives::FixConservatives(
     const double minimum_rest_mass_density_times_lorentz_factor,
     const double rest_mass_density_times_lorentz_factor_cutoff,
+    double minimum_electron_fraction, double electron_fraction_cutoff,
     const double safety_factor_for_magnetic_field,
     const double safety_factor_for_momentum_density,
     const Options::Context& context)
@@ -106,6 +107,8 @@ FixConservatives::FixConservatives(
           minimum_rest_mass_density_times_lorentz_factor),
       rest_mass_density_times_lorentz_factor_cutoff_(
           rest_mass_density_times_lorentz_factor_cutoff),
+      minimum_electron_fraction_(minimum_electron_fraction),
+      electron_fraction_cutoff_(electron_fraction_cutoff),
       one_minus_safety_factor_for_magnetic_field_(
           1.0 - safety_factor_for_magnetic_field),
       one_minus_safety_factor_for_momentum_density_(
@@ -119,12 +122,21 @@ FixConservatives::FixConservatives(
                     << ") must be less than or equal to the cutoff value of D ("
                     << rest_mass_density_times_lorentz_factor_cutoff_ << ')');
   }
+  if (minimum_electron_fraction_ > electron_fraction_cutoff_) {
+    PARSE_ERROR(context,
+                "The minimum value of electron fraction Y_e ("
+                    << minimum_electron_fraction_
+                    << ") must be less than or equal to the cutoff value ("
+                    << electron_fraction_cutoff_ << ')');
+  }
 }
 
 // NOLINTNEXTLINE(google-runtime-references)
 void FixConservatives::pup(PUP::er& p) {
   p | minimum_rest_mass_density_times_lorentz_factor_;
   p | rest_mass_density_times_lorentz_factor_cutoff_;
+  p | minimum_electron_fraction_;
+  p | electron_fraction_cutoff_;
   p | one_minus_safety_factor_for_magnetic_field_;
   p | one_minus_safety_factor_for_momentum_density_;
 }
@@ -159,10 +171,6 @@ bool FixConservatives::operator()(
   rest_mass_density_times_lorentz_factor =
       get(*tilde_d) / get(sqrt_det_spatial_metric);
 
-  DataVector& local_ye = get(get<::Tags::TempScalar<4>>(temp_buffer));
-
-  local_ye = get(*tilde_ye) / get(*tilde_d);
-
   Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
   dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
               spatial_metric);
@@ -175,17 +183,21 @@ bool FixConservatives::operator()(
       get<::Tags::TempScalar<3>>(temp_buffer);
   dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
 
+  DataVector& local_ye = get(get<::Tags::TempScalar<4>>(temp_buffer));
+  local_ye = get(*tilde_ye) / get(*tilde_d);
+
   for (size_t s = 0; s < size; s++) {
-    double& ye_tilde = get(*tilde_ye)[s];
     double& d_tilde = get(*tilde_d)[s];
-    double ye_cutoff_ = 0.;  // FIXME: Should this be a proper parameter?
-    if (local_ye[s] < ye_cutoff_) {
+
+    // Increase electron fraction if necessary
+    double& ye_tilde = get(*tilde_ye)[s];
+    if (local_ye[s] < electron_fraction_cutoff_) {
       needed_fixing = true;
-      local_ye[s] = ye_cutoff_;
+      local_ye[s] = minimum_electron_fraction_;
       ye_tilde = local_ye[s] * d_tilde;
     }
 
-    // Increase density if necessary
+    // Increase mass density if necessary
     const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
     if (rest_mass_density_times_lorentz_factor[s] <
         rest_mass_density_times_lorentz_factor_cutoff_) {
