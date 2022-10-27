@@ -777,7 +777,7 @@ void test_shell_boundaries_logarithmic_map() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
-          "an outflow boundary condition, you must use that."));
+          "an outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
       creators::Shell(
           inner_radius, outer_radius, refinement_level, grid_points_r_angular,
@@ -790,7 +790,7 @@ void test_shell_boundaries_logarithmic_map() {
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
-          "an outflow boundary condition, you must use that."));
+          "an outflow-type boundary condition, you must use that."));
 }
 
 void test_shell_factory_logarithmic_map() {

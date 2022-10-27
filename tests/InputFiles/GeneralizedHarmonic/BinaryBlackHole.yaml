@@ -48,7 +48,7 @@ DomainCreator:
       XCoord: &XCoordA -7.683
       Interior:
         ExciseWithBoundaryCondition:
-          Outflow:
+          DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
     ObjectB:
       InnerRadius: 0.7925
@@ -56,7 +56,7 @@ DomainCreator:
       XCoord: &XCoordB 7.683
       Interior:
         ExciseWithBoundaryCondition:
-          Outflow:
+          DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
     EnvelopingCube:
       Radius: 100.0

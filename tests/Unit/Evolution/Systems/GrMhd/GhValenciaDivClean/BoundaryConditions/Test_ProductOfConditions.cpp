@@ -65,11 +65,11 @@ struct ComputeBoundaryConditionHelper<
   }
 
   template <typename ArgumentVariables, typename GridlessBox>
-  static std::optional<std::string> dg_outflow(
+  static std::optional<std::string> dg_demand_outgoing_char_speeds(
       const ArgumentVariables& argument_variables,
       const GridlessBox& gridless_box,
       const DerivedCondition& derived_condition) {
-    return derived_condition.dg_outflow(
+    return derived_condition.dg_demand_outgoing_char_speeds(
         tuples::get<ArgumentTags>(argument_variables)...,
         db::get<GridlessTags>(gridless_box)...);
   }
@@ -229,12 +229,13 @@ void test_boundary_condition_combination(
   static constexpr evolution::BoundaryConditions::Type bc_type =
       product_condition_type::bc_type;
 
-  if constexpr (bc_type == evolution::BoundaryConditions::Type::Outflow) {
-    auto gh_result = gh_bc_helper::dg_outflow(argument_variables, gridless_box,
-                                              derived_gh_condition);
-    auto valencia_result = valencia_bc_helper::dg_outflow(
+  if constexpr (bc_type ==
+                evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds) {
+    auto gh_result = gh_bc_helper::dg_demand_outgoing_char_speeds(
+        argument_variables, gridless_box, derived_gh_condition);
+    auto valencia_result = valencia_bc_helper::dg_demand_outgoing_char_speeds(
         argument_variables, gridless_box, derived_valencia_condition);
-    auto product_result = product_bc_helper::dg_outflow(
+    auto product_result = product_bc_helper::dg_demand_outgoing_char_speeds(
         argument_variables, gridless_box, derived_product_condition);
     if (gh_result.has_value()) {
       if (valencia_result.has_value()) {
@@ -475,30 +476,36 @@ SPECTRE_TEST_CASE(
   }
   {
     INFO(
-        "Product condition of ValenciaDivClean Outflow and "
-        "GeneralizedHarmonic Outflow");
-    const grmhd::ValenciaDivClean::BoundaryConditions::Outflow
+        "Product condition of ValenciaDivClean DemandOutgoingCharSpeeds and "
+        "GeneralizedHarmonic DemandOutgoingCharSpeeds");
+    const grmhd::ValenciaDivClean::BoundaryConditions::DemandOutgoingCharSpeeds
         valencia_condition{};
-    const GeneralizedHarmonic::BoundaryConditions::Outflow<3_st> gh_condition{};
+    const GeneralizedHarmonic::BoundaryConditions::DemandOutgoingCharSpeeds<
+        3_st>
+        gh_condition{};
     const auto product_boundary_condition = TestHelpers::test_factory_creation<
         grmhd::GhValenciaDivClean::BoundaryConditions::BoundaryCondition,
         grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
-            GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
-            grmhd::ValenciaDivClean::BoundaryConditions::Outflow>>(
-        "ProductOutflowAndOutflow:\n"
-        "  GeneralizedHarmonicOutflow:\n"
-        "  ValenciaOutflow:");
+            GeneralizedHarmonic::BoundaryConditions::DemandOutgoingCharSpeeds<
+                3_st>,
+            grmhd::ValenciaDivClean::BoundaryConditions::
+                DemandOutgoingCharSpeeds>>(
+        "ProductDemandOutgoingCharSpeedsAndDemandOutgoingCharSpeeds:\n"
+        "  GeneralizedHarmonicDemandOutgoingCharSpeeds:\n"
+        "  ValenciaDemandOutgoingCharSpeeds:");
     const auto gridless_box = db::create<db::AddSimpleTags<>>();
     auto serialized_and_deserialized_condition = serialize_and_deserialize(
         *dynamic_cast<
             grmhd::GhValenciaDivClean::BoundaryConditions::ProductOfConditions<
-                GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
-                grmhd::ValenciaDivClean::BoundaryConditions::Outflow>*>(
+                GeneralizedHarmonic::BoundaryConditions::
+                    DemandOutgoingCharSpeeds<3_st>,
+                grmhd::ValenciaDivClean::BoundaryConditions::
+                    DemandOutgoingCharSpeeds>*>(
             product_boundary_condition.get()));
     test_boundary_condition_combination<
         tmpl::list<>, tmpl::list<>,
-        GeneralizedHarmonic::BoundaryConditions::Outflow<3_st>,
-        grmhd::ValenciaDivClean::BoundaryConditions::Outflow>(
+        GeneralizedHarmonic::BoundaryConditions::DemandOutgoingCharSpeeds<3_st>,
+        grmhd::ValenciaDivClean::BoundaryConditions::DemandOutgoingCharSpeeds>(
         gh_condition, valencia_condition, serialized_and_deserialized_condition,
         gridless_box);
   }

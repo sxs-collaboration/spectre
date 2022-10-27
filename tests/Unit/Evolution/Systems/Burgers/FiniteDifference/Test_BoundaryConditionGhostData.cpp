@@ -138,7 +138,7 @@ void test(const BoundaryConditionType& boundary_condition,
   using SolutionForTest = Burgers::Solutions::Linear;
   const SolutionForTest solution{-0.5};
 
-  // Below are tags required by Outflow boundary condition
+  // Below are tags required by DemandOutgoingCharSpeeds boundary condition
   //  - scalar field U on subcell mesh
   //  - mesh velocity
   //  - normal vectors
@@ -270,29 +270,30 @@ void test(const BoundaryConditionType& boundary_condition,
     }
 
     if (typeid(BoundaryConditionType) ==
-        typeid(Burgers::BoundaryConditions::Outflow)) {
-      // U = 1.0 on the subcell mesh, so the outflow condition will not throw
-      // any error. Here we just check if
+        typeid(Burgers::BoundaryConditions::DemandOutgoingCharSpeeds)) {
+      // U = 1.0 on the subcell mesh, so the DemandOutgoingCharSpeeds condition
+      // will not throw any error. Here we just check if
       // `Burgers::fd::BoundaryConditionGhostData::apply()` has correctly filled
       // out `fd_ghost_data` with the outermost value.
       const std::vector<double> expected_ghost_u(fd_ghost_data.size(),
                                                  volume_u_val);
       CHECK_ITERABLE_APPROX(expected_ghost_u, fd_ghost_data);
 
-      // Test when U=-1.0, which will raise ERROR by violating the outflow
-      // condition.
+      // Test when U=-1.0, which will raise ERROR by violating the
+      // DemandOutgoingCharSpeeds condition.
       db::mutate<Burgers::Tags::U>(
           make_not_null(&box),
           [](const gsl::not_null<Scalar<DataVector>*> volume_u) {
             get(*volume_u) = -1.0;
           });
       // See if the code fails correctly.
-      CHECK_THROWS_WITH(
-          ([&box, &element]() {
-            Burgers::fd::BoundaryConditionGhostData::apply(
-                make_not_null(&box), element, ReconstructorForTest{});
-          })(),
-          Catch::Contains("Outflow boundary condition (subcell) violated"));
+      CHECK_THROWS_WITH(([&box, &element]() {
+                          Burgers::fd::BoundaryConditionGhostData::apply(
+                              make_not_null(&box), element,
+                              ReconstructorForTest{});
+                        })(),
+                        Catch::Contains("DemandOutgoingCharSpeeds boundary "
+                                        "condition (subcell) violated"));
 
       // Test when the volume mesh velocity has value, which will raise ERROR.
       db::mutate<domain::Tags::MeshVelocity<1>>(
@@ -326,7 +327,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.BCondGhostData",
              "U: 0.3\n"),
          test_this);
     test(Burgers::BoundaryConditions::DirichletAnalytic{}, test_this);
-    test(Burgers::BoundaryConditions::Outflow{}, test_this);
+    test(Burgers::BoundaryConditions::DemandOutgoingCharSpeeds{}, test_this);
   }
 
   // check that the periodic BC fails

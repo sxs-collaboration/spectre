@@ -6,7 +6,7 @@ set(LIBRARY "Test_CurvedScalarWave")
 set(LIBRARY_SOURCES
   BoundaryCorrections/Test_UpwindPenalty.cpp
   BoundaryConditions/Test_ConstraintPreservingSphericalRadiation.cpp
-  BoundaryConditions/Test_Outflow.cpp
+  BoundaryConditions/Test_DemandOutgoingCharSpeeds.cpp
   Test_BackgroundSpacetime.cpp
   Test_CalculateGrVars.cpp
   Test_Constraints.cpp

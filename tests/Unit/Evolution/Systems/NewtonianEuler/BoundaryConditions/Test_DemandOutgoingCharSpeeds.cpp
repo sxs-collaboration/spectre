@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Outflow.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/NewtonianEuler/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
@@ -92,21 +92,24 @@ void test(EosType& eos) {
       ranges{std::array{1.0e-30, 1.0}, std::array{1.0e-30, 1.0}};
 
   helpers::test_boundary_condition_with_python<
-      NewtonianEuler::BoundaryConditions::Outflow<Dim>,
+      NewtonianEuler::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       NewtonianEuler::BoundaryConditions::BoundaryCondition<Dim>,
       NewtonianEuler::System<Dim, DummyInitialData>,
       tmpl::list<NewtonianEuler::BoundaryCorrections::Rusanov<Dim>>,
       tmpl::list<ConvertPolytropic, ConvertIdeal>>(
       make_not_null(&gen),
-      "Evolution.Systems.NewtonianEuler.BoundaryConditions.Outflow",
+      "Evolution.Systems.NewtonianEuler.BoundaryConditions."
+      "DemandOutgoingCharSpeeds",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
-      "Outflow:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5}, box, ranges);
+      "DemandOutgoingCharSpeeds:\n", Index<Dim - 1>{Dim == 1 ? 1 : 5}, box,
+      ranges);
 }  // namespace
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.NewtonianEuler.BoundaryConditions.Outflow",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.NewtonianEuler.BoundaryConditions.DemandOutgoingCharSpeeds",
+    "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
 
   EquationsOfState::PolytropicFluid<false> eos_polytrope{1.4, 5.0 / 3.0};

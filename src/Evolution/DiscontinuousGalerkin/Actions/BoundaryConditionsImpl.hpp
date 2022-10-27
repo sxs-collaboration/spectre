@@ -213,11 +213,11 @@ void apply_boundary_condition_on_face(
   //
   // Note on the ordering of the data to project: if we are using a ghost
   // boundary condition with a boundary correction, then we know that all the
-  // evolved variables are needed, whereas when using Outflow or Bjorhus
-  // boundary conditions none of the evolved variables might be needed (or only
-  // some subset). Also, the way the typelist is assembled, the evolved vars are
-  // guaranteed to be contiguous, but only if we are doing a ghost boundary
-  // condition.
+  // evolved variables are needed, whereas when using DemandOutgoingCharSpeeds
+  // or Bjorhus boundary conditions none of the evolved variables might be
+  // needed (or only some subset). Also, the way the typelist is assembled, the
+  // evolved vars are guaranteed to be contiguous, but only if we are doing a
+  // ghost boundary condition.
   if constexpr (uses_ghost_condition) {
     project_contiguous_data_to_boundary(make_not_null(&interior_face_fields),
                                         volume_evolved_vars, volume_mesh,
@@ -350,17 +350,17 @@ void apply_boundary_condition_on_face(
   }
 
   if constexpr (BoundaryCondition::bc_type ==
-                evolution::BoundaryConditions::Type::Outflow) {
-    // Outflow boundary conditions only check that all characteristic speeds
-    // are directed out of the element. If there are any inward directed
-    // fields then the boundary condition should error.
-    const auto apply_bc = [&boundary_condition, &face_mesh_velocity,
-                           &interior_normal_covector](
-                              const auto&... face_and_volume_args) {
-      return boundary_condition.dg_outflow(face_mesh_velocity,
-                                           interior_normal_covector,
-                                           face_and_volume_args...);
-    };
+                evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds) {
+    // DemandOutgoingCharSpeeds boundary conditions only check that all
+    // characteristic speeds are directed out of the element. If there are any
+    // inward directed fields then the boundary condition should error.
+    const auto apply_bc =
+        [&boundary_condition, &face_mesh_velocity,
+         &interior_normal_covector](const auto&... face_and_volume_args) {
+          return boundary_condition.dg_demand_outgoing_char_speeds(
+              face_mesh_velocity, interior_normal_covector,
+              face_and_volume_args...);
+        };
     const std::optional<std::string> error_message =
         apply_boundary_condition_impl(
             apply_bc, interior_face_fields, bcondition_interior_tags{},

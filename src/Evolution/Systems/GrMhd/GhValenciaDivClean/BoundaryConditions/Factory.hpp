@@ -15,9 +15,9 @@ namespace detail {
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 using ProductOfConditionsIfConsistent = tmpl::conditional_t<
     (DerivedGhCondition::bc_type ==
-     evolution::BoundaryConditions::Type::Outflow) xor
+     evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds) xor
         (DerivedValenciaCondition::bc_type ==
-         evolution::BoundaryConditions::Type::Outflow),
+         evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds),
     tmpl::list<>,
     ProductOfConditions<DerivedGhCondition, DerivedValenciaCondition>>;
 

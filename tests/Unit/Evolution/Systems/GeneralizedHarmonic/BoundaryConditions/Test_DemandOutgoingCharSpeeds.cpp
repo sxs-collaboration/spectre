@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -28,22 +28,23 @@ void test() {
   MAKE_GENERATOR(gen);
 
   helpers::test_boundary_condition_with_python<
-      GeneralizedHarmonic::BoundaryConditions::Outflow<Dim>,
+      GeneralizedHarmonic::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       GeneralizedHarmonic::BoundaryConditions::BoundaryCondition<Dim>,
       GeneralizedHarmonic::System<Dim>,
       tmpl::list<GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>>>(
-      make_not_null(&gen), "Outflow",
+      make_not_null(&gen), "DemandOutgoingCharSpeeds",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
-      "Outflow:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
+      "DemandOutgoingCharSpeeds:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
       db::DataBox<tmpl::list<>>{},
       tuples::TaggedTuple<helpers::Tags::Range<
           GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1>>{
           std::array{0.0, 1.0}});
 }
 }  // namespace
-SPECTRE_TEST_CASE("Unit.GeneralizedHarmonic.BoundaryConditions.Outflow",
-                  "[Unit][GrMhd]") {
+SPECTRE_TEST_CASE(
+    "Unit.GeneralizedHarmonic.BoundaryConditions.DemandOutgoingCharSpeeds",
+    "[Unit][GrMhd]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/"};
   test<1>();

@@ -406,6 +406,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like an "
-          "outflow boundary condition, you must use that."));
+          "outflow-type boundary condition, you must use that."));
 }
 }  // namespace domain

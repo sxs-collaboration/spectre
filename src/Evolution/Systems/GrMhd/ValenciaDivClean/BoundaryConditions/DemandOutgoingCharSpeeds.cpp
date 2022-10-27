@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Outflow.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 
 #include <cmath>
 #include <cstddef>
@@ -32,16 +32,18 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-Outflow::Outflow(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
+DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
+    : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow::get_clone() const {
-  return std::make_unique<Outflow>(*this);
+DemandOutgoingCharSpeeds::get_clone() const {
+  return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
-void Outflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
-std::optional<std::string> Outflow::dg_outflow(
+std::optional<std::string>
+DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, 3, Frame::Inertial>&
@@ -69,14 +71,15 @@ std::optional<std::string> Outflow::dg_outflow(
   min_speed = std::min(min(-get(lapse) - get(normal_dot_shift)),
                        min(get(lapse) - get(normal_dot_shift)));
   if (min_speed < 0.0) {
-    return {MakeString{} << "Outflow boundary condition violated. Speed: "
-                         << min_speed << "\nn_i: "
-                         << outward_directed_normal_covector << "\n"};
+    return {MakeString{}
+            << "DemandOutgoingCharSpeeds boundary condition violated. Speed: "
+            << min_speed << "\nn_i: " << outward_directed_normal_covector
+            << "\n"};
   }
   return std::nullopt;
 }
 
-void Outflow::fd_outflow(
+void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,
@@ -118,14 +121,14 @@ void Outflow::fd_outflow(
   const size_t num_face_pts{
       subcell_extents.slice_away(dim_direction).product()};
 
-  // The outflow boundary condition below simply uses the outermost values on
+  // The boundary condition below simply uses the outermost values on
   // cell-centered FD grid points to compute face values on the external
   // boundary. This is equivalent to adopting the piecewise constant (lowest
   // order) FD reconstruction for FD cells at the external boundaries.
   //
   // In the future we may want to use more accurate methods (for instance,
   // one-sided characteristic reconstruction using WENO) for imposing
-  // higher-order outflow boundary condition.
+  // higher-order DemandOutgoingCharSpeeds boundary condition.
 
   auto lapse_at_boundary = evolution::dg::subcell::slice_tensor_for_subcell(
       lapse, subcell_extents, 1, direction);
@@ -153,15 +156,16 @@ void Outflow::fd_outflow(
                min(get(lapse_at_boundary) - get(normal_dot_shift)));
 
   if (min_char_speed < 0.0) {
-    ERROR("Subcell outflow boundary condition violated. Speed: "
-          << min_char_speed << "\nn_i: " << outward_directed_normal_covector
-          << "\n");
+    ERROR(
+        "Subcell DemandOutgoingCharSpeeds boundary condition violated. Speed: "
+        << min_char_speed << "\nn_i: " << outward_directed_normal_covector
+        << "\n");
   } else {
-    // Once the outflow condition has been checked, we fill each slices of the
-    // ghost data with the boundary values. The reason that we need this step is
-    // to prevent floating point exceptions being raised while computing the
-    // subcell time derivative because of NaN or uninitialized values in ghost
-    // data.
+    // Once the DemandOutgoingCharSpeeds condition has been checked, we fill
+    // each slices of the ghost data with the boundary values. The reason that
+    // we need this step is to prevent floating point exceptions being raised
+    // while computing the subcell time derivative because of NaN or
+    // uninitialized values in ghost data.
 
     using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
     using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
@@ -238,6 +242,6 @@ void Outflow::fd_outflow(
 }
 
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Outflow::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
 
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

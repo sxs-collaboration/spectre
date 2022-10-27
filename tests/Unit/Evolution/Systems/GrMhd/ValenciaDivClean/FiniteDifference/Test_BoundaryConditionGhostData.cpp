@@ -138,7 +138,7 @@ void test(const BoundaryConditionType& boundary_condition,
   const SolutionForTest solution{mean_velocity, wave_vector, pressure,
                                  adiabatic_index, perturbation_size};
 
-  // Below are tags used for testing Outflow boundary condition
+  // Below are tags used for testing DemandOutgoingCharSpeeds boundary condition
   //  - volume metric and primitive variables on subcell mesh
   //  - mesh velocity
   //  - normal vectors
@@ -156,9 +156,10 @@ void test(const BoundaryConditionType& boundary_condition,
       hydro::Tags::DivergenceCleaningField<DataVector>;
 
   // Use the Minkowski spacetime for spacetime vars, but we manually tweak
-  // values of shift vector so that the outflow condition can be satisfied at
-  // the first place. Later we will change shift vector to its original value
-  // (0.0) and check that the outflow condition is violated as expected.
+  // values of shift vector so that the DemandOutgoingCharSpeeds condition can
+  // be satisfied at the first place. Later we will change shift vector to its
+  // original value (0.0) and check that the DemandOutgoingCharSpeeds condition
+  // is violated as expected.
   Variables<typename System::spacetime_variables_tag::tags_list>
       volume_spacetime_vars{subcell_mesh.number_of_grid_points()};
   volume_spacetime_vars.assign_subset(solution.variables(
@@ -363,11 +364,12 @@ void test(const BoundaryConditionType& boundary_condition,
                             div_cleaning_field_py);
     }
 
-    if (typeid(BoundaryConditionType) == typeid(BoundaryConditions::Outflow)) {
-      // At this moment shift vector was set to be that the outflow condition
-      // does not throw any error. Here we just check if
-      // `fd::BoundaryConditionGhostData::apply()` has correctly filled out
-      // `fd_ghost_data` with the outermost value.
+    if (typeid(BoundaryConditionType) ==
+        typeid(BoundaryConditions::DemandOutgoingCharSpeeds)) {
+      // At this moment shift vector was set to be that the
+      // DemandOutgoingCharSpeedscondition does not throw any error. Here we
+      // just check if `fd::BoundaryConditionGhostData::apply()` has correctly
+      // filled out `fd_ghost_data` with the outermost value.
       Variables<prims_to_reconstruct> expected_ghost_vars{ghost_zone_size *
                                                           num_face_pts};
       get(get<RestMassDensity>(expected_ghost_vars)) = 1.0;
@@ -387,8 +389,8 @@ void test(const BoundaryConditionType& boundary_condition,
                                   get<tag>(fd_ghost_vars));
           });
 
-      // Set shift to be zero so that the outflow condition is violated. See if
-      // the code fails correctly.
+      // Set shift to be zero so that the DemandOutgoingCharSpeeds condition is
+      // violated. See if the code fails correctly.
       db::mutate<gr::Tags::Shift<3>>(
           make_not_null(&box),
           [](const gsl::not_null<tnsr::I<DataVector, 3>*> shift_vector) {
@@ -401,7 +403,8 @@ void test(const BoundaryConditionType& boundary_condition,
             fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                                   ReconstructorForTest{});
           })(),
-          Catch::Contains("Subcell outflow boundary condition violated"));
+          Catch::Contains(
+              "Subcell DemandOutgoingCharSpeeds boundary condition violated"));
 
       // Test when the volume mesh velocity has value, which will raise ERROR.
       // See if the code fails correctly.
@@ -436,9 +439,10 @@ void test(const BoundaryConditionType& boundary_condition,
         get<MagneticField>(expected_ghost_vars).get(i) = 0.5;
       }
       get(get<DivergenceCleaningField>(expected_ghost_vars)) =
-          0.0;  // note the difference from Outflow boundary condition. While
-                // the volume value was set to 1e-2, FreeOutflow boundary should
-                // assign zero to Phi in ghost zones.
+          0.0;  // note the difference from DemandOutgoingCharSpeeds boundary
+                // condition. While the volume value was set to 1e-2,
+                // FreeOutflow boundary should assign zero to Phi in ghost
+                // zones.
 
       tmpl::for_each<prims_to_reconstruct>(
           [&expected_ghost_vars, &fd_ghost_vars](auto tag_v) {
@@ -491,7 +495,7 @@ SPECTRE_TEST_CASE(
   for (const auto test_this :
        {TestCases::BcPointerIsNull, TestCases::AllGoodWithDomain}) {
     test(BoundaryConditions::DirichletAnalytic{}, test_this);
-    test(BoundaryConditions::Outflow{}, test_this);
+    test(BoundaryConditions::DemandOutgoingCharSpeeds{}, test_this);
     test(BoundaryConditions::FreeOutflow{}, test_this);
   }
 

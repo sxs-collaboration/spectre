@@ -226,7 +226,7 @@ void test_rotated_intervals() {
           nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
-          "an outflow boundary condition, you must use that."));
+          "an outflow-type boundary condition, you must use that."));
   CHECK_THROWS_WITH(
       creators::RotatedIntervals(
           lower_bound, midpoint, upper_bound, refinement_level[0],
@@ -238,7 +238,7 @@ void test_rotated_intervals() {
           nullptr, Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
-          "an outflow boundary condition, you must use that."));
+          "an outflow-type boundary condition, you must use that."));
 }
 
 void test_rotated_intervals_factory() {

@@ -35,11 +35,11 @@ enum class Type {
   /// Impose ghost boundary conditions on some of the evolved variables and time
   /// derivative boundary conditions on others.
   GhostAndTimeDerivative,
-  /// Impose outflow boundary conditions on the boundary.
+  /// Require all characteristics to be outgoing on the boundary.
   ///
-  /// Typically the outflow boundary conditions should only check that all
+  /// Typically this boundary condition should only check that all
   /// characteristic speeds are out of the domain.
-  Outflow
+  DemandOutgoingCharSpeeds
 };
 
 std::ostream& operator<<(std::ostream& os, Type boundary_condition_type);

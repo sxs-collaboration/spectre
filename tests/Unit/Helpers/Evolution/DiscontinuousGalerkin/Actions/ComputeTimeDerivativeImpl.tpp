@@ -243,8 +243,7 @@ struct TimeDerivativeTerms {
 
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
-      const Scalar<DataVector>& var3,
-      const Scalar<DataVector>& prim_var1) {
+      const Scalar<DataVector>& var3, const Scalar<DataVector>& prim_var1) {
     apply(dt_var1, dt_var2, flux_var1, flux_var2, square_var3, var1, var2,
           var3);
     get(*dt_var1) += get(prim_var1);
@@ -332,8 +331,7 @@ struct TimeDerivativeTerms {
 
       const Scalar<DataVector>& var1,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
-      const Scalar<DataVector>& var3,
-      const Scalar<DataVector>& prim_var1) {
+      const Scalar<DataVector>& var3, const Scalar<DataVector>& prim_var1) {
     apply(dt_var1, dt_var2, flux_var2, square_var3, d_var1, var1, var2, var3);
     get(*dt_var1) += get(prim_var1);
   }
@@ -434,8 +432,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     *out_normal_dot_flux_var1 = dot_product(flux_var1, normal_covector);
     if (mesh_velocity.has_value()) {
       get(*out_normal_dot_flux_var1) -=
@@ -519,8 +516,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
     if (mesh_velocity.has_value()) {
@@ -573,8 +569,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity,
-      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity)
-      const {
+      const std::optional<Scalar<DataVector>>& normal_dot_mesh_velocity) const {
     get(*out_normal_dot_flux_var1) =
         get(var1) + get(dot_product(var2, normal_covector));
     if (mesh_velocity.has_value()) {
@@ -646,11 +641,11 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim, HasPrims> {
 template <size_t Dim, bool HasPrims>
 PUP::able::PUP_ID BoundaryTerms<Dim, HasPrims>::my_PUP_ID = 0;
 
-// We only use an Outflow boundary condition with a static member variable that
-// we set to verify the call went through. The actual boundary condition
-// implementation is tested elsewhere.
+// We only use an DemandOutgoingCharSpeeds boundary condition with a static
+// member variable that we set to verify the call went through. The actual
+// boundary condition implementation is tested elsewhere.
 template <size_t Dim>
-class Outflow;
+class DemandOutgoingCharSpeeds;
 
 template <size_t Dim>
 class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
@@ -670,28 +665,29 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 };
 
 template <size_t Dim>
-class Outflow : public BoundaryCondition<Dim> {
+class DemandOutgoingCharSpeeds : public BoundaryCondition<Dim> {
  public:
-  Outflow() = default;
-  Outflow(Outflow&&) = default;
-  Outflow& operator=(Outflow&&) = default;
-  Outflow(const Outflow&) = default;
-  Outflow& operator=(const Outflow&) = default;
-  ~Outflow() override = default;
+  DemandOutgoingCharSpeeds() = default;
+  DemandOutgoingCharSpeeds(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds& operator=(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds(const DemandOutgoingCharSpeeds&) = default;
+  DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
+      default;
+  ~DemandOutgoingCharSpeeds() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg)
+  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg)
       : BoundaryCondition<Dim>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
-      domain::BoundaryConditions::BoundaryCondition, Outflow);
+      domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);
 
   auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
-    return std::make_unique<Outflow<Dim>>(*this);
+    return std::make_unique<DemandOutgoingCharSpeeds<Dim>>(*this);
   }
 
   static constexpr ::evolution::BoundaryConditions::Type bc_type =
-      ::evolution::BoundaryConditions::Type::Outflow;
+      ::evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds;
 
   void pup(PUP::er& p) override { BoundaryCondition<Dim>::pup(p); }
 
@@ -700,12 +696,12 @@ class Outflow : public BoundaryCondition<Dim> {
   using dg_interior_temporary_tags = tmpl::list<>;
   using dg_gridless_tags = tmpl::list<>;
 
-  static std::optional<std::string> dg_outflow(
+  static std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
       /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
       /*outward_directed_normal_covector*/) {
-    Outflow<Dim>::number_of_times_called += 1;
+    DemandOutgoingCharSpeeds<Dim>::number_of_times_called += 1;
     return std::nullopt;
   }
 
@@ -713,10 +709,10 @@ class Outflow : public BoundaryCondition<Dim> {
 };
 
 template <size_t Dim>
-PUP::able::PUP_ID Outflow<Dim>::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
 
 template <size_t Dim>
-size_t Outflow<Dim>::number_of_times_called = 0;
+size_t DemandOutgoingCharSpeeds<Dim>::number_of_times_called = 0;
 
 template <size_t Dim, SystemType system_type, bool HasPrimitiveVariables>
 struct System {
@@ -764,8 +760,8 @@ struct component {
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::evolution::dg::Tags::Quadrature, variables_tag,
       db::add_tag_prefix<::Tags::dt, variables_tag>,
-      ::Tags::HistoryEvolvedVariables<variables_tag>,
-      Var3, domain::Tags::Mesh<Metavariables::volume_dim>,
+      ::Tags::HistoryEvolvedVariables<variables_tag>, Var3,
+      domain::Tags::Mesh<Metavariables::volume_dim>,
       ::domain::Tags::FunctionsOfTimeInitialize,
       domain::CoordinateMaps::Tags::CoordinateMap<Metavariables::volume_dim,
                                                   Frame::Grid, Frame::Inertial>,
@@ -851,7 +847,8 @@ struct Metavariables {
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = tmpl::map<
-        tmpl::pair<BoundaryCondition<Dim>, tmpl::list<Outflow<Dim>>>,
+        tmpl::pair<BoundaryCondition<Dim>,
+                   tmpl::list<DemandOutgoingCharSpeeds<Dim>>>,
         tmpl::pair<
             StepChooser<StepChooserUse::LtsStep>,
             tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>>;
@@ -974,19 +971,23 @@ void test_impl(const Spectral::Quadrature quadrature,
                                     .inverse_map()};
       for (const auto& direction : Direction<Dim>::all_directions()) {
         if (direction != Direction<Dim>::lower_eta()) {
-          boundary_conditions[0][direction] = std::make_unique<Outflow<Dim>>();
+          boundary_conditions[0][direction] =
+              std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
         }
         if (direction != element.neighbors()
                              .at(Direction<Dim>::lower_eta())
                              .orientation()(Direction<Dim>::lower_eta())) {
-          boundary_conditions[1][direction] = std::make_unique<Outflow<Dim>>();
+          boundary_conditions[1][direction] =
+              std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
         }
       }
     } else {
       (void)element;
       for (const auto& direction : Direction<Dim>::all_directions()) {
-        boundary_conditions[0][direction] = std::make_unique<Outflow<Dim>>();
-        boundary_conditions[1][direction] = std::make_unique<Outflow<Dim>>();
+        boundary_conditions[0][direction] =
+            std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
+        boundary_conditions[1][direction] =
+            std::make_unique<DemandOutgoingCharSpeeds<Dim>>();
       }
     }
     blocks[0] = Block<Dim>{
@@ -1150,7 +1151,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   // separately), but we need the FunctionsOfTime tag for boundary conditions.
   // When checking boundary conditions we just test that the boundary condition
   // function is called, not that the resulting code is correct, and so we just
-  // use an Outflow condition, which doesn't actually need the coordinate maps.
+  // use an DemandOutgoingCharSpeeds condition, which doesn't actually need the
+  // coordinate maps.
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
       functions_of_time{};
@@ -1298,11 +1300,11 @@ void test_impl(const Spectral::Quadrature quadrature,
   const auto variables_before_compute_time_derivatives =
       get_tag(variables_tag{});
   // Start testing the actual dg::ComputeTimeDerivative action
-  Outflow<Dim>::number_of_times_called = 0;
+  DemandOutgoingCharSpeeds<Dim>::number_of_times_called = 0;
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
   ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
                                                   self_id);
-  CHECK(Outflow<Dim>::number_of_times_called ==
+  CHECK(DemandOutgoingCharSpeeds<Dim>::number_of_times_called ==
         element.external_boundaries().size());
 
   Variables<tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>>
@@ -1557,8 +1559,7 @@ void test_impl(const Spectral::Quadrature quadrature,
        &mesh_velocity, &mortar_meshes, &mortar_sizes, &volume_temporaries,
        &variables_before_compute_time_derivatives](
           const Direction<Dim>& local_direction,
-          const ElementId<Dim>& local_neighbor_id,
-          const bool local_data) {
+          const ElementId<Dim>& local_neighbor_id, const bool local_data) {
         const auto& face_mesh = mesh.slice_away(local_direction.dimension());
         // First project data to the face in the direction of the mortar
         Variables<
@@ -1859,8 +1860,8 @@ void test() {
             // Clang doesn't want moving mesh to be captured, but GCC requires
             // it. Silence the Clang warning by "using" it.
             (void)moving_mesh;
-            if constexpr (not(decltype(use_prims)::value and system_type ==
-                              SystemType::Nonconservative)) {
+            if constexpr (not(decltype(use_prims)::value and
+                              system_type == SystemType::Nonconservative)) {
               test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
                         system_type, std::decay_t<decltype(use_prims)>::value>(
                   quadrature, local_dg_formulation);

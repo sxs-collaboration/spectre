@@ -5,13 +5,13 @@
 
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/FreeOutflow.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Outflow.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
 /// Typelist of standard BoundaryConditions
 using standard_boundary_conditions =
-    tmpl::list<DirichletAnalytic, FreeOutflow, Outflow,
+    tmpl::list<DemandOutgoingCharSpeeds, DirichletAnalytic, FreeOutflow,
                domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions

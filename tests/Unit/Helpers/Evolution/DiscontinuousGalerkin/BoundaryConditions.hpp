@@ -288,18 +288,19 @@ void test_boundary_condition_with_python_impl(
   }
 
   if constexpr (BoundaryCondition::bc_type ==
-                ::evolution::BoundaryConditions::Type::Outflow) {
-    // Outflow boundary conditions only check that all characteristic speeds
-    // are directed out of the element. If there are any inward directed
-    // fields then the boundary condition should error.
+                ::evolution::BoundaryConditions::Type::
+                    DemandOutgoingCharSpeeds) {
+    // DemandOutgoingCharSpeeds boundary conditions only check that all
+    // characteristic speeds are directed out of the element. If there are any
+    // inward directed fields then the boundary condition should error.
     const auto apply_bc =
         [&boundary_condition, &face_mesh_velocity, &interior_normal_covector,
          &python_boundary_condition_functions,
          &python_module](const auto&... face_and_volume_args) {
           const std::optional<std::string> error_msg =
-              boundary_condition.dg_outflow(face_mesh_velocity,
-                                            interior_normal_covector,
-                                            face_and_volume_args...);
+              boundary_condition.dg_demand_outgoing_char_speeds(
+                  face_mesh_velocity, interior_normal_covector,
+                  face_and_volume_args...);
           const std::string& python_error_msg_function =
               get_python_error_message_function<BoundaryCorrection>(
                   python_boundary_condition_functions);
@@ -504,11 +505,12 @@ using get_boundary_conditions = typename get_boundary_conditions_impl<T>::type;
  * error message. For ghost cell boundary conditions they must also return the
  * arguments needed by the boundary correction's `dg_package_data` function by
  * `gsl::not_null`. Time derivative boundary conditions return the correction
- * added to the time derivatives by `gsl::not_null`, while outflow boundary
- * conditions should only check that the boundary is actually an outflow
- * boundary. Therefore, the comparison implementation in python must have a
- * function for each of these. Which function is called is specified using a
- * `python_boundary_condition_functions` and `Tags::PythonFunctionName`.
+ * added to the time derivatives by `gsl::not_null`, while
+ * DemandOutgoingCharSpeeds boundary conditions should only check that all the
+ * characteristics are outgoing. Therefore, the comparison implementation in
+ * python must have a function for each of these. Which function is called is
+ * specified using a `python_boundary_condition_functions` and
+ * `Tags::PythonFunctionName`.
  *
  * The specific boundary condition and system need to be explicitly given.
  * Once the boundary condition and boundary correction base classes are
@@ -575,7 +577,8 @@ void test_boundary_condition_with_python(
       boundary_condition = [&factory_string]() {
         if constexpr (std::is_same_v<Metavariables, NoSuchType>) {
           return TestHelpers::test_factory_creation<BoundaryConditionBase,
-                                             BoundaryCondition>(factory_string);
+                                                    BoundaryCondition>(
+              factory_string);
         } else {
           return TestHelpers::test_creation<
               std::unique_ptr<BoundaryConditionBase>, Metavariables>(

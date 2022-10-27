@@ -10,5 +10,5 @@ def error(face_mesh_velocity, outward_directed_normal_covector, u):
         speed -= face_mesh_velocity[0] * outward_directed_normal_covector[0]
 
     if speed < 0.0:
-        return "Outflow boundary condition violated with speed U ingoing:.*"
+        return "DemandOutgoingCharSpeeds boundary condition violated"
     return None

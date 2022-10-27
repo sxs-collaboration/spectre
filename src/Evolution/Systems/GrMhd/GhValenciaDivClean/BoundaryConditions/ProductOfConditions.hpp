@@ -55,25 +55,33 @@ struct UnionOfBcTypes<evolution::BoundaryConditions::Type::TimeDerivative,
 };
 
 template <evolution::BoundaryConditions::Type GhBcType>
-struct UnionOfBcTypes<GhBcType, evolution::BoundaryConditions::Type::Outflow> {
-  static_assert(GhBcType == evolution::BoundaryConditions::Type::Outflow,
-                "If either boundary condition in `ProductOfConditions` has "
-                "`Type::Outflow`, both must have `Type::Outflow`");
+struct UnionOfBcTypes<
+    GhBcType, evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds> {
+  static_assert(
+      GhBcType == evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds,
+      "If either boundary condition in `ProductOfConditions` has "
+      "`Type::DemandOutgoingCharSpeeds`, both must have "
+      "`Type::DemandOutgoingCharSpeeds`");
 };
 
 template <evolution::BoundaryConditions::Type ValenciaBcType>
-struct UnionOfBcTypes<evolution::BoundaryConditions::Type::Outflow,
-                      ValenciaBcType> {
-  static_assert(ValenciaBcType == evolution::BoundaryConditions::Type::Outflow,
-                "If either boundary condition in `ProductOfConditions` has "
-                "`Type::Outflow`, both must have `Type::Outflow`");
+struct UnionOfBcTypes<
+    evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds,
+    ValenciaBcType> {
+  static_assert(
+      ValenciaBcType ==
+          evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds,
+      "If either boundary condition in `ProductOfConditions` has "
+      "`Type::DemandOutgoingCharSpeeds`, both must have "
+      "`Type::DemandOutgoingCharSpeeds`");
 };
 
 template <>
-struct UnionOfBcTypes<evolution::BoundaryConditions::Type::Outflow,
-                      evolution::BoundaryConditions::Type::Outflow> {
+struct UnionOfBcTypes<
+    evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds,
+    evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds> {
   static constexpr evolution::BoundaryConditions::Type bc_type =
-      evolution::BoundaryConditions::Type::Outflow;
+      evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds;
 };
 
 struct ValenciaDoNothingGhostCondition {
@@ -379,7 +387,7 @@ struct ProductOfConditionsImpl<
   }
 
   template <typename... GridlessVariables>
-  static std::optional<std::string> dg_outflow(
+  static std::optional<std::string> dg_demand_outgoing_char_speeds(
       const DerivedGhCondition& gh_condition,
       const DerivedValenciaCondition& valencia_condition,
 
@@ -416,10 +424,11 @@ struct ProductOfConditionsImpl<
         Tags::detail::TemporaryReference<DeduplicatedInteriorEvolvedTags>...>
         shuffle_refs{gridless_variables..., temp_variables...,
                      int_evolved_variables...};
-    // outflow condition is only valid if both boundary conditions are outflow,
-    // so we directly apply both. A static_assert elsewhere is triggered if only
-    // one boundary condition is outflow.
-    auto gh_string = gh_condition.dg_outflow(
+    // DemandOutgoingCharSpeeds condition is only valid if both boundary
+    // conditions are DemandOutgoingCharSpeeds, so we directly apply both. A
+    // static_assert elsewhere is triggered if only one boundary condition is
+    // DemandOutgoingCharSpeeds.
+    auto gh_string = gh_condition.dg_demand_outgoing_char_speeds(
         face_mesh_velocity, normal_covector, normal_vector,
         tuples::get<Tags::detail::TemporaryReference<GhInteriorEvolvedTags>>(
             shuffle_refs)...,
@@ -430,7 +439,7 @@ struct ProductOfConditionsImpl<
         tuples::get<Tags::detail::TemporaryReference<
             GhGridlessTags, tmpl::at<gridless_tags_and_types, GhGridlessTags>>>(
             shuffle_refs)...);
-    auto valencia_string = valencia_condition.dg_outflow(
+    auto valencia_string = valencia_condition.dg_demand_outgoing_char_speeds(
         face_mesh_velocity, normal_covector, normal_vector,
         tuples::get<
             Tags::detail::TemporaryReference<ValenciaInteriorEvolvedTags>>(
@@ -558,7 +567,7 @@ struct ProductOfConditionsImpl<
  * It is anticipated that the systems are sufficiently independent that the
  * order of application is inconsequential. Arbitrary combinations of differing
  * `bc_type`s for the two systems are supported, with the only restriction that
- * if either is an outflow condition, both must be.
+ * if either is an DemandOutgoingCharSpeeds condition, both must be.
  */
 template <typename DerivedGhCondition, typename DerivedValenciaCondition>
 class ProductOfConditions final : public BoundaryCondition {
@@ -713,10 +722,11 @@ class ProductOfConditions final : public BoundaryCondition {
   }
 
   template <typename... Args>
-  std::optional<std::string> dg_outflow(Args&&... args) const {
-    return product_of_conditions_impl::dg_outflow(derived_gh_condition_,
-                                                  derived_valencia_condition_,
-                                                  std::forward<Args>(args)...);
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
+      Args&&... args) const {
+    return product_of_conditions_impl::dg_demand_outgoing_char_speeds(
+        derived_gh_condition_, derived_valencia_condition_,
+        std::forward<Args>(args)...);
   }
 
   template <typename... Args>

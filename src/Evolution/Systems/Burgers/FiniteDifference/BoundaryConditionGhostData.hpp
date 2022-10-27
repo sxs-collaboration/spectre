@@ -152,9 +152,10 @@ void BoundaryConditionGhostData::apply(
             apply_subcell_boundary_condition_impl(apply_fd_ghost, box,
                                                   bcondition_interior_tags{});
           } else if constexpr (BoundaryCondition::bc_type ==
-                               evolution::BoundaryConditions::Type::Outflow) {
-            // Outflow boundary condition only checks if the characteristic
-            // speed is directed out of the element.
+                               evolution::BoundaryConditions::Type::
+                                   DemandOutgoingCharSpeeds) {
+            // This boundary condition only checks if all the characteristic
+            // speeds are directed outward.
             const auto& volume_mesh_velocity =
                 db::get<domain::Tags::MeshVelocity<1, Frame::Inertial>>(*box);
             if (volume_mesh_velocity.has_value()) {
@@ -169,19 +170,21 @@ void BoundaryConditionGhostData::apply(
             const auto& outward_directed_normal_covector =
                 get<evolution::dg::Tags::NormalCovector<1>>(
                     normal_covector_and_magnitude.at(direction).value());
-            const auto apply_fd_outflow =
+            const auto apply_fd_demand_outgoing_char_speeds =
                 [&boundary_condition, &direction, &face_mesh_velocity,
                  &ghost_data_vars, &outward_directed_normal_covector](
                     const auto&... boundary_ghost_data_args) {
                   return (*boundary_condition)
-                      .fd_outflow(make_not_null(
-                                      &get<Burgers::Tags::U>(ghost_data_vars)),
-                                  direction, face_mesh_velocity,
-                                  outward_directed_normal_covector,
-                                  boundary_ghost_data_args...);
+                      .fd_demand_outgoing_char_speeds(
+                          make_not_null(
+                              &get<Burgers::Tags::U>(ghost_data_vars)),
+                          direction, face_mesh_velocity,
+                          outward_directed_normal_covector,
+                          boundary_ghost_data_args...);
                 };
-            apply_subcell_boundary_condition_impl(apply_fd_outflow, box,
-                                                  bcondition_interior_tags{});
+            apply_subcell_boundary_condition_impl(
+                apply_fd_demand_outgoing_char_speeds, box,
+                bcondition_interior_tags{});
 
             return;
           } else {

@@ -412,7 +412,7 @@ void test_cylinder_no_refinement() {
                                  Options::Context{false, {}, 1, 1}),
               Catch::Matchers::Contains(
                   "None boundary condition is not supported. If you would like "
-                  "an outflow boundary condition, you must use that."));
+                  "an outflow-type boundary condition, you must use that."));
           CHECK_THROWS_WITH(
               creators::Cylinder(
                   inner_radius, outer_radius, lower_z_bound, upper_z_bound,
@@ -423,7 +423,7 @@ void test_cylinder_no_refinement() {
                   distribution_in_z, Options::Context{false, {}, 1, 1}),
               Catch::Matchers::Contains(
                   "None boundary condition is not supported. If you would like "
-                  "an outflow boundary condition, you must use that."));
+                  "an outflow-type boundary condition, you must use that."));
           CHECK_THROWS_WITH(
               creators::Cylinder(
                   inner_radius, outer_radius, lower_z_bound, upper_z_bound,
@@ -434,7 +434,7 @@ void test_cylinder_no_refinement() {
                   distribution_in_z, Options::Context{false, {}, 1, 1}),
               Catch::Matchers::Contains(
                   "None boundary condition is not supported. If you would like "
-                  "an outflow boundary condition, you must use that."));
+                  "an outflow-type boundary condition, you must use that."));
         }
       }  // periodic_in_z
     }    // equiangular_map
