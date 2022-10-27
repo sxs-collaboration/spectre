@@ -7,7 +7,7 @@ spectre_target_sources(
   BoundaryCondition.cpp
   DemandOutgoingCharSpeeds.cpp
   DirichletAnalytic.cpp
-  FreeOutflow.cpp
+  HydroFreeOutflow.cpp
   )
 
 spectre_target_headers(
@@ -18,5 +18,5 @@ spectre_target_headers(
   DemandOutgoingCharSpeeds.hpp
   DirichletAnalytic.hpp
   Factory.hpp
-  FreeOutflow.hpp
+  HydroFreeOutflow.hpp
   )

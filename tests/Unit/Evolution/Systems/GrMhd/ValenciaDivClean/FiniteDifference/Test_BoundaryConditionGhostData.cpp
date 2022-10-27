@@ -426,7 +426,7 @@ void test(const BoundaryConditionType& boundary_condition,
     }
 
     if (typeid(BoundaryConditionType) ==
-        typeid(BoundaryConditions::FreeOutflow)) {
+        typeid(BoundaryConditions::HydroFreeOutflow)) {
       Variables<prims_to_reconstruct> expected_ghost_vars{ghost_zone_size *
                                                           num_face_pts};
       // cf) See line 172-179 for values of prim variables in volume.
@@ -441,7 +441,7 @@ void test(const BoundaryConditionType& boundary_condition,
       get(get<DivergenceCleaningField>(expected_ghost_vars)) =
           0.0;  // note the difference from DemandOutgoingCharSpeeds boundary
                 // condition. While the volume value was set to 1e-2,
-                // FreeOutflow boundary should assign zero to Phi in ghost
+                // HydroFreeOutflow boundary should assign zero to Phi in ghost
                 // zones.
 
       tmpl::for_each<prims_to_reconstruct>(
@@ -496,7 +496,7 @@ SPECTRE_TEST_CASE(
        {TestCases::BcPointerIsNull, TestCases::AllGoodWithDomain}) {
     test(BoundaryConditions::DirichletAnalytic{}, test_this);
     test(BoundaryConditions::DemandOutgoingCharSpeeds{}, test_this);
-    test(BoundaryConditions::FreeOutflow{}, test_this);
+    test(BoundaryConditions::HydroFreeOutflow{}, test_this);
   }
 
 // check that the periodic BC fails
