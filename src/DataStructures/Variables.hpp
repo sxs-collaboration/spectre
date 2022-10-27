@@ -271,24 +271,33 @@ class Variables<tmpl::list<Tags...>> {
 
   /// @{
   /// \brief Assign a subset of the `Tensor`s from another Variables or a
-  /// tuples::TaggedTuple
+  /// tuples::TaggedTuple. Any tags that aren't in both containers are
+  /// ignored.
   ///
   /// \note There is no need for an rvalue overload because we need to copy into
   /// the contiguous array anyway
-  template <typename... SubsetOfTags,
-            Requires<tmpl2::flat_all<tmpl::list_contains_v<
-                tmpl::list<Tags...>, SubsetOfTags>...>::value> = nullptr>
+  template <typename... SubsetOfTags>
   void assign_subset(const Variables<tmpl::list<SubsetOfTags...>>& vars) {
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
+    EXPAND_PACK_LEFT_TO_RIGHT([this, &vars]() {
+      if constexpr (tmpl::list_contains_v<tmpl::list<Tags...>, SubsetOfTags>) {
+        get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars);
+      } else {
+        (void)this;
+        (void)vars;
+      }
+    }());
   }
 
-  template <typename... SubsetOfTags,
-            Requires<tmpl2::flat_all<tmpl::list_contains_v<
-                tmpl::list<Tags...>, SubsetOfTags>...>::value> = nullptr>
+  template <typename... SubsetOfTags>
   void assign_subset(const tuples::TaggedTuple<SubsetOfTags...>& vars) {
-    EXPAND_PACK_LEFT_TO_RIGHT(
-        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
+    EXPAND_PACK_LEFT_TO_RIGHT([this, &vars]() {
+      if constexpr (tmpl::list_contains_v<tmpl::list<Tags...>, SubsetOfTags>) {
+        get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars);
+      } else {
+        (void)this;
+        (void)vars;
+      }
+    }());
   }
   /// @}
 

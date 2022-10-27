@@ -9,6 +9,7 @@
 #include <random>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "DataStructures/ComplexDataVector.hpp"
@@ -973,6 +974,29 @@ void test_variables_assign_subset() {
               number_of_grid_points, values_in_variables[2]}),
       values_in_variables[1], values_in_variables[2]);
 
+  test_assign_to_vars_with_two_tags(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                           TestHelpers::Tags::OneForm<VectorType>>>(
+          number_of_grid_points, values_in_variables[1]),
+      Variables<tmpl::list<TestHelpers::Tags::Scalar<VectorType>,
+                           TestHelpers::Tags::OneForm<VectorType>>>(
+          number_of_grid_points, values_in_variables[2]),
+      values_in_variables[1], values_in_variables[2]);
+  test_assign_to_vars_with_two_tags(
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>,
+                          TestHelpers::Tags::OneForm<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
+              number_of_grid_points, values_in_variables[1]},
+          typename TestHelpers::Tags::OneForm<VectorType>::type{
+              number_of_grid_points, values_in_variables[0]}),
+      tuples::TaggedTuple<TestHelpers::Tags::Scalar<VectorType>,
+                          TestHelpers::Tags::OneForm<VectorType>>(
+          typename TestHelpers::Tags::Scalar<VectorType>::type{
+              number_of_grid_points, values_in_variables[2]},
+          typename TestHelpers::Tags::OneForm<VectorType>::type{
+              number_of_grid_points, values_in_variables[0]}),
+      values_in_variables[1], values_in_variables[2]);
+
   // Test assigning a single tag to a Variables with three tags, either from a
   // Variables or a TaggedTuple
   const auto test_assign_to_vars_with_three_tags = [&number_of_grid_points,
@@ -1025,6 +1049,29 @@ void test_variables_assign_subset() {
               number_of_grid_points, values_in_variables[2]}),
       values_in_variables[1], values_in_variables[2]);
 
+  test_assign_to_vars_with_three_tags(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                           TestHelpers::Tags::OneForm<VectorType>>>(
+          number_of_grid_points, values_in_variables[1]),
+      Variables<tmpl::list<TestHelpers::Tags::Scalar<VectorType>,
+                           TestHelpers::Tags::OneForm<VectorType>>>(
+          number_of_grid_points, values_in_variables[2]),
+      values_in_variables[1], values_in_variables[2]);
+  test_assign_to_vars_with_three_tags(
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>,
+                          TestHelpers::Tags::OneForm<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
+              number_of_grid_points, values_in_variables[1]},
+          typename TestHelpers::Tags::OneForm<VectorType>::type{
+              number_of_grid_points, values_in_variables[0]}),
+      tuples::TaggedTuple<TestHelpers::Tags::Scalar<VectorType>,
+                          TestHelpers::Tags::OneForm<VectorType>>(
+          typename TestHelpers::Tags::Scalar<VectorType>::type{
+              number_of_grid_points, values_in_variables[2]},
+          typename TestHelpers::Tags::OneForm<VectorType>::type{
+              number_of_grid_points, values_in_variables[0]}),
+      values_in_variables[1], values_in_variables[2]);
+
   // Test assignment to a Variables with a single tag either from a Variables or
   // a TaggedTuple
   const auto test_assign_to_vars_with_one_tag =
@@ -1048,6 +1095,20 @@ void test_variables_assign_subset() {
       tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>>(
           typename TestHelpers::Tags::Vector<VectorType>::type{
               number_of_grid_points, values_in_variables[1]}),
+      values_in_variables[1]);
+
+  test_assign_to_vars_with_one_tag(
+      Variables<tmpl::list<TestHelpers::Tags::Vector<VectorType>,
+                           TestHelpers::Tags::OneForm<VectorType>>>(
+          number_of_grid_points, values_in_variables[1]),
+      values_in_variables[1]);
+  test_assign_to_vars_with_one_tag(
+      tuples::TaggedTuple<TestHelpers::Tags::Vector<VectorType>,
+                          TestHelpers::Tags::OneForm<VectorType>>(
+          typename TestHelpers::Tags::Vector<VectorType>::type{
+              number_of_grid_points, values_in_variables[1]},
+          typename TestHelpers::Tags::OneForm<VectorType>::type{
+              number_of_grid_points, values_in_variables[0]}),
       values_in_variables[1]);
 }
 
