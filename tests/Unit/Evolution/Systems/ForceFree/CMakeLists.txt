@@ -4,6 +4,7 @@
 set(LIBRARY Test_ForceFree)
 
 set(LIBRARY_SOURCES
+  Test_Characteristics.cpp
   Test_Tags.cpp
   )
 
