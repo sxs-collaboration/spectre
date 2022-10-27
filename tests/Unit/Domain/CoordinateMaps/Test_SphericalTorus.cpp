@@ -109,7 +109,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SphericalTorus",
                 return std::array{partial_torus.jacobian(x).get(i, j),
                                   partial_torus.inv_jacobian(x).get(i, j)};
               },
-              test_point, k, 1e-2);
+              test_point, k, 1e-3);
           auto deriv_approx = Approx::custom().epsilon(1.0e-9).scale(1.0);
           CHECK(analytic.get(i, j, k) == deriv_approx(numerical[0]));
           CHECK(analytic_inverse.get(i, j, k) == deriv_approx(numerical[1]));
