@@ -92,6 +92,9 @@ void test_boundary_correction_combination(
         DerivedGhCorrection, DerivedValenciaCorrection>&
         derived_product_correction,
     const dg::Formulation formulation) {
+  CHECK(derived_product_correction.gh_correction() == derived_gh_correction);
+  CHECK(derived_product_correction.valencia_correction() ==
+        derived_valencia_correction);
   using gh_variables_tags =
       typename GeneralizedHarmonic::System<3_st>::variables_tag::tags_list;
   using valencia_variables_tags =

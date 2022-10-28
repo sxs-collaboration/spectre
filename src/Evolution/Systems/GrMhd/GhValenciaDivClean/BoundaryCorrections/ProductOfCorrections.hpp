@@ -242,6 +242,14 @@ class ProductOfCorrections final : public BoundaryCorrection {
         derived_valencia_correction_);
   }
 
+  const DerivedGhCorrection& gh_correction() const {
+    return derived_gh_correction_;
+  }
+
+  const DerivedValenciaCorrection& valencia_correction() const {
+    return derived_valencia_correction_;
+  }
+
  private:
   DerivedGhCorrection derived_gh_correction_;
   DerivedValenciaCorrection derived_valencia_correction_;
