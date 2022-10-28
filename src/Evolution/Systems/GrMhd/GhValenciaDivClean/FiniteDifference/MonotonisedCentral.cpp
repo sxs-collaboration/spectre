@@ -26,8 +26,10 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
+#include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
@@ -69,7 +71,22 @@ void MonotonisedCentralPrim::reconstruct(
         std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh) const {
-  reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<3>>>(
+  using prim_tags_for_reconstruction =
+      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
+  using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
+      primitive_grmhd_and_spacetime_reconstruction_tags;
+
+  FixedHashMap<maximum_number_of_neighbors(dim),
+               std::pair<Direction<dim>, ElementId<dim>>,
+               Variables<all_tags_for_reconstruction>,
+               boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>
+      neighbor_variables_data{};
+  ::fd::neighbor_data_as_variables<dim>(make_not_null(&neighbor_variables_data),
+                                        neighbor_data, ghost_zone_size(),
+                                        subcell_mesh);
+
+  reconstruct_prims_work<tmpl::list<gr::Tags::SpacetimeMetric<3>>,
+                         prim_tags_for_reconstruction>(
       vars_on_lower_face, vars_on_upper_face,
       [](auto upper_face_vars_ptr, auto lower_face_vars_ptr,
          const auto& volume_vars, const auto& ghost_cell_vars,
@@ -107,8 +124,8 @@ void MonotonisedCentralPrim::reconstruct(
         gr::lapse(make_not_null(&get<gr::Tags::Lapse<>>(*vars_on_face_ptr)),
                   shift, spacetime_metric);
       },
-      volume_prims, volume_spacetime_and_cons_vars, eos, element, neighbor_data,
-      subcell_mesh, ghost_zone_size());
+      volume_prims, volume_spacetime_and_cons_vars, eos, element,
+      neighbor_variables_data, subcell_mesh, ghost_zone_size(), true);
 }
 
 template <size_t ThermodynamicDim, typename TagsList>
@@ -126,7 +143,13 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
         boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
-  reconstruct_fd_neighbor_work(
+  using prim_tags_for_reconstruction =
+      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
+  using all_tags_for_reconstruction = grmhd::GhValenciaDivClean::Tags::
+      primitive_grmhd_and_spacetime_reconstruction_tags;
+  reconstruct_fd_neighbor_work<Tags::spacetime_reconstruction_tags,
+                               prim_tags_for_reconstruction,
+                               all_tags_for_reconstruction>(
       vars_on_face,
       [](const auto tensor_component_on_face_ptr,
          const auto& tensor_component_volume,
@@ -203,7 +226,8 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
                   shift, spacetime_metric);
       },
       subcell_volume_prims, subcell_volume_spacetime_metric, eos, element,
-      neighbor_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size());
+      neighbor_data, subcell_mesh, direction_to_reconstruct, ghost_zone_size(),
+      true);
 }
 
 bool operator==(const MonotonisedCentralPrim& /*lhs*/,
