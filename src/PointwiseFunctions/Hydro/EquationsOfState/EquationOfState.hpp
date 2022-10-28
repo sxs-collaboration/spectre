@@ -43,9 +43,11 @@ struct DerivedClasses {};
 
 template <>
 struct DerivedClasses<true, 1> {
-  using type =
-      tmpl::list<Spectral, Enthalpy<Spectral>, PiecewisePolytropicFluid<true>,
-                 PolytropicFluid<true>>;
+  using type = tmpl::list<Enthalpy<Enthalpy<Enthalpy<Spectral>>>,
+                          Enthalpy<Enthalpy<Spectral>>, Enthalpy<Spectral>,
+                          Enthalpy<PolytropicFluid<true>>,
+                          PiecewisePolytropicFluid<true>, PolytropicFluid<true>,
+                          Spectral>;
 };
 
 template <>

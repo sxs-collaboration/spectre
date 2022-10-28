@@ -25,7 +25,7 @@ void check_exact() {
   Parallel::register_derived_classes_with_charm<EquationOfState<true, 1>>();
   const auto eos_pointer = serialize_and_deserialize(
       TestHelpers::test_creation<std::unique_ptr<EquationOfState<true, 1>>>(
-          {"Enthalpy:\n"
+          {"Enthalpy(Spectral):\n"
            "  ReferenceDensity: 2.0\n"
            "  MinimumDensity: 4.0\n"
            "  MaximumDensity: 100.0\n"
