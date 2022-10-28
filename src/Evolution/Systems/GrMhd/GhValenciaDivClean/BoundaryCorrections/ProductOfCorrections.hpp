@@ -219,9 +219,9 @@ class ProductOfCorrections final : public BoundaryCorrection {
   WRAPPED_PUPable_decl_template(ProductOfCorrections);  // NOLINT
   /// \endcond
   void pup(PUP::er& p) override {
+    BoundaryCorrection::pup(p);
     p | derived_gh_correction_;
     p | derived_valencia_correction_;
-    BoundaryCorrection::pup(p);
   }
 
   std::unique_ptr<BoundaryCorrection> get_clone() const override {
