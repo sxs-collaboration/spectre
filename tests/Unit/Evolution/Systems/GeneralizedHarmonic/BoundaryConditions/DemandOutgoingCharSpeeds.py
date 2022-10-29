@@ -21,7 +21,7 @@ def error(face_mesh_velocity, outward_directed_normal_covector,
             speeds[i] -= np.dot(outward_directed_normal_covector,
                                 face_mesh_velocity)
         if speeds[i] < 0.0:
-            return ("Outflow boundary condition violated with speed index .*")
+            return ("DemandOutgoingCharSpeeds boundary condition violated")
     return None
 
     pass

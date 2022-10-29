@@ -200,7 +200,7 @@ void test_interval() {
             nullptr, Options::Context{false, {}, 1, 1}),
         Catch::Matchers::Contains(
             "None boundary condition is not supported. If you would like an "
-            "outflow boundary condition, you must use that."));
+            "outflow-type boundary condition, you must use that."));
     CHECK_THROWS_WITH(
         creators::Interval(
             lower_bound, upper_bound, refinement_level[0], grid_points[0],
@@ -211,7 +211,7 @@ void test_interval() {
             nullptr, Options::Context{false, {}, 1, 1}),
         Catch::Matchers::Contains(
             "None boundary condition is not supported. If you would like an "
-            "outflow boundary condition, you must use that."));
+            "outflow-type boundary condition, you must use that."));
   }
 }
 

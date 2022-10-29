@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/Outflow.hpp"
+#include "Evolution/Systems/NewtonianEuler/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 
 #include <cstddef>
 #include <memory>
@@ -24,27 +24,29 @@
 
 namespace NewtonianEuler::BoundaryConditions {
 template <size_t Dim>
-Outflow<Dim>::Outflow(CkMigrateMessage* const msg)
+DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
+    CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow<Dim>::get_clone() const {
-  return std::make_unique<Outflow>(*this);
+DemandOutgoingCharSpeeds<Dim>::get_clone() const {
+  return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
 template <size_t Dim>
-void Outflow<Dim>::pup(PUP::er& p) {
+void DemandOutgoingCharSpeeds<Dim>::pup(PUP::er& p) {
   BoundaryCondition<Dim>::pup(p);
 }
 
 template <size_t Dim>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Outflow<Dim>::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
 
 template <size_t Dim>
 template <size_t ThermodynamicDim>
-std::optional<std::string> Outflow<Dim>::dg_outflow(
+std::optional<std::string>
+DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -84,9 +86,10 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
   }
 
   if (min_char_speed < 0.0) {
-    return {MakeString{} << "Outflow boundary condition violated with the "
-                            "characteristic speed : "
-                         << min_char_speed << "\n"};
+    return {MakeString{}
+            << "DemandOutgoingCharSpeeds boundary condition violated with the "
+               "characteristic speed : "
+            << min_char_speed << "\n"};
   }
 
   return std::nullopt;
@@ -94,7 +97,8 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data) template class Outflow<DIM(data)>;
+#define INSTANTIATION(_, data) \
+  template class DemandOutgoingCharSpeeds<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
@@ -104,7 +108,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #define INSTANTIATION(_, data)                                              \
   template std::optional<std::string>                                       \
-  Outflow<DIM(data)>::dg_outflow<THERMODIM(data)>(                          \
+  DemandOutgoingCharSpeeds<DIM(data)>::dg_demand_outgoing_char_speeds<      \
+      THERMODIM(data)>(                                                     \
       const std::optional<tnsr::I<DataVector, DIM(data), Frame::Inertial>>& \
           face_mesh_velocity,                                               \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                \

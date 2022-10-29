@@ -90,7 +90,7 @@ Shell::Shell(
     PARSE_ERROR(
         context,
         "None boundary condition is not supported. If you would like an "
-        "outflow boundary condition, you must use that.");
+        "outflow-type boundary condition, you must use that.");
   }
   using domain::BoundaryConditions::is_periodic;
   if (is_periodic(inner_boundary_condition_) or

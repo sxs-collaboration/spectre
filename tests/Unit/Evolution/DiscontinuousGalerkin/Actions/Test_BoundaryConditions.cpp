@@ -715,7 +715,7 @@ PUP::able::PUP_ID
 // We template them on the system so we can test that we have access to all the
 // different tags that we should have access to.
 template <typename System>
-class Outflow;
+class DemandOutgoingCharSpeeds;
 template <typename System>
 class TimeDerivative;
 template <typename System>
@@ -741,29 +741,31 @@ class BoundaryCondition : public domain::BoundaryConditions::BoundaryCondition {
 };
 
 template <typename System>
-class Outflow : public BoundaryCondition<System> {
+class DemandOutgoingCharSpeeds : public BoundaryCondition<System> {
  public:
-  Outflow() = default;
-  explicit Outflow(const bool mesh_is_moving)
+  DemandOutgoingCharSpeeds() = default;
+  explicit DemandOutgoingCharSpeeds(const bool mesh_is_moving)
       : mesh_is_moving_(mesh_is_moving) {}
-  Outflow(Outflow&&) = default;
-  Outflow& operator=(Outflow&&) = default;
-  Outflow(const Outflow&) = default;
-  Outflow& operator=(const Outflow&) = default;
-  ~Outflow() override = default;
+  DemandOutgoingCharSpeeds(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds& operator=(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds(const DemandOutgoingCharSpeeds&) = default;
+  DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
+      default;
+  ~DemandOutgoingCharSpeeds() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg) : BoundaryCondition<System>(msg) {}
+  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg)
+      : BoundaryCondition<System>(msg) {}
 
   WRAPPED_PUPable_decl_base_template(
-      domain::BoundaryConditions::BoundaryCondition, Outflow);
+      domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);
 
   auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override {
-    return std::make_unique<Outflow<System>>(*this);
+    return std::make_unique<DemandOutgoingCharSpeeds<System>>(*this);
   }
 
   static constexpr ::evolution::BoundaryConditions::Type bc_type =
-      ::evolution::BoundaryConditions::Type::Outflow;
+      ::evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds;
 
   // NOLINTNEXTLINE
   void pup(PUP::er& p) override {
@@ -779,7 +781,7 @@ class Outflow : public BoundaryCondition<System> {
   using dg_interior_dt_vars_tags = tmpl::list<::Tags::dt<Tags::Var1>>;
   using dg_gridless_tags = tmpl::list<Tags::BoundaryConditionVolumeTag>;
 
-  std::optional<std::string> dg_outflow(
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, System::volume_dim,
                                   Frame::Inertial>>& face_mesh_velocity,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
@@ -828,7 +830,7 @@ class Outflow : public BoundaryCondition<System> {
     return std::nullopt;
   }
 
-  std::optional<std::string> dg_outflow(
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, System::volume_dim,
                                   Frame::Inertial>>& face_mesh_velocity,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
@@ -839,15 +841,16 @@ class Outflow : public BoundaryCondition<System> {
       const tnsr::I<DataVector, System::volume_dim, Frame::Inertial>& var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const double volume_number) const {
-    dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
-               var3_squared, dt_var1, volume_number);
+    dg_demand_outgoing_char_speeds(face_mesh_velocity,
+                                   outward_directed_normal_covector, var1, var2,
+                                   var3_squared, dt_var1, volume_number);
     CHECK_ITERABLE_APPROX(get(dot_product(outward_directed_normal_covector,
                                           outward_directed_normal_vector)),
                           DataVector(get(var1).size(), 1.0));
     return std::nullopt;
   }
 
-  std::optional<std::string> dg_outflow(
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, System::volume_dim,
                                   Frame::Inertial>>& face_mesh_velocity,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
@@ -858,8 +861,9 @@ class Outflow : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const double volume_number) const {
-    dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
-               var3_squared, dt_var1, volume_number);
+    dg_demand_outgoing_char_speeds(face_mesh_velocity,
+                                   outward_directed_normal_covector, var1, var2,
+                                   var3_squared, dt_var1, volume_number);
     const size_t num_pts = get(var1).size();
     CHECK_ITERABLE_APPROX(get(prim_var1),
                           DataVector(num_pts, offset_primitive_vars));
@@ -870,7 +874,7 @@ class Outflow : public BoundaryCondition<System> {
     return std::nullopt;
   }
 
-  std::optional<std::string> dg_outflow(
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, System::volume_dim,
                                   Frame::Inertial>>& face_mesh_velocity,
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>&
@@ -883,8 +887,9 @@ class Outflow : public BoundaryCondition<System> {
       const tnsr::i<DataVector, System::volume_dim, Frame::Inertial>& prim_var2,
       const Scalar<DataVector>& var3_squared, const Scalar<DataVector>& dt_var1,
       const double volume_number) const {
-    dg_outflow(face_mesh_velocity, outward_directed_normal_covector, var1, var2,
-               prim_var1, prim_var2, var3_squared, dt_var1, volume_number);
+    dg_demand_outgoing_char_speeds(
+        face_mesh_velocity, outward_directed_normal_covector, var1, var2,
+        prim_var1, prim_var2, var3_squared, dt_var1, volume_number);
     CHECK_ITERABLE_APPROX(get(dot_product(outward_directed_normal_covector,
                                           outward_directed_normal_vector)),
                           DataVector(get(var1).size(), 1.0));
@@ -897,7 +902,7 @@ class Outflow : public BoundaryCondition<System> {
 
 template <typename System>
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Outflow<System>::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds<System>::my_PUP_ID = 0;
 
 template <typename System>
 class Ghost : public BoundaryCondition<System> {
@@ -2077,12 +2082,13 @@ struct System
   };
 };
 
-// Note: Outflow is intentionally first so it gets applied first. This makes
-// the test easier because the other BCs modify the time derivatives.
+// Note: DemandOutgoingCharSpeeds is intentionally first so it gets applied
+// first. This makes the test easier because the other BCs modify the time
+// derivatives.
 template <typename System>
 using standard_boundary_conditions =
-    tmpl::list<Outflow<System>, Ghost<System>, TimeDerivative<System>,
-               GhostAndTimeDerivative<System>,
+    tmpl::list<DemandOutgoingCharSpeeds<System>, Ghost<System>,
+               TimeDerivative<System>, GhostAndTimeDerivative<System>,
                domain::BoundaryConditions::Periodic<BoundaryCondition<System>>,
                domain::BoundaryConditions::None<BoundaryCondition<System>>>;
 
@@ -2211,15 +2217,15 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   Domain<Dim> domain{};
   {
     // For the initial tests, set the boundary conditions to:
-    // lower_xi: Outflow
-    // upper_xi: Outflow
+    // lower_xi: DemandOutgoingCharSpeeds
+    // upper_xi: DemandOutgoingCharSpeeds
     DirectionMap<Dim,
                  std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
         boundary_conditions{};
     boundary_conditions[Direction<Dim>::lower_xi()] =
-        std::make_unique<Outflow<System>>(moving_mesh);
+        std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
     boundary_conditions[Direction<Dim>::upper_xi()] =
-        std::make_unique<Outflow<System>>(moving_mesh);
+        std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
     domain = Domain<Dim>{make_vector(Block<Dim>{
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
@@ -2256,8 +2262,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       boundary_correction_volume_tag_number, formulation);
 
   {
-    INFO("Outflow only");
-    // Outflow both sides, dt in volume shouldn't change.
+    INFO("DemandOutgoingCharSpeeds only");
+    // DemandOutgoingCharSpeeds both sides, dt in volume shouldn't change.
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<System, Dim>(
             make_not_null(&box), BndryTerms{moving_mesh, 0.0}, temporaries,
@@ -2327,25 +2333,26 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     return expected_dt_volume_correction;
   };
 
-  const auto check_outflow_and_ghost = [&box, &dt_evolved_vars,
-                                        &expected_ghost_dt_correction,
-                                        &moving_mesh, &partial_derivs,
-                                        &primitive_vars_ptr, &temporaries,
-                                        &volume_fluxes](const Direction<Dim>&
-                                                            outflow_direction) {
+  const auto check_outgoing_and_ghost = [&box, &dt_evolved_vars,
+                                         &expected_ghost_dt_correction,
+                                         &moving_mesh, &partial_derivs,
+                                         &primitive_vars_ptr, &temporaries,
+                                         &volume_fluxes](
+                                            const Direction<Dim>&
+                                                outgoing_direction) {
     INFO("Ghost");
-    CAPTURE(outflow_direction);
+    CAPTURE(outgoing_direction);
     db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
         make_not_null(&box),
-        [&moving_mesh, &outflow_direction](const auto domain_ptr,
-                                           const auto dt_vars_ptr) {
+        [&moving_mesh, &outgoing_direction](const auto domain_ptr,
+                                            const auto dt_vars_ptr) {
           DirectionMap<Dim, std::unique_ptr<
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
-          boundary_conditions[outflow_direction.opposite()] =
+          boundary_conditions[outgoing_direction.opposite()] =
               std::make_unique<Ghost<System>>(moving_mesh);
-          boundary_conditions[outflow_direction] =
-              std::make_unique<Outflow<System>>(moving_mesh);
+          boundary_conditions[outgoing_direction] =
+              std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
           *domain_ptr = Domain<Dim>{make_vector(
               Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                           Frame::Inertial>(
@@ -2359,12 +2366,12 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<System, Dim>(
             make_not_null(&box),
-            BndryTerms{moving_mesh, outflow_direction.opposite().sign()},
+            BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
 
     auto expected_dt_evolved_vars = dt_evolved_vars;
     expected_dt_evolved_vars +=
-        expected_ghost_dt_correction(outflow_direction.opposite());
+        expected_ghost_dt_correction(outgoing_direction.opposite());
     CHECK_ITERABLE_APPROX(
         get(get<::Tags::dt<Tags::Var1>>(box)),
         get(get<::Tags::dt<Tags::Var1>>(expected_dt_evolved_vars)));
@@ -2374,10 +2381,10 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           get<::Tags::dt<Tags::Var2<Dim>>>(expected_dt_evolved_vars).get(i));
     }
   };
-  // Outflow +xi, Ghost -xi
-  check_outflow_and_ghost(Direction<Dim>::upper_xi());
-  // Ghost +xi, Outflow -xi
-  check_outflow_and_ghost(Direction<Dim>::lower_xi());
+  // DemandOutgoingCharSpeeds +xi, Ghost -xi
+  check_outgoing_and_ghost(Direction<Dim>::upper_xi());
+  // Ghost +xi, DemandOutgoingCharSpeeds -xi
+  check_outgoing_and_ghost(Direction<Dim>::lower_xi());
 
   const auto expected_time_derivative_dt_correction = [&mesh, &quadrature](
                                                           const auto&
@@ -2409,26 +2416,26 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     return expected_dt_volume_correction;
   };
 
-  const auto check_outflow_and_dt = [&box, &dt_evolved_vars,
-                                     &expected_time_derivative_dt_correction,
-                                     &moving_mesh, &partial_derivs,
-                                     &primitive_vars_ptr, &temporaries,
-                                     &volume_fluxes](const Direction<Dim>&
-                                                         outflow_direction) {
+  const auto check_outgoing_and_dt = [&box, &dt_evolved_vars,
+                                      &expected_time_derivative_dt_correction,
+                                      &moving_mesh, &partial_derivs,
+                                      &primitive_vars_ptr, &temporaries,
+                                      &volume_fluxes](const Direction<Dim>&
+                                                          outgoing_direction) {
     INFO("TimeDerivative");
-    CAPTURE(outflow_direction);
+    CAPTURE(outgoing_direction);
     db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
         make_not_null(&box),
-        [&moving_mesh, &outflow_direction](const auto domain_ptr,
-                                           const auto dt_vars_ptr) {
+        [&moving_mesh, &outgoing_direction](const auto domain_ptr,
+                                            const auto dt_vars_ptr) {
           DirectionMap<Dim, std::unique_ptr<
                                 domain::BoundaryConditions::BoundaryCondition>>
               boundary_conditions{};
-          boundary_conditions[outflow_direction.opposite()] =
+          boundary_conditions[outgoing_direction.opposite()] =
               std::make_unique<TimeDerivative<System>>(moving_mesh,
                                                        offset_dt_evolved_vars);
-          boundary_conditions[outflow_direction] =
-              std::make_unique<Outflow<System>>(moving_mesh);
+          boundary_conditions[outgoing_direction] =
+              std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
           *domain_ptr = Domain<Dim>{make_vector(
               Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                           Frame::Inertial>(
@@ -2442,12 +2449,12 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
     evolution::dg::Actions::detail::
         apply_boundary_conditions_on_all_external_faces<System, Dim>(
             make_not_null(&box),
-            BndryTerms{moving_mesh, outflow_direction.opposite().sign()},
+            BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
             temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
 
     auto expected_dt_evolved_vars = dt_evolved_vars;
     expected_dt_evolved_vars +=
-        expected_time_derivative_dt_correction(outflow_direction.opposite());
+        expected_time_derivative_dt_correction(outgoing_direction.opposite());
     CHECK_ITERABLE_APPROX(
         get(get<::Tags::dt<Tags::Var1>>(box)),
         get(get<::Tags::dt<Tags::Var1>>(expected_dt_evolved_vars)));
@@ -2457,10 +2464,10 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
           get<::Tags::dt<Tags::Var2<Dim>>>(expected_dt_evolved_vars).get(i));
     }
   };
-  // Outflow +xi, TimeDerivative -xi
-  check_outflow_and_dt(Direction<Dim>::upper_xi());
-  // Outflow -xi, TimeDerivative +xi
-  check_outflow_and_dt(Direction<Dim>::lower_xi());
+  // DemandOutgoingCharSpeeds +xi, TimeDerivative -xi
+  check_outgoing_and_dt(Direction<Dim>::upper_xi());
+  // DemandOutgoingCharSpeeds -xi, TimeDerivative +xi
+  check_outgoing_and_dt(Direction<Dim>::lower_xi());
 
   const auto check_ghost_and_dt_opposite =
       [&box, &dt_evolved_vars, &expected_ghost_dt_correction,
@@ -2539,25 +2546,26 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
       [&box, &dt_evolved_vars, &expected_ghost_dt_correction,
        &expected_time_derivative_dt_correction, &moving_mesh, &partial_derivs,
        &primitive_vars_ptr, &temporaries,
-       &volume_fluxes](const Direction<Dim>& outflow_direction) {
+       &volume_fluxes](const Direction<Dim>& outgoing_direction) {
         INFO("GhostAndTimeDerivative combined on one side");
-        CAPTURE(outflow_direction);
+        CAPTURE(outgoing_direction);
         // Since the Ghost and TimeDerivative are applied in the same direction
         // they both receive the dt_vars _without_ either boundary condition
         // applied, which is different from way Ghost and TimeDerivative are
         // applied in different directions.
         db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
             make_not_null(&box),
-            [&moving_mesh, &outflow_direction](const auto domain_ptr,
-                                               const auto dt_vars_ptr) {
+            [&moving_mesh, &outgoing_direction](const auto domain_ptr,
+                                                const auto dt_vars_ptr) {
               DirectionMap<Dim,
                            std::unique_ptr<
                                domain::BoundaryConditions::BoundaryCondition>>
                   boundary_conditions{};
-              boundary_conditions[outflow_direction.opposite()] =
+              boundary_conditions[outgoing_direction.opposite()] =
                   std::make_unique<GhostAndTimeDerivative<System>>(moving_mesh);
-              boundary_conditions[outflow_direction] =
-                  std::make_unique<Outflow<System>>(moving_mesh);
+              boundary_conditions[outgoing_direction] =
+                  std::make_unique<DemandOutgoingCharSpeeds<System>>(
+                      moving_mesh);
               *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
                   domain::make_coordinate_map_base<Frame::BlockLogical,
                                                    Frame::Inertial>(
@@ -2571,14 +2579,14 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         evolution::dg::Actions::detail::
             apply_boundary_conditions_on_all_external_faces<System, Dim>(
                 make_not_null(&box),
-                BndryTerms{moving_mesh, outflow_direction.opposite().sign()},
+                BndryTerms{moving_mesh, outgoing_direction.opposite().sign()},
                 temporaries, volume_fluxes, partial_derivs, primitive_vars_ptr);
 
         auto expected_dt_evolved_vars = dt_evolved_vars;
         expected_dt_evolved_vars += expected_time_derivative_dt_correction(
-            outflow_direction.opposite());
+            outgoing_direction.opposite());
         expected_dt_evolved_vars +=
-            expected_ghost_dt_correction(outflow_direction.opposite());
+            expected_ghost_dt_correction(outgoing_direction.opposite());
 
         CHECK_ITERABLE_APPROX(
             get(get<::Tags::dt<Tags::Var1>>(box)),
@@ -2590,9 +2598,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                   .get(i));
         }
       };
-  // Outflow +xi, GhostAndTimeDerivative -xi
+  // DemandOutgoingCharSpeeds +xi, GhostAndTimeDerivative -xi
   check_ghost_and_dt_combined_bc(Direction<Dim>::upper_xi());
-  // Outflow -xi, GhostAndTimeDerivative +xi
+  // DemandOutgoingCharSpeeds -xi, GhostAndTimeDerivative +xi
   check_ghost_and_dt_combined_bc(Direction<Dim>::lower_xi());
 }
 

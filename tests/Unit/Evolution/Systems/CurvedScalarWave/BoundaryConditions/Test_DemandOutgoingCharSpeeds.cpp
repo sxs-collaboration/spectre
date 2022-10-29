@@ -8,8 +8,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/CurvedScalarWave/BoundaryConditions/Outflow.hpp"
 #include "Evolution/Systems/CurvedScalarWave/BoundaryCorrections/UpwindPenalty.hpp"
 #include "Evolution/Systems/CurvedScalarWave/System.hpp"
 #include "Framework/SetupLocalPythonEnvironment.hpp"
@@ -28,20 +28,22 @@ void test() {
   MAKE_GENERATOR(gen);
 
   helpers::test_boundary_condition_with_python<
-      CurvedScalarWave::BoundaryConditions::Outflow<Dim>,
+      CurvedScalarWave::BoundaryConditions::DemandOutgoingCharSpeeds<Dim>,
       CurvedScalarWave::BoundaryConditions::BoundaryCondition<Dim>,
       CurvedScalarWave::System<Dim>,
       tmpl::list<CurvedScalarWave::BoundaryCorrections::UpwindPenalty<Dim>>>(
       make_not_null(&gen),
-      "Evolution.Systems.CurvedScalarWave.BoundaryConditions.Outflow",
+      "Evolution.Systems.CurvedScalarWave.BoundaryConditions."
+      "DemandOutgoingCharSpeeds",
       tuples::TaggedTuple<helpers::Tags::PythonFunctionForErrorMessage<>>{
           "error"},
-      "Outflow:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
+      "DemandOutgoingCharSpeeds:\n", Index<Dim - 1>{Dim == 1 ? 0 : 5},
       db::DataBox<tmpl::list<>>{}, tuples::TaggedTuple<>{});
 }
 }  // namespace
-SPECTRE_TEST_CASE("Unit.CurvedScalarWave.BoundaryConditions.Outflow",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.CurvedScalarWave.BoundaryConditions.DemandOutgoingCharSpeeds",
+    "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   test<1>();
   test<2>();

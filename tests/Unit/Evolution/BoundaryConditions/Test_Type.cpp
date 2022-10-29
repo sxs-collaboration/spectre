@@ -16,5 +16,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.BoundaryConditions.Type",
   CHECK(
       get_output(evolution::BoundaryConditions::Type::GhostAndTimeDerivative) ==
       "GhostAndTimeDerivative");
-  CHECK(get_output(evolution::BoundaryConditions::Type::Outflow) == "Outflow");
+  CHECK(get_output(
+            evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds) ==
+        "DemandOutgoingCharSpeeds");
 }

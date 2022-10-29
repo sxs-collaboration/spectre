@@ -16,12 +16,12 @@ std::ostream& operator<<(std::ostream& os, const Type boundary_condition_type) {
       return os << "TimeDerivative";
     case Type::GhostAndTimeDerivative:
       return os << "GhostAndTimeDerivative";
-    case Type::Outflow:
-      return os << "Outflow";
+    case Type::DemandOutgoingCharSpeeds:
+      return os << "DemandOutgoingCharSpeeds";
     default:
       ERROR(
           "Unknown enumeration value. Should be one of Ghost, TimeDerivative, "
-          "GhostAndTimeDerivative, or Outflow.");
+          "GhostAndTimeDerivative, or DemandOutgoingCharSpeeds.");
   }
 }
 }  // namespace evolution::BoundaryConditions

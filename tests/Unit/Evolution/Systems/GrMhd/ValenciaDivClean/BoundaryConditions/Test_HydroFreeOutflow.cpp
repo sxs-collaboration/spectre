@@ -10,7 +10,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Determinant.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/FreeOutflow.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/HydroFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Rusanov.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -25,7 +25,7 @@
 
 namespace helpers = ::TestHelpers::evolution::dg;
 
-SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
+SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.HydroFreeOutflow",
                   "[Unit][GrMhd]") {
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   MAKE_GENERATOR(gen);
@@ -45,13 +45,13 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
       spatial_metric, sqrt_det_spatial_metric);
 
   helpers::test_boundary_condition_with_python<
-      grmhd::ValenciaDivClean::BoundaryConditions::FreeOutflow,
+      grmhd::ValenciaDivClean::BoundaryConditions::HydroFreeOutflow,
       grmhd::ValenciaDivClean::BoundaryConditions::BoundaryCondition,
       grmhd::ValenciaDivClean::System,
       tmpl::list<grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov>>(
       make_not_null(&gen),
       "Evolution.Systems.GrMhd.ValenciaDivClean.BoundaryConditions."
-      "FreeOutflow",
+      "HydroFreeOutflow",
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
           helpers::Tags::PythonFunctionName<
@@ -95,6 +95,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.FreeOutflow",
           "tilde_phi", "flux_tilde_d", "flux_tilde_ye", "flux_tilde_tau",
           "flux_tilde_s", "flux_tilde_b", "flux_tilde_phi", "lapse", "shift",
           "inv_spatial_metric"},
-      "FreeOutflow:\n", face_mesh_index, box_with_gridless_tags,
+      "HydroFreeOutflow:\n", face_mesh_index, box_with_gridless_tags,
       tuples::TaggedTuple<>{});
 }

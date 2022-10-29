@@ -55,7 +55,7 @@ namespace grmhd::ValenciaDivClean::BoundaryConditions {
  *  - Divergence cleaning scalar field \f$\Phi\f$ is set to zero in ghost zone.
  *
  */
-class FreeOutflow final : public BoundaryCondition {
+class HydroFreeOutflow final : public BoundaryCondition {
  private:
   using RestMassDensity = hydro::Tags::RestMassDensity<DataVector>;
   using ElectronFraction = hydro::Tags::ElectronFraction<DataVector>;
@@ -77,17 +77,17 @@ class FreeOutflow final : public BoundaryCondition {
       "Free outflow & no inflow boundary condition on GRMHD primitive "
       "variables"};
 
-  FreeOutflow() = default;
-  FreeOutflow(FreeOutflow&&) = default;
-  FreeOutflow& operator=(FreeOutflow&&) = default;
-  FreeOutflow(const FreeOutflow&) = default;
-  FreeOutflow& operator=(const FreeOutflow&) = default;
-  ~FreeOutflow() override = default;
+  HydroFreeOutflow() = default;
+  HydroFreeOutflow(HydroFreeOutflow&&) = default;
+  HydroFreeOutflow& operator=(HydroFreeOutflow&&) = default;
+  HydroFreeOutflow(const HydroFreeOutflow&) = default;
+  HydroFreeOutflow& operator=(const HydroFreeOutflow&) = default;
+  ~HydroFreeOutflow() override = default;
 
-  explicit FreeOutflow(CkMigrateMessage* msg);
+  explicit HydroFreeOutflow(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
-      domain::BoundaryConditions::BoundaryCondition, FreeOutflow);
+      domain::BoundaryConditions::BoundaryCondition, HydroFreeOutflow);
 
   auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;

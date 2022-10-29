@@ -266,7 +266,7 @@ void test_disk_boundaries_equidistant() {
                      Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like an "
-          "outflow boundary condition, you must use that."));
+          "outflow-type boundary condition, you must use that."));
 }
 
 void test_disk_factory_equidistant() {

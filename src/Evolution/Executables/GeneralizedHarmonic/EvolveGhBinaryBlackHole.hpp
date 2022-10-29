@@ -44,9 +44,9 @@
 #include "Evolution/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Actions/NumericInitialData.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Bjorhus.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletMinkowski.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryCorrections/RegisterDerived.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/RegisterDerivedWithCharm.hpp"
@@ -320,8 +320,8 @@ struct EvolutionMetavars {
                                   ConstraintPreservingBjorhus<volume_dim>,
                               GeneralizedHarmonic::BoundaryConditions::
                                   DirichletMinkowski<volume_dim>,
-                              GeneralizedHarmonic::BoundaryConditions::Outflow<
-                                  volume_dim>>>,
+                              GeneralizedHarmonic::BoundaryConditions::
+                                  DemandOutgoingCharSpeeds<volume_dim>>>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<
             PhaseChange,

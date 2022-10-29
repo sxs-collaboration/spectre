@@ -196,7 +196,7 @@ void test_kxrcf_1d() {
                   cons_energy, mesh, element, element_map, neighbor_densities,
                   neighbor_energies);
 
-  // no trigger: all boundaries are outflow
+  // no trigger: all boundaries have outgoing characteristics
   cons_density = Scalar<DataVector>{DataVector{{0.4, 0.3, 0.2}}};
   cons_momentum = tnsr::I<DataVector, 1>{DataVector{{-0.2, 0.1, 0.05}}};
   cons_energy = Scalar<DataVector>{DataVector{{1.4, 1.3, 1.7}}};
@@ -280,7 +280,7 @@ void test_kxrcf_2d() {
                   cons_energy, mesh, element, element_map, neighbor_densities,
                   neighbor_energies);
 
-  // no trigger: all boundaries are outflow
+  // no trigger: all boundaries have outgoing characteristics
   get<0>(cons_momentum) =
       DataVector{{-0.2, 0., 0.05, -1.2, 0., 0.3, -0.9, 0., 0.4}};
   get<1>(cons_momentum) =
@@ -405,7 +405,7 @@ void test_kxrcf_3d() {
                   cons_energy, mesh, element, element_map, neighbor_densities,
                   neighbor_energies);
 
-  // no trigger: all boundaries are outflow
+  // no trigger: all boundaries have outgoing characteristics
   get<0>(cons_momentum) =
       // clang-format off
       DataVector{{-0.2, 0., 0.05, -0.2, 0., 0.3, -0.8, 0., 0.2,

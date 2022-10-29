@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/FreeOutflow.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/HydroFreeOutflow.hpp"
 
 #include <cstddef>
 #include <memory>
@@ -27,20 +27,20 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean::BoundaryConditions {
-FreeOutflow::FreeOutflow(CkMigrateMessage* const msg)
+HydroFreeOutflow::HydroFreeOutflow(CkMigrateMessage* const msg)
     : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-FreeOutflow::get_clone() const {
-  return std::make_unique<FreeOutflow>(*this);
+HydroFreeOutflow::get_clone() const {
+  return std::make_unique<HydroFreeOutflow>(*this);
 }
 
-void FreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void HydroFreeOutflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
 // NOLINTNEXTLINE
-PUP::able::PUP_ID FreeOutflow::my_PUP_ID = 0;
+PUP::able::PUP_ID HydroFreeOutflow::my_PUP_ID = 0;
 
-std::optional<std::string> FreeOutflow::dg_ghost(
+std::optional<std::string> HydroFreeOutflow::dg_ghost(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_ye,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
@@ -165,7 +165,7 @@ std::optional<std::string> FreeOutflow::dg_ghost(
   return {};
 }
 
-void FreeOutflow::fd_ghost(
+void HydroFreeOutflow::fd_ghost(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> electron_fraction,
     const gsl::not_null<Scalar<DataVector>*> pressure,

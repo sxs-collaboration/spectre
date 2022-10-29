@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Outflow.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -22,22 +22,24 @@
 
 namespace GeneralizedHarmonic::BoundaryConditions {
 template <size_t Dim>
-Outflow<Dim>::Outflow(CkMigrateMessage* const msg)
+DemandOutgoingCharSpeeds<Dim>::DemandOutgoingCharSpeeds(
+    CkMigrateMessage* const msg)
     : BoundaryCondition<Dim>(msg) {}
 
 template <size_t Dim>
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow<Dim>::get_clone() const {
-  return std::make_unique<Outflow>(*this);
+DemandOutgoingCharSpeeds<Dim>::get_clone() const {
+  return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
 template <size_t Dim>
-void Outflow<Dim>::pup(PUP::er& p) {
+void DemandOutgoingCharSpeeds<Dim>::pup(PUP::er& p) {
   BoundaryCondition<Dim>::pup(p);
 }
 
 template <size_t Dim>
-std::optional<std::string> Outflow<Dim>::dg_outflow(
+std::optional<std::string>
+DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -63,8 +65,9 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
     }
     if (min_speed < 0.0) {
       return {MakeString{}
-              << "Outflow boundary condition violated with speed index " << i
-              << " ingoing: " << min_speed
+              << "DemandOutgoingCharSpeeds boundary condition violated with "
+                 "speed index "
+              << i << " ingoing: " << min_speed
               << "\n speed: " << gsl::at(char_speeds, i)
               << "\nn_i: " << outward_directed_normal_covector
               << "\n"
@@ -77,11 +80,12 @@ std::optional<std::string> Outflow<Dim>::dg_outflow(
 
 // NOLINTNEXTLINE
 template <size_t Dim>
-PUP::able::PUP_ID Outflow<Dim>::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data) template class Outflow<DIM(data)>;
+#define INSTANTIATION(r, data) \
+  template class DemandOutgoingCharSpeeds<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

@@ -31,31 +31,32 @@ namespace CurvedScalarWave::BoundaryConditions {
 /// directed out of the domain; no boundary data is altered by this boundary
 /// condition.
 template <size_t Dim>
-class Outflow final : public BoundaryCondition<Dim> {
+class DemandOutgoingCharSpeeds final : public BoundaryCondition<Dim> {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Boundary conditions which check that all characteristic "
       "fields are outflowing."};
-  Outflow() = default;
+  DemandOutgoingCharSpeeds() = default;
   /// \cond
-  Outflow(Outflow&&) = default;
-  Outflow& operator=(Outflow&&) = default;
-  Outflow(const Outflow&) = default;
-  Outflow& operator=(const Outflow&) = default;
+  DemandOutgoingCharSpeeds(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds& operator=(DemandOutgoingCharSpeeds&&) = default;
+  DemandOutgoingCharSpeeds(const DemandOutgoingCharSpeeds&) = default;
+  DemandOutgoingCharSpeeds& operator=(const DemandOutgoingCharSpeeds&) =
+      default;
   /// \endcond
-  ~Outflow() override = default;
+  ~DemandOutgoingCharSpeeds() override = default;
 
-  explicit Outflow(CkMigrateMessage* msg);
+  explicit DemandOutgoingCharSpeeds(CkMigrateMessage* msg);
 
   WRAPPED_PUPable_decl_base_template(
-      domain::BoundaryConditions::BoundaryCondition, Outflow);
+      domain::BoundaryConditions::BoundaryCondition, DemandOutgoingCharSpeeds);
 
   auto get_clone() const -> std::unique_ptr<
       domain::BoundaryConditions::BoundaryCondition> override;
 
   static constexpr evolution::BoundaryConditions::Type bc_type =
-      evolution::BoundaryConditions::Type::Outflow;
+      evolution::BoundaryConditions::Type::DemandOutgoingCharSpeeds;
 
   void pup(PUP::er& p) override;
 
@@ -67,7 +68,7 @@ class Outflow final : public BoundaryCondition<Dim> {
   using dg_interior_deriv_vars_tags = tmpl::list<>;
   using dg_gridless_tags = tmpl::list<>;
 
-  std::optional<std::string> dg_outflow(
+  std::optional<std::string> dg_demand_outgoing_char_speeds(
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           face_mesh_velocity,
       const tnsr::i<DataVector, Dim>& normal_covector,

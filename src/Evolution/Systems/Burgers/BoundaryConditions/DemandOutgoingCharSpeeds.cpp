@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/Burgers/BoundaryConditions/Outflow.hpp"
+#include "Evolution/Systems/Burgers/BoundaryConditions/DemandOutgoingCharSpeeds.hpp"
 
 #include <cstddef>
 #include <limits>
@@ -19,16 +19,18 @@
 #include "Utilities/MakeString.hpp"
 
 namespace Burgers::BoundaryConditions {
-Outflow::Outflow(CkMigrateMessage* const msg) : BoundaryCondition(msg) {}
+DemandOutgoingCharSpeeds::DemandOutgoingCharSpeeds(CkMigrateMessage* const msg)
+    : BoundaryCondition(msg) {}
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-Outflow::get_clone() const {
-  return std::make_unique<Outflow>(*this);
+DemandOutgoingCharSpeeds::get_clone() const {
+  return std::make_unique<DemandOutgoingCharSpeeds>(*this);
 }
 
-void Outflow::pup(PUP::er& p) { BoundaryCondition::pup(p); }
+void DemandOutgoingCharSpeeds::pup(PUP::er& p) { BoundaryCondition::pup(p); }
 
-std::optional<std::string> Outflow::dg_outflow(
+std::optional<std::string>
+DemandOutgoingCharSpeeds::dg_demand_outgoing_char_speeds(
     const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, 1, Frame::Inertial>&
@@ -42,22 +44,22 @@ std::optional<std::string> Outflow::dg_outflow(
     min_speed = min(get<0>(outward_directed_normal_covector) * get(u));
   }
   if (min_speed < 0.0) {
-    return {MakeString{}
-            << "Outflow boundary condition violated with speed U ingoing: "
-            << min_speed << "\nU: " << u
-            << "\nn_i: " << outward_directed_normal_covector << "\n"};
+    return {MakeString{} << "DemandOutgoingCharSpeeds boundary condition "
+                            "violated with speed U ingoing: "
+                         << min_speed << "\nU: " << u << "\nn_i: "
+                         << outward_directed_normal_covector << "\n"};
   }
   return std::nullopt;
 }
 
-void Outflow::fd_outflow(
+void DemandOutgoingCharSpeeds::fd_demand_outgoing_char_speeds(
     const gsl::not_null<Scalar<DataVector>*> u, const Direction<1>& direction,
     const std::optional<tnsr::I<DataVector, 1, Frame::Inertial>>&
         face_mesh_velocity,
     const tnsr::i<DataVector, 1, Frame::Inertial>&
         outward_directed_normal_covector,
     const Scalar<DataVector>& u_interior, const Mesh<1>& subcell_mesh) {
-  // The outflow condition here simply uses the outermost values on
+  // The boundary condition here simply uses the outermost values on
   // cell-centered FD grid points to compute face values on the external
   // boundary. This is equivalent to adopting the piecewise constant FD
   // reconstruction for FD cells at the external boundaries.
@@ -75,13 +77,15 @@ void Outflow::fd_outflow(
         min(get<0>(outward_directed_normal_covector) * u_val_at_boundary);
   }
   if (min_char_speed < 0.0) {
-    ERROR("Outflow boundary condition (subcell) violated with speed U ingoing:"
-          << min_char_speed << "\nU: " << u_val_at_boundary
-          << "\nn_i: " << outward_directed_normal_covector << "\n");
+    ERROR(
+        "DemandOutgoingCharSpeeds boundary condition (subcell) violated with "
+        "speed U ingoing:"
+        << min_char_speed << "\nU: " << u_val_at_boundary
+        << "\nn_i: " << outward_directed_normal_covector << "\n");
   } else {
-    // Once the outflow condition has been checked, we fill the ghost data with
-    // the boundary values. This does not mirror the data across the boundary
-    // and so is quite low-order.
+    // Once the DemandOutgoingCharSpeeds condition has been checked, we fill the
+    // ghost data with the boundary values. This does not mirror the data across
+    // the boundary and so is quite low-order.
     //
     // The reason that we need this step is to prevent floating point exceptions
     // being raised while computing the subcell time derivative because of NaN
@@ -92,5 +96,5 @@ void Outflow::fd_outflow(
 }
 
 // NOLINTNEXTLINE
-PUP::able::PUP_ID Outflow::my_PUP_ID = 0;
+PUP::able::PUP_ID DemandOutgoingCharSpeeds::my_PUP_ID = 0;
 }  // namespace Burgers::BoundaryConditions

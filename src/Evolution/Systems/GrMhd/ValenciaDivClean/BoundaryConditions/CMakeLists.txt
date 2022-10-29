@@ -5,9 +5,9 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   BoundaryCondition.cpp
+  DemandOutgoingCharSpeeds.cpp
   DirichletAnalytic.cpp
-  FreeOutflow.cpp
-  Outflow.cpp
+  HydroFreeOutflow.cpp
   )
 
 spectre_target_headers(
@@ -15,8 +15,8 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   BoundaryCondition.hpp
+  DemandOutgoingCharSpeeds.hpp
   DirichletAnalytic.hpp
   Factory.hpp
-  FreeOutflow.hpp
-  Outflow.hpp
+  HydroFreeOutflow.hpp
   )

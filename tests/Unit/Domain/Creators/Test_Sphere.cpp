@@ -290,7 +290,7 @@ void test_sphere_boundaries_equiangular() {
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
           "None boundary condition is not supported. If you would like "
-          "an outflow boundary condition, you must use that."));
+          "an outflow-type boundary condition, you must use that."));
 }
 
 void test_sphere_factory_equiangular() {

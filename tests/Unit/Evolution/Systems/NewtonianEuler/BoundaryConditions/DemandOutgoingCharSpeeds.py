@@ -31,6 +31,6 @@ def error(face_mesh_velocity, normal_covector, int_mass_density, int_velocity,
             - normal_dot_mesh_velocity - sound_speed
 
     if min_char_speed < 0.0:
-        return "Outflow boundary condition violated"
+        return "DemandOutgoingCharSpeeds boundary condition violated"
 
     return None

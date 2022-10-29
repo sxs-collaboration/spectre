@@ -246,7 +246,7 @@ Cylinder::Cylinder(
     PARSE_ERROR(
         context,
         "None boundary condition is not supported. If you would like an "
-        "outflow boundary condition, you must use that.");
+        "outflow-type boundary condition, you must use that.");
   }
   if (mantle_boundary_condition_ == nullptr or
       (not is_periodic_in_z_ and (lower_z_boundary_condition_ == nullptr or
