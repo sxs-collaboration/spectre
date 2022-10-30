@@ -648,7 +648,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
 
           make EvolveBurgersStep -j2
 
-          ctest -j2 -R InputFiles.Burgers.Step.yaml
+          ctest -j2 -R InputFiles.Burgers.Step.yaml --output-on-failure
 
           make clean
       - name: Diagnose ccache
