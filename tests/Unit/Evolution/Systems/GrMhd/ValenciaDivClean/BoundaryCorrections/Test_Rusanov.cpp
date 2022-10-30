@@ -77,4 +77,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Rusanov",
           *rusanov),
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       {});
+
+  CHECK_FALSE(grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{} !=
+              grmhd::ValenciaDivClean::BoundaryCorrections::Rusanov{});
 }

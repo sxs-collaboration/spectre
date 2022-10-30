@@ -189,4 +189,7 @@ class Rusanov final : public BoundaryCorrection {
       const Scalar<DataVector>& abs_char_speed_ext,
       dg::Formulation dg_formulation);
 };
+
+bool operator==(const Rusanov& lhs, const Rusanov& rhs);
+bool operator!=(const Rusanov& lhs, const Rusanov& rhs);
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections
