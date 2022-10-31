@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -153,16 +154,27 @@ void logical_partial_derivatives_fastest_dim(
              << ") must be not smaller than the stencil width (current value: "
              << stencil_width << ") minus 1");
   constexpr size_t ghost_zone_for_stencil = fd_order / 2;
-  // Assume we send one extra ghost cell. This is done for reconstruction, e.g.
-  // 2nd order reconstruction would send 2 ghost zones, so we can do up to 4th
-  // order derivatives.
-  constexpr size_t ghost_pts_in_neighbor_data = ghost_zone_for_stencil + 1;
+  // Compute the number of ghost cells.
+  const size_t number_of_stripes =
+      volume_extents.slice_away(0).product() * number_of_variables;
+  ASSERT(lower_ghost_data.size() % number_of_stripes == 0,
+         "The lower ghost data must be a multiple of the number of stripes ("
+             << number_of_stripes
+             << "), which is defined as the number of variables ("
+             << number_of_variables
+             << ") times the number of grid points on a 2d slice ("
+             << volume_extents.slice_away(0).product() << ")");
+  ASSERT(upper_ghost_data.size() == lower_ghost_data.size(),
+         "The lower ghost data size ("
+             << lower_ghost_data.size()
+             << ") must match the upper ghost data size, "
+             << upper_ghost_data.size());
+  const size_t ghost_pts_in_neighbor_data =
+      lower_ghost_data.size() / number_of_stripes;
+
   // Precompute derivative weights to minimize FLOPs
   const std::array<double, fd_order / 2> derivative_weights =
       DerivativeComputer::derivative_weights(1.0 / delta);
-
-  const size_t number_of_stripes =
-      volume_extents.slice_away(0).product() * number_of_variables;
 
   std::array<double, stencil_width> q{};
   for (size_t slice = 0; slice < number_of_stripes; ++slice) {
