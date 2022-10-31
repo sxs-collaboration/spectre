@@ -59,10 +59,39 @@ AnalyticSolution:
     PressureStarTol: 1e-9
 
 EventsAndTriggers:
-  - - Slabs:
-        Specified:
-          Values: [10]
+  - - TimeCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: 0.2
     - - Completion
+  - - Always
+    - - ChangeSlabSize:
+          # Smaller values for DelayChange make the error control more
+          # responsive, while larger values reduce the global coupling
+          # between all the elements.  Experimentally, varying this
+          # number has little qualitative effect on chosen step size,
+          # as long as the initial step size is not too large for the
+          # requested accuracy.
+          DelayChange: &slab_update_delay 10
+          StepChoosers:
+            - ErrorControl:
+                AbsoluteTolerance: 1.0e-3
+                RelativeTolerance: 1.0e-3
+                MaxFactor: 10000.0
+                MinFactor: 0.0
+                SafetyFactor: 0.9
+  # These step choosers require no communication, so can be applied
+  # with a delay of 0 with no downside.  We don't want them to start
+  # increasing the slab size before the error control is active,
+  # though.
+  - - SlabCompares:
+        Comparison: GreaterThanOrEqualTo
+        Value: *slab_update_delay
+    - - ChangeSlabSize:
+          DelayChange: 0
+          StepChoosers:
+            - Increase:
+                Factor: 2.0
+            - PreventRapidIncrease
 
 EventsAndDenseTriggers:
 
