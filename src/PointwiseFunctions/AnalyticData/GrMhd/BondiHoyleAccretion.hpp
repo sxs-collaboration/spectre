@@ -78,7 +78,7 @@ namespace grmhd::AnalyticData {
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
  */
-class BondiHoyleAccretion : public evolution::initial_data::InitialData,
+class BondiHoyleAccretion : public virtual evolution::initial_data::InitialData,
                             public MarkAsAnalyticData,
                             public AnalyticDataBase {
  public:

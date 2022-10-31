@@ -12,7 +12,9 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // for tags
 #include "Options/Options.hpp"
+#include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -37,9 +39,26 @@ namespace Solutions {
  * and `GeneralizedHarmonic::Tags::Phi`
  */
 template <typename SolutionType>
-class WrappedGr : public SolutionType {
+class WrappedGr : public virtual evolution::initial_data::InitialData,
+                  public SolutionType {
  public:
   using SolutionType::SolutionType;
+
+  WrappedGr() = default;
+  WrappedGr(const WrappedGr& /*rhs*/) = default;
+  WrappedGr& operator=(const WrappedGr& /*rhs*/) = default;
+  WrappedGr(WrappedGr&& /*rhs*/) = default;
+  WrappedGr& operator=(WrappedGr&& /*rhs*/) = default;
+  ~WrappedGr() override = default;
+
+  auto get_clone() const
+      -> std::unique_ptr<evolution::initial_data::InitialData> override;
+
+  /// \cond
+  explicit WrappedGr(CkMigrateMessage* msg);
+  using PUP::able::register_constructor;
+  WRAPPED_PUPable_decl_template(WrappedGr);
+  /// \endcond
 
   static constexpr size_t volume_dim = SolutionType::volume_dim;
   using options = typename SolutionType::options;
@@ -114,7 +133,7 @@ class WrappedGr : public SolutionType {
   }
 
   // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p) { SolutionType::pup(p); }
+  void pup(PUP::er& p) override;
 
  private:
   // Preprocessor logic to avoid declaring variables() functions for
@@ -183,17 +202,12 @@ class WrappedGr : public SolutionType {
 };
 
 template <typename SolutionType>
-inline constexpr bool operator==(const WrappedGr<SolutionType>& lhs,
-                                 const WrappedGr<SolutionType>& rhs) {
-  return dynamic_cast<const SolutionType&>(lhs) ==
-         dynamic_cast<const SolutionType&>(rhs);
-}
+bool operator==(const WrappedGr<SolutionType>& lhs,
+                const WrappedGr<SolutionType>& rhs);
 
 template <typename SolutionType>
-inline constexpr bool operator!=(const WrappedGr<SolutionType>& lhs,
-                                 const WrappedGr<SolutionType>& rhs) {
-  return not(lhs == rhs);
-}
+bool operator!=(const WrappedGr<SolutionType>& lhs,
+                const WrappedGr<SolutionType>& rhs);
 
 template <typename SolutionType>
 WrappedGr(SolutionType solution) -> WrappedGr<SolutionType>;
