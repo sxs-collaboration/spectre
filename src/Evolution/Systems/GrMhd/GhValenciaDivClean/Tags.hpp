@@ -6,6 +6,10 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean {
 /// %Tags for the combined system of the Generalized Harmonic formulation for
@@ -52,5 +56,27 @@ struct ComovingMagneticFieldOneForm : db::SimpleTag {
 struct FourVelocityOneForm : db::SimpleTag {
   using type = tnsr::a<DataVector, 3>;
 };
+
+/// \brief Tags sent for GRMHD primitive variable reconstruction. All tags sent
+/// are the reconstruciton+spacetime tags
+using primitive_grmhd_reconstruction_tags =
+    tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+               hydro::Tags::ElectronFraction<DataVector>,
+               hydro::Tags::Pressure<DataVector>,
+               hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
+               hydro::Tags::MagneticField<DataVector, 3>,
+               hydro::Tags::DivergenceCleaningField<DataVector>>;
+
+/// \brief Tags sent for spacetime evolution. All tags sent are the
+/// reconstruciton+spacetime tags
+using spacetime_reconstruction_tags =
+    tmpl::list<gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Pi<3>,
+               GeneralizedHarmonic::Tags::Phi<3>>;
+
+/// \brief All tags sent for primitive reconstruction, both GRMHD and spacetime
+/// evolution tags.
+using primitive_grmhd_and_spacetime_reconstruction_tags =
+    tmpl::append<primitive_grmhd_reconstruction_tags,
+                 spacetime_reconstruction_tags>;
 }  // namespace Tags
 }  // namespace grmhd::GhValenciaDivClean

@@ -22,6 +22,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/ReconstructWork.tpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -52,17 +53,12 @@ void reconstruct_prims_work(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3) + 1,
-        std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
-                 hydro::Tags::MagneticField<DataVector, 3>,
-                 hydro::Tags::DivergenceCleaningField<DataVector>>;
+      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
 
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
                  subcell_mesh.quadrature(0)) == subcell_mesh,
@@ -228,34 +224,29 @@ void reconstruct_fd_neighbor_work(
     const ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags&
         spacetime_vars_for_grmhd,
     const Variables<PrimsTags>& subcell_volume_prims,
-    const Variables<tmpl::list<
-        gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-        GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_vars,
+    const Variables<
+        grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+        subcell_volume_spacetime_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3) + 1,
-        std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size) {
   using prim_tags_for_reconstruction =
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::ElectronFraction<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>,
-                 hydro::Tags::MagneticField<DataVector, 3>,
-                 hydro::Tags::DivergenceCleaningField<DataVector>>;
-  using spacetime_tags = tmpl::list<gr::Tags::SpacetimeMetric<3>,
-                                    GeneralizedHarmonic::Tags::Phi<3>,
-                                    GeneralizedHarmonic::Tags::Pi<3>>;
+      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
+  using spacetime_tags =
+      GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
   const std::pair mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<3> ghost_data_extents = subcell_mesh.extents();
   ghost_data_extents[direction_to_reconstruct.dimension()] = ghost_zone_size;
-  Variables<tmpl::append<prim_tags_for_reconstruction, spacetime_tags>>
+  Variables<GhValenciaDivClean::Tags::
+                primitive_grmhd_and_spacetime_reconstruction_tags>
       neighbor_prims{ghost_data_extents.product()};
   {
     ASSERT(neighbor_data.contains(mortar_id),

@@ -27,6 +27,7 @@
 #include "Evolution/DiscontinuousGalerkin/Actions/NormalCovectorAndMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/FiniteDifference/Reconstructor.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -46,7 +47,7 @@
 namespace TestHelpers::grmhd::GhValenciaDivClean::fd {
 namespace detail {
 template <typename F>
-FixedHashMap<maximum_number_of_neighbors(3) + 1,
+FixedHashMap<maximum_number_of_neighbors(3),
              std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
@@ -54,7 +55,7 @@ compute_neighbor_data(
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& volume_logical_coords,
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
-  FixedHashMap<maximum_number_of_neighbors(3) + 1,
+  FixedHashMap<maximum_number_of_neighbors(3),
                std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
@@ -121,9 +122,8 @@ void test_prim_reconstructor_impl(
                        tmpl::size_t<3>, Frame::Inertial>;
   using prim_tags_for_reconstruction =
       tmpl::list<Rho, ElectronFraction, Pressure, VelocityW, MagField, Phi>;
-  using spacetime_tags = tmpl::list<gr::Tags::SpacetimeMetric<3>,
-                                    GeneralizedHarmonic::Tags::Phi<3>,
-                                    GeneralizedHarmonic::Tags::Pi<3>>;
+  using spacetime_tags =
+      ::grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
 
   const Mesh<3> subcell_mesh{points_per_dimension,
                              Spectral::Basis::FiniteDifference,
@@ -193,7 +193,7 @@ void test_prim_reconstructor_impl(
     return vars;
   };
 
-  const FixedHashMap<maximum_number_of_neighbors(3) + 1,
+  const FixedHashMap<maximum_number_of_neighbors(3),
                      std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(

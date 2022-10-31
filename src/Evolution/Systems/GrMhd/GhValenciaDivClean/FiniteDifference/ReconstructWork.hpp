@@ -58,8 +58,8 @@ void reconstruct_prims_work(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3) + 1,
-        std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, size_t ghost_zone_size);
 
@@ -86,14 +86,14 @@ void reconstruct_fd_neighbor_work(
     const ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags&
         spacetime_vars_for_grmhd,
     const Variables<PrimsTags>& subcell_volume_prims,
-    const Variables<tmpl::list<
-        gr::Tags::SpacetimeMetric<3>, GeneralizedHarmonic::Tags::Phi<3>,
-        GeneralizedHarmonic::Tags::Pi<3>>>& subcell_volume_spacetime_vars,
+    const Variables<
+        grmhd::GhValenciaDivClean::Tags::spacetime_reconstruction_tags>&
+        subcell_volume_spacetime_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
     const FixedHashMap<
-        maximum_number_of_neighbors(3) + 1,
-        std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     size_t ghost_zone_size);
