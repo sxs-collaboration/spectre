@@ -68,6 +68,18 @@ struct ConvertStep {
     return 1;
   }
 };
+
+struct Metavariables {
+  struct factory_creation
+      : tt::ConformsTo<Options::protocols::FactoryCreation> {
+    using factory_classes = tmpl::map<
+        tmpl::pair<Burgers::BoundaryConditions::BoundaryCondition,
+                   tmpl::list<Burgers::BoundaryConditions::DirichletAnalytic>>,
+        tmpl::pair<evolution::initial_data::InitialData,
+                   tmpl::list<Burgers::Solutions::Step,
+                              Burgers::AnalyticData::Sinusoid>>>;
+  };
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
@@ -78,12 +90,16 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
   const auto box_analytic_data = db::create<db::AddSimpleTags<
       Tags::Time, Tags::AnalyticData<Burgers::AnalyticData::Sinusoid>>>(
       0.4, Burgers::AnalyticData::Sinusoid{});
+  Parallel::register_classes_with_charm<Burgers::Solutions::Step,
+                                        Burgers::AnalyticData::Sinusoid>();
 
   helpers::test_boundary_condition_with_python<
       Burgers::BoundaryConditions::DirichletAnalytic,
       Burgers::BoundaryConditions::BoundaryCondition, Burgers::System,
       tmpl::list<Burgers::BoundaryCorrections::Rusanov>,
-      tmpl::list<ConvertSinusoid>>(
+      tmpl::list<ConvertSinusoid>,
+      tmpl::list<Tags::AnalyticData<Burgers::AnalyticData::Sinusoid>>,
+      Metavariables>(
       make_not_null(&gen), "DirichletAnalytic",
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
@@ -91,8 +107,10 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
           helpers::Tags::PythonFunctionName<::Tags::Flux<
               Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>{
           "error_sinusoid", "u_sinusoid", "flux_sinusoid"},
-      "DirichletAnalytic:\n", Index<0>{1}, box_analytic_data,
-      tuples::TaggedTuple<>{});
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    Sinusoid:\n",
+      Index<0>{1}, box_analytic_data, tuples::TaggedTuple<>{});
 
   const auto box_analytic_soln = db::create<db::AddSimpleTags<
       Tags::Time, Tags::AnalyticSolution<Burgers::Solutions::Step>>>(
@@ -102,7 +120,9 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
       Burgers::BoundaryConditions::DirichletAnalytic,
       Burgers::BoundaryConditions::BoundaryCondition, Burgers::System,
       tmpl::list<Burgers::BoundaryCorrections::Rusanov>,
-      tmpl::list<ConvertStep>>(
+      tmpl::list<ConvertStep>,
+      tmpl::list<Tags::AnalyticSolution<Burgers::Solutions::Step>>,
+      Metavariables>(
       make_not_null(&gen), "DirichletAnalytic",
       tuples::TaggedTuple<
           helpers::Tags::PythonFunctionForErrorMessage<>,
@@ -110,6 +130,11 @@ SPECTRE_TEST_CASE("Unit.Burgers.BoundaryConditions.DirichletAnalytic",
           helpers::Tags::PythonFunctionName<::Tags::Flux<
               Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>{
           "error_step", "u_step", "flux_step"},
-      "DirichletAnalytic:\n", Index<0>{1}, box_analytic_soln,
-      tuples::TaggedTuple<>{});
+      "DirichletAnalytic:\n"
+      "  AnalyticPrescription:\n"
+      "    Step:\n"
+      "      LeftValue: 2.0\n"
+      "      RightValue: 1.0\n"
+      "      InitialPosition: 0.5\n",
+      Index<0>{1}, box_analytic_soln, tuples::TaggedTuple<>{});
 }

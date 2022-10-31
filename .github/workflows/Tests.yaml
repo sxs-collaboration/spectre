@@ -588,10 +588,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           # formaline injects data at the linking stage, which means we are
           # somewhat tied to the compiler version.
 
-          make EvolveBurgersStep -j2
+          make EvolveBurgers -j2
 
-          if [ ! -f ./bin/EvolveBurgersStep ]; then
-            echo "Could not find the executable EvolveBurgersStep";
+          if [ ! -f ./bin/EvolveBurgers ]; then
+            echo "Could not find the executable EvolveBurgers";
             echo "which we use for testing formaline";
             exit 1
           fi
@@ -600,7 +600,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           # positives that would cause the build to fail. We disable
           # leak sanitizer for the ctest runs inside CMake anyway.
 
-          ASAN_OPTIONS=detect_leaks=0 ./bin/EvolveBurgersStep
+          ASAN_OPTIONS=detect_leaks=0 ./bin/EvolveBurgers
           --dump-source-tree-as spectre_src --dump-only
 
           mkdir spectre_src;
@@ -646,7 +646,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
           -D BUILD_DOCS=OFF
           ..
 
-          make EvolveBurgersStep -j2
+          make EvolveBurgers -j2
 
           ctest -j2 -R InputFiles.Burgers.Step.yaml --output-on-failure
 

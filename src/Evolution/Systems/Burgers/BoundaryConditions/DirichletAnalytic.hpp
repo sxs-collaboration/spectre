@@ -39,6 +39,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -54,7 +55,14 @@ class DirichletAnalytic final : public BoundaryCondition {
       ::Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>;
 
  public:
-  using options = tmpl::list<>;
+  /// \brief What analytic solution/data to prescribe.
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+
+  using options = tmpl::list<AnalyticPrescription>;
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions setting the value of U to "
       "the analytic solution or analytic data."};
@@ -62,9 +70,13 @@ class DirichletAnalytic final : public BoundaryCondition {
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
   DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
-  DirichletAnalytic(const DirichletAnalytic&) = default;
-  DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
+  DirichletAnalytic(const DirichletAnalytic&);
+  DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
+
+  explicit DirichletAnalytic(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
 
@@ -82,10 +94,8 @@ class DirichletAnalytic final : public BoundaryCondition {
   using dg_interior_evolved_variables_tags = tmpl::list<>;
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<1, Frame::Inertial>>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
-  template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> u,
       const gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux_u,
@@ -93,18 +103,7 @@ class DirichletAnalytic final : public BoundaryCondition {
           tnsr::I<DataVector, 1, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, 1, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, 1, Frame::Inertial>& coords,
-      [[maybe_unused]] const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-      *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
-          coords, time, tmpl::list<Burgers::Tags::U>{}));
-    } else {
-      *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
-          coords, tmpl::list<Burgers::Tags::U>{}));
-    }
-    flux_impl(flux_u, *u);
-    return {};
-  }
+      [[maybe_unused]] const double time) const;
 
   using fd_interior_evolved_variables_tags = tmpl::list<>;
   using fd_interior_temporary_tags =
@@ -114,9 +113,8 @@ class DirichletAnalytic final : public BoundaryCondition {
                  domain::Tags::ElementMap<1, Frame::Grid>,
                  domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                              Frame::Inertial>,
-                 fd::Tags::Reconstructor, ::Tags::AnalyticSolutionOrData>;
+                 fd::Tags::Reconstructor>;
 
-  template <typename AnalyticSolutionOrData>
   void fd_ghost(const gsl::not_null<Scalar<DataVector>*> u,
                 const Direction<1>& direction, const Mesh<1> subcell_mesh,
                 const double time,
@@ -127,31 +125,13 @@ class DirichletAnalytic final : public BoundaryCondition {
                 const ElementMap<1, Frame::Grid>& logical_to_grid_map,
                 const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial,
                                                 1>& grid_to_inertial_map,
-                const fd::Reconstructor& reconstructor,
-                const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
-
-    const auto ghost_logical_coords =
-        evolution::dg::subcell::fd::ghost_zone_logical_coordinates(
-            subcell_mesh, ghost_zone_size, direction);
-
-    const auto ghost_inertial_coords = grid_to_inertial_map(
-        logical_to_grid_map(ghost_logical_coords), time, functions_of_time);
-
-    // Compute U according to analytic solution or data
-    if constexpr (std::is_base_of_v<MarkAsAnalyticSolution,
-                                    AnalyticSolutionOrData>) {
-      *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
-          ghost_inertial_coords, time, tmpl::list<Burgers::Tags::U>{}));
-    } else {
-      *u = get<Burgers::Tags::U>(analytic_solution_or_data.variables(
-          ghost_inertial_coords, tmpl::list<Burgers::Tags::U>{}));
-    }
-  }
+                const fd::Reconstructor& reconstructor) const;
 
  private:
   static void flux_impl(
       gsl::not_null<tnsr::I<DataVector, 1, Frame::Inertial>*> flux,
       const Scalar<DataVector>& u_analytic);
+
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
 }  // namespace Burgers::BoundaryConditions

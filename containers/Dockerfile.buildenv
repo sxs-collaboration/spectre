@@ -388,7 +388,7 @@ RUN mkdir spectre/build && cd spectre/build \
     -D MEMORY_ALLOCATOR=SYSTEM \
     .. \
   && make ${PARALLEL_MAKE_ARG} ExportTimeDependentCoordinates3D \
-  && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvectionKuzmin2D \
+  && make ${PARALLEL_MAKE_ARG} EvolveScalarAdvection2D \
   && make ${PARALLEL_MAKE_ARG} all-pybindings
 
 RUN pip3 --no-cache-dir install jupyterlab

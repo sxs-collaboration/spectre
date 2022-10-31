@@ -124,7 +124,7 @@ class CProxy_GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim, typename InitialData>
+template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   using system = ScalarAdvection::System<Dim>;
@@ -135,22 +135,18 @@ struct EvolutionMetavars {
   // or a DG-FD hybrid scheme (true).
   static constexpr bool use_dg_subcell = true;
 
-  using initial_data = InitialData;
-  static_assert(
-      is_analytic_data_v<initial_data> xor is_analytic_solution_v<initial_data>,
-      "initial_data must be either an analytic_data or an analytic_solution");
-  using initial_data_tag =
-      tmpl::conditional_t<is_analytic_solution_v<initial_data>,
-                          Tags::AnalyticSolution<initial_data>,
-                          Tags::AnalyticData<initial_data>>;
+  using initial_data_list =
+      tmpl::conditional_t<Dim == 1,
+                          tmpl::list<ScalarAdvection::Solutions::Krivodonova,
+                                     ScalarAdvection::Solutions::Sinusoid>,
+                          tmpl::list<ScalarAdvection::Solutions::Kuzmin>>;
 
   using limiter = Tags::Limiter<
       Limiters::Minmod<Dim, typename system::variables_tag::tags_list>>;
 
   using analytic_variables_tags = typename system::variables_tag::tags_list;
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
-                                                analytic_variables_tags>;
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_variables_tags, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<
@@ -187,6 +183,7 @@ struct EvolutionMetavars {
                                   volume_dim, Tags::Time, observe_fields,
                                   non_tensor_compute_tags>,
                               Events::time_events<system>>>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange, tmpl::list<PhaseControl::VisitAndReturn<
                                     Parallel::Phase::LoadBalancing>>>,
@@ -283,7 +280,7 @@ struct EvolutionMetavars {
                           dg_step_actions>;
 
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag,
+      tmpl::list<evolution::initial_data::Tags::InitialData,
                  tmpl::conditional_t<
                      use_dg_subcell,
                      tmpl::list<ScalarAdvection::fd::Tags::Reconstructor<Dim>,
