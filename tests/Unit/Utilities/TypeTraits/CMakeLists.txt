@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_CreateHasStaticMemberVariable.cpp
   Test_CreateHasTypeAlias.cpp
   Test_CreateIsCallable.cpp
+  Test_FastPointerCast.cpp
   Test_FunctionInfo.cpp
   Test_GetFundamentalType.cpp
   Test_HasEquivalence.cpp

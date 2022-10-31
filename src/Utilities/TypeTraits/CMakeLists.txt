@@ -12,6 +12,7 @@ spectre_target_headers(
   CreateHasStaticMemberVariable.hpp
   CreateHasTypeAlias.hpp
   CreateIsCallable.hpp
+  FastPointerCast.hpp
   FunctionInfo.hpp
   GetFundamentalType.hpp
   HasEquivalence.hpp
