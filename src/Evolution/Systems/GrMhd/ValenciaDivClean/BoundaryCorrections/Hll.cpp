@@ -241,6 +241,9 @@ void Hll::dg_boundary_terms(
   }
 }
 
+bool operator==(const Hll& /*lhs*/, const Hll& /*rhs*/) { return true; }
+bool operator!=(const Hll& lhs, const Hll& rhs) { return not(lhs == rhs); }
+
 // NOLINTNEXTLINE
 PUP::able::PUP_ID Hll::my_PUP_ID = 0;
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections

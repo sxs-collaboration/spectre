@@ -69,6 +69,9 @@ void test(const gsl::not_null<std::mt19937*> gen, const size_t num_pts) {
       Mesh<Dim - 1>{num_pts, Spectral::Basis::Legendre,
                     Spectral::Quadrature::Gauss},
       {}, {});
+
+  CHECK_FALSE(GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{} !=
+              GeneralizedHarmonic::BoundaryCorrections::UpwindPenalty<Dim>{});
 }
 }  // namespace
 

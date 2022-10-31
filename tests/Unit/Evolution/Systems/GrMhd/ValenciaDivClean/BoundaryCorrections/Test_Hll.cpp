@@ -83,5 +83,8 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.BoundaryCorrections.Hll",
           *hll),
       Mesh<2>{5, Spectral::Basis::Legendre, Spectral::Quadrature::Gauss}, {},
       ranges);
+
+  CHECK_FALSE(grmhd::ValenciaDivClean::BoundaryCorrections::Hll{} !=
+              grmhd::ValenciaDivClean::BoundaryCorrections::Hll{});
 }
 }  // namespace

@@ -212,4 +212,7 @@ class Hll final : public BoundaryCorrection {
       const Scalar<DataVector>& largest_ingoing_char_speed_ext,
       dg::Formulation dg_formulation);
 };
+
+bool operator==(const Hll& lhs, const Hll& rhs);
+bool operator!=(const Hll& lhs, const Hll& rhs);
 }  // namespace grmhd::ValenciaDivClean::BoundaryCorrections
