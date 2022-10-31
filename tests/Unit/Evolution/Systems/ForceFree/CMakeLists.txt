@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Fluxes.cpp
   Test_Sources.cpp
   Test_Tags.cpp
+  Test_TimeDerivativeTerms.cpp
   )
 
 add_test_library(
