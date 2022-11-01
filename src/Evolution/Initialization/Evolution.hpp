@@ -162,7 +162,6 @@ struct TimeAndTimeStep {
 /// DataBox changes:
 /// - Adds:
 ///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
-///   * `Tags::StepperError<variables_tag>`
 ///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
 /// - Removes: nothing
 /// - Modifies: nothing
@@ -173,14 +172,11 @@ struct TimeStepperHistory {
   static constexpr size_t dim = Metavariables::volume_dim;
   using variables_tag = typename Metavariables::system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
-  using error_variables_tag =
-      db::add_tag_prefix<::Tags::StepperError, variables_tag>;
 
   using simple_tags = tmpl::flatten<tmpl::list<
       dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
       tmpl::conditional_t<Metavariables::local_time_stepping,
-                          ::Tags::RollbackValue<variables_tag>, tmpl::list<>>,
-      error_variables_tag, ::Tags::StepperErrorUpdated>>;
+                          ::Tags::RollbackValue<variables_tag>, tmpl::list<>>>>;
 
   using compute_tags = db::AddComputeTags<>;
 
@@ -193,7 +189,6 @@ struct TimeStepperHistory {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     using DtVars = typename dt_variables_tag::type;
-    using ErrorVars = typename error_variables_tag::type;
 
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
@@ -205,17 +200,10 @@ struct TimeStepperHistory {
     DtVars dt_vars{num_grid_points};
     typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history{
       starting_order};
-    ErrorVars error_vars;
-    // only bother allocating if the error vars are going to be used
-    if (db::get<::Tags::IsUsingTimeSteppingErrorControl>(box)) {
-      error_vars = ErrorVars{num_grid_points};
-    }
 
     Initialization::mutate_assign<tmpl::list<
-        dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
-        error_variables_tag, ::Tags::StepperErrorUpdated>>(
-        make_not_null(&box), std::move(dt_vars), std::move(history),
-        std::move(error_vars), false);
+        dt_variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>>>(
+        make_not_null(&box), std::move(dt_vars), std::move(history));
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

@@ -92,26 +92,20 @@ struct InitializeCharacteristicEvolutionVariables {
       typename Metavariables::evolved_coordinates_variables_tag;
   using dt_coordinate_variables_tag =
       db::add_tag_prefix<::Tags::dt, coordinate_variables_tag>;
-  using stepper_error_coordinate_variables_tag =
-      db::add_tag_prefix<::Tags::StepperError, coordinate_variables_tag>;
   using evolved_swsh_variables_tag =
       ::Tags::Variables<tmpl::list<typename Metavariables::evolved_swsh_tag>>;
   using evolved_swsh_dt_variables_tag =
       db::add_tag_prefix<::Tags::dt, evolved_swsh_variables_tag>;
-  using evolved_swsh_stepper_error_variables_tag =
-      db::add_tag_prefix<::Tags::StepperError, evolved_swsh_variables_tag>;
 
   using simple_tags_for_evolution = tmpl::list<
       boundary_value_variables_tag, coordinate_variables_tag,
-      dt_coordinate_variables_tag, stepper_error_coordinate_variables_tag,
-      evolved_swsh_variables_tag, evolved_swsh_dt_variables_tag,
-      evolved_swsh_stepper_error_variables_tag,
-      angular_coordinates_variables_tag, scri_variables_tag,
-      volume_variables_tag, pre_swsh_derivatives_variables_tag,
-      transform_buffer_variables_tag, swsh_derivative_variables_tag,
+      dt_coordinate_variables_tag, evolved_swsh_variables_tag,
+      evolved_swsh_dt_variables_tag, angular_coordinates_variables_tag,
+      scri_variables_tag, volume_variables_tag,
+      pre_swsh_derivatives_variables_tag, transform_buffer_variables_tag,
+      swsh_derivative_variables_tag,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
-      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>,
-      ::Tags::StepperErrorUpdated>;
+      Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>>;
   using simple_tags =
       tmpl::append<StepChoosers::step_chooser_simple_tags<Metavariables>,
                    simple_tags_for_evolution>;
@@ -138,19 +132,13 @@ struct InitializeCharacteristicEvolutionVariables {
     const size_t transform_buffer_size =
         number_of_radial_points *
         Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
-    const bool is_using_error_control =
-        db::get<::Tags::IsUsingTimeSteppingErrorControl>(box);
     Initialization::mutate_assign<simple_tags_for_evolution>(
         make_not_null(&box),
         typename boundary_value_variables_tag::type{boundary_size},
         typename coordinate_variables_tag::type{boundary_size},
         typename dt_coordinate_variables_tag::type{boundary_size},
-        typename stepper_error_coordinate_variables_tag::type{
-            is_using_error_control ? boundary_size : 0},
         typename evolved_swsh_variables_tag::type{volume_size},
         typename evolved_swsh_dt_variables_tag::type{volume_size},
-        typename evolved_swsh_stepper_error_variables_tag::type{
-            is_using_error_control ? volume_size : 0},
         typename angular_coordinates_variables_tag::type{boundary_size},
         typename scri_variables_tag::type{boundary_size},
         typename volume_variables_tag::type{volume_size},
@@ -158,8 +146,7 @@ struct InitializeCharacteristicEvolutionVariables {
         typename transform_buffer_variables_tag::type{transform_buffer_size,
                                                       0.0},
         typename swsh_derivative_variables_tag::type{volume_size, 0.0},
-        Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{},
-         false);
+        Spectral::Swsh::SwshInterpolator{}, Spectral::Swsh::SwshInterpolator{});
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

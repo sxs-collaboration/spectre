@@ -45,6 +45,9 @@ SPECTRE_TEST_CASE("Unit.Time.Tags", "[Unit][Time]") {
   TestHelpers::db::test_simple_tag<Tags::StepController>("StepController");
   TestHelpers::db::test_simple_tag<Tags::StepperError<DummyVariablesTag>>(
       "StepperError(Variables(Scalar))");
+  TestHelpers::db::test_simple_tag<
+      Tags::PreviousStepperError<DummyVariablesTag>>(
+      "PreviousStepperError(Variables(Scalar))");
   TestHelpers::db::test_simple_tag<Tags::StepperErrorUpdated>(
       "StepperErrorUpdated");
 }

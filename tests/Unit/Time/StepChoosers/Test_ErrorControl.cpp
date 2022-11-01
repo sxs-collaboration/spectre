@@ -76,30 +76,30 @@ struct Metavariables {
   using component_list = tmpl::list<>;
 };
 
-template <typename EvolvedTags, typename ErrorTags>
+template <typename EvolvedTags>
 std::pair<double, bool> get_suggestion(
-    const gsl::not_null<std::optional<double>*> previous_step_error,
     const StepChoosers::ErrorControl<EvolvedVariablesTag>& error_control,
     const Variables<EvolvedTags>& step_values,
-    const Variables<ErrorTags>& error, const double previous_step,
+    const Variables<EvolvedTags>& error,
+    const Variables<EvolvedTags>& previous_error, const double previous_step,
     const size_t stepper_order) {
   const Parallel::GlobalCache<Metavariables<true>> cache{};
   TimeSteppers::History<Variables<db::wrap_tags_in<::Tags::dt, EvolvedTags>>>
       history{stepper_order};
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, 0.1 * step_values);
-  auto box = db::create<
-      db::AddSimpleTags<
-          Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
-          Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
-          Tags::RollbackValue<EvolvedVariablesTag>,
-          db::add_tag_prefix<Tags::StepperError, EvolvedVariablesTag>,
-          Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>,
-          StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>,
-      db::AddComputeTags<>>(
-      Metavariables<true>{}, std::move(history), step_values, error, false,
-      std::unique_ptr<TimeStepper>{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)},
-      *previous_step_error);
+  auto box =
+      db::create<db::AddSimpleTags<
+                     Parallel::Tags::MetavariablesImpl<Metavariables<true>>,
+                     Tags::HistoryEvolvedVariables<EvolvedVariablesTag>,
+                     Tags::RollbackValue<EvolvedVariablesTag>,
+                     Tags::StepperError<EvolvedVariablesTag>,
+                     Tags::PreviousStepperError<EvolvedVariablesTag>,
+                     Tags::StepperErrorUpdated, Tags::TimeStepper<TimeStepper>>,
+                 db::AddComputeTags<>>(
+          Metavariables<true>{}, std::move(history), step_values, error,
+          previous_error, false,
+          std::unique_ptr<TimeStepper>{
+              std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)});
 
   const auto& time_stepper = get<Tags::TimeStepper<>>(box);
   const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
@@ -110,11 +110,8 @@ std::pair<double, bool> get_suggestion(
   // check that when the error is not declared updated, the step is accepted and
   // the step is infinity.
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control(previous_step_error, step_values, error, false,
-                      time_stepper, previous_step, cache));
-  CHECK(
-      *previous_step_error ==
-      db::get<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(box));
+        error_control(step_values, error, previous_error, false, time_stepper,
+                      previous_step, cache));
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
         error_control_base->desired_step(make_not_null(&box), previous_step,
                                          cache));
@@ -124,22 +121,12 @@ std::pair<double, bool> get_suggestion(
         *stepper_updated = true;
       });
   const std::pair<double, bool> result =
-      error_control(previous_step_error, step_values, error, true, time_stepper,
+      error_control(step_values, error, previous_error, true, time_stepper,
                     previous_step, cache);
-  // reset the previous step error so we can reuse the former state on the next
-  // re-application
-  *previous_step_error =
-      db::get<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(box);
   CHECK(error_control_base->desired_step(make_not_null(&box), previous_step,
                                          cache) == result);
-  db::mutate<StepChoosers::Tags::PreviousStepError<EvolvedVariablesTag>>(
-      make_not_null(&box),
-      [previous_step_error](const gsl::not_null<std::optional<double>*>
-                                previous_step_error_from_box) {
-        *previous_step_error_from_box = *previous_step_error;
-      });
   CHECK(serialize_and_deserialize(error_control)(
-            previous_step_error, step_values, error, true, time_stepper,
+            step_values, error, previous_error, true, time_stepper,
             previous_step, cache) == result);
   CHECK(serialize_and_deserialize(error_control_base)
             ->desired_step(make_not_null(&box), previous_step, cache) ==
@@ -158,9 +145,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
                           make_not_null(&generator), make_not_null(&step_dist));
   const DataVector flattened_step_values{step_values.data(), 15};
   std::uniform_real_distribution<> error_dist{1.0e-4, 2.0e-4};
-  Variables<tmpl::list<Tags::StepperError<EvolvedVar1>,
-                       Tags::StepperError<EvolvedVar2>>>
-      step_errors{5};
+  Variables<tmpl::list<EvolvedVar1, EvolvedVar2>> step_errors{5};
   fill_with_random_values(make_not_null(&step_errors),
                           make_not_null(&generator),
                           make_not_null(&error_dist));
@@ -172,21 +157,17 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       INFO("Test error control step fixed by absolute tolerance");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
           5.0e-4, 0.0, 2.0, 0.5, 0.95};
-      std::optional<double> previous_step_error;
-      const auto first_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, step_errors, 1.0, stepper_order);
+      const auto first_result = get_suggestion(
+          error_control, step_values, step_errors, {}, 1.0, stepper_order);
       // manually calculated in the special case in question: only absolute
       // errors constrained
       const double expected_linf_error = max(flattened_step_errors) / 5.0e-4;
       CHECK(approx(first_result.first) ==
             0.95 / pow(expected_linf_error, 1.0 / stepper_order));
       CHECK(first_result.second);
-      const double previous_step_error_hold = *previous_step_error;
-      const auto second_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, decltype(step_errors){1.2 * step_errors},
-                         first_result.first, stepper_order);
+      const auto second_result = get_suggestion(
+          error_control, step_values, decltype(step_errors){1.2 * step_errors},
+          step_errors, first_result.first, stepper_order);
       CHECK(approx(second_result.first) ==
             0.95 * first_result.first /
                 (pow(expected_linf_error, 0.3 / stepper_order) *
@@ -194,21 +175,18 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       CHECK(second_result.first);
       // Check that the suggested step size is smaller if the error in
       // increasing faster.
-      *previous_step_error = 0.5 * previous_step_error_hold;
-      const auto adjusted_second_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, decltype(step_errors){1.2 * step_errors},
-                         first_result.first, stepper_order);
+      const auto adjusted_second_result = get_suggestion(
+          error_control, step_values, decltype(step_errors){1.2 * step_errors},
+          decltype(step_errors){0.5 * step_errors}, first_result.first,
+          stepper_order);
       CHECK(adjusted_second_result.first < second_result.first);
     }
     {
       INFO("Test error control step fixed by relative tolerance");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
           0.0, 3.0e-4, 2.0, 0.5, 0.95};
-      std::optional<double> previous_step_error;
-      const auto first_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, step_errors, 1.0, stepper_order);
+      const auto first_result = get_suggestion(
+          error_control, step_values, step_errors, {}, 1.0, stepper_order);
       // manually calculated in the special case in question: only relative
       // errors constrained
       const double expected_linf_error =
@@ -218,10 +196,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       CHECK(approx(first_result.first) ==
             0.95 / pow(expected_linf_error, 1.0 / stepper_order));
       CHECK(first_result.second);
-      const auto second_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, decltype(step_errors){1.2 * step_errors},
-                         first_result.first, stepper_order);
+      const auto second_result = get_suggestion(
+          error_control, step_values, decltype(step_errors){1.2 * step_errors},
+          step_errors, first_result.first, stepper_order);
       const double new_expected_linf_error =
           max(1.2 * flattened_step_errors /
               (flattened_step_values + 1.2 * flattened_step_errors)) /
@@ -236,10 +213,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       INFO("Test error control step failure");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
           4.0e-5, 4.0e-5, 2.0, 0.5, 0.95};
-      std::optional<double> previous_step_error;
-      const auto first_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, step_errors, 1.0, stepper_order);
+      const auto first_result = get_suggestion(
+          error_control, step_values, step_errors, {}, 1.0, stepper_order);
       // manually calculated in the special case in question: only absolute
       // errors constrained
       const double expected_linf_error =
@@ -255,10 +230,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       INFO("Test error control clamped minimum");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
           4.0e-5, 4.0e-5, 2.0, 0.9, 0.95};
-      std::optional<double> previous_step_error;
-      const auto first_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, step_errors, 1.0, stepper_order);
+      const auto first_result = get_suggestion(
+          error_control, step_values, step_errors, {}, 1.0, stepper_order);
       // manually calculated in the special case in question: only absolute
       // errors constrained
       CHECK(first_result.first == 0.9);
@@ -267,10 +240,8 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
       INFO("Test error control clamped minimum");
       const StepChoosers::ErrorControl<EvolvedVariablesTag> error_control{
           1.0e-1, 1.0e-1, 2.0, 0.5, 0.95};
-      std::optional<double> previous_step_error;
-      const auto first_result =
-          get_suggestion(make_not_null(&previous_step_error), error_control,
-                         step_values, step_errors, 1.0, stepper_order);
+      const auto first_result = get_suggestion(
+          error_control, step_values, step_errors, {}, 1.0, stepper_order);
       CHECK(first_result == std::make_pair(2.0, true));
     }
   }

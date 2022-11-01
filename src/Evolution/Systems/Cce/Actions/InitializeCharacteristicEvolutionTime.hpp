@@ -81,8 +81,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
       ::Tags::RollbackValue<EvolvedCoordinatesVariablesTag>,
-      ::Tags::RollbackValue<evolved_swsh_variables_tag>,
-      ::Tags::StepperErrorUpdated>;
+      ::Tags::RollbackValue<evolved_swsh_variables_tag>>;
   using compute_tags =
       tmpl::list<::Tags::IsUsingTimeSteppingErrorControlCompute>;
 
@@ -129,14 +128,13 @@ struct InitializeCharacteristicEvolutionTime {
         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
         ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
         ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
-        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
-        ::Tags::StepperErrorUpdated>>(
+        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>>(
         make_not_null(&box), TimeStepId{},
         TimeStepId{true,
                    -static_cast<int64_t>(time_stepper.number_of_past_steps()),
                    initial_time},
         initial_time_step, initial_time_step, initial_time_value,
-        std::move(coordinate_history), std::move(swsh_history), false);
+        std::move(coordinate_history), std::move(swsh_history));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

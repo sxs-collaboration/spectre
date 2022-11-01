@@ -24,19 +24,6 @@ class GlobalCache;
 /// \endcond
 
 namespace StepChoosers {
-namespace Tags {
-/// \brief The stepper error measure computed in the previous application of the
-/// `StepChooser::ErrorControl` step chooser.
-///
-/// \details This tag is templated on `EvolvedVariableTag`, as a separate error
-/// measure should be stored for each evolved variables, because the stepper is
-/// separately applied to each object.
-template <typename EvolvedVariableTag>
-struct PreviousStepError : db::SimpleTag {
-  using type = std::optional<double>;
-};
-}  // namespace Tags
-
 namespace ErrorControl_detail {
 struct IsAnErrorControl {};
 }  // namespace ErrorControl_detail
@@ -110,8 +97,7 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
  public:
   using evolved_variable_type = typename EvolvedVariableTag::type;
   using error_variable_type =
-      typename db::add_tag_prefix<::Tags::StepperError,
-                                  EvolvedVariableTag>::type;
+      typename ::Tags::StepperError<EvolvedVariableTag>::type;
 
   /// \cond
   ErrorControl() = default;
@@ -177,21 +163,27 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
 
+  using simple_tags =
+      tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
+                 ::Tags::StepperError<EvolvedVariableTag>,
+                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
+                 ::Tags::StepperErrorUpdated>;
+
   using argument_tags =
       tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
-                 db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
+                 ::Tags::StepperError<EvolvedVariableTag>,
+                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
-
-  using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables, typename TimeStepper>
   std::pair<double, bool> operator()(
-      const gsl::not_null<std::optional<double>*> previous_step_error,
       const evolved_variable_type& rollback_value,
-      const error_variable_type& error, const bool& stepper_error_updated,
-      const TimeStepper& stepper, const double previous_step,
+      const error_variable_type& error,
+      const error_variable_type& previous_error,
+      const bool& stepper_error_updated, const TimeStepper& stepper,
+      const double previous_step,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
@@ -200,26 +192,28 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
     }
     const double l_inf_error = error_calc_impl(rollback_value, error);
     double new_step;
-    if (not previous_step_error->has_value()) {
+    if (previous_error.number_of_grid_points() !=
+        rollback_value.number_of_grid_points()) {
       new_step = previous_step *
                  std::clamp(safety_factor_ *
                                 pow(1.0 / std::max(l_inf_error, 1e-14),
                                     1.0 / (stepper.error_estimate_order() + 1)),
                             min_factor_, max_factor_);
     } else {
+      const double previous_l_inf_error =
+          error_calc_impl(rollback_value, previous_error);
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       const double alpha_factor = 0.7 / (stepper.error_estimate_order() + 1);
       const double beta_factor = 0.4 / (stepper.error_estimate_order() + 1);
       new_step =
           previous_step *
-          std::clamp(safety_factor_ *
-                         pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
-                         pow(std::max(previous_step_error->value(), 1e-14),
-                             beta_factor),
-                     min_factor_, max_factor_);
+          std::clamp(
+              safety_factor_ *
+                  pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
+                  pow(std::max(previous_l_inf_error, 1e-14), beta_factor),
+              min_factor_, max_factor_);
     }
-    *previous_step_error = l_inf_error;
     return std::make_pair(new_step, l_inf_error <= 1.0);
   }
 
@@ -265,8 +259,8 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
             // it in the capture...
             (void)this;
             using tag = typename decltype(tag_v)::type;
-            recursive_call_result = error_calc_impl(
-                get<tag>(values), get<::Tags::StepperError<tag>>(errors));
+            recursive_call_result =
+                error_calc_impl(get<tag>(values), get<tag>(errors));
             if (recursive_call_result > result) {
               result = recursive_call_result;
             }
