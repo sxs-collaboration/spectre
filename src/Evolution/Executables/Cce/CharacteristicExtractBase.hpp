@@ -103,8 +103,10 @@ struct CharacteristicExtractDefaults {
   using cce_step_choosers = tmpl::list<
       StepChoosers::Constant<StepChooserUse::LtsStep>,
       StepChoosers::Increase<StepChooserUse::LtsStep>,
-      StepChoosers::ErrorControl<Tags::Variables<tmpl::list<evolved_swsh_tag>>,
+      StepChoosers::ErrorControl<StepChooserUse::LtsStep,
+                                 Tags::Variables<tmpl::list<evolved_swsh_tag>>,
                                  swsh_vars_selector>,
-      StepChoosers::ErrorControl<evolved_coordinates_variables_tag,
+      StepChoosers::ErrorControl<StepChooserUse::LtsStep,
+                                 evolved_coordinates_variables_tag,
                                  coord_vars_selector>>;
 };

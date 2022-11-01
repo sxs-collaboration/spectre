@@ -19,7 +19,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/RungeKutta4.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -40,7 +40,8 @@ struct Component {
 
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
-                        Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time>;
+                        Tags::TimeStep, Tags::Next<Tags::TimeStep>, Tags::Time,
+                        Tags::IsUsingTimeSteppingErrorControl>;
 
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<
@@ -57,7 +58,7 @@ struct Metavariables {
 
 void check(std::unique_ptr<TimeStepper> time_stepper,
            const std::vector<Rational>& substeps, const Time& start,
-           const TimeDelta& time_step) {
+           const TimeDelta& time_step, const bool using_error_control) {
   std::vector<TimeDelta> substep_offsets{};
   substep_offsets.reserve(substeps.size());
   for (const auto& substep : substeps) {
@@ -74,7 +75,7 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
            ? TimeStepId(time_step.is_positive(), 8, start + time_step)
            : TimeStepId(time_step.is_positive(), 8, start, 1,
                         start + substep_offsets[1]),
-       time_step, time_step, start.value()});
+       time_step, time_step, start.value(), using_error_control});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
@@ -104,14 +105,19 @@ void check(std::unique_ptr<TimeStepper> time_stepper,
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.AdvanceTime", "[Unit][Time][Actions]") {
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
-                                        TimeSteppers::RungeKutta3>();
+                                        TimeSteppers::RungeKutta4>();
   const Slab slab(0., 1.);
-  check(std::make_unique<TimeSteppers::RungeKutta3>(), {0, 1, {1, 2}},
-        slab.start(), slab.duration() / 2);
-  check(std::make_unique<TimeSteppers::RungeKutta3>(), {0, 1, {1, 2}},
-        slab.end(), -slab.duration() / 2);
+  check(std::make_unique<TimeSteppers::RungeKutta4>(), {0, {1, 2}, {1, 2}, 1},
+        slab.start(), slab.duration() / 2, false);
+  check(std::make_unique<TimeSteppers::RungeKutta4>(), {0, {1, 2}, {1, 2}, 1},
+        slab.end(), -slab.duration() / 2, false);
   check(std::make_unique<TimeSteppers::AdamsBashforthN>(1), {0}, slab.start(),
-        slab.duration() / 2);
+        slab.duration() / 2, false);
   check(std::make_unique<TimeSteppers::AdamsBashforthN>(1), {0}, slab.end(),
-        -slab.duration() / 2);
+        -slab.duration() / 2, false);
+  check(std::make_unique<TimeSteppers::RungeKutta4>(),
+        {0, {1, 2}, {1, 2}, 1, {3, 4}}, slab.start(), slab.duration() / 2,
+        true);
+  check(std::make_unique<TimeSteppers::RungeKutta4>(),
+        {0, {1, 2}, {1, 2}, 1, {3, 4}}, slab.end(), -slab.duration() / 2, true);
 }

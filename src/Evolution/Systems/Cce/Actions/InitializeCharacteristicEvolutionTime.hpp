@@ -15,7 +15,6 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Time/Slab.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -82,8 +81,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
       ::Tags::RollbackValue<EvolvedCoordinatesVariablesTag>,
       ::Tags::RollbackValue<evolved_swsh_variables_tag>>;
-  using compute_tags =
-      tmpl::list<::Tags::IsUsingTimeSteppingErrorControlCompute>;
+  using compute_tags = tmpl::list<>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

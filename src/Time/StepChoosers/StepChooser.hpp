@@ -64,12 +64,16 @@ CREATE_GET_TYPE_ALIAS_OR_DEFAULT(compute_tags)
 CREATE_GET_TYPE_ALIAS_OR_DEFAULT(simple_tags)
 
 template <typename Metavariables>
-using all_step_choosers = tmpl::join<tmpl::transform<
-    tmpl::filter<
-        tmpl::wrap<typename Metavariables::factory_creation::factory_classes,
-                   tmpl::list>,
-        tt::is_a<StepChooser, tmpl::bind<tmpl::front, tmpl::_1>>>,
-    tmpl::bind<tmpl::back, tmpl::_1>>>;
+using all_step_choosers = tmpl::join<tmpl::remove<
+    tmpl::list<
+        tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                 StepChooser<StepChooserUse::Slab>>,
+        tmpl::conditional_t<
+            Metavariables::local_time_stepping,
+            tmpl::at<typename Metavariables::factory_creation::factory_classes,
+                     StepChooser<StepChooserUse::LtsStep>>,
+            tmpl::no_such_type_>>,
+    tmpl::no_such_type_>>;
 }  // namespace detail
 
 template <typename Metavariables>
