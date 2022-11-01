@@ -15,7 +15,10 @@
 
 namespace Parallel {
 std::vector<Phase> known_phases() {
-  return {Phase::Cleanup,
+  return {Phase::AdjustDomain,
+          Phase::CheckDomain,
+          Phase::Cleanup,
+          Phase::EvaluateAmrCriteria,
           Phase::Evolve,
           Phase::Execute,
           Phase::Exit,
@@ -34,8 +37,14 @@ std::vector<Phase> known_phases() {
 
 std::ostream& operator<<(std::ostream& os, const Phase& phase) {
   switch (phase) {
+    case Parallel::Phase::AdjustDomain:
+      return os << "AdjustDomain";
+    case Parallel::Phase::CheckDomain:
+      return os << "CheckDomain";
     case Parallel::Phase::Cleanup:
       return os << "Cleanup";
+    case Parallel::Phase::EvaluateAmrCriteria:
+      return os << "EvaluateAmrCriteria";
     case Parallel::Phase::Evolve:
       return os << "Evolve";
     case Parallel::Phase::Execute:
