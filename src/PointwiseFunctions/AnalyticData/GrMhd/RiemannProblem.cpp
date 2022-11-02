@@ -85,8 +85,6 @@ tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
 RiemannProblem::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
-  // FIXME Either add EoS call or make electron fraction independent
-  // to test advection behavior
 
     return {make_with_value<Scalar<DataType>>(x, 0.1)};
 }

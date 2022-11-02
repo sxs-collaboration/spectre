@@ -86,7 +86,6 @@ tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
 MagneticFieldLoop::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
-  // FIXME Add proper EoS call to get Ye
 
   return {make_with_value<Scalar<DataType>>(x, 0.1)};
 }

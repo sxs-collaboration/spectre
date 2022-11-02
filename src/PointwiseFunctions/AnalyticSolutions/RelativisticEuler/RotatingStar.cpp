@@ -642,8 +642,6 @@ RotatingStar::variables(
     const gsl::not_null<IntermediateVariables<DataType>*> /* vars */,
     const tnsr::I<DataType, 3>& x,
     tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const {
-  // FIXME need to replace this with actual electron fraction
-  // consistent with the EoS used to construct the star.
 
   auto ye = make_with_value<Scalar<DataType>>(x, 0.1);
 
