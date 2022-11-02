@@ -21,7 +21,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
@@ -82,7 +81,6 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
                                        const DataVector& coordinates) {
   using Cfl = Metavariables::Cfl<Use>;
 
-  const Parallel::GlobalCache<Metavariables> cache{};
   auto box = db::create<
       db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<Metavariables>, CharacteristicSpeed,
@@ -109,23 +107,21 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
   const std::unique_ptr<StepChooser<Use>> cfl_base = std::make_unique<Cfl>(cfl);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const auto result =
-      cfl(grid_spacing, time_stepper, speed, current_step, cache);
+  const auto result = cfl(grid_spacing, time_stepper, speed, current_step);
   CHECK(serialize_and_deserialize(cfl)(grid_spacing, time_stepper, speed,
-                                       current_step, cache) == result);
+                                       current_step) == result);
   CHECK_FALSE(result.second);
   const auto accepted_step_result =
-      cfl(grid_spacing, time_stepper, speed, result.first * 0.7, cache);
+      cfl(grid_spacing, time_stepper, speed, result.first * 0.7);
   CHECK(accepted_step_result.second);
   if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-    CHECK(cfl_base->desired_step(make_not_null(&box), current_step, cache) ==
-          result);
+    CHECK(cfl_base->desired_step(make_not_null(&box), current_step) == result);
     CHECK(serialize_and_deserialize(cfl_base)->desired_step(
-              make_not_null(&box), current_step, cache) == result);
+              make_not_null(&box), current_step) == result);
   } else {
-    CHECK(cfl_base->desired_slab(current_step, box, cache) == result.first);
+    CHECK(cfl_base->desired_slab(current_step, box) == result.first);
     CHECK(serialize_and_deserialize(cfl_base)->desired_slab(
-              current_step, box, cache) == result.first);
+              current_step, box) == result.first);
   }
   return result;
 }

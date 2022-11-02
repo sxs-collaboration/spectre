@@ -11,7 +11,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -35,7 +34,6 @@ struct Metavariables {
 
 template <typename Use>
 void test_use() {
-  const Parallel::GlobalCache<Metavariables> cache{};
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
@@ -45,19 +43,19 @@ void test_use() {
       std::make_unique<StepChoosers::Constant<Use>>(constant);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  CHECK(constant(current_step, cache) == std::make_pair(5.4, true));
-  CHECK(serialize_and_deserialize(constant)(current_step, cache) ==
+  CHECK(constant(current_step) == std::make_pair(5.4, true));
+  CHECK(serialize_and_deserialize(constant)(current_step) ==
         std::make_pair(5.4, true));
   if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-    CHECK(constant_base->desired_step(make_not_null(&box), current_step,
-                                      cache) == std::make_pair(5.4, true));
+    CHECK(constant_base->desired_step(make_not_null(&box), current_step) ==
+          std::make_pair(5.4, true));
     CHECK(serialize_and_deserialize(constant_base)
-              ->desired_step(make_not_null(&box), current_step, cache) ==
+              ->desired_step(make_not_null(&box), current_step) ==
           std::make_pair(5.4, true));
   } else {
-    CHECK(constant_base->desired_slab(current_step, box, cache) == 5.4);
+    CHECK(constant_base->desired_slab(current_step, box) == 5.4);
     CHECK(serialize_and_deserialize(constant_base)
-              ->desired_slab(current_step, box, cache) == 5.4);
+              ->desired_slab(current_step, box) == 5.4);
   }
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(

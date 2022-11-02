@@ -13,13 +13,6 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-/// \endcond
-
 namespace StepChoosers {
 
 /// Suggests a constant step size.
@@ -42,10 +35,8 @@ class Constant : public StepChooser<StepChooserUse> {
   using argument_tags = tmpl::list<>;
   using return_tags = tmpl::list<>;
 
-  template <typename Metavariables>
   std::pair<double, bool> operator()(
-      const double /*last_step_magnitude*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+      const double /*last_step_magnitude*/) const {
     return std::make_pair(value_, true);
   }
 

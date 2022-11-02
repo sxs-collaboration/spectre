@@ -487,7 +487,7 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::apply(
       });
 
   if constexpr (Metavariables::local_time_stepping) {
-    take_step<DgStepChoosers>(make_not_null(&box), cache);
+    take_step<DgStepChoosers>(make_not_null(&box));
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),

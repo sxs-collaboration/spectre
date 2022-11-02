@@ -15,7 +15,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
@@ -51,7 +50,6 @@ void test_by_block() {
       std::make_unique<ByBlock>(by_block);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const Parallel::GlobalCache<Metavariables> cache{};
   for (size_t block = 0; block < 3; ++block) {
     const Element<volume_dim> element(ElementId<volume_dim>(block), {});
     auto box = db::create<
@@ -60,22 +58,20 @@ void test_by_block() {
                                                               element);
     const double expected = 0.5 * static_cast<double>(block + 5);
 
-    CHECK(by_block(element, current_step, cache) ==
-          std::make_pair(expected, true));
-    CHECK(serialize_and_deserialize(by_block)(element, current_step, cache) ==
+    CHECK(by_block(element, current_step) == std::make_pair(expected, true));
+    CHECK(serialize_and_deserialize(by_block)(element, current_step) ==
           std::make_pair(expected, true));
 
     if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-      CHECK(by_block_base->desired_step(make_not_null(&box), current_step,
-                                        cache) ==
+      CHECK(by_block_base->desired_step(make_not_null(&box), current_step) ==
             std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(by_block_base)
-                ->desired_step(make_not_null(&box), current_step, cache) ==
+                ->desired_step(make_not_null(&box), current_step) ==
             std::make_pair(expected, true));
     } else {
       CHECK(serialize_and_deserialize(by_block_base)
-                ->desired_slab(current_step, box, cache) == expected);
-      CHECK(by_block_base->desired_slab(current_step, box, cache) == expected);
+                ->desired_slab(current_step, box) == expected);
+      CHECK(by_block_base->desired_slab(current_step, box) == expected);
     }
   }
 

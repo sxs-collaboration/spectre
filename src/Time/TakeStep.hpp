@@ -3,13 +3,20 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Utilities/Gsl.hpp"
+
+/// \cond
+namespace Parallel::Tags {
+struct Metavariables;
+}  // namespace Parallel::Tags
+/// \endcond
 
 /// Bundled method for recording the current system state in the history, and
 /// updating the evolved variables and step size.
@@ -18,16 +25,16 @@
 /// system, and in the case for which step parameters may need to be rejected
 /// and re-tried, looping until an acceptable step is performed.
 template <typename StepChoosersToUse = AllStepChoosers,
-          typename VariablesTag = NoSuchType, typename DbTags,
-          typename Metavariables>
-void take_step(const gsl::not_null<db::DataBox<DbTags>*> box,
-               const Parallel::GlobalCache<Metavariables>& cache) {
-  using system = typename Metavariables::system;
+          typename VariablesTag = NoSuchType, typename DbTags>
+void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
+  using metavars =
+      std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(*box))>;
+  using system = typename metavars::system;
   record_time_stepper_data<system, VariablesTag>(box);
-  if constexpr (Metavariables::local_time_stepping) {
+  if constexpr (metavars::local_time_stepping) {
     for (;;) {
       update_u<system, VariablesTag>(box);
-      if (change_step_size<StepChoosersToUse>(box, cache)) {
+      if (change_step_size<StepChoosersToUse>(box)) {
         break;
       }
       using variables_tag =

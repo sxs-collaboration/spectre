@@ -17,7 +17,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Slab.hpp"
@@ -54,8 +53,6 @@ struct Metavariables {
 void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
   CAPTURE(times);
   CAPTURE(expected_frac);
-
-  const Parallel::GlobalCache<Metavariables> cache{};
 
   const Slab slab(0.25, 1.5);
   const double expected = expected_frac == -1
@@ -103,7 +100,7 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       gts_history.insert_initial(make_gts_time_id(i), 0.0);
     }
 
-    const auto check = [&cache, &expected](auto box, const Time& current_time) {
+    const auto check = [&expected](auto box, const Time& current_time) {
       const auto& history = db::get<history_tag>(box);
       const double current_step =
           history.size() > 0 ? abs(current_time - history.back()).value()
@@ -117,15 +114,13 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
                 StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>>(
                 relax);
 
-        CHECK(relax(history, current_step, cache) ==
+        CHECK(relax(history, current_step) == std::make_pair(expected, true));
+        CHECK(serialize_and_deserialize(relax)(history, current_step) ==
               std::make_pair(expected, true));
-        CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
-              std::make_pair(expected, true));
-        CHECK(relax_base->desired_step(make_not_null(&box), current_step,
-                                       cache) ==
+        CHECK(relax_base->desired_step(make_not_null(&box), current_step) ==
               std::make_pair(expected, true));
         CHECK(serialize_and_deserialize(relax_base)
-                  ->desired_step(make_not_null(&box), current_step, cache) ==
+                  ->desired_step(make_not_null(&box), current_step) ==
               std::make_pair(expected, true));
       }
       {
@@ -135,13 +130,12 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
                 StepChoosers::PreventRapidIncrease<StepChooserUse::Slab>>(
                 relax);
 
-        CHECK(relax(history, current_step, cache) ==
+        CHECK(relax(history, current_step) == std::make_pair(expected, true));
+        CHECK(serialize_and_deserialize(relax)(history, current_step) ==
               std::make_pair(expected, true));
-        CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
-              std::make_pair(expected, true));
-        CHECK(relax_base->desired_slab(current_step, box, cache) == expected);
+        CHECK(relax_base->desired_slab(current_step, box) == expected);
         CHECK(serialize_and_deserialize(relax_base)
-                  ->desired_slab(current_step, box, cache) == expected);
+                  ->desired_slab(current_step, box) == expected);
       }
     };
 
@@ -164,8 +158,6 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
 }
 
 void check_substep_methods() {
-  const Parallel::GlobalCache<Metavariables> cache{};
-
   const Slab slab(0.25, 1.5);
 
   struct Tag : db::SimpleTag {
@@ -182,7 +174,7 @@ void check_substep_methods() {
       TimeStepId(true, 0, slab.start(), 2, slab.start() + slab.duration() / 2),
       0.0);
   const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
-  CHECK(relax(history, 3.14, cache) ==
+  CHECK(relax(history, 3.14) ==
         std::make_pair(std::numeric_limits<double>::infinity(), true));
 }
 }  // namespace

@@ -13,14 +13,6 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateGetTypeAliasOrDefault.hpp"
 
-/// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
-/// \endcond
-
 /// The intended use for a step chooser.  This is used to control the
 /// classes via factories.
 namespace StepChooserUse {
@@ -123,10 +115,9 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
   /// state information in the \ref DataBoxGroup "DataBox"), and we do
   /// not have the capability to reject a slab so this function
   /// returns only a `double` indicating the desired slab size.
-  template <typename Metavariables, typename DbTags>
+  template <typename DbTags>
   double desired_slab(const double last_step_magnitude,
-                      const db::DataBox<DbTags>& box,
-                      const Parallel::GlobalCache<Metavariables>& cache) const {
+                      const db::DataBox<DbTags>& box) const {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     using factory_classes =
@@ -136,8 +127,8 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
         call_with_dynamic_type<std::pair<double, bool>,
                                tmpl::at<factory_classes, StepChooser>>(
             this,
-            [&last_step_magnitude, &box, &cache](const auto* const chooser) {
-              return db::apply(*chooser, box, last_step_magnitude, cache);
+            [&last_step_magnitude, &box](const auto* const chooser) {
+              return db::apply(*chooser, box, last_step_magnitude);
             });
     ASSERT(
         result.first > 0.,
@@ -190,12 +181,10 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
   /// (default) indicates that any constructible step chooser may be used. This
   /// option is used when multiple components need to invoke `ChangeStepSize`
   /// with step choosers that may not be compatible with all components.
-  template <typename StepChoosersToUse = AllStepChoosers,
-            typename Metavariables, typename DbTags>
+  template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
   std::pair<double, bool> desired_step(
       const gsl::not_null<db::DataBox<DbTags>*> box,
-      const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& cache) const {
+      const double last_step_magnitude) const {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     using factory_classes =
@@ -208,11 +197,11 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
     const auto result =
         call_with_dynamic_type<std::pair<double, bool>, step_choosers>(
             this,
-            [&last_step_magnitude, &box, &cache](const auto* const chooser) {
+            [&last_step_magnitude, &box](const auto* const chooser) {
               using chooser_type = typename std::decay_t<decltype(*chooser)>;
               return db::mutate_apply<typename chooser_type::return_tags,
                                       typename chooser_type::argument_tags>(
-                  *chooser, box, last_step_magnitude, cache);
+                  *chooser, box, last_step_magnitude);
             });
     ASSERT(
         result.first > 0.,

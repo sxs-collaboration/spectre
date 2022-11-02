@@ -285,7 +285,7 @@ class ChangeSlabSize : public Event {
           std::min(desired_slab_size,
                    step_chooser->desired_slab(
                        time_step_id.step_time().slab().duration().value(),
-                       box_for_step_choosers, cache));
+                       box_for_step_choosers));
       // We must synchronize if any step chooser requires it, not just
       // the limiting one, because choosers requiring synchronization
       // can be limiting on some processors and not others.

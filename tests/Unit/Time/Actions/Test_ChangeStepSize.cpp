@@ -51,10 +51,7 @@ struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
   explicit StepRejector(CkMigrateMessage* /*unused*/) {}
   StepRejector() = default;
 
-  template <typename Metavariables>
-  std::pair<double, bool> operator()(
-      const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+  std::pair<double, bool> operator()(const double last_step_magnitude) const {
     return {last_step_magnitude, false};
   }
 

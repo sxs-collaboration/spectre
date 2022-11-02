@@ -76,8 +76,6 @@ void test_gts() {
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
 
-  const Parallel::GlobalCache<Metavariables<false>> cache{};
-
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist{-1.0, 1.0};
 
@@ -113,7 +111,7 @@ void test_gts() {
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
                                         db::get<EvolvedVariable>(box));
-  take_step(make_not_null(&box), cache);
+  take_step(make_not_null(&box));
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
   CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
@@ -129,7 +127,6 @@ void test_lts() {
   const Slab slab{0.0, 1.00};
   const TimeDelta time_step = slab.duration() / 4;
 
-  const Parallel::GlobalCache<Metavariables<true>> cache{};
   std::vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>
       step_choosers;
   step_choosers.emplace_back(
@@ -188,7 +185,7 @@ void test_lts() {
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
                                          db::get<EvolvedVariable>(box));
-  take_step(make_not_null(&box), cache);
+  take_step(make_not_null(&box));
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == 0.0);
   CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box).substep_time().value() ==
@@ -226,7 +223,7 @@ void test_lts() {
       make_not_null(&box), [](const gsl::not_null<double*> grid_spacing) {
         *grid_spacing = 0.15 / TimeSteppers::AdamsBashforthN{5}.stable_step();
       });
-  take_step(make_not_null(&box), cache);
+  take_step(make_not_null(&box));
   // check that the state is as expected
   CHECK(db::get<Tags::TimeStepId>(box).substep_time().value() == approx(0.25));
   CHECK(db::get<Tags::TimeStep>(box) == TimeDelta{slab, {1, 8}});

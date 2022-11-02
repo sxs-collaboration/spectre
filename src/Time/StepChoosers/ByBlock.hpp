@@ -18,10 +18,6 @@
 /// \cond
 template <size_t VolumeDim>
 class Element;
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 namespace domain {
 namespace Tags {
 template <size_t VolumeDim>
@@ -57,10 +53,9 @@ class ByBlock : public StepChooser<StepChooserUse> {
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
   using return_tags = tmpl::list<>;
 
-  template <typename Metavariables>
   std::pair<double, bool> operator()(
-      const Element<Dim>& element, const double /*last_step_magnitude*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+      const Element<Dim>& element,
+      const double /*last_step_magnitude*/) const {
     const size_t block = element.id().block_id();
     if (block >= sizes_.size()) {
       ERROR("Step size not specified for block " << block);

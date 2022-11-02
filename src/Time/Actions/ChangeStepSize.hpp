@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Time/Actions/UpdateU.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
@@ -21,6 +20,10 @@
 /// \cond
 class TimeDelta;
 class TimeStepId;
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
 namespace StepChooserUse {
 struct LtsStep;
 }  // namespace StepChooserUse
@@ -40,10 +43,8 @@ struct Next;
 /// indicates that any constructible step chooser may be used. This option is
 /// used when multiple components need to invoke `ChangeStepSize` with step
 /// choosers that may not be compatible with all components.
-template <typename StepChoosersToUse = AllStepChoosers, typename DbTags,
-          typename Metavariables>
-bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box,
-                      const Parallel::GlobalCache<Metavariables>& cache) {
+template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
+bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(*box);
   const auto& step_choosers = db::get<Tags::StepChoosers>(*box);
   const auto& step_controller = db::get<Tags::StepController>(*box);
@@ -77,7 +78,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box,
   for (const auto& step_chooser : step_choosers) {
     const auto [step_choice, step_choice_accepted] =
         step_chooser->template desired_step<StepChoosersToUse>(
-            box, last_step_size, cache);
+            box, last_step_size);
     desired_step = std::min(desired_step, step_choice);
     step_accepted = step_accepted and step_choice_accepted;
   }
@@ -152,7 +153,7 @@ struct ChangeStepSize {
             typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& cache,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     static_assert(
@@ -163,7 +164,7 @@ struct ChangeStepSize {
         "to handle both stepping and step-choosing instead of the "
         "ChangeStepSize action.");
     const bool step_successful =
-        change_step_size<StepChoosersToUse>(make_not_null(&box), cache);
+        change_step_size<StepChoosersToUse>(make_not_null(&box));
     if (step_successful) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     } else {

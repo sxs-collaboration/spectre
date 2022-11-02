@@ -20,7 +20,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -98,7 +97,6 @@ std::pair<double, bool> get_suggestion(
     const Variables<EvolvedTags>& error,
     const Variables<EvolvedTags>& previous_error, const double previous_step,
     const size_t stepper_order) {
-  const Parallel::GlobalCache<Metavariables<true>> cache{};
   TimeSteppers::History<Variables<db::wrap_tags_in<::Tags::dt, EvolvedTags>>>
       history{stepper_order};
   history.insert(TimeStepId{true, 0, {{0.0, 1.0}, {0, 1}}}, 0.1 * step_values);
@@ -124,26 +122,23 @@ std::pair<double, bool> get_suggestion(
   // the step is infinity.
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
         error_control(step_values, error, previous_error, false, time_stepper,
-                      previous_step, cache));
+                      previous_step));
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control_base->desired_step(make_not_null(&box), previous_step,
-                                         cache));
+        error_control_base->desired_step(make_not_null(&box), previous_step));
 
   db::mutate<Tags::StepperErrorUpdated>(
       make_not_null(&box), [](const gsl::not_null<bool*> stepper_updated) {
         *stepper_updated = true;
       });
-  const std::pair<double, bool> result =
-      error_control(step_values, error, previous_error, true, time_stepper,
-                    previous_step, cache);
-  CHECK(error_control_base->desired_step(make_not_null(&box), previous_step,
-                                         cache) == result);
+  const std::pair<double, bool> result = error_control(
+      step_values, error, previous_error, true, time_stepper, previous_step);
+  CHECK(error_control_base->desired_step(make_not_null(&box), previous_step) ==
+        result);
   CHECK(serialize_and_deserialize(error_control)(
             step_values, error, previous_error, true, time_stepper,
-            previous_step, cache) == result);
+            previous_step) == result);
   CHECK(serialize_and_deserialize(error_control_base)
-            ->desired_step(make_not_null(&box), previous_step, cache) ==
-        result);
+            ->desired_step(make_not_null(&box), previous_step) == result);
   return result;
 }
 }  // namespace

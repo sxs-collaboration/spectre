@@ -24,15 +24,9 @@
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsIterable.hpp"
-
-/// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-/// \endcond
 
 /// \cond
 namespace Tags {
@@ -198,14 +192,12 @@ class ErrorControl : public StepChooser<StepChooserUse>,
 
   using return_tags = tmpl::list<>;
 
-  template <typename Metavariables, typename TimeStepper>
   std::pair<double, bool> operator()(
       const evolved_variable_type& rollback_value,
       const error_variable_type& error,
       const error_variable_type& previous_error,
       const bool& stepper_error_updated, const TimeStepper& stepper,
-      const double previous_step,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+      const double previous_step) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
     if (not stepper_error_updated) {

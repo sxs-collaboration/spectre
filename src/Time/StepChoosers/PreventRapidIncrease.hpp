@@ -15,13 +15,6 @@
 #include "Time/Utilities.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-/// \endcond
-
 namespace StepChoosers {
 /// Avoids instabilities due to rapid increases in the step size by
 /// preventing the step size from increasing unless all steps in the
@@ -46,10 +39,9 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
   using return_tags = tmpl::list<>;
 
-  template <typename Metavariables, typename History>
-  std::pair<double, bool> operator()(
-      const History& history, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+  template <typename History>
+  std::pair<double, bool> operator()(const History& history,
+                                     const double last_step_magnitude) const {
     if (history.size() < 2) {
       return std::make_pair(std::numeric_limits<double>::infinity(), true);
     }
