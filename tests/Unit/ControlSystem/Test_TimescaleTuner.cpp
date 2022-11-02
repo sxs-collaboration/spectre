@@ -161,11 +161,10 @@ void test_increase_or_decrease() {
 
     // There is only one case which triggers an increase in the timescale
     // (4) |Q| < increase_timescale_threshold
-    //     |\dot{Q}| < (increase_timescale_threshold-|Q|)/timescale
+    //     |\dot{Q}| < increase_timescale_threshold/timescale
     // the error and time derivative are sufficiently small: increase timescale
     q = sign_of_q * less_than_one * increase_timescale_threshold;
-    qdot = sign_of_q * less_than_one *
-           (increase_timescale_threshold - fabs(q)) / tscale;
+    qdot = sign_of_q * less_than_one * increase_timescale_threshold / tscale;
     tscale *= increase_factor;
     tst.update_timescale({{q, qdot}});
     CHECK(tst.current_timescale() ==
