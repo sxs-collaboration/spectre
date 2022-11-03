@@ -12,6 +12,7 @@ spectre_target_sources(
   Fluxes.cpp
   Sources.cpp
   TimeDerivativeTerms.cpp
+  VolumeTermsInstantiation.cpp
   )
 
 spectre_target_headers(
