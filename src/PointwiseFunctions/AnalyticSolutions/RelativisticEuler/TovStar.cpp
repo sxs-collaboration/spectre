@@ -229,7 +229,7 @@ void TovVariables<DataType, Region>::operator()(
   if constexpr (Region == StarRegion::Exterior) {
     get(*electron_fraction) = 0.45;
   } else {
-    get(*electron_fraction) = 0.1;  // FIXME Need EOS call here
+    get(*electron_fraction) = 0.1;
   }
 }
 
