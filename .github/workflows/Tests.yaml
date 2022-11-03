@@ -693,6 +693,10 @@ ${{ env.CACHE_KEY_SUFFIX }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3.0.1
+      - name: Force Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Install Homebrew dependencies
         run: |
           brew install $SPECTRE_BREW_DEPS
@@ -768,6 +772,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # details.
       # - We increase the timeout for tests because the GitHub-hosted macOS VMs
       #   appear to be quite slow.
+      # - Pin the python version to 3.10 for now until we can guarantee support
+      #   for 3.11
       - name: Configure build with cmake
         run: |
           source $HOME/spack/share/spack/setup-env.sh
@@ -780,6 +786,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D CMAKE_CXX_FLAGS="-Werror" \
             -D OVERRIDE_ARCH=x86-64 \
             -D BUILD_SHARED_LIBS=ON \
+            -D Python_EXECUTABLE=/usr/local/Frameworks/Python.framework/Versions/3.10/bin/python3.10 \
             -D BUILD_PYTHON_BINDINGS=ON \
             -D MEMORY_ALLOCATOR=SYSTEM \
             -D CHARM_ROOT=$(spack location --install-dir charmpp) \

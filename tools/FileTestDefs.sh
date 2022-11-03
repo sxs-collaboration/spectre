@@ -255,6 +255,7 @@ long_lines() {
     whitelist "$1" \
               '.cmake$' \
               '.css$' \
+              '.github/workflows/Tests.yaml$' \
               '.h5$' \
               '.html$' \
               '.ipynb$' \
