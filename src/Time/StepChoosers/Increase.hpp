@@ -37,7 +37,6 @@ class Increase : public StepChooser<StepChooserUse> {
   explicit Increase(const double factor) : factor_(factor) {}
 
   using argument_tags = tmpl::list<>;
-  using return_tags = tmpl::list<>;
 
   std::pair<double, bool> operator()(const double last_step_magnitude) const {
     return std::make_pair(last_step_magnitude * factor_, true);

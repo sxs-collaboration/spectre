@@ -33,7 +33,6 @@ class Constant : public StepChooser<StepChooserUse> {
   }
 
   using argument_tags = tmpl::list<>;
-  using return_tags = tmpl::list<>;
 
   std::pair<double, bool> operator()(
       const double /*last_step_magnitude*/) const {

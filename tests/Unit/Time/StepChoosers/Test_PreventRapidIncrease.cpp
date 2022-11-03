@@ -117,10 +117,10 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
         CHECK(relax(history, current_step) == std::make_pair(expected, true));
         CHECK(serialize_and_deserialize(relax)(history, current_step) ==
               std::make_pair(expected, true));
-        CHECK(relax_base->desired_step(make_not_null(&box), current_step) ==
+        CHECK(relax_base->desired_step(current_step, box) ==
               std::make_pair(expected, true));
         CHECK(serialize_and_deserialize(relax_base)
-                  ->desired_step(make_not_null(&box), current_step) ==
+                  ->desired_step(current_step, box) ==
               std::make_pair(expected, true));
       }
       {

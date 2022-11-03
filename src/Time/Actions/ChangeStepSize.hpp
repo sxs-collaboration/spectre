@@ -78,7 +78,7 @@ bool change_step_size(const gsl::not_null<db::DataBox<DbTags>*> box) {
   for (const auto& step_chooser : step_choosers) {
     const auto [step_choice, step_choice_accepted] =
         step_chooser->template desired_step<StepChoosersToUse>(
-            box, last_step_size);
+            last_step_size, *box);
     desired_step = std::min(desired_step, step_choice);
     step_accepted = step_accepted and step_choice_accepted;
   }

@@ -55,7 +55,6 @@ class Cfl : public StepChooser<StepChooserUse> {
       tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
                  ::Tags::TimeStepper<>,
                  typename System::compute_largest_characteristic_speed>;
-  using return_tags = tmpl::list<>;
 
   using compute_tags = tmpl::list<
       domain::Tags::MinimumGridSpacingCompute<System::volume_dim, Frame>,

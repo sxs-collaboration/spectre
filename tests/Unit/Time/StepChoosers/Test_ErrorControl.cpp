@@ -124,7 +124,7 @@ std::pair<double, bool> get_suggestion(
         error_control(step_values, error, previous_error, false, time_stepper,
                       previous_step));
   CHECK(std::make_pair(std::numeric_limits<double>::infinity(), true) ==
-        error_control_base->desired_step(make_not_null(&box), previous_step));
+        error_control_base->desired_step(previous_step, box));
 
   db::mutate<Tags::StepperErrorUpdated>(
       make_not_null(&box), [](const gsl::not_null<bool*> stepper_updated) {
@@ -132,13 +132,12 @@ std::pair<double, bool> get_suggestion(
       });
   const std::pair<double, bool> result = error_control(
       step_values, error, previous_error, true, time_stepper, previous_step);
-  CHECK(error_control_base->desired_step(make_not_null(&box), previous_step) ==
-        result);
+  CHECK(error_control_base->desired_step(previous_step, box) == result);
   CHECK(serialize_and_deserialize(error_control)(
             step_values, error, previous_error, true, time_stepper,
             previous_step) == result);
   CHECK(serialize_and_deserialize(error_control_base)
-            ->desired_step(make_not_null(&box), previous_step) == result);
+            ->desired_step(previous_step, box) == result);
   return result;
 }
 }  // namespace

@@ -53,7 +53,6 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
       : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<::Tags::TimeStepId>;
-  using return_tags = tmpl::list<>;
 
   std::pair<double, bool> operator()(const TimeStepId& time_step_id,
                                      const double last_step_magnitude) const {

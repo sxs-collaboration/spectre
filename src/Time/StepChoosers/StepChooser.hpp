@@ -32,13 +32,8 @@ struct LtsStep;
 /// with the appropriate `StepChooserUse` template argument.  A class
 /// cannot inherit from both base classes simultaneously; if both uses
 /// are supported the use must be chosen using a template parameter.
-/// If a derived class is usable as a step chooser (i.e., inherits
-/// from StepChooser<StepChooserUse::LtsStep>), it must specify type
-/// aliases `argument_tags` and `return_tags` for the arguments to the
-/// call operator. If it is usable only for slab choosing (i.e.,
-/// unconditionally inherits from StepChooser<StepChooserUse::Slab>),
-/// it need only specify `argument_tags`, as slab choosers are not
-/// permitted mutable access to the \ref DataBoxGroup "DataBox".
+/// Derived classes must specify a type alias `argument_tags` for the
+/// arguments to the call operator.
 ///
 /// For the class interface, see the specializations
 /// StepChooser<StepChooserUse::LtsStep> and
@@ -110,11 +105,9 @@ class StepChooser<StepChooserUse::Slab> : public PUP::able {
   /// adjusted; It may be infinite if the appropriate size cannot be determined.
   ///
   /// As opposed to the decision made by `desired_step` in the
-  /// StepChooser<StepChooserUse::LtsStep> specialization, the slab
-  /// change decision must be callable from an event (so cannot store
-  /// state information in the \ref DataBoxGroup "DataBox"), and we do
-  /// not have the capability to reject a slab so this function
-  /// returns only a `double` indicating the desired slab size.
+  /// StepChooser<StepChooserUse::LtsStep> specialization, we do not
+  /// have the capability to reject a slab so this function returns
+  /// only a `double` indicating the desired slab size.
   template <typename DbTags>
   double desired_slab(const double last_step_magnitude,
                       const db::DataBox<DbTags>& box) const {
@@ -182,26 +175,21 @@ class StepChooser<StepChooserUse::LtsStep> : public PUP::able {
   /// option is used when multiple components need to invoke `ChangeStepSize`
   /// with step choosers that may not be compatible with all components.
   template <typename StepChoosersToUse = AllStepChoosers, typename DbTags>
-  std::pair<double, bool> desired_step(
-      const gsl::not_null<db::DataBox<DbTags>*> box,
-      const double last_step_magnitude) const {
+  std::pair<double, bool> desired_step(const double last_step_magnitude,
+                                       const db::DataBox<DbTags>& box) const {
     ASSERT(last_step_magnitude > 0.,
            "Passed non-positive step magnitude: " << last_step_magnitude);
     using factory_classes =
         typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            *box))>::factory_creation::factory_classes;
+            box))>::factory_creation::factory_classes;
     using step_choosers =
         tmpl::conditional_t<std::is_same_v<StepChoosersToUse, AllStepChoosers>,
                             tmpl::at<factory_classes, StepChooser>,
                             StepChoosersToUse>;
     const auto result =
         call_with_dynamic_type<std::pair<double, bool>, step_choosers>(
-            this,
-            [&last_step_magnitude, &box](const auto* const chooser) {
-              using chooser_type = typename std::decay_t<decltype(*chooser)>;
-              return db::mutate_apply<typename chooser_type::return_tags,
-                                      typename chooser_type::argument_tags>(
-                  *chooser, box, last_step_magnitude);
+            this, [&last_step_magnitude, &box](const auto* const chooser) {
+              return db::apply(*chooser, box, last_step_magnitude);
             });
     ASSERT(
         result.first > 0.,

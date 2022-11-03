@@ -51,7 +51,6 @@ class ByBlock : public StepChooser<StepChooserUse> {
   explicit ByBlock(std::vector<double> sizes) : sizes_(std::move(sizes)) {}
 
   using argument_tags = tmpl::list<domain::Tags::Element<Dim>>;
-  using return_tags = tmpl::list<>;
 
   std::pair<double, bool> operator()(
       const Element<Dim>& element,

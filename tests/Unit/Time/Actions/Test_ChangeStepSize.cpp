@@ -41,7 +41,6 @@ namespace {
 // control-flow.
 struct StepRejector : public StepChooser<StepChooserUse::LtsStep> {
   using argument_tags = tmpl::list<>;
-  using return_tags = tmpl::list<>;
   using compute_tags = tmpl::list<>;
   using PUP::able::register_constructor;
 #pragma GCC diagnostic push

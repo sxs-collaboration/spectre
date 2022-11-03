@@ -62,7 +62,6 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   using argument_tags =
       tmpl::list<::Tags::TimeStepper<>, domain::Tags::SizeOfElement<Dim>,
                  typename System::compute_largest_characteristic_speed>;
-  using return_tags = tmpl::list<>;
   using compute_tags =
       tmpl::list<domain::Tags::SizeOfElementCompute<Dim>,
                  typename System::compute_largest_characteristic_speed>;

@@ -63,10 +63,10 @@ void test_by_block() {
           std::make_pair(expected, true));
 
     if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-      CHECK(by_block_base->desired_step(make_not_null(&box), current_step) ==
+      CHECK(by_block_base->desired_step(current_step, box) ==
             std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(by_block_base)
-                ->desired_step(make_not_null(&box), current_step) ==
+                ->desired_step(current_step, box) ==
             std::make_pair(expected, true));
     } else {
       CHECK(serialize_and_deserialize(by_block_base)

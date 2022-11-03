@@ -190,8 +190,6 @@ class ErrorControl : public StepChooser<StepChooserUse>,
                  ::Tags::PreviousStepperError<EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<>;
-
   std::pair<double, bool> operator()(
       const evolved_variable_type& rollback_value,
       const error_variable_type& error,

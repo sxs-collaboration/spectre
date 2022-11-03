@@ -110,12 +110,11 @@ std::pair<double, bool> get_suggestion(
   const auto accepted_step_result =
       element_size_cfl(time_stepper, element_size, speed, result.first * 0.7);
   CHECK(accepted_step_result.second);
-  CHECK(element_size_base->desired_step(make_not_null(&box), current_step) ==
-        result);
+  CHECK(element_size_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(element_size_cfl)(
             time_stepper, element_size, speed, current_step) == result);
   CHECK(serialize_and_deserialize(element_size_base)
-            ->desired_step(make_not_null(&box), current_step) == result);
+            ->desired_step(current_step, box) == result);
   return result;
 }
 }  // namespace

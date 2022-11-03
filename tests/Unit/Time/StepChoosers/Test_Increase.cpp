@@ -51,11 +51,10 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
       CHECK(increase(step) == std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(increase)(step) ==
             std::make_pair(expected, true));
-      CHECK(increase_base->desired_step(make_not_null(&box), step) ==
+      CHECK(increase_base->desired_step(step, box) ==
             std::make_pair(expected, true));
       CHECK(serialize_and_deserialize(increase_base)
-                ->desired_step(make_not_null(&box), step) ==
-            std::make_pair(expected, true));
+                ->desired_step(step, box) == std::make_pair(expected, true));
     }
     {
       const StepChoosers::Increase<StepChooserUse::Slab> increase{5.};

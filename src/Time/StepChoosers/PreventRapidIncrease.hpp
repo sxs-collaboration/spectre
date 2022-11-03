@@ -37,7 +37,6 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
   using options = tmpl::list<>;
 
   using argument_tags = tmpl::list<::Tags::HistoryEvolvedVariables<>>;
-  using return_tags = tmpl::list<>;
 
   template <typename History>
   std::pair<double, bool> operator()(const History& history,
