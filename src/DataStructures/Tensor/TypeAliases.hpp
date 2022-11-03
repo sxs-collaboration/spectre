@@ -77,6 +77,13 @@ using AB = Tensor<
         Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>,
         Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr, Index>>>;
 template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
+using aI =
+    Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
+           index_list<Tensor_detail::TensorIndexType<SpatialDim, UpLo::Lo, Fr,
+                                                     IndexType::Spacetime>,
+                      Tensor_detail::TensorIndexType<SpatialDim, UpLo::Up, Fr,
+                                                     IndexType::Spatial>>>;
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial>
 using ij = Tensor<DataType, tmpl::integral_list<std::int32_t, 2, 1>,
                   index_list<SpatialIndex<SpatialDim, UpLo::Lo, Fr>,
                              SpatialIndex<SpatialDim, UpLo::Lo, Fr>>>;
