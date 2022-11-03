@@ -12,7 +12,5 @@ namespace grmhd::GhValenciaDivClean::subcell {
  *
  * See `grmhd::ValenciaDivClean::subcell::TciOnFdGrid` for details.
  */
-template <typename RecoveryScheme>
-struct TciOnFdGrid
-    : grmhd::ValenciaDivClean::subcell::TciOnFdGrid<RecoveryScheme> {};
+struct TciOnFdGrid : grmhd::ValenciaDivClean::subcell::TciOnFdGrid {};
 }  // namespace grmhd::GhValenciaDivClean::subcell
