@@ -28,10 +28,6 @@ namespace StepChoosers {
 /// time-stepper history are the same size.  If there have been recent
 /// step size changes the new size bound is the size of the most
 /// recent step, otherwise it is infinite (no restriction is imposed).
-///
-/// Changes in step size resulting from a slab size change are not
-/// taken into account.  In practice, this should not be an issue as
-/// long as there are many steps between slab size changes.
 template <typename StepChooserUse>
 class PreventRapidIncrease : public StepChooser<StepChooserUse> {
  public:
@@ -59,13 +55,20 @@ class PreventRapidIncrease : public StepChooser<StepChooserUse> {
     }
 
     const double sloppiness = slab_rounding_error(history[0]);
-    for (auto step = history.begin(); step != history.end() - 1; ++step) {
-      // Potential roundoff error comes from the inability to make
-      // slabs exactly the same length.
-      if (abs(abs(*(step + 1) - *step).value() - last_step_magnitude) >
-          sloppiness) {
-        return std::make_pair(last_step_magnitude, true);
+    std::optional<Time> history_step{};
+    for (auto step = history.begin(); step != history.end(); ++step) {
+      if (step.time_step_id().substep() != 0) {
+        continue;
       }
+      if (history_step.has_value()) {
+        // Potential roundoff error comes from the inability to make
+        // slabs exactly the same length.
+        if (abs(abs(*history_step - *step).value() - last_step_magnitude) >
+            sloppiness) {
+          return std::make_pair(last_step_magnitude, true);
+        }
+      }
+      history_step.emplace(*step);
     }
     // Request that the step size be at most infinity.  This imposes
     // no restriction on the chosen step.
