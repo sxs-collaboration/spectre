@@ -15,6 +15,7 @@ spectre_target_headers(
 
 add_subdirectory(Burgers)
 add_subdirectory(Elasticity)
+add_subdirectory(ForceFree)
 add_subdirectory(GeneralRelativity)
 add_subdirectory(GhGrMhd)
 add_subdirectory(GhRelativisticEuler)
