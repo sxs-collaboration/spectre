@@ -100,58 +100,47 @@ void check_case(const Frac& expected_frac, const std::vector<Frac>& times) {
       gts_history.insert_initial(make_gts_time_id(i), 0.0);
     }
 
-    const auto check = [&expected](auto box, const Time& current_time) {
+    const auto check = [&expected](auto use, const auto& box,
+                                   const Time& current_time) {
+      using Use = tmpl::type_from<decltype(use)>;
       const auto& history = db::get<history_tag>(box);
       const double current_step =
           history.size() > 0 ? abs(current_time - history.back()).value()
                              : std::numeric_limits<double>::infinity();
 
-      {
-        const StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>
-            relax{};
-        const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>> relax_base =
-            std::make_unique<
-                StepChoosers::PreventRapidIncrease<StepChooserUse::LtsStep>>(
-                relax);
+      const StepChoosers::PreventRapidIncrease<Use> relax{};
+      const std::unique_ptr<StepChooser<Use>> relax_base =
+          std::make_unique<StepChoosers::PreventRapidIncrease<Use>>(relax);
 
-        CHECK(relax(history, current_step) == std::make_pair(expected, true));
-        CHECK(serialize_and_deserialize(relax)(history, current_step) ==
-              std::make_pair(expected, true));
-        CHECK(relax_base->desired_step(current_step, box) ==
-              std::make_pair(expected, true));
-        CHECK(serialize_and_deserialize(relax_base)
-                  ->desired_step(current_step, box) ==
-              std::make_pair(expected, true));
-      }
-      {
-        const StepChoosers::PreventRapidIncrease<StepChooserUse::Slab> relax{};
-        const std::unique_ptr<StepChooser<StepChooserUse::Slab>> relax_base =
-            std::make_unique<
-                StepChoosers::PreventRapidIncrease<StepChooserUse::Slab>>(
-                relax);
-
-        CHECK(relax(history, current_step) == std::make_pair(expected, true));
-        CHECK(serialize_and_deserialize(relax)(history, current_step) ==
-              std::make_pair(expected, true));
-        CHECK(relax_base->desired_slab(current_step, box) == expected);
-        CHECK(serialize_and_deserialize(relax_base)
-                  ->desired_slab(current_step, box) == expected);
-      }
+      CHECK(relax(history, current_step) == std::make_pair(expected, true));
+      CHECK(serialize_and_deserialize(relax)(history, current_step) ==
+            std::make_pair(expected, true));
+      CHECK(relax_base->desired_step(current_step, box) ==
+            std::make_pair(expected, true));
+      CHECK(serialize_and_deserialize(relax_base)
+                ->desired_step(current_step, box) ==
+            std::make_pair(expected, true));
     };
 
     {
       CAPTURE(lts_history);
-      check(db::create<db::AddSimpleTags<
-                Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
-                Metavariables{}, std::move(lts_history)),
+      const auto box = db::create<db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
+          Metavariables{}, std::move(lts_history));
+      check(tmpl::type_<StepChooserUse::LtsStep>{}, box,
+            make_time_id(0).substep_time());
+      check(tmpl::type_<StepChooserUse::Slab>{}, box,
             make_time_id(0).substep_time());
     }
 
     {
       CAPTURE(gts_history);
-      check(db::create<db::AddSimpleTags<
-                Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
-                Metavariables{}, std::move(gts_history)),
+      const auto box = db::create<db::AddSimpleTags<
+          Parallel::Tags::MetavariablesImpl<Metavariables>, history_tag>>(
+          Metavariables{}, std::move(gts_history));
+      check(tmpl::type_<StepChooserUse::LtsStep>{}, box,
+            make_gts_time_id(0).substep_time());
+      check(tmpl::type_<StepChooserUse::Slab>{}, box,
             make_gts_time_id(0).substep_time());
     }
   }

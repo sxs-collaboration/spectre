@@ -69,11 +69,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
       } else {
         CHECK(result == answer.first);
       }
-      CHECK(step_to_times_base->desired_slab(step, box) == result);
+      CHECK(step_to_times_base->desired_step(step, box) ==
+            std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times)(now_id, step) ==
             std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_slab(step, box) == result);
+                ->desired_step(step, box) == std::make_pair(result, true));
     };
     impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
     alg::for_each(times, [](double& x) { return x = -x; });

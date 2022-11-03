@@ -46,16 +46,10 @@ void test_use() {
   CHECK(constant(current_step) == std::make_pair(5.4, true));
   CHECK(serialize_and_deserialize(constant)(current_step) ==
         std::make_pair(5.4, true));
-  if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-    CHECK(constant_base->desired_step(current_step, box) ==
-          std::make_pair(5.4, true));
-    CHECK(serialize_and_deserialize(constant_base)
-              ->desired_step(current_step, box) == std::make_pair(5.4, true));
-  } else {
-    CHECK(constant_base->desired_slab(current_step, box) == 5.4);
-    CHECK(serialize_and_deserialize(constant_base)
-              ->desired_slab(current_step, box) == 5.4);
-  }
+  CHECK(constant_base->desired_step(current_step, box) ==
+        std::make_pair(5.4, true));
+  CHECK(serialize_and_deserialize(constant_base)
+            ->desired_step(current_step, box) == std::make_pair(5.4, true));
 
   TestHelpers::test_creation<std::unique_ptr<StepChooser<Use>>, Metavariables>(
       "Constant: 5.4");

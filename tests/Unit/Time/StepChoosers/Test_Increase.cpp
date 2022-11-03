@@ -40,38 +40,28 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables>>>(
       Metavariables{});
-  const auto check = [&box](const double step, const double expected) {
-    {
-      const StepChoosers::Increase<StepChooserUse::LtsStep> increase{5.};
-      const std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>
-          increase_base =
-              std::make_unique<StepChoosers::Increase<StepChooserUse::LtsStep>>(
-                  increase);
+  const auto check = [&box](auto use, const double step,
+                            const double expected) {
+    using Use = tmpl::type_from<decltype(use)>;
+    const StepChoosers::Increase<Use> increase{5.};
+    const std::unique_ptr<StepChooser<Use>> increase_base =
+        std::make_unique<StepChoosers::Increase<Use>>(increase);
 
-      CHECK(increase(step) == std::make_pair(expected, true));
-      CHECK(serialize_and_deserialize(increase)(step) ==
-            std::make_pair(expected, true));
-      CHECK(increase_base->desired_step(step, box) ==
-            std::make_pair(expected, true));
-      CHECK(serialize_and_deserialize(increase_base)
-                ->desired_step(step, box) == std::make_pair(expected, true));
-    }
-    {
-      const StepChoosers::Increase<StepChooserUse::Slab> increase{5.};
-      const std::unique_ptr<StepChooser<StepChooserUse::Slab>> increase_base =
-          std::make_unique<StepChoosers::Increase<StepChooserUse::Slab>>(
-              increase);
-
-      CHECK(increase(step) == std::make_pair(expected, true));
-      CHECK(serialize_and_deserialize(increase)(step) ==
-            std::make_pair(expected, true));
-      CHECK(increase_base->desired_slab(step, box) == expected);
-      CHECK(serialize_and_deserialize(increase_base)->desired_slab(step, box) ==
-            expected);
-    }
+    CHECK(increase(step) == std::make_pair(expected, true));
+    CHECK(serialize_and_deserialize(increase)(step) ==
+          std::make_pair(expected, true));
+    CHECK(increase_base->desired_step(step, box) ==
+          std::make_pair(expected, true));
+    CHECK(serialize_and_deserialize(increase_base)->desired_step(step, box) ==
+          std::make_pair(expected, true));
   };
-  check(0.25, 1.25);
-  check(std::numeric_limits<double>::infinity(),
+  check(tmpl::type_<StepChooserUse::LtsStep>{}, 0.25, 1.25);
+  check(tmpl::type_<StepChooserUse::Slab>{}, 0.25, 1.25);
+  check(tmpl::type_<StepChooserUse::LtsStep>{},
+        std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity());
+  check(tmpl::type_<StepChooserUse::Slab>{},
+        std::numeric_limits<double>::infinity(),
         std::numeric_limits<double>::infinity());
 
   TestHelpers::test_creation<

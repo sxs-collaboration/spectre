@@ -114,15 +114,9 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
   const auto accepted_step_result =
       cfl(grid_spacing, time_stepper, speed, result.first * 0.7);
   CHECK(accepted_step_result.second);
-  if constexpr (std::is_same_v<Use, StepChooserUse::LtsStep>) {
-    CHECK(cfl_base->desired_step(current_step, box) == result);
-    CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step,
-                                                            box) == result);
-  } else {
-    CHECK(cfl_base->desired_slab(current_step, box) == result.first);
-    CHECK(serialize_and_deserialize(cfl_base)->desired_slab(
-              current_step, box) == result.first);
-  }
+  CHECK(cfl_base->desired_step(current_step, box) == result);
+  CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box) ==
+        result);
   return result;
 }
 
