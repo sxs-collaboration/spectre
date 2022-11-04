@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -177,14 +178,16 @@ struct LargestCharacteristicSpeed : db::SimpleTag {
 
 struct ComputeLargestCharacteristicSpeed : db::ComputeTag,
                                            LargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<3>,
+                                   gr::Tags::SpatialMetric<3>>;
   using return_type = double;
   using base = LargestCharacteristicSpeed;
-  static void function(const gsl::not_null<double*> speed) {
-    // note: this is an approximation valid only in flat spacetime. For better
-    // CFL estimates, this should be updated to calculate the characteristic
-    // speed based on the lapse and shift.
-    *speed = 1.0;
+  static void function(gsl::not_null<double*> speed,
+                       const Scalar<DataVector>& lapse,
+                       const tnsr::I<DataVector, 3>& shift,
+                       const tnsr::ii<DataVector, 3>& spatial_metric) {
+    const auto shift_magnitude = magnitude(shift, spatial_metric);
+    *speed = max(get(shift_magnitude) + get(lapse));
   }
 };
 }  // namespace Tags
