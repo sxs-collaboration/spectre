@@ -249,12 +249,12 @@ void verify_time_independent_einstein_solution(
       GeneralizedHarmonic::Tags::GaugeH<3>,
       GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>,
       GeneralizedHarmonic::Tags::Gamma1Gamma2,
-      GeneralizedHarmonic::Tags::PiTwoNormals,
+      GeneralizedHarmonic::Tags::HalfPiTwoNormals,
       GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
       GeneralizedHarmonic::Tags::Gamma1Plus1,
       GeneralizedHarmonic::Tags::PiOneNormal<3>,
       GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::PhiTwoNormals<3>,
+      GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>,
       GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>,
       GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<3>,
       GeneralizedHarmonic::Tags::PhiOneNormal<3>,
@@ -290,7 +290,7 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
@@ -298,7 +298,8 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>>(
               buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PhiTwoNormals<3>>(buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<3>>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>>(
               buffer)),

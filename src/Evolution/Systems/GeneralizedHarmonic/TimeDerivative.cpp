@@ -35,12 +35,12 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::ab<DataVector, Dim>*>
         temp_spacetime_deriv_gauge_function,
     const gsl::not_null<Scalar<DataVector>*> gamma1gamma2,
-    const gsl::not_null<Scalar<DataVector>*> pi_two_normals,
+    const gsl::not_null<Scalar<DataVector>*> half_pi_two_normals,
     const gsl::not_null<Scalar<DataVector>*> normal_dot_gauge_constraint,
     const gsl::not_null<Scalar<DataVector>*> gamma1_plus_1,
     const gsl::not_null<tnsr::a<DataVector, Dim>*> pi_one_normal,
     const gsl::not_null<tnsr::a<DataVector, Dim>*> gauge_constraint,
-    const gsl::not_null<tnsr::i<DataVector, Dim>*> phi_two_normals,
+    const gsl::not_null<tnsr::i<DataVector, Dim>*> half_phi_two_normals,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*>
         shift_dot_three_index_constraint,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*>
@@ -162,12 +162,13 @@ void TimeDerivative<Dim>::apply(
     }
   }
 
-  get(*pi_two_normals) =
+  get(*half_pi_two_normals) =
       get<0>(*normal_spacetime_vector) * get<0>(*pi_one_normal);
   for (size_t mu = 1; mu < Dim + 1; ++mu) {
-    get(*pi_two_normals) +=
+    get(*half_pi_two_normals) +=
         normal_spacetime_vector->get(mu) * pi_one_normal->get(mu);
   }
+  get(*half_pi_two_normals) *= 0.5;
 
   for (size_t n = 0; n < Dim; ++n) {
     for (size_t nu = 0; nu < Dim + 1; ++nu) {
@@ -181,12 +182,13 @@ void TimeDerivative<Dim>::apply(
   }
 
   for (size_t n = 0; n < Dim; ++n) {
-    phi_two_normals->get(n) =
+    half_phi_two_normals->get(n) =
         get<0>(*normal_spacetime_vector) * phi_one_normal->get(n, 0);
     for (size_t mu = 1; mu < Dim + 1; ++mu) {
-      phi_two_normals->get(n) +=
+      half_phi_two_normals->get(n) +=
           normal_spacetime_vector->get(mu) * phi_one_normal->get(n, mu);
     }
+    half_phi_two_normals->get(n) *= 0.5;
   }
 
   for (size_t n = 0; n < Dim; ++n) {
@@ -258,7 +260,7 @@ void TimeDerivative<Dim>::apply(
       dt_pi->get(mu, nu) =
           -spacetime_deriv_gauge_function.get(mu, nu) -
           spacetime_deriv_gauge_function.get(nu, mu) -
-          0.5 * get(*pi_two_normals) * pi.get(mu, nu) +
+          get(*half_pi_two_normals) * pi.get(mu, nu) +
           get(gamma0) *
               (normal_spacetime_one_form->get(mu) * gauge_constraint->get(nu) +
                normal_spacetime_one_form->get(nu) * gauge_constraint->get(mu)) -
@@ -313,7 +315,7 @@ void TimeDerivative<Dim>::apply(
     for (size_t mu = 0; mu < Dim + 1; ++mu) {
       for (size_t nu = mu; nu < Dim + 1; ++nu) {
         dt_phi->get(i, mu, nu) =
-            0.5 * pi.get(mu, nu) * phi_two_normals->get(i) -
+            pi.get(mu, nu) * half_phi_two_normals->get(i) -
             d_pi.get(i, mu, nu) +
             get(gamma2) * three_index_constraint->get(i, mu, nu);
         for (size_t n = 0; n < Dim; ++n) {

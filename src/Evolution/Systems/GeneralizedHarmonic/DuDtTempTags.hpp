@@ -17,8 +17,8 @@ struct Gamma1Gamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
-/// \f$\Pi_{ab}n^an^b\f$
-struct PiTwoNormals : db::SimpleTag {
+/// \f$0.5\Pi_{ab}n^an^b\f$
+struct HalfPiTwoNormals : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
@@ -38,9 +38,9 @@ struct PiOneNormal : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame::Inertial>;
 };
 
-/// \f$\Phi_{iab}n^an^b\f$
+/// \f$0.5\Phi_{iab}n^an^b\f$
 template <size_t Dim>
-struct PhiTwoNormals : db::SimpleTag {
+struct HalfPhiTwoNormals : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
 };
 

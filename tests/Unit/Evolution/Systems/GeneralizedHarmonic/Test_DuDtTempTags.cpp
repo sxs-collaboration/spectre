@@ -12,8 +12,8 @@ template <size_t Dim>
 void test_simple_tags() {
   TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::Gamma1Gamma2>(
       "Gamma1Gamma2");
-  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::PiTwoNormals>(
-      "PiTwoNormals");
+  TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(
+      "HalfPiTwoNormals");
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(
       "NormalDotOneIndexConstraint");
@@ -22,7 +22,7 @@ void test_simple_tags() {
   TestHelpers::db::test_simple_tag<GeneralizedHarmonic::Tags::PiOneNormal<Dim>>(
       "PiOneNormal");
   TestHelpers::db::test_simple_tag<
-      GeneralizedHarmonic::Tags::PhiTwoNormals<Dim>>("PhiTwoNormals");
+      GeneralizedHarmonic::Tags::HalfPhiTwoNormals<Dim>>("HalfPhiTwoNormals");
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<Dim>>(
       "ShiftDotThreeIndexConstraint");

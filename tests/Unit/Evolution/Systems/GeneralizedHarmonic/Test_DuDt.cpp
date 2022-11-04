@@ -573,12 +573,12 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       GeneralizedHarmonic::Tags::GaugeH<Dim>,
       GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>,
       GeneralizedHarmonic::Tags::Gamma1Gamma2,
-      GeneralizedHarmonic::Tags::PiTwoNormals,
+      GeneralizedHarmonic::Tags::HalfPiTwoNormals,
       GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint,
       GeneralizedHarmonic::Tags::Gamma1Plus1,
       GeneralizedHarmonic::Tags::PiOneNormal<Dim>,
       GeneralizedHarmonic::Tags::GaugeConstraint<Dim, Frame::Inertial>,
-      GeneralizedHarmonic::Tags::PhiTwoNormals<Dim>,
+      GeneralizedHarmonic::Tags::HalfPhiTwoNormals<Dim>,
       GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<Dim>,
       GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<Dim>,
       GeneralizedHarmonic::Tags::PhiOneNormal<Dim>,
@@ -616,7 +616,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
@@ -626,7 +626,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               GeneralizedHarmonic::Tags::GaugeConstraint<Dim, Frame::Inertial>>(
               buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::PhiTwoNormals<Dim>>(buffer)),
+          &get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<Dim>>(
               buffer)),
@@ -739,7 +739,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
@@ -749,7 +749,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               GeneralizedHarmonic::Tags::GaugeConstraint<Dim, Frame::Inertial>>(
               buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::PhiTwoNormals<Dim>>(buffer)),
+          &get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(&shift_dot_three_index_constraint),
       make_not_null(&mesh_velocity_dot_three_index_constraint),
       make_not_null(&get<GeneralizedHarmonic::Tags::PhiOneNormal<Dim>>(buffer)),
@@ -812,7 +812,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       make_not_null(
           &get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Gamma2>(buffer)),
-      make_not_null(&get<GeneralizedHarmonic::Tags::PiTwoNormals>(buffer)),
+      make_not_null(&get<GeneralizedHarmonic::Tags::HalfPiTwoNormals>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::NormalDotOneIndexConstraint>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::Gamma1Plus1>(buffer)),
@@ -822,7 +822,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
               GeneralizedHarmonic::Tags::GaugeConstraint<Dim, Frame::Inertial>>(
               buffer)),
       make_not_null(
-          &get<GeneralizedHarmonic::Tags::PhiTwoNormals<Dim>>(buffer)),
+          &get<GeneralizedHarmonic::Tags::HalfPhiTwoNormals<Dim>>(buffer)),
       make_not_null(&shift_dot_three_index_constraint),
       make_not_null(&mesh_velocity_dot_three_index_constraint),
       make_not_null(&get<GeneralizedHarmonic::Tags::PhiOneNormal<Dim>>(buffer)),
