@@ -676,7 +676,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.
       SPECTRE_BREW_DEPS: >-  # Line breaks are spaces, no trailing newline
-        autoconf automake ccache cmake pkg-config python
+        autoconf automake ccache cmake pkg-config
       # We install these packages with Spack and cache them. The full specs are
       # listed in support/DevEnvironments/spack.yaml. This list is only needed
       # to create the cache.
@@ -693,6 +693,9 @@ ${{ env.CACHE_KEY_SUFFIX }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3.0.1
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - name: Install Homebrew dependencies
         run: |
           brew install $SPECTRE_BREW_DEPS
