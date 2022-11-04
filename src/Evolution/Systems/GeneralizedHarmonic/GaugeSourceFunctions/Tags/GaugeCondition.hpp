@@ -65,7 +65,8 @@ struct GaugeAndDerivativeCompute
   using return_type = typename base::type;
   using argument_tags = tmpl::list<
       gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
-      gr::Tags::SpacetimeNormalOneForm<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::SpacetimeNormalOneForm<Dim>,
+      gr::Tags::SpacetimeNormalVector<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
       gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::SpacetimeMetric<Dim>,
       GeneralizedHarmonic::Tags::Pi<Dim>, GeneralizedHarmonic::Tags::Phi<Dim>,
       ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
@@ -80,6 +81,7 @@ struct GaugeAndDerivativeCompute
       const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
       const tnsr::a<DataVector, Dim, Frame::Inertial>&
           spacetime_unit_normal_one_form,
+      const tnsr::A<DataVector, Dim, Frame::Inertial>& spacetime_unit_normal,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
       const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,

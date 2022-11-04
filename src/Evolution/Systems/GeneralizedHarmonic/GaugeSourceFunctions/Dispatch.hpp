@@ -29,6 +29,7 @@ void dispatch(
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
     const tnsr::a<DataVector, Dim, Frame::Inertial>&
         spacetime_unit_normal_one_form,
+    const tnsr::A<DataVector, Dim, Frame::Inertial>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
