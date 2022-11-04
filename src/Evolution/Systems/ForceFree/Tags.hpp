@@ -211,6 +211,21 @@ struct KappaPhi : db::SimpleTag {
     return kappa_phi;
   }
 };
+
+/*!
+ * \brief The damping parameter \f$\eta\f$ in the electric current density to
+ * impose force-free conditions. Physically, this parameter is the conductivity
+ * parallel to magnetic field lines.
+ */
+struct ParallelConductivity : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::ParallelConductivity>;
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double parallel_conductivity) {
+    return parallel_conductivity;
+  }
+};
+
 }  // namespace Tags
 
 }  // namespace ForceFree

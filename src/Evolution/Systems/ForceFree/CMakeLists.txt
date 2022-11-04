@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Fluxes.cpp
+  SpatialCurrentDensity.cpp
   )
 
 spectre_target_headers(
@@ -16,6 +17,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Fluxes.hpp
+  SpatialCurrentDensity.hpp
   Tags.hpp
   )
 
