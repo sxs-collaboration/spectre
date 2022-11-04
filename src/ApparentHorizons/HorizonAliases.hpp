@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ApparentHorizons/TagsDeclarations.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
