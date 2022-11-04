@@ -23,17 +23,11 @@ namespace Parallel {
  * \details Spectre executables are split into distinct phases separated by
  * global synchronizations.  Each executable will start with phase
  * `Initialization` and end with phase `Exit`.  The metavariables of each
- * executable must define a static member function with the signature:
- *
- * \code
- * static Parallel::Phase determine_next_phase(
- *    const gsl::not_null<
- *        tuples::TaggedTuple<Tags...>*> phase_change_decision_data,
- *    const Parallel::Phase& current_phase,
- *    const Parallel::CProxy_GlobalCache<Metavariables>& cache_proxy);
- * \endcode
- *
- * that is used to determine the next phase once the current phase has ended.
+ * executable must define `default_phase_order`, an array of Parallel::Phase
+ * that must contain at least `Initialization` as the first element and `Exit`
+ * as the last element.  Usually the next phase is determined from the
+ * `default_phase_order` provided by the metavariables.  If more complex
+ * decision making is desired, use the PhaseControl infrastructure.
  *
  * \warning The phases are in alphabetical order.  Do not use the values of the
  * underlying integral type as they will change as new phases are added to the
