@@ -12,6 +12,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -38,15 +39,21 @@ void GaugeAndDerivativeCompute<Dim>::function(
       UNLIKELY(gauge_and_deriv->number_of_grid_points() != num_points)) {
     gauge_and_deriv->initialize(num_points);
   }
+  // Just compute d4_spacetime_metric internally for now. Since compute tags
+  // are only used for observing, this should be fine.
+  tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{
+      get(lapse).size()};
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
   dispatch(make_not_null(
                &get<::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>(
                    *gauge_and_deriv)),
            make_not_null(&get<::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
                              Dim, Frame::Inertial>>(*gauge_and_deriv)),
            lapse, shift, spacetime_unit_normal_one_form, spacetime_unit_normal,
-           sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric,
-           pi, phi, mesh, time, inertial_coords, inverse_jacobian,
-           gauge_condition);
+           sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+           spacetime_metric, pi, phi, mesh, time, inertial_coords,
+           inverse_jacobian, gauge_condition);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

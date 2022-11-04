@@ -126,13 +126,19 @@ void SetPiFromGauge<Dim>::apply(
   trace_last_indices(make_not_null(&trace_spatial_christoffel_first),
                      spatial_christoffel_first, inverse_spatial_metric);
 
+  // Here we use `derivatives_of_spacetime_metric` to get \f$ \partial_a
+  // g_{bc}\f$ instead, and use only the derivatives of \f$ g_{bi}\f$.
+  tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_spacetime_metric), lapse, shift, *pi, phi);
+
   // Note: we pass in pi to compute d4_gauge_h, but we don't use d4_gauge_h. We
   // actually reset pi from gauge_h below.
   dispatch(make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
            spacetime_unit_normal_one_form, spacetime_unit_normal_vector,
-           sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric,
-           *pi, phi, mesh, time, inertial_coords, inverse_jacobian,
-           gauge_condition);
+           sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+           spacetime_metric, *pi, phi, mesh, time, inertial_coords,
+           inverse_jacobian, gauge_condition);
 
   // Compute lapse and shift time derivatives
   get(dt_lapse) =

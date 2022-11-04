@@ -228,11 +228,12 @@ void TimeDerivative<Dim>::apply(
   // Compute gauge condition.
   get(*sqrt_det_spatial_metric) = sqrt(get(*det_spatial_metric));
 
-  gauges::dispatch<Dim>(
-      gauge_function, spacetime_deriv_gauge_function, *lapse, *shift,
-      *normal_spacetime_one_form, *normal_spacetime_vector,
-      *sqrt_det_spatial_metric, *inverse_spatial_metric, spacetime_metric, pi,
-      phi, mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
+  gauges::dispatch<Dim>(gauge_function, spacetime_deriv_gauge_function, *lapse,
+                        *shift, *normal_spacetime_one_form,
+                        *normal_spacetime_vector, *sqrt_det_spatial_metric,
+                        *inverse_spatial_metric, *da_spacetime_metric,
+                        spacetime_metric, pi, phi, mesh, time, inertial_coords,
+                        inverse_jacobian, gauge_condition);
 
   // Compute source function last so that we don't need to recompute any of the
   // other temporary tags.

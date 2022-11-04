@@ -37,6 +37,7 @@
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/InverseSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
@@ -130,14 +131,17 @@ void test(const gsl::not_null<std::mt19937*> generator) {
       gr::spacetime_normal_one_form<Dim, Frame::Inertial>(lapse);
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
+  tnsr::abb<DataVector, Dim, Frame::Inertial> d4_spacetime_metric{};
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
 
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       spacetime_normal_one_form, spacetime_normal_vector,
-      sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
-      phi, mesh, db::get<::Tags::Time>(box),
+      sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
+      spacetime_metric, pi, phi, mesh, db::get<::Tags::Time>(box),
       db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                           Frame::Inertial>>(
           box)(db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(box)(

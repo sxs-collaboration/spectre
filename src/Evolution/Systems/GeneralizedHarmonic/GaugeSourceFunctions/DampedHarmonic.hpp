@@ -172,6 +172,7 @@ void damped_harmonic_rollon(
     const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::abb<DataVector, SpatialDim, Frame>& d4_spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
@@ -193,6 +194,7 @@ void damped_harmonic(
     const tnsr::A<DataVector, SpatialDim, Frame>& spacetime_unit_normal,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::abb<DataVector, SpatialDim, Frame>& d4_spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
@@ -267,6 +269,8 @@ class DampedHarmonic final : public GaugeCondition {
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::II<DataVector, SpatialDim, Frame::Inertial>&
           inverse_spatial_metric,
+      const tnsr::abb<DataVector, SpatialDim, Frame::Inertial>&
+          d4_spacetime_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& spacetime_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame::Inertial>& pi,
       const tnsr::iaa<DataVector, SpatialDim, Frame::Inertial>& phi,
