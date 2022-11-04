@@ -48,8 +48,14 @@ enum class Phase {
   // vector created by known_phases() below, and add it to the stream operator
   // If the new phase is the first or last in the list, update Test_Phase.
 
+  ///  phase in which AMR adjusts the domain
+  AdjustDomain,
+  ///  phase in which sanity checks are done after AMR
+  CheckDomain,
   ///  a cleanup phase
   Cleanup,
+  ///  phase in which AMR criteria are evaluated
+  EvaluateAmrCriteria,
   ///  phase in which time steps are taken for an evolution executable
   Evolve,
   ///  generic execution phase of an executable
