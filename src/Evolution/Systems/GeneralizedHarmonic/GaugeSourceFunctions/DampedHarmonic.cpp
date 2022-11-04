@@ -16,6 +16,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/DampedWaveHelpers.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DerivativesOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpacetimeDerivativeOfSpacetimeMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/TimeDerivOfLapse.hpp"
@@ -84,8 +85,9 @@ void damped_harmonic_impl(
     const int exp_L1, const int exp_L2, const int exp_S,
     const double rollon_start_time, const double rollon_width,
     const double sigma_r) {
-  destructive_resize_components(gauge_h, get(lapse).size());
-  destructive_resize_components(d4_gauge_h, get(lapse).size());
+  const size_t num_points = get(lapse).size();
+  destructive_resize_components(gauge_h, num_points);
+  destructive_resize_components(d4_gauge_h, num_points);
 
   if constexpr (UseRollon) {
     ASSERT(gauge_h_init != nullptr,
@@ -107,8 +109,6 @@ void damped_harmonic_impl(
   // important in a multithreaded environment.
   TempBuffer<tmpl::list<
       ::Tags::TempA<0, SpatialDim, Frame>, ::Tags::Tempii<1, SpatialDim, Frame>,
-      ::Tags::TempAA<2, SpatialDim, Frame>,
-      ::Tags::Tempii<3, SpatialDim, Frame>,
       ::Tags::Tempijj<4, SpatialDim, Frame>, ::Tags::TempScalar<5>,
       ::Tags::TempScalar<6>, ::Tags::TempScalar<7>, ::Tags::TempScalar<8>,
       ::Tags::TempScalar<9>, ::Tags::TempScalar<10>, ::Tags::TempScalar<11>,
@@ -125,23 +125,16 @@ void damped_harmonic_impl(
       ::Tags::Tempa<24, SpatialDim, Frame>, ::Tags::TempScalar<25>,
       ::Tags::Tempi<26, SpatialDim, Frame>,
       ::Tags::Tempa<27, SpatialDim, Frame>,
-      ::Tags::TempI<28, SpatialDim, Frame>,
-      ::Tags::TempiJ<29, SpatialDim, Frame>,
       ::Tags::TempaB<30, SpatialDim, Frame>,
-      ::Tags::Tempab<31, SpatialDim, Frame>, ::Tags::TempScalar<32>,
+      ::Tags::Tempa<31, SpatialDim, Frame>, ::Tags::TempScalar<32>,
       ::Tags::Tempa<33, SpatialDim, Frame>,
       ::Tags::Tempabb<34, SpatialDim, Frame>,
       ::Tags::Tempab<35, SpatialDim, Frame>,
-      ::Tags::Tempab<36, SpatialDim, Frame>,
+      ::Tags::Tempa<36, SpatialDim, Frame>,
       ::Tags::Tempab<37, SpatialDim, Frame>>>
-      buffer(get_size(get(lapse)));
+      buffer(num_points);
   auto& spacetime_unit_normal =
       get<::Tags::TempA<0, SpatialDim, Frame>>(buffer);
-  auto& spatial_metric = get<::Tags::Tempii<1, SpatialDim, Frame>>(buffer);
-  auto& inverse_spacetime_metric =
-      get<::Tags::TempAA<2, SpatialDim, Frame>>(buffer);
-  auto& d0_spatial_metric = get<::Tags::Tempii<3, SpatialDim, Frame>>(buffer);
-  auto& d3_spatial_metric = get<::Tags::Tempijj<4, SpatialDim, Frame>>(buffer);
   auto& one_over_lapse = get<::Tags::TempScalar<5>>(buffer);
   auto& log_fac_1 = get<::Tags::TempScalar<6>>(buffer);
   auto& log_fac_2 = get<::Tags::TempScalar<7>>(buffer);
@@ -162,32 +155,40 @@ void damped_harmonic_impl(
   auto& d4_log_fac_mu1 = get<::Tags::Tempa<22, SpatialDim, Frame>>(buffer);
   auto& d4_log_fac_muS = get<::Tags::Tempa<23, SpatialDim, Frame>>(buffer);
   auto& d4_log_fac_mu2 = get<::Tags::Tempa<24, SpatialDim, Frame>>(buffer);
-  auto& dt_lapse = get<::Tags::TempScalar<25>>(buffer);
+
+  auto& d0_lapse = get<::Tags::TempScalar<25>>(buffer);
   auto& d3_lapse = get<::Tags::Tempi<26, SpatialDim, Frame>>(buffer);
-  auto& d4_lapse = get<::Tags::Tempa<27, SpatialDim, Frame>>(buffer);
-  auto& d0_shift = get<::Tags::TempI<28, SpatialDim, Frame>>(buffer);
-  auto& d3_shift = get<::Tags::TempiJ<29, SpatialDim, Frame>>(buffer);
-  auto& d4_shift = get<::Tags::TempaB<30, SpatialDim, Frame>>(buffer);
-  auto& d4_normal_one_form = get<::Tags::Tempab<31, SpatialDim, Frame>>(buffer);
+  auto& spacetime_metric_dot_shift =
+      get<::Tags::Tempa<31, SpatialDim, Frame>>(buffer);
   auto& prefac = get<::Tags::TempScalar<32>>(buffer);
   auto& d4_muS_over_lapse = get<::Tags::Tempa<33, SpatialDim, Frame>>(buffer);
   auto& d4_psi = get<::Tags::Tempabb<34, SpatialDim, Frame>>(buffer);
   auto& dT1 = get<::Tags::Tempab<35, SpatialDim, Frame>>(buffer);
-  auto& dT2 = get<::Tags::Tempab<36, SpatialDim, Frame>>(buffer);
+  auto& dT2 = get<::Tags::Tempa<36, SpatialDim, Frame>>(buffer);
   auto& dT3 = get<::Tags::Tempab<37, SpatialDim, Frame>>(buffer);
 
   // 3+1 quantities
-  spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame, DataVector>(lapse, shift);
-  spatial_metric =
-      gr::spatial_metric<SpatialDim, Frame, DataVector>(spacetime_metric);
-  inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame, DataVector>(
-          lapse, shift, inverse_spatial_metric);
-  time_deriv_of_spatial_metric<SpatialDim, Frame, DataVector>(
-      make_not_null(&d0_spatial_metric), lapse, shift, phi, pi);
-  deriv_spatial_metric<SpatialDim, Frame, DataVector>(
-      make_not_null(&d3_spatial_metric), phi);
+  gr::spacetime_normal_vector<SpatialDim, Frame, DataVector>(
+      make_not_null(&spacetime_unit_normal), lapse, shift);
+  const tnsr::ii<DataVector, SpatialDim, Frame> spatial_metric{};
+  for (size_t i = 0; i< SpatialDim; ++i) {
+    for (size_t j = 0; j <= i; ++j) {
+      make_const_view(make_not_null(&spatial_metric.get(i, j)),
+                      spacetime_metric.get(i + 1, j + 1), 0, num_points);
+    }
+  }
+  // We need \f$ \partial_a g_{bi} = \partial_a \psi_{bi} \f$. Here we
+  // use `derivatives_of_spacetime_metric` to get \f$ \partial_a g_{bc}\f$
+  // instead, and use only the derivatives of \f$ g_{bi}\f$.
+  GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
+      make_not_null(&d4_psi), lapse, shift, pi, phi);
+  const tnsr::ii<DataVector, SpatialDim, Frame> d0_spatial_metric{};
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = i; j < SpatialDim; ++j) {
+      make_const_view(make_not_null(&d0_spatial_metric.get(i, j)),
+                      d4_psi.get(0, i + 1, j + 1), 0, num_points);
+    }
+  }
 
   // commonly used terms
   constexpr auto exp_fac_1 = 0.5;
@@ -223,19 +224,25 @@ void damped_harmonic_impl(
 
   get(prefac) = get(mu_L1) * get(log_fac_1) + get(mu_L2) * get(log_fac_2);
 
-  // Calculate H_a
+  // Compute g_ai shift^i
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    if constexpr (UseRollon) {
-      gauge_h->get(a) = (1. - roll_on) * gauge_h_init->get(a) +
-                        get(prefac) * spacetime_unit_normal_one_form.get(a);
-    } else {
-      gauge_h->get(a) = get(prefac) * spacetime_unit_normal_one_form.get(a);
-    }
-    for (size_t i = 0; i < SpatialDim; ++i) {
-      gauge_h->get(a) -=
-          get(mu_S_over_lapse) * spacetime_metric.get(a, i + 1) * shift.get(i);
+    spacetime_metric_dot_shift.get(a) =
+        spacetime_metric.get(a, 1) * shift.get(0);
+    for (size_t i = 1; i < SpatialDim; ++i) {
+      spacetime_metric_dot_shift.get(a) +=
+          spacetime_metric.get(a, i + 1) * shift.get(i);
     }
   }
+
+  // Calculate H_a
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    gauge_h->get(a) = -get(mu_S_over_lapse) * spacetime_metric_dot_shift.get(a);
+    if constexpr (UseRollon) {
+      gauge_h->get(a) += (1. - roll_on) * gauge_h_init->get(a);
+    }
+  }
+  // Since n_i = 0 only do H_0 term
+  gauge_h->get(0) += get(prefac) * spacetime_unit_normal_one_form.get(0);
 
   [[maybe_unused]] const double d0_roll_on =
       UseRollon ? DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
@@ -295,35 +302,29 @@ void damped_harmonic_impl(
         amp_coef_L2 * roll_on * get(weight) * d4_log_fac_mu2.get(a);
   }
 
+  const tnsr::ijj<DataVector, SpatialDim, Frame> d3_spatial_metric{};
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = 0; j < SpatialDim; ++j) {
+      for (size_t k = 0; k <= j; ++k) {
+        make_const_view(make_not_null(&d3_spatial_metric.get(i, j, k)),
+                        phi.get(i, j + 1, k + 1), 0, num_points);
+      }
+    }
+  }
+
+  const tnsr::a<DataVector, SpatialDim, Frame> d4_lapse{};
+  make_const_view(make_not_null(&get<0>(d4_lapse)), get(d0_lapse), 0,
+                  num_points);
+  for (size_t a = 1; a < SpatialDim + 1; ++a) {
+    make_const_view(make_not_null(&d4_lapse.get(a)), d3_lapse.get(a - 1), 0,
+                    num_points);
+  }
+
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
   time_deriv_of_lapse<SpatialDim, Frame, DataVector>(
-      make_not_null(&dt_lapse), lapse, shift, spacetime_unit_normal, phi, pi);
+      make_not_null(&d0_lapse), lapse, shift, spacetime_unit_normal, phi, pi);
   spatial_deriv_of_lapse<SpatialDim, Frame, DataVector>(
       make_not_null(&d3_lapse), lapse, spacetime_unit_normal, phi);
-  get<0>(d4_lapse) = get(dt_lapse);
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    d4_lapse.get(1 + i) = d3_lapse.get(i);
-  }
-
-  // Calc \f$ \partial_a N^i = {\partial_0 N^i, \partial_j N^i} \f$
-  d0_shift = time_deriv_of_shift<SpatialDim, Frame, DataVector>(
-      lapse, shift, inverse_spatial_metric, spacetime_unit_normal, phi, pi);
-  d3_shift = spatial_deriv_of_shift<SpatialDim, Frame, DataVector>(
-      lapse, inverse_spacetime_metric, spacetime_unit_normal, phi);
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    d4_shift.get(0, 1 + i) = d0_shift.get(i);
-    for (size_t j = 0; j < SpatialDim; ++j) {
-      d4_shift.get(1 + j, 1 + i) = d3_shift.get(j, i);
-    }
-  }
-
-  // Calc \f$ \partial_a n_b = {-\partial_a N, 0, 0, 0} \f$
-  for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    d4_normal_one_form.get(a, 0) = -d4_lapse.get(a);
-    for (size_t b = 1; b < SpatialDim + 1; ++b) {
-      d4_normal_one_form.get(a, b) = 0.;
-    }
-  }
 
   // \f[ \partial_a (\mu_S/N) = (1/N) \partial_a \mu_{S}
   //         - (\mu_{S}/N^2) \partial_a N
@@ -333,13 +334,6 @@ void damped_harmonic_impl(
     d4_muS_over_lapse.get(a) =
         get(one_over_lapse) * d4_mu_S.get(a) + get(prefac) * d4_lapse.get(a);
   }
-
-  // We need \f$ \partial_a g_{bi} = \partial_a \psi_{bi} \f$. Here we
-  // use `derivatives_of_spacetime_metric` to get \f$ \partial_a g_{bc}\f$
-  // instead, and use only the derivatives of \f$ g_{bi}\f$.
-  d4_psi = gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>(
-      lapse, dt_lapse, d3_lapse, shift, d0_shift, d3_shift, spatial_metric,
-      d0_spatial_metric, d3_spatial_metric);
 
   // Calc \f$ \partial_a T1 \f$
   if constexpr (UseRollon) {
@@ -357,28 +351,37 @@ void damped_harmonic_impl(
 
   // Calc \f$ \partial_a T2 \f$
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      dT2.get(a, b) = (get(mu1) + get(mu2)) * d4_normal_one_form.get(a, b) +
-                      (d4_mu1.get(a) + d4_mu2.get(a)) *
-                          spacetime_unit_normal_one_form.get(b);
-    }
+    dT2.get(a) =
+        (d4_mu1.get(a) + d4_mu2.get(a)) * spacetime_unit_normal_one_form.get(0)
+        // Note:  \f$ \partial_a n_b = {-\partial_a alpha, 0, 0, 0} \f$
+        - (get(mu1) + get(mu2)) * d4_lapse.get(a);
   }
 
   // Calc \f$ \partial_a T3 \f$ (note minus sign)
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
-    for (size_t b = 0; b < SpatialDim + 1; ++b) {
-      dT3.get(a, b) = -d4_muS_over_lapse.get(a) * get<0>(shift) *
-                      spacetime_metric.get(b, 1);
-      for (size_t i = 0; i < SpatialDim; ++i) {
-        if (i != 0) {
-          dT3.get(a, b) -= d4_muS_over_lapse.get(a) * shift.get(i) *
-                           spacetime_metric.get(b, i + 1);
-        }
-        dT3.get(a, b) -=
-            get(mu_S_over_lapse) * shift.get(i) * d4_psi.get(a, b, i + 1);
-        dT3.get(a, b) -= get(mu_S_over_lapse) * spacetime_metric.get(b, i + 1) *
-                         d4_shift.get(a, i + 1);
+    for (size_t j = 0; j < SpatialDim; ++j) {
+      dT3.get(a, j + 1) = d4_psi.get(a, 0, j + 1);
+    }
+    dT3.get(a, 0) = d4_psi.get(a, 0, 1) * get<0>(shift);
+    for (size_t j = 1; j < SpatialDim; ++j) {
+      dT3.get(a, 0) += d4_psi.get(a, 0, j + 1) * shift.get(j);
+    }
+    for (size_t i = 0; i < SpatialDim; ++i) {
+      for (size_t j = i + 1; j < SpatialDim; ++j) {
+        dT3.get(a, 0) -=
+            shift.get(i) * shift.get(j) * d4_psi.get(a, i + 1, j + 1);
       }
+    }
+    dT3.get(a, 0) *= 2.0;
+    for (size_t i = 0; i < SpatialDim; ++i) {
+      dT3.get(a, 0) -=
+          shift.get(i) * shift.get(i) * d4_psi.get(a, i + 1, i + 1);
+    }
+
+    for (size_t b = 0; b < SpatialDim + 1; ++b) {
+      dT3.get(a, b) *= -get(mu_S_over_lapse);
+      dT3.get(a, b) -=
+          d4_muS_over_lapse.get(a) * spacetime_metric_dot_shift.get(b);
     }
   }
 
@@ -386,11 +389,12 @@ void damped_harmonic_impl(
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       if constexpr (UseRollon) {
-        d4_gauge_h->get(a, b) = dT1.get(a, b) + dT2.get(a, b) + dT3.get(a, b);
+        d4_gauge_h->get(a, b) = dT1.get(a, b) +  dT3.get(a, b);
       } else {
-        d4_gauge_h->get(a, b) = dT2.get(a, b) + dT3.get(a, b);
+        d4_gauge_h->get(a, b) = dT3.get(a, b);
       }
     }
+    d4_gauge_h->get(a, 0) += dT2.get(a);
   }
 }
 }  // namespace
