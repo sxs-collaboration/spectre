@@ -44,9 +44,8 @@ class er;
  * - the error is sufficiently small: \f$|Q|<\f$ `increase_timescale_threshold`
  * \n
  * AND \n
- * - the expected change in \f$Q\f$ is less than the difference between the
- * current error and the threshold:
- * \f$|\dot{Q}|\tau < \f$ (`increase_timescale_threshold` \f$-|Q|\f$)
+ * - the expected change in \f$Q\f$ is less than the threshold:
+ * \f$|\dot{Q}|\tau < \f$ `increase_timescale_threshold`
  */
 
 class TimescaleTuner {

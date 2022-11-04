@@ -142,8 +142,7 @@ void TimescaleTuner::update_timescale(
     }
     // check whether we need to increase the timescale:
     else if (fabs(q[i]) < increase_timescale_threshold_ and
-             fabs(dtq[i] * timescale_[i]) <
-                 (increase_timescale_threshold_ - fabs(q[i]))) {
+             fabs(dtq[i] * timescale_[i]) < increase_timescale_threshold_) {
       // if Q `and` dtQ are below the minimum required threshold
       timescale_[i] *= increase_factor_;
     }
