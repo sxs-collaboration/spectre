@@ -50,6 +50,12 @@ struct ShiftDotThreeIndexConstraint : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame::Inertial>;
 };
 
+/// \f$\v^i_g \mathcal{C}_{iab}\f$
+template <size_t Dim>
+struct MeshVelocityDotThreeIndexConstraint : db::SimpleTag {
+  using type = tnsr::aa<DataVector, Dim, Frame::Inertial>;
+};
+
 /// \f$\Phi_{iab}n^a\f$
 template <size_t Dim>
 struct PhiOneNormal : db::SimpleTag {

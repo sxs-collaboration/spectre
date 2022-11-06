@@ -118,6 +118,8 @@ struct TimeDerivativeTermsImpl<
       const Scalar<DataVector>& /*gamma2*/,
       const tnsr::a<DataVector, 3_st>& /*gauge_function*/,
       const tnsr::ab<DataVector, 3_st>& /*spacetime_deriv_gauge_function*/,
+      const std::optional<
+          tnsr::I<DataVector, 3_st, Frame::Inertial>>& /*mesh_velocity*/,
       const TupleType& args) {
     trace_reversed_stress_energy(
         local_stress_energy, four_velocity_buffer_one_form,

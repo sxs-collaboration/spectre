@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <pup.h>
 #include <random>
 
@@ -65,7 +66,17 @@ Scalar<DataVector> speed_with_index(
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal) {
   return Scalar<DataVector>{GeneralizedHarmonic::characteristic_speeds(
-      gamma_1, lapse, shift, normal)[Index]};
+      gamma_1, lapse, shift, normal, {})[Index]};
+}
+
+template <size_t Dim, typename Frame>
+Scalar<DataVector> char_speed_upsi_with_moving_mesh(
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const tnsr::i<DataVector, Dim, Frame>& normal,
+    const tnsr::I<DataVector, Dim, Frame>& mesh_velocity) {
+  return Scalar<DataVector>{GeneralizedHarmonic::characteristic_speeds(
+      gamma_1, lapse, shift, normal, {mesh_velocity})[0]};
 }
 
 template <size_t Dim, typename Frame>
@@ -86,6 +97,10 @@ void test_characteristic_speeds() {
   pypp::check_with_random_values<1>(speed_with_index<2, Dim, Frame>,
                                     "TestFunctions", "char_speed_uplus",
                                     {{{-2.0, 2.0}}}, used_for_size);
+
+  pypp::check_with_random_values<1>(
+      char_speed_upsi_with_moving_mesh<Dim, Frame>, "TestFunctions",
+      "char_speed_upsi_moving_mesh", {{{-2.0, 2.0}}}, used_for_size);
 }
 
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
@@ -148,7 +163,7 @@ void test_characteristic_speeds_analytic(
   GeneralizedHarmonic::
       CharacteristicSpeedsCompute<spatial_dim, Frame::Inertial>::function(
           make_not_null(&char_speeds_from_func), gamma_1, lapse, shift,
-          unit_normal_one_form);
+          unit_normal_one_form, {});
   const auto& upsi_speed_from_func = char_speeds_from_func[0];
   const auto& uzero_speed_from_func = char_speeds_from_func[1];
   const auto& uplus_speed_from_func = char_speeds_from_func[2];
@@ -598,7 +613,7 @@ void check_max_char_speed(const DataVector& used_for_size) {
 
     const auto characteristic_speeds =
         GeneralizedHarmonic::characteristic_speeds(gamma_1, lapse, shift,
-                                                   unit_one_form);
+                                                   unit_one_form, {});
     double max_speed_in_chosen_direction = 0.0;
     for (const auto& speed : characteristic_speeds) {
       max_speed_in_chosen_direction =

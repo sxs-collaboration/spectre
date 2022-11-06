@@ -7,6 +7,7 @@
 #include <random>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/System.hpp"
@@ -16,6 +17,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -131,10 +133,19 @@ SPECTRE_TEST_CASE(
   tmpl::for_each<tmpl::append<gh_arg_tags, valencia_arg_tags>>(
       [&gen, &dist, &arg_variables](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        tuples::get<tag>(arg_variables) =
-            make_with_random_values<typename tag::type>(
-                make_not_null(&gen), make_not_null(&dist),
-                DataVector{element_size});
+        if constexpr (std::is_same_v<typename tag::type,
+                                     std::optional<tnsr::I<DataVector, 3,
+                                                           Frame::Inertial>>>) {
+          tuples::get<tag>(arg_variables) = make_with_random_values<
+              typename tnsr::I<DataVector, 3, Frame::Inertial>>(
+              make_not_null(&gen), make_not_null(&dist),
+              DataVector{element_size});
+        } else {
+          tuples::get<tag>(arg_variables) =
+              make_with_random_values<typename tag::type>(
+                  make_not_null(&gen), make_not_null(&dist),
+                  DataVector{element_size});
+        }
       });
 
   // ensure that the signature of the metric is correct

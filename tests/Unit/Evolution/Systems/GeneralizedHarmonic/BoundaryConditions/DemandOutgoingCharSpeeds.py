@@ -20,6 +20,8 @@ def error(face_mesh_velocity, outward_directed_normal_covector,
         if face_mesh_velocity is not None:
             speeds[i] -= np.dot(outward_directed_normal_covector,
                                 face_mesh_velocity)
+            speeds[0] -= np.dot(outward_directed_normal_covector,
+                                face_mesh_velocity) * gamma_1
         if speeds[i] < 0.0:
             return ("DemandOutgoingCharSpeeds boundary condition violated")
     return None

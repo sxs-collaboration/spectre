@@ -27,6 +27,9 @@ void test_simple_tags() {
       GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<Dim>>(
       "ShiftDotThreeIndexConstraint");
   TestHelpers::db::test_simple_tag<
+      GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<Dim>>(
+      "MeshVelocityDotThreeIndexConstraint");
+  TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::PhiOneNormal<Dim>>("PhiOneNormal");
   TestHelpers::db::test_simple_tag<
       GeneralizedHarmonic::Tags::PiSecondIndexUp<Dim>>("PiSecondIndexUp");

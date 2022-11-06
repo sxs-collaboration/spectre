@@ -50,7 +50,8 @@ DemandOutgoingCharSpeeds<Dim>::dg_demand_outgoing_char_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& shift) {
   const auto char_speeds = characteristic_speeds(
-      gamma_1, lapse, shift, outward_directed_normal_covector);
+      gamma_1, lapse, shift, outward_directed_normal_covector,
+      face_mesh_velocity);
   Scalar<DataVector> normal_dot_mesh_velocity;
   if (face_mesh_velocity.has_value()) {
     normal_dot_mesh_velocity = dot_product(outward_directed_normal_covector,

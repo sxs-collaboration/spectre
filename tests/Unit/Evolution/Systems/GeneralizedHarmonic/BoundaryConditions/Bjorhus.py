@@ -331,6 +331,7 @@ def error(face_mesh_velocity, normal_covector, normal_vector, spacetime_metric,
              spacetime_deriv_gauge_source, dt_pi, dt_phi, dt_spacetime_metric,
              d_pi, d_phi, d_spacetime_metric)
         char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
         if (np.amin(char_speeds) < 0.0) and (np.dot(face_mesh_velocity,
                                                     normal_covector) > 0.0):
             return (
@@ -367,6 +368,7 @@ def dt_corrs_ConstraintPreserving(
          dt_pi, dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric)
     if face_mesh_velocity is not None:
         char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
     dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
@@ -411,6 +413,7 @@ def dt_corrs_ConstraintPreservingPhysical(
          dt_pi, dt_phi, dt_spacetime_metric, d_pi, d_phi, d_spacetime_metric)
     if face_mesh_velocity is not None:
         char_speeds = char_speeds - np.dot(normal_covector, face_mesh_velocity)
+        char_speeds[0] -= np.dot(normal_covector, face_mesh_velocity) * gamma1
     if np.amin(char_speeds) >= 0.:
         return (pi * 0, phi * 0, pi * 0, pi * 0)
     dt_v_psi = constraint_preserving_bjorhus_corrections_dt_v_psi(
