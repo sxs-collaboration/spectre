@@ -33,6 +33,8 @@ void dispatch(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
     const tnsr::abb<DataVector, Dim, Frame::Inertial>& d4_spacetime_metric,
+    const Scalar<DataVector>& half_pi_two_normals,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& half_phi_two_normals,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,

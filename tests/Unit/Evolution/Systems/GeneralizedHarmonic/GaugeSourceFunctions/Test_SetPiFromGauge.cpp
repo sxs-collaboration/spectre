@@ -135,13 +135,37 @@ void test(const gsl::not_null<std::mt19937*> generator) {
   GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
 
+  Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
+  tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
+      get(lapse).size(), 0.0};
+  for (size_t a = 0; a < Dim + 1; ++a) {
+    get(half_pi_two_normals) += spacetime_normal_vector.get(a) *
+                                spacetime_normal_vector.get(a) * pi.get(a, a);
+    for (size_t i = 0; i < Dim; ++i) {
+      half_phi_two_normals.get(i) += 0.5 * spacetime_normal_vector.get(a) *
+                                     spacetime_normal_vector.get(a) *
+                                     phi.get(i, a, a);
+    }
+    for (size_t b = a + 1; b < Dim + 1; ++b) {
+      get(half_pi_two_normals) += 2.0 * spacetime_normal_vector.get(a) *
+                                  spacetime_normal_vector.get(b) * pi.get(a, b);
+      for (size_t i = 0; i < Dim; ++i) {
+        half_phi_two_normals.get(i) += spacetime_normal_vector.get(a) *
+                                       spacetime_normal_vector.get(b) *
+                                       phi.get(i, a, b);
+      }
+    }
+  }
+  get(half_pi_two_normals) *= 0.5;
+
   tnsr::a<DataVector, Dim, Frame::Inertial> gauge_h(num_points);
   tnsr::ab<DataVector, Dim, Frame::Inertial> d4_gauge_h(num_points);
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       spacetime_normal_one_form, spacetime_normal_vector,
       sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-      spacetime_metric, pi, phi, mesh, db::get<::Tags::Time>(box),
+      half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
+      mesh, db::get<::Tags::Time>(box),
       db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                           Frame::Inertial>>(
           box)(db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(box)(

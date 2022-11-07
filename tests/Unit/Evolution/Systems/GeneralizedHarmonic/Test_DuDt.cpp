@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -558,14 +559,36 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   const Scalar<DataVector> sqrt_det_spatial_metric{
       sqrt(get(det_spatial_metric))};
 
+  Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
+  tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
+      get(lapse).size(), 0.0};
+  for (size_t a = 0; a < Dim + 1; ++a) {
+    get(half_pi_two_normals) +=
+        normal_vector.get(a) * normal_vector.get(a) * pi.get(a, a);
+    for (size_t i = 0; i < Dim; ++i) {
+      half_phi_two_normals.get(i) +=
+          0.5 * normal_vector.get(a) * normal_vector.get(a) * phi.get(i, a, a);
+    }
+    for (size_t b = a + 1; b < Dim + 1; ++b) {
+      get(half_pi_two_normals) +=
+          2.0 * normal_vector.get(a) * normal_vector.get(b) * pi.get(a, b);
+      for (size_t i = 0; i < Dim; ++i) {
+        half_phi_two_normals.get(i) +=
+            normal_vector.get(a) * normal_vector.get(b) * phi.get(i, a, b);
+      }
+    }
+  }
+  get(half_pi_two_normals) *= 0.5;
+
   tnsr::a<DataVector, Dim> gauge_h{mesh.number_of_grid_points()};
   tnsr::ab<DataVector, Dim> d4_gauge_h{mesh.number_of_grid_points()};
 
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), lapse, shift,
       normal_one_form, normal_vector, sqrt_det_spatial_metric,
-      inverse_spatial_metric, da_spacetime_metric, spacetime_metric, pi, phi,
-      mesh, time, inertial_coords, inv_jac, gauge_condition);
+      inverse_spatial_metric, da_spacetime_metric, half_pi_two_normals,
+      half_phi_two_normals, spacetime_metric, pi, phi, mesh, time,
+      inertial_coords, inv_jac, gauge_condition);
 
   const auto [expected_dt_spacetime_metric, expected_dt_pi, expected_dt_phi] =
       gh_rhs_reference_impl(
