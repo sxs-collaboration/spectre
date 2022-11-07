@@ -37,6 +37,10 @@ struct PreviousStepError : db::SimpleTag {
 };
 }  // namespace Tags
 
+namespace ErrorControl_detail {
+struct IsAnErrorControl {};
+}  // namespace ErrorControl_detail
+
 /*!
  * \brief Suggests a step size based on a target absolute and/or relative error
  * measure.
@@ -101,7 +105,8 @@ struct PreviousStepError : db::SimpleTag {
  */
 template <typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse::LtsStep> {
+class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
+                     public ErrorControl_detail::IsAnErrorControl {
  public:
   using evolved_variable_type = typename EvolvedVariableTag::type;
   using error_variable_type =
@@ -288,72 +293,29 @@ PUP::able::PUP_ID
 }  // namespace StepChoosers
 
 namespace Tags {
-namespace detail {
-template <typename Tag>
-using NoPrefix = Tag;
-}  // detail
-
-/// \ingroup TimeGroup
-/// \brief Base tag for reporting whether the `ErrorControl` step chooser is in
-/// use.
-struct IsUsingTimeSteppingErrorControlBase : db::BaseTag {};
-
 /// \ingroup TimeGroup
 /// \brief A tag that is true if the `ErrorControl` step chooser is one of the
 /// option-created `Event`s.
-template <template <typename> typename Prefix = detail::NoPrefix>
-struct IsUsingTimeSteppingErrorControl : db::SimpleTag,
-                                         IsUsingTimeSteppingErrorControlBase {
-  using type = bool;
-  template <typename Metavariables>
-  using option_tags = tmpl::list<Prefix<::OptionTags::StepChoosers>>;
+struct IsUsingTimeSteppingErrorControlCompute
+    : db::ComputeTag,
+      IsUsingTimeSteppingErrorControl {
+  using base = IsUsingTimeSteppingErrorControl;
+  using argument_tags = tmpl::list<::Tags::StepChoosers>;
 
-  static constexpr bool pass_metavariables = true;
-  template <typename Metavariables>
-  static bool create_from_options(
+  static void function(
+      const gsl::not_null<bool*> is_using_error_control,
       const std::vector<
           std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>&
           step_choosers) {
-    bool is_using_error_control = false;
-    // unwraps the factory-created classes to determine whether any of the
-    // step choosers are the ErrorControl step chooser.
-    tmpl::for_each<
-        tmpl::at<typename Metavariables::factory_creation::factory_classes,
-                 StepChooser<StepChooserUse::LtsStep>>>(
-        [&is_using_error_control, &step_choosers](auto step_chooser_type_v) {
-          if (is_using_error_control) {
-            return;
-          }
-          using step_chooser_type =
-              typename decltype(step_chooser_type_v)::type;
-          if constexpr (tt::is_a_v<::StepChoosers::ErrorControl,
-                                   step_chooser_type>) {
-            for (const auto& step_chooser : step_choosers) {
-              if (dynamic_cast<const step_chooser_type*>(&*step_chooser) !=
-                  nullptr) {
-                is_using_error_control = true;
-                return;
-              }
-            }
-          }
-        });
-    return is_using_error_control;
+    *is_using_error_control = false;
+    for (const auto& step_chooser : step_choosers) {
+      if (dynamic_cast<
+              const ::StepChoosers::ErrorControl_detail::IsAnErrorControl*>(
+              &*step_chooser) != nullptr) {
+        *is_using_error_control = true;
+        return;
+      }
+    }
   }
-};
-
-/// \ingroup TimeGroup
-/// \brief Tag indicating that the `ErrorControl` step chooser will not be used.
-///
-/// \details This can be useful when e.g. local time stepping is disabled and it
-/// is known at compile-time that the `ErrorControl` step chooser cannot be
-/// used.
-struct NeverUsingTimeSteppingErrorControl
-    : db::SimpleTag,
-      IsUsingTimeSteppingErrorControlBase {
-  using type = bool;
-  using option_tags = tmpl::list<>;
-
-  static constexpr bool pass_metavariables = false;
-  static bool create_from_options() { return false; }
 };
 }  // namespace Tags

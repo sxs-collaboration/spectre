@@ -61,7 +61,6 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -772,14 +771,13 @@ struct component {
       domain::Tags::MeshVelocity<Metavariables::volume_dim>,
       domain::Tags::DivMeshVelocity,
       domain::Tags::ElementMap<Metavariables::volume_dim, Frame::Grid>,
+      ::Tags::IsUsingTimeSteppingErrorControl,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::IsUsingTimeSteppingErrorControl<>,
-                     ::Tags::StepController, ::Tags::StepChoosers,
+          tmpl::list<::Tags::StepController, ::Tags::StepChoosers,
                      ::Tags::TimeStepper<LtsTimeStepper>,
                      ::Tags::RollbackValue<variables_tag>>,
-          tmpl::list<::Tags::NeverUsingTimeSteppingErrorControl,
-                     ::Tags::TimeStepper<TimeStepper>>>>>;
+          tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
       domain::Tags::JacobianCompute<Metavariables::volume_dim,
                                     Frame::ElementLogical, Frame::Inertial>,

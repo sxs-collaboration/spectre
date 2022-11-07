@@ -62,13 +62,12 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using initialization_tags_to_keep = tmpl::flatten<tmpl::list<
-      Initialization::Tags::InitialSlabSize<local_time_stepping>,
-      ::Tags::IsUsingTimeSteppingErrorControl<OptionTags::CceEvolutionPrefix>,
-      Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
-      Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
-      Tags::CceEvolutionPrefix<::Tags::StepController>,
-      ::Initialization::Tags::InitialTimeDelta>>;
+  using initialization_tags_to_keep = tmpl::flatten<
+      tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
+                 Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
+                 Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
+                 Tags::CceEvolutionPrefix<::Tags::StepController>,
+                 ::Initialization::Tags::InitialTimeDelta>>;
 
   using initialization_tags = initialization_tags_to_keep;
 
@@ -84,7 +83,8 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::RollbackValue<EvolvedCoordinatesVariablesTag>,
       ::Tags::RollbackValue<evolved_swsh_variables_tag>,
       ::Tags::StepperErrorUpdated>;
-  using compute_tags = tmpl::list<>;
+  using compute_tags =
+      tmpl::list<::Tags::IsUsingTimeSteppingErrorControlCompute>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

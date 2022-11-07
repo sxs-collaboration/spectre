@@ -272,4 +272,11 @@ struct StepController : db::SimpleTag {
     return deserialize<type>(serialize<type>(step_controller).data());
   }
 };
+
+/// \ingroup TimeGroup
+/// \brief Tag for reporting whether the `ErrorControl` step chooser is in
+/// use.
+struct IsUsingTimeSteppingErrorControl : db::SimpleTag {
+  using type = bool;
+};
 }  // namespace Tags

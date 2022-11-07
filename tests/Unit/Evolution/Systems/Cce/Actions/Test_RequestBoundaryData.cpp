@@ -208,7 +208,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   // controller gives a predictable value (not subject to roundoff fluctuations
   // in the generated value)
   ActionTesting::emplace_component<evolution_component>(
-      &runner, 0, target_step_size * 0.75, false,
+      &runner, 0, target_step_size * 0.75,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),

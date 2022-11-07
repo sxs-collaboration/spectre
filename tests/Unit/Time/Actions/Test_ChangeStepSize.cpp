@@ -19,7 +19,6 @@
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
@@ -88,7 +87,7 @@ struct Component {
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, Tags::Next<Tags::TimeStep>,
                                  ::Tags::StepChoosers, ::Tags::StepController,
-                                 Tags::IsUsingTimeSteppingErrorControl<>,
+                                 Tags::IsUsingTimeSteppingErrorControl,
                                  history_tag, typename System::variables_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

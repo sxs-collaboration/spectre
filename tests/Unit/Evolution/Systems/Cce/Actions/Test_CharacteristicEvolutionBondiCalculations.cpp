@@ -240,7 +240,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<
       mock_observer_writer<metavariables>>(&runner, 0, {Parallel::NodeLock{}});
   ActionTesting::emplace_component<component>(
-      &runner, 0, target_step_size, false,
+      &runner, 0, target_step_size,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),

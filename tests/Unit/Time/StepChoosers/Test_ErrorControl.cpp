@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -296,42 +297,48 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ErrorControl", "[Unit][Time]") {
   CHECK(StepChoosers::ErrorControl<EvolvedVariablesTag, ErrorControlSelecter>{}
             .uses_local_data());
 
-  // Test `IsUsingTimeSteppingErrorControl` tag:
+  // Test `IsUsingTimeSteppingErrorControlCompute` tag:
   {
-    INFO("IsUsingTimeSteppingErrorControl tag test");
-    const auto step_choosers_collection_0 =
-        TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                   Metavariables<true>>(
-            "- ErrorControl:\n"
-            "    SafetyFactor: 0.95\n"
-            "    AbsoluteTolerance: 1.0e-5\n"
-            "    RelativeTolerance: 1.0e-4\n"
-            "    MaxFactor: 2.1\n"
-            "    MinFactor: 0.5\n"
-            "- Increase:\n"
-            "    Factor: 2\n"
-            "- Constant: 0.5");
-    const auto step_choosers_collection_1 =
-        TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                   Metavariables<true>>(
-            "- PreventRapidIncrease:\n"
-            "- Increase:\n"
-            "    Factor: 2\n"
-            "- Constant: 0.5");
-    const auto step_choosers_collection_2 =
-        TestHelpers::test_creation<typename Tags::StepChoosers::type,
-                                   Metavariables<false>>(
-            "- PreventRapidIncrease:\n"
-            "- Increase:\n"
-            "    Factor: 2\n"
-            "- Constant: 0.5");
-    CHECK(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
-          Metavariables<true>>(step_choosers_collection_0));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
-                Metavariables<true>>(step_choosers_collection_1));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
-                Metavariables<false>>(step_choosers_collection_2));
-    CHECK_FALSE(Tags::IsUsingTimeSteppingErrorControl<>::create_from_options<
-                Metavariables<true>>({}));
+    INFO("IsUsingTimeSteppingErrorControlCompute tag test");
+    auto box = db::create<
+        db::AddSimpleTags<Tags::StepChoosers>,
+        db::AddComputeTags<Tags::IsUsingTimeSteppingErrorControlCompute>>();
+    db::mutate<Tags::StepChoosers>(
+        make_not_null(&box),
+        [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
+          *choosers =
+              TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                         Metavariables<true>>(
+                  "- ErrorControl:\n"
+                  "    SafetyFactor: 0.95\n"
+                  "    AbsoluteTolerance: 1.0e-5\n"
+                  "    RelativeTolerance: 1.0e-4\n"
+                  "    MaxFactor: 2.1\n"
+                  "    MinFactor: 0.5\n"
+                  "- Increase:\n"
+                  "    Factor: 2\n"
+                  "- Constant: 0.5");
+        });
+    CHECK(db::get<Tags::IsUsingTimeSteppingErrorControlCompute>(box));
+    db::mutate<Tags::StepChoosers>(
+        make_not_null(&box),
+        [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
+          *choosers =
+              TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                         Metavariables<true>>(
+                  "- PreventRapidIncrease:\n"
+                  "- Increase:\n"
+                  "    Factor: 2\n"
+                  "- Constant: 0.5");
+        });
+    CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControlCompute>(box));
+    db::mutate<Tags::StepChoosers>(
+        make_not_null(&box),
+        [](const gsl::not_null<Tags::StepChoosers::type*> choosers) {
+          *choosers =
+              TestHelpers::test_creation<typename Tags::StepChoosers::type,
+                                         Metavariables<true>>("");
+        });
+    CHECK_FALSE(db::get<Tags::IsUsingTimeSteppingErrorControlCompute>(box));
   }
 }

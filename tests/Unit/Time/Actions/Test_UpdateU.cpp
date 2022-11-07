@@ -20,7 +20,6 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -63,7 +62,7 @@ struct Component {
   using array_index = int;
   using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using simple_tags = tmpl::append<
-      tmpl::list<Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl<>>,
+      tmpl::list<Tags::TimeStep, ::Tags::IsUsingTimeSteppingErrorControl>,
       SimpleTags>;
 
   using phase_dependent_action_list =

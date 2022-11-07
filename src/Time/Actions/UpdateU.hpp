@@ -13,7 +13,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
-#include "Time/StepChoosers/ErrorControl.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -41,7 +40,7 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
       tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                           typename System::variables_tag, VariablesTag>;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
-  if (db::get<Tags::IsUsingTimeSteppingErrorControlBase>(*box)) {
+  if (db::get<Tags::IsUsingTimeSteppingErrorControl>(*box)) {
     using error_tag = db::add_tag_prefix<::Tags::StepperError, variables_tag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
       db::mutate<Tags::StepperErrorUpdated, variables_tag, error_tag,
@@ -86,7 +85,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepper<>
-///   - Tags::IsUsingTimeSteppingErrorControlBase
+///   - Tags::IsUsingTimeSteppingErrorControl
 ///
 /// DataBox changes:
 /// - Adds: nothing
