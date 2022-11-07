@@ -8,6 +8,7 @@ spectre_target_sources(
   DampedWaveHelpers.cpp
   DhGaugeParameters.cpp
   Gauges.cpp
+  HalfPiPhiTwoNormals.cpp
   Harmonic.cpp
   InitializeDampedHarmonic.cpp
   RegisterDerived.cpp
@@ -22,6 +23,7 @@ spectre_target_headers(
   DhGaugeParameters.hpp
   Factory.hpp
   Gauges.hpp
+  HalfPiPhiTwoNormals.hpp
   Harmonic.hpp
   InitializeDampedHarmonic.hpp
   RegisterDerived.hpp
