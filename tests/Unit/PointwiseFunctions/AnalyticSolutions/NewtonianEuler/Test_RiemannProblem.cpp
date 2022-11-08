@@ -52,7 +52,7 @@ void test_solution(const std::array<double, Dim> left_velocity,
   // Member variables correspond to Sod tube test. For other test cases,
   // new parameters in the star region must be given in the python modules.
   RiemannProblemProxy<Dim> solution(1.4, 0.5, 1.0, left_velocity, 1.0, 0.125,
-                                    right_velocity, 0.1, 1.e-6);
+                                    right_velocity, 0.1, 1.e-9);
   pypp::check_with_random_values<1>(
       &RiemannProblemProxy<Dim>::template primitive_variables<DataType>,
       solution, "RiemannProblem",
@@ -76,11 +76,11 @@ void test_solution(const std::array<double, Dim> left_velocity,
       right_velocity_opt +
       "\n"
       "RightPressure: 0.1\n"
-      "PressureStarTol: 1.e-6");
+      "PressureStarTol: 1.e-9");
   CHECK(solution_from_options == solution);
 
   RiemannProblemProxy<Dim> solution_to_move(1.4, 0.5, 1.0, left_velocity, 1.0,
-                                            0.125, right_velocity, 0.1, 1.e-6);
+                                            0.125, right_velocity, 0.1, 1.e-9);
   test_move_semantics(std::move(solution_to_move), solution);  //  NOLINT
   test_serialization(solution);
   test_copy_semantics(solution);
@@ -202,22 +202,4 @@ SPECTRE_TEST_CASE(
       1.4, 0.7, 1.0, {{0.0}}, -1.0, 0.125, {{30.0}}, 1.1);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
-}
-
-// [[OutputRegex, newton_raphson reached max iterations of 50 without
-// converging.]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.RootF",
-    "[Unit][PointwiseFunctions]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<NewtonianEuler::Solutions::RiemannProblem<1>>(
-      "AdiabaticIndex: 1.4\n"
-      "InitialPosition: 0.25\n"
-      "LeftMassDensity: 10.0\n"
-      "LeftVelocity: [0.0]\n"
-      "LeftPressure: 100.0\n"
-      "RightMassDensity: 1.0\n"
-      "RightVelocity: [0.0]\n"
-      "RightPressure: 1.0\n"
-      "PressureStarTol: 1.e-10");
 }

@@ -146,7 +146,9 @@ void test_diff_matrix(const size_t num_points, const Matrix& expected_matrix) {
       Spectral::differentiation_matrix<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto>(
           num_points);
-  CHECK_MATRIX_APPROX(expected_matrix, diff_matrix);
+  Approx diff_approx = approx;
+  diff_approx.margin(1.0e-13);
+  CHECK_MATRIX_CUSTOM_APPROX(expected_matrix, diff_matrix, diff_approx);
 }
 
 }  // namespace

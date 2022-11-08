@@ -5,7 +5,6 @@ set(LIBRARY "Test_RootFinding")
 
 set(LIBRARY_SOURCES
   Test_GslMultiRoot.cpp
-  Test_NewtonRaphson.cpp
   Test_QuadraticEquation.cpp
   Test_RootBracketing.cpp
   Test_TOMS748.cpp

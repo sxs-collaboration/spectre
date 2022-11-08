@@ -11,7 +11,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -124,18 +124,13 @@ compute_collocation_points_and_weights<Basis::Legendre, Quadrature::Gauss>(
       w[0] = w[1] = 1.;
       break;
     default:
-      auto newton_raphson_step = [poly_degree](double logical_coord) {
-        const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
-                                                       logical_coord);
-        return std::make_pair(L_and_dL.L, L_and_dL.dL);
-      };
       for (size_t j = 0; j <= (poly_degree + 1) / 2 - 1; j++) {
-        double logical_coord = RootFinder::newton_raphson(
-            newton_raphson_step,
-            // Initial guess
-            -cos((2. * j + 1.) * M_PI / (2. * poly_degree + 2.)),
-            // Lower and upper bound, and number of desired base-10 digits
-            -1., 1., 14);
+        double logical_coord = RootFinder::toms748(
+            [poly_degree](const double coord) {
+              return LegendrePolynomialAndDerivative(poly_degree + 1, coord).L;
+            },
+            -cos((2. * j) * M_PI / (2. * poly_degree + 2.)),
+            -cos((2. * j + 2.) * M_PI / (2. * poly_degree + 2.)), 0.0, 6.0e-16);
         const LegendrePolynomialAndDerivative L_and_dL(poly_degree + 1,
                                                        logical_coord);
         x[j] = logical_coord;
@@ -159,7 +154,6 @@ namespace {
 struct EvaluateQandL {
   EvaluateQandL(size_t poly_degree, double x);
   double q;
-  double q_prime;
   double L;
 };
 
@@ -184,10 +178,7 @@ EvaluateQandL::EvaluateQandL(const size_t poly_degree, const double x) {
   const size_t k = poly_degree + 1;
   const double L_n_plus_1 =
       ((2. * k - 1.) * x * L_n - (k - 1.) * L_n_minus_2) / k;
-  const double L_prime_n_plus_1 =
-      L_prime_n_minus_2 + (2. * k - 1.) * L_n_minus_1;
   q = L_n_plus_1 - L_n_minus_2;
-  q_prime = L_prime_n_plus_1 - L_prime_n_minus_2;
   L = L_n;
 }
 
@@ -213,18 +204,16 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
       x[0] = -1.;
       x[poly_degree] = 1.;
       w[0] = w[poly_degree] = 2. / (poly_degree * (poly_degree + 1.));
-      auto newton_raphson_step = [poly_degree](double logical_coord) {
-        const EvaluateQandL q_and_L(poly_degree, logical_coord);
-        return std::make_pair(q_and_L.q, q_and_L.q_prime);
-      };
       for (size_t j = 1; j < (poly_degree + 1) / 2; j++) {
-        double logical_coord = RootFinder::newton_raphson(
-            newton_raphson_step,
-            // Initial guess
-            -cos((j + 0.25) * M_PI / poly_degree -
-                 0.375 / (poly_degree * M_PI * (j + 0.25))),
-            // Lower and upper bound, and number of desired base-10 digits
-            -1., 1., 14);
+        double logical_coord = RootFinder::toms748(
+            [poly_degree](const double coord) {
+              return EvaluateQandL(poly_degree, coord).q;
+            },
+            -cos((j - 0.25) * M_PI / poly_degree -
+                 0.375 / (poly_degree * M_PI * (j - 0.25))),
+            -cos((j + 0.75) * M_PI / poly_degree -
+                 0.375 / (poly_degree * M_PI * (j + 0.75))),
+            0.0, 6.0e-16);
         const EvaluateQandL q_and_L(poly_degree, logical_coord);
         x[j] = logical_coord;
         x[poly_degree - j] = -logical_coord;

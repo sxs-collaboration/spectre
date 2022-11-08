@@ -234,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Fd.Reconstruction",
                         Spectral::Quadrature::GaussLobatto>(
         {1.0e-13}, reconstruction_method);
     test_reconstruct_fd<10, 1, Spectral::Basis::Legendre,
-                        Spectral::Quadrature::Gauss>({5.0e-14},
+                        Spectral::Quadrature::Gauss>({1.0e-13},
                                                      reconstruction_method);
 
     test_reconstruct_fd<8, 2, Spectral::Basis::Legendre,

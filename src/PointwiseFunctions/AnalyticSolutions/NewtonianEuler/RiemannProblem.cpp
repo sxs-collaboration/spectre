@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
+#include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/ContainerHelpers.hpp"
@@ -29,13 +29,10 @@ struct FunctionOfPressureAndData {
                                 RiemannProblem<Dim>::InitialData& data,
                             const double adiabatic_index)
       : state_pressure_(data.pressure_),
-        adiabatic_index_(adiabatic_index),
         constant_a_(data.constant_a_),
         constant_b_(data.constant_b_) {
-    prefactor_ = 2.0 * data.sound_speed_ / (adiabatic_index_ - 1.0);
-    prefactor_deriv_ = data.sound_speed_ / adiabatic_index_ / state_pressure_;
-    exponent_ = 0.5 * (adiabatic_index_ - 1.0) / adiabatic_index_;
-    exponent_deriv_ = -0.5 * (adiabatic_index_ + 1.0) / adiabatic_index_;
+    prefactor_ = 2.0 * data.sound_speed_ / (adiabatic_index - 1.0);
+    exponent_ = 0.5 * (adiabatic_index - 1.0) / adiabatic_index;
   }
 
   double operator()(const double pressure) const {
@@ -49,26 +46,14 @@ struct FunctionOfPressureAndData {
                      (pow(pressure / state_pressure_, exponent_) - 1.0);
   }
 
-  // First derivative with respect to the pressure.
-  double deriv(const double pressure) const {
-    return pressure > state_pressure_
-               ? 0.5 * sqrt(constant_a_) *
-                     (pressure + state_pressure_ + 2.0 * constant_b_) /
-                     pow(pressure + constant_b_, 1.5)
-               : prefactor_deriv_ * pow(pressure / state_pressure_, exponent_);
-  }
-
  private:
   double state_pressure_ = std::numeric_limits<double>::signaling_NaN();
-  double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
   double constant_a_ = std::numeric_limits<double>::signaling_NaN();
   double constant_b_ = std::numeric_limits<double>::signaling_NaN();
 
   // Auxiliary variables for computing the rarefaction wave
   double prefactor_ = std::numeric_limits<double>::signaling_NaN();
-  double prefactor_deriv_ = std::numeric_limits<double>::signaling_NaN();
   double exponent_ = std::numeric_limits<double>::signaling_NaN();
-  double exponent_deriv_ = std::numeric_limits<double>::signaling_NaN();
 };
 
 }  // namespace
@@ -110,28 +95,6 @@ RiemannProblem<Dim>::RiemannProblem(
   // state variables in the star region by solving a transcendental equation,
   // which is what all the math in this constructor is about.
 
-  // The initial guess to obtain p_* is given by the
-  // Two-Shock approximation (Eqn. (4.47) in Toro), which gives best results
-  // overall. Other options are also possible (see Section 4.3.2 of Toro.)
-  const double guess_for_pressure_star = [&delta_u, this](
-                                             const InitialData& left,
-                                             const InitialData& right) {
-    // Eqn. (4.47) of Toro: guess derived from a linearized solution
-    // based on primitive variables.
-    double p_pv =
-        0.5 * (left.pressure_ + right.pressure_ -
-               0.25 * delta_u * (left.mass_density_ + right.mass_density_) *
-                   (left.sound_speed_ + right.sound_speed_));
-    p_pv = std::max(pressure_star_tol_, p_pv);
-
-    // Eqns. (4.48) of Toro: Two-Shock wave approximation.
-    const double g_left = sqrt(left.constant_a_ / (p_pv + left.constant_b_));
-    const double g_right = sqrt(right.constant_a_ / (p_pv + right.constant_b_));
-    return std::max(pressure_star_tol_, (g_left * left.pressure_ +
-                                         g_right * right.pressure_ - delta_u) /
-                                            (g_left + g_right));
-  }(left_initial_data_, right_initial_data_);
-
   // Compute bracket for root finder according to value of the function whose
   // root we want (Eqn. 4.39 of Toro.)
   const FunctionOfPressureAndData<Dim> f_of_p_left(left_initial_data_,
@@ -145,38 +108,47 @@ RiemannProblem<Dim>::RiemannProblem(
   const double f_max =
       f_of_p_left(p_minmax.second) + f_of_p_right(p_minmax.second) + delta_u;
 
-  double pressure_lower = std::numeric_limits<double>::signaling_NaN();
-  double pressure_upper = std::numeric_limits<double>::signaling_NaN();
   if (f_min > 0.0 and f_max > 0.0) {
-    pressure_lower = 0.0;
-    pressure_upper = p_minmax.first;
-  } else if (f_min < 0.0 and f_max > 0.0) {
-    pressure_lower = p_minmax.first;
-    pressure_upper = p_minmax.second;
+    const double exponent = 0.5 * (adiabatic_index_ - 1.0) / adiabatic_index_;
+    pressure_star_ = std::pow(
+        (left_initial_data_.sound_speed_ + right_initial_data_.sound_speed_ -
+         0.5 * (adiabatic_index_ - 1.0) * delta_u) /
+            (left_initial_data_.sound_speed_ *
+                 std::pow(left_initial_data_.pressure_, -exponent) +
+             right_initial_data_.sound_speed_ *
+                 std::pow(right_initial_data_.pressure_, -exponent)),
+        1.0 / exponent);
+    ASSERT(std::abs(f_of_p_left(pressure_star_) + f_of_p_right(pressure_star_) +
+                    delta_u) < 1.0e-8,
+           "Failed to analytically solve correctly.");
   } else {
-    pressure_lower = p_minmax.second;
-    pressure_upper = 10.0 * pressure_lower;  // Arbitrary upper bound < \infty
-  }
+    double pressure_lower = std::numeric_limits<double>::signaling_NaN();
+    double pressure_upper = std::numeric_limits<double>::signaling_NaN();
+    if (f_min < 0.0 and f_max > 0.0) {
+      pressure_lower = p_minmax.first;
+      pressure_upper = p_minmax.second;
+    } else {
+      pressure_lower = p_minmax.second;
+      pressure_upper = 10.0 * pressure_lower;  // Arbitrary upper bound < \infty
+    }
 
-  // Now get pressure by solving transcendental equation. Newton-Raphson is OK.
-  const auto f_of_p_and_deriv = [&f_of_p_left, &f_of_p_right,
-                                 &delta_u](const double pressure) {
-    // Function of pressure in Eqn. (4.5) of Toro.
-    return std::make_pair(
-        f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u,
-        f_of_p_left.deriv(pressure) + f_of_p_right.deriv(pressure));
-  };
-  try {
-    pressure_star_ = RootFinder::newton_raphson(
-        f_of_p_and_deriv, guess_for_pressure_star, pressure_lower,
-        pressure_upper, -log10(pressure_star_tol_));
-  } catch (std::exception& exception) {
-    ERROR(
-        "Failed to find p_* with Newton-Raphson root finder. Got "
-        "exception message:\n"
-        << exception.what()
-        << "\nIf the residual is small you can change the tolerance for the "
-           "root finder in the input file.");
+    // Now get pressure by solving transcendental equation.
+    const auto f_of_p = [&f_of_p_left, &f_of_p_right,
+                         &delta_u](const double pressure) {
+      // Function of pressure in Eqn. (4.5) of Toro.
+      return f_of_p_left(pressure) + f_of_p_right(pressure) + delta_u;
+    };
+    try {
+      pressure_star_ = RootFinder::toms748(
+          f_of_p, pressure_lower, pressure_upper, pressure_star_tol_, 1.0e-15);
+    } catch (std::exception& exception) {
+      ERROR(
+          "Failed to find p_* with Newton-Raphson root finder. Got "
+          "exception message:\n"
+          << exception.what()
+          << "\nIf the residual is small you can change the tolerance for the "
+             "root finder in the input file.");
+    }
   }
 
   // Calculated p_*, u_* is obtained from Eqn. (4.9) in Toro.

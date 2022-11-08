@@ -301,7 +301,7 @@ void test_numerical_deriv_det_spatial_metric(const DataVector& used_for_size) {
   // A custom epsilon is used here because the Legendre polynomials don't fit
   // the derivative of 1 / r well. This was looked at for various box sizes and
   // number of 1D grid points.
-  Approx approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  Approx approx = Approx::custom().epsilon(1e-11).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(deriv_det_spatial_metric,
                                expected_deriv_det_spatial_metric, approx);
 }
