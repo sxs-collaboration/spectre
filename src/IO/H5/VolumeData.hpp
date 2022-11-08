@@ -117,8 +117,8 @@ class VolumeData : public h5::Object {
         return observation_id;
       }
     }
-    ERROR("No observation with value " << observation_value
-                                       << " found in volume file.");
+    ERROR_NO_TRACE("No observation with value " << observation_value
+                                                << " found in volume file.");
   }
 
   /// List all the tensor components at observation id `observation_id`
