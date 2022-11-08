@@ -17,6 +17,7 @@ spectre_target_headers(
   GhostZoneLogicalCoordinates.hpp
   Matrices.hpp
   Mesh.hpp
+  NeighborRdmpAndVolumeData.hpp
   NeighborReconstructedFaceSolution.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
@@ -40,6 +41,7 @@ spectre_target_sources(
   GhostZoneLogicalCoordinates.cpp
   Matrices.cpp
   Mesh.cpp
+  NeighborRdmpAndVolumeData.cpp
   PerssonTci.cpp
   Projection.cpp
   RdmpTci.cpp

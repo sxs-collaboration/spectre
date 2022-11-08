@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_GhostZoneLogicalCoordinates.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
+  Test_NeighborRdmpAndVolumeData.cpp
   Test_NeighborReconstructedFaceSolution.cpp
   Test_PerssonTci.cpp
   Test_PrepareNeighborData.cpp
