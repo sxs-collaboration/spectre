@@ -32,6 +32,12 @@ unset(${SPECTRE_NAME}_VERSION_PATCH)
 if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   cmake_policy(SET CMP0110 NEW)
 endif ()
+# - Prefer finding Python by location (NEW behavior) instead of always choosing
+#   the latest version installed on the system (OLD behavior). This allows to
+#   set `Python_ROOT_DIR` on the command line, like for any other package.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  cmake_policy(SET CMP0094 NEW)
+endif()
 
 # Define standard installation directories
 include(GNUInstallDirs)
