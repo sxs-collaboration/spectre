@@ -101,15 +101,15 @@ struct MagnetizedTovVariables
  *
  * \f{align*}{
  *   B^i&=n_a\epsilon^{aijk}\partial_jA_k \\
- *      &=-\frac{1}{\sqrt{\gamma}}[ijk]\partial_j A_k,
+ *      &=\frac{1}{\sqrt{\gamma}}[ijk]\partial_j A_k,
  * \f}
  *
  * where \f$[ijk]\f$ is the total anti-symmetric symbol. This means that
  *
  * \f{align*}{
- *   B^x&=\frac{1}{\sqrt{\gamma}} (\partial_z A_y-\partial_y A_z), \\
- *   B^y&=\frac{1}{\sqrt{\gamma}} (\partial_x A_z - \partial_z A_x), \\
- *   B^z&=\frac{1}{\sqrt{\gamma}} (\partial_y A_x - \partial_x A_y).
+ *   B^x&=\frac{1}{\sqrt{\gamma}} (\partial_y A_z - \partial_z A_y), \\
+ *   B^y&=\frac{1}{\sqrt{\gamma}} (\partial_z A_x - \partial_x A_z), \\
+ *   B^z&=\frac{1}{\sqrt{\gamma}} (\partial_x A_y - \partial_y A_x).
  * \f}
  *
  * Focusing on the region where the field is non-zero we have:
@@ -130,11 +130,11 @@ struct MagnetizedTovVariables
  * The magnetic field is given by:
  *
  * \f{align*}{
- *   B^x&=\frac{1}{\sqrt{\gamma}}\frac{xz}{r}
+ *   B^x&=-\frac{1}{\sqrt{\gamma}}\frac{xz}{r}
  *        A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \\
- *   B^y&=\frac{1}{\sqrt{\gamma}}\frac{yz}{r}
+ *   B^y&=-\frac{1}{\sqrt{\gamma}}\frac{yz}{r}
  *        A_bn_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_rp \\
- *   B^z&=-\frac{A_b}{\sqrt{\gamma}}\left[
+ *   B^z&=\frac{A_b}{\sqrt{\gamma}}\left[
  *        2(p-p_{\mathrm{cut}})^{n_s} \phantom{\frac{a}{b}}\right. \\
  *      &\left.+\frac{x^2+y^2}{r}
  *        n_s(p-p_{\mathrm{cut}})^{n_s-1}\partial_r p
@@ -146,7 +146,7 @@ struct MagnetizedTovVariables
  * \f{align*}{
  *   B^x&=0, \\
  *   B^y&=0, \\
- *   B^z&=-\frac{A_b}{\sqrt{\gamma}}
+ *   B^z&=\frac{A_b}{\sqrt{\gamma}}
  *        2(p-p_{\mathrm{cut}})^{n_s}.
  * \f}
  *
