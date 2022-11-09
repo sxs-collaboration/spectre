@@ -90,19 +90,19 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
           dr_pressure;
 
       get_element(get<0>(*magnetic_field), i) =
-          x * z / radius_i * deriv_pressure_term;
+          -x * z / radius_i * deriv_pressure_term;
 
       get_element(get<1>(*magnetic_field), i) =
-          y * z / radius_i * deriv_pressure_term;
+          -y * z / radius_i * deriv_pressure_term;
 
       get_element(get<2>(*magnetic_field), i) =
-          (-2.0 * pressure_term +
-           (square(x) + square(y)) / radius_i * deriv_pressure_term);
+          2.0 * pressure_term +
+          (square(x) + square(y)) / radius_i * deriv_pressure_term;
     } else {
       get_element(get<0>(*magnetic_field), i) = 0.0;
       get_element(get<1>(*magnetic_field), i) = 0.0;
       get_element(get<2>(*magnetic_field), i) =
-          (-2.0 * pow(pressure - cutoff_pressure, pressure_exponent));
+          2.0 * pow(pressure - cutoff_pressure, pressure_exponent);
     }
   }
   for (size_t i = 0; i < 3; ++i) {
