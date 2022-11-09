@@ -31,6 +31,7 @@
 #include "Domain/Structure/TrimMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -284,12 +285,17 @@ struct ReceiveDataForReconstruction {
         boost::hash<Key>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
+
+    const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
+
     db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
                evolution::dg::Tags::NeighborMesh<Dim>>(
         make_not_null(&box),
-        [&current_time_step_id, &element, &received_data](
+        [&current_time_step_id, &element,
+         ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
+         &received_data, &subcell_mesh](
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),
                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
@@ -360,38 +366,13 @@ struct ReceiveDataForReconstruction {
                      "actual subcell data for reconstruction.");
               // Collect the max/min of u(t^n) for the RDMP as we receive data.
               // This reduces the memory footprint.
-              std::vector<double>& received_neighbor_subcell_data =
-                  *std::get<2>(received_data[directional_element_id]);
-              ASSERT(not received_neighbor_subcell_data.empty(),
-                     "The received subcell data must not be empty.");
-              const size_t max_offset = received_neighbor_subcell_data.size() -
-                                        2 * number_of_rdmp_vars;
-              const size_t min_offset =
-                  received_neighbor_subcell_data.size() - number_of_rdmp_vars;
-              for (size_t var_index = 0; var_index < number_of_rdmp_vars;
-                   ++var_index) {
-                rdmp_tci_data_ptr->max_variables_values[var_index] = std::max(
-                    rdmp_tci_data_ptr->max_variables_values[var_index],
-                    received_neighbor_subcell_data[max_offset + var_index]);
-                rdmp_tci_data_ptr->min_variables_values[var_index] = std::min(
-                    rdmp_tci_data_ptr->min_variables_values[var_index],
-                    received_neighbor_subcell_data[min_offset + var_index]);
-              }
-              // Copy over the ghost cell data for subcell reconstruction.
-              [[maybe_unused]] const auto insert_result =
-                  neighbor_data_ptr->insert(std::pair{
-                      directional_element_id,
-                      std::vector<double>{
-                          received_neighbor_subcell_data.begin(),
-                          std::prev(
-                              received_neighbor_subcell_data.end(),
-                              2 * static_cast<typename std::iterator_traits<
-                                      typename std::vector<double>::iterator>::
-                                                  difference_type>(
-                                      number_of_rdmp_vars))}});
-              ASSERT(insert_result.second,
-                     "Failed to insert the neighbor data in direction "
-                         << direction << " from neighbor " << neighbor);
+
+              evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
+                  rdmp_tci_data_ptr, neighbor_data_ptr,
+                  *std::get<2>(received_data[directional_element_id]),
+                  number_of_rdmp_vars, directional_element_id,
+                  neighbor_mesh->at(directional_element_id), element,
+                  subcell_mesh, ghost_zone_size);
             }
           }
         });

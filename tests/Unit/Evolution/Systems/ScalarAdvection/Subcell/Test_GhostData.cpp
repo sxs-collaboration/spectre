@@ -43,24 +43,10 @@ void test(const gsl::not_null<std::mt19937*> gen,
       ::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>>>(
       random_vars_subcell);
   const auto retrieved_vars_subcell =
-      db::mutate_apply<ScalarAdvection::subcell::GhostDataOnSubcells>(
+      db::mutate_apply<ScalarAdvection::subcell::GhostVariables>(
           make_not_null(&box_subcell));
   CHECK_ITERABLE_APPROX(get<ScalarAdvection::Tags::U>(random_vars_subcell),
                         get<ScalarAdvection::Tags::U>(retrieved_vars_subcell));
-
-  // add the random U on the DG mesh to a databox, apply GhostDataToSlice and
-  // compare with a projected vector
-  auto box_projection = db::create<db::AddSimpleTags<
-      ::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>,
-      domain::Tags::Mesh<Dim>, evolution::dg::subcell::Tags::Mesh<Dim>>>(
-      random_vars_dg, dg_mesh, subcell_mesh);
-  const auto retrieved_vars_slice =
-      db::mutate_apply<ScalarAdvection::subcell::GhostDataToSlice<Dim>>(
-          make_not_null(&box_projection));
-  CHECK_ITERABLE_APPROX(
-      get<ScalarAdvection::Tags::U>(evolution::dg::subcell::fd::project(
-          random_vars_dg, dg_mesh, subcell_mesh.extents())),
-      get<ScalarAdvection::Tags::U>(retrieved_vars_slice));
 }
 }  // namespace
 

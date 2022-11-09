@@ -5,14 +5,10 @@
 
 #include <cstddef>
 
-#include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/ScalarAdvection/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <size_t Dim>
-class Mesh;
 template <typename T>
 class Variables;
 namespace Tags {
@@ -23,14 +19,12 @@ struct Variables;
 
 namespace ScalarAdvection::subcell {
 /*!
- * \brief Returns \f$U\f$ on the subcells so it can be used for reconstruction.
+ * \brief Returns \f$U\f$, the variables needed for reconstruction.
  *
  * This mutator is passed to
  * `evolution::dg::subcell::Actions::SendDataForReconstruction`.
- *
- * \note Only called on elements using FD.
  */
-class GhostDataOnSubcells {
+class GhostVariables {
  public:
   using return_tags = tmpl::list<>;
   using argument_tags =
@@ -38,26 +32,5 @@ class GhostDataOnSubcells {
 
   static Variables<tmpl::list<ScalarAdvection::Tags::U>> apply(
       const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars);
-};
-
-/*!
- * \brief Projects \f$U\f$ from DG grid to subcell grid to send out ghost cell
- * data to neighbors for reconstruction.
- *
- * This mutator is passed what `Metavars::SubcellOptions::GhostDataToSlice` must
- * be set to.
- */
-template <size_t Dim>
-class GhostDataToSlice {
- public:
-  using return_tags = tmpl::list<>;
-  using argument_tags =
-      tmpl::list<::Tags::Variables<tmpl::list<ScalarAdvection::Tags::U>>,
-                 domain::Tags::Mesh<Dim>,
-                 evolution::dg::subcell::Tags::Mesh<Dim>>;
-
-  static Variables<tmpl::list<ScalarAdvection::Tags::U>> apply(
-      const Variables<tmpl::list<ScalarAdvection::Tags::U>>& vars,
-      const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh);
 };
 }  // namespace ScalarAdvection::subcell

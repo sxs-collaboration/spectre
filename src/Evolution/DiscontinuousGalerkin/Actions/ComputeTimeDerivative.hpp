@@ -57,9 +57,10 @@
 namespace evolution::dg::subcell {
 // We use a forward declaration instead of including a header file to avoid
 // coupling to the DG-subcell libraries for executables that don't use subcell.
-template <typename Metavariables, typename DbTagsList>
-DirectionMap<Metavariables::volume_dim, std::vector<double>>
-prepare_neighbor_data(gsl::not_null<db::DataBox<DbTagsList>*> box);
+template <typename Metavariables, typename DbTagsList, size_t Dim>
+auto prepare_neighbor_data(gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
+                           gsl::not_null<db::DataBox<DbTagsList>*> box)
+    -> DirectionMap<Metavariables::volume_dim, std::vector<double>>;
 }  // namespace evolution::dg::subcell
 namespace tuples {
 template <typename...>
@@ -514,10 +515,11 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
       all_neighbor_data_for_reconstruction = std::nullopt;
   // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
   // projection.
-  Mesh<Dim> ghost_cell_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
+  Mesh<Dim> ghost_data_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
   if constexpr (using_subcell_v<Metavariables>) {
     all_neighbor_data_for_reconstruction =
-        evolution::dg::subcell::prepare_neighbor_data<Metavariables>(box);
+        evolution::dg::subcell::prepare_neighbor_data<Metavariables>(
+            make_not_null(&ghost_data_mesh), box);
   }
 
   for (const auto& [direction, neighbors] : element.neighbors()) {
@@ -568,7 +570,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
 
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
                  std::optional<std::vector<double>>, ::TimeStepId>
-          data{ghost_cell_mesh,
+          data{ghost_data_mesh,
                neighbor_boundary_data_on_mortar.first,
                ghost_and_subcell_data,
                {std::move(neighbor_boundary_data_on_mortar.second)},

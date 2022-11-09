@@ -318,8 +318,8 @@ struct EvolutionMetavars {
     using DgComputeSubcellNeighborPackagedData =
         NewtonianEuler::subcell::NeighborPackagedData;
 
-    using GhostDataToSlice =
-        NewtonianEuler::subcell::PrimitiveGhostDataToSlice<volume_dim>;
+    using GhostVariables =
+        NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>;
   };
 
   using dg_subcell_step_actions = tmpl::flatten<tmpl::list<
@@ -342,7 +342,7 @@ struct EvolutionMetavars {
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim,
-          NewtonianEuler::subcell::PrimitiveGhostDataOnSubcells<volume_dim>>,
+          NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

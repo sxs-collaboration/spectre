@@ -18,6 +18,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
 #include "Evolution/DgSubcell/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/NeighborRdmpAndVolumeData.hpp"
 #include "Evolution/DgSubcell/Projection.hpp"
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 #include "Evolution/DgSubcell/RdmpTciData.hpp"
@@ -32,6 +33,7 @@
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
 #include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
+#include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
@@ -102,10 +104,9 @@ struct TciAndRollback {
     ASSERT(active_grid == ActiveGrid::Dg,
            "Must be using DG when calling TciAndRollback action.");
 
+    const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const bool cell_is_not_on_external_boundary =
-        db::get<::domain::Tags::Element<Dim>>(box)
-            .external_boundaries()
-            .empty();
+        element.external_boundaries().empty();
 
     constexpr bool subcell_enabled_at_external_boundary =
         Metavariables::SubcellOptions::subcell_enabled_at_external_boundary;
@@ -133,14 +134,27 @@ struct TciAndRollback {
          subcell_enabled_at_external_boundary) and
         cell_is_troubled) {
       db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
-                 Tags::ActiveGrid, Tags::DidRollback, Tags::TciStatus>(
+                 Tags::ActiveGrid, Tags::DidRollback, Tags::TciStatus,
+                 subcell::Tags::NeighborDataForReconstruction<Dim>>(
           make_not_null(&box),
-          [&dg_mesh, &subcell_mesh, &tci_status](
+          [&dg_mesh, &element, &subcell_mesh, &tci_status](
               const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
               const gsl::not_null<bool*> did_rollback_ptr,
               const gsl::not_null<Scalar<DataVector>*> tci_status_ptr,
-              const typename variables_tag::type& rollback_value) {
+              const gsl::not_null<FixedHashMap<
+                  maximum_number_of_neighbors(Dim),
+                  std::pair<Direction<Dim>, ElementId<Dim>>,
+                  std::vector<double>,
+                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+                  neighbor_data_ptr,
+              const typename variables_tag::type& rollback_value,
+              const FixedHashMap<
+                  maximum_number_of_neighbors(Dim),
+                  std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
+                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+                  neighbor_meshes,
+              const size_t ghost_zone_size) {
             ASSERT(
                 active_history_ptr->size() > 0,
                 "We cannot have an empty history when unwinding, that's just "
@@ -169,6 +183,18 @@ struct TciAndRollback {
             *active_history_ptr = std::move(subcell_history);
             *active_grid_ptr = ActiveGrid::Subcell;
             *did_rollback_ptr = true;
+            // Project the neighbor data we were sent for reconstruction since
+            // the neighbor might have sent DG volume data instead of ghost data
+            // in order to elide projections when they aren't necessary.
+            for (const auto& [directional_element_id, neighbor_mesh] :
+                 neighbor_meshes) {
+              evolution::dg::subcell::insert_or_update_neighbor_volume_data<
+                  false>(neighbor_data_ptr,
+                         neighbor_data_ptr->at(directional_element_id), 0,
+                         directional_element_id, neighbor_mesh, element,
+                         subcell_mesh, ghost_zone_size);
+            }
+
             // Note: We do _not_ project the boundary history here because
             // that needs to be done at the lifting stage of the subcell
             // method, since we need to lift G+D instead of the ingredients
@@ -179,7 +205,9 @@ struct TciAndRollback {
                                           subcell_mesh.number_of_grid_points());
             get(*tci_status_ptr) = static_cast<double>(tci_status);
           },
-          db::get<::Tags::RollbackValue<variables_tag>>(box));
+          db::get<::Tags::RollbackValue<variables_tag>>(box),
+          db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),
+          Metavariables::SubcellOptions::ghost_zone_size(box));
 
       if (UNLIKELY(db::get<::Tags::TimeStepId>(box).slab_number() < 0)) {
         // If we are doing self start, then we need to project the initial

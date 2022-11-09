@@ -5,8 +5,6 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesTag.hpp"
-#include "Domain/Tags.hpp"
-#include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -15,8 +13,6 @@
 
 /// \cond
 class DataVector;
-template <size_t Dim>
-class Mesh;
 template <typename T>
 class Variables;
 /// \endcond
@@ -38,7 +34,7 @@ namespace grmhd::GhValenciaDivClean::subcell {
  *
  * \note Only called on elements using FD.
  */
-class PrimitiveGhostDataOnSubcells {
+class PrimitiveGhostVariables {
  private:
   using tags_for_reconstruction = GhValenciaDivClean::Tags::
       primitive_grmhd_and_spacetime_reconstruction_tags;
@@ -56,46 +52,5 @@ class PrimitiveGhostDataOnSubcells {
       const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
       const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
       const tnsr::aa<DataVector, 3, Frame::Inertial>& pi);
-};
-
-/*!
- * \brief Projects the rest mass density \f$\rho\f$, electron fraction
- * \f$Y_e\f$, pressure \f$p\f$, Lorentz factor times the spatial velocity \f$W
- * v^i\f$, magnetic field \f$B^i\f$, and the divergence cleaning field
- * \f$\Phi\f$ so they can be sent to neighbors for subcell reconstruction.
- *
- * The computation copies the data from the primitive variables to a new
- * Variables and computes \f$W v^i\f$, then does the projection. In the future
- * we will likely want to elide this copy but that requires support from the
- * actions.
- *
- * This mutator is passed what `Metavars::SubcellOptions::GhostDataToSlice` must
- * be set to.
- *
- * \note We are ultimately projecting the primitive variables rather than
- * computing them on the subcells. This introduces truncation level errors, but
- * from tests so far this seems to be fine and is what is done with local time
- * stepping ADER-DG.
- */
-class PrimitiveGhostDataToSlice {
- private:
-  using tags_for_reconstruction = GhValenciaDivClean::Tags::
-      primitive_grmhd_and_spacetime_reconstruction_tags;
-
- public:
-  using return_tags = tmpl::list<>;
-  using argument_tags =
-      tmpl::list<::Tags::Variables<hydro::grmhd_tags<DataVector>>,
-                 gr::Tags::SpacetimeMetric<3>,
-                 GeneralizedHarmonic::Tags::Phi<3>,
-                 GeneralizedHarmonic::Tags::Pi<3>, domain::Tags::Mesh<3>,
-                 evolution::dg::subcell::Tags::Mesh<3>>;
-
-  static Variables<tags_for_reconstruction> apply(
-      const Variables<hydro::grmhd_tags<DataVector>>& prims,
-      const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-      const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
-      const tnsr::aa<DataVector, 3, Frame::Inertial>& pi,
-      const Mesh<3>& dg_mesh, const Mesh<3>& subcell_mesh);
 };
 }  // namespace grmhd::GhValenciaDivClean::subcell

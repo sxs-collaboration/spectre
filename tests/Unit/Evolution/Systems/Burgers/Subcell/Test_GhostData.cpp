@@ -43,22 +43,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.GhostData",
       db::AddSimpleTags<::Tags::Variables<tmpl::list<Burgers::Tags::U>>>>(
       random_vars_subcell);
   const auto retrieved_vars_subcell =
-      db::mutate_apply<Burgers::subcell::GhostDataOnSubcells>(
+      db::mutate_apply<Burgers::subcell::GhostVariables>(
           make_not_null(&box_subcell));
   CHECK_ITERABLE_APPROX(get<Burgers::Tags::U>(random_vars_subcell),
                         get<Burgers::Tags::U>(retrieved_vars_subcell));
-
-  // add the random U on the DG mesh to a databox, apply GhostDataToSlice and
-  // compare with a projected vector
-  auto box_projection = db::create<db::AddSimpleTags<
-      ::Tags::Variables<tmpl::list<Burgers::Tags::U>>, domain::Tags::Mesh<1>,
-      evolution::dg::subcell::Tags::Mesh<1>>>(random_vars_dg, dg_mesh,
-                                              subcell_mesh);
-  const auto retrieved_vars_slice =
-      db::mutate_apply<Burgers::subcell::GhostDataToSlice>(
-          make_not_null(&box_projection));
-  CHECK_ITERABLE_APPROX(
-      get<Burgers::Tags::U>(evolution::dg::subcell::fd::project(
-          random_vars_dg, dg_mesh, subcell_mesh.extents())),
-      get<Burgers::Tags::U>(retrieved_vars_slice));
 }

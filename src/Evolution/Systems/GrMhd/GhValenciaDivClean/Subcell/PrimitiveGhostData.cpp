@@ -8,12 +8,10 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/DgSubcell/Projection.hpp"
-#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::subcell {
-auto PrimitiveGhostDataOnSubcells::apply(
+auto PrimitiveGhostVariables::apply(
     const Variables<hydro::grmhd_tags<DataVector>>& prims,
     const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
     const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
@@ -44,16 +42,5 @@ auto PrimitiveGhostDataOnSubcells::apply(
   get<GeneralizedHarmonic::Tags::Phi<3>>(vars_to_reconstruct) = phi;
   get<GeneralizedHarmonic::Tags::Pi<3>>(vars_to_reconstruct) = pi;
   return vars_to_reconstruct;
-}
-
-auto PrimitiveGhostDataToSlice::apply(
-    const Variables<hydro::grmhd_tags<DataVector>>& prims,
-    const tnsr::aa<DataVector, 3, Frame::Inertial>& spacetime_metric,
-    const tnsr::iaa<DataVector, 3, Frame::Inertial>& phi,
-    const tnsr::aa<DataVector, 3, Frame::Inertial>& pi, const Mesh<3>& dg_mesh,
-    const Mesh<3>& subcell_mesh) -> Variables<tags_for_reconstruction> {
-  return evolution::dg::subcell::fd::project(
-      PrimitiveGhostDataOnSubcells::apply(prims, spacetime_metric, phi, pi),
-      dg_mesh, subcell_mesh.extents());
 }
 }  // namespace grmhd::GhValenciaDivClean::subcell
