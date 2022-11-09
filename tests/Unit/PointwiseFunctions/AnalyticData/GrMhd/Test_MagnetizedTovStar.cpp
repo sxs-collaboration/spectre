@@ -128,51 +128,67 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
         Spectral::Quadrature::GaussLobatto}}};
   const auto log_coords = logical_coordinates(mesh);
 
-  // Coordinates where we check the data. Includes the origin.
-  tnsr::I<DataVector, 3, Frame::Inertial> in_coords{
+  // Coordinates where we check the data.
+  tnsr::I<DataVector, 3, Frame::Inertial> inertial_coords{
       mesh.number_of_grid_points(), 0.0};
   const double scale = 1.0e-2;
-  in_coords.get(0) = scale * (log_coords.get(0) + 1.);
   InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
       inv_jac{mesh.number_of_grid_points(), 0.0};
   for (size_t i = 0; i < 3; ++i) {
     inv_jac.get(i, i) = 1.0 / scale;
   }
 
-  // Check that the non-magnetic field tags match the unmagnetized solution.
-  using tov_tags =
-      tmpl::remove<tmpl::append<hydro::grmhd_tags<DataVector>,
-                                gr::tags_for_hydro<3, DataVector>>,
-                   hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>;
-  tmpl::for_each<tov_tags>(
-      [tov_values = tov.variables(in_coords, 0.0, tov_tags{}),
-       mag_tov_values = mag_tov.variables(in_coords, tov_tags{})](auto tag_v) {
-        using tag = tmpl::type_from<decltype(tag_v)>;
-        CHECK_ITERABLE_APPROX(get<tag>(mag_tov_values), get<tag>(tov_values));
-      });
+  const auto test_for_small_coords_patch = [&inv_jac, &mag_tov, &mesh,
+                                            &tov](const tnsr::I<DataVector, 3>&
+                                                      in_coords) {
+    // Check that the non-magnetic field tags match the unmagnetized solution.
+    using tov_tags = tmpl::remove<
+        tmpl::append<hydro::grmhd_tags<DataVector>,
+                     gr::tags_for_hydro<3, DataVector>>,
+        hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>;
+    tmpl::for_each<tov_tags>(
+        [tov_values = tov.variables(in_coords, 0.0, tov_tags{}),
+         mag_tov_values =
+             mag_tov.variables(in_coords, tov_tags{})](auto tag_v) {
+          using tag = tmpl::type_from<decltype(tag_v)>;
+          CHECK_ITERABLE_APPROX(get<tag>(mag_tov_values), get<tag>(tov_values));
+        });
 
-  // Verify that the resulting magnetic field has (approximately) vanishing
-  // covariant divergence, but is non-zero overall.
-  INFO("Check magnetic field");
-  const auto vars = mag_tov.variables(
-      in_coords,
-      tmpl::list<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
-                 gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
-  const auto& b_field =
-      get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(vars);
-  const auto& sqrt_det_spatial_metric =
-      get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
-  auto tilde_b = b_field;
-  double b_field_l2norm = 0.;
+    // Verify that the resulting magnetic field has (approximately) vanishing
+    // covariant divergence, but is non-zero overall.
+    INFO("Check magnetic field");
+    const auto vars = mag_tov.variables(
+        in_coords,
+        tmpl::list<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
+                   gr::Tags::SqrtDetSpatialMetric<DataVector>>{});
+    const auto& b_field =
+        get<hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>>(vars);
+    const auto& sqrt_det_spatial_metric =
+        get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(vars);
+    auto tilde_b = b_field;
+    double b_field_l2norm = 0.;
+    for (size_t i = 0; i < 3; ++i) {
+      tilde_b.get(i) *= get(sqrt_det_spatial_metric);
+      b_field_l2norm += sum(square(b_field.get(i)));
+    }
+
+    b_field_l2norm = sqrt(b_field_l2norm);
+    CHECK(b_field_l2norm != approx(0.));
+    const auto div_tilde_b = divergence(tilde_b, mesh, inv_jac);
+    CHECK(max(abs(get(div_tilde_b))) < 1.0e-6 * b_field_l2norm);
+  };
+
+  // check a small region around the origin
   for (size_t i = 0; i < 3; ++i) {
-    tilde_b.get(i) *= get(sqrt_det_spatial_metric);
-    b_field_l2norm += sum(square(b_field.get(i)));
+    inertial_coords.get(i) = scale * log_coords.get(i);
   }
+  test_for_small_coords_patch(inertial_coords);
 
-  b_field_l2norm = sqrt(b_field_l2norm);
-  CHECK(b_field_l2norm != approx(0.));
-  const auto div_tilde_b = divergence(tilde_b, mesh, inv_jac);
-  CHECK(max(abs(get(div_tilde_b))) < 1.0e-14);
+  // check a small region off-origin
+  inertial_coords.get(0) += 0.5;
+  inertial_coords.get(1) += 1.0;
+  inertial_coords.get(2) += 2.0;
+  test_for_small_coords_patch(inertial_coords);
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.MagTovStar",
