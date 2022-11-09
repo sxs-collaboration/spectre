@@ -86,7 +86,6 @@ include(SetupInformer)
 include(SetupCCache)
 include(SetupCraySupport)
 include(SetupCharm)
-include(SetupMacOsx)
 include(EnableWarnings)
 include(SetupGoldOrLldLinker)
 
