@@ -143,7 +143,10 @@ void test(const TestThis test_this) {
       db::mutate_apply<NewtonianEuler::subcell::TciOnDgGrid<Dim>>(
           make_not_null(&box), persson_exponent);
 
-  CHECK(get<1>(result) == expected_rdmp_tci_data);
+  CHECK_ITERABLE_APPROX(get<1>(result).max_variables_values,
+                        expected_rdmp_tci_data.max_variables_values);
+  CHECK_ITERABLE_APPROX(get<1>(result).min_variables_values,
+                        expected_rdmp_tci_data.min_variables_values);
   if (test_this == TestThis::AllGood) {
     CHECK_FALSE(std::get<0>(result));
   } else {
