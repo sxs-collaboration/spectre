@@ -77,6 +77,8 @@ void check_slice<1>(
 template <size_t Dim>
 void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
   CAPTURE(do_not_slice_in_direction.value_or(-1));
+  const size_t additional_buffer_size = 7;
+  CAPTURE(additional_buffer_size);
   for (size_t number_of_ghost_points = 1; number_of_ghost_points < 5;
        ++number_of_ghost_points) {
     for (size_t num_pts_1d = 5; num_pts_1d < 7; ++num_pts_1d) {
@@ -97,8 +99,9 @@ void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
                                     *do_not_slice_in_direction)] = false;
       }
 
-      const auto sliced_data = subcell::slice_data(
-          volume_vars, extents, number_of_ghost_points, directions_to_slice);
+      const auto sliced_data =
+          subcell::slice_data(volume_vars, extents, number_of_ghost_points,
+                              directions_to_slice, additional_buffer_size);
       for (const auto& direction : Direction<Dim>::all_directions()) {
         CAPTURE(direction);
         if (directions_to_slice.count(direction) == 1 and
@@ -106,6 +109,16 @@ void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
           REQUIRE(sliced_data.count(direction) == 1);
           Index<Dim> subcell_slice_extents = extents;
           subcell_slice_extents[direction.dimension()] = number_of_ghost_points;
+          CAPTURE(subcell_slice_extents);
+          CHECK(sliced_data.at(direction).capacity() ==
+                subcell_slice_extents.product() *
+                        Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>::
+                            number_of_independent_components +
+                    additional_buffer_size);
+          CHECK(sliced_data.at(direction).size() ==
+                subcell_slice_extents.product() *
+                    Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>::
+                        number_of_independent_components);
 
           for (size_t component_index = 0;
                component_index < volume_vars.number_of_independent_components;

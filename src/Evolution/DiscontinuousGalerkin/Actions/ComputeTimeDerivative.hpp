@@ -535,6 +535,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
           std::move(all_neighbor_data_for_reconstruction.value()[direction]);
     }
 
+    const size_t total_neighbors = neighbors.size();
+    size_t neighbor_count = 1;
     for (const auto& neighbor : neighbors) {
       const std::pair mortar_id{direction, neighbor};
 
@@ -568,20 +570,33 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers>::
         }
       }();
 
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId>
-          data{ghost_data_mesh,
-               neighbor_boundary_data_on_mortar.first,
-               ghost_and_subcell_data,
-               {std::move(neighbor_boundary_data_on_mortar.second)},
-               next_time_step_id};
+      using SendData =
+          std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                     std::optional<std::vector<double>>,
+                     std::optional<std::vector<double>>, ::TimeStepId>;
+      SendData data{};
+
+      if (neighbor_count == total_neighbors) {
+        data = SendData{ghost_data_mesh,
+                        neighbor_boundary_data_on_mortar.first,
+                        std::move(ghost_and_subcell_data),
+                        {std::move(neighbor_boundary_data_on_mortar.second)},
+                        next_time_step_id};
+      } else {
+        data = SendData{ghost_data_mesh,
+                        neighbor_boundary_data_on_mortar.first,
+                        ghost_and_subcell_data,
+                        {std::move(neighbor_boundary_data_on_mortar.second)},
+                        next_time_step_id};
+      }
 
       // Send mortar data (the `std::tuple` named `data`) to neighbor
       Parallel::receive_data<
           evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
           receiver_proxy[neighbor], time_step_id,
           std::make_pair(std::pair{direction_from_neighbor, element.id()},
-                         data));
+                         std::move(data)));
+      ++neighbor_count;
     }
   }
 

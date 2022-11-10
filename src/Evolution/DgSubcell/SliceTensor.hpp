@@ -29,7 +29,7 @@ void slice_tensor_for_subcell(
   auto& scalar_dv = get(volume_scalar);
   auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
       gsl::make_span(scalar_dv.data(), scalar_dv.size()), subcell_extents,
-      number_of_ghost_points, directions_to_slice)[direction];
+      number_of_ghost_points, directions_to_slice, 0)[direction];
 
   std::copy(sliced_data.begin(), sliced_data.end(), get(*sliced_scalar).data());
 }
@@ -57,7 +57,7 @@ void slice_tensor_for_subcell(
 
     auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(ti.data(), ti.size()), subcell_extents,
-        number_of_ghost_points, directions_to_slice)[direction];
+        number_of_ghost_points, directions_to_slice, 0)[direction];
 
     std::copy(sliced_data.begin(), sliced_data.end(),
               (*sliced_tensor).get(i).data());

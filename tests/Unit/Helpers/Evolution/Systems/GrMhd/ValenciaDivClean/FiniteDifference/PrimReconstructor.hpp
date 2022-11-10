@@ -71,7 +71,7 @@ compute_neighbor_data(
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
         gsl::make_span(neighbor_vars_for_reconstruction.data(),
                        neighbor_vars_for_reconstruction.size()),
-        subcell_mesh.extents(), ghost_zone_size, directions_to_slice);
+        subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
     neighbor_data[std::pair{direction, neighbor_id}] =

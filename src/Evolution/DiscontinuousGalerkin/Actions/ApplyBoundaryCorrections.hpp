@@ -543,16 +543,13 @@ struct ApplyBoundaryCorrections {
               const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
                   neighbor_mesh_and_data =
                       *neighbor_mortar_data.neighbor_mortar_data();
-              local_data_on_mortar.initialize(
-                  mortar_mesh.number_of_grid_points());
-              neighbor_data_on_mortar.initialize(
-                  mortar_mesh.number_of_grid_points());
-              std::copy(std::get<1>(local_mesh_and_data).begin(),
-                        std::get<1>(local_mesh_and_data).end(),
-                        local_data_on_mortar.data());
-              std::copy(std::get<1>(neighbor_mesh_and_data).begin(),
-                        std::get<1>(neighbor_mesh_and_data).end(),
-                        neighbor_data_on_mortar.data());
+              local_data_on_mortar.set_data_ref(
+                  const_cast<double*>(std::get<1>(local_mesh_and_data).data()),
+                  std::get<1>(local_mesh_and_data).size());
+              neighbor_data_on_mortar.set_data_ref(
+                  const_cast<double*>(
+                      std::get<1>(neighbor_mesh_and_data).data()),
+                  std::get<1>(neighbor_mesh_and_data).size());
 
               // The boundary computations and lifting can be further
               // optimized by in the h-refinement case having only one

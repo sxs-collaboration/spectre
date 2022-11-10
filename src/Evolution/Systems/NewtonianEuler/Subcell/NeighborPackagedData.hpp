@@ -93,6 +93,9 @@ struct NeighborPackagedData {
                  std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_package_data{};
+    if (mortars_to_reconstruct_to.empty()) {
+      return neighbor_package_data;
+    }
 
     const auto& neighbor_subcell_data = db::get<
         evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>>(box);
@@ -102,6 +105,9 @@ struct NeighborPackagedData {
     const auto& subcell_options =
         db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
 
+    // Note: we need to compare if projecting the entire mesh or only ghost
+    // zones needed is faster. This probably depends on the number of neighbors
+    // we have doing FD.
     const auto volume_prims = evolution::dg::subcell::fd::project(
         db::get<typename system::primitive_variables_tag>(box), dg_mesh,
         subcell_mesh.extents());

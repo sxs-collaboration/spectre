@@ -91,9 +91,12 @@ struct NeighborPackagedData {
     FixedHashMap<maximum_number_of_neighbors(3),
                  std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
                  boost::hash<std::pair<Direction<3>, ElementId<3>>>>
-        nhbr_package_data{};
+        neighbor_package_data{};
+    if (mortars_to_reconstruct_to.empty()) {
+      return neighbor_package_data;
+    }
 
-    const auto& nhbr_subcell_data =
+    const auto& neighbor_subcell_data =
         db::get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(
             box);
     const Mesh<3>& subcell_mesh =
@@ -102,6 +105,9 @@ struct NeighborPackagedData {
     const auto& subcell_options =
         db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
 
+    // Note: we need to compare if projecting the entire mesh or only ghost
+    // zones needed is faster. This probably depends on the number of neighbors
+    // we have doing FD.
     const auto volume_prims = evolution::dg::subcell::fd::project(
         db::get<typename System::primitive_variables_tag>(box), dg_mesh,
         subcell_mesh.extents());
@@ -115,8 +121,9 @@ struct NeighborPackagedData {
     tmpl::for_each<
         derived_boundary_corrections>([&box, &boundary_correction, &dg_mesh,
                                        &mortars_to_reconstruct_to,
-                                       &nhbr_package_data, &nhbr_subcell_data,
-                                       &recons, &subcell_mesh, &subcell_options,
+                                       &neighbor_package_data,
+                                       &neighbor_subcell_data, &recons,
+                                       &subcell_mesh, &subcell_options,
                                        &volume_prims](
                                           auto derived_correction_v) {
       using DerivedCorrection = tmpl::type_from<decltype(derived_correction_v)>;
@@ -176,12 +183,12 @@ struct NeighborPackagedData {
 
           call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
-              &recons,
-              [&element, &eos, &mortar_id, &nhbr_subcell_data, &subcell_mesh,
-               &vars_on_face, &volume_prims](const auto& reconstructor) {
+              &recons, [&element, &eos, &mortar_id, &neighbor_subcell_data,
+                        &subcell_mesh, &vars_on_face,
+                        &volume_prims](const auto& reconstructor) {
                 reconstructor->reconstruct_fd_neighbor(
                     make_not_null(&vars_on_face), volume_prims, eos, element,
-                    nhbr_subcell_data, subcell_mesh, mortar_id.first);
+                    neighbor_subcell_data, subcell_mesh, mortar_id.first);
               });
 
           grmhd::ValenciaDivClean::subcell::compute_fluxes(
@@ -231,14 +238,14 @@ struct NeighborPackagedData {
               packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
               subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
               subcell_options.reconstruction_method());
-          nhbr_package_data[mortar_id] = std::vector<double>{
+          neighbor_package_data[mortar_id] = std::vector<double>{
               dg_packaged_data.data(),
               dg_packaged_data.data() + dg_packaged_data.size()};
         }
       }
     });
 
-    return nhbr_package_data;
+    return neighbor_package_data;
   }
 };
 }  // namespace grmhd::ValenciaDivClean::subcell
