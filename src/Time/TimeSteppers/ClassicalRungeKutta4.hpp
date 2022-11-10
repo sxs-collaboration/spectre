@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class RungeKutta4.
-
 #pragma once
 
 #include <cstddef>
@@ -49,18 +46,18 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.3926467817026411.
  */
-class RungeKutta4 : public RungeKutta {
+class ClassicalRungeKutta4 : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "The standard fourth-order Runge-Kutta time-stepper."};
 
-  RungeKutta4() = default;
-  RungeKutta4(const RungeKutta4&) = default;
-  RungeKutta4& operator=(const RungeKutta4&) = default;
-  RungeKutta4(RungeKutta4&&) = default;
-  RungeKutta4& operator=(RungeKutta4&&) = default;
-  ~RungeKutta4() override = default;
+  ClassicalRungeKutta4() = default;
+  ClassicalRungeKutta4(const ClassicalRungeKutta4&) = default;
+  ClassicalRungeKutta4& operator=(const ClassicalRungeKutta4&) = default;
+  ClassicalRungeKutta4(ClassicalRungeKutta4&&) = default;
+  ClassicalRungeKutta4& operator=(ClassicalRungeKutta4&&) = default;
+  ~ClassicalRungeKutta4() override = default;
 
   size_t order() const override;
 
@@ -68,9 +65,9 @@ class RungeKutta4 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(RungeKutta4);  // NOLINT
+  WRAPPED_PUPable_decl_template(ClassicalRungeKutta4);  // NOLINT
 
-  explicit RungeKutta4(CkMigrateMessage* /*unused*/) {}
+  explicit ClassicalRungeKutta4(CkMigrateMessage* /*unused*/) {}
 
  private:
   const ButcherTableau& butcher_tableau() const override;
@@ -78,13 +75,13 @@ class RungeKutta4 : public RungeKutta {
   const ButcherTableau& error_tableau() const override;
 };
 
-inline bool constexpr operator==(const RungeKutta4& /*lhs*/,
-                                 const RungeKutta4& /*rhs*/) {
+inline bool constexpr operator==(const ClassicalRungeKutta4& /*lhs*/,
+                                 const ClassicalRungeKutta4& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const RungeKutta4& /*lhs*/,
-                                 const RungeKutta4& /*rhs*/) {
+inline bool constexpr operator!=(const ClassicalRungeKutta4& /*lhs*/,
+                                 const ClassicalRungeKutta4& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers

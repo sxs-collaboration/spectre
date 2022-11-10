@@ -8,7 +8,7 @@ set(LIBRARY_SOURCES
   TimeSteppers/Test_Cerk3.cpp
   TimeSteppers/Test_Cerk4.cpp
   TimeSteppers/Test_Cerk5.cpp
+  TimeSteppers/Test_ClassicalRungeKutta4.cpp
   TimeSteppers/Test_DormandPrince5.cpp
   TimeSteppers/Test_RungeKutta3.cpp
-  TimeSteppers/Test_RungeKutta4.cpp
   PARENT_SCOPE)

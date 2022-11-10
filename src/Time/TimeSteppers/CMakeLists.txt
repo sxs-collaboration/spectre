@@ -9,10 +9,10 @@ spectre_target_sources(
   Cerk3.cpp
   Cerk4.cpp
   Cerk5.cpp
+  ClassicalRungeKutta4.cpp
   DormandPrince5.cpp
   RungeKutta.cpp
   RungeKutta3.cpp
-  RungeKutta4.cpp
   )
 
 spectre_target_headers(
@@ -24,11 +24,11 @@ spectre_target_headers(
   Cerk3.hpp
   Cerk4.hpp
   Cerk5.hpp
+  ClassicalRungeKutta4.hpp
   DormandPrince5.hpp
   Factory.hpp
   LtsTimeStepper.hpp
   RungeKutta.hpp
   RungeKutta3.hpp
-  RungeKutta4.hpp
   TimeStepper.hpp
   )

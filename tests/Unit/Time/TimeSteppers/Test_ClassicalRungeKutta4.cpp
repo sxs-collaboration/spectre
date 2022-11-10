@@ -6,12 +6,13 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
-#include "Time/TimeSteppers/RungeKutta4.hpp"
+#include "Time/TimeSteppers/ClassicalRungeKutta4.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Literals.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta4", "[Unit][Time]") {
-  const TimeSteppers::RungeKutta4 stepper{};
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.ClassicalRungeKutta4",
+                  "[Unit][Time]") {
+  const TimeSteppers::ClassicalRungeKutta4 stepper{};
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 4, 0, 1.0, 1.0e-9);
   TimeStepperTestUtils::integrate_test(stepper, 4, 0, -1.0, 1.0e-9);
@@ -29,10 +30,12 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta4", "[Unit][Time]") {
   CHECK(stepper.order() == 4_st);
   CHECK(stepper.error_estimate_order() == 3_st);
 
-  TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::RungeKutta4>(
-      "RungeKutta4");
+  TestHelpers::test_factory_creation<TimeStepper,
+                                     TimeSteppers::ClassicalRungeKutta4>(
+      "ClassicalRungeKutta4");
   test_serialization(stepper);
-  test_serialization_via_base<TimeStepper, TimeSteppers::RungeKutta4>();
+  test_serialization_via_base<TimeStepper,
+                              TimeSteppers::ClassicalRungeKutta4>();
   // test operator !=
   CHECK_FALSE(stepper != stepper);
 }
