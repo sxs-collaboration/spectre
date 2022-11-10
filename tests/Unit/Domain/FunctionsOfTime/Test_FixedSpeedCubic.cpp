@@ -41,6 +41,20 @@ void test(
   const auto lambdas4 = f_of_t->func_and_deriv(decay_timescale * 1.0e7);
   CHECK(approx(lambdas4[1][0]) == velocity);
 
+  // Check some time in between where we can easily calculate the answer by
+  // hand. Choosing dt = 1.0 is helpful because 1^n = 1
+  const double check_time = initial_time + 1.0;
+  const double square_decay_timescale = square(decay_timescale);
+  const double denom = square_decay_timescale + 1.0;
+  const auto lambdas5 = f_of_t->func_and_2_derivs(check_time);
+  CHECK(approx(lambdas5[0][0]) ==
+        initial_function_value + velocity * 1.0 / denom);
+  CHECK(approx(lambdas5[1][0]) ==
+        velocity * (3.0 * square_decay_timescale + 1.0) / square(denom));
+  CHECK(approx(lambdas5[2][0]) == 2.0 * velocity * square_decay_timescale *
+                                      (3.0 * square_decay_timescale - 1.0) /
+                                      cube(denom));
+
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == initial_time);

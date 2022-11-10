@@ -47,7 +47,7 @@ std::array<DataVector, MaxDerivReturned + 1> FixedSpeedCubic::func_and_derivs(
     gsl::at(result, 1)[0] = (3.0 * squared_decay_timescale_ + square(dt)) *
                             square(dt) * velocity_ * square(one_over_denom);
     if (MaxDerivReturned > 1) {
-      gsl::at(result, 2)[0] = -2.0 * squared_decay_timescale_ *
+      gsl::at(result, 2)[0] = 2.0 * squared_decay_timescale_ *
                               (3.0 * squared_decay_timescale_ - square(dt)) *
                               dt * velocity_ * cube(one_over_denom);
     }
