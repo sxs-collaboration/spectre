@@ -38,6 +38,13 @@ on:
           Enter a version name YYYY.MM.DD[.TWEAK] to create a release on success
         required: false
         default: ''
+      timezone:
+        description: >
+          Timezone used for validating the version name. The release must be
+          approved by the end of the day in the specified timezone. See
+          /usr/share/zoneinfo for a list of possible values.
+        required: false
+        default: 'America/Los_Angeles'
       clear_ccache:
         description: >
           Enter 'yes' without quotes to clear ccache before running
@@ -871,6 +878,8 @@ ${{ env.CACHE_KEY_SUFFIX }}"
       - check_files_and_formatting
       - doc_check
       - unit_tests
+    env:
+      TZ: ${{ github.event.inputs.timezone }}
     steps:
       - uses: actions/checkout@v3.0.1
         with:
