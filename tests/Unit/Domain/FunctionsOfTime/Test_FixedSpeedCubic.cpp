@@ -41,24 +41,29 @@ void test(
   const auto lambdas4 = f_of_t->func_and_deriv(decay_timescale * 1.0e7);
   CHECK(approx(lambdas4[1][0]) == velocity);
 
+  // Check some time in between where we can easily calculate the answer by
+  // hand. Choosing dt = 1.0 is helpful because 1^n = 1
+  const double check_time = initial_time + 1.0;
+  const double square_decay_timescale = square(decay_timescale);
+  const double denom = square_decay_timescale + 1.0;
+  const auto lambdas5 = f_of_t->func_and_2_derivs(check_time);
+  CHECK(approx(lambdas5[0][0]) ==
+        initial_function_value + velocity * 1.0 / denom);
+  CHECK(approx(lambdas5[1][0]) ==
+        velocity * (3.0 * square_decay_timescale + 1.0) / square(denom));
+  CHECK(approx(lambdas5[2][0]) == 2.0 * velocity * square_decay_timescale *
+                                      (3.0 * square_decay_timescale - 1.0) /
+                                      cube(denom));
+
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == initial_time);
   CHECK(t_bounds[1] == std::numeric_limits<double>::max());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic",
-                  "[Domain][Unit]") {
-  using FixedSpeedCubic = domain::FunctionsOfTime::FixedSpeedCubic;
-
-  domain::FunctionsOfTime::register_derived_with_charm();
-
-  constexpr double initial_function_value{1.0};
-  constexpr double initial_time{10.0};
-  constexpr double velocity{0.4};
-  constexpr double decay_timescale{5.0};
-
+void test_function(const double initial_function_value,
+                   const double initial_time, const double velocity,
+                   const double decay_timescale) {
   INFO("Test with base class construction.");
   const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
       std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
@@ -74,105 +79,125 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic",
       f_of_t->get_clone();
   test(f_of_t3, initial_function_value, initial_time, velocity,
        decay_timescale);
-
-  {
-    INFO("Test operator==");
-    CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale} ==
-          FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale});
-    CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale} !=
-                FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale});
-
-    CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale} !=
-          FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          2.0 * decay_timescale});
-    CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale} ==
-                FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                2.0 * decay_timescale});
-
-    CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale} !=
-          FixedSpeedCubic{initial_function_value, initial_time, 2.0 * velocity,
-                          decay_timescale});
-    CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale} ==
-                FixedSpeedCubic{initial_function_value, initial_time,
-                                2.0 * velocity, decay_timescale});
-
-    CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale} !=
-          FixedSpeedCubic{initial_function_value, 2.0 * initial_time, velocity,
-                          decay_timescale});
-    CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale} ==
-                FixedSpeedCubic{initial_function_value, 2.0 * initial_time,
-                                velocity, decay_timescale});
-
-    CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                          decay_timescale} !=
-          FixedSpeedCubic{2.0 * initial_function_value, initial_time, velocity,
-                          decay_timescale});
-    CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
-                                decay_timescale} ==
-                FixedSpeedCubic{2.0 * initial_function_value, initial_time,
-                                velocity, decay_timescale});
-  }
 }
 
-// [[OutputRegex, FixedSpeedCubic denominator should not be zero]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.FixedSpeedCubic.CheckDenom",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
+void test_operator(const double initial_function_value,
+                   const double initial_time, const double velocity,
+                   const double decay_timescale) {
+  INFO("Test operator==");
+  using FixedSpeedCubic = domain::FunctionsOfTime::FixedSpeedCubic;
+  CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale} ==
+        FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale});
+  CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale} !=
+              FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale});
+
+  CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale} !=
+        FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        2.0 * decay_timescale});
+  CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale} ==
+              FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              2.0 * decay_timescale});
+
+  CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale} !=
+        FixedSpeedCubic{initial_function_value, initial_time, 2.0 * velocity,
+                        decay_timescale});
+  CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale} ==
+              FixedSpeedCubic{initial_function_value, initial_time,
+                              2.0 * velocity, decay_timescale});
+
+  CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale} !=
+        FixedSpeedCubic{initial_function_value, 2.0 * initial_time, velocity,
+                        decay_timescale});
+  CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale} ==
+              FixedSpeedCubic{initial_function_value, 2.0 * initial_time,
+                              velocity, decay_timescale});
+
+  CHECK(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                        decay_timescale} !=
+        FixedSpeedCubic{2.0 * initial_function_value, initial_time, velocity,
+                        decay_timescale});
+  CHECK_FALSE(FixedSpeedCubic{initial_function_value, initial_time, velocity,
+                              decay_timescale} ==
+              FixedSpeedCubic{2.0 * initial_function_value, initial_time,
+                              velocity, decay_timescale});
+}
+
+void test_errors() {
 #ifdef SPECTRE_DEBUG
-  constexpr double initial_function_value = 1.0;
-  constexpr double initial_time = 0.0;
-  constexpr double velocity = -0.1;
-  constexpr double decay_timescale = 0.0;
-  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
-      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-          initial_function_value, initial_time, velocity, decay_timescale);
-  test(f_of_t, initial_function_value, initial_time, velocity, decay_timescale);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      ([]() {
+        constexpr double initial_function_value = 1.0;
+        constexpr double initial_time = 0.0;
+        constexpr double velocity = -0.1;
+        constexpr double decay_timescale = 0.0;
+        const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+            std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+                initial_function_value, initial_time, velocity,
+                decay_timescale);
+        test(f_of_t, initial_function_value, initial_time, velocity,
+             decay_timescale);
+      }()),
+      Catch::Contains("FixedSpeedCubic denominator should not be zero"));
 #endif
-}
 
-// [[OutputRegex, Cannot update this FunctionOfTime.]]
-SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic.BadUpdate",
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double initial_function_value = 1.0;
+        const double initial_time = 0.0;
+        const double velocity = -0.1;
+        const double decay_timescale = 0.0;
+        const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+            std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+                initial_function_value, initial_time, velocity,
+                decay_timescale);
+
+        const double update_time = 1.0;
+        const DataVector updated_deriv{};
+        const double next_expr_time = 2.0;
+        f_of_t->update(update_time, updated_deriv, next_expr_time);
+      }()),
+      Catch::Contains("Cannot update this FunctionOfTime"));
+
+  CHECK_THROWS_WITH(
+      ([]() {
+        const double initial_function_value = 1.0;
+        const double initial_time = 0.0;
+        const double velocity = -0.1;
+        const double decay_timescale = 0.0;
+        const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+            std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
+                initial_function_value, initial_time, velocity,
+                decay_timescale);
+
+        const double next_expr_time = 2.0;
+        f_of_t->reset_expiration_time(next_expr_time);
+      }()),
+      Catch::Contains("Cannot reset expiration time of this FunctionOfTime"));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.FixedSpeedCubic",
                   "[Domain][Unit]") {
-  ERROR_TEST();
-  const double initial_function_value = 1.0;
-  const double initial_time = 0.0;
-  const double velocity = -0.1;
-  const double decay_timescale = 0.0;
-  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
-      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-          initial_function_value, initial_time, velocity, decay_timescale);
+  domain::FunctionsOfTime::register_derived_with_charm();
 
-  const double update_time = 1.0;
-  const DataVector updated_deriv{};
-  const double next_expr_time = 2.0;
-  f_of_t->update(update_time, updated_deriv, next_expr_time);
-}
+  constexpr double initial_function_value{1.0};
+  constexpr double initial_time{10.0};
+  constexpr double velocity{0.4};
+  constexpr double decay_timescale{5.0};
 
-// [[OutputRegex, Cannot reset expiration time of this FunctionOfTime.]]
-SPECTRE_TEST_CASE(
-    "Unit.Domain.FunctionsOfTime.FixedSpeedCubic.BadResetExprTime",
-    "[Domain][Unit]") {
-  ERROR_TEST();
-  const double initial_function_value = 1.0;
-  const double initial_time = 0.0;
-  const double velocity = -0.1;
-  const double decay_timescale = 0.0;
-  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
-      std::make_unique<domain::FunctionsOfTime::FixedSpeedCubic>(
-          initial_function_value, initial_time, velocity, decay_timescale);
-
-  const double next_expr_time = 2.0;
-  f_of_t->reset_expiration_time(next_expr_time);
+  test_function(initial_function_value, initial_time, velocity,
+                decay_timescale);
+  test_operator(initial_function_value, initial_time, velocity,
+                decay_timescale);
+  test_errors();
 }
