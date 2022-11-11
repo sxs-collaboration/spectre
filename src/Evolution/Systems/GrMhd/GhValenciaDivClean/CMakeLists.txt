@@ -18,6 +18,7 @@ spectre_target_headers(
   HEADERS
   Characteristics.hpp
   Constraints.hpp
+  SetPiFromGauge.hpp
   System.hpp
   StressEnergy.hpp
   Tags.hpp
