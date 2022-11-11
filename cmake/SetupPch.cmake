@@ -235,11 +235,11 @@ if (USE_PCH)
 
   # Set the compiler-dependent flags needed to use precompiled headers
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(SPECTRE_PCH_FLAG "-include;${SPECTRE_PCH_HEADER_PATH}")
+    set(SPECTRE_PCH_FLAG "-include ${SPECTRE_PCH_HEADER_PATH}")
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(SPECTRE_PCH_FLAG "-include-pch;${SPECTRE_PCH_PATH}")
+    set(SPECTRE_PCH_FLAG "-include-pch ${SPECTRE_PCH_PATH}")
   elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
-    set(SPECTRE_PCH_FLAG "-include-pch;${SPECTRE_PCH_PATH}")
+    set(SPECTRE_PCH_FLAG "-include-pch ${SPECTRE_PCH_PATH}")
   else()
     message(
       STATUS "Precompiled headers have not been configured for"
@@ -247,9 +247,9 @@ if (USE_PCH)
       )
   endif()
 
-  set_property(TARGET ${SPECTRE_PCH}
-    APPEND PROPERTY INTERFACE_COMPILE_OPTIONS
-    $<$<COMPILE_LANGUAGE:CXX>:${SPECTRE_PCH_FLAG}>
+  target_compile_options(${SPECTRE_PCH}
+    INTERFACE
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:${SPECTRE_PCH_FLAG}>"
     )
 
   # Have `make clean` (and `ninja clean` on CMake v3.15 and newer) remove
