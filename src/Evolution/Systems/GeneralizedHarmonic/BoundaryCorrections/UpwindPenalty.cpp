@@ -83,7 +83,8 @@ double UpwindPenalty<Dim>::dg_package_data(
   }
 
   if (normal_dot_mesh_velocity.has_value()) {
-    get<0>(*packaged_char_speeds) -= get(*normal_dot_mesh_velocity);
+    get<0>(*packaged_char_speeds) -=
+        get(*normal_dot_mesh_velocity) * (1. + get(constraint_gamma1));
     get<1>(*packaged_char_speeds) -= get(*normal_dot_mesh_velocity);
     get<2>(*packaged_char_speeds) -= get(*normal_dot_mesh_velocity);
     get<3>(*packaged_char_speeds) -= get(*normal_dot_mesh_velocity);

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <optional>
+
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/VolumeTermsImpl.tpp"
@@ -52,6 +54,8 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const Scalar<DataVector>& gamma2,
     const tnsr::a<DataVector, 3>& gauge_function,
     const tnsr::ab<DataVector, 3>& spacetime_deriv_gauge_function,
+    const std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>&
+        mesh_velocity_gh,
     // GRMHD argument tags
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
     const Scalar<DataVector>& tilde_tau,

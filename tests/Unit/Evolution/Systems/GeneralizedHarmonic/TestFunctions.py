@@ -187,6 +187,12 @@ def char_speed_upsi(gamma1, lapse, shift, unit_normal):
     return -(1. + gamma1) * np.dot(shift, unit_normal)
 
 
+def char_speed_upsi_moving_mesh(gamma1, lapse, shift, unit_normal,
+                                mesh_velocity):
+    return -(1. + gamma1) * np.dot(shift, unit_normal) - gamma1 * np.dot(
+        mesh_velocity, unit_normal)
+
+
 def char_speed_uzero(gamma1, lapse, shift, unit_normal):
     return -np.dot(shift, unit_normal)
 

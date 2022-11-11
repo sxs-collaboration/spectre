@@ -422,7 +422,7 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
     const gsl::not_null<std::array<DataVector, 4>*> char_speeds,
 
     const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
-    /* face_mesh_velocity */,
+        face_mesh_velocity,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_covector,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
@@ -540,7 +540,8 @@ void ConstraintPreservingBjorhus<Dim>::compute_intermediate_vars(
     }
   }
 
-  characteristic_speeds(char_speeds, gamma1, lapse, shift, normal_covector);
+  characteristic_speeds(char_speeds, gamma1, lapse, shift, normal_covector,
+                        face_mesh_velocity);
 }
 
 template <size_t Dim>

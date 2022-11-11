@@ -43,6 +43,8 @@ void TimeDerivative<Dim>::apply(
     const gsl::not_null<tnsr::i<DataVector, Dim>*> phi_two_normals,
     const gsl::not_null<tnsr::aa<DataVector, Dim>*>
         shift_dot_three_index_constraint,
+    const gsl::not_null<tnsr::aa<DataVector, Dim>*>
+        mesh_velocity_dot_three_index_constraint,
     const gsl::not_null<tnsr::ia<DataVector, Dim>*> phi_one_normal,
     const gsl::not_null<tnsr::aB<DataVector, Dim>*> pi_2_up,
     const gsl::not_null<tnsr::iaa<DataVector, Dim>*> three_index_constraint,
@@ -70,7 +72,9 @@ void TimeDerivative<Dim>::apply(
     const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,
     const Scalar<DataVector>& gamma2,
     const tnsr::a<DataVector, Dim>& gauge_function,
-    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function) {
+    const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
+    const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+        mesh_velocity) {
   // Need constraint damping on interfaces in DG schemes
   *temp_gamma1 = gamma1;
   *temp_gamma2 = gamma2;
@@ -213,9 +217,17 @@ void TimeDerivative<Dim>::apply(
     for (size_t nu = mu; nu < Dim + 1; ++nu) {
       shift_dot_three_index_constraint->get(mu, nu) =
           get<0>(*shift) * three_index_constraint->get(0, mu, nu);
+      if (mesh_velocity.has_value()) {
+        mesh_velocity_dot_three_index_constraint->get(mu, nu) =
+            get<0>(*mesh_velocity) * three_index_constraint->get(0, mu, nu);
+      }
       for (size_t m = 1; m < Dim; ++m) {
         shift_dot_three_index_constraint->get(mu, nu) +=
             shift->get(m) * three_index_constraint->get(m, mu, nu);
+        if (mesh_velocity.has_value()) {
+          mesh_velocity_dot_three_index_constraint->get(mu, nu) +=
+              mesh_velocity->get(m) * three_index_constraint->get(m, mu, nu);
+        }
       }
     }
   }
@@ -228,6 +240,10 @@ void TimeDerivative<Dim>::apply(
       dt_spacetime_metric->get(mu, nu) = -get(*lapse) * pi.get(mu, nu);
       dt_spacetime_metric->get(mu, nu) +=
           gamma1p1 * shift_dot_three_index_constraint->get(mu, nu);
+      if (mesh_velocity.has_value()) {
+        dt_spacetime_metric->get(mu, nu) +=
+            get(gamma1) * mesh_velocity_dot_three_index_constraint->get(mu, nu);
+      }
       for (size_t m = 0; m < Dim; ++m) {
         dt_spacetime_metric->get(mu, nu) += shift->get(m) * phi.get(m, mu, nu);
       }
@@ -278,6 +294,10 @@ void TimeDerivative<Dim>::apply(
 
       dt_pi->get(mu, nu) +=
           gamma12 * shift_dot_three_index_constraint->get(mu, nu);
+      if (mesh_velocity.has_value()) {
+        dt_pi->get(mu, nu) +=
+            gamma12 * mesh_velocity_dot_three_index_constraint->get(mu, nu);
+      }
 
       for (size_t m = 0; m < Dim; ++m) {
         // DualFrame term

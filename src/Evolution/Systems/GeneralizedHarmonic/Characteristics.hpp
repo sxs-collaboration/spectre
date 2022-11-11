@@ -4,10 +4,12 @@
 #pragma once
 
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -48,27 +50,29 @@ namespace GeneralizedHarmonic {
  * Eq.(34) and Eq.(35) of \cite Lindblom2005qh :
  *
  * \f{align*}
- * v_{\psi} =& -(1 + \gamma_1) n_k N^k \\
- * v_{0} =& -n_k N^k \\
- * v_{\pm} =& -n_k N^k \pm N
+ * v_{\psi} =& -(1 + \gamma_1) n_k \beta^k - \gamma_1 n_k v^k_g \\
+ * v_{0} =& -n_k \beta^k \\
+ * v_{\pm} =& -n_k \beta^k \pm \alpha
  * \f}
  *
- * where \f$N, N^k\f$ are the lapse and shift respectively, \f$\gamma_1\f$ is a
- * constraint damping parameter, and \f$n_k\f$ is the unit normal to the
- * surface.
+ * where \f$\alpha, \beta^k\f$ are the lapse and shift respectively,
+ * \f$\gamma_1\f$ is a constraint damping parameter, \f$n_k\f$ is the unit
+ * normal to the surface, and $v^k_g$ is the (optional) mesh velocity.
  */
 template <size_t Dim, typename Frame>
 std::array<DataVector, 4> characteristic_speeds(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
 
 template <size_t Dim, typename Frame>
 void characteristic_speeds(
     gsl::not_null<std::array<DataVector, 4>*> char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form);
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
+    const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity);
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
@@ -78,7 +82,8 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
   using argument_tags = tmpl::list<
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       gr::Tags::Lapse<DataVector>, gr::Tags::Shift<Dim, Frame, DataVector>,
-      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
+      ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim, Frame>>,
+      domain::Tags::MeshVelocity<Dim, Frame>>;
 
   using return_type = typename base::type;
 
@@ -86,8 +91,10 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
       const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) {
-    characteristic_speeds(result, gamma_1, lapse, shift, unit_normal_one_form);
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
+      const std::optional<tnsr::I<DataVector, Dim, Frame>>& mesh_velocity) {
+    characteristic_speeds(result, gamma_1, lapse, shift, unit_normal_one_form,
+                          mesh_velocity);
   };
 };
 /// @}

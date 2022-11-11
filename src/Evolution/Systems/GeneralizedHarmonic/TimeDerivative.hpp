@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  // IWYU pragma: keep
@@ -44,12 +45,14 @@ namespace GeneralizedHarmonic {
  *
  * \f{align}{
  *   \partial_t g_{ab}-
- *   &\left(1+\gamma_1\right)\beta^k\partial_k g_{ab} =
+ *   &\left(1+\gamma_1\right)\beta^k\partial_k g_{ab} - \gamma_1 v^i_g
+ * \mathcal{C}_{iab} =
  *     -\alpha \Pi_{ab}-\gamma_1\beta^i\Phi_{iab}, \\
  *
  *   \partial_t\Pi_{ab}-
  *   &\beta^k\partial_k\Pi_{ab} + \alpha \gamma^{ki}\partial_k\Phi_{iab}
- *     - \gamma_1\gamma_2\beta^k\partial_kg_{ab} \notag \\
+ *     - \gamma_1\gamma_2\beta^k\partial_kg_{ab} - \gamma_1 \gamma_2 v^i_g
+ * \mathcal{C}_{iab} \notag\\
  *   =&2\alpha g^{cd}\left(\gamma^{ij}\Phi_{ica}\Phi_{jdb}
  *      - \Pi_{ca}\Pi_{db} - g^{ef}\Gamma_{ace}\Gamma_{bdf}\right) \notag \\
  *   &-2\alpha \nabla_{(a}H_{b)}
@@ -73,8 +76,10 @@ namespace GeneralizedHarmonic {
  *   &-\alpha \gamma_2\Phi_{iab},
  * \f}
  *
- * where \f$H_a\f$ is the gauge source function and
- * \f$\mathcal{C}_a=H_a+\Gamma_a\f$ is the gauge constraint. The constraint
+ * where \f$H_a\f$ is the gauge source function,
+ * \f$\mathcal{C}_a=H_a+\Gamma_a\f$ is the gauge constraint,
+ * \f$\mathcal{C}_{iab}\f$ is the 3-index constraint, and
+ * \f$v^i_g\f$ is the mesh velocity. The constraint
  * damping parameters \f$\gamma_0\f$ \f$\gamma_1\f$, \f$\gamma_2\f$,
  * \f$\gamma_3\f$, \f$\gamma_4\f$, and \f$\gamma_5\f$ have units of inverse time
  * and control the time scales on which the constraints are damped to zero.
@@ -82,6 +87,11 @@ namespace GeneralizedHarmonic {
  * \note We have not coded up the constraint damping terms for \f$\gamma_3\f$,
  * \f$\gamma_4\f$, and \f$\gamma_5\f$. \f$\gamma_3\f$ was found to be essential
  * for evolutions of black strings by Pretorius and Lehner \cite Lehner2010pn.
+ *
+ * \note Here the only terms dependent on mesh velocity are constraint damping
+ * terms added to this implementation of the generalized harmonic system.
+ * Mesh-velocity corrections that are applicable to all systems are made in
+ * `evolution::dg::Actions::detail::volume_terms()`.
  */
 template <size_t Dim>
 struct TimeDerivative {
@@ -93,7 +103,8 @@ struct TimeDerivative {
       Tags::PiTwoNormals, Tags::NormalDotOneIndexConstraint, Tags::Gamma1Plus1,
       Tags::PiOneNormal<Dim>, Tags::GaugeConstraint<Dim, Frame::Inertial>,
       Tags::PhiTwoNormals<Dim>, Tags::ShiftDotThreeIndexConstraint<Dim>,
-      Tags::PhiOneNormal<Dim>, Tags::PiSecondIndexUp<Dim>,
+      Tags::MeshVelocityDotThreeIndexConstraint<Dim>, Tags::PhiOneNormal<Dim>,
+      Tags::PiSecondIndexUp<Dim>,
       Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
       Tags::PhiFirstIndexUp<Dim>, Tags::PhiThirdIndexUp<Dim>,
       Tags::SpacetimeChristoffelFirstKindThirdIndexUp<Dim>,
@@ -116,7 +127,8 @@ struct TimeDerivative {
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>>;
+      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>,
+      domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*> dt_spacetime_metric,
@@ -136,6 +148,8 @@ struct TimeDerivative {
       gsl::not_null<tnsr::i<DataVector, Dim>*> phi_two_normals,
       gsl::not_null<tnsr::aa<DataVector, Dim>*>
           shift_dot_three_index_constraint,
+      gsl::not_null<tnsr::aa<DataVector, Dim>*>
+          mesh_velocity_dot_three_index_constraint,
       gsl::not_null<tnsr::ia<DataVector, Dim>*> phi_one_normal,
       gsl::not_null<tnsr::aB<DataVector, Dim>*> pi_2_up,
       gsl::not_null<tnsr::iaa<DataVector, Dim>*> three_index_constraint,
@@ -162,6 +176,8 @@ struct TimeDerivative {
       const tnsr::iaa<DataVector, Dim>& phi, const Scalar<DataVector>& gamma0,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
       const tnsr::a<DataVector, Dim>& gauge_function,
-      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function);
+      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
+      const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
+          mesh_velocity);
 };
 }  // namespace GeneralizedHarmonic

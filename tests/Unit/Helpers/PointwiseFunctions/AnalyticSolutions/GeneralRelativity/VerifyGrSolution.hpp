@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
@@ -255,6 +256,7 @@ void verify_time_independent_einstein_solution(
       GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>,
       GeneralizedHarmonic::Tags::PhiTwoNormals<3>,
       GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>,
+      GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<3>,
       GeneralizedHarmonic::Tags::PhiOneNormal<3>,
       GeneralizedHarmonic::Tags::PiSecondIndexUp<3>,
       GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::Inertial>,
@@ -300,6 +302,9 @@ void verify_time_independent_einstein_solution(
       make_not_null(
           &get<GeneralizedHarmonic::Tags::ShiftDotThreeIndexConstraint<3>>(
               buffer)),
+      make_not_null(
+          &get<GeneralizedHarmonic::Tags::MeshVelocityDotThreeIndexConstraint<
+              3>>(buffer)),
       make_not_null(&get<GeneralizedHarmonic::Tags::PhiOneNormal<3>>(buffer)),
       make_not_null(
           &get<GeneralizedHarmonic::Tags::PiSecondIndexUp<3>>(buffer)),
@@ -341,7 +346,7 @@ void verify_time_independent_einstein_solution(
           &get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
                                                       DataVector>>(buffer)),
       d_psi, d_pi, d_phi, psi, pi, phi, gamma0, gamma1, gamma2, gauge_function,
-      d4_H);
+      d4_H, std::nullopt);
 
   // Make sure the RHS is zero.
   CHECK_ITERABLE_CUSTOM_APPROX(
