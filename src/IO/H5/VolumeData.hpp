@@ -37,22 +37,23 @@ namespace h5 {
  * generally be the result of hashing the temporal identifier used for the
  * simulation.
  *
+ * \par Grid names
  * The data stored in the subfile are the tensor components passed to the
- * `write_volume_data()` method as a  `std::vector<ExtentsAndTensorVolumeData>`.
- * The name of each tensor component must follow the format
- * `GRID_NAME/TENSOR_NAME_COMPONENT`, e.g. `Element0/T_xx`. Typically the
- * `GRID_NAME` should be the output of the stream operator of the spatial ID of
- * the parallel component element sending the data to be observed. For example,
- * in the case of a dG evolution where the spatial IDs are `ElementId`s, the
- * grid names would be of the form `[B0,(L2I3,L2I3,L2I3)]`.  The data are
- * written contiguously inside of the H5 subfile, in that each tensor
- * component has a single dataset which holds all of the data from
- * all elements, e.g. a tensor component `T_xx` which is found on all grids
- * appears in the path `H5_FILE_NAME/element_data.vol/T_xx` and that is where
- * all of the `T_xx` data from all of the grids resides.  Note that coordinates
- * must be written as tensors in order to visualize the data in ParaView,
- * Visit, etc.   In order to reconstruct which data came from which grid,
- * the `get_grid_names()`, and `get_extents()` methods list the grids
+ * `write_volume_data()` method as a `std::vector<ElementVolumeData>`. Typically
+ * the `GRID_NAME` should be the output of the stream operator of the spatial ID
+ * of the parallel component element sending the data to be observed. For
+ * example, in the case of a dG evolution where the spatial IDs are
+ * `ElementId`s, the grid names would be of the form `[B0,(L2I3,L2I3,L2I3)]`.
+ *
+ * \par Data layout in the H5 file
+ * The data are written contiguously inside of the H5 subfile, in that each
+ * tensor component has a single dataset which holds all of the data from all
+ * elements, e.g. a tensor component `T_xx` which is found on all grids appears
+ * in the path `H5_FILE_NAME/SUBFILE_NAME.vol/OBSERVATION_ID/GRID_NAME/T_xx` and
+ * that is where all of the `T_xx` data from all of the grids resides. Note that
+ * coordinates must be written as tensors in order to visualize the data in
+ * ParaView, Visit, etc.  In order to reconstruct which data came from which
+ * grid, the `get_grid_names()`, and `get_extents()` methods list the grids
  * and their extents in the order which they and the data were written.
  * For example, if the first grid has name `GRID_NAME` with extents
  * `{2, 2, 2}`, it was responsible for contributing the first 2*2*2 = 8 grid
@@ -94,9 +95,6 @@ class VolumeData : public h5::Object {
 
   /// Insert tensor components at `observation_id` with floating point value
   /// `observation_value`
-  ///
-  /// \requires The names of the tensor components is of the form
-  /// `GRID_NAME/TENSOR_NAME_COMPONENT`, e.g. `Element0/T_xx`
   void write_volume_data(size_t observation_id, double observation_value,
                          const std::vector<ElementVolumeData>& elements);
 
