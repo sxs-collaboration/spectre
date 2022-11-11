@@ -95,9 +95,13 @@
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/SpacetimeNormalVector.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylTypeD1.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -254,7 +258,15 @@ struct GeneralizedHarmonicTemplateBase<
                          GeneralizedHarmonic::Tags::FourIndexConstraint<3,
                                                                         frame>>,
                      GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
-                                                                        frame>>,
+                                                                        frame>,
+                     GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
+              3, ::Frame::Inertial>,
+          gr::Tags::WeylElectricCompute<volume_dim, ::Frame::Inertial,
+                                        DataVector>,
+          gr::Tags::WeylTypeD1Compute<3, ::Frame::Inertial,
+                                      DataVector>,
+          gr::Tags::WeylTypeD1ScalarCompute<3, ::Frame::Inertial,
+                                            DataVector>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

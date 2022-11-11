@@ -18,7 +18,6 @@ struct not_null;
 /// \endcond
 
 namespace gr {
-
 /// @{
 /*!
  * \ingroup GeneralRelativityGroup

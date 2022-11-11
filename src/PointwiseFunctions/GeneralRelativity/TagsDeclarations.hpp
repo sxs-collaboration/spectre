@@ -100,5 +100,9 @@ template <typename Frame, typename DataType>
 struct WeylMagnetic;
 template <typename DataType>
 struct WeylMagneticScalar;
+template <size_t Dim, typename Frame, typename DataType>
+struct WeylTypeD1;
+template <typename DataType>
+struct WeylTypeD1Scalar;
 }  // namespace Tags
 }  // namespace gr
