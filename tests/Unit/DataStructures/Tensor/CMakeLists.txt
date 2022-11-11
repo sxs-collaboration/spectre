@@ -18,7 +18,19 @@ add_test_library(
   ${LIBRARY}
   "DataStructures/Tensor"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;DataStructures;ErrorHandling"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  DataStructures
+  DataStructuresHelpers
+  DomainStructure
+  ErrorHandling
+  Utilities
+  Spectral
   )
 
 spectre_add_python_bindings_test(

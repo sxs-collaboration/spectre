@@ -216,14 +216,15 @@ void test_observe(
         observers::ArrayComponentId(
             std::add_pointer_t<element_component>{},
             Parallel::ArrayIndex<ElementId<volume_dim>>(array_index)));
-  CHECK(results.received_extents.size() == volume_dim);
-  CHECK(std::equal(results.received_extents.begin(),
-                   results.received_extents.end(),
+  CHECK(results.received_volume_data.extents.size() == volume_dim);
+  CHECK(std::equal(results.received_volume_data.extents.begin(),
+                   results.received_volume_data.extents.end(),
                    interpolating_mesh.value_or(mesh).extents().begin()));
-  CHECK(std::equal(results.received_basis.begin(), results.received_basis.end(),
+  CHECK(std::equal(results.received_volume_data.basis.begin(),
+                   results.received_volume_data.basis.end(),
                    interpolating_mesh.value_or(mesh).basis().begin()));
-  CHECK(std::equal(results.received_quadrature.begin(),
-                   results.received_quadrature.end(),
+  CHECK(std::equal(results.received_volume_data.quadrature.begin(),
+                   results.received_volume_data.quadrature.end(),
                    interpolating_mesh.value_or(mesh).quadrature().begin()));
 
   size_t num_components_observed = 0;
@@ -231,7 +232,8 @@ void test_observe(
   // reference and fails to compile because it wants it to be
   // non-const, so we capture a pointer instead.
   const auto check_component = [&num_components_observed,
-                                tensor_data = &results.in_received_tensor_data,
+                                tensor_data = &results.received_volume_data
+                                                   .tensor_components,
                                 &interpolant](const std::string& component,
                                               const DataVector& expected) {
     CAPTURE(*tensor_data);
@@ -289,7 +291,8 @@ void test_observe(
           check_component(name, get<decltype(tag)>(errors).get(indices...));
         });
   }
-  CHECK(results.in_received_tensor_data.size() == num_components_observed);
+  CHECK(results.received_volume_data.tensor_components.size() ==
+        num_components_observed);
 
   CHECK(static_cast<const Event&>(*observe).is_ready(
       box, ActionTesting::cache<element_component>(runner, array_index),

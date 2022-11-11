@@ -173,9 +173,11 @@ def interpolate_h5_file(source_file_path,
                                                 copy=False)))
 
             volume_data.append(
-                ElementVolumeData(target_mesh.extents(), tensor_comps,
-                                  target_mesh.basis(),
-                                  target_mesh.quadrature(), grid_name))
+                ElementVolumeData(element_name=grid_name,
+                                  components=tensor_comps,
+                                  extents=target_mesh.extents(),
+                                  basis=target_mesh.basis(),
+                                  quadrature=target_mesh.quadrature()))
         target_file.close()
         target_vol = target_file.get_vol(target_volume_data)
         target_vol.write_volume_data(obs, obs_value, volume_data)

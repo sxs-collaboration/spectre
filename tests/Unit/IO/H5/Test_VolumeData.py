@@ -66,30 +66,39 @@ class TestVolumeData(unittest.TestCase):
         self.h5_file.close()
         self.vol_file = self.h5_file.get_vol(path="/element_data")
 
-        # Set TensorComponent and ExtentsAndTensorVolumeData to
-        # be written
+        # Set TensorComponent and ElementVolumeData to be written
 
         self.element_vol_data_grid_1 = [
-            ds.ElementVolumeData([2, 2, 2], [
-                ds.TensorComponent(
-                    "field_1", ds.DataVector(
-                        self.tensor_component_data[2 * i])),
-                ds.TensorComponent(
-                    "field_2",
-                    ds.DataVector(self.tensor_component_data[2 * i + 1]))
-            ], [basis, basis, basis], [quad, quad, quad], grid_names[0])
+            ds.ElementVolumeData(
+                element_name=grid_names[0],
+                components=[
+                    ds.TensorComponent(
+                        "field_1",
+                        ds.DataVector(self.tensor_component_data[2 * i])),
+                    ds.TensorComponent(
+                        "field_2",
+                        ds.DataVector(self.tensor_component_data[2 * i + 1]))
+                ],
+                extents=3 * [2],
+                basis=3 * [basis],
+                quadrature=3 * [quad])
             for i, observation_id in enumerate(observation_ids)
         ]
 
         self.element_vol_data_grid_2 = [
-            ds.ElementVolumeData([2, 2, 2], [
-                ds.TensorComponent(
-                    "field_1",
-                    ds.DataVector(self.tensor_component_data[2 * i + 1])),
-                ds.TensorComponent(
-                    "field_2", ds.DataVector(
-                        self.tensor_component_data[2 * i]))
-            ], [basis, basis, basis], [quad, quad, quad], grid_names[1])
+            ds.ElementVolumeData(
+                element_name=grid_names[1],
+                components=[
+                    ds.TensorComponent(
+                        "field_1",
+                        ds.DataVector(self.tensor_component_data[2 * i + 1])),
+                    ds.TensorComponent(
+                        "field_2",
+                        ds.DataVector(self.tensor_component_data[2 * i]))
+                ],
+                extents=3 * [2],
+                basis=3 * [basis],
+                quadrature=3 * [quad])
             for i, observation_id in enumerate(observation_ids)
         ]
 

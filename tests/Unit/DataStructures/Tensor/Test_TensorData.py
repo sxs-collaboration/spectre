@@ -1,8 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import (DataVector, ExtentsAndTensorVolumeData,
-                                    TensorComponent, ElementVolumeData)
+from spectre.DataStructures import (DataVector, TensorComponent,
+                                    ElementVolumeData)
 from spectre.Spectral import Basis, Quadrature
 import unittest
 import numpy as np
@@ -31,38 +31,6 @@ class TestTensorData(unittest.TestCase):
         self.assertEqual(repr(tensor_component),
                          "(new tensor component, (6.7,3.2))")
 
-    # Tests for ExtentsAndTensorVolumeData functions
-    def test_extents_and_tensor_volume_data(self):
-        # Set up Extents and Tensor Volume data
-        tensor_component_1 = TensorComponent("tensor component one",
-                                             DataVector([1.5, 1.1]))
-        tensor_component_2 = TensorComponent("tensor component two",
-                                             DataVector([7.1, 5]))
-        extents_and_data = ExtentsAndTensorVolumeData(
-            [1, 2, 3, 4], [tensor_component_1, tensor_component_2])
-        # Test extents
-        self.assertEqual(extents_and_data.extents, [1, 2, 3, 4])
-        extents_and_data.extents = [5, 6, 7, 8]
-        self.assertEqual(extents_and_data.extents, [5, 6, 7, 8])
-        # Test tensor components
-        self.assertEqual(extents_and_data.tensor_components,
-                         [tensor_component_1, tensor_component_2])
-        extents_and_data.tensor_components = [
-            tensor_component_1, tensor_component_1
-        ]
-        self.assertEqual(extents_and_data.tensor_components,
-                         [tensor_component_1, tensor_component_1])
-        # Test str, repr
-        self.assertEqual(
-            str(extents_and_data),
-            "((5,6,7,8),((tensor component one, (1.5,1.1)"
-            "),(tensor component one, (1.5,1.1))))")
-        self.assertEqual(
-            repr(extents_and_data),
-            "((5,6,7,8),((tensor component one, (1.5,1.1)"
-            "),(tensor component one, (1.5,1.1))))")
-
-    # Tests for ExtentsAndTensorVolumeData functions
     def test_element_volume_data(self):
         # Set up Extents and Tensor Volume data
         tensor_component_1 = TensorComponent("tensor component one",
@@ -72,13 +40,16 @@ class TestTensorData(unittest.TestCase):
         basis = Basis.Legendre
         quad = Quadrature.Gauss
         element_data = ElementVolumeData(
-            [1, 2, 3, 4], [tensor_component_1, tensor_component_2],
-            [basis, basis], [quad, quad], "grid_name")
+            element_name="grid_name",
+            components=[tensor_component_1, tensor_component_2],
+            extents=[3, 4],
+            basis=2 * [basis],
+            quadrature=2 * [quad])
 
         # Test extents
-        self.assertEqual(element_data.extents, [1, 2, 3, 4])
-        element_data.extents = [5, 6, 7, 8]
-        self.assertEqual(element_data.extents, [5, 6, 7, 8])
+        self.assertEqual(element_data.extents, [3, 4])
+        element_data.extents = [5, 6]
+        self.assertEqual(element_data.extents, [5, 6])
         # Test tensor components
         self.assertEqual(element_data.tensor_components,
                          [tensor_component_1, tensor_component_2])
@@ -87,13 +58,6 @@ class TestTensorData(unittest.TestCase):
         ]
         self.assertEqual(element_data.tensor_components,
                          [tensor_component_1, tensor_component_1])
-        # Test str, repr
-        self.assertEqual(
-            str(element_data), "((5,6,7,8),((tensor component one, (1.5,1.1)"
-            "),(tensor component one, (1.5,1.1))))")
-        self.assertEqual(
-            repr(element_data), "((5,6,7,8),((tensor component one, (1.5,1.1)"
-            "),(tensor component one, (1.5,1.1))))")
         # Test basis and quadrature
         self.assertEqual(element_data.basis, [basis, basis])
         self.assertEqual(element_data.quadrature, [quad, quad])

@@ -54,19 +54,7 @@ ElementVolumeData construct_element_volume_data(
         }
       });
 
-  const auto& mesh = info.mesh;
-  const auto& index_extents = mesh.extents();
-  const auto& array_bases = mesh.basis();
-  const auto& array_quadratures = mesh.quadrature();
-  std::vector<size_t> extents(index_extents.begin(), index_extents.end());
-  std::vector<Spectral::Basis> bases(array_bases.begin(), array_bases.end());
-  std::vector<Spectral::Quadrature> quadratures(array_quadratures.begin(),
-                                                array_quadratures.end());
-  std::string element_name = MakeString{} << element_id;
-
-  return ElementVolumeData{std::move(extents), std::move(components),
-                           std::move(bases), std::move(quadratures),
-                           std::move(element_name)};
+  return ElementVolumeData{element_id, std::move(components), info.mesh};
 }
 }  // namespace detail
 

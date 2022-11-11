@@ -113,14 +113,12 @@ class TestInterpolateH5(unittest.TestCase):
 
                 # this matches the solution by sol
                 volume_data.append(
-                    ElementVolumeData([3, 3, 4], components, [
-                        Spectral.Basis.Legendre, Spectral.Basis.Legendre,
-                        Spectral.Basis.Legendre
-                    ], [
-                        Spectral.Quadrature.GaussLobatto,
-                        Spectral.Quadrature.GaussLobatto,
-                        Spectral.Quadrature.GaussLobatto
-                    ], self.element_names[k]))
+                    ElementVolumeData(element_name=self.element_names[k],
+                                      components=components,
+                                      extents=[3, 3, 4],
+                                      basis=3 * [Spectral.Basis.Legendre],
+                                      quadrature=3 *
+                                      [Spectral.Quadrature.GaussLobatto]))
 
             target_vol.write_volume_data(self.observation_ids[j],
                                          self.observation_values[j],

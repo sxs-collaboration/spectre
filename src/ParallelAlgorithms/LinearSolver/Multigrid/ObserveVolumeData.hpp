@@ -104,7 +104,6 @@ struct ObserveVolumeData {
             cache));
     const auto& level_observation_key =
         *db::get<observers::Tags::ObservationKey<Tags::MultigridLevel>>(box);
-    const std::string element_name = MakeString{} << element_id;
     const std::string subfile_path =
         "/" + pretty_type::name<OptionsGroup>() + level_observation_key;
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
@@ -113,8 +112,7 @@ struct ObserveVolumeData {
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
-        element_name, std::move(components), mesh.extents(), mesh.basis(),
-        mesh.quadrature());
+        ElementVolumeData{element_id, std::move(components), mesh});
 
     // Increment observation ID
     db::mutate<Tags::ObservationId<OptionsGroup>>(

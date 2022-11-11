@@ -46,28 +46,23 @@ namespace Actions {
  * component) must pass in an `observation_id` used to uniquely identify the
  * observation in time, the name of the `h5::VolumeData` subfile in the HDF5
  * file (e.g. `/element_data`, where the slash is important), the contributing
- * parallel component element's component id, a vector of the `TensorComponent`s
- * to be written to disk, and an `Index<Dim>` of the extents of the volume.
+ * parallel component element's component id, and the `ElementVolumeData`
+ * to be written to disk.
  */
 struct ContributeVolumeData {
   template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex, size_t Dim>
-  static void apply(
-      db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index,
-      const observers::ObservationId& observation_id,
-      const std::string& subfile_name,
-      const observers::ArrayComponentId& sender_array_id,
-      std::string element_name,
-      std::vector<TensorComponent>&& received_tensor_data,
-      const Index<Dim>& received_extents,
-      const std::array<Spectral::Basis, Dim>& received_basis,
-      const std::array<Spectral::Quadrature, Dim>& received_quadrature) {
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index,
+                    const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
+                    const observers::ArrayComponentId& sender_array_id,
+                    ElementVolumeData&& received_volume_data) {
     db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData>(
         make_not_null(&box),
-        [&array_index, &cache, &element_name, &observation_id, &sender_array_id,
-         &received_basis, &received_extents, &received_quadrature,
-         &received_tensor_data, &subfile_name](
+        [&array_index, &cache, &received_volume_data, &observation_id,
+         &sender_array_id, &subfile_name](
             const gsl::not_null<std::unordered_map<
                 observers::ObservationId,
                 std::unordered_map<observers::ArrayComponentId,
@@ -104,27 +99,13 @@ struct ContributeVolumeData {
 
           if (volume_data->count(observation_id) == 0 or
               volume_data->at(observation_id).count(sender_array_id) == 0) {
-            std::vector<size_t> extents(received_extents.begin(),
-                                        received_extents.end());
-            std::vector<Spectral::Basis> bases(received_basis.begin(),
-                                               received_basis.end());
-            std::vector<Spectral::Quadrature> quadratures(
-                received_quadrature.begin(), received_quadrature.end());
-
             volume_data->operator[](observation_id)
-                .emplace(sender_array_id,
-                         ElementVolumeData(
-                             {received_extents.begin(), received_extents.end()},
-                             std::move(received_tensor_data),
-                             {received_basis.begin(), received_basis.end()},
-                             {received_quadrature.begin(),
-                              received_quadrature.end()},
-                             element_name));
+                .emplace(sender_array_id, std::move(received_volume_data));
           } else {
             auto& current_data =
                 volume_data->at(observation_id).at(sender_array_id);
-            if (UNLIKELY(
-                    not alg::equal(current_data.extents, received_extents))) {
+            if (UNLIKELY(not alg::equal(current_data.extents,
+                                        received_volume_data.extents))) {
               ERROR(
                   "The extents from the same volume component at a specific "
                   "observation should always be the same. For example, the "
@@ -133,8 +114,10 @@ struct ContributeVolumeData {
             }
             current_data.tensor_components.insert(
                 current_data.tensor_components.end(),
-                std::make_move_iterator(received_tensor_data.begin()),
-                std::make_move_iterator(received_tensor_data.end()));
+                std::make_move_iterator(
+                    received_volume_data.tensor_components.begin()),
+                std::make_move_iterator(
+                    received_volume_data.tensor_components.end()));
           }
 
           // Check if we have received all "volume" data from the registered

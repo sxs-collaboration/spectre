@@ -9,7 +9,10 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 
@@ -26,21 +29,10 @@ void test() {
   CHECK(tc1 != tc2);
   test_serialization(tc0);
 
-  const ExtentsAndTensorVolumeData etvd0({2, 2}, {tc0, tc1, tc2});
-  const auto after = serialize_and_deserialize(etvd0);
-  CHECK(after.extents == etvd0.extents);
-  CHECK(after.tensor_components == etvd0.tensor_components);
-  CHECK(after == etvd0);
-  // Check operator==
-  CHECK(etvd0 != ExtentsAndTensorVolumeData({3, 2}, {tc0, tc1, tc2}));
-  CHECK(etvd0 != ExtentsAndTensorVolumeData({2, 2}, {tc2, tc1, tc0}));
-  CHECK(etvd0 == ExtentsAndTensorVolumeData({2, 2}, {tc0, tc1, tc2}));
-
   const ElementVolumeData evd0(
-      {2, 2}, {tc0, tc1, tc2},
+      "Element0", {tc0, tc1, tc2}, {2, 2},
       {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-      {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-      "Element0");
+      {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto});
   const auto after_evd0 = serialize_and_deserialize(evd0);
   CHECK(after_evd0.extents == evd0.extents);
   CHECK(after_evd0.tensor_components == evd0.tensor_components);
@@ -51,40 +43,64 @@ void test() {
   // Check operator==
   CHECK(evd0 !=
         ElementVolumeData(
-            {3, 2}, {tc0, tc1, tc2},
+            "Element0", {tc0, tc1, tc2}, {3, 2},
             {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-            "Element0"));
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
   CHECK(evd0 !=
         ElementVolumeData(
-            {2, 2}, {tc2, tc1, tc0},
+            "Element0", {tc2, tc1, tc0}, {2, 2},
             {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-            "Element0"));
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
   CHECK(evd0 !=
         ElementVolumeData(
-            {2, 2}, {tc0, tc1, tc2},
+            "Element0", {tc0, tc1, tc2}, {2, 2},
             {Spectral::Basis::Chebyshev, Spectral::Basis::Chebyshev},
-            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-            "Element0"));
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
   CHECK(evd0 != ElementVolumeData(
-                    {2, 2}, {tc0, tc1, tc2},
+                    "Element0", {tc0, tc1, tc2}, {2, 2},
                     {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
                     {Spectral::Quadrature::GaussLobatto,
-                     Spectral::Quadrature::GaussLobatto},
-                    "Element0"));
+                     Spectral::Quadrature::GaussLobatto}));
   CHECK(evd0 !=
         ElementVolumeData(
-            {2, 2}, {tc0, tc1, tc2},
+            "Element1", {tc0, tc1, tc2}, {2, 2},
             {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-            "Element1"));
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
   CHECK(evd0 ==
         ElementVolumeData(
-            {2, 2}, {tc0, tc1, tc2},
+            "Element0", {tc0, tc1, tc2}, {2, 2},
             {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
-            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto},
-            "Element0"));
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
+  CHECK(ElementVolumeData(ElementId<1>{0, {{{1, 1}}}}, {tc0, tc1, tc2},
+                          Mesh<1>{3, Spectral::Basis::Legendre,
+                                  Spectral::Quadrature::GaussLobatto}) ==
+        ElementVolumeData("[B0,(L1I1)]", {tc0, tc1, tc2}, {3},
+                          {Spectral::Basis::Legendre},
+                          {Spectral::Quadrature::GaussLobatto}));
+  CHECK(ElementVolumeData(
+            ElementId<2>{0, {{{1, 1}, {2, 0}}}}, {tc0, tc1, tc2},
+            Mesh<2>{{{3, 4}},
+                    {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev}},
+                    {{Spectral::Quadrature::Gauss,
+                      Spectral::Quadrature::GaussLobatto}}}) ==
+        ElementVolumeData(
+            "[B0,(L1I1,L2I0)]", {tc0, tc1, tc2}, {3, 4},
+            {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev},
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto}));
+  CHECK(ElementVolumeData(
+            ElementId<3>{0, {{{1, 1}, {2, 0}, {2, 1}}}}, {tc0, tc1, tc2},
+            Mesh<3>{{{3, 4, 5}},
+                    {{Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
+                      Spectral::Basis::Legendre}},
+                    {{Spectral::Quadrature::Gauss,
+                      Spectral::Quadrature::GaussLobatto,
+                      Spectral::Quadrature::Gauss}}}) ==
+        ElementVolumeData(
+            "[B0,(L1I1,L2I0,L2I1)]", {tc0, tc1, tc2}, {3, 4, 5},
+            {Spectral::Basis::Legendre, Spectral::Basis::Chebyshev,
+             Spectral::Basis::Legendre},
+            {Spectral::Quadrature::Gauss, Spectral::Quadrature::GaussLobatto,
+             Spectral::Quadrature::Gauss}));
 }
 }  // namespace
 

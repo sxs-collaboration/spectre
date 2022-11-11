@@ -67,7 +67,7 @@ void test_strahlkorper() {
     volume_file.write_volume_data(
         observation_ids[0], observation_values[0],
         std::vector<ElementVolumeData>{
-          {extents, tensor_components, bases, quadratures, grid_name}});
+            {grid_name, tensor_components, extents, bases, quadratures}});
     strahlkorper_file.close_current_object();
 
     // Open the read volume file and check that the observation id and values
@@ -130,7 +130,7 @@ void test() {
       volume_file.write_volume_data(
           observation_id, observation_value,
           std::vector<ElementVolumeData>{
-              {{2, 2, 2},
+              {first_grid,
                {TensorComponent{"S", TestHelpers::io::VolumeData::multiply(
                                          observation_value,
                                          tensor_components_and_coords[0])},
@@ -155,11 +155,11 @@ void test() {
                 TensorComponent{"T_z", TestHelpers::io::VolumeData::multiply(
                                            observation_value,
                                            tensor_components_and_coords[6])}},
+               {2, 2, 2},
                bases.front(),
-               quadratures.front(),
-               first_grid},
+               quadratures.front()},
               // Second Element Data
-              {{2, 2, 2},
+              {last_grid,
                {TensorComponent{"S", TestHelpers::io::VolumeData::multiply(
                                          observation_value,
                                          tensor_components_and_coords[1])},
@@ -184,9 +184,9 @@ void test() {
                 TensorComponent{"T_z", TestHelpers::io::VolumeData::multiply(
                                            observation_value,
                                            tensor_components_and_coords[2])}},
+               {2, 2, 2},
                bases.back(),
-               quadratures.back(),
-               last_grid}});
+               quadratures.back()}});
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
@@ -264,11 +264,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
             my_file.insert<h5::VolumeData>("/element_data", version_number);
         volume_file.write_volume_data(
             100, 10.0,
-            {{{2},
+            {{"grid_name",
               {TensorComponent{"grid_name/S", DataVector{1.0, 2.0}}},
+              {2},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss},
-              "grid_name"}});
+              {Spectral::Quadrature::Gauss}}});
       }(),
       Catch::Contains("The expected format of the tensor component names is "
                       "'COMPONENT_NAME' but found a '/' in"));
@@ -284,12 +284,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
             my_file.insert<h5::VolumeData>("/element_data", version_number);
         volume_file.write_volume_data(
             100, 10.0,
-            {{{2},
+            {{"grid_name",
               {TensorComponent{"S", DataVector{1.0, 2.0}},
                TensorComponent{"S", DataVector{1.0, 2.0}}},
+              {2},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss},
-              "grid_name"}});
+              {Spectral::Quadrature::Gauss}}});
       }(),
       Catch::Contains(
           "Trying to write tensor component 'S' which already exists in HDF5 "
@@ -309,11 +309,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
             h5_file.insert<h5::VolumeData>("/element_data", version_number);
         volume_file.write_volume_data(
             100, 10.0,
-            {{{2},
+            {{"grid_name",
               {TensorComponent{"S", DataVector{1.0, 2.0}}},
+              {2},
               {Spectral::Basis::Legendre},
-              {Spectral::Quadrature::Gauss},
-              "grid_name"}});
+              {Spectral::Quadrature::Gauss}}});
         volume_file.find_observation_id(11.0);
       }(),
       Catch::Contains("No observation with value"));

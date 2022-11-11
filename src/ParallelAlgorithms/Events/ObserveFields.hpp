@@ -215,7 +215,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       const Mesh<VolumeDim>& mesh,
       const ObservationBox<DataBoxType, ComputeTagsList>& box,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ElementId<VolumeDim>& array_index,
+      const ElementId<VolumeDim>& element_id,
       const ParallelComponent* const /*meta*/) {
     // if no interpolation_mesh is provided, the interpolation is essentially
     // ignored by the RegularGridInterpolant except for a single copy.
@@ -271,9 +271,6 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         };
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(tmpl::type_<Tensors>{}));
 
-    const std::string element_name = MakeString{}
-                                     << ElementId<VolumeDim>(array_index);
-
     // Send data to volume observer
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
@@ -284,11 +281,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         subfile_path,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<VolumeDim>>(array_index)),
-        element_name, std::move(components),
-        interpolation_mesh.value_or(mesh).extents(),
-        interpolation_mesh.value_or(mesh).basis(),
-        interpolation_mesh.value_or(mesh).quadrature());
+            Parallel::ArrayIndex<ElementId<VolumeDim>>(element_id)),
+        ElementVolumeData{element_id, std::move(components),
+                          interpolation_mesh.value_or(mesh)});
   }
 
   using observation_registration_tags = tmpl::list<::Tags::DataBox>;

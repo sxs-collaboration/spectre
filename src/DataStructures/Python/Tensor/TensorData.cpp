@@ -30,37 +30,17 @@ void bind_tensordata(py::module& m) {  // NOLINT
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self != py::self);
 
-  // Wrapper for ExtentsAndTensorVolumeData
-  py::class_<ExtentsAndTensorVolumeData>(m, "ExtentsAndTensorVolumeData")
-      .def(py::init<std::vector<size_t>, std::vector<TensorComponent>>(),
-           py::arg("extents"), py::arg("components"))
-      .def_readwrite("extents", &ExtentsAndTensorVolumeData::extents)
-      .def_readwrite("tensor_components",
-                     &ExtentsAndTensorVolumeData::tensor_components)
-      .def("__str__",
-           [](const ExtentsAndTensorVolumeData& extents_and_data) {
-             return "(" + get_output(extents_and_data.extents) + "," +
-                    get_output(extents_and_data.tensor_components) + ")";
-           })
-      .def("__repr__",
-           [](const ExtentsAndTensorVolumeData& extents_and_data) {
-             return "(" + get_output(extents_and_data.extents) + "," +
-                    get_output(extents_and_data.tensor_components) + ")";
-           })
-      // NOLINTNEXTLINE(misc-redundant-expression)
-      .def(py::self == py::self)
-      // NOLINTNEXTLINE(misc-redundant-expression)
-      .def(py::self != py::self);
-  py::class_<ElementVolumeData, ExtentsAndTensorVolumeData>(m,
-                                                            "ElementVolumeData")
-      .def(py::init<std::vector<size_t>, std::vector<TensorComponent>,
-                    std::vector<Spectral::Basis>,
-                    std::vector<Spectral::Quadrature>, std::string>(),
-           py::arg("extents"), py::arg("components"), py::arg("basis"),
-           py::arg("quadrature"), py::arg("element_name"))
+  py::class_<ElementVolumeData>(m, "ElementVolumeData")
+      .def(py::init<std::string, std::vector<TensorComponent>,
+                    std::vector<size_t>, std::vector<Spectral::Basis>,
+                    std::vector<Spectral::Quadrature>>(),
+           py::arg("element_name"), py::arg("components"), py::arg("extents"),
+           py::arg("basis"), py::arg("quadrature"))
+      .def_readwrite("element_name", &ElementVolumeData::element_name)
+      .def_readwrite("tensor_components", &ElementVolumeData::tensor_components)
+      .def_readwrite("extents", &ElementVolumeData::extents)
       .def_readwrite("basis", &ElementVolumeData::basis)
       .def_readwrite("quadrature", &ElementVolumeData::quadrature)
-      .def_readwrite("element_name", &ElementVolumeData::element_name)
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self == py::self)
       // NOLINTNEXTLINE(misc-redundant-expression)
