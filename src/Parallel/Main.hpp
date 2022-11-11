@@ -387,7 +387,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
     std::string input_file;
     if (has_options) {
       if (parsed_command_line_options.count("input-file") == 0) {
-        ERROR("No default input file name.  Pass --input-file.");
+        ERROR_NO_TRACE("No default input file name.  Pass --input-file.");
       }
       input_file = parsed_command_line_options["input-file"].as<std::string>();
       options.parse_file(input_file);
