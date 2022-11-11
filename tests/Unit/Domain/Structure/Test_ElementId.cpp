@@ -165,6 +165,24 @@ void test_element_id() {
   // Test output operator:
   CHECK(get_output(block_2_3d) == "[B2,(L2I3,L1I0,L1I1)]");
   CHECK(get_output(element_six) == "[B4,(L0I0,L0I0,L0I0),G1]");
+  CHECK(ElementId<3>{"[B2,(L2I3,L1I0,L1I1)]"} == block_2_3d);
+  CHECK(ElementId<3>{"[B4,(L0I0,L0I0,L0I0),G1]"} == element_six);
+  CHECK(ElementId<1>{"[B1,(L2I3)]"} == ElementId<1>{1, {{{2, 3}}}});
+  CHECK(ElementId<1>{"[B1,(L2I3),G2]"} == ElementId<1>{1, {{{2, 3}}}, 2});
+  CHECK(ElementId<1>{"[B10,(L2I3)]"} == ElementId<1>{10, {{{2, 3}}}});
+  CHECK(ElementId<2>{"[B2,(L1I1,L2I0)]"} ==
+        ElementId<2>{2, {{{1, 1}, {2, 0}}}});
+  CHECK(ElementId<2>{"[B2,(L1I1,L2I0),G12]"} ==
+        ElementId<2>{2, {{{1, 1}, {2, 0}}}, 12});
+  CHECK(ElementId<2>{"[B52,(L12I133,L6I38)]"} ==
+        ElementId<2>{52, {{{12, 133}, {6, 38}}}});
+  CHECK_THROWS_WITH(ElementId<1>("somegrid"),
+                    Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<2>("[B0,(L1I0)]"),
+                    Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<2>("[B0]"), Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<3>("L1I0,L2I1,L2I0"),
+                    Catch::Contains("Invalid grid name"));
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(ElementId<3>::block_id_bits) - 1);
@@ -235,6 +253,8 @@ void test_serialization() {
         reader | deserialized_array_index;
         CHECK(array_index == deserialized_array_index);
         CHECK(element_id == deserialized_array_index.get_index());
+        // Check roundtrip to string representation and back
+        CHECK(ElementId<VolumeDim>(get_output(element_id)) == element_id);
       }
     }
   }
@@ -247,28 +267,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   test_serialization<1>();
   test_serialization<2>();
   test_serialization<3>();
-}
-
-// [[OutputRegex, Block id out of bounds]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId.BadBlockId",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_element_id =
-      ElementId<1>(two_to_the(ElementId<1>::block_id_bits));
-  static_cast<void>(failed_element_id);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Grid index out of bounds]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId.BadGridIndex",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_element_id =
-      ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits));
-  static_cast<void>(failed_element_id);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(ElementId<1>(two_to_the(ElementId<1>::block_id_bits)),
+                    Catch::Contains("Block id out of bounds"));
+  CHECK_THROWS_WITH(
+      ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits)),
+      Catch::Contains("Grid index out of bounds"));
 #endif
 }

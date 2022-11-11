@@ -4,10 +4,13 @@
 #include "Domain/Structure/ElementId.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <exception>
 #include <limits>
 #include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
+#include <regex>
+#include <string>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -80,6 +83,63 @@ ElementId<VolumeDim>::ElementId(const size_t block_id,
     index_zeta_ = 0;
     refinement_level_zeta_ = 0;
   }
+}
+
+template <size_t VolumeDim>
+ElementId<VolumeDim>::ElementId(const std::string& grid_name) {
+  std::string pattern_str = "\\[B([0-9]+),\\(";
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    pattern_str.append("L([0-9]+)I([0-9]+)");
+    if (d < VolumeDim - 1) {
+      pattern_str.append(",");
+    }
+  }
+  pattern_str.append("\\)(,G([0-9]+))?\\]");
+  const std::regex pattern(pattern_str);
+  std::smatch match;
+  std::regex_match(grid_name, match, pattern);
+  if (match.empty()) {
+    throw std::invalid_argument{"Invalid grid name '" + grid_name +
+                                "' does not match the pattern '" + pattern_str +
+                                "'."};
+  }
+  const auto to_size_t = [](const std::ssub_match& s) {
+    return static_cast<size_t>(std::stoi(s.str()));
+  };
+  block_id_ = to_size_t(match[1]);
+  refinement_level_xi_ = to_size_t(match[2]);
+  index_xi_ = to_size_t(match[3]);
+  if constexpr (VolumeDim > 1) {
+    refinement_level_eta_ = to_size_t(match[4]);
+    index_eta_ = to_size_t(match[5]);
+  } else {
+    refinement_level_eta_ = 0;
+    index_eta_ = 0;
+  }
+  if constexpr (VolumeDim > 2) {
+    refinement_level_zeta_ = to_size_t(match[6]);
+    index_zeta_ = to_size_t(match[7]);
+  } else {
+    refinement_level_zeta_ = 0;
+    index_zeta_ = 0;
+  }
+  if (match[1                // Full matched string
+            + 1              // Block ID
+            + 2 * VolumeDim  // Segment IDs
+            + 1              // Optional grid_index subexpression
+  ]
+          .matched) {
+    grid_index_ = to_size_t(match[2 * VolumeDim + 3]);
+  } else {
+    grid_index_ = 0;
+  }
+  empty_ = 0;
+  ASSERT(block_id_ < two_to_the(block_id_bits),
+         "Block id out of bounds: " << block_id_ << "\nMaximum value is: "
+                                    << two_to_the(block_id_bits) - 1);
+  ASSERT(grid_index_ < two_to_the(grid_index_bits),
+         "Grid index out of bounds: " << grid_index_ << "\nMaximum value is: "
+                                      << two_to_the(grid_index_bits) - 1);
 }
 
 template <size_t VolumeDim>

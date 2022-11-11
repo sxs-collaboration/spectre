@@ -13,6 +13,11 @@ class TestElementId(unittest.TestCase):
         element_id = ElementId1D(block_id=1, segment_ids=[SegmentId(1, 0)])
         self.assertEqual(element_id.block_id, 1)
         self.assertEqual(element_id.segment_ids, [SegmentId(1, 0)])
+        self.assertEqual(
+            ElementId2D("[B2,(L0I0,L2I3)]"),
+            ElementId2D(block_id=2,
+                        segment_ids=[SegmentId(0, 0),
+                                     SegmentId(2, 3)]))
 
     def test_repr(self):
         self.assertEqual(repr(ElementId1D(0)), "[B0,(L0I0)]")
