@@ -10,18 +10,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/IdPair.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/Structure/BlockId.hpp"
 
 /// \cond
-namespace domain {
-class BlockId;
-}  // namespace domain
 class DataVector;
 template <size_t VolumeDim>
 class Domain;
-template <typename IdType, typename DataType>
-class IdPair;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
