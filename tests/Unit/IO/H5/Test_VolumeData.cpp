@@ -273,6 +273,25 @@ void test() {
     CHECK(last_grid_offset_and_length.second == 8);
   }
 
+  {
+    INFO("mesh_for_grid");
+    const size_t observation_id = observation_ids.front();
+    const auto all_grid_names = volume_file.get_grid_names(observation_id);
+    const auto all_extents = volume_file.get_extents(observation_id);
+    const auto all_bases = volume_file.get_bases(observation_id);
+    const auto all_quadratures = volume_file.get_quadratures(observation_id);
+    const auto first_mesh =
+        h5::mesh_for_grid<3>(grid_names.front(), all_grid_names, all_extents,
+                             all_bases, all_quadratures);
+    CHECK(first_mesh ==
+          Mesh<3>(2, Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss));
+    const auto last_mesh =
+        h5::mesh_for_grid<3>(grid_names.back(), all_grid_names, all_extents,
+                             all_bases, all_quadratures);
+    CHECK(last_mesh == Mesh<3>(2, Spectral::Basis::Legendre,
+                               Spectral::Quadrature::GaussLobatto));
+  }
+
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }

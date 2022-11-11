@@ -16,7 +16,9 @@
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/TensorData.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
@@ -240,5 +242,13 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
     const std::string& grid_name,
     const std::vector<std::string>& all_grid_names,
     const std::vector<std::vector<size_t>>& all_extents);
+
+template <size_t Dim>
+Mesh<Dim> mesh_for_grid(
+    const std::string& grid_name,
+    const std::vector<std::string>& all_grid_names,
+    const std::vector<std::vector<size_t>>& all_extents,
+    const std::vector<std::vector<Spectral::Basis>>& all_bases,
+    const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures);
 
 }  // namespace h5
