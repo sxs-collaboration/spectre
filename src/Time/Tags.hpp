@@ -138,6 +138,18 @@ struct StepperError : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
 };
 
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// \brief Tag for the previous value of the stepper error measure.
+template <typename Tag>
+struct PreviousStepperError : db::PrefixTag, db::SimpleTag {
+  static std::string name() {
+    return "PreviousStepperError(" + db::tag_name<Tag>() + ")";
+  }
+  using type = typename Tag::type;
+  using tag = Tag;
+};
+
 /// \ingroup TimeGroup
 /// \brief Tag indicating whether the stepper error has been updated on the
 /// current step

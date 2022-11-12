@@ -22,17 +22,21 @@ PhaseChangeAndTriggers:
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.001
-  InitialSlabSize: 0.01
+  InitialSlabSize: 0.1
   TimeStepper:
     AdamsBashforthN:
       Order: 3
   StepController: BinaryFraction
   StepChoosers:
-    - Constant: 0.05
+    - PreventRapidIncrease
     - Increase:
         Factor: 2
-    - Cfl:
-        SafetyFactor: 0.2
+    - ErrorControl:
+        AbsoluteTolerance: 1.0e-5
+        RelativeTolerance: 1.0e-5
+        MaxFactor: 10000.0
+        MinFactor: 0.0
+        SafetyFactor: 0.9
 
 DomainCreator:
   RotatedIntervals:
@@ -64,17 +68,6 @@ EventsAndTriggers:
         Specified:
           Values: [5]
     - - Completion
-  - - Slabs:
-        EvenlySpaced:
-          Interval: 2
-          Offset: 0
-    - - ChangeSlabSize:
-          DelayChange: 3
-          StepChoosers:
-            # Based on the step size choices above, this should aim for
-            # about 100 steps per slab.
-            - Cfl:
-                SafetyFactor: 20
 
 EventsAndDenseTriggers:
 

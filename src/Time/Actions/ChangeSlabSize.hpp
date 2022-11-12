@@ -330,6 +330,13 @@ class ChangeSlabSize : public Event {
     return true;
   }
 
+  template <typename F>
+  void for_each_step_chooser(F&& f) const {
+    for (const auto& step_chooser : step_choosers_) {
+      f(*step_chooser);
+    }
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
     Event::pup(p);

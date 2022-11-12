@@ -59,6 +59,14 @@ struct AdvanceTime {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
+    bool is_using_error_control = false;
+    if constexpr (db::tag_is_retrievable_v<
+                      Tags::IsUsingTimeSteppingErrorControl,
+                      db::DataBox<DbTags>>) {
+      is_using_error_control =
+          db::get<Tags::IsUsingTimeSteppingErrorControl>(box);
+    }
+
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time, Tags::Next<Tags::TimeStep>>(
         make_not_null(&box),
@@ -67,16 +75,22 @@ struct AdvanceTime {
            const gsl::not_null<TimeDelta*> time_step,
            const gsl::not_null<double*> time,
            const gsl::not_null<TimeDelta*> next_time_step,
-           const TimeStepper& time_stepper) {
+           const TimeStepper& time_stepper, const bool using_error_control) {
           *time_id = *next_time_id;
           *time_step = next_time_step->with_slab(time_id->step_time().slab());
 
-          *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
+          if (using_error_control) {
+            *next_time_id =
+                time_stepper.next_time_id_for_error(*next_time_id, *time_step);
+          } else {
+            *next_time_id =
+                time_stepper.next_time_id(*next_time_id, *time_step);
+          }
           *next_time_step =
               time_step->with_slab(next_time_id->step_time().slab());
           *time = time_id->substep_time().value();
         },
-        db::get<Tags::TimeStepper<>>(box));
+        db::get<Tags::TimeStepper<>>(box), is_using_error_control);
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

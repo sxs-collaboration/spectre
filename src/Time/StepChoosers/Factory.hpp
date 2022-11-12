@@ -31,9 +31,10 @@ using common_step_choosers = tmpl::push_back<
             StepChoosers::ElementSizeCfl<Use, System::volume_dim, System>>,
         tmpl::list<>>,
     StepChoosers::Constant<Use>, StepChoosers::Increase<Use>>;
-template <typename Use>
+template <typename Use, typename System>
 using step_choosers_for_step_only =
-    tmpl::list<StepChoosers::PreventRapidIncrease<Use>>;
+    tmpl::list<StepChoosers::PreventRapidIncrease<Use>,
+               StepChoosers::ErrorControl<Use, typename System::variables_tag>>;
 using step_choosers_for_slab_only = tmpl::list<StepChoosers::StepToTimes>;
 
 template <typename System, bool HasCharSpeedFunctions>
@@ -43,11 +44,11 @@ using lts_slab_choosers = tmpl::append<
 }  // namespace Factory_detail
 
 template <typename System, bool HasCharSpeedFunctions = true>
-using standard_step_choosers = tmpl::append<
-    Factory_detail::common_step_choosers<StepChooserUse::LtsStep, System,
-                                         HasCharSpeedFunctions>,
-    Factory_detail::step_choosers_for_step_only<StepChooserUse::LtsStep>,
-    tmpl::list<StepChoosers::ErrorControl<typename System::variables_tag>>>;
+using standard_step_choosers =
+    tmpl::append<Factory_detail::common_step_choosers<
+                     StepChooserUse::LtsStep, System, HasCharSpeedFunctions>,
+                 Factory_detail::step_choosers_for_step_only<
+                     StepChooserUse::LtsStep, System>>;
 
 template <typename System, bool LocalTimeStepping,
           bool HasCharSpeedFunctions = true>
@@ -56,5 +57,6 @@ using standard_slab_choosers = tmpl::conditional_t<
     Factory_detail::lts_slab_choosers<System, HasCharSpeedFunctions>,
     tmpl::append<
         Factory_detail::lts_slab_choosers<System, HasCharSpeedFunctions>,
-        Factory_detail::step_choosers_for_step_only<StepChooserUse::Slab>>>;
+        Factory_detail::step_choosers_for_step_only<StepChooserUse::Slab,
+                                                    System>>>;
 }  // namespace StepChoosers

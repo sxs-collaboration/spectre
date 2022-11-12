@@ -41,25 +41,41 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
                           typename System::variables_tag, VariablesTag>;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
   if (db::get<Tags::IsUsingTimeSteppingErrorControl>(*box)) {
-    using error_tag = db::add_tag_prefix<::Tags::StepperError, variables_tag>;
+    using error_tag = ::Tags::StepperError<variables_tag>;
+    using previous_error_tag = ::Tags::PreviousStepperError<variables_tag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
       db::mutate<Tags::StepperErrorUpdated, variables_tag, error_tag,
-                 history_tag>(
+                 previous_error_tag, history_tag>(
           box,
           [](const gsl::not_null<bool*> stepper_error_updated,
              const gsl::not_null<typename variables_tag::type*> vars,
              const gsl::not_null<typename error_tag::type*> error,
+             const gsl::not_null<typename previous_error_tag::type*>
+                 previous_error,
              const gsl::not_null<typename history_tag::type*> history,
              const ::TimeDelta& time_step, const auto& time_stepper) {
-            *stepper_error_updated =
-                time_stepper.update_u(vars, error, history, time_step);
+            using std::swap;
+            // We need to make sure *previous_error has the correct
+            // size.  We don't care about the value, but it could be
+            // several types so we can't just call ->initialize() or
+            // something.
+            //
+            // We are not required to preserve the old value, because
+            // the errors will only be used after a successful error
+            // update.
+            *previous_error = *vars;
+            swap(*error, *previous_error);
+            *stepper_error_updated = time_stepper.update_u(
+                vars, make_not_null(&*error), history, time_step);
+            if (not *stepper_error_updated) {
+              swap(*error, *previous_error);
+            }
           },
           db::get<Tags::TimeStep>(*box), db::get<Tags::TimeStepper<>>(*box));
     } else {
       ERROR(
           "Cannot update the stepper error measure -- "
-          "`db::add_tag_prefix<::Tags::StepperError, VariablesTag>` is not "
-          "present in the box.");
+          "`::Tags::StepperError<VariablesTag>` is not present in the box.");
     }
   } else {
     db::mutate<variables_tag, history_tag>(

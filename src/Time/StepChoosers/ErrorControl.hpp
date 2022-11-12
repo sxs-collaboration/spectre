@@ -3,14 +3,25 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <memory>
+#include <optional>
 #include <pup.h>
 #include <pup_stl.h>
+#include <string>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -23,20 +34,14 @@ class GlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace StepChoosers {
+/// \cond
 namespace Tags {
-/// \brief The stepper error measure computed in the previous application of the
-/// `StepChooser::ErrorControl` step chooser.
-///
-/// \details This tag is templated on `EvolvedVariableTag`, as a separate error
-/// measure should be stored for each evolved variables, because the stepper is
-/// separately applied to each object.
-template <typename EvolvedVariableTag>
-struct PreviousStepError : db::SimpleTag {
-  using type = std::optional<double>;
-};
+template <bool LocalTimeStepping>
+struct IsUsingTimeSteppingErrorControlCompute;
 }  // namespace Tags
+/// \endcond
 
+namespace StepChoosers {
 namespace ErrorControl_detail {
 struct IsAnErrorControl {};
 }  // namespace ErrorControl_detail
@@ -103,15 +108,14 @@ struct IsAnErrorControl {};
  * in the same executable. The name used for the input file includes
  * `ErrorControlSelector::name()` if it is provided.
  */
-template <typename EvolvedVariableTag,
+template <typename StepChooserUse, typename EvolvedVariableTag,
           typename ErrorControlSelector = NoSuchType>
-class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
+class ErrorControl : public StepChooser<StepChooserUse>,
                      public ErrorControl_detail::IsAnErrorControl {
  public:
   using evolved_variable_type = typename EvolvedVariableTag::type;
   using error_variable_type =
-      typename db::add_tag_prefix<::Tags::StepperError,
-                                  EvolvedVariableTag>::type;
+      typename ::Tags::StepperError<EvolvedVariableTag>::type;
 
   /// \cond
   ErrorControl() = default;
@@ -177,21 +181,30 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
         min_factor_{min_factor},
         safety_factor_{safety_factor} {}
 
+  using simple_tags =
+      tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
+                 ::Tags::StepperError<EvolvedVariableTag>,
+                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
+                 ::Tags::StepperErrorUpdated>;
+
+  using compute_tags = tmpl::list<Tags::IsUsingTimeSteppingErrorControlCompute<
+      std::is_same_v<StepChooserUse, ::StepChooserUse::LtsStep>>>;
+
   using argument_tags =
       tmpl::list<::Tags::RollbackValue<EvolvedVariableTag>,
-                 db::add_tag_prefix<::Tags::StepperError, EvolvedVariableTag>,
+                 ::Tags::StepperError<EvolvedVariableTag>,
+                 ::Tags::PreviousStepperError<EvolvedVariableTag>,
                  ::Tags::StepperErrorUpdated, ::Tags::TimeStepper<>>;
 
-  using return_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
-
-  using simple_tags = tmpl::list<Tags::PreviousStepError<EvolvedVariableTag>>;
+  using return_tags = tmpl::list<>;
 
   template <typename Metavariables, typename TimeStepper>
   std::pair<double, bool> operator()(
-      const gsl::not_null<std::optional<double>*> previous_step_error,
       const evolved_variable_type& rollback_value,
-      const error_variable_type& error, const bool& stepper_error_updated,
-      const TimeStepper& stepper, const double previous_step,
+      const error_variable_type& error,
+      const error_variable_type& previous_error,
+      const bool& stepper_error_updated, const TimeStepper& stepper,
+      const double previous_step,
       const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
     // request that the step size not be changed if there isn't a new error
     // estimate
@@ -200,26 +213,28 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
     }
     const double l_inf_error = error_calc_impl(rollback_value, error);
     double new_step;
-    if (not previous_step_error->has_value()) {
+    if (previous_error.number_of_grid_points() !=
+        rollback_value.number_of_grid_points()) {
       new_step = previous_step *
                  std::clamp(safety_factor_ *
                                 pow(1.0 / std::max(l_inf_error, 1e-14),
                                     1.0 / (stepper.error_estimate_order() + 1)),
                             min_factor_, max_factor_);
     } else {
+      const double previous_l_inf_error =
+          error_calc_impl(rollback_value, previous_error);
       // From simple advice from Numerical Recipes 17.2.1 regarding a heuristic
       // for PI step control.
       const double alpha_factor = 0.7 / (stepper.error_estimate_order() + 1);
       const double beta_factor = 0.4 / (stepper.error_estimate_order() + 1);
       new_step =
           previous_step *
-          std::clamp(safety_factor_ *
-                         pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
-                         pow(std::max(previous_step_error->value(), 1e-14),
-                             beta_factor),
-                     min_factor_, max_factor_);
+          std::clamp(
+              safety_factor_ *
+                  pow(1.0 / std::max(l_inf_error, 1e-14), alpha_factor) *
+                  pow(std::max(previous_l_inf_error, 1e-14), beta_factor),
+              min_factor_, max_factor_);
     }
-    *previous_step_error = l_inf_error;
     return std::make_pair(new_step, l_inf_error <= 1.0);
   }
 
@@ -265,8 +280,8 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
             // it in the capture...
             (void)this;
             using tag = typename decltype(tag_v)::type;
-            recursive_call_result = error_calc_impl(
-                get<tag>(values), get<::Tags::StepperError<tag>>(errors));
+            recursive_call_result =
+                error_calc_impl(get<tag>(values), get<tag>(errors));
             if (recursive_call_result > result) {
               result = recursive_call_result;
             }
@@ -285,10 +300,10 @@ class ErrorControl : public StepChooser<StepChooserUse::LtsStep>,
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 /// \cond
-template <typename EvolvedVariableTag, typename ErrorControlSelector>
-PUP::able::PUP_ID
-    ErrorControl<EvolvedVariableTag, ErrorControlSelector>::my_PUP_ID =
-        0;  // NOLINT
+template <typename StepChooserUse, typename EvolvedVariableTag,
+          typename ErrorControlSelector>
+PUP::able::PUP_ID ErrorControl<StepChooserUse, EvolvedVariableTag,
+                               ErrorControlSelector>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace StepChoosers
 
@@ -296,12 +311,16 @@ namespace Tags {
 /// \ingroup TimeGroup
 /// \brief A tag that is true if the `ErrorControl` step chooser is one of the
 /// option-created `Event`s.
+template <bool LocalTimeStepping>
 struct IsUsingTimeSteppingErrorControlCompute
     : db::ComputeTag,
-      IsUsingTimeSteppingErrorControl {
+    IsUsingTimeSteppingErrorControl {
   using base = IsUsingTimeSteppingErrorControl;
-  using argument_tags = tmpl::list<::Tags::StepChoosers>;
+  using argument_tags =
+      tmpl::conditional_t<LocalTimeStepping, tmpl::list<::Tags::StepChoosers>,
+                          tmpl::list<::Tags::EventsAndTriggers>>;
 
+  // local time stepping
   static void function(
       const gsl::not_null<bool*> is_using_error_control,
       const std::vector<
@@ -316,6 +335,35 @@ struct IsUsingTimeSteppingErrorControlCompute
         return;
       }
     }
+  }
+
+  // global time stepping
+  static void function(const gsl::not_null<bool*> is_using_error_control,
+                       const ::EventsAndTriggers& events_and_triggers) {
+    // In principle the slab size could be changed based on a dense
+    // trigger, but it's not clear that there is ever a good reason to
+    // do so, and it wouldn't make sense to use error control in that
+    // context in any case.
+    *is_using_error_control = false;
+    events_and_triggers.for_each_event([&](const auto& event) {
+      if (*is_using_error_control) {
+        return;
+      }
+      if (const auto* const change_slab_size =
+              dynamic_cast<const ::Events::ChangeSlabSize*>(&event)) {
+        change_slab_size->for_each_step_chooser(
+            [&](const StepChooser<StepChooserUse::Slab>& step_chooser) {
+              if (*is_using_error_control) {
+                return;
+              }
+              if (dynamic_cast<const ::StepChoosers::ErrorControl_detail::
+                                   IsAnErrorControl*>(&step_chooser) !=
+                  nullptr) {
+                *is_using_error_control = true;
+              }
+            });
+      }
+    });
   }
 };
 }  // namespace Tags
