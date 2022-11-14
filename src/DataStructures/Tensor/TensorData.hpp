@@ -23,9 +23,8 @@ class er;
  * \ingroup DataStructuresGroup
  * \brief An untyped tensor component with a name for observation.
  *
- * The name should be a path inside an H5 file, typically starting with the name
- * of the volume subfile. For example,
- * `element_volume_data.vol/ObservationId[ID]/[ElementIdName]/psi_xx`.
+ * The name should be just the name of the tensor component, such as 'Psi_xx'.
+ * It must not include any slashes ('/').
  */
 struct TensorComponent {
   TensorComponent() = default;
