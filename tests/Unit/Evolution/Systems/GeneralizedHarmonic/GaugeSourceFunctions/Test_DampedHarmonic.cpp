@@ -34,7 +34,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail {
+namespace {
 // The return-by-value implementations of spatial_weight_function and
 // spacetime_deriv_of_spatial_weight_function are intentionally only available
 // in the test because while convenient the additional allocations are bad for
@@ -58,13 +58,6 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_spatial_weight_function(
   return d4_weight;
 }
 
-double roll_on_function(double time, double t_start, double sigma_t);
-
-double time_deriv_of_roll_on_function(double time, double t_start,
-                                      double sigma_t);
-}  // namespace GeneralizedHarmonic::gauges::DampedHarmonicGauge_detail
-
-namespace {
 template <size_t SpatialDim, typename Frame, typename DataType>
 void test_rollon_function(const DataType& used_for_size) {
   INFO("Test rollon function");
