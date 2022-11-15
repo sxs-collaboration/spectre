@@ -12,8 +12,8 @@ spectre_target_sources(
   None.cpp
   ScalingAndZRotation.cpp
   RegisterDerivedWithCharm.cpp
+  RotationAboutZAxis.cpp
   SphericalCompression.cpp
-  UniformRotationAboutZAxis.cpp
   UniformTranslation.cpp
   )
 
@@ -25,10 +25,10 @@ spectre_target_headers(
   GenerateCoordinateMap.hpp
   None.hpp
   RegisterDerivedWithCharm.hpp
+  RotationAboutZAxis.hpp
   ScalingAndZRotation.hpp
   SphericalCompression.hpp
   TimeDependence.hpp
-  UniformRotationAboutZAxis.hpp
   UniformTranslation.hpp
   )
 

@@ -20,8 +20,8 @@
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/TimeDependent/Rotation.hpp"
+#include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
-#include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
@@ -67,9 +67,8 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
   // We downcast to the expected derived class to make sure that factory
   // creation worked correctly. In order to maximize code reuse this check is
   // done here as opposed to separately elsewhere.
-  const auto* const time_dep =
-      dynamic_cast<const UniformRotationAboutZAxis<MeshDim>*>(
-          time_dep_unique_ptr.get());
+  const auto* const time_dep = dynamic_cast<const RotationAboutZAxis<MeshDim>*>(
+      time_dep_unique_ptr.get());
   REQUIRE(time_dep != nullptr);
 
   // Test coordinate maps
@@ -171,9 +170,9 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
 
 void test_equivalence() {
   {
-    UniformRotationAboutZAxis<2> ur0{1.0, 2.0};
-    UniformRotationAboutZAxis<2> ur1{1.2, 2.0};
-    UniformRotationAboutZAxis<2> ur2{1.0, 3.0};
+    RotationAboutZAxis<2> ur0{1.0, 2.0, 0.1, 0.08};
+    RotationAboutZAxis<2> ur1{1.2, 2.0, 0.3, 0.07};
+    RotationAboutZAxis<2> ur2{1.0, 3.0, 0.3, 0.08};
     CHECK(ur0 == ur0);
     CHECK_FALSE(ur0 != ur0);
     CHECK(ur0 != ur1);
@@ -182,9 +181,9 @@ void test_equivalence() {
     CHECK_FALSE(ur0 == ur2);
   }
   {
-    UniformRotationAboutZAxis<3> ur0{1.0, 2.0};
-    UniformRotationAboutZAxis<3> ur1{1.2, 2.0};
-    UniformRotationAboutZAxis<3> ur2{1.0, 3.0};
+    RotationAboutZAxis<3> ur0{1.0, 2.0, 0.1, 0.08};
+    RotationAboutZAxis<3> ur1{1.2, 2.0, 0.3, 0.07};
+    RotationAboutZAxis<3> ur2{1.0, 3.0, 0.3, 0.08};
     CHECK(ur0 == ur0);
     CHECK_FALSE(ur0 != ur0);
     CHECK(ur0 != ur1);
@@ -194,40 +193,45 @@ void test_equivalence() {
   }
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.TimeDependence.UniformRotationAboutZAxis",
-    "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.TimeDependence.RotationAboutZAxis",
+                  "[Domain][Unit]") {
   const double initial_time = 1.3;
+  constexpr double angle = 1.5;
   constexpr double angular_velocity = 2.4;
-  // This name must match the hard coded one in UniformRotationAboutZAxis
+  constexpr double angular_acceleration = 0.27;
+  // This name must match the hard coded one in RotationAboutZAxis
   const std::string f_of_t_name = "Rotation";
   {
     // 2d
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<2>>
-        time_dep = std::make_unique<UniformRotationAboutZAxis<2>>(
-            initial_time, angular_velocity);
+        time_dep = std::make_unique<RotationAboutZAxis<2>>(
+            initial_time, angle, angular_velocity, angular_acceleration);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<2>>>(
-             "UniformRotationAboutZAxis:\n"
+             "RotationAboutZAxis:\n"
              "  InitialTime: 1.3\n"
-             "  AngularVelocity: 2.4\n"),
+             "  InitialAngle: 1.5\n"
+             "  InitialAngularVelocity: 2.4\n"
+             "  InitialAngularAcceleration: 0.27\n"),
          initial_time, f_of_t_name);
   }
 
   {
     // 3d
     const std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
-        time_dep = std::make_unique<UniformRotationAboutZAxis<3>>(
-            initial_time, angular_velocity);
+        time_dep = std::make_unique<RotationAboutZAxis<3>>(
+            initial_time, angle, angular_velocity, angular_acceleration);
     test(time_dep, initial_time, f_of_t_name);
     test(time_dep->get_clone(), initial_time, f_of_t_name);
 
     test(TestHelpers::test_creation<std::unique_ptr<TimeDependence<3>>>(
-             "UniformRotationAboutZAxis:\n"
+             "RotationAboutZAxis:\n"
              "  InitialTime: 1.3\n"
-             "  AngularVelocity: 2.4\n"),
+             "  InitialAngle: 1.5\n"
+             "  InitialAngularVelocity: 2.4\n"
+             "  InitialAngularAcceleration: 0.27\n"),
          initial_time, f_of_t_name);
   }
 

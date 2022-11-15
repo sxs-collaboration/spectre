@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
+#include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 
 #include <array>
 #include <cstddef>
@@ -30,21 +30,26 @@ namespace domain {
 namespace creators::time_dependence {
 
 template <size_t MeshDim>
-UniformRotationAboutZAxis<MeshDim>::UniformRotationAboutZAxis(
-    const double initial_time, const double angular_velocity)
-    : initial_time_(initial_time), angular_velocity_(angular_velocity) {}
+RotationAboutZAxis<MeshDim>::RotationAboutZAxis(
+    double initial_time, double initial_angle, double initial_angular_velocity,
+    double initial_angular_acceleration)
+    : initial_time_(initial_time),
+      initial_angle_(initial_angle),
+      initial_angular_velocity_(initial_angular_velocity),
+      initial_angular_acceleration_(initial_angular_acceleration) {}
 
 template <size_t MeshDim>
 std::unique_ptr<TimeDependence<MeshDim>>
-UniformRotationAboutZAxis<MeshDim>::get_clone() const {
-  return std::make_unique<UniformRotationAboutZAxis>(initial_time_,
-                                                     angular_velocity_);
+RotationAboutZAxis<MeshDim>::get_clone() const {
+  return std::make_unique<RotationAboutZAxis>(initial_time_, initial_angle_,
+                                              initial_angular_velocity_,
+                                              initial_angular_acceleration_);
 }
 
 template <size_t MeshDim>
 std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
-UniformRotationAboutZAxis<MeshDim>::block_maps_grid_to_inertial(
+RotationAboutZAxis<MeshDim>::block_maps_grid_to_inertial(
     const size_t number_of_blocks) const {
   ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
   std::vector<std::unique_ptr<
@@ -60,7 +65,7 @@ UniformRotationAboutZAxis<MeshDim>::block_maps_grid_to_inertial(
 template <size_t MeshDim>
 std::unordered_map<std::string,
                    std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-UniformRotationAboutZAxis<MeshDim>::functions_of_time(
+RotationAboutZAxis<MeshDim>::functions_of_time(
     const std::unordered_map<std::string, double>& initial_expiration_times)
     const {
   std::unordered_map<std::string,
@@ -81,21 +86,22 @@ UniformRotationAboutZAxis<MeshDim>::functions_of_time(
   result[function_of_time_name_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<3>>(
           initial_time_,
-          std::array<DataVector, 4>{{{0.0}, {angular_velocity_}, {0.0}, {0.0}}},
+          std::array<DataVector, 4>{{{initial_angle_},
+                                     {initial_angular_velocity_},
+                                     {initial_angular_acceleration_},
+                                     {0.0}}},
           expiration_time);
   return result;
 }
 
 template <>
-auto UniformRotationAboutZAxis<2>::grid_to_inertial_map() const
-    -> GridToInertialMap {
+auto RotationAboutZAxis<2>::grid_to_inertial_map() const -> GridToInertialMap {
   return GridToInertialMap{domain::CoordinateMaps::TimeDependent::Rotation<2>{
       function_of_time_name_}};
 }
 
 template <>
-auto UniformRotationAboutZAxis<3>::grid_to_inertial_map() const
-    -> GridToInertialMap {
+auto RotationAboutZAxis<3>::grid_to_inertial_map() const -> GridToInertialMap {
   using ProductMap = domain::CoordinateMaps::TimeDependent::ProductOf2Maps<
       domain::CoordinateMaps::TimeDependent::Rotation<2>,
       domain::CoordinateMaps::Identity<1>>;
@@ -106,28 +112,30 @@ auto UniformRotationAboutZAxis<3>::grid_to_inertial_map() const
 }
 
 template <size_t Dim>
-bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) {
+bool operator==(const RotationAboutZAxis<Dim>& lhs,
+                const RotationAboutZAxis<Dim>& rhs) {
   return lhs.initial_time_ == rhs.initial_time_ and
-         lhs.angular_velocity_ == rhs.angular_velocity_;
+         lhs.initial_angle_ == rhs.initial_angle_ and
+         lhs.initial_angular_velocity_ == rhs.initial_angular_velocity_ and
+         lhs.initial_angular_acceleration_ == rhs.initial_angular_acceleration_;
 }
 
 template <size_t Dim>
-bool operator!=(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs) {
+bool operator!=(const RotationAboutZAxis<Dim>& lhs,
+                const RotationAboutZAxis<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                          \
-  template class UniformRotationAboutZAxis<GET_DIM(data)>;              \
-  template bool operator==                                              \
-      <GET_DIM(data)>(const UniformRotationAboutZAxis<GET_DIM(data)>&,  \
-                      const UniformRotationAboutZAxis<GET_DIM(data)>&); \
-  template bool operator!=                                              \
-      <GET_DIM(data)>(const UniformRotationAboutZAxis<GET_DIM(data)>&,  \
-                      const UniformRotationAboutZAxis<GET_DIM(data)>&);
+#define INSTANTIATION(r, data)                                   \
+  template class RotationAboutZAxis<GET_DIM(data)>;              \
+  template bool operator==                                       \
+      <GET_DIM(data)>(const RotationAboutZAxis<GET_DIM(data)>&,  \
+                      const RotationAboutZAxis<GET_DIM(data)>&); \
+  template bool operator!=                                       \
+      <GET_DIM(data)>(const RotationAboutZAxis<GET_DIM(data)>&,  \
+                      const RotationAboutZAxis<GET_DIM(data)>&);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (2, 3))
 

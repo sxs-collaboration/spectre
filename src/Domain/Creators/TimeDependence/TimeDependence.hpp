@@ -34,7 +34,7 @@ template <size_t MeshDim>
 class ScalingAndZRotation;
 class SphericalCompression;
 template <size_t MeshDim>
-class UniformRotationAboutZAxis;
+class RotationAboutZAxis;
 template <size_t MeshDim, size_t Index = 0>
 class UniformTranslation;
 }  // namespace domain::creators::time_dependence
@@ -57,9 +57,9 @@ struct TimeDependence {
  private:
   using creatable_classes_1d = tmpl::list<>;
   using creatable_classes_2d =
-      tmpl::list<UniformRotationAboutZAxis<2>, ScalingAndZRotation<2>>;
+      tmpl::list<RotationAboutZAxis<2>, ScalingAndZRotation<2>>;
   using creatable_classes_3d =
-      tmpl::list<SphericalCompression, UniformRotationAboutZAxis<3>,
+      tmpl::list<SphericalCompression, RotationAboutZAxis<3>,
                  ScalingAndZRotation<3>>;
   using creatable_classes_any_dim =
       tmpl::list<CubicScale<MeshDim>, None<MeshDim>,
@@ -127,7 +127,7 @@ TimeDependence<MeshDim>::~TimeDependence() = default;
 #include "Domain/CoordinateMaps/TimeDependent/ProductMaps.tpp"
 #include "Domain/Creators/TimeDependence/CubicScale.hpp"
 #include "Domain/Creators/TimeDependence/None.hpp"
+#include "Domain/Creators/TimeDependence/RotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/ScalingAndZRotation.hpp"
 #include "Domain/Creators/TimeDependence/SphericalCompression.hpp"
-#include "Domain/Creators/TimeDependence/UniformRotationAboutZAxis.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"

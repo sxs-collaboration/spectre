@@ -45,7 +45,7 @@ struct Inertial;
 
 namespace domain::creators::time_dependence {
 /*!
- * \brief A uniform rotation about the \f$z\f$ axis:
+ * \brief A spatially uniform rotation about the \f$z\f$ axis:
  * \f{eqnarray*}
  * x &\to& x \cos \alpha(t) - y \sin \alpha(t)\text{,} \\
  * y &\to& x \sin \alpha(t) + y \cos \alpha(t)\text{,}
@@ -56,10 +56,9 @@ namespace domain::creators::time_dependence {
  * (and therefore unimplemented here) for 1 spatial dimension.
  */
 template <size_t MeshDim>
-class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
-  static_assert(
-      MeshDim > 1,
-      "UniformRotationAboutZAxis<MeshDim> undefined for MeshDim == 1");
+class RotationAboutZAxis final : public TimeDependence<MeshDim> {
+  static_assert(MeshDim > 1,
+                "RotationAboutZAxis<MeshDim> undefined for MeshDim == 1");
 
  private:
   using Identity = domain::CoordinateMaps::Identity<1>;
@@ -80,11 +79,20 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
     static constexpr Options::String help = {
         "The initial time of the function of time"};
   };
+  struct InitialAngle {
+    using type = double;
+    static constexpr Options::String help = {"The initial angle."};
+  };
   /// \brief The \f$x\f$-, \f$y\f$-, and \f$z\f$-velocity.
-  struct AngularVelocity {
+  struct InitialAngularVelocity {
     using type = double;
     static constexpr Options::String help = {
-        "The angular velocity of the map."};
+        "The initial angular velocity of the map."};
+  };
+  struct InitialAngularAcceleration {
+    using type = double;
+    static constexpr Options::String help = {
+        "The initial angular acceleration of the map."};
   };
 
   using GridToInertialMap = detail::generate_coordinate_map_t<
@@ -93,21 +101,23 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
                                      domain::CoordinateMaps::TimeDependent::
                                          ProductOf2Maps<Rotation, Identity>>>>;
 
-  using options = tmpl::list<InitialTime, AngularVelocity>;
+  using options = tmpl::list<InitialTime, InitialAngle, InitialAngularVelocity,
+                             InitialAngularAcceleration>;
 
   static constexpr Options::String help = {
       "A spatially uniform rotation about the z axis initialized with a "
       "constant angular velocity."};
 
-  UniformRotationAboutZAxis() = default;
-  ~UniformRotationAboutZAxis() override = default;
-  UniformRotationAboutZAxis(const UniformRotationAboutZAxis&) = delete;
-  UniformRotationAboutZAxis(UniformRotationAboutZAxis&&) = default;
-  UniformRotationAboutZAxis& operator=(const UniformRotationAboutZAxis&) =
-      delete;
-  UniformRotationAboutZAxis& operator=(UniformRotationAboutZAxis&&) = default;
+  RotationAboutZAxis() = default;
+  ~RotationAboutZAxis() override = default;
+  RotationAboutZAxis(const RotationAboutZAxis&) = delete;
+  RotationAboutZAxis(RotationAboutZAxis&&) = default;
+  RotationAboutZAxis& operator=(const RotationAboutZAxis&) = delete;
+  RotationAboutZAxis& operator=(RotationAboutZAxis&&) = default;
 
-  UniformRotationAboutZAxis(double initial_time, double angular_velocity);
+  RotationAboutZAxis(double initial_time, double initial_angle,
+                     double initial_angular_velocity,
+                     double initial_angular_acceleration);
 
   auto get_clone() const -> std::unique_ptr<TimeDependence<MeshDim>> override;
 
@@ -140,21 +150,25 @@ class UniformRotationAboutZAxis final : public TimeDependence<MeshDim> {
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)
-  friend bool operator==(const UniformRotationAboutZAxis<LocalDim>& lhs,
-                         const UniformRotationAboutZAxis<LocalDim>& rhs);
+  friend bool operator==(const RotationAboutZAxis<LocalDim>& lhs,
+                         const RotationAboutZAxis<LocalDim>& rhs);
 
   GridToInertialMap grid_to_inertial_map() const;
 
   double initial_time_{std::numeric_limits<double>::signaling_NaN()};
-  double angular_velocity_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_angle_{std::numeric_limits<double>::signaling_NaN()};
+  double initial_angular_velocity_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double initial_angular_acceleration_{
+      std::numeric_limits<double>::signaling_NaN()};
   inline static const std::string function_of_time_name_{"Rotation"};
 };
 
 template <size_t Dim>
-bool operator==(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs);
+bool operator==(const RotationAboutZAxis<Dim>& lhs,
+                const RotationAboutZAxis<Dim>& rhs);
 
 template <size_t Dim>
-bool operator!=(const UniformRotationAboutZAxis<Dim>& lhs,
-                const UniformRotationAboutZAxis<Dim>& rhs);
+bool operator!=(const RotationAboutZAxis<Dim>& lhs,
+                const RotationAboutZAxis<Dim>& rhs);
 }  // namespace domain::creators::time_dependence
