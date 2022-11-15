@@ -10,6 +10,7 @@
 #include <memory>
 #include <pup.h>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -32,11 +33,17 @@
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
+#include "IO/H5/AccessType.hpp"
+#include "IO/H5/File.hpp"
+#include "IO/H5/VolumeData.hpp"
+#include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/Actions/DumpInterpolatorVolumeData.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
@@ -52,9 +59,12 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/Rational.hpp"
@@ -256,7 +266,7 @@ struct mock_interpolation_target {
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
-  using chare_type = ActionTesting::MockArrayChare;
+  using chare_type = ActionTesting::MockGroupChare;
   using array_index = size_t;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
       intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
@@ -266,8 +276,28 @@ struct mock_interpolator {
           Parallel::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::PostFailureCleanup,
+          tmpl::list<intrp::Actions::DumpInterpolatorVolumeData<
+              tmpl::list<::Tags::TimeStepId>>>>>;
   using component_being_mocked = void;  // not needed.
+};
+
+template <typename Metavariables>
+struct mock_observer_writer {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockNodeGroupChare;
+  using array_index = size_t;
+  using component_being_mocked = observers::ObserverWriter<Metavariables>;
+  using const_global_cache_tags = tmpl::list<observers::Tags::VolumeFileName>;
+
+  using simple_tags =
+      typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>>;
 };
 
 struct MockMetavariables {
@@ -285,10 +315,12 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
+  using observed_reduction_data_tags = tmpl::list<>;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
-      mock_interpolator<MockMetavariables>>;
+      mock_interpolator<MockMetavariables>,
+      mock_observer_writer<MockMetavariables>>;
 };
 
 // Create volume data and send it to the interpolator.
@@ -327,8 +359,9 @@ void create_volume_data_and_send_it_to_interpolator(
   }
 }
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
-                  "[Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Interpolator.ReceiveAndDumpVolumeData",
+    "[Unit]") {
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
@@ -337,6 +370,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
+  using observer_writer = mock_observer_writer<metavars>;
 
   // Make an InterpolatedVarsHolders containing the target points.
   const auto domain_creator =
@@ -367,10 +401,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
     return vars_holders_l;
   }();
 
+  const std::string filename{"TestDumpIntrpData"};
+  if (file_system::check_if_file_exists(filename + "0.h5")) {
+    file_system::rm(filename + "0.h5", true);
+  }
+
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain()}};
-  ActionTesting::emplace_component_and_initialize<interp_component>(
-      &runner, 0,
+      {domain_creator.create_domain(), filename}};
+  ActionTesting::emplace_group_component_and_initialize<interp_component>(
+      &runner,
       {0_st,
        typename intrp::Tags::VolumeVarsInfo<
            metavars,
@@ -381,6 +420,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
+  ActionTesting::emplace_nodegroup_component<observer_writer>(
+      make_not_null(&runner));
+  ActionTesting::next_action<observer_writer>(make_not_null(&runner), 0);
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Register);
 
   // Create Element_ids.
@@ -434,6 +476,56 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   CHECK(volume_vars_info.size() == 1);
   CHECK(volume_vars_info.at(temporal_id).size() == element_ids.size());
 
+  // Now that VolumeVarsInfo is full, test dumping the data
+  // Go to the post failure cleanup phase just for now so we can run the action
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Parallel::Phase::PostFailureCleanup);
+
+  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  // Only one threaded action because we only have one temporal Id type and one
+  // time
+  ActionTesting::invoke_queued_threaded_action<observer_writer>(
+      make_not_null(&runner), 0);
+
+  {
+    const h5::H5File<h5::AccessType::ReadOnly> h5file{filename + "0.h5"s};
+    const auto& vol_file =
+        h5file.get<h5::VolumeData>("/InterpolatorVolumeData_TimeStepId", 0);
+    const auto written_data = vol_file.get_data_by_element(
+        std::nullopt, std::nullopt,
+        std::vector<std::string>{db::tag_name<gr::Tags::Lapse<DataVector>>()});
+    // Only wrote data for one time
+    CHECK(written_data.size() == 1);
+    const auto& written_tuple = written_data[0];
+    const auto& observation_value = get<1>(written_tuple);
+    const auto& vec_element_vol_data = get<2>(written_tuple);
+
+    CHECK(
+        observation_value ==
+        intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id));
+
+    for (const auto& [temporal_id_val, info_map] : volume_vars_info) {
+      for (const auto& [element_id, info] : info_map) {
+        const std::string element_name = MakeString{} << element_id;
+
+        const ElementVolumeData written_element_vol_data = *alg::find_if(
+            vec_element_vol_data,
+            [&element_name](const ElementVolumeData& volume_data) {
+              return volume_data.element_name == element_name;
+            });
+
+        const ElementVolumeData element_vol_data =
+            intrp::Actions::detail::construct_element_volume_data<
+                ::Tags::TimeStepId, metavars>(element_id, info);
+
+        CHECK(element_vol_data == written_element_vol_data);
+      }
+    }
+  }
+
+  // Go back to the testing phase
+  ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
+
   // Now we will test that if temporal_ids_when_data_has_been_interpolated
   // is set for this temporal_id, subsequent calls of
   // InterpolatorReceiveVolumeData have no effect.
@@ -461,5 +553,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<target_component>(0));
+
+  // Remove file
+  if (file_system::check_if_file_exists(filename + "0.h5")) {
+    file_system::rm(filename + "0.h5", true);
+  }
 }
 }  // namespace
