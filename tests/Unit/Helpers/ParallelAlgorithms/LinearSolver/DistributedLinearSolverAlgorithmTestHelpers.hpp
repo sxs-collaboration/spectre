@@ -127,7 +127,7 @@ using operator_applied_to_fields_tag =
 // entry of the vectors provided in the input file. This function translates the
 // element to an index into these vectors. We assume the domain is composed of a
 // single block.
-size_t get_index(const ElementId<1>& element_id) {
+inline size_t get_index(const ElementId<1>& element_id) {
   return element_id.segment_id(0).index();
 }
 
