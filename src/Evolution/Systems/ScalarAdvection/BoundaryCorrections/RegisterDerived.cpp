@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/RegisterDerived.hpp"
+
 #include "Evolution/Systems/ScalarAdvection/BoundaryCorrections/Factory.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "ControlSystem/ControlErrors/Size/RegisterDerivedWithCharm.hpp"
+
 #include <memory>
 #include <pup.h>
 

@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"

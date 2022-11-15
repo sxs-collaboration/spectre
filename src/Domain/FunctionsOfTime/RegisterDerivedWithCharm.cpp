@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+
 #include <cstddef>
 #include <memory>
 #include <pup.h>

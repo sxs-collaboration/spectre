@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/RegisterDerived.hpp"
+
 #include "Evolution/Systems/RelativisticEuler/Valencia/BoundaryCorrections/Factory.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 

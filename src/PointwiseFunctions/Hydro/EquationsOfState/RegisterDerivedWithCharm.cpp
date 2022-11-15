@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
+
 #include <cstddef>
 
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
