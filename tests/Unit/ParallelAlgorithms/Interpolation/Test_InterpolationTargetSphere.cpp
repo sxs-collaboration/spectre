@@ -54,7 +54,6 @@ struct MockMetavariables {
                      MockMetavariables, InterpolationTargetA>,
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
 };
-}  // namespace
 
 void test_interpolation_target_sphere(
     const intrp::AngularOrdering angular_ordering) {
@@ -133,6 +132,7 @@ void test_interpolation_target_sphere(
       intrp::Tags::Sphere<MockMetavariables::InterpolationTargetA>>(
       domain_creator, sphere_opts, expected_block_coord_holders);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Sphere",
                   "[Unit]") {

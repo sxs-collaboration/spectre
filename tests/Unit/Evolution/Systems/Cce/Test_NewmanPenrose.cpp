@@ -12,7 +12,7 @@
 #include "Framework/SetupLocalPythonEnvironment.hpp"
 
 namespace Cce {
-
+namespace {
 void pypp_test_volume_weyl() {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
@@ -22,6 +22,7 @@ void pypp_test_volume_weyl() {
                                     "NewmanPenrose", {"psi0"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.NewmanPenrose", "[Unit][Cce]") {
   pypp_test_volume_weyl();

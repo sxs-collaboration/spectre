@@ -52,6 +52,7 @@
 #endif
 }
 
+namespace {
 void test_modal_vector_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
 
@@ -87,6 +88,7 @@ void test_modal_vector_math() {
   // have been moved to `Test_ModalVectorInhomogeneousOperations.cpp` in an
   // effort to better parallelize the build.
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ModalVector", "[DataStructures][Unit]") {
   {

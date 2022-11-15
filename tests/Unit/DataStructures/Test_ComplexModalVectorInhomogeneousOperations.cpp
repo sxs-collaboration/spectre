@@ -20,6 +20,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
+namespace {
 void test_complex_modal_vector_inhomogeneous_binary_math() {
   const TestHelpers::VectorImpl::Bound generic{{-10.0, 10.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.1, 10.0}};
@@ -65,6 +66,7 @@ void test_complex_modal_vector_inhomogeneous_binary_math() {
       TestHelpers::VectorImpl::TestKind::GivenOrderOfArgumentsOnly,
       ComplexModalVector, ModalVector>(just_modal_vector_with_modal_vector_ops);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexModalVector.InhomogeneousOperations",

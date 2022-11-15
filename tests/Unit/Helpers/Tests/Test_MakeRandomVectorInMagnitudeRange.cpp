@@ -11,6 +11,7 @@
 #include "Helpers/DataStructures/MakeRandomVectorInMagnitudeRange.hpp"
 #include "Helpers/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 
+namespace {
 void check_random_values(const double v, const double bound1,
                          const double bound2) {
   CHECK(approx(v) >= std::min(bound1, bound2));
@@ -109,6 +110,7 @@ void test_range(const gsl::not_null<std::mt19937*> generator,
 
   check_random_values(vector_mag, r1, r2);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Test.TestHelpers.MakeRandomVectorInMagnitudeRange",
                   "[Unit]") {

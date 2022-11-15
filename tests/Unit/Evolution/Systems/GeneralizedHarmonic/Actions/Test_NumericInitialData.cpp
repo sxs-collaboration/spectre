@@ -144,8 +144,6 @@ struct Metavariables {
                                     MockVolumeDataReader<Metavariables>>;
 };
 
-}  // namespace
-
 void test_numeric_initial_data(
     const typename detail::Tags::NumericInitialDataVariables<
         TestOptionGroup>::type& selected_vars,
@@ -258,6 +256,7 @@ void test_numeric_initial_data(
       get_element_tag(Tags::Phi<3, Frame::Inertial>{}),
       (get<Tags::Phi<3, Frame::Inertial>>(kerr_gh_vars)), custom_approx);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Gh.NumericInitialData",
                   "[Unit][Evolution]") {

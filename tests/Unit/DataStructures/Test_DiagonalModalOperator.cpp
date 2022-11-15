@@ -51,6 +51,7 @@
 #endif
 }
 
+namespace {
 void test_diagonal_modal_operator_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.01, 100.0}};
@@ -82,6 +83,7 @@ void test_diagonal_modal_operator_math() {
   // `Test_MoreDiagonalModalOperatorMath.cpp` in an effort to better
   // parallelize the build.
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DiagonalModalOperator",
                   "[DataStructures][Unit]") {

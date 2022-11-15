@@ -43,6 +43,8 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
+
+namespace {
 struct TestMetavariables;
 template <class Metavariables>
 struct NoOpsComponent;
@@ -64,6 +66,7 @@ TestAlgorithmArrayInstance& operator++(TestAlgorithmArrayInstance& instance) {
   instance.i++;
   return instance;
 }
+}  // namespace
 
 namespace std {
 template <>
@@ -74,6 +77,7 @@ struct hash<TestAlgorithmArrayInstance> {
 };
 }  // namespace std
 
+namespace {
 struct ElementIndex {};
 
 struct CountActionsCalled : db::SimpleTag {
@@ -678,6 +682,7 @@ struct TestMetavariables {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
 };
+}  // namespace
 
 // [charm_init_funcs_example]
 static const std::vector<void (*)()> charm_init_node_funcs{

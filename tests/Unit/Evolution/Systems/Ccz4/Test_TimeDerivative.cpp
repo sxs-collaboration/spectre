@@ -1239,7 +1239,6 @@ void test_kerrschild(const Ccz4::EvolveShift evolve_shift,
   CHECK_ITERABLE_CUSTOM_APPROX(dt_field_p_actual, dt_field_p_expected,
                                approx_12m);
 }
-}  // namespace
 
 // Test first order CCZ4 against Minkowski and KerrSchild
 void test(const Ccz4::EvolveShift evolve_shift,
@@ -1247,6 +1246,7 @@ void test(const Ccz4::EvolveShift evolve_shift,
   test_minkowski(evolve_shift, slicing_condition_type);
   test_kerrschild(evolve_shift, slicing_condition_type);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Ccz4.TimeDerivative",
                   "[Unit][Evolution]") {
