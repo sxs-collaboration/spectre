@@ -20,25 +20,20 @@ spectre_target_headers(
   Connectivity.hpp
   )
 
+# Notes:
+# - The H5 lib depends in IO for the connectivity. Keep that in mind when adding
+#   dependencies here.
 target_link_libraries(
   ${LIBRARY}
   PUBLIC
-  Boost::boost
   DataStructures
   ErrorHandling
-  EventsAndTriggers
-  hdf5::hdf5
-  Options
-  Spectral
   Utilities
-  PRIVATE
-  Informer
-  INTERFACE
-  Spectral
-  SystemUtilities
   )
 
 add_subdirectory(H5)
-add_subdirectory(Importers)
 add_subdirectory(Logging)
+
+# These two libraries should move to ParallelAlgorithms
+add_subdirectory(Importers)
 add_subdirectory(Observer)

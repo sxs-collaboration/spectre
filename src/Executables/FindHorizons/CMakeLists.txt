@@ -9,8 +9,8 @@ set(LIBS_TO_LINK
   GeneralRelativity
   Informer
   Importers
-  IO
   LinearOperators
+  Observer
   Options
   Parallel
   ParallelInterpolation

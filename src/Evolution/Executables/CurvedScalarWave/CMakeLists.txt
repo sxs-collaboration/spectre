@@ -12,14 +12,14 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   GeneralRelativity
-  IO
   Informer
   LinearOperators
   MathFunctions
-  Time
+  Observer
   Options
   Parallel
   PhaseControl
+  Time
   Utilities
   WaveEquationSolutions
 )

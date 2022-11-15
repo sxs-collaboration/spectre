@@ -16,6 +16,7 @@ target_link_libraries(
   PUBLIC
   Cce
   DataStructures
+  H5
   Spectral
   Utilities
   )

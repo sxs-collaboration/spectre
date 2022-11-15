@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(LIBRARY Observer)
+
+add_spectre_library(${LIBRARY})
+
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
@@ -26,6 +30,22 @@ spectre_target_headers(
   TypeOfObservation.hpp
   VolumeActions.hpp
   WriteSimpleData.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Boost::boost
+  Charmxx::pup
+  DataStructures
+  Domain
+  ErrorHandling
+  H5
+  Options
+  Parallel
+  Utilities
+  INTERFACE
+  EventsAndTriggers
   )
 
 add_subdirectory(Actions)

@@ -7,8 +7,8 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   Informer
-  IO
   LinearOperators
+  Observer
   Options
   Parallel
   Time

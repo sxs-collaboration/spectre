@@ -24,13 +24,13 @@ set(LIBS_TO_LINK
   GrMhdAnalyticData
   GrMhdSolutions
   Hydro
-  IO
   Informer
   Limiters
   LinearOperators
   MathFunctions
   ParallelInterpolation
   RelativisticEulerSolutions
+  Observer
   Options
   Parallel
   PhaseControl

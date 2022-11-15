@@ -36,11 +36,11 @@ set(LIBS_TO_LINK
   GrMhdAnalyticData
   GrMhdSolutions
   Hydro
-  IO
   Informer
   Limiters
   LinearOperators
   MathFunctions
+  Observer
   Options
   Parallel
   RelativisticEulerSolutions

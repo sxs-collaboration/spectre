@@ -49,7 +49,6 @@ target_link_libraries(
   DgSubcell
   DgSubcellHelpers
   ErrorHandling
-  IO
   Parallel
   Spectral
   )

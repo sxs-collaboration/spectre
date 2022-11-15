@@ -20,6 +20,7 @@ target_link_libraries(
   ControlSystem
   Domain
   DataStructures
+  Observer
   Parallel
   Time
   Utilities

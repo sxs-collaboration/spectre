@@ -27,7 +27,7 @@ target_link_libraries(
   Events
   EventsAndTriggers
   Interpolation
-  IO
+  Observer
   Spectral
   Time
   Utilities

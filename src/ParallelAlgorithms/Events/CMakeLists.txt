@@ -28,6 +28,7 @@ target_link_libraries(
   EventsAndTriggers
   Interpolation
   LinearOperators
+  Observer
   Options
   Parallel
   Spectral

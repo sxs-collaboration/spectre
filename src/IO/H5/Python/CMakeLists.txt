@@ -21,7 +21,7 @@ spectre_python_link_libraries(
   PRIVATE
   Boost::boost
   DataStructures
-  IO
+  H5
   pybind11::module
   )
 

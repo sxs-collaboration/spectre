@@ -1,6 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+set(LIBRARY H5)
+
+add_spectre_library(${LIBRARY})
+
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
@@ -40,6 +44,20 @@ spectre_target_headers(
   Version.hpp
   VolumeData.hpp
   Wrappers.hpp
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PUBLIC
+  Boost::boost
+  DataStructures
+  ErrorHandling
+  hdf5::hdf5
+  Utilities
+  Spectral
+  PRIVATE
+  Informer
+  IO
   )
 
 add_subdirectory(Python)

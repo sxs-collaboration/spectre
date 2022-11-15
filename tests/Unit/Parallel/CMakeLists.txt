@@ -10,8 +10,9 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Boost::program_options
   Charmxx::main
   ErrorHandling
+  H5
   Informer
-  IO
+  Observer
   Options
   Parallel
   ParallelHelpers
@@ -147,8 +148,22 @@ add_test_library(
   ${LIBRARY}
   "Parallel"
   "${LIBRARY_SOURCES}"
-  "IO;Options;Parallel;SystemUtilities"
+  ""
   )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Actions
+  DataStructures
+  DataStructuresHelpers
+  DomainStructure
+  ObserverHelpers
+  Options
+  Parallel
+  SystemUtilities
+  Utilities
+)
 
 add_dependencies(
   ${LIBRARY}

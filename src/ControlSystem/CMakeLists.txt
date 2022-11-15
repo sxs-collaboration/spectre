@@ -44,7 +44,8 @@ target_link_libraries(
   Domain
   ErrorHandling
   FunctionsOfTime
-  IO
+  INTERFACE
+  Observer
   )
 
 add_subdirectory(Actions)

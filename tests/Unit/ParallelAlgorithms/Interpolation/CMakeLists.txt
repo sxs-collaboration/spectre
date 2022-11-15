@@ -46,11 +46,12 @@ target_link_libraries(
   DomainCreators
   DomainStructure
   GeneralRelativitySolutions
+  H5
   Interpolation
-  IO
   IoTestHelpers
   Logging
   MathFunctions
+  Observer
   ParallelInterpolation
   RelativisticEulerSolutions
   Spectral

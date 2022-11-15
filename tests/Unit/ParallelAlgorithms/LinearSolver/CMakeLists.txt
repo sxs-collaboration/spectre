@@ -11,7 +11,16 @@ add_test_library(
   ${LIBRARY}
   "ParallelAlgorithms/LinearSolver/"
   "${LIBRARY_SOURCES}"
-  "Convergence;DataStructures;Options;ParallelLinearSolver"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Convergence
+  DataStructures
+  Options
+  ParallelLinearSolver
   )
 
 add_dependencies(
@@ -26,8 +35,8 @@ set(INTEGRATION_TEST_LINK_LIBRARIES
   Charmxx::main
   DataStructures
   ErrorHandling
-  IO
   Informer
+  Observer
   Parallel
   ParallelLinearSolver
   )

@@ -42,6 +42,7 @@ target_link_libraries(
   PRIVATE
   LinearOperators
   INTERFACE
+  Observer
   SystemUtilities
   )
 

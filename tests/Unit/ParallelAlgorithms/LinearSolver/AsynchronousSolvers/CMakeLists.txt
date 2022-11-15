@@ -19,6 +19,6 @@ target_link_libraries(
   PRIVATE
   Convergence
   DataStructures
-  IO
+  H5
   ParallelLinearSolver
   )

@@ -38,10 +38,10 @@ target_link_libraries(
   Convergence
   DiscontinuousGalerkin
   Domain
-  IO
   Initialization
   LinearSolver
   Logging
+  Observer
   Options
   Parallel
   ParallelLinearSolver

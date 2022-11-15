@@ -62,9 +62,10 @@ target_link_libraries(
   ErrorHandling
   GeneralizedHarmonic
   GeneralRelativity
-  IO
+  H5
   Interpolation
   LinearOperators
+  Observer
   Options
   Spectral
   Utilities

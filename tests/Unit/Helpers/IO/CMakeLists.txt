@@ -23,9 +23,9 @@ target_link_libraries(
   PRIVATE
   Boost::boost
   DataStructures
-  IO
   ErrorHandling
   Framework
+  H5
   Utilities
   )
 

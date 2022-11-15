@@ -12,10 +12,10 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   FiniteDifference
-  IO
   Informer
   Limiters
   LinearOperators
+  Observer
   Options
   Parallel
   PhaseControl

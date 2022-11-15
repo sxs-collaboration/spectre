@@ -38,7 +38,6 @@ target_link_libraries(
   DomainStructure
   GeneralRelativitySolutions
   Interpolation
-  IO
   Logging
   MathFunctions
   RelativisticEulerSolutions

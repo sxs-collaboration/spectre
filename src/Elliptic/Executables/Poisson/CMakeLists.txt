@@ -12,9 +12,9 @@ set(LIBS_TO_LINK
   Events
   EventsAndTriggers
   Informer
-  IO
   LinearOperators
   MathFunctions
+  Observer
   Options
   Parallel
   ParallelLinearSolver
