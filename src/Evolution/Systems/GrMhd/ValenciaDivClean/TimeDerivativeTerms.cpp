@@ -9,6 +9,8 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -18,69 +20,6 @@
 #include "Utilities/Gsl.hpp"
 
 namespace grmhd::ValenciaDivClean {
-namespace detail {
-void fluxes_impl(
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
-    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-    gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
-
-    // Temporaries
-    gsl::not_null<Scalar<DataVector>*> transport_velocity,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w,
-    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
-    const Scalar<DataVector>& pressure_star_lapse_sqrt_det_spatial_metric,
-
-    // Extra args
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
-    const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity);
-
-void sources_impl(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
-    gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
-
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_s_up,
-    gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> densitized_stress,
-    gsl::not_null<Scalar<DataVector>*> h_rho_w_squared_plus_b_squared,
-
-    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
-    const Scalar<DataVector>& magnetic_field_squared,
-    const Scalar<DataVector>& one_over_w_squared,
-    const Scalar<DataVector>& pressure_star,
-    const tnsr::I<DataVector, 3, Frame::Inertial>&
-        trace_spatial_christoffel_second,
-
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
-    const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-
-    const Scalar<DataVector>& rest_mass_density,
-    const Scalar<DataVector>& electron_fraction,
-    const Scalar<DataVector>& specific_enthalpy,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    double constraint_damping_parameter);
-}  // namespace detail
-
 void TimeDerivativeTerms::apply(
     const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_d*/,
     const gsl::not_null<Scalar<DataVector>*> /*non_flux_terms_dt_tilde_ye*/,
