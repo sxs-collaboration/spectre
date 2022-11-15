@@ -17,6 +17,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
@@ -29,14 +30,17 @@ struct BlockLogical;
 }  // namespace Frame
 
 namespace domain::creators {
-Sphere::Sphere(typename InnerRadius::type inner_radius,
-               typename OuterRadius::type outer_radius,
-               typename InitialRefinement::type initial_refinement,
-               typename InitialGridPoints::type initial_number_of_grid_points,
-               typename UseEquiangularMap::type use_equiangular_map,
-               std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-                   boundary_condition,
-               const Options::Context& context)
+Sphere::Sphere(
+    typename InnerRadius::type inner_radius,
+    typename OuterRadius::type outer_radius,
+    typename InitialRefinement::type initial_refinement,
+    typename InitialGridPoints::type initial_number_of_grid_points,
+    typename UseEquiangularMap::type use_equiangular_map,
+    std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+        time_dependence,
+    std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
+        boundary_condition,
+    const Options::Context& context)
     // clang-tidy: trivially copyable
     : inner_radius_(std::move(inner_radius)),                // NOLINT
       outer_radius_(std::move(outer_radius)),                // NOLINT
@@ -45,6 +49,7 @@ Sphere::Sphere(typename InnerRadius::type inner_radius,
       initial_number_of_grid_points_(                        // NOLINT
           std::move(initial_number_of_grid_points)),         // NOLINT
       use_equiangular_map_(std::move(use_equiangular_map)),  // NOLINT
+      time_dependence_(std::move(time_dependence)),          // NOLINT
       boundary_condition_(std::move(boundary_condition)) {
   using domain::BoundaryConditions::is_none;
   if (is_none(boundary_condition_)) {
@@ -57,6 +62,10 @@ Sphere::Sphere(typename InnerRadius::type inner_radius,
   if (is_periodic(boundary_condition_)) {
     PARSE_ERROR(context,
                 "Cannot have periodic boundary conditions with a Sphere");
+  }
+  if (time_dependence_ == nullptr) {
+    time_dependence_ =
+        std::make_unique<domain::creators::time_dependence::None<3>>();
   }
 }
 
@@ -105,8 +114,28 @@ Domain<3> Sphere::create_domain() const {
     }
   }
 
-  return Domain<3>(std::move(coord_maps), corners, {},
-                   std::move(boundary_conditions_all_blocks));
+  Domain<3> domain{std::move(coord_maps),
+                   corners,
+                   {},
+                   std::move(boundary_conditions_all_blocks)};
+
+  if (not time_dependence_->is_none()) {
+    const size_t number_of_blocks = domain.blocks().size();
+    auto block_maps_grid_to_inertial =
+        time_dependence_->block_maps_grid_to_inertial(number_of_blocks);
+    auto block_maps_grid_to_distorted =
+        time_dependence_->block_maps_grid_to_distorted(number_of_blocks);
+    auto block_maps_distorted_to_inertial =
+        time_dependence_->block_maps_distorted_to_inertial(number_of_blocks);
+    for (size_t block_id = 0; block_id < number_of_blocks; ++block_id) {
+      domain.inject_time_dependent_map_for_block(
+          block_id, std::move(block_maps_grid_to_inertial[block_id]),
+          std::move(block_maps_grid_to_distorted[block_id]),
+          std::move(block_maps_distorted_to_inertial[block_id]));
+    }
+  }
+
+  return domain;
 }
 
 std::vector<std::array<size_t, 3>> Sphere::initial_extents() const {
@@ -122,5 +151,16 @@ std::vector<std::array<size_t, 3>> Sphere::initial_extents() const {
 
 std::vector<std::array<size_t, 3>> Sphere::initial_refinement_levels() const {
   return {7, make_array<3>(initial_refinement_)};
+}
+
+std::unordered_map<std::string,
+                   std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+Sphere::functions_of_time(const std::unordered_map<std::string, double>&
+                              initial_expiration_times) const {
+  if (time_dependence_->is_none()) {
+    return {};
+  } else {
+    return time_dependence_->functions_of_time(initial_expiration_times);
+  }
 }
 }  // namespace domain::creators
