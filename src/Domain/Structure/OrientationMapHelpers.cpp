@@ -200,9 +200,6 @@ std::vector<size_t> compute_offset_permutation(
   return oriented_offsets;
 }
 
-}  // namespace
-
-namespace OrientationMapHelpers_detail {
 std::vector<size_t> oriented_offset(
     const Index<1>& extents, const OrientationMap<1>& orientation_of_neighbor) {
   const Direction<1> neighbor_axis =
@@ -316,16 +313,7 @@ void orient_each_component(
     }
   }
 }
-
-template void orient_each_component(
-    const gsl::not_null<gsl::span<double>*> oriented_variables,
-    const gsl::span<const double>& variables, const size_t num_pts,
-    const std::vector<size_t>& oriented_offset);
-template void orient_each_component(
-    const gsl::not_null<gsl::span<std::complex<double>>*> oriented_variables,
-    const gsl::span<const std::complex<double>>& variables,
-    const size_t num_pts, const std::vector<size_t>& oriented_offset);
-}  // namespace OrientationMapHelpers_detail
+}  // namespace
 
 template <size_t VolumeDim>
 void orient_variables(
@@ -346,13 +334,12 @@ void orient_variables(
     return;
   }
 
-  const auto oriented_offset = OrientationMapHelpers_detail::oriented_offset(
-      extents, orientation_of_neighbor);
+  const auto oriented_extents =
+      oriented_offset(extents, orientation_of_neighbor);
   auto oriented_vars_view = gsl::make_span(result->data(), result->size());
-  OrientationMapHelpers_detail::orient_each_component(
-      make_not_null(&oriented_vars_view),
-      gsl::make_span(variables.data(), variables.size()), number_of_grid_points,
-      oriented_offset);
+  orient_each_component(make_not_null(&oriented_vars_view),
+                        gsl::make_span(variables.data(), variables.size()),
+                        number_of_grid_points, oriented_extents);
 }
 
 template <size_t VolumeDim>
@@ -376,12 +363,11 @@ void orient_variables_on_slice(
     return;
   }
 
-  const auto oriented_offset =
-      OrientationMapHelpers_detail::oriented_offset_on_slice(
-          slice_extents, sliced_dim, orientation_of_neighbor);
+  const auto oriented_offset = oriented_offset_on_slice(
+      slice_extents, sliced_dim, orientation_of_neighbor);
 
   auto oriented_vars_view = gsl::make_span(result->data(), result->size());
-  OrientationMapHelpers_detail::orient_each_component(
+  orient_each_component(
       make_not_null(&oriented_vars_view),
       gsl::make_span(variables_on_slice.data(), variables_on_slice.size()),
       number_of_grid_points, oriented_offset);

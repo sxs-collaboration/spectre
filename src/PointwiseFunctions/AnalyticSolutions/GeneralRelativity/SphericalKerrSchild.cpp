@@ -62,6 +62,7 @@ SphericalKerrSchild::IntermediateComputer<
                                            const tnsr::I<DataType, 3, Frame>& x)
     : solution_(solution), x_(x) {}
 
+namespace {
 auto dimensionful_spin(const SphericalKerrSchild& solution) {
   return solution.dimensionless_spin() * solution.mass();
 }
@@ -72,6 +73,7 @@ auto spin_a_and_squared(const SphericalKerrSchild& solution) {
       std::inner_product(spin_a.begin(), spin_a.end(), spin_a.begin(), 0.);
   return std::make_tuple(spin_a, a_squared);
 }
+}  // namespace
 
 template <typename DataType, typename Frame>
 void SphericalKerrSchild::IntermediateComputer<DataType, Frame>::operator()(

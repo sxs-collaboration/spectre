@@ -15,6 +15,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace evolution::dg::detail {
+namespace {
 // We use a separate function in the  xi direction to avoid the expensive
 // SliceIterator
 void lift_boundary_terms_gauss_points_impl_xi_dir(
@@ -102,6 +103,7 @@ void lift_boundary_terms_gauss_points_impl_xi_dir(
     }
   }
 }
+}  // namespace
 
 template <size_t Dim>
 void lift_boundary_terms_gauss_points_impl(

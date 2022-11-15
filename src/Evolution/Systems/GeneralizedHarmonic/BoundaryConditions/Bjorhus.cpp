@@ -28,7 +28,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace GeneralizedHarmonic::BoundaryConditions {
-namespace helpers {
+namespace {
 double min_characteristic_speed(const std::array<DataVector, 4>& char_speeds) {
   std::array<double, 4> min_speeds{{min(char_speeds[0]), min(char_speeds[1]),
                                     min(char_speeds[2]), min(char_speeds[3])}};
@@ -45,7 +45,7 @@ void set_bc_corr_zero_when_char_speed_is_positive(
     }
   }
 }
-}  // namespace helpers
+}  // namespace
 
 namespace detail {
 ConstraintPreservingBjorhusType
@@ -290,7 +290,7 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   }
 
   // If no point on the boundary has any incoming characteristic, return here
-  if (helpers::min_characteristic_speed(char_speeds) >= 0.) {
+  if (min_characteristic_speed(char_speeds) >= 0.) {
     std::fill(dt_spacetime_metric_correction->begin(),
               dt_spacetime_metric_correction->end(), 0.);
     std::fill(dt_pi_correction->begin(), dt_pi_correction->end(), 0.);
@@ -341,14 +341,14 @@ std::optional<std::string> ConstraintPreservingBjorhus<Dim>::dg_time_derivative(
   }
 
   // Only add corrections at grid points where the char speeds are negative
-  helpers::set_bc_corr_zero_when_char_speed_is_positive(
-      make_not_null(&bc_dt_v_psi), char_speeds[0]);
-  helpers::set_bc_corr_zero_when_char_speed_is_positive(
-      make_not_null(&bc_dt_v_zero), char_speeds[1]);
-  helpers::set_bc_corr_zero_when_char_speed_is_positive(
-      make_not_null(&bc_dt_v_plus), char_speeds[2]);
-  helpers::set_bc_corr_zero_when_char_speed_is_positive(
-      make_not_null(&bc_dt_v_minus), char_speeds[3]);
+  set_bc_corr_zero_when_char_speed_is_positive(make_not_null(&bc_dt_v_psi),
+                                               char_speeds[0]);
+  set_bc_corr_zero_when_char_speed_is_positive(make_not_null(&bc_dt_v_zero),
+                                               char_speeds[1]);
+  set_bc_corr_zero_when_char_speed_is_positive(make_not_null(&bc_dt_v_plus),
+                                               char_speeds[2]);
+  set_bc_corr_zero_when_char_speed_is_positive(make_not_null(&bc_dt_v_minus),
+                                               char_speeds[3]);
 
   // The boundary conditions here are imposed as corrections to the projections
   // of the right-hand-sides of the GH evolution equations (i.e. using Bjorhus'

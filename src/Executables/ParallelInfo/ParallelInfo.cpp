@@ -63,6 +63,7 @@ void ParallelInfo::start_node_group_check() const {
   sys::exit();
 }
 
+namespace {
 // Helper print function so that both node and pe group prints can be changed
 // easily.
 void print_info() {
@@ -85,6 +86,7 @@ void print_info() {
       sys::my_local_rank(), sys::first_proc_on_node(sys::my_node()),
       sys::node_of(sys::my_proc()), sys::local_rank_of(sys::my_proc()));
 }
+}  // namespace
 
 PeGroupReporter::PeGroupReporter(const CkCallback& cb_start_node_group_check) {
   print_info();

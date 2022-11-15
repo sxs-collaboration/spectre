@@ -24,6 +24,7 @@ std::ostream& operator<<(std::ostream& os, const Topology& topology) {
   }
 }
 
+namespace {
 std::vector<CellInTopology> cells_in_i1(const size_t number_of_points_in_i1) {
   // The number of cells in an I1 with N collocation points is N-1. Each cell
   // goes from the ith to the i+1th collocation point. This is stored in a
@@ -94,6 +95,7 @@ std::vector<CellInTopology> tensor_product_cells(
   }
   return result;
 }
+}  // namespace
 
 template <size_t Dim>
 std::vector<CellInTopology> compute_cells(const Index<Dim>& extents) {

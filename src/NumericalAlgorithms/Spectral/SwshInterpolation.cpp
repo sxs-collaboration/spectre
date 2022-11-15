@@ -156,6 +156,7 @@ void SpinWeightedSphericalHarmonic::pup(PUP::er& p) {
   p | r_prefactors_;
 }
 
+namespace {
 // A function for indexing a desired element in one of the caches stored
 // in `ClenshawRecurrenceConstants`.
 // Useful for accessing the `beta_constant`, `alpha_constant`, or
@@ -326,6 +327,7 @@ const ClenshawRecurrenceConstants<Spin>& cached_clenshaw_factors(
           });
   return lazy_clenshaw_cache(l_max);
 }
+}  // namespace
 
 SwshInterpolator::SwshInterpolator(const DataVector& theta,
                                    const DataVector& phi, const size_t l_max)
@@ -618,9 +620,6 @@ void SwshInterpolator::pup(PUP::er& p) {
 #define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INTERPOLATION_INSTANTIATION(r, data)                                  \
-  template struct ClenshawRecurrenceConstants<GET_SPIN(data)>;                \
-  template const ClenshawRecurrenceConstants<GET_SPIN(data)>&                 \
-  cached_clenshaw_factors<GET_SPIN(data)>(const size_t l_max);                \
   template void SwshInterpolator::interpolate<GET_SPIN(data)>(                \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>   \
           interpolated,                                                       \
