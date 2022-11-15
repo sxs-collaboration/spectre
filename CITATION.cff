@@ -177,6 +177,12 @@ authors:
   family-names: Morales
   given-names: Marlo
   orcid: https://orcid.org/0000-0002-0593-4318
+- affiliation: Princeton Center for Theoretical Science and Gravity Initiative, Princeton
+    University, Princeton, NJ 08544, USA and School of Natural Sciences, Institute
+    for Advanced Study, Princeton, NJ 08540, USA
+  family-names: Most
+  given-names: Elias R.
+  orcid: https://orcid.org/0000-0002-0491-1210
 - affiliation: Theoretical Astrophysics, Walter Burke Institute for Theoretical Physics,
     California Institute of Technology, Pasadena, CA 91125, USA
   family-names: Pajkos
@@ -232,8 +238,8 @@ authors:
   given-names: David
   orcid: https://orcid.org/0000-0002-5287-4389
 cff-version: 1.1.0
-date-released: 2022-10-04
-doi: 10.5281/zenodo.7144771
+date-released: 2022-11-15
+doi: 10.5281/zenodo.7324338
 keywords:
 - Software
 - Astrophysics
@@ -251,4 +257,4 @@ message: Please cite SpECTRE in any publications that make use of its code or da
 repository-code: https://github.com/sxs-collaboration/spectre
 title: SpECTRE
 url: https://spectre-code.org
-version: 2022.10.04
+version: 2022.11.15
