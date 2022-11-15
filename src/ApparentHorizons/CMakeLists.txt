@@ -45,4 +45,6 @@ target_link_libraries(
   PRIVATE
   CoordinateMaps
   Domain
+  INTERFACE
+  Observer
   )

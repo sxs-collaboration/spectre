@@ -15,5 +15,7 @@ target_link_libraries(
   Boost::boost
   Boost::program_options
   DataStructures
+  H5
+  Informer
   IO
   )

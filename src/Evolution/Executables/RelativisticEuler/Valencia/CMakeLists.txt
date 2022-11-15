@@ -10,16 +10,16 @@ set(LIBS_TO_LINK
   Evolution
   GeneralRelativitySolutions
   Hydro
-  IO
   Informer
   Limiters
   LinearOperators
   MathFunctions
   RelativisticEulerSolutions
-  Time
+  Observer
   Options
   Parallel
   PhaseControl
+  Time
   Utilities
   Valencia
   )

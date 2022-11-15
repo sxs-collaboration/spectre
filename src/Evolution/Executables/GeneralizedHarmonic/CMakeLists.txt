@@ -33,11 +33,11 @@ set(LIBS_TO_LINK
   Evolution
   GeneralRelativity
   GeneralizedHarmonic
-  IO
   Informer
   Interpolation
   LinearOperators
   MathFunctions
+  Observer
   Options
   Parallel
   ParallelInterpolation

@@ -9,15 +9,15 @@ set(LIBS_TO_LINK
   EventsAndDenseTriggers
   EventsAndTriggers
   Evolution
-  IO
   Informer
   LinearOperators
   MathFunctions
   ScalarWave
-  Time
+  Observer
   Options
   Parallel
   PhaseControl
+  Time
   Utilities
   WaveEquationSolutions
   )

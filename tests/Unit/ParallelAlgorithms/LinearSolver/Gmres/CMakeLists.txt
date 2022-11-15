@@ -20,8 +20,8 @@ target_link_libraries(
   PRIVATE
   Convergence
   DataStructures
-  IO
   Logging
+  Observer
   ParallelLinearSolver
 )
 

@@ -10,13 +10,13 @@ set(LIBS_TO_LINK
   Evolution
   GeneralRelativitySolutions
   Hydro
-  IO
   Informer
   Limiters
   LinearOperators
   MathFunctions
   M1Grey
   M1GreySolutions
+  Observer
   Options
   Parallel
   PhaseControl

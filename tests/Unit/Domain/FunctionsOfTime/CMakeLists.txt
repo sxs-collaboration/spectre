@@ -19,5 +19,17 @@ add_test_library(
   ${LIBRARY}
   "Domain/FunctionsOfTime"
   "${LIBRARY_SOURCES}"
-  "DataStructures;DomainCreators;FunctionsOfTime;IO;Informer;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  DataStructures
+  DomainCreators
+  FunctionsOfTime
+  H5
+  Informer
+  Options
+  Utilities
   )

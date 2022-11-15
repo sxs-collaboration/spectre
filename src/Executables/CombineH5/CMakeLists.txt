@@ -15,7 +15,7 @@ target_link_libraries(
   Boost::boost
   Boost::program_options
   DataStructures
-  IO
+  H5
   Parallel
   Utilities
   )

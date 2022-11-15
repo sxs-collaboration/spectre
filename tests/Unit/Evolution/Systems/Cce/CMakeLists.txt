@@ -32,5 +32,18 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/"
   "${LIBRARY_SOURCES}"
-  "Boost::boost;Cce;CceHelpers;DataStructures;IO;Options;Spectral;GeneralRelativitySolutions"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  Boost::boost
+  Cce
+  CceHelpers
+  DataStructures
+  Observer
+  Options
+  Spectral
+  GeneralRelativitySolutions
   )

@@ -40,7 +40,6 @@ set(LIBS_TO_LINK
   EventsAndTriggers
   Evolution
   Hydro
-  IO
   Informer
   Limiters
   LinearOperators
@@ -51,6 +50,7 @@ set(LIBS_TO_LINK
   NewtonianEulerLimiters
   NewtonianEulerSolutions
   NewtonianEulerSources
+  Observer
   Options
   Parallel
   PhaseControl

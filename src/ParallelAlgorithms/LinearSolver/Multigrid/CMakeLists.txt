@@ -34,8 +34,8 @@ target_link_libraries(
   DataStructures
   Domain
   Initialization
-  IO
   Logging
+  Observer
   Options
   Parallel
   ParallelLinearSolver

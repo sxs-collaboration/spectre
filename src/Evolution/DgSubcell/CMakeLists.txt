@@ -57,7 +57,6 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Domain
-  IO
   Spectral
 
   INTERFACE

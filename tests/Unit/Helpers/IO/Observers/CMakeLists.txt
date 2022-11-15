@@ -26,7 +26,7 @@ target_link_libraries(
   DataStructures
   Domain
   Framework
-  IO
+  Observer
   Parallel
   Utilities
   )

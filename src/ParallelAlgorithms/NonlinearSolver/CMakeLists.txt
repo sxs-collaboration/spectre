@@ -22,9 +22,9 @@ target_link_libraries(
   Convergence
   DataStructures
   Initialization
-  IO
   LinearSolver
   Logging
+  Observer
   Options
   Parallel
   ParallelLinearSolver

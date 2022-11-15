@@ -24,11 +24,12 @@ target_link_libraries(
   ${LIBRARY}
   PUBLIC
   ErrorHandling
+  H5
+  Observer
   Options
   INTERFACE
   DataStructures
   DomainStructure
-  IO
   Initialization
   Parallel
   Utilities

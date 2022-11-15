@@ -39,6 +39,8 @@ target_link_libraries(
   ControlSystem
   EventsAndDenseTriggers
   FunctionsOfTime
+  H5
+  Observer
   ObserverHelpers
   Parallel
   SizeControlErrors

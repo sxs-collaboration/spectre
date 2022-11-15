@@ -53,7 +53,7 @@ target_link_libraries(
   DgSubcell
   EventsAndTriggers
   GeneralizedHarmonic
-  IO
+  Observer
   )
 
 add_subdirectory(Actions)

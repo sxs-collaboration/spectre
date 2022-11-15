@@ -16,7 +16,6 @@ target_link_libraries(
   Boost::program_options
   Cce
   GeneralRelativity
-  IO
   Informer
   Spectral
   )
