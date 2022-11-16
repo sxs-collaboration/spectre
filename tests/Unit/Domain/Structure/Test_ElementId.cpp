@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -227,36 +228,58 @@ void test_element_id() {
 template <size_t VolumeDim>
 void test_serialization() {
   constexpr size_t volume_dim = VolumeDim;
-  const ElementId<volume_dim> unused_id(0);
-  const auto initial_ref_levels = make_array<volume_dim>(1_st);
-  // We restrict the test to 2^7 blocks and 2^grid_index_bits-2 grid indices so
-  // it finishes in a reasonable amount of time.
-  for (size_t block_id = 0; block_id < two_to_the(7_st); ++block_id) {
-    for (size_t grid_index = 0;
-         grid_index < two_to_the(ElementId<VolumeDim>::grid_index_bits - 2);
-         ++grid_index) {
-      const std::vector<ElementId<volume_dim>> element_ids =
-          initial_element_ids(block_id, initial_ref_levels, grid_index);
-      for (const auto element_id : element_ids) {
-        const auto serialized_id = serialize_and_deserialize(element_id);
-        CHECK(serialized_id == element_id);
-        // The following checks that ElementId can be used as a Charm array
-        // index
-        Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
-        CHECK(element_id == array_index.get_index());
-        // now check pupping the ArrayIndex works...
-        const auto serialized_array_index =
-            serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
-        PUP::fromMem reader(serialized_array_index.data());
-        Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
-            unused_id);
-        reader | deserialized_array_index;
-        CHECK(array_index == deserialized_array_index);
-        CHECK(element_id == deserialized_array_index.get_index());
-        // Check roundtrip to string representation and back
-        CHECK(ElementId<VolumeDim>(get_output(element_id)) == element_id);
-      }
+
+  // Generate random element IDs so we test the full range of possible values
+  MAKE_GENERATOR(gen);
+  std::uniform_int_distribution<size_t> dist_block_id(
+      0, two_to_the(ElementId<VolumeDim>::block_id_bits) - 1);
+  std::uniform_int_distribution<size_t> dist_grid_index(
+      0, two_to_the(ElementId<VolumeDim>::grid_index_bits) - 1);
+  std::uniform_int_distribution<size_t> dist_refinement(
+      0, two_to_the(ElementId<VolumeDim>::refinement_bits) - 1);
+  const auto random_segment_id = [&gen, &dist_refinement]() -> SegmentId {
+    const size_t refinement = dist_refinement(gen);
+    std::uniform_int_distribution<size_t> dist_index(
+        0, two_to_the(refinement) - 1);
+    return {refinement, dist_index(gen)};
+  };
+  const auto random_segment_ids =
+      [&random_segment_id]() -> std::array<SegmentId, VolumeDim> {
+    if constexpr (VolumeDim == 1) {
+      return {{random_segment_id()}};
+    } else if constexpr (VolumeDim == 2) {
+      return {{random_segment_id(), random_segment_id()}};
+    } else {
+      return {{random_segment_id(), random_segment_id(), random_segment_id()}};
     }
+  };
+
+  const ElementId<volume_dim> unused_id(0);
+  for (size_t i = 0; i < 100; ++i) {
+    ElementId<volume_dim> element_id{dist_block_id(gen), random_segment_ids(),
+                                     dist_grid_index(gen)};
+    CAPTURE(element_id);
+
+    // Test serialization
+    const auto serialized_id = serialize_and_deserialize(element_id);
+    CHECK(serialized_id == element_id);
+
+    // The following checks that ElementId can be used as a Charm array
+    // index
+    Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
+    CHECK(element_id == array_index.get_index());
+    // now check pupping the ArrayIndex works...
+    const auto serialized_array_index =
+        serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
+    PUP::fromMem reader(serialized_array_index.data());
+    Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
+        unused_id);
+    reader | deserialized_array_index;
+    CHECK(array_index == deserialized_array_index);
+    CHECK(element_id == deserialized_array_index.get_index());
+
+    // Check roundtrip to string representation and back
+    CHECK(ElementId<VolumeDim>(get_output(element_id)) == element_id);
   }
 }
 }  // namespace
