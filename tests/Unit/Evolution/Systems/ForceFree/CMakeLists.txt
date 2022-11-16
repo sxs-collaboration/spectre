@@ -5,6 +5,7 @@ set(LIBRARY Test_ForceFree)
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_Periodic.cpp
+  BoundaryConditions/Test_DirichletAnalytic.cpp
   BoundaryCorrections/Test_Rusanov.cpp
   Test_Characteristics.cpp
   Test_ElectricCurrentDensity.cpp
@@ -27,6 +28,8 @@ target_link_libraries(
   DataStructures
   Domain
   ForceFree
+  ForceFreeAnalyticData
+  ForceFreeSolutions
   GeneralRelativityHelpers
   Utilities
   )
