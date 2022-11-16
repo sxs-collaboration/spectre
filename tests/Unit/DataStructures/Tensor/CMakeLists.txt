@@ -8,7 +8,6 @@ set(LIBRARY_SOURCES
   Test_Identity.cpp
   Test_Slice.cpp
   Test_Tensor.cpp
-  Test_TensorData.cpp
   )
 
 add_subdirectory(EagerMath)
@@ -32,9 +31,3 @@ target_link_libraries(
   Utilities
   Spectral
   )
-
-spectre_add_python_bindings_test(
-  "Unit.DataStructures.Tensor.Python.TensorData"
-  Test_TensorData.py
-  "Unit;DataStructures;Tensor;Python"
-  PyDataStructures)

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/Tensor/TensorData.hpp"
+#include "IO/H5/TensorData.hpp"
 
 #include <ostream>
 #include <pup.h>

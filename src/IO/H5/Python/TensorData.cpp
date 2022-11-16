@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/StdHelpers.hpp"

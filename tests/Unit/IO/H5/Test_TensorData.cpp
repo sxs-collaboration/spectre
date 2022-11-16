@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/GetOutput.hpp"

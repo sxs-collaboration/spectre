@@ -9,6 +9,7 @@ namespace py_bindings {
 void bind_h5file(py::module& m);  // NOLINT
 void bind_h5dat(py::module& m);   // NOLINT
 void bind_h5vol(py::module& m);   // NOLINT
+void bind_tensordata(py::module& m);  // NOLINT
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyH5, m) {  // NOLINT
@@ -16,4 +17,5 @@ PYBIND11_MODULE(_PyH5, m) {  // NOLINT
   py_bindings::bind_h5file(m);
   py_bindings::bind_h5dat(m);
   py_bindings::bind_h5vol(m);
+  py_bindings::bind_tensordata(m);
 }

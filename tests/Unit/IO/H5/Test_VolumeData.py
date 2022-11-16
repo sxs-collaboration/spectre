@@ -1,9 +1,10 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre import DataStructures as ds
+from spectre.DataStructures import DataVector
 from spectre.Spectral import Basis, Quadrature
 import spectre.IO.H5 as spectre_h5
+from spectre.IO.H5 import TensorComponent, ElementVolumeData
 from spectre import Informer
 import unittest
 import numpy as np
@@ -69,15 +70,15 @@ class TestVolumeData(unittest.TestCase):
         # Set TensorComponent and ElementVolumeData to be written
 
         self.element_vol_data_grid_1 = [
-            ds.ElementVolumeData(
+            ElementVolumeData(
                 element_name=grid_names[0],
                 components=[
-                    ds.TensorComponent(
+                    TensorComponent(
                         "field_1",
-                        ds.DataVector(self.tensor_component_data[2 * i])),
-                    ds.TensorComponent(
+                        DataVector(self.tensor_component_data[2 * i])),
+                    TensorComponent(
                         "field_2",
-                        ds.DataVector(self.tensor_component_data[2 * i + 1]))
+                        DataVector(self.tensor_component_data[2 * i + 1]))
                 ],
                 extents=3 * [2],
                 basis=3 * [basis],
@@ -86,15 +87,15 @@ class TestVolumeData(unittest.TestCase):
         ]
 
         self.element_vol_data_grid_2 = [
-            ds.ElementVolumeData(
+            ElementVolumeData(
                 element_name=grid_names[1],
                 components=[
-                    ds.TensorComponent(
+                    TensorComponent(
                         "field_1",
-                        ds.DataVector(self.tensor_component_data[2 * i + 1])),
-                    ds.TensorComponent(
+                        DataVector(self.tensor_component_data[2 * i + 1])),
+                    TensorComponent(
                         "field_2",
-                        ds.DataVector(self.tensor_component_data[2 * i]))
+                        DataVector(self.tensor_component_data[2 * i]))
                 ],
                 extents=3 * [2],
                 basis=3 * [basis],

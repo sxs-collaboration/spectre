@@ -4,8 +4,8 @@
 import unittest
 from spectre.Informer import unit_test_build_path
 import spectre.IO.H5 as spectre_h5
-from spectre.DataStructures import (DataVector, TensorComponent,
-                                    ElementVolumeData)
+from spectre.IO.H5 import TensorComponent, ElementVolumeData
+from spectre.DataStructures import DataVector
 from spectre import Spectral
 from spectre.Visualization import InterpolateVolumeData
 import os

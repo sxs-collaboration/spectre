@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Tags.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"

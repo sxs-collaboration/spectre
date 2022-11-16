@@ -1,8 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.DataStructures import (DataVector, TensorComponent,
-                                    ElementVolumeData)
+from spectre.DataStructures import DataVector
+from spectre.IO.H5 import TensorComponent, ElementVolumeData
 from spectre.Spectral import Basis, Quadrature
 import unittest
 import numpy as np

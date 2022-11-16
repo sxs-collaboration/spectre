@@ -2,8 +2,8 @@
 # See LICENSE.txt for details.
 
 import spectre.IO.H5 as spectre_h5
-from spectre.DataStructures import (DataVector, TensorComponent,
-                                    ElementVolumeData)
+from spectre.IO.H5 import TensorComponent, ElementVolumeData
+from spectre.DataStructures import DataVector
 from spectre import Spectral, Interpolation
 import numpy as np
 import sys
