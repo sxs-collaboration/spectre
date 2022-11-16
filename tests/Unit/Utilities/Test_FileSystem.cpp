@@ -3,15 +3,20 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cstdlib>
+#include <cstring>
+#include <fcntl.h>
 #include <fstream>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
-#include "Informer/InfoFromBuild.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 
 namespace {
+void create_file(const char* const file) { std::fstream(file, std::ios::out); }
+
 void test() {
   {
     INFO("get_parent_path");
@@ -51,14 +56,14 @@ void test() {
   {
     INFO("check_if_exists");
     CHECK(file_system::check_if_dir_exists("./"));
-    std::fstream file("check_if_exists.txt", file.out);
-    file.close();
+    create_file("check_if_exists.txt");
     CHECK(file_system::check_if_file_exists("./check_if_exists.txt"));
     CHECK(0 == file_system::file_size("./check_if_exists.txt"));
 
-    file = std::fstream("check_if_exists.txt", file.out);
-    file << "Write something";
-    file.close();
+    {
+      std::fstream file("check_if_exists.txt", file.out);
+      file << "Write something";
+    }
     CHECK(0 < file_system::file_size("./check_if_exists.txt"));
 
     file_system::rm("./check_if_exists.txt", false);
@@ -74,11 +79,8 @@ void test() {
         "./create_and_rm_directory/nested/nested2/nested4");
     file_system::create_directory(dir_two);
     CHECK(file_system::check_if_dir_exists(dir_two));
-    std::fstream file(
-        "./create_and_rm_directory//nested/nested2/nested4/"
-        "check_if_exists.txt",
-        file.out);
-    file.close();
+    create_file("./create_and_rm_directory//nested/nested2/nested4/"
+                "check_if_exists.txt");
     // Check that creating an existing directory does nothing
     file_system::create_directory(dir_two);
     CHECK(file_system::check_if_dir_exists(dir_two));
@@ -101,10 +103,8 @@ void test() {
   }
   {
     INFO("glob");
-    std::fstream file1("glob1.txt", file1.out);
-    file1.close();
-    std::fstream file2("glob2.txt", file2.out);
-    file2.close();
+    create_file("glob1.txt");
+    create_file("glob2.txt");
     CHECK(file_system::glob("glob*.txt") ==
           std::vector<std::string>{"glob1.txt", "glob2.txt"});
     file_system::rm("glob1.txt", false);
@@ -112,52 +112,14 @@ void test() {
   }
   {
     INFO("ls");
-    std::vector<std::string> expected_list{"Test_StdHelpers.cpp",
-                                           "Test_Tuple.cpp",
-                                           "Test_ConstantExpressions.cpp",
-                                           "CMakeLists.txt",
-                                           "Test_Blas.cpp",
-                                           "Test_TaggedTuple.cpp",
-                                           "Test_MakeWithValue.cpp",
-                                           "Test_FractionUtilities.cpp",
-                                           "Test_TupleSlice.cpp",
-                                           "Test_MakeArray.cpp",
-                                           "Test_MakeString.cpp",
-                                           "Test_CallWithDynamicType.cpp",
-                                           "Test_Math.cpp",
-                                           "Test_MakeSignalingNan.cpp",
-                                           "TypeTraits",
-                                           "Test_Blas.hpp",
-                                           "Test_ContainerHelpers.cpp",
-                                           "Test_GetOutput.cpp",
-                                           "Test_ProtocolHelpers.cpp",
-                                           "Test_WrapText.cpp",
-                                           "Test_FileSystem.cpp",
-                                           "Test_Gsl.cpp",
-                                           "Test_Requires.cpp",
-                                           "Test_ParallelInfo.cpp",
-                                           "Test_CachedFunction.cpp",
-                                           "Test_EqualWithinRoundoff.cpp",
-                                           "Test_Numeric.cpp",
-                                           "Test_DereferenceWrapper.cpp",
-                                           "Test_VectorAlgebra.cpp",
-                                           "Test_Formaline.cpp",
-                                           "Test_TMPL.cpp",
-                                           "Test_TMPLDocumentation.cpp",
-                                           "Test_StdArrayHelpers.cpp",
-                                           "Test_StaticCache.cpp",
-                                           "Test_Overloader.cpp",
-                                           "Test_Functional.cpp",
-                                           "Test_Array.cpp",
-                                           "Test_Rational.cpp",
-                                           "Test_OptionalHelpers.cpp",
-                                           "Test_PrettyType.cpp",
-                                           "Test_MemoryHelpers.cpp",
-                                           "Test_Registration.cpp",
-                                           "Test_CloneUniquePtrs.cpp",
-                                           "Test_Algorithm.cpp",
-                                           "Test_MakeVector.cpp"};
-    auto list = file_system::ls(unit_test_src_path() + "/Utilities");
+    file_system::create_directory("ls_test"s);
+    create_file("ls_test/file1");
+    create_file("ls_test/file2");
+    create_file("ls_test/file3");
+    file_system::create_directory("ls_test/dir1"s);
+    create_file("ls_test/dir1/nested_file");
+    std::vector<std::string> expected_list{"file1", "file2", "file3", "dir1"};
+    auto list = file_system::ls("ls_test");
     alg::sort(list);
     alg::sort(expected_list);
     CHECK(list == expected_list);
@@ -206,6 +168,43 @@ void test_errors() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.FileSystem", "[Unit][Utilities]") {
-  test();
-  test_errors();
+  // This is a macro to report locations better and to ensure that
+  // creating the argument can't modify errno before we save it.
+#define SYS_ERROR(description)                                 \
+  do {                                                         \
+    const int errno_save = errno;                              \
+    ERROR(description << " failed: " << strerror(errno_save)); \
+  } while (false)
+
+  // Run the test in a temporary directory so we have a known starting
+  // state for the filesystem.  This also simplifies cleanup.
+  const int original_directory = open(".", O_RDONLY);
+  if (original_directory == -1) {
+    SYS_ERROR("opendir(.)");
+  }
+  char scratch_directory[] = "Test_FileSystem_scratch-XXXXXX";
+  if (mkdtemp(scratch_directory) == nullptr) {
+    // scratch_directory may have been modified, so reporting it in
+    // the error would be misleading.
+    SYS_ERROR("mkdtemp");
+  }
+  const auto cleanup = [&]() {
+    if (fchdir(original_directory) != 0) {
+      SYS_ERROR("fchdir");
+    }
+    close(original_directory);
+    file_system::rm(scratch_directory, true);
+  };
+
+  try {
+    if (chdir(scratch_directory) != 0) {
+      SYS_ERROR("chrdir(" << scratch_directory << ")");
+    }
+    test();
+    test_errors();
+    cleanup();
+  } catch (...) {
+    cleanup();
+    throw;
+  }
 }
