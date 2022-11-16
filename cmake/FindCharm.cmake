@@ -363,8 +363,9 @@ configure_file(
   ${CMAKE_BINARY_DIR}
   )
 add_library(CharmModuleInit OBJECT ${CMAKE_BINARY_DIR}/CharmModuleInit.C)
+# -w -- suppress all warnings because this is charm-generated source
 set_property(TARGET CharmModuleInit
-  APPEND PROPERTY COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:-fPIC>)
+  APPEND PROPERTY COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:-fPIC -w>)
 
 # Use the charm building blocks to construct imported targets
 # - Imported target with all Charm libs

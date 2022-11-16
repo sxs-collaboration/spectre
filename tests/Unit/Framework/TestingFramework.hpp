@@ -34,7 +34,10 @@
 // add_test_library CMake function. It is used to make a call into a translation
 // unit so that static variables for Catch are properly initialized.
 #ifdef SPECTRE_TEST_REGISTER_FUNCTION
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-declarations"
 void SPECTRE_TEST_REGISTER_FUNCTION() {}  // NOLINT
+#pragma GCC diagnostic pop
 #endif  // SPECTRE_TEST_REGISTER_FUNCTION
 /// \endcond
 
