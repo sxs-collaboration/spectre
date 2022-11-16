@@ -18,10 +18,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 namespace domain {
 namespace Tags {
 template <size_t Dim, typename Frame>
@@ -59,18 +55,15 @@ class Cfl : public StepChooser<StepChooserUse> {
       tmpl::list<domain::Tags::MinimumGridSpacing<System::volume_dim, Frame>,
                  ::Tags::TimeStepper<>,
                  typename System::compute_largest_characteristic_speed>;
-  using return_tags = tmpl::list<>;
 
   using compute_tags = tmpl::list<
       domain::Tags::MinimumGridSpacingCompute<System::volume_dim, Frame>,
       typename System::compute_largest_characteristic_speed>;
 
-  template <typename Metavariables>
   std::pair<double, bool> operator()(
       const double minimum_grid_spacing,
       const TimeStepper& time_stepper,
-      const double speed, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+      const double speed, const double last_step_magnitude) const {
     const double time_stepper_stability_factor = time_stepper.stable_step();
     const double step_size = safety_factor_ * time_stepper_stability_factor *
                              minimum_grid_spacing /

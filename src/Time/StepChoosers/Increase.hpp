@@ -13,13 +13,6 @@
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
-/// \endcond
-
 namespace StepChoosers {
 /// Suggests increasing the step size by a constant ratio.
 template <typename StepChooserUse>
@@ -44,12 +37,8 @@ class Increase : public StepChooser<StepChooserUse> {
   explicit Increase(const double factor) : factor_(factor) {}
 
   using argument_tags = tmpl::list<>;
-  using return_tags = tmpl::list<>;
 
-  template <typename Metavariables>
-  std::pair<double, bool> operator()(
-      const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+  std::pair<double, bool> operator()(const double last_step_magnitude) const {
     return std::make_pair(last_step_magnitude * factor_, true);
   }
 

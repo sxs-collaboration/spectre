@@ -34,6 +34,13 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
+namespace Parallel {
+template <typename Metavariables>
+class GlobalCache;
+}  // namespace Parallel
+/// \endcond
+
 namespace GeneralizedHarmonic::gauges::Actions {
 /*!
  * \brief Initialize the damped harmonic gauge, either with or without a rollon

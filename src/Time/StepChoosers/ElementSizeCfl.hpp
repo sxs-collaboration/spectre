@@ -18,10 +18,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 namespace domain {
 namespace Tags {
 template <size_t Dim>
@@ -66,17 +62,14 @@ class ElementSizeCfl : public StepChooser<StepChooserUse> {
   using argument_tags =
       tmpl::list<::Tags::TimeStepper<>, domain::Tags::SizeOfElement<Dim>,
                  typename System::compute_largest_characteristic_speed>;
-  using return_tags = tmpl::list<>;
   using compute_tags =
       tmpl::list<domain::Tags::SizeOfElementCompute<Dim>,
                  typename System::compute_largest_characteristic_speed>;
 
-  template <typename Metavariables>
   std::pair<double, bool> operator()(
       const TimeStepper& time_stepper,
       const std::array<double, Dim>& element_size, const double speed,
-      const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+      const double last_step_magnitude) const {
     double min_size_of_element = std::numeric_limits<double>::infinity();
     for (auto face_to_face_dimension : element_size) {
       if (face_to_face_dimension < min_size_of_element) {

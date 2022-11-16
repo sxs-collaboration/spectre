@@ -25,7 +25,6 @@
 #include "Framework/TestHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/ElementSizeCfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -73,7 +72,6 @@ template <size_t Dim>
 std::pair<double, bool> get_suggestion(
     const double safety_factor, const double characteristic_speed,
     ElementMap<Dim, Frame::Grid>&& element_map) {
-  const Parallel::GlobalCache<Metavariables<Dim>> cache{};
   auto box = db::create<
       db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<Metavariables<Dim>>,
                         CharacteristicSpeed, Tags::TimeStepper<TimeStepper>,
@@ -107,17 +105,16 @@ std::pair<double, bool> get_suggestion(
 
   const double current_step = std::numeric_limits<double>::infinity();
   const std::pair<double, bool> result =
-      element_size_cfl(time_stepper, element_size, speed, current_step, cache);
+      element_size_cfl(time_stepper, element_size, speed, current_step);
   CHECK_FALSE(result.second);
-  const auto accepted_step_result = element_size_cfl(
-      time_stepper, element_size, speed, result.first * 0.7, cache);
+  const auto accepted_step_result =
+      element_size_cfl(time_stepper, element_size, speed, result.first * 0.7);
   CHECK(accepted_step_result.second);
-  CHECK(element_size_base->desired_step(make_not_null(&box), current_step,
-                                        cache) == result);
+  CHECK(element_size_base->desired_step(current_step, box) == result);
   CHECK(serialize_and_deserialize(element_size_cfl)(
-            time_stepper, element_size, speed, current_step, cache) == result);
+            time_stepper, element_size, speed, current_step) == result);
   CHECK(serialize_and_deserialize(element_size_base)
-            ->desired_step(make_not_null(&box), current_step, cache) == result);
+            ->desired_step(current_step, box) == result);
   return result;
 }
 }  // namespace

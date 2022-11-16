@@ -18,10 +18,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Parallel {
-template <typename Metavariables>
-class GlobalCache;
-}  // namespace Parallel
 namespace Tags {
 struct TimeStepId;
 }  // namespace Tags
@@ -57,12 +53,9 @@ class StepToTimes : public StepChooser<StepChooserUse::Slab> {
       : times_(std::move(times)) {}
 
   using argument_tags = tmpl::list<::Tags::TimeStepId>;
-  using return_tags = tmpl::list<>;
 
-  template <typename Metavariables>
-  std::pair<double, bool> operator()(
-      const TimeStepId& time_step_id, const double last_step_magnitude,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/) const {
+  std::pair<double, bool> operator()(const TimeStepId& time_step_id,
+                                     const double last_step_magnitude) const {
     const auto& substep_time = time_step_id.substep_time();
     const double now = substep_time.value();
     // Trying to step to a given time might not get us exactly there

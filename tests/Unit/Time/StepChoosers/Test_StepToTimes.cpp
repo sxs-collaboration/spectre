@@ -14,7 +14,6 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
-#include "Parallel/GlobalCache.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Time/Slab.hpp"
@@ -60,22 +59,22 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.StepToTimes", "[Unit][Time]") {
           step_to_times_base = std::make_unique<StepChoosers::StepToTimes>(
               std::make_unique<Specified>(impl_times));
 
-      const Parallel::GlobalCache<Metavariables> cache{};
       auto box = db::create<db::AddSimpleTags<
           Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId>>(
           Metavariables{}, now_id);
 
-      const auto answer = step_to_times(now_id, step, cache);
+      const auto answer = step_to_times(now_id, step);
       if (result == -1.0) {
         result = answer.first;
       } else {
         CHECK(result == answer.first);
       }
-      CHECK(step_to_times_base->desired_slab(step, box, cache) == result);
-      CHECK(serialize_and_deserialize(step_to_times)(now_id, step, cache) ==
+      CHECK(step_to_times_base->desired_step(step, box) ==
+            std::make_pair(result, true));
+      CHECK(serialize_and_deserialize(step_to_times)(now_id, step) ==
             std::make_pair(result, true));
       CHECK(serialize_and_deserialize(step_to_times_base)
-                ->desired_slab(step, box, cache) == result);
+                ->desired_step(step, box) == std::make_pair(result, true));
     };
     impl(TimeStepId(true, 0, Slab(now, now + 1.0).start()), times);
     alg::for_each(times, [](double& x) { return x = -x; });
