@@ -16,7 +16,15 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "Helpers/IO/VolumeData.hpp"
@@ -164,13 +172,25 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   using element_comp =
       helpers::element_component<metavariables, registration_list>;
 
+  const std::string output_file_prefix = "./Unit.IO.Observers.VolumeObserver";
+  const domain::creators::Brick domain_creator{
+      {{0., 0., 0.}},
+      {{1., 2., 3.}},
+      {{1, 0, 1}},
+      {{3, 4, 5}},
+      {{false, false, false}},
+      std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3, 0>>(
+          1., std::array<double, 3>{{2., 3., 4.}})};
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
-                      observers::Tags::VolumeFileName>
-      cache_data{};
-  const auto& output_file_prefix =
-      tuples::get<observers::Tags::VolumeFileName>(cache_data) =
-          "./Unit.IO.Observers.VolumeObserver";
-  ActionTesting::MockRuntimeSystem<metavariables> runner{cache_data};
+                      observers::Tags::VolumeFileName, domain::Tags::Domain<3>,
+                      domain::Tags::FunctionsOfTimeInitialize>
+      cache_data{"", output_file_prefix, domain_creator.create_domain(),
+                 domain_creator.functions_of_time()};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{std::move(cache_data)};
   ActionTesting::emplace_group_component<obs_component>(&runner);
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);

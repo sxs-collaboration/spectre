@@ -12,7 +12,10 @@
 #include <vector>
 
 #include "DataStructures/Matrix.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -70,16 +73,20 @@ void test_reduction_observer(const bool observe_per_core) {
   using element_comp =
       helpers::element_component<metavariables, registration_list>;
 
+  const std::string output_file_prefix =
+      "./Unit.IO.Observers.ReductionObserver";
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
-                      observers::Tags::VolumeFileName>
-      cache_data{};
-  const auto& output_file_prefix =
-      tuples::get<observers::Tags::ReductionFileName>(cache_data) =
-          "./Unit.IO.Observers.ReductionObserver";
+                      observers::Tags::VolumeFileName, domain::Tags::Domain<3>,
+                      domain::Tags::FunctionsOfTimeInitialize>
+      cache_data{
+          output_file_prefix, "", Domain<3>{},
+          std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}};
   const std::vector<size_t> num_cores_per_node{1, 2};
   const size_t num_cores = alg::accumulate(num_cores_per_node, size_t{0});
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      cache_data, {}, num_cores_per_node};
+      std::move(cache_data), {}, num_cores_per_node};
   ActionTesting::emplace_group_component<obs_component>(&runner);
   for (size_t core_id = 0; core_id < num_cores; ++core_id) {
     for (size_t i = 0; i < 2; ++i) {

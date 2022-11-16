@@ -5,7 +5,10 @@
 
 #include <functional>
 
+#include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
@@ -51,6 +54,9 @@ struct element_component {
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Register,
                                         RegistrationActionsList>>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::Domain<3>,
+                 domain::Tags::FunctionsOfTimeInitialize>;
 };
 
 template <typename Metavariables>
@@ -115,6 +121,8 @@ using reduction_data_from_ds_and_vs = Parallel::ReductionData<
 
 template <typename RegistrationActionsList>
 struct Metavariables {
+  static constexpr size_t volume_dim = 3;
+
   using component_list =
       tmpl::list<element_component<Metavariables, RegistrationActionsList>,
                  observer_component<Metavariables>,
