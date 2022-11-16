@@ -12,9 +12,12 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // std::vector ostream
 
 TensorComponent::TensorComponent(std::string in_name, DataVector in_data)
@@ -59,6 +62,16 @@ ElementVolumeData::ElementVolumeData(
       basis(std::move(basis_in)),
       quadrature(std::move(quadrature_in)) {}
 
+template <size_t Dim>
+ElementVolumeData::ElementVolumeData(const ElementId<Dim>& element_id,
+                                     std::vector<TensorComponent> components,
+                                     const Mesh<Dim>& mesh)
+    : element_name(get_output(element_id)),
+      tensor_components(std::move(components)),
+      extents(mesh.extents().indices().begin(), mesh.extents().indices().end()),
+      basis(mesh.basis().begin(), mesh.basis().end()),
+      quadrature(mesh.quadrature().begin(), mesh.quadrature().end()) {}
+
 void ElementVolumeData::pup(PUP::er& p) {
   p | element_name;
   p | tensor_components;
@@ -77,3 +90,13 @@ bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs) {
 bool operator!=(const ElementVolumeData& lhs, const ElementVolumeData& rhs) {
   return not(lhs == rhs);
 }
+
+// Explicit instantiations
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define INSTANTIATE(_, data)                     \
+  template ElementVolumeData::ElementVolumeData( \
+      const ElementId<DIM(data)>& element_id,    \
+      std::vector<TensorComponent> components, const Mesh<DIM(data)>& mesh);
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+#undef INSTANTIATE
+#undef DIM

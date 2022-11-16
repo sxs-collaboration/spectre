@@ -53,6 +53,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DomainStructure
   ErrorHandling
   hdf5::hdf5
   Utilities

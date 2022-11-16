@@ -83,13 +83,3 @@ struct ElementVolumeData {
 
 bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs);
 bool operator!=(const ElementVolumeData& lhs, const ElementVolumeData& rhs);
-
-template <size_t Dim>
-ElementVolumeData::ElementVolumeData(const ElementId<Dim>& element_id,
-                                     std::vector<TensorComponent> components,
-                                     const Mesh<Dim>& mesh)
-    : element_name(get_output(element_id)),
-      tensor_components(std::move(components)),
-      extents(mesh.extents().indices().begin(), mesh.extents().indices().end()),
-      basis(mesh.basis().begin(), mesh.basis().end()),
-      quadrature(mesh.quadrature().begin(), mesh.quadrature().end()) {}
