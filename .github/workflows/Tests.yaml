@@ -803,6 +803,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
             -D SPECTRE_TEST_TIMEOUT_FACTOR=5 \
             -D CMAKE_INSTALL_PREFIX=../install \
             -D BUILD_DOCS=OFF \
+            -D USE_XSIMD=OFF \
             $GITHUB_WORKSPACE
       - name: Build unit tests
         working-directory: build

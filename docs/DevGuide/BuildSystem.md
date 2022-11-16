@@ -335,6 +335,12 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     (default is `OFF`)
   - \note Blaze isn't tested super thoroughly across different architectures so
     there's unfortunately no guarantee that Blaze+Sleef will work everywhere.
+- USE_XSIMD
+  - Whether to use [xsimd](https://github.com/xtensor-stack/xsimd) with Blaze to
+    vectorize addition math functions like `sin`, `cos`, and `exp`.
+    Defines the macro `SPECTRE_USE_XSIMD`, which can be check to enable manual
+    vectorization where necessary.
+    (default is `OFF`)
 
 ## CMake targets
 
