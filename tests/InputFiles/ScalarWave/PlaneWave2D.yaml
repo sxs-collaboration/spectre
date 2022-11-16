@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWavePlaneWave2D
+# Executable: EvolveScalarWave2D
 # Check: parse;execute
 # ExpectedOutput:
 #   ScalarWavePlaneWave2DReductions.h5
@@ -9,7 +9,7 @@
 ResourceInfo:
   AvoidGlobalProc0: false
 
-AnalyticSolution:
+InitialData:
   PlaneWave:
     WaveVector: [1.0, 1.0]
     Center: [0.0, 0.0]

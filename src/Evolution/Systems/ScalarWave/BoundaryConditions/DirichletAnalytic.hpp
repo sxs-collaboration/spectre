@@ -20,6 +20,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -39,7 +40,15 @@ namespace ScalarWave::BoundaryConditions {
 template <size_t Dim>
 class DirichletAnalytic final : public BoundaryCondition<Dim> {
  public:
-  using options = tmpl::list<>;
+  /// \brief What analytic solution/data to prescribe.
+  struct AnalyticPrescription {
+    static constexpr Options::String help =
+        "What analytic solution/data to prescribe.";
+    using type = std::unique_ptr<evolution::initial_data::InitialData>;
+  };
+
+  using options = tmpl::list<AnalyticPrescription>;
+
   static constexpr Options::String help{
       "DirichletAnalytic boundary conditions setting the value of Psi, Phi, "
       "and Pi to the analytic solution or analytic data."};
@@ -47,9 +56,13 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   DirichletAnalytic() = default;
   DirichletAnalytic(DirichletAnalytic&&) = default;
   DirichletAnalytic& operator=(DirichletAnalytic&&) = default;
-  DirichletAnalytic(const DirichletAnalytic&) = default;
-  DirichletAnalytic& operator=(const DirichletAnalytic&) = default;
+  DirichletAnalytic(const DirichletAnalytic&);
+  DirichletAnalytic& operator=(const DirichletAnalytic&);
   ~DirichletAnalytic() override = default;
+
+  explicit DirichletAnalytic(
+      std::unique_ptr<evolution::initial_data::InitialData>
+          analytic_prescription);
 
   explicit DirichletAnalytic(CkMigrateMessage* msg);
 
@@ -68,10 +81,8 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
   using dg_interior_temporary_tags =
       tmpl::list<domain::Tags::Coordinates<Dim, Frame::Inertial>,
                  Tags::ConstraintGamma2>;
-  using dg_gridless_tags =
-      tmpl::list<::Tags::Time, ::Tags::AnalyticSolutionOrData>;
+  using dg_gridless_tags = tmpl::list<::Tags::Time>;
 
-  template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
       const gsl::not_null<Scalar<DataVector>*> psi,
       const gsl::not_null<Scalar<DataVector>*> pi,
@@ -81,27 +92,10 @@ class DirichletAnalytic final : public BoundaryCondition<Dim> {
           tnsr::I<DataVector, Dim, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& coords,
-      const Scalar<DataVector>& interior_gamma2, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data) const {
-    *gamma2 = interior_gamma2;
-    auto boundary_values = [&analytic_solution_or_data, &coords, &time]() {
-      if constexpr (is_analytic_solution_v<AnalyticSolutionOrData>) {
-        return analytic_solution_or_data.variables(
-            coords, time,
-            tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                       ScalarWave::Tags::Phi<Dim>>{});
+      const Scalar<DataVector>& interior_gamma2,
+      [[maybe_unused]] const double time) const;
 
-      } else {
-        (void)time;
-        return analytic_solution_or_data.variables(
-            coords, tmpl::list<ScalarWave::Tags::Psi, ScalarWave::Tags::Pi,
-                               ScalarWave::Tags::Phi<Dim>>{});
-      }
-    }();
-    *psi = get<ScalarWave::Tags::Psi>(boundary_values);
-    *pi = get<ScalarWave::Tags::Pi>(boundary_values);
-    *phi = get<ScalarWave::Tags::Phi<Dim>>(boundary_values);
-    return {};
-  }
+ private:
+  std::unique_ptr<evolution::initial_data::InitialData> analytic_prescription_;
 };
 }  // namespace ScalarWave::BoundaryConditions
