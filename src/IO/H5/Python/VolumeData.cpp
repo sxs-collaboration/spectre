@@ -19,7 +19,10 @@ void bind_h5vol(py::module& m) {  // NOLINT
       .def("get_header", &h5::VolumeData::get_header)
       .def("get_version", &h5::VolumeData::get_version)
       .def("get_dimension", &h5::VolumeData::get_dimension)
-      .def("write_volume_data", &h5::VolumeData::write_volume_data)
+      .def("write_volume_data", &h5::VolumeData::write_volume_data,
+           py::arg("observation_id"), py::arg("observation_value"),
+           py::arg("elements"), py::arg("serialized_domain") = std::nullopt,
+           py::arg("serialized_functions_of_time") = std::nullopt)
       .def("list_observation_ids", &h5::VolumeData::list_observation_ids)
       .def("get_observation_value", &h5::VolumeData::get_observation_value,
            py::arg("observation_id"))
@@ -34,6 +37,9 @@ void bind_h5vol(py::module& m) {  // NOLINT
       .def("get_quadratures", &h5::VolumeData::get_quadratures,
            py::arg("observation_id"))
       .def("get_bases", &h5::VolumeData::get_bases, py::arg("observation_id"))
+      .def("get_domain", &h5::VolumeData::get_domain, py::arg("observation_id"))
+      .def("get_functions_of_time", &h5::VolumeData::get_functions_of_time,
+           py::arg("observation_id"))
       .def("get_data_by_element", &h5::VolumeData::get_data_by_element,
            py::arg("start_observation_value"), py::arg("end_observation_value"),
            py::arg("components_to_retrieve") = std::nullopt);

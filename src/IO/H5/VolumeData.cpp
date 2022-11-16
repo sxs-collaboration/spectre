@@ -8,6 +8,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <hdf5.h>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -196,7 +197,9 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
 // an `observation_group` in a `VolumeData` file.
 void VolumeData::write_volume_data(
     const size_t observation_id, const double observation_value,
-    const std::vector<ElementVolumeData>& elements) {
+    const std::vector<ElementVolumeData>& elements,
+    const std::optional<std::vector<char>>& serialized_domain,
+    const std::optional<std::vector<char>>& serialized_functions_of_time) {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
@@ -348,6 +351,16 @@ void VolumeData::write_volume_data(
     h5::write_data(observation_group.id(), pole_connectivity,
                    {pole_connectivity.size()}, "pole_connectivity");
   }
+  // Write the serialized domain
+  if (serialized_domain.has_value()) {
+    h5::write_data(observation_group.id(), *serialized_domain,
+                   {serialized_domain->size()}, "domain");
+  }
+  // Write the serialized functions of time
+  if (serialized_functions_of_time.has_value()) {
+    h5::write_data(observation_group.id(), *serialized_functions_of_time,
+                   {serialized_functions_of_time->size()}, "functions_of_time");
+  }
 }
 
 std::vector<size_t> VolumeData::list_observation_ids() const {
@@ -377,27 +390,18 @@ std::vector<std::string> VolumeData::list_tensor_components(
   auto tensor_components =
       get_group_names(volume_data_group_.id(),
                       "ObservationId" + std::to_string(observation_id));
-  auto remove_data_name = [&tensor_components](const std::string& data_name) {
-    // NOLINTNEXTLINE(bugprone-unused-return-value)
-    alg::remove(tensor_components, data_name);
-  };
-
-  const auto search_result = alg::find(tensor_components, "pole_connectivity");
-  const long number_of_components_to_remove =
-      search_result != tensor_components.end() ? 6 : 5;
-
-  remove_data_name("connectivity");
-  remove_data_name("pole_connectivity");
-  remove_data_name("total_extents");
-  remove_data_name("grid_names");
-  remove_data_name("quadratures");
-  remove_data_name("bases");
-  // std::remove moves the element to the end of the vector, so we still need to
-  // actually erase it from the vector
+  // Remove names that are not tensor components
+  const std::unordered_set<std::string> non_tensor_components{
+      "connectivity", "pole_connectivity", "total_extents",
+      "grid_names",   "quadratures",       "bases",
+      "domain",       "functions_of_time"};
   tensor_components.erase(
-      tensor_components.end() - number_of_components_to_remove,
+      alg::remove_if(tensor_components,
+                     [&non_tensor_components](const std::string& name) {
+                       return non_tensor_components.find(name) !=
+                              non_tensor_components.end();
+                     }),
       tensor_components.end());
-
   return tensor_components;
 }
 
@@ -661,6 +665,30 @@ std::vector<std::vector<std::string>> VolumeData::get_quadratures(
   }
 
   return element_quadratures;
+}
+
+std::optional<std::vector<char>> VolumeData::get_domain(
+    const size_t observation_id) const {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadOnly);
+  if (not contains_dataset_or_group(observation_group.id(), "", "domain")) {
+    return std::nullopt;
+  }
+  return h5::read_data<1, std::vector<char>>(observation_group.id(), "domain");
+}
+
+std::optional<std::vector<char>> VolumeData::get_functions_of_time(
+    const size_t observation_id) const {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadOnly);
+  if (not contains_dataset_or_group(observation_group.id(), "",
+                                    "functions_of_time")) {
+    return std::nullopt;
+  }
+  return h5::read_data<1, std::vector<char>>(observation_group.id(),
+                                             "functions_of_time");
 }
 
 }  // namespace h5

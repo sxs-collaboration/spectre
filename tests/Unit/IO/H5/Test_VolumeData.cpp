@@ -10,6 +10,12 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/UniformTranslation.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Helpers/IO/VolumeData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
@@ -18,6 +24,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/YlmSpherepack.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/FileSystem.hpp"
 
 namespace {
@@ -118,13 +125,26 @@ void test() {
   const std::vector<std::vector<Spectral::Quadrature>> quadratures{
       {3, Spectral::Quadrature::Gauss},
       {3, Spectral::Quadrature::GaussLobatto}};
+  const auto domain_creator = domain::creators::Brick{
+      {{0., 0., 0.}},
+      {{1., 2., 3.}},
+      {{1, 0, 1}},
+      {{3, 4, 5}},
+      {{false, false, false}},
+      std::make_unique<
+          domain::creators::time_dependence::UniformTranslation<3, 0>>(
+          1., std::array<double, 3>{{2., 3., 4.}})};
+  domain::creators::register_derived_with_charm();
+  domain::creators::time_dependence::register_derived_with_charm();
+  domain::FunctionsOfTime::register_derived_with_charm();
   {
     auto& volume_file =
         my_file.insert<h5::VolumeData>("/element_data", version_number);
     const auto write_to_file = [&volume_file, &tensor_components_and_coords,
-                                &grid_names, &bases,
-                                &quadratures](const size_t observation_id,
-                                              const double observation_value) {
+                                &grid_names, &bases, &quadratures,
+                                &domain_creator](
+                                   const size_t observation_id,
+                                   const double observation_value) {
       std::string first_grid = grid_names.front();
       std::string last_grid = grid_names.back();
       volume_file.write_volume_data(
@@ -186,7 +206,9 @@ void test() {
                                            tensor_components_and_coords[2])}},
                {2, 2, 2},
                bases.back(),
-               quadratures.back()}});
+               quadratures.back()}},
+          serialize(domain_creator.create_domain()),
+          serialize(domain_creator.functions_of_time()));
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
@@ -220,6 +242,10 @@ void test() {
         {"S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z"},
         {{0, 1, 2, 3, 4, 5, 6}, {1, 0, 5, 3, 6, 4, 2}}, {},
         observation_values[i]);
+    CHECK(volume_file.get_domain(observation_ids[i]) ==
+          serialize(domain_creator.create_domain()));
+    CHECK(volume_file.get_functions_of_time(observation_ids[i]) ==
+          serialize(domain_creator.functions_of_time()));
   }
 
   {

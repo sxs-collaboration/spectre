@@ -89,12 +89,16 @@ void check_volume_data(
   CHECK(target_bases == read_bases);
   CHECK(target_quadratures == read_quadratures);
 
-  const auto read_components =
-      volume_file.list_tensor_components(observation_id);
-  CHECK(alg::all_of(read_components,
-                    [&expected_components](const std::string& id) {
-                      return alg::found(expected_components, id);
-                    }));
+  {
+    const auto read_components =
+        volume_file.list_tensor_components(observation_id);
+    CAPTURE(read_components);
+    CAPTURE(expected_components);
+    CHECK(alg::all_of(read_components,
+                      [&expected_components](const std::string& id) {
+                        return alg::found(expected_components, id);
+                      }));
+  }
   // Helper Function to get number of points on a particular grid
   const auto accumulate_extents = [](const std::vector<size_t>& grid_extents) {
     return alg::accumulate(grid_extents, 1, std::multiplies<>{});
