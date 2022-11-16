@@ -119,6 +119,31 @@ target_compile_definitions(Blaze
   BLAZE_USE_ALWAYS_INLINE=${_BLAZE_USE_ALWAYS_INLINE}
   )
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+  target_compile_options(Blaze
+    INTERFACE
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-include csignal>")
+  # CMake doesn't like function macros in target_compile_definitions, so we
+  # have to define it separately. We also need to make sure csignal is
+  # included.
+  target_compile_options(Blaze
+    INTERFACE
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
+    -D 'BLAZE_THROW(EXCEPTION)=struct sigaction handler{}\;handler.sa_handler=\
+SIG_IGN\;handler.sa_flags=0\;sigemptyset(&handler.sa_mask)\;\
+sigaction(SIGTRAP,&handler,nullptr)\;raise(SIGTRAP)\;throw EXCEPTION'
+    >")
+else()
+  # In release mode disable checks completely.
+  set_property(TARGET Blaze
+    APPEND PROPERTY
+    INTERFACE_COMPILE_OPTIONS
+    "$<$<COMPILE_LANGUAGE:CXX>:SHELL:
+    -D 'BLAZE_THROW(EXCEPTION)='
+    >")
+endif()
+
+
 add_interface_lib_headers(
   TARGET Blaze
   HEADERS
