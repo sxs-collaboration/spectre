@@ -22,6 +22,7 @@ allowed_tags = [
     "ErrorHandling",
     "Evolution",
     "Fluxes",
+    "ForceFree",
     "GeneralizedHarmonic",
     "GrMhd",
     "H5",
