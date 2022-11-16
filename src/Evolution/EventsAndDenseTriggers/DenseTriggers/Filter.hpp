@@ -33,7 +33,7 @@ namespace DenseTriggers {
 ///
 /// For example, to trigger every 10 starting at 100, one could use
 ///
-/// \snippet Test_Filter.cpp example
+/// \snippet DenseTriggers/Test_Filter.cpp example
 class Filter : public DenseTrigger {
  public:
   /// \cond
