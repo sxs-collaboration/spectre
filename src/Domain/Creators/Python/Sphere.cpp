@@ -14,9 +14,7 @@
 
 namespace py = pybind11;
 
-namespace domain {
-namespace creators {
-namespace py_bindings {
+namespace domain::creators::py_bindings {
 void bind_sphere(py::module& m) {
   py::class_<Sphere, DomainCreator<3>>(m, "Sphere")
       .def(py::init<double, double, size_t, std::array<size_t, 2>, bool>(),
@@ -25,6 +23,4 @@ void bind_sphere(py::module& m) {
            py::arg("initial_number_of_grid_points"),
            py::arg("use_equiangular_map"));
 }
-}  // namespace py_bindings
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::py_bindings

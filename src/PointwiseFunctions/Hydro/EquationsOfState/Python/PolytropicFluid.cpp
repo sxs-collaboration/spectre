@@ -10,8 +10,7 @@
 
 namespace py = pybind11;
 
-namespace EquationsOfState {
-namespace py_bindings {
+namespace EquationsOfState::py_bindings {
 
 void bind_polytropic_fluid(py::module& m) {
   // We can't expose any member functions without wrapping tensors in Python,
@@ -22,5 +21,4 @@ void bind_polytropic_fluid(py::module& m) {
            py::arg("polytropic_exponent"));
 }
 
-}  // namespace py_bindings
-}  // namespace EquationsOfState
+}  // namespace EquationsOfState::py_bindings

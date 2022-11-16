@@ -10,8 +10,7 @@
 
 namespace py = pybind11;
 
-namespace EquationsOfState {
-namespace py_bindings {
+namespace EquationsOfState::py_bindings {
 
 void bind_equation_of_state(py::module& m) {
   // This is a virtual base class, so we expose it only to use it in Python
@@ -19,5 +18,4 @@ void bind_equation_of_state(py::module& m) {
   py::class_<EquationOfState<true, 1>>(m, "RelativisticEquationOfState1D");
 }
 
-}  // namespace py_bindings
-}  // namespace EquationsOfState
+}  // namespace EquationsOfState::py_bindings

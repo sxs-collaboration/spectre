@@ -29,7 +29,7 @@ void bind_datavector(py::module& m) {
              return result;
            }),
            py::arg("values"))
-      .def(py::init([](py::buffer buffer, const bool copy) {
+      .def(py::init([](const py::buffer& buffer, const bool copy) {
              py::buffer_info info = buffer.request();
              // Sanity-check the buffer
              if (info.format != py::format_descriptor<double>::format()) {

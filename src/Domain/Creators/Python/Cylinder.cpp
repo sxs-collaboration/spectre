@@ -14,9 +14,7 @@
 
 namespace py = pybind11;
 
-namespace domain {
-namespace creators {
-namespace py_bindings {
+namespace domain::creators::py_bindings {
 void bind_cylinder(py::module& m) {
   py::class_<Cylinder, DomainCreator<3>>(m, "Cylinder")
       .def(py::init<double, double, double, double, bool, size_t,
@@ -27,6 +25,4 @@ void bind_cylinder(py::module& m) {
            py::arg("initial_number_of_grid_points"),
            py::arg("use_equiangular_map"));
 }
-}  // namespace py_bindings
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::py_bindings

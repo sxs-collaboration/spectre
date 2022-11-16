@@ -24,7 +24,7 @@ void bind_matrix(py::module& m) {
   // Wrapper for basic Matrix operations
   py::class_<Matrix>(m, "Matrix", py::buffer_protocol())
       .def(py::init<size_t, size_t>(), py::arg("rows"), py::arg("columns"))
-      .def(py::init([](py::buffer buffer) {
+      .def(py::init([](const py::buffer& buffer) {
              py::buffer_info info = buffer.request();
              // Sanity-check the buffer
              if (info.format != py::format_descriptor<double>::format()) {

@@ -11,8 +11,7 @@
 #include "Domain/Creators/Python/Shell.hpp"
 #include "Domain/Creators/Python/Sphere.hpp"
 
-namespace domain {
-namespace creators {
+namespace domain::creators {
 
 PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   // Order is important: The base class `DomainCreator` needs to have its
@@ -26,5 +25,4 @@ PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   py_bindings::bind_sphere(m);
 }
 
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators
