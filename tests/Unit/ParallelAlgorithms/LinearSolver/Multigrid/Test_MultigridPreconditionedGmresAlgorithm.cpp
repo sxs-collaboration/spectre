@@ -18,7 +18,7 @@
 #include "Parallel/Main.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/Goto.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/MakeIdentityIfSkipped.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Multigrid/ElementsAllocator.hpp"
@@ -103,7 +103,7 @@ struct Metavariables {
                  typename linear_solver::initialize_element,
                  typename multigrid::initialize_element,
                  typename smoother::initialize_element,
-                 ::Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+                 Parallel::Actions::TerminatePhase>;
 
   using register_actions =
       tmpl::list<typename nonlinear_solver::register_element,

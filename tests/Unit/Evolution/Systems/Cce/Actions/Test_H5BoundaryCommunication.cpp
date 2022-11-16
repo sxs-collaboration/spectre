@@ -37,6 +37,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -110,8 +111,7 @@ struct mock_characteristic_evolution {
           typename Metavariables::evolved_swsh_tag, false>,
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
-      ::Actions::AdvanceTime,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      ::Actions::AdvanceTime, Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

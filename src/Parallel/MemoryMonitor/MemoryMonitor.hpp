@@ -10,7 +10,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -47,7 +47,7 @@ struct MemoryMonitor {
       Parallel::Phase::Initialization,
       tmpl::list<Initialization::Actions::AddSimpleTags<
                      mem_monitor::detail::InitializeMutator>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+                 Parallel::Actions::TerminatePhase>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

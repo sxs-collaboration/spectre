@@ -28,6 +28,7 @@
 #include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -43,7 +44,7 @@ struct mock_analytic_worldtube_boundary {
   using initialize_action_list =
       tmpl::list<Actions::InitializeWorldtubeBoundary<
                      AnalyticWorldtubeBoundary<Metavariables>>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+                 Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

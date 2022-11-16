@@ -82,7 +82,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
@@ -401,7 +400,7 @@ struct GhValenciaDivCleanTemplateBase<
       Initialization::Actions::Minmod<3>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<derived_metavars>>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   using dg_element_array_component = DgElementArray<
       derived_metavars,

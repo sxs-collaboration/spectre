@@ -50,9 +50,7 @@ struct InitializeCharacteristicEvolutionScri {
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
           tmpl::list<Tags::AnalyticBoundaryDataManager>, tmpl::list<>>>>;
-  using initialization_tags_to_keep = tmpl::conditional_t<
-      tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,
-      tmpl::list<Tags::AnalyticBoundaryDataManager>, tmpl::list<>>;
+
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
 

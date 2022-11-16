@@ -81,7 +81,6 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/MonitorMemory.hpp"
@@ -437,7 +436,7 @@ struct EvolutionMetavars {
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,

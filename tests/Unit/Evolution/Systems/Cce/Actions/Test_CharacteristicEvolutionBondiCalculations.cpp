@@ -37,6 +37,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -91,8 +92,7 @@ struct mock_characteristic_evolution {
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime, Actions::ReceiveWorldtubeData<Metavariables>,
-      Actions::InitializeFirstHypersurface<false,
-                                           DummyBoundary<Metavariables>>,
+      Actions::InitializeFirstHypersurface<false, DummyBoundary<Metavariables>>,
       ::Actions::MutateApply<InitializeGauge>,
       ::Actions::MutateApply<GaugeUpdateAngularFromCartesian<
           Tags::CauchyAngularCoords, Tags::CauchyCartesianCoords>>,
@@ -104,7 +104,7 @@ struct mock_characteristic_evolution {
       ::Actions::MutateApply<
           GaugeUpdateOmega<Tags::PartiallyFlatGaugeC, Tags::PartiallyFlatGaugeD,
                            Tags::PartiallyFlatGaugeOmega>>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

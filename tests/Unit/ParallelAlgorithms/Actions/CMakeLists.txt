@@ -9,7 +9,6 @@ set(LIBRARY_SOURCES
   Test_Goto.cpp
   Test_MutateApply.cpp
   Test_RandomizeVariables.cpp
-  Test_RemoveOptionsAndTerminatePhase.cpp
   Test_SetData.cpp
   Test_TerminatePhase.cpp
   Test_UpdateMessageQueue.cpp

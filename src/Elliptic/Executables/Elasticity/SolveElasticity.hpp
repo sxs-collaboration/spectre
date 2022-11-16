@@ -41,7 +41,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveVolumeIntegrals.hpp"
@@ -239,7 +238,7 @@ struct Metavariables {
       elliptic::dg::Actions::apply_operator<
           system, true, linear_solver_iteration_id, fields_tag, fluxes_vars_tag,
           operator_applied_to_fields_tag, vars_tag, fluxes_vars_tag>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   using build_linear_operator_actions = elliptic::dg::Actions::apply_operator<
       system, true, linear_solver_iteration_id, vars_tag, fluxes_vars_tag,

@@ -217,10 +217,7 @@ Each %Parallel Component struct must have the following type aliases:
    examples of components below).  Each initialization action may
    specify a type alias `using initialization_tags` which are a
    `tmpl::list` of tags that will be fetched from the db::DataBox by the
-   action.  All `initialization_tags` are removed from the db::DataBox of
-   the component at the end of the `Initialization` phase, except for
-   tags listed in a type alias `using initialization_tags_to_keep` that
-   may appear in each initialization action.
+   action.
 5. `using const_global_cache_tags` is set to a `tmpl::list` of tags
    that are required by the `allocate_array` function of an array
    component, or simple actions called on the parallel component.

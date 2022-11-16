@@ -10,7 +10,6 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 
 namespace Cce {
@@ -25,7 +24,7 @@ struct WorldtubeComponentBase {
   using metavariables = Metavariables;
   using initialize_action_list =
       tmpl::list<Actions::InitializeWorldtubeBoundary<WorldtubeComponent>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+                 Parallel::Actions::TerminatePhase>;
 
   using initialization_tags =
       tmpl::push_back<Parallel::get_initialization_tags<initialize_action_list>,
