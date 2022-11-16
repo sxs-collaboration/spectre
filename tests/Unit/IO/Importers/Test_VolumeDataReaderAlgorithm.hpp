@@ -18,11 +18,11 @@
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Helpers/Parallel/RoundRobinArrayElements.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -190,10 +190,9 @@ void write_test_data(const std::string& data_file_name,
       element_quadratures.push_back(Spectral::Quadrature::Gauss);
       element_bases.push_back(Spectral::Basis::Chebyshev);
     }
-    element_data.push_back({std::move(element_extents),
-                            std::move(tensor_components),
-                            std::move(element_bases),
-                            std::move(element_quadratures), element_name});
+    element_data.push_back(
+        {element_name, std::move(tensor_components), std::move(element_extents),
+         std::move(element_bases), std::move(element_quadratures)});
   }
   test_data_file.write_volume_data(0, observation_value,
                                    std::move(element_data));

@@ -60,38 +60,23 @@ struct MockContributeVolumeData {
     observers::ObservationId observation_id{};
     std::string subfile_name{};
     observers::ArrayComponentId array_component_id{};
-    std::string element_name{};
-    std::vector<TensorComponent> in_received_tensor_data{};
-    std::vector<size_t> received_extents{};
-    std::vector<Spectral::Basis> received_basis{};
-    std::vector<Spectral::Quadrature> received_quadrature{};
+    ElementVolumeData received_volume_data{};
   };
   static Results results;
 
   template <typename ParallelComponent, typename... DbTags,
-            typename Metavariables, typename ArrayIndex, size_t Dim>
-  static void apply(
-      db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-      Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/,
-      const observers::ObservationId& observation_id,
-      const std::string& subfile_name,
-      const observers::ArrayComponentId& array_component_id,
-      std::string element_name,
-      std::vector<TensorComponent>&& in_received_tensor_data,
-      const Index<Dim>& received_extents,
-      const std::array<Spectral::Basis, Dim>& received_basis,
-      const std::array<Spectral::Quadrature, Dim>& received_quadrature) {
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
+                    const observers::ArrayComponentId& array_component_id,
+                    ElementVolumeData&& received_volume_data) {
     results.observation_id = observation_id;
     results.subfile_name = subfile_name;
     results.array_component_id = array_component_id;
-    results.element_name = element_name;
-    results.in_received_tensor_data = in_received_tensor_data;
-    results.received_extents.assign(received_extents.indices().begin(),
-                                    received_extents.indices().end());
-    results.received_basis.assign(received_basis.begin(), received_basis.end());
-    results.received_quadrature.assign(received_quadrature.begin(),
-                                       received_quadrature.end());
+    results.received_volume_data = std::move(received_volume_data);
   }
 };
 

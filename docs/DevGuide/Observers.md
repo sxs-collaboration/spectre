@@ -82,11 +82,10 @@ registration is the same as in the reduction data case.
 
 Once the observers are registered, data is contributed to the
 `observers::Observer` component using the
-`observers::Actions::ContributeVolumeData` action. The data is packed into a
-`std::vector<TensorComponent>`, where the `TensorComponent` is data from just
-one tensor component or a reduction over a tensor. The `extents`,
-`Spectral::Basis` and `Spectral::Quadrature` are currently also passed to the
-`ContributeVolumeData` action. Once all the elements on a single core have
+`observers::Actions::ContributeVolumeData` action. The data is packed into an
+`ElementVolumeData` object that carries `TensorComponent`s on a grid.
+Information on the grid, such as its extents, basis and quadrature, are stored
+alongside the `TensorComponent`s. Once all the elements on a single core have
 contributed their volume data to the `observers::Observer` group, the
 `observers::Observer` group moves its data to the `observers::ObserverWriter`
 component to be written. We write one file per node, appending the node ID to

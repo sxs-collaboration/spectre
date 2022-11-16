@@ -12,11 +12,16 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/GetOutput.hpp"
 
 /// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
+template <size_t Dim>
+struct ElementId;
+template <size_t Dim>
+struct Mesh;
 /// \endcond
 
 /*!
@@ -45,48 +50,35 @@ bool operator!=(const TensorComponent& lhs, const TensorComponent& rhs);
 
 /*!
  * \ingroup DataStructuresGroup
- * \brief Holds the extents of the mesh and the tensor components on the mesh.
- *
- * The extents is a `std::vector<size_t>` where each element is the number of
- * grid points in the given dimension. The `TensorComponent`s must live on the
- * grid of the size of the extents. We use runtime extents instead of the
- * `Index` class because observers may write 1D, 2D, or 3D data in a 3D
- * simulation.
+ * \brief Holds tensor components on a grid, to be written into an H5 file
  */
-struct ExtentsAndTensorVolumeData {
-  ExtentsAndTensorVolumeData() = default;
-  ExtentsAndTensorVolumeData(std::vector<size_t> extents_in,
-                             std::vector<TensorComponent> components);
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& p);
-  std::vector<size_t> extents{};
-  std::vector<TensorComponent> tensor_components{};
-};
-
-bool operator==(const ExtentsAndTensorVolumeData& lhs,
-                const ExtentsAndTensorVolumeData& rhs);
-bool operator!=(const ExtentsAndTensorVolumeData& lhs,
-                const ExtentsAndTensorVolumeData& rhs);
-
-/*!
- * An extension of `ExtentsAndTensorVolumeData` to store `Spectral::Quadrature`
- * and `Spectral::Basis`  associated with each axis of the element, in addition
- * to the extents and tensor components data.
- */
-struct ElementVolumeData : ExtentsAndTensorVolumeData {
+struct ElementVolumeData {
   ElementVolumeData() = default;
-  ElementVolumeData(std::vector<size_t> extents_in,
+  ElementVolumeData(std::string element_name_in,
                     std::vector<TensorComponent> components,
+                    std::vector<size_t> extents_in,
                     std::vector<Spectral::Basis> basis_in,
-                    std::vector<Spectral::Quadrature> quadrature_in,
-                    std::string element_name_in);
+                    std::vector<Spectral::Quadrature> quadrature_in);
+  template <size_t Dim>
+  ElementVolumeData(const ElementId<Dim>& element_id,
+                    std::vector<TensorComponent> components,
+                    const Mesh<Dim>& mesh);
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
-  std::vector<Spectral::Basis> basis{};
-  std::vector<Spectral::Quadrature> quadrature{};
+  /// Name of the grid (should be human-readable). For standard volume data this
+  /// name must be the string representation of an ElementId, such as
+  /// [B0,(I1L0,I0L0,I2L3)]. Code that reads the volume data may rely on this
+  /// pattern to reconstruct the ElementId.
   std::string element_name{};
+  /// All tensor components on the grid
+  std::vector<TensorComponent> tensor_components{};
+  /// Number of grid points in every dimension of the grid
+  std::vector<size_t> extents{};
+  /// Spectral::Basis in every dimension of the grid
+  std::vector<Spectral::Basis> basis{};
+  /// Spectral::Quadrature in every dimension of the grid
+  std::vector<Spectral::Quadrature> quadrature{};
 };
 
 bool operator==(const ElementVolumeData& lhs, const ElementVolumeData& rhs);

@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5PropertiesMatch.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -57,7 +57,7 @@ void setup_test_files(const std::vector<std::string>& h5_file_names) {
       volume_file.write_volume_data(
           observation_ids[j], observation_values[j],
           std::vector<ElementVolumeData>{
-              {extents, tensor_components, bases, quadratures, grid_name}});
+              {grid_name, tensor_components, extents, bases, quadratures}});
     }
     h5_file.close_current_object();
   }
@@ -71,7 +71,7 @@ void setup_test_files(const std::vector<std::string>& h5_file_names) {
     volume_file.write_volume_data(
         5678, 4.0,
         std::vector<ElementVolumeData>{
-            {extents, tensor_components, bases, quadratures, grid_name}});
+            {grid_name, tensor_components, extents, bases, quadratures}});
   }  // End of scope for H5 file
 }
 

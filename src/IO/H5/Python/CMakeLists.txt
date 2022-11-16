@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   Dat.cpp
   File.cpp
+  TensorData.cpp
   VolumeData.cpp
   PYTHON_EXECUTABLES
   ExtractDatFromH5.py

@@ -13,9 +13,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond

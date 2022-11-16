@@ -6,7 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 
 namespace py = pybind11;

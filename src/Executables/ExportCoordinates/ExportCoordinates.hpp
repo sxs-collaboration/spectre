@@ -97,13 +97,12 @@ struct ExportCoordinates {
   }
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+            typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ElementId<Dim>& element_id, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const double time = get<Tags::Time>(box);
 
@@ -147,16 +146,13 @@ struct ExportCoordinates {
     auto& local_observer = *Parallel::local_branch(
         Parallel::get_parallel_component<observers::Observer<Metavariables>>(
             cache));
-    const std::string element_name = MakeString{}
-                                     << ElementId<Dim>(array_index);
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer, observers::ObservationId(time, "ObserveCoords"),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
-            Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
-        element_name, std::move(components), mesh.extents(), mesh.basis(),
-        mesh.quadrature());
+            Parallel::ArrayIndex<ElementId<Dim>>(element_id)),
+        ElementVolumeData{element_id, std::move(components), mesh});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

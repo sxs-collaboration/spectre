@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"

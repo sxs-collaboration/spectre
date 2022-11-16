@@ -26,6 +26,7 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   EventsAndTriggers
+  H5
   Interpolation
   LinearOperators
   Observer

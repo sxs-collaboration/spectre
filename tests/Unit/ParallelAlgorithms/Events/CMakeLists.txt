@@ -26,6 +26,7 @@ target_link_libraries(
   ErrorHandling
   Events
   EventsAndTriggers
+  H5
   Interpolation
   Observer
   Spectral

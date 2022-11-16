@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/SpectralIo.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -192,7 +192,7 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
   }
 }
 
-// Write Volume Data stored in a vector of `ExtentsAndTensorVolumeData` to
+// Write Volume Data stored in a vector of `ElementVolumeData` to
 // an `observation_group` in a `VolumeData` file.
 void VolumeData::write_volume_data(
     const size_t observation_id, const double observation_value,
@@ -591,7 +591,8 @@ auto VolumeData::get_data_by_element(
       });
 
       element_volume_data.emplace_back(
-          extents[grid_index], std::move(tensor_components),
+          grid_names[grid_index], std::move(tensor_components),
+          extents[grid_index],
           std::vector<Spectral::Basis>(
               boost::make_transform_iterator(bases[grid_index].begin(),
                                              Spectral::to_basis),
@@ -601,8 +602,7 @@ auto VolumeData::get_data_by_element(
               boost::make_transform_iterator(quadratures[grid_index].begin(),
                                              Spectral::to_quadrature),
               boost::make_transform_iterator(quadratures[grid_index].end(),
-                                             Spectral::to_quadrature)),
-          grid_names[grid_index]);
+                                             Spectral::to_quadrature)));
       offset += mesh_size;
     }  // for grid_index
 

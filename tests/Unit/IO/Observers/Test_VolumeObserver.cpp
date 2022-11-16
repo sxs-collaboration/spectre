@@ -16,13 +16,13 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/IO/Observers/ObserverHelpers.hpp"
 #include "Helpers/IO/VolumeData.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
 #include "IO/Observer/Actions/RegisterWithObservers.hpp"
@@ -33,6 +33,7 @@
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -71,13 +72,10 @@ auto make_fake_volume_data(const observers::ArrayComponentId& id) {
       TensorComponent("S_yy"s, DataVector{-10.5 * hashed_id, -11.0 * hashed_id,
                                           -13.0 * hashed_id, 22.0 * hashed_id});
 
-  return std::make_tuple(
-      Index<2>{2, 2}, std::move(data),
-      std::array<Spectral::Basis, 2>{
-          {Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
-      std::array<Spectral::Quadrature, 2>{
-          {Spectral::Quadrature::GaussLobatto,
-           Spectral::Quadrature::GaussLobatto}});
+  return std::make_tuple(Mesh<2>{{{2, 2}},
+                                 Spectral::Basis::Legendre,
+                                 Spectral::Quadrature::GaussLobatto},
+                         std::move(data));
 }
 
 // Check that WriteVolumeData correctly writes a single element of volume
@@ -100,18 +98,15 @@ void check_write_volume_data(
   // Although the WriteVolumeData action would typically be writing
   // 2D surface "volume" data from a Strahlkorper, to simplify this test, here
   // just reuse make_fake_volume_data().
-  const auto h5_write_volume_fake =
+  const auto [expected_mesh, fake_volume_data] =
       make_fake_volume_data(h5_write_volume_array_id);
 
   const std::vector<size_t> h5_write_volume_expected_extents{
-      {std::get<0>(h5_write_volume_fake)[0],
-       std::get<0>(h5_write_volume_fake)[1]}};
+      {expected_mesh.extents(0), expected_mesh.extents(1)}};
   const std::vector<Spectral::Basis> h5_write_volume_expected_bases{
-      {std::get<2>(h5_write_volume_fake)[0],
-       std::get<2>(h5_write_volume_fake)[1]}};
+      {expected_mesh.basis(0), expected_mesh.basis(1)}};
   const std::vector<Spectral::Quadrature> h5_write_volume_expected_quadratures{
-      {std::get<3>(h5_write_volume_fake)[0],
-       std::get<3>(h5_write_volume_fake)[1]}};
+      {expected_mesh.quadrature(0), expected_mesh.quadrature(1)}};
 
   const observers::ObservationId write_vol_observation_id{
       1., "ElementObservationType"};
@@ -125,13 +120,13 @@ void check_write_volume_data(
       0, h5_write_volume_file_name, h5_write_volume_group_name,
       write_vol_observation_id,
       std::vector<ElementVolumeData>{
-          {h5_write_volume_expected_extents, std::get<1>(h5_write_volume_fake),
-           h5_write_volume_expected_bases, h5_write_volume_expected_quadratures,
-           h5_write_volume_element_name}});
+          {h5_write_volume_element_name, fake_volume_data,
+           h5_write_volume_expected_extents, h5_write_volume_expected_bases,
+           h5_write_volume_expected_quadratures}});
 
   {
     std::vector<DataVector> h5_write_volume_expected_tensor_data{};
-    for (const auto& tensor_component : std::get<1>(h5_write_volume_fake)) {
+    for (const auto& tensor_component : fake_volume_data) {
       h5_write_volume_expected_tensor_data.push_back(
           std::get<DataVector>(tensor_component.data));
     }
@@ -218,22 +213,13 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   for (const auto& id : element_ids) {
     const observers::ArrayComponentId array_id(
         std::add_pointer_t<element_comp>{nullptr},
-        Parallel::ArrayIndex<ElementId<2>>{ElementId<2>{id}});
+        Parallel::ArrayIndex<ElementId<2>>{id});
 
-    auto volume_data_fakes = make_fake_volume_data(array_id);
-    const std::string element_name = MakeString{} << id;
+    auto [mesh, fake_volume_data] = make_fake_volume_data(array_id);
     runner
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
             0, observation_id, std::string{"/element_data"}, array_id,
-            element_name,
-            /* get<1> = volume tensor data */
-            std::move(std::get<1>(volume_data_fakes)),
-            /* get<0> = index of dimensions */
-            std::get<0>(volume_data_fakes),
-            /* get<2> = element bases */
-            std::get<2>(volume_data_fakes),
-            /* get<3> = element quadratures*/
-            std::get<3>(volume_data_fakes));
+            ElementVolumeData{id, std::move(fake_volume_data), mesh});
   }
   // Invoke the simple action 'ContributeVolumeDataToWriter'
   // to move the volume data to the Writer parallel component.
@@ -318,12 +304,12 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     // Each element contains as many data points as the product of its
     // extents, compute this number
     const size_t stride =
-      alg::accumulate(std::get<0>(volume_data_fakes),
-                       static_cast<size_t>(1), std::multiplies<>{});
+        alg::accumulate(std::get<0>(volume_data_fakes).extents().indices(),
+                        static_cast<size_t>(1), std::multiplies<>{});
 
     // Check that the extents and tensor data were correctly written
-    CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes)[0],
-                              std::get<0>(volume_data_fakes)[1]} ==
+    CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes).extents(0),
+                              std::get<0>(volume_data_fakes).extents(1)} ==
           read_extents[i]);
     for (const auto& tensor_component : std::get<1>(volume_data_fakes)) {
       CHECK(std::get<DataVector>(tensor_component.data) ==

@@ -19,6 +19,7 @@ spectre_target_sources(
   SourceArchive.cpp
   SpectralIo.cpp
   StellarCollapseEos.cpp
+  TensorData.cpp
   Version.cpp
   VolumeData.cpp
   )
@@ -40,6 +41,7 @@ spectre_target_headers(
   SourceArchive.hpp
   SpectralIo.hpp
   StellarCollapseEos.hpp
+  TensorData.hpp
   Type.hpp
   Version.hpp
   VolumeData.hpp
@@ -51,6 +53,7 @@ target_link_libraries(
   PUBLIC
   Boost::boost
   DataStructures
+  DomainStructure
   ErrorHandling
   hdf5::hdf5
   Utilities

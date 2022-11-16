@@ -15,11 +15,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Importers/Actions/ReadVolumeData.hpp"
 #include "IO/Importers/Actions/ReceiveVolumeData.hpp"
@@ -180,10 +180,11 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     tensor_data[4] = TensorComponent("T_yx"s, get<1, 0>(tensor));
     tensor_data[5] = TensorComponent("T_yy"s, get<1, 1>(tensor));
     all_element_data[id.block_id()].push_back(
-        {{2, 2},
+        {element_name,
          tensor_data,
+         {2, 2},
          {2, Spectral::Basis::Legendre},
-         {2, Spectral::Quadrature::GaussLobatto}, element_name});
+         {2, Spectral::Quadrature::GaussLobatto}});
   }
   // Write the sample data into an H5 file
   for (size_t i = 0; i < all_element_data.size(); ++i) {
