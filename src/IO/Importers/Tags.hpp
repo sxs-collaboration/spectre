@@ -6,10 +6,12 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <variant>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "IO/Importers/ObservationSelector.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "Options/Options.hpp"
@@ -179,10 +181,13 @@ struct EnableInterpolation : db::SimpleTag {
  *
  * \details Identifiers for elements from multiple parallel components can be
  * stored. Each element is identified by an `observers::ArrayComponentId` and
- * also needs to provide the `std::string` that identifies it in the data file.
+ * also needs to provide the inertial coordinates of its grid points. The
+ * imported data will be interpolated to these grid points.
  */
+template <size_t Dim>
 struct RegisteredElements : db::SimpleTag {
-  using type = std::unordered_map<observers::ArrayComponentId, std::string>;
+  using type = std::unordered_map<observers::ArrayComponentId,
+                                  tnsr::I<DataVector, Dim, Frame::Inertial>>;
 };
 
 /// Indicates which volume data files have already been read.

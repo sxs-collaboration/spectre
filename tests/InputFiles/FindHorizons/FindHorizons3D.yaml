@@ -29,6 +29,7 @@ Importers:
     FileGlob: "KerrVolume*.h5"
     Subgroup: "VolumeData"
     ObservationValue: Last
+    Interpolate: False
 
 ApparentHorizons:
   AhA:

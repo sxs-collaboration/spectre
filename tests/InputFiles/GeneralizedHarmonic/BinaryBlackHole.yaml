@@ -290,8 +290,8 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
 
-# initial_data.h5 should contain numerical initial data
-# on the same grid as specified by the domain given above
+# initial_data.h5 should contain numerical initial data on a grid that covers
+# the domain given above
 # - One way to produce initial data is with the `SolveXcts` executable. See the
 #   example in `docs/Examples/BbhInitialData`.
 # - You can also produce initial data with SpEC, interpolate it (using SpEC) to
@@ -299,11 +299,14 @@ ControlSystems:
 #   coordinates of all grid points in the domain), and then load it here by
 #   selecting either the GH variables (`SpacetimeMetric`, `Pi`, `Phi`) or the
 #   ADM variables (`Lapse`, `Shift`, `SpatialMetric`, `ExtrinsicCurvature`).
+#   In this case, set `Interpolate: False` because the data is already given
+#   on this exact grid.
 Importers:
   NumericInitialData:
     FileGlob: "/path/to/initial_data.h5"
     Subgroup: "VolumeData"
     ObservationValue: Last
+    Interpolate: True
     Variables:
       Lapse: Lapse
       # Load a shift that is not corotating. See `docs/Examples/BbhInitialData`

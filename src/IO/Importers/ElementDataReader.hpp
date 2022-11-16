@@ -65,7 +65,7 @@ namespace detail {
 template <size_t Dim>
 struct InitializeElementDataReader {
   using simple_tags =
-      tmpl::list<Tags::RegisteredElements, Tags::ElementDataAlreadyRead>;
+      tmpl::list<Tags::RegisteredElements<Dim>, Tags::ElementDataAlreadyRead>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,

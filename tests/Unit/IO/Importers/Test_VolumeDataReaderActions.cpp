@@ -16,6 +16,7 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Structure/ElementId.hpp"
+#include "Domain/Tags.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
@@ -63,7 +64,9 @@ struct MockElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<import_tags_list>,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::push_back<
+                         import_tags_list,
+                         domain::Tags::Coordinates<2, Frame::Inertial>>>,
                      importers::Actions::RegisterWithElementDataReader>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
@@ -97,7 +100,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   using element_array = MockElementArray<Metavariables>;
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {"TestVolumeData*.h5", "element_data", observation_selection}};
+      {"TestVolumeData*.h5", "element_data", observation_selection, false}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(
@@ -116,14 +119,20 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   std::unordered_map<ElementId<2>,
                      tuples::tagged_tuple_from_typelist<import_tags_list>>
       all_sample_data{};
+  std::unordered_map<ElementId<2>, tnsr::I<DataVector, 2>> all_coords{};
   for (const auto& id : element_ids) {
     // Generate sample data
     auto& sample_data =
         all_sample_data
             .emplace(id, tuples::tagged_tuple_from_typelist<import_tags_list>{})
             .first->second;
+    auto& coords = all_coords[id];
     const auto hashed_id = static_cast<double>(std::hash<ElementId<2>>{}(id));
     const size_t num_points = 4;
+    get<0>(coords) = DataVector{1.5 * hashed_id, 2.3 * hashed_id,
+                                3.4 * hashed_id, 5.6 * hashed_id};
+    get<1>(coords) = DataVector{8.9 * hashed_id, 1.3 * hashed_id,
+                                2.4 * hashed_id, 6.7 * hashed_id};
     tnsr::I<DataVector, 2> vector{num_points};
     get<0>(vector) = DataVector{0.5 * hashed_id, 1.0 * hashed_id,
                                 3.0 * hashed_id, -2.0 * hashed_id};
@@ -145,7 +154,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     // data file
     ActionTesting::emplace_component_and_initialize<element_array>(
         make_not_null(&runner), ElementIdType{id},
-        {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}});
+        {tnsr::I<DataVector, 2>{}, tnsr::ij<DataVector, 2>{}, coords});
 
     // Register element
     ActionTesting::next_action<element_array>(make_not_null(&runner), id);
@@ -170,7 +179,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
   std::vector<std::vector<ElementVolumeData>> all_element_data(2);
   for (const auto& id : element_ids) {
     const std::string element_name = MakeString{} << id;
-    std::vector<TensorComponent> tensor_data(6);
+    std::vector<TensorComponent> tensor_data(8);
     const auto& vector = get<VectorTag>(all_sample_data.at(id));
     tensor_data[0] = TensorComponent("V_x"s, get<0>(vector));
     tensor_data[1] = TensorComponent("V_y"s, get<1>(vector));
@@ -179,6 +188,9 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     tensor_data[3] = TensorComponent("T_xy"s, get<0, 1>(tensor));
     tensor_data[4] = TensorComponent("T_yx"s, get<1, 0>(tensor));
     tensor_data[5] = TensorComponent("T_yy"s, get<1, 1>(tensor));
+    const auto& coords = all_coords.at(id);
+    tensor_data[6] = TensorComponent("InertialCoordinates_x"s, get<0>(coords));
+    tensor_data[7] = TensorComponent("InertialCoordinates_y"s, get<1>(coords));
     all_element_data[id.block_id()].push_back(
         {element_name,
          tensor_data,

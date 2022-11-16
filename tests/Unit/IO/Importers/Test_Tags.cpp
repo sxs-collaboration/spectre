@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cstddef>
 #include <string>
 
 #include "DataStructures/DataBox/TagName.hpp"
@@ -20,7 +21,7 @@ struct ExampleVolumeData {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
-  TestHelpers::db::test_simple_tag<importers::Tags::RegisteredElements>(
+  TestHelpers::db::test_simple_tag<importers::Tags::RegisteredElements<3>>(
       "RegisteredElements");
   TestHelpers::db::test_simple_tag<importers::Tags::ElementDataAlreadyRead>(
       "ElementDataAlreadyRead");

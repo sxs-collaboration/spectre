@@ -129,6 +129,7 @@ struct ReadNumericInitialData {
       importers::Tags::FileGlob<ImporterOptionsGroup>,
       importers::Tags::Subgroup<ImporterOptionsGroup>,
       importers::Tags::ObservationValue<ImporterOptionsGroup>,
+      importers::Tags::EnableInterpolation<ImporterOptionsGroup>,
       detail::Tags::NumericInitialDataVariables<ImporterOptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,

@@ -1,16 +1,24 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+SourceDomainCreator: &source_domain
+  Disk:
+    InnerRadius: 1.
+    OuterRadius: 3.
+    InitialRefinement: 1
+    InitialGridPoints: [3, 3]
+    UseEquiangularMap: True
+
+# Load data directly onto the same domain without interpolation
+TargetDomainCreator: *source_domain
+
 # [importer_options]
 Importers:
-  FineVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm2D_shared.h5"
-    Subgroup: "fine_data"
-    ObservationValue: 3.
-  CoarseVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm2D_shared.h5"
-    Subgroup: "coarse_data"
+  VolumeData:
+    FileGlob: "Test_DataImporterAlgorithm2D.h5"
+    Subgroup: "TestData"
     ObservationValue: 2.
+    Interpolate: False
 # [importer_options]
 
 ResourceInfo:
