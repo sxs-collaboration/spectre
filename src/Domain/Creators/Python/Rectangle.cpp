@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Rectangle.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -13,7 +15,7 @@
 namespace py = pybind11;
 
 namespace domain::creators::py_bindings {
-void bind_rectangle(py::module& m) {  // NOLINT
+void bind_rectangle(py::module& m) {
   py::class_<Rectangle, DomainCreator<2>>(m, "Rectangle")
       .def(py::init<std::array<double, 2>, std::array<double, 2>,
                     std::array<size_t, 2>, std::array<size_t, 2>,

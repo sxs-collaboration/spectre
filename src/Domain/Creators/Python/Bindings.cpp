@@ -3,20 +3,16 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
+#include "Domain/Creators/Python/Brick.hpp"
+#include "Domain/Creators/Python/Cylinder.hpp"
+#include "Domain/Creators/Python/DomainCreator.hpp"
+#include "Domain/Creators/Python/Interval.hpp"
+#include "Domain/Creators/Python/Rectangle.hpp"
+#include "Domain/Creators/Python/Shell.hpp"
+#include "Domain/Creators/Python/Sphere.hpp"
 
 namespace domain {
 namespace creators {
-
-namespace py_bindings {
-void bind_brick(py::module& m);           // NOLINT
-void bind_cylinder(py::module& m);        // NOLINT
-void bind_domain_creator(py::module& m);  // NOLINT
-void bind_interval(py::module& m);        // NOLINT
-void bind_rectangle(py::module& m);       // NOLINT
-void bind_shell(py::module& m);           // NOLINT
-void bind_sphere(py::module& m);          // NOLINT
-}  // namespace py_bindings
 
 PYBIND11_MODULE(_PyDomainCreators, m) {  // NOLINT
   // Order is important: The base class `DomainCreator` needs to have its

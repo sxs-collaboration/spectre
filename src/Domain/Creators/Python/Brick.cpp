@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Brick.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -13,7 +15,7 @@
 namespace py = pybind11;
 
 namespace domain::creators::py_bindings {
-void bind_brick(py::module& m) {  // NOLINT
+void bind_brick(py::module& m) {
   py::class_<Brick, DomainCreator<3>>(m, "Brick")
       .def(py::init<std::array<double, 3>, std::array<double, 3>,
                     std::array<size_t, 3>, std::array<size_t, 3>,

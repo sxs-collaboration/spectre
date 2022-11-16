@@ -11,6 +11,13 @@ spectre_python_add_module(
   RegularGridInterpolant.cpp
 )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  RegularGridInterpolant.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE

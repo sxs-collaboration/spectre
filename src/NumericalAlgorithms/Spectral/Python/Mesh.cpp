@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "NumericalAlgorithms/Spectral/Python/Mesh.hpp"
+
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -12,7 +14,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-
+namespace {
 template <size_t Dim>
 void bind_mesh_impl(py::module& m) {  // NOLINT
   // the bindings here are not complete
@@ -77,8 +79,9 @@ void bind_mesh_impl(py::module& m) {  // NOLINT
                 state[2].cast<std::array<Spectral::Quadrature, Dim>>());
           }));
 }
+}  // namespace
 
-void bind_mesh(py::module& m) {  // NOLINT
+void bind_mesh(py::module& m) {
   bind_mesh_impl<1>(m);
   bind_mesh_impl<2>(m);
   bind_mesh_impl<3>(m);

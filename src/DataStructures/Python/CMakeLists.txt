@@ -12,6 +12,14 @@ spectre_python_add_module(
   Matrix.cpp
   )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  DataVector.hpp
+  Matrix.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE

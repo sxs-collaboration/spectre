@@ -12,6 +12,14 @@ spectre_python_add_module(
   SegmentId.cpp
   )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  ElementId.hpp
+  SegmentId.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE

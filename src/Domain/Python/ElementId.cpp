@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Python/ElementId.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/operators.h>
@@ -16,7 +18,7 @@ namespace py = pybind11;
 
 namespace domain::py_bindings {
 
-namespace detail {
+namespace {
 template <size_t Dim>
 void bind_element_id_impl(py::module& m) {  // NOLINT
   // These bindings don't cover the full public interface yet. More bindings
@@ -37,12 +39,12 @@ void bind_element_id_impl(py::module& m) {  // NOLINT
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self != py::self);
 }
-}  // namespace detail
+}  // namespace
 
-void bind_element_id(py::module& m) {  // NOLINT
-  detail::bind_element_id_impl<1>(m);
-  detail::bind_element_id_impl<2>(m);
-  detail::bind_element_id_impl<3>(m);
+void bind_element_id(py::module& m) {
+  bind_element_id_impl<1>(m);
+  bind_element_id_impl<2>(m);
+  bind_element_id_impl<3>(m);
 }
 
 }  // namespace domain::py_bindings

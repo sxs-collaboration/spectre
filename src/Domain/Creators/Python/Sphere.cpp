@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Sphere.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -15,7 +17,7 @@ namespace py = pybind11;
 namespace domain {
 namespace creators {
 namespace py_bindings {
-void bind_sphere(py::module& m) {  // NOLINT
+void bind_sphere(py::module& m) {
   py::class_<Sphere, DomainCreator<3>>(m, "Sphere")
       .def(py::init<double, double, size_t, std::array<size_t, 2>, bool>(),
            py::arg("inner_radius"), py::arg("outer_radius"),

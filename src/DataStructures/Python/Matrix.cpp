@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "DataStructures/Python/Matrix.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -18,7 +20,7 @@ namespace py = pybind11;
 
 namespace py_bindings {
 
-void bind_matrix(py::module& m) {  // NOLINT
+void bind_matrix(py::module& m) {
   // Wrapper for basic Matrix operations
   py::class_<Matrix>(m, "Matrix", py::buffer_protocol())
       .def(py::init<size_t, size_t>(), py::arg("rows"), py::arg("columns"))

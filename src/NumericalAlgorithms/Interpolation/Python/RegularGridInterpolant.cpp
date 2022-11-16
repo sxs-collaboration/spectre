@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "NumericalAlgorithms/Interpolation/Python/RegularGridInterpolant.hpp"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -11,7 +13,7 @@
 namespace py = pybind11;
 
 namespace intrp::py_bindings {
-
+namespace {
 template <size_t Dim>
 void bind_regular_grid_impl(py::module& m) {  // NOLINT
   // the bindings are not complete and can be extended
@@ -28,8 +30,9 @@ void bind_regular_grid_impl(py::module& m) {  // NOLINT
            py::arg("input"))
       .def("interpolation_matrices", &RegularGrid<Dim>::interpolation_matrices);
 }
+}  // namespace
 
-void bind_regular_grid(py::module& m) {  // NOLINT
+void bind_regular_grid(py::module& m) {
   bind_regular_grid_impl<1>(m);
   bind_regular_grid_impl<2>(m);
   bind_regular_grid_impl<3>(m);

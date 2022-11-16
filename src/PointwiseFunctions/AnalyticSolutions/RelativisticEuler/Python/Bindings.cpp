@@ -3,11 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
-
-namespace RelativisticEuler::Solutions::py_bindings {
-void bind_tov(py::module& m);  // NOLINT
-}  // namespace RelativisticEuler::Solutions::py_bindings
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Python/Tov.hpp"
 
 PYBIND11_MODULE(_PyRelativisticEulerSolutions, m) {  // NOLINT
   RelativisticEuler::Solutions::py_bindings::bind_tov(m);

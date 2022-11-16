@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "IO/H5/Python/Dat.hpp"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <string>
@@ -12,7 +14,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_h5dat(py::module& m) {  // NOLINT
+void bind_h5dat(py::module& m) {
   // Wrapper for basic H5Dat operations
   py::class_<h5::Dat>(m, "H5Dat")
       .def("append",

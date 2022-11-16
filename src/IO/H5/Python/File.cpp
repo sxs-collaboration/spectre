@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "IO/H5/Python/File.hpp"
+
 #include <boost/algorithm/string/join.hpp>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -15,6 +17,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
+namespace {
 template <h5::AccessType Access_t>
 void bind_h5file_impl(py::module& m) {  // NOLINT
   // Wrapper for basic H5File operations
@@ -83,7 +86,9 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
             py::arg("version"));
   }
 }
-void bind_h5file(py::module& m) {  // NOLINT
+}  // namespace
+
+void bind_h5file(py::module& m) {
   bind_h5file_impl<h5::AccessType::ReadOnly>(m);
   bind_h5file_impl<h5::AccessType::ReadWrite>(m);
 

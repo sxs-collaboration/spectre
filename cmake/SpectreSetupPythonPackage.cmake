@@ -366,6 +366,18 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   endwhile(NOT ${CURRENT_MODULE} STREQUAL ${SPECTRE_PYTHON_PREFIX})
 endfunction()
 
+# Add headers if Python bindings are being built
+function (spectre_python_headers LIBRARY_NAME)
+  if(NOT BUILD_PYTHON_BINDINGS)
+    return()
+  endif()
+spectre_target_headers(
+    ${LIBRARY_NAME}
+    # Forward all remaining arguments
+    ${ARGN}
+    )
+endfunction()
+
 # Link with the LIBRARIES if Python bindings are being built
 function (spectre_python_link_libraries LIBRARY_NAME)
   if(NOT BUILD_PYTHON_BINDINGS)

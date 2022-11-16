@@ -13,6 +13,14 @@ spectre_python_add_module(
   PolytropicFluid.cpp
   )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  EquationOfState.hpp
+  PolytropicFluid.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
