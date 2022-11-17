@@ -27,6 +27,7 @@ void bind_element_id_impl(py::module& m) {  // NOLINT
       .def(py::init<size_t>(), py::arg("block_id"))
       .def(py::init<size_t, std::array<SegmentId, Dim>>(), py::arg("block_id"),
            py::arg("segment_ids"))
+      .def(py::init<const std::string&>(), py::arg("grid_name"))
       .def_property("block_id", &ElementId<Dim>::block_id, nullptr)
       .def_property("segment_ids", &ElementId<Dim>::segment_ids, nullptr)
       .def_static("external_boundary_id", &ElementId<Dim>::external_boundary_id)

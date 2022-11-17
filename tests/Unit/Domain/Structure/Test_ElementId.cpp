@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -165,6 +166,24 @@ void test_element_id() {
   // Test output operator:
   CHECK(get_output(block_2_3d) == "[B2,(L2I3,L1I0,L1I1)]");
   CHECK(get_output(element_six) == "[B4,(L0I0,L0I0,L0I0),G1]");
+  CHECK(ElementId<3>{"[B2,(L2I3,L1I0,L1I1)]"} == block_2_3d);
+  CHECK(ElementId<3>{"[B4,(L0I0,L0I0,L0I0),G1]"} == element_six);
+  CHECK(ElementId<1>{"[B1,(L2I3)]"} == ElementId<1>{1, {{{2, 3}}}});
+  CHECK(ElementId<1>{"[B1,(L2I3),G2]"} == ElementId<1>{1, {{{2, 3}}}, 2});
+  CHECK(ElementId<1>{"[B10,(L2I3)]"} == ElementId<1>{10, {{{2, 3}}}});
+  CHECK(ElementId<2>{"[B2,(L1I1,L2I0)]"} ==
+        ElementId<2>{2, {{{1, 1}, {2, 0}}}});
+  CHECK(ElementId<2>{"[B2,(L1I1,L2I0),G12]"} ==
+        ElementId<2>{2, {{{1, 1}, {2, 0}}}, 12});
+  CHECK(ElementId<2>{"[B52,(L12I133,L6I38)]"} ==
+        ElementId<2>{52, {{{12, 133}, {6, 38}}}});
+  CHECK_THROWS_WITH(ElementId<1>("somegrid"),
+                    Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<2>("[B0,(L1I0)]"),
+                    Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<2>("[B0]"), Catch::Contains("Invalid grid name"));
+  CHECK_THROWS_WITH(ElementId<3>("L1I0,L2I1,L2I0"),
+                    Catch::Contains("Invalid grid name"));
 
   CHECK(ElementId<3>::external_boundary_id().block_id() ==
         two_to_the(ElementId<3>::block_id_bits) - 1);
@@ -209,34 +228,58 @@ void test_element_id() {
 template <size_t VolumeDim>
 void test_serialization() {
   constexpr size_t volume_dim = VolumeDim;
-  const ElementId<volume_dim> unused_id(0);
-  const auto initial_ref_levels = make_array<volume_dim>(1_st);
-  // We restrict the test to 2^7 blocks and 2^grid_index_bits-2 grid indices so
-  // it finishes in a reasonable amount of time.
-  for (size_t block_id = 0; block_id < two_to_the(7_st); ++block_id) {
-    for (size_t grid_index = 0;
-         grid_index < two_to_the(ElementId<VolumeDim>::grid_index_bits - 2);
-         ++grid_index) {
-      const std::vector<ElementId<volume_dim>> element_ids =
-          initial_element_ids(block_id, initial_ref_levels, grid_index);
-      for (const auto element_id : element_ids) {
-        const auto serialized_id = serialize_and_deserialize(element_id);
-        CHECK(serialized_id == element_id);
-        // The following checks that ElementId can be used as a Charm array
-        // index
-        Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
-        CHECK(element_id == array_index.get_index());
-        // now check pupping the ArrayIndex works...
-        const auto serialized_array_index =
-            serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
-        PUP::fromMem reader(serialized_array_index.data());
-        Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
-            unused_id);
-        reader | deserialized_array_index;
-        CHECK(array_index == deserialized_array_index);
-        CHECK(element_id == deserialized_array_index.get_index());
-      }
+
+  // Generate random element IDs so we test the full range of possible values
+  MAKE_GENERATOR(gen);
+  std::uniform_int_distribution<size_t> dist_block_id(
+      0, two_to_the(ElementId<VolumeDim>::block_id_bits) - 1);
+  std::uniform_int_distribution<size_t> dist_grid_index(
+      0, two_to_the(ElementId<VolumeDim>::grid_index_bits) - 1);
+  std::uniform_int_distribution<size_t> dist_refinement(
+      0, two_to_the(ElementId<VolumeDim>::refinement_bits) - 1);
+  const auto random_segment_id = [&gen, &dist_refinement]() -> SegmentId {
+    const size_t refinement = dist_refinement(gen);
+    std::uniform_int_distribution<size_t> dist_index(
+        0, two_to_the(refinement) - 1);
+    return {refinement, dist_index(gen)};
+  };
+  const auto random_segment_ids =
+      [&random_segment_id]() -> std::array<SegmentId, VolumeDim> {
+    if constexpr (VolumeDim == 1) {
+      return {{random_segment_id()}};
+    } else if constexpr (VolumeDim == 2) {
+      return {{random_segment_id(), random_segment_id()}};
+    } else {
+      return {{random_segment_id(), random_segment_id(), random_segment_id()}};
     }
+  };
+
+  const ElementId<volume_dim> unused_id(0);
+  for (size_t i = 0; i < 100; ++i) {
+    ElementId<volume_dim> element_id{dist_block_id(gen), random_segment_ids(),
+                                     dist_grid_index(gen)};
+    CAPTURE(element_id);
+
+    // Test serialization
+    const auto serialized_id = serialize_and_deserialize(element_id);
+    CHECK(serialized_id == element_id);
+
+    // The following checks that ElementId can be used as a Charm array
+    // index
+    Parallel::ArrayIndex<ElementId<volume_dim>> array_index(element_id);
+    CHECK(element_id == array_index.get_index());
+    // now check pupping the ArrayIndex works...
+    const auto serialized_array_index =
+        serialize<Parallel::ArrayIndex<ElementId<volume_dim>>>(array_index);
+    PUP::fromMem reader(serialized_array_index.data());
+    Parallel::ArrayIndex<ElementId<volume_dim>> deserialized_array_index(
+        unused_id);
+    reader | deserialized_array_index;
+    CHECK(array_index == deserialized_array_index);
+    CHECK(element_id == deserialized_array_index.get_index());
+
+    // Check roundtrip to string representation and back
+    CHECK(ElementId<VolumeDim>(get_output(element_id)) == element_id);
   }
 }
 }  // namespace
@@ -247,28 +290,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId", "[Domain][Unit]") {
   test_serialization<1>();
   test_serialization<2>();
   test_serialization<3>();
-}
-
-// [[OutputRegex, Block id out of bounds]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId.BadBlockId",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  auto failed_element_id =
-      ElementId<1>(two_to_the(ElementId<1>::block_id_bits));
-  static_cast<void>(failed_element_id);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Grid index out of bounds]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.ElementId.BadGridIndex",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_element_id =
-      ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits));
-  static_cast<void>(failed_element_id);
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(ElementId<1>(two_to_the(ElementId<1>::block_id_bits)),
+                    Catch::Contains("Block id out of bounds"));
+  CHECK_THROWS_WITH(
+      ElementId<1>(0, {{{0, 0}}}, two_to_the(ElementId<1>::grid_index_bits)),
+      Catch::Contains("Grid index out of bounds"));
 #endif
 }

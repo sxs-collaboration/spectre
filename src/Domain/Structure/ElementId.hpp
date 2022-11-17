@@ -82,6 +82,9 @@ class ElementId {
   ElementId(size_t block_id, std::array<SegmentId, VolumeDim> segment_ids,
             size_t grid_index = 0);
 
+  /// Create an ElementId from its string representation (see `operator<<`).
+  ElementId(const std::string& grid_name);
+
   ElementId<VolumeDim> id_of_child(size_t dim, Side side) const;
 
   ElementId<VolumeDim> id_of_parent(size_t dim) const;
