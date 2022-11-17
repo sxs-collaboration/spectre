@@ -11,7 +11,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
-
+namespace {
 void weyl_psi0_impl(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> psi_0,
     const SpinWeighted<ComplexDataVector, 2>& bondi_j,
@@ -35,6 +35,7 @@ void weyl_psi0_impl(
              0.5 * bondi_j * (1.0 + square(bondi_k)) * dy_j * conj(dy_j)) /
                 square(bondi_k));
 }
+}  // namespace
 
 void VolumeWeyl<Tags::Psi0>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> psi_0,

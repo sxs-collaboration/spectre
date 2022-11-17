@@ -89,8 +89,6 @@ struct Metavariables {
                                     MockVolumeDataReader<Metavariables>>;
 };
 
-}  // namespace
-
 void test_actions(const std::variant<double, importers::ObservationSelector>&
                       observation_selection) {
   using reader_component = MockVolumeDataReader<Metavariables>;
@@ -234,6 +232,7 @@ void test_actions(const std::variant<double, importers::ObservationSelector>&
     }
   }
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Importers.VolumeDataReaderActions", "[Unit][IO]") {
   test_actions(0.);

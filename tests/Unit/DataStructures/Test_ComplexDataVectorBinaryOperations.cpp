@@ -18,6 +18,7 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 
+namespace {
 void test_complex_data_vector_multiple_operand_math() {
   const TestHelpers::VectorImpl::Bound generic{{-10.0, 10.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.1, 10.0}};
@@ -74,6 +75,7 @@ void test_complex_data_vector_multiple_operand_math() {
       std::array<ComplexDataVector, 2>, std::array<ComplexDataVector, 2>>(
       array_binary_ops);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.ComplexDataVector.MultipleOperands",
                   "[DataStructures][Unit]") {

@@ -18,7 +18,7 @@ namespace TestHelpers::tenex {
 /// \details The functions tested are:
 /// - `tenex::compute_tensorindex_transformation`
 /// - `tenex::transform_multi_index`
-void test_tensor_index_transformation_with_time_indices() {
+inline void test_tensor_index_transformation_with_time_indices() {
   const std::array<size_t, 0> index_order_empty = {};
   const std::array<size_t, 1> index_order_t = {ti::t.value};
   const std::array<size_t, 3> index_order_atb = {ti::a.value, ti::t.value,

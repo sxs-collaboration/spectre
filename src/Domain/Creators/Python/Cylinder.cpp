@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Cylinder.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -12,10 +14,8 @@
 
 namespace py = pybind11;
 
-namespace domain {
-namespace creators {
-namespace py_bindings {
-void bind_cylinder(py::module& m) {  // NOLINT
+namespace domain::creators::py_bindings {
+void bind_cylinder(py::module& m) {
   py::class_<Cylinder, DomainCreator<3>>(m, "Cylinder")
       .def(py::init<double, double, double, double, bool, size_t,
                     std::array<size_t, 3>, bool>(),
@@ -25,6 +25,4 @@ void bind_cylinder(py::module& m) {  // NOLINT
            py::arg("initial_number_of_grid_points"),
            py::arg("use_equiangular_map"));
 }
-}  // namespace py_bindings
-}  // namespace creators
-}  // namespace domain
+}  // namespace domain::creators::py_bindings

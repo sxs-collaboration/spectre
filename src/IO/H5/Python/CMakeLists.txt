@@ -17,6 +17,16 @@ spectre_python_add_module(
   MODULE_PATH "IO"
   )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Dat.hpp
+  File.hpp
+  TensorData.hpp
+  VolumeData.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE

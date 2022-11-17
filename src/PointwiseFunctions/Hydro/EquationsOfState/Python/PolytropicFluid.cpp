@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "PointwiseFunctions/Hydro/EquationsOfState/Python/PolytropicFluid.hpp"
+
 #include <pybind11/pybind11.h>
 #include <string>
 
@@ -8,10 +10,9 @@
 
 namespace py = pybind11;
 
-namespace EquationsOfState {
-namespace py_bindings {
+namespace EquationsOfState::py_bindings {
 
-void bind_polytropic_fluid(py::module& m) {  // NOLINT
+void bind_polytropic_fluid(py::module& m) {
   // We can't expose any member functions without wrapping tensors in Python,
   // so we only expose the initializer for now.
   py::class_<PolytropicFluid<true>, EquationOfState<true, 1>>(
@@ -20,5 +21,4 @@ void bind_polytropic_fluid(py::module& m) {  // NOLINT
            py::arg("polytropic_exponent"));
 }
 
-}  // namespace py_bindings
-}  // namespace EquationsOfState
+}  // namespace EquationsOfState::py_bindings

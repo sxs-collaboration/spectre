@@ -122,6 +122,7 @@ SPECTRE_TEST_CASE(
       "  Width: 1.0\n"
       "  Center: [7.7, -8.8, 9.9]");
   CHECK(created_triple_gauss == triple_gauss_3d);
+  CHECK_FALSE(created_triple_gauss != triple_gauss_3d);
   const auto created_triple_gauss_gh_damping_function =
       TestHelpers::test_creation<
           std::unique_ptr<GeneralizedHarmonic::ConstraintDamping::

@@ -26,6 +26,7 @@
 // main module we just have it be empty
 extern "C" void CkRegisterMainModule(void) {}
 
+namespace {
 // from a time-varies-fastest set of buffers provided by
 // `MetricWorldtubeH5BufferUpdater` extract the set of coefficients for a
 // particular time given by `buffer_time_offset` into the `time_span` size of
@@ -274,6 +275,7 @@ void perform_cce_worldtube_reduction(
   }
   Parallel::printf("\n");
 }
+}  // namespace
 
 /*
  * This executable is used for converting the unnecessarily large SpEC worldtube

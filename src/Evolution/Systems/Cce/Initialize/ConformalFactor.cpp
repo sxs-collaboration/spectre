@@ -32,7 +32,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce::InitializeJ {
-namespace detail {
+namespace {
 void read_modes_from_input_file(
     const gsl::not_null<ComplexModalVector*> input_modes,
     const std::string& input_filename) {
@@ -94,7 +94,7 @@ void only_vary_gauge_d_heuristic(
                          gauge_d.data();
   gauge_c_step->data() = 0;
 }
-}  // namespace detail
+}  // namespace
 
 ConformalFactor::ConformalFactor(CkMigrateMessage* msg)
     : InitializeJ<false>(msg) {}
@@ -196,9 +196,8 @@ void ConformalFactor::operator()(
   if (use_input_modes_) {
     if (input_mode_filename_.has_value()) {
       hdf5_lock->lock();
-      detail::read_modes_from_input_file(
-          make_not_null(&(goldberg_modes.data())),
-          input_mode_filename_.value());
+      read_modes_from_input_file(make_not_null(&(goldberg_modes.data())),
+                                 input_mode_filename_.value());
       hdf5_lock->unlock();
     } else {
       ASSERT(input_modes_.size() <= goldberg_modes.size(),
@@ -275,12 +274,11 @@ void ConformalFactor::operator()(
   if (iteration_heuristic_ ==
       ::Cce::InitializeJ::ConformalFactorIterationHeuristic::
           SpinWeight1CoordPerturbation) {
-    iteration_heuristic_function =
-        &detail::spin_weight_1_coord_perturbation_heuristic;
+    iteration_heuristic_function = &spin_weight_1_coord_perturbation_heuristic;
   } else if (iteration_heuristic_ ==
              ::Cce::InitializeJ::ConformalFactorIterationHeuristic::
                  OnlyVaryGaugeD) {
-    iteration_heuristic_function = &detail::only_vary_gauge_d_heuristic;
+    iteration_heuristic_function = &only_vary_gauge_d_heuristic;
   } else {  // LCOV_EXCL_LINE
     // LCOV_EXCL_START
     ERROR("Unknown ConformalFactorIterationHeuristic");

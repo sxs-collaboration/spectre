@@ -20,6 +20,7 @@ if(${ENABLE_WARNINGS})
 -Wformat-y2k;\
 -Wformat=2;\
 -Winvalid-pch;\
+-Wmissing-declarations;\
 -Wmissing-field-initializers;\
 -Wmissing-format-attribute;\
 -Wmissing-include-dirs;\

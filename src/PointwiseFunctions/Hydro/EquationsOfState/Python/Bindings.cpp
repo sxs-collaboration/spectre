@@ -3,14 +3,8 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
-
-namespace EquationsOfState {
-namespace py_bindings {
-void bind_equation_of_state(py::module& m);  // NOLINT
-void bind_polytropic_fluid(py::module& m);   // NOLINT
-}  // namespace py_bindings
-}  // namespace EquationsOfState
+#include "PointwiseFunctions/Hydro/EquationsOfState/Python/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Python/PolytropicFluid.hpp"
 
 PYBIND11_MODULE(_PyEquationsOfState, m) {  // NOLINT
   EquationsOfState::py_bindings::bind_equation_of_state(m);

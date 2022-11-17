@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Interval.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -13,7 +15,7 @@
 namespace py = pybind11;
 
 namespace domain::creators::py_bindings {
-void bind_interval(py::module& m) {  // NOLINT
+void bind_interval(py::module& m) {
   py::class_<Interval, DomainCreator<1>>(m, "Interval")
       .def(
           py::init(

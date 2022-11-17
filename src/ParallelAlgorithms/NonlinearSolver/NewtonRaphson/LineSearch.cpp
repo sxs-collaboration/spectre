@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "ParallelAlgorithms/NonlinearSolver/NewtonRaphson/LineSearch.hpp"
+
 #include <cmath>
 #include <cstddef>
 

@@ -731,7 +731,6 @@ struct ComputeDerived : ComputeBase, db::ComputeTag {
   }
   using argument_tags = tmpl::list<SimpleBase>;
 };
-}  // namespace
 
 void test_interface_base_tags() {
   const auto interface = [](const auto xi_value, const auto eta_value) {
@@ -747,7 +746,7 @@ void test_interface_base_tags() {
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
 }
-
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
   test_interface_items();

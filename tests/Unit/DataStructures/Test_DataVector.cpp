@@ -19,6 +19,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
+namespace {
 void test_data_vector_unary_math() {
   // [test_functions_with_vector_arguments_example]
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
@@ -65,7 +66,6 @@ void test_data_vector_unary_math() {
   // the build.
 }
 
-namespace {
 void test_norms() {
   // Test l1Norm and l2Norm:
   MAKE_GENERATOR(gen);

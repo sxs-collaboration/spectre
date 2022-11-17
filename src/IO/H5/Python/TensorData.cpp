@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "IO/H5/Python/TensorData.hpp"
+
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -16,7 +18,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_tensordata(py::module& m) {  // NOLINT
+void bind_tensordata(py::module& m) {
   // Wrapper for TensorComponent
   py::class_<TensorComponent>(m, "TensorComponent")
       .def(py::init<std::string, DataVector>(), py::arg("name"),

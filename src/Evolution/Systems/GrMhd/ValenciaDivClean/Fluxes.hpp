@@ -29,6 +29,31 @@ class DataVector;
 
 namespace grmhd {
 namespace ValenciaDivClean {
+namespace detail {
+void fluxes_impl(
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_ye_flux,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
+    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
+    gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
+
+    // Temporaries
+    gsl::not_null<Scalar<DataVector>*> transport_velocity,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w,
+    const Scalar<DataVector>& magnetic_field_dot_spatial_velocity,
+    const Scalar<DataVector>& pressure_star_lapse_sqrt_det_spatial_metric,
+
+    // Extra args
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_ye,
+    const Scalar<DataVector>& tilde_tau,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity);
+}  // namespace detail
 
 /*!
  * \brief The fluxes of the conservative variables

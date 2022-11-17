@@ -550,6 +550,7 @@ void set_identified_boundaries(
   }
 }
 
+namespace {
 // A Block or Blocks can be wrapped in an outer layer of Blocks surrounding
 // the original Block(s). In the BBH Domain, this occurs several times, using
 // both Wedges and Frustums. The simplest example in which wrapping is used is
@@ -581,7 +582,6 @@ std::array<OrientationMap<3>, 6> orientations_for_wrappings() {
   }};
 }
 
-namespace {
 size_t which_wedge_index(const ShellWedges& which_wedges) {
   switch (which_wedges) {
     case ShellWedges::All:

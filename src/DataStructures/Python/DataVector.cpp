@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "DataStructures/Python/DataVector.hpp"
+
 #include <memory>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
@@ -16,7 +18,7 @@
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_datavector(py::module& m) {  // NOLINT
+void bind_datavector(py::module& m) {
   // Wrapper for basic DataVector operations
   py::class_<DataVector>(m, "DataVector", py::buffer_protocol())
       .def(py::init<size_t>(), py::arg("size"))
@@ -27,7 +29,7 @@ void bind_datavector(py::module& m) {  // NOLINT
              return result;
            }),
            py::arg("values"))
-      .def(py::init([](py::buffer buffer, const bool copy) {
+      .def(py::init([](const py::buffer& buffer, const bool copy) {
              py::buffer_info info = buffer.request();
              // Sanity-check the buffer
              if (info.format != py::format_descriptor<double>::format()) {

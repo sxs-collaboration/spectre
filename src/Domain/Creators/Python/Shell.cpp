@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Creators/Python/Shell.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
@@ -14,7 +16,7 @@ namespace py = pybind11;
 
 namespace domain::creators::py_bindings {
 
-void bind_shell(py::module& m) {  // NOLINT
+void bind_shell(py::module& m) {
   py::class_<Shell, DomainCreator<3>>(m, "Shell")
       .def(
           py::init([](const double inner_radius, const double outer_radius,

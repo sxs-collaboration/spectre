@@ -18,6 +18,19 @@ spectre_python_add_module(
   Sphere.cpp
   )
 
+spectre_python_headers(
+  ${LIBRARY}
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  HEADERS
+  Brick.hpp
+  Cylinder.hpp
+  DomainCreator.hpp
+  Interval.hpp
+  Rectangle.hpp
+  Shell.hpp
+  Sphere.hpp
+  )
+
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE

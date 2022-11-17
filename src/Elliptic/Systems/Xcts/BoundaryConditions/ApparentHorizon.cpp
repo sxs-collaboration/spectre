@@ -45,6 +45,7 @@ ApparentHorizon<ConformalGeometry>::ApparentHorizon(
           // NOLINTNEXTLINE(performance-move-const-arg)
           std::move(solution_for_negative_expansion)) {}
 
+namespace {
 // This sets the output buffer to: \bar{m}^{ij} \bar{\nabla}_i n_j
 void normal_gradient_term_flat_cartesian(
     const gsl::not_null<Scalar<DataVector>*> n_dot_conformal_factor_gradient,
@@ -487,6 +488,7 @@ void linearized_apparent_horizon_impl(
     get(*n_dot_lapse_times_conformal_factor_gradient_correction) = 0.;
   }
 }
+}  // namespace
 
 template <Xcts::Geometry ConformalGeometry>
 void ApparentHorizon<ConformalGeometry>::apply(

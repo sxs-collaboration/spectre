@@ -21,6 +21,7 @@
 
 // IWYU pragma: no_include <algorithm>
 
+namespace {
 void test_additional_complex_diagonal_modal_operator_math() {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
 
@@ -69,6 +70,7 @@ void test_additional_complex_diagonal_modal_operator_math() {
       TestHelpers::VectorImpl::TestKind::Strict,
       std::array<ComplexDiagonalModalOperator, 2>>(array_binary_ops);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.DataStructures.ComplexDiagonalModalOperator.AdditionalMath",

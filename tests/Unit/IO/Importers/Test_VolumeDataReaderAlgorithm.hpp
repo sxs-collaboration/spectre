@@ -69,7 +69,7 @@ struct VectorFieldTag : db::SimpleTag {
 
 enum class Grid { Fine, Coarse };
 
-std::ostream& operator<<(std::ostream& os, Grid grid) {
+inline std::ostream& operator<<(std::ostream& os, Grid grid) {
   switch (grid) {
     case Grid::Fine:
       return os << "Fine";

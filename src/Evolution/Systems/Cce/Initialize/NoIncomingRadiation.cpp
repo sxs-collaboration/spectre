@@ -19,7 +19,7 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Cce::InitializeJ {
-namespace detail {
+namespace {
 
 void radial_evolve_psi0_condition(
     const gsl::not_null<SpinWeighted<ComplexDataVector, 2>*> volume_j_id,
@@ -94,7 +94,7 @@ void radial_evolve_psi0_condition(
     angular_view = state_buffer[0];
   }
 }
-}  // namespace detail
+}  // namespace
 
 NoIncomingRadiation::NoIncomingRadiation(
     const double angular_coordinate_tolerance, const size_t max_iterations,
@@ -121,9 +121,9 @@ void NoIncomingRadiation::operator()(
     const gsl::not_null<Parallel::NodeLock*> /*hdf5_lock*/) const {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
-  detail::radial_evolve_psi0_condition(make_not_null(&get(*j)), get(boundary_j),
-                                       get(boundary_dr_j), get(r), l_max,
-                                       number_of_radial_points);
+  radial_evolve_psi0_condition(make_not_null(&get(*j)), get(boundary_j),
+                               get(boundary_dr_j), get(r), l_max,
+                               number_of_radial_points);
   const SpinWeighted<ComplexDataVector, 2> j_at_scri_view;
   make_const_view(make_not_null(&j_at_scri_view), get(*j),
                   (number_of_radial_points - 1) * number_of_angular_points,

@@ -111,6 +111,7 @@ LinearizedBondiSachs::get_clone() const {
 PUP::able::PUP_ID LinearizedBondiSachs::my_PUP_ID = 0;
 }  // namespace InitializeJ
 
+namespace {
 const size_t z_harmonics_maximum_l_max = 64_st;
 const ComplexDataVector& cached_z_harmonics(const size_t l_max, const size_t l,
                                             const int spin) {
@@ -141,6 +142,7 @@ const ComplexDataVector& cached_z_harmonics(const size_t l_max, const size_t l,
           });
   return lazy_z_harmonics_cache(l_max, l, spin);
 }
+}  // namespace
 
 template <int Spin, typename FactorType>
 void assign_components_from_l_factors(

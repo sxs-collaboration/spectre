@@ -33,7 +33,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Cce {
-
+namespace {
 tnsr::A<DataVector, 3> bouncing_bh_mapped_coordinates(
     const tnsr::A<DataVector, 3>& unmapped_coordinates, const double amplitude,
     const double period) {
@@ -74,6 +74,7 @@ tnsr::aaB<DataVector, 3> bouncing_bh_mapped_hessian(
        cos(8.0 * M_PI * get<0>(unmapped_coordinates) / period));
   return result;
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BouncingBlackHole",
                   "[Unit][Cce]") {

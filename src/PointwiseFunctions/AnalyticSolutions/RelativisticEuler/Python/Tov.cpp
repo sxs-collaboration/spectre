@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Python/Tov.hpp"
+
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <string>
@@ -12,7 +14,7 @@ namespace py = pybind11;
 
 namespace RelativisticEuler::Solutions::py_bindings {
 
-void bind_tov(py::module& m) {  // NOLINT
+void bind_tov(py::module& m) {
   py::enum_<TovCoordinates>(m, "TovCoordinates")
       .value("Schwarzschild", TovCoordinates::Schwarzschild)
       .value("Isotropic", TovCoordinates::Isotropic);

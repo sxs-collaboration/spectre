@@ -56,7 +56,6 @@ struct FormatErrors
 // [formatter_example]
 static_assert(tt::assert_conforms_to_v<
               FormatErrors, observers::protocols::ReductionDataFormatter>);
-}  // namespace
 
 void test_reduction_observer(const bool observe_per_core) {
   using registration_list = tmpl::list<
@@ -380,6 +379,7 @@ void test_reduction_observer(const bool observe_per_core) {
     }
   });
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   test_reduction_observer(false);

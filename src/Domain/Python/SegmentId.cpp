@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "Domain/Python/SegmentId.hpp"
+
 #include <array>
 #include <cstddef>
 #include <pybind11/operators.h>
@@ -15,7 +17,7 @@ namespace py = pybind11;
 
 namespace domain::py_bindings {
 
-void bind_segment_id(py::module& m) {  // NOLINT
+void bind_segment_id(py::module& m) {
   // These bindings don't cover the full public interface yet. More bindings
   // can be added as needed.
   py::class_<SegmentId>(m, "SegmentId")

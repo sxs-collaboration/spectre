@@ -3,14 +3,12 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
+#include "IO/H5/Python/Dat.hpp"
+#include "IO/H5/Python/File.hpp"
+#include "IO/H5/Python/TensorData.hpp"
+#include "IO/H5/Python/VolumeData.hpp"
 
-namespace py_bindings {
-void bind_h5file(py::module& m);  // NOLINT
-void bind_h5dat(py::module& m);   // NOLINT
-void bind_h5vol(py::module& m);   // NOLINT
-void bind_tensordata(py::module& m);  // NOLINT
-}  // namespace py_bindings
+namespace py = pybind11;
 
 PYBIND11_MODULE(_PyH5, m) {  // NOLINT
   py::module_::import("spectre.DataStructures");

@@ -180,4 +180,7 @@ class TimeDependentTripleGaussian : public DampingFunction<3, Frame::Grid> {
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           functions_of_time) const;
 };
+
+bool operator!=(const TimeDependentTripleGaussian& lhs,
+                const TimeDependentTripleGaussian& rhs);
 }  // namespace GeneralizedHarmonic::ConstraintDamping

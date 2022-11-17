@@ -283,5 +283,13 @@ class DampedHarmonic final : public GaugeCondition {
                                  std::numeric_limits<int>::max(),
                                  std::numeric_limits<int>::max()}};
 };
+
+namespace DampedHarmonicGauge_detail {
+// Used in the test
+double roll_on_function(double time, double t_start, double sigma_t);
+
+double time_deriv_of_roll_on_function(double time, double t_start,
+                                      double sigma_t);
+}  // namespace DampedHarmonicGauge_detail
 }  // namespace gauges
 }  // namespace GeneralizedHarmonic

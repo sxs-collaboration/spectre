@@ -34,6 +34,8 @@ formaline_object_output=${formaline_dir}/${formaline_archive_name}.o
 formaline_output=@CMAKE_BINARY_DIR@/tmp/${formaline_archive_name}.cpp
 rm -f ${formaline_output}
 cat >${formaline_output} <<EOF
+#include "Utilities/Formaline.hpp"
+
 #include <string>
 #include <vector>
 

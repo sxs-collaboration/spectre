@@ -15,6 +15,7 @@
 // main module we just have it be empty
 extern "C" void CkRegisterMainModule(void) {}
 
+namespace {
 void convert_file(const std::string& compose_directory,
                   const std::string& spectre_eos_filename,
                   const std::string& spectre_eos_subfile) {
@@ -40,6 +41,7 @@ void convert_file(const std::string& compose_directory,
     spectre_eos.write_quantity(quantity_name, quantity_data);
   }
 }
+}  // namespace
 
 int main(int argc, char** argv) {
   namespace bpo = boost::program_options;
