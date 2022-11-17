@@ -69,15 +69,16 @@ struct Adm : tuples::tagged_tuple_from_typelist<
 // - Generalized harmonic variables
 using gh_vars =
     tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-               Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>;
+               Tags::Pi<3, Frame::Inertial>>;
 struct GeneralizedHarmonic
     : tuples::tagged_tuple_from_typelist<
           db::wrap_tags_in<OptionTags::VarName, gh_vars>> {
   using Base = tuples::tagged_tuple_from_typelist<
       db::wrap_tags_in<OptionTags::VarName, gh_vars>>;
   static constexpr Options::String help =
-      "GH variables: 'SpacetimeMetric', 'Pi' and 'Phi'. These variables are "
-      "used to set the initial data directly.";
+      "GH variables: 'SpacetimeMetric' and 'Pi'. These variables are "
+      "used to set the initial data directly; Phi is then set to the numerical "
+      "derivative of SpacetimeMetric, to enforce the 3-index constraint.";
   using options = db::wrap_tags_in<OptionTags::VarName, gh_vars>;
   using Base::TaggedTuple;
 };
@@ -223,11 +224,17 @@ struct SetNumericInitialData {
     if (std::holds_alternative<detail::GeneralizedHarmonic>(
             selected_initial_data_vars)) {
       // We have loaded the GH system variables from the file, so just move the
-      // data into the DataBox directly. No conversion needed.
+      // data for spacetime_metric and Pi into the DataBox directly, with no
+      // conversion needed. Set Phi to the spatial derivative of the spacetime
+      // metric to enforce the 3-index constraint.
+      const auto& mesh = db::get<domain::Tags::Mesh<Dim>>(box);
+      const auto& inv_jacobian =
+          db::get<domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                                Frame::Inertial>>(box);
       db::mutate<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
                  Tags::Pi<3, Frame::Inertial>, Tags::Phi<3, Frame::Inertial>>(
           make_not_null(&box),
-          [&numeric_initial_data](
+          [&numeric_initial_data, &mesh, &inv_jacobian](
               const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
               const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
               const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi) {
@@ -236,8 +243,8 @@ struct SetNumericInitialData {
                     numeric_initial_data));
             *pi = std::move(
                 get<Tags::Pi<3, Frame::Inertial>>(numeric_initial_data));
-            *phi = std::move(
-                get<Tags::Phi<3, Frame::Inertial>>(numeric_initial_data));
+            // Set Phi to the numerical spatial derivative of spacetime_metric
+            partial_derivative(phi, *spacetime_metric, mesh, inv_jacobian);
           });
     } else if (std::holds_alternative<detail::Adm>(
                    selected_initial_data_vars)) {
