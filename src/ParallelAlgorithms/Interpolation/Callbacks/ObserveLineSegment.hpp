@@ -11,7 +11,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
-#include "DataStructures/Tensor/TensorData.hpp"
+#include "IO/H5/TensorData.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/VolumeActions.hpp"
@@ -106,9 +106,9 @@ struct ObserveLineSegment
     Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
         proxy[0], Parallel::get<observers::Tags::ReductionFileName>(cache),
         subfile_path, observation_id,
-        std::vector<ElementVolumeData>{{extents_vector, tensor_components,
-                                        bases_vector, quadratures_vector,
-                                        name}});
+        std::vector<ElementVolumeData>{{name, std::move(tensor_components),
+                                        extents_vector, bases_vector,
+                                        quadratures_vector}});
   }
 };
 }  // namespace callbacks
