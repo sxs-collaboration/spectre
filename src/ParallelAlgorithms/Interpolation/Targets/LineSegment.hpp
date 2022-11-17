@@ -67,11 +67,6 @@ struct LineSegment {
               std::array<double, VolumeDim> end_in, size_t number_of_points_in);
 
   LineSegment() = default;
-  LineSegment(const LineSegment& /*rhs*/) = delete;
-  LineSegment& operator=(const LineSegment& /*rhs*/) = default;
-  LineSegment(LineSegment&& /*rhs*/) = default;
-  LineSegment& operator=(LineSegment&& /*rhs*/) = default;
-  ~LineSegment() = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);

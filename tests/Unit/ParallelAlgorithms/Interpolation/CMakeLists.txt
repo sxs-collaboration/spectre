@@ -23,6 +23,7 @@ set(LIBRARY_SOURCES
   Test_InterpolatorReceiveAndDumpVolumeData.cpp
   Test_InterpolatorReceivePoints.cpp
   Test_InterpolatorRegisterElement.cpp
+  Test_ObserveLineSegment.cpp
   Test_ObserveTimeSeriesAndSurfaceData.cpp
   Test_ParallelInterpolator.cpp
   Test_Protocols.cpp
