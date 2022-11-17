@@ -21,6 +21,7 @@ spectre_unload_modules() {
     module unload yaml-cpp/master
     module unload impi/2017.1
     module unload cmake/3.18.2
+    module unload ccache/4.7.3
     module unload ninja/1.10.0
     module unload doxygen/1.8.13
     module unload git/2.8.4
@@ -44,6 +45,7 @@ spectre_load_modules() {
     module load yaml-cpp/master
     module load impi/2017.1
     module load cmake/3.18.2
+    module load ccache/4.7.3
     module load ninja/1.10.0
     module load doxygen/1.8.13
     module load git/2.8.4
