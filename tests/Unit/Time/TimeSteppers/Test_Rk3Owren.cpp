@@ -11,6 +11,12 @@
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3Owren", "[Unit][Time]") {
   const TimeSteppers::Rk3Owren stepper{};
+
+  CHECK(stepper.order() == 3);
+  CHECK(stepper.error_estimate_order() == 2);
+  CHECK(stepper.number_of_substeps() == 3);
+  CHECK(stepper.number_of_substeps_for_error() == 3);
+
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, 1.0, 1.0e-9);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, -1.0, 1.0e-9);

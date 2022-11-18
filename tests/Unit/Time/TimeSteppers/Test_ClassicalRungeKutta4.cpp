@@ -13,6 +13,12 @@
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.ClassicalRungeKutta4",
                   "[Unit][Time]") {
   const TimeSteppers::ClassicalRungeKutta4 stepper{};
+
+  CHECK(stepper.order() == 4);
+  CHECK(stepper.error_estimate_order() == 3);
+  CHECK(stepper.number_of_substeps() == 4);
+  CHECK(stepper.number_of_substeps_for_error() == 5);
+
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 4, 0, 1.0, 1.0e-9);
   TimeStepperTestUtils::integrate_test(stepper, 4, 0, -1.0, 1.0e-9);
@@ -26,9 +32,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.ClassicalRungeKutta4",
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 4_st);
-
-  CHECK(stepper.order() == 4_st);
-  CHECK(stepper.error_estimate_order() == 3_st);
 
   TestHelpers::test_factory_creation<TimeStepper,
                                      TimeSteppers::ClassicalRungeKutta4>(

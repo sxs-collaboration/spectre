@@ -11,6 +11,12 @@
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Heun2", "[Unit][Time]") {
   const TimeSteppers::Heun2 stepper{};
+
+  CHECK(stepper.order() == 2);
+  CHECK(stepper.error_estimate_order() == 1);
+  CHECK(stepper.number_of_substeps() == 2);
+  CHECK(stepper.number_of_substeps_for_error() == 2);
+
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 2, 0, 1.0, 1.0e-6);
   TimeStepperTestUtils::integrate_test(stepper, 2, 0, -1.0, 1.0e-6);
