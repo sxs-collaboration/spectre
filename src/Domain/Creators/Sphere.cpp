@@ -10,6 +10,7 @@
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
@@ -22,6 +23,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -32,7 +34,7 @@ struct BlockLogical;
 namespace domain::creators {
 Sphere::Sphere(
     typename InnerRadius::type inner_radius,
-    typename OuterRadius::type outer_radius,
+    typename OuterRadius::type outer_radius, const double inner_cube_sphericity,
     typename InitialRefinement::type initial_refinement,
     typename InitialGridPoints::type initial_number_of_grid_points,
     typename UseEquiangularMap::type use_equiangular_map,
@@ -42,8 +44,9 @@ Sphere::Sphere(
         boundary_condition,
     const Options::Context& context)
     // clang-tidy: trivially copyable
-    : inner_radius_(std::move(inner_radius)),                // NOLINT
-      outer_radius_(std::move(outer_radius)),                // NOLINT
+    : inner_radius_(std::move(inner_radius)),  // NOLINT
+      outer_radius_(std::move(outer_radius)),  // NOLINT
+      inner_cube_sphericity_(inner_cube_sphericity),
       initial_refinement_(                                   // NOLINT
           std::move(initial_refinement)),                    // NOLINT
       initial_number_of_grid_points_(                        // NOLINT
@@ -51,6 +54,12 @@ Sphere::Sphere(
       use_equiangular_map_(std::move(use_equiangular_map)),  // NOLINT
       time_dependence_(std::move(time_dependence)),          // NOLINT
       boundary_condition_(std::move(boundary_condition)) {
+  if (inner_cube_sphericity_ < 0.0 or inner_cube_sphericity_ >= 1.0) {
+    PARSE_ERROR(
+        context,
+        "Inner cube sphericity must be >= 0.0 and strictly < 1.0, not " +
+            get_output(inner_cube_sphericity_));
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(boundary_condition_)) {
     PARSE_ERROR(
@@ -75,27 +84,35 @@ Domain<3> Sphere::create_domain() const {
 
   auto coord_maps = domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                             Frame::Inertial, 3>(
-      sph_wedge_coordinate_maps(inner_radius_, outer_radius_, 0.0, 1.0,
+      sph_wedge_coordinate_maps(inner_radius_, outer_radius_,
+                                inner_cube_sphericity_, 1.0,
                                 use_equiangular_map_));
-  if (use_equiangular_map_) {
-    coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            Equiangular3D{
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0)),
-                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0))}));
+  if (inner_cube_sphericity_ == 0.0) {
+    if (use_equiangular_map_) {
+      coord_maps.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              Equiangular3D{
+                  Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0)),
+                  Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0)),
+                  Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0))}));
+    } else {
+      coord_maps.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0)),
+                       Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0)),
+                       Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
+                              inner_radius_ / sqrt(3.0))}));
+    }
   } else {
     coord_maps.emplace_back(
         make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-            Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0)),
-                     Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0)),
-                     Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
-                            inner_radius_ / sqrt(3.0))}));
+            BulgedCube{inner_radius_, inner_cube_sphericity_,
+                       use_equiangular_map_}));
   }
 
   std::vector<DirectionMap<

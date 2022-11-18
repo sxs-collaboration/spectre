@@ -17,6 +17,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
@@ -81,7 +82,8 @@ auto create_boundary_conditions() {
 template <typename... FuncsOfTime>
 void test_sphere_construction(
     const creators::Sphere& sphere, const double inner_radius,
-    const double outer_radius, const bool use_equiangular_map,
+    const double outer_radius, const double inner_cube_sphericity,
+    const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_sphere_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const BoundaryCondVector& expected_boundary_conditions = {},
@@ -94,6 +96,10 @@ void test_sphere_construction(
         time_dependencies = {},
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
+  CAPTURE(inner_radius);
+  CAPTURE(outer_radius);
+  CAPTURE(inner_cube_sphericity);
+  CAPTURE(use_equiangular_map);
   const auto domain = sphere.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
@@ -193,58 +199,66 @@ void test_sphere_construction(
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+  using BulgedCube = CoordinateMaps::BulgedCube;
 
   const auto make_coord_maps = [&inner_radius, &outer_radius,
+                                &inner_cube_sphericity,
                                 &use_equiangular_map](const auto frame) {
     using TargetFrame = std::decay_t<decltype(frame)>;
     auto local_coord_maps = make_vector_coordinate_map_base<Frame::BlockLogical,
                                                             TargetFrame>(
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0, OrientationMap<3>{},
-                   use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
+                   OrientationMap<3>{}, use_equiangular_map},
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                         Direction<3>::lower_zeta()}}},
                    use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                         Direction<3>::lower_eta()}}},
                    use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map},
-        Wedge3DMap{inner_radius, outer_radius, 0.0, 1.0,
+        Wedge3DMap{inner_radius, outer_radius, inner_cube_sphericity, 1.0,
                    OrientationMap<3>{std::array<Direction<3>, 3>{
                        {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::upper_eta()}}},
                    use_equiangular_map});
-    if (use_equiangular_map) {
-      local_coord_maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-              Equiangular3D{
-                  Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0)),
-                  Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0)),
-                  Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0))}));
+    if (inner_cube_sphericity == 0.0) {
+      if (use_equiangular_map) {
+        local_coord_maps.emplace_back(
+            make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+                Equiangular3D{
+                    Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0)),
+                    Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0)),
+                    Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0))}));
+      } else {
+        local_coord_maps.emplace_back(
+            make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
+                Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0)),
+                         Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0)),
+                         Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
+                                inner_radius / sqrt(3.0))}));
+      }
     } else {
       local_coord_maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(
-              Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0)),
-                       Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0)),
-                       Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
-                              inner_radius / sqrt(3.0))}));
+          make_coordinate_map_base<Frame::BlockLogical, TargetFrame>(BulgedCube{
+              inner_radius, inner_cube_sphericity, use_equiangular_map}));
     }
     return local_coord_maps;
   };
@@ -307,32 +321,65 @@ void test_sphere_boundaries_equiangular() {
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const creators::Sphere sphere{inner_radius, outer_radius, refinement,
-                                grid_points_r_angular, true};
-  test_physical_separation(sphere.create_domain().blocks());
+  for (const auto sphericity : {0.0, 0.2, 0.7}) {
+    const creators::Sphere sphere{
+        inner_radius, outer_radius,          sphericity,
+        refinement,   grid_points_r_angular, true};
+    test_physical_separation(sphere.create_domain().blocks());
 
-  test_sphere_construction(sphere, inner_radius, outer_radius, true,
-                           grid_points_r_angular,
-                           {7, make_array<3>(refinement)});
+    test_sphere_construction(sphere, inner_radius, outer_radius, sphericity,
+                             true, grid_points_r_angular,
+                             {7, make_array<3>(refinement)});
 
-  const creators::Sphere sphere_boundary_condition{inner_radius,
-                                                   outer_radius,
-                                                   refinement,
-                                                   grid_points_r_angular,
-                                                   true,
-                                                   nullptr,
-                                                   create_boundary_condition()};
-  test_physical_separation(sphere_boundary_condition.create_domain().blocks());
+    const creators::Sphere sphere_boundary_condition{
+        inner_radius,
+        outer_radius,
+        sphericity,
+        refinement,
+        grid_points_r_angular,
+        true,
+        nullptr,
+        create_boundary_condition()};
+    test_physical_separation(
+        sphere_boundary_condition.create_domain().blocks());
 
-  test_sphere_construction(sphere_boundary_condition, inner_radius,
-                           outer_radius, true, grid_points_r_angular,
-                           {7, make_array<3>(refinement)},
-                           create_boundary_conditions());
+    test_sphere_construction(
+        sphere_boundary_condition, inner_radius, outer_radius, sphericity, true,
+        grid_points_r_angular, {7, make_array<3>(refinement)},
+        create_boundary_conditions());
+  }
 
   CHECK_THROWS_WITH(
       creators::Sphere(
-          inner_radius, outer_radius, refinement, grid_points_r_angular, true,
-          nullptr,
+          inner_radius, outer_radius, -1.0, refinement, grid_points_r_angular,
+          true, nullptr,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
+  CHECK_THROWS_WITH(
+      creators::Sphere(
+          inner_radius, outer_radius, 1.0, refinement, grid_points_r_angular,
+          true, nullptr,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
+  CHECK_THROWS_WITH(
+      creators::Sphere(
+          inner_radius, outer_radius, 2.0, refinement, grid_points_r_angular,
+          true, nullptr,
+          std::make_unique<TestHelpers::domain::BoundaryConditions::
+                               TestPeriodicBoundaryCondition<3>>(),
+          Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "Inner cube sphericity must be >= 0.0 and strictly < 1.0"));
+  CHECK_THROWS_WITH(
+      creators::Sphere(
+          inner_radius, outer_radius, 0.0, refinement, grid_points_r_angular,
+          true, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestPeriodicBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -340,8 +387,8 @@ void test_sphere_boundaries_equiangular() {
           "Cannot have periodic boundary conditions with a Sphere"));
   CHECK_THROWS_WITH(
       creators::Sphere(
-          inner_radius, outer_radius, refinement, grid_points_r_angular, true,
-          nullptr,
+          inner_radius, outer_radius, 0.0, refinement, grid_points_r_angular,
+          true, nullptr,
           std::make_unique<TestHelpers::domain::BoundaryConditions::
                                TestNoneBoundaryCondition<3>>(),
           Options::Context{false, {}, 1, 1}),
@@ -366,6 +413,7 @@ void test_sphere_factory_equiangular() {
         "Sphere:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
+        "  InnerCubeSphericity: 0.0\n"
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: true\n"
@@ -378,7 +426,7 @@ void test_sphere_factory_equiangular() {
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
     test_sphere_construction(
         dynamic_cast<const creators::Sphere&>(*sphere), inner_radius,
-        outer_radius, true, grid_points_r_angular,
+        outer_radius, 0.0, true, grid_points_r_angular,
         {7, make_array<3>(refinement_level)}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
@@ -392,27 +440,33 @@ void test_sphere_boundaries_equidistant() {
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const creators::Sphere sphere{inner_radius, outer_radius, refinement,
-                                grid_points_r_angular, false};
-  test_physical_separation(sphere.create_domain().blocks());
+  for (const auto sphericity : {0.0, 0.2, 0.7}) {
+    const creators::Sphere sphere{
+        inner_radius, outer_radius,          sphericity,
+        refinement,   grid_points_r_angular, false};
+    test_physical_separation(sphere.create_domain().blocks());
 
-  test_sphere_construction(sphere, inner_radius, outer_radius, false,
-                           grid_points_r_angular,
-                           {7, make_array<3>(refinement)});
+    test_sphere_construction(sphere, inner_radius, outer_radius, sphericity,
+                             false, grid_points_r_angular,
+                             {7, make_array<3>(refinement)});
 
-  const creators::Sphere sphere_boundary_condition{inner_radius,
-                                                   outer_radius,
-                                                   refinement,
-                                                   grid_points_r_angular,
-                                                   false,
-                                                   nullptr,
-                                                   create_boundary_condition()};
-  test_physical_separation(sphere_boundary_condition.create_domain().blocks());
+    const creators::Sphere sphere_boundary_condition{
+        inner_radius,
+        outer_radius,
+        sphericity,
+        refinement,
+        grid_points_r_angular,
+        false,
+        nullptr,
+        create_boundary_condition()};
+    test_physical_separation(
+        sphere_boundary_condition.create_domain().blocks());
 
-  test_sphere_construction(sphere_boundary_condition, inner_radius,
-                           outer_radius, false, grid_points_r_angular,
-                           {7, make_array<3>(refinement)},
-                           create_boundary_conditions());
+    test_sphere_construction(
+        sphere_boundary_condition, inner_radius, outer_radius, sphericity,
+        false, grid_points_r_angular, {7, make_array<3>(refinement)},
+        create_boundary_conditions());
+  }
 }
 
 void test_sphere_factory_equidistant() {
@@ -431,6 +485,7 @@ void test_sphere_factory_equidistant() {
         "Sphere:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
+        "  InnerCubeSphericity: 0.1\n"
         "  InitialRefinement: 2\n"
         "  InitialGridPoints: [2,3]\n"
         "  UseEquiangularMap: false\n"
@@ -439,11 +494,12 @@ void test_sphere_factory_equidistant() {
                                               : boundary_conditions_string()));
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
+    const double sphericity = 0.1;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
     test_sphere_construction(
         dynamic_cast<const creators::Sphere&>(*sphere), inner_radius,
-        outer_radius, false, grid_points_r_angular,
+        outer_radius, sphericity, false, grid_points_r_angular,
         {7, make_array<3>(refinement_level)}, expected_boundary_conditions);
   };
   helper(BoundaryCondVector{}, std::false_type{});
@@ -465,6 +521,7 @@ void test_sphere_factory_time_dependent() {
             "Sphere:\n"
             "  InnerRadius: 1\n"
             "  OuterRadius: 3\n"
+            "  InnerCubeSphericity: 0.0\n"
             "  InitialRefinement: 2\n"
             "  InitialGridPoints: [2,3]\n"
             "  UseEquiangularMap: false\n"
@@ -477,6 +534,7 @@ void test_sphere_factory_time_dependent() {
     const double initial_time = 1.0;
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
+    const double sphericity = 0.0;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
     const bool use_equiangular_map = false;
@@ -498,7 +556,7 @@ void test_sphere_factory_time_dependent() {
 
     test_sphere_construction(
         dynamic_cast<const creators::Sphere&>(*sphere), inner_radius,
-        outer_radius, use_equiangular_map, grid_points_r_angular,
+        outer_radius, sphericity, use_equiangular_map, grid_points_r_angular,
         {7, make_array<3>(refinement_level)}, BoundaryCondVector{},
         std::make_tuple(
             std::pair<std::string,

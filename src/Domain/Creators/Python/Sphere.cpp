@@ -17,9 +17,10 @@ namespace py = pybind11;
 namespace domain::creators::py_bindings {
 void bind_sphere(py::module& m) {
   py::class_<Sphere, DomainCreator<3>>(m, "Sphere")
-      .def(py::init<double, double, size_t, std::array<size_t, 2>, bool>(),
+      .def(py::init<double, double, double, size_t, std::array<size_t, 2>,
+                    bool>(),
            py::arg("inner_radius"), py::arg("outer_radius"),
-           py::arg("initial_refinement"),
+           py::arg("inner_cube_sphericity"), py::arg("initial_refinement"),
            py::arg("initial_number_of_grid_points"),
            py::arg("use_equiangular_map"));
 }
