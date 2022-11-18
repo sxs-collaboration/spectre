@@ -13,14 +13,22 @@ import shutil
 
 class TestExtractDatFromH5(unittest.TestCase):
     def setUp(self):
-        self.unit_test_dir = spectre_informer.unit_test_src_path()
-        self.h5_filename = os.path.join(self.unit_test_dir,
+        self.unit_test_src_dir = spectre_informer.unit_test_src_path()
+        self.unit_test_build_dir = spectre_informer.unit_test_build_path()
+        self.h5_filename = os.path.join(self.unit_test_src_dir,
                                         "Visualization/Python",
                                         "DatTestData.h5")
-        self.test_dir = os.path.join(self.unit_test_dir, "IO/H5/Python")
+        self.test_dir = os.path.join(self.unit_test_build_dir, "IO/H5/Python")
         self.created_dir_default = os.path.join(self.test_dir,
                                                 "extracted_DatTestData")
         self.created_dir_input = os.path.join(self.test_dir, "WinterIsComing")
+
+        if not os.path.exists(self.test_dir):
+            os.makedirs(self.test_dir)
+        if os.path.exists(self.created_dir_default):
+            shutil.rmtree(self.created_dir_default)
+        if os.path.exists(self.created_dir_input):
+            shutil.rmtree(self.created_dir_input)
 
     def tearDown(self):
         if os.path.exists(self.created_dir_default):
