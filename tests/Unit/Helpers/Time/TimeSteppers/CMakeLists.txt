@@ -4,6 +4,7 @@
 set(LIBRARY "TimeStepperHelpers")
 
 set(LIBRARY_SOURCES
+  RungeKutta.cpp
   TimeStepperTestUtils.cpp
   )
 

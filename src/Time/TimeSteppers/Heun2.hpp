@@ -58,7 +58,6 @@ class Heun2 : public RungeKutta {
 
   explicit Heun2(CkMigrateMessage* /*unused*/) {}
 
- private:
   const ButcherTableau& butcher_tableau() const override;
 };
 

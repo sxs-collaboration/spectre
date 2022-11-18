@@ -3,6 +3,8 @@
 
 #include "Time/TimeSteppers/RungeKutta.hpp"
 
+#include <algorithm>
+
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/History.hpp"
 #include "Time/Time.hpp"
@@ -17,34 +19,33 @@ uint64_t RungeKutta::number_of_substeps() const {
 }
 
 uint64_t RungeKutta::number_of_substeps_for_error() const {
-  return error_tableau().error_coefficients.size();
+  return std::max(butcher_tableau().result_coefficients.size(),
+                  butcher_tableau().error_coefficients.size());
 }
 
 size_t RungeKutta::number_of_past_steps() const { return 0; }
 
 namespace {
-TimeStepId next_time_id_with_tableau(
+TimeStepId next_time_id_from_substeps(
     const TimeStepId& current_id, const TimeDelta& time_step,
-    const RungeKutta::ButcherTableau& tableau) {
-  const auto number_of_substeps = tableau.result_coefficients.size();
+    const std::vector<Rational>& substep_times,
+    const size_t number_of_substeps) {
+  ASSERT(substep_times.size() + 1 >= number_of_substeps,
+         "More result coefficients than substeps");
   const auto substep = current_id.substep();
   const auto step_time = current_id.step_time();
   const auto substep_time = current_id.substep_time();
-  ASSERT(tableau.substep_times.size() == number_of_substeps - 1,
-         "There should be one substep time for each substep, excluding the "
-         "initial substep at 0.");
 
   if (substep == 0) {
     ASSERT(substep_time == step_time,
            "The first substep time should equal the step time "
                << step_time << ", not " << substep_time);
   } else {
-    ASSERT(substep_time ==
-               step_time + tableau.substep_times[substep - 1] * time_step,
+    ASSERT(substep_time == step_time + substep_times[substep - 1] * time_step,
            "The time for substep "
                << substep << " with step time " << step_time
                << " and time step " << time_step << " should be "
-               << step_time + tableau.substep_times[substep - 1] * time_step
+               << step_time + substep_times[substep - 1] * time_step
                << ", not " << substep_time);
   }
 
@@ -56,68 +57,43 @@ TimeStepId next_time_id_with_tableau(
             step_time + time_step};
   } else {
     return {current_id.time_runs_forward(), current_id.slab_number(), step_time,
-            substep + 1,
-            step_time + tableau.substep_times[substep] * time_step};
+            substep + 1, step_time + substep_times[substep] * time_step};
   }
 }
 }  // namespace
 
 TimeStepId RungeKutta::next_time_id(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const {
-  return next_time_id_with_tableau(current_id, time_step, butcher_tableau());
+  return next_time_id_from_substeps(current_id, time_step,
+                                    butcher_tableau().substep_times,
+                                    number_of_substeps());
 }
 
 TimeStepId RungeKutta::next_time_id_for_error(
     const TimeStepId& current_id, const TimeDelta& time_step) const {
-  const auto& tableau = error_tableau();
-  const auto number_of_substeps = tableau.result_coefficients.size();
-  const auto number_of_substeps_for_error = tableau.error_coefficients.size();
-
-  const auto substep = current_id.substep();
-  const auto step_time = current_id.step_time();
-
-  if (number_of_substeps_for_error == number_of_substeps) {
-    return next_time_id_with_tableau(current_id, time_step, tableau);
-  }
-
-  if (substep == number_of_substeps) {
-    return {current_id.time_runs_forward(), current_id.slab_number(),
-            step_time + time_step};
-  } else if (substep == number_of_substeps - 1) {
-    // Fake FSAL step.
-    return {current_id.time_runs_forward(), current_id.slab_number(), step_time,
-            substep + 1, step_time + time_step};
-  } else {
-    return next_time_id_with_tableau(current_id, time_step, tableau);
-  }
-}
-
-const RungeKutta::ButcherTableau& RungeKutta::error_tableau() const {
-  ASSERT(not butcher_tableau().error_coefficients.empty(),
-         "No embedded error method was given and error_tableau() was not "
-         "implemented for this stepper.");
-  return butcher_tableau();
+  return next_time_id_from_substeps(current_id, time_step,
+                                    butcher_tableau().substep_times,
+                                    number_of_substeps_for_error());
 }
 
 namespace {
 template <typename T>
 void update_between_substeps(const gsl::not_null<T*> u,
-                             const gsl::not_null<UntypedHistory<T>*> history,
-                             const double dt,
+                             const UntypedHistory<T>& history, const double dt,
                              const std::vector<double>& coeffs_last,
                              const std::vector<double>& coeffs_this) {
-  ASSERT(coeffs_last.size() + 1 == coeffs_this.size(),
-         "Unexpected coefficient vector sizes.");
-  if (coeffs_this.back() != 0.0) {
-    *u += coeffs_this.back() * dt * *(history->end() - 1).derivative();
-  }
-  // The input state of *u is the previous substep, but Butcher
-  // tableaus are given in terms of the start of the full step, so we
-  // have to undo the previous substep as well as take this one.
-  for (size_t i = 0; i < coeffs_last.size(); ++i) {
-    const double coef = coeffs_this[i] - coeffs_last[i];
+  const size_t number_of_substeps =
+      std::max(coeffs_last.size(), coeffs_this.size());
+  for (size_t i = 0; i < number_of_substeps; ++i) {
+    double coef = 0.0;
+    if (i < coeffs_this.size()) {
+      coef += coeffs_this[i];
+    }
+    if (i < coeffs_last.size()) {
+      coef -= coeffs_last[i];
+    }
     if (coef != 0.0) {
-      *u += coef * dt * *(history->begin() + static_cast<int>(i)).derivative();
+      *u += coef * dt * *(history.begin() + static_cast<int>(i)).derivative();
     }
   }
 }
@@ -126,8 +102,8 @@ template <typename T>
 void update_u_impl_with_tableau(const gsl::not_null<T*> u,
                                 const gsl::not_null<UntypedHistory<T>*> history,
                                 const TimeDelta& time_step,
-                                const RungeKutta::ButcherTableau& tableau) {
-  const auto number_of_substeps = tableau.result_coefficients.size();
+                                const RungeKutta::ButcherTableau& tableau,
+                                const size_t number_of_substeps) {
   const size_t substep = (history->end() - 1).time_step_id().substep();
 
   // Clean up old history
@@ -137,8 +113,6 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
 
   const double dt = time_step.value();
 
-  ASSERT(tableau.substep_coefficients.size() == number_of_substeps - 1,
-         "Tableau size inconsistency.");
   ASSERT(number_of_substeps > 1,
          "Implementing Euler's method is not supported by RungeKutta.");
 
@@ -148,11 +122,11 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
     *u += tableau.substep_coefficients[0][0] * dt *
           *history->begin().derivative();
   } else if (substep == number_of_substeps - 1) {
-    update_between_substeps(u, history, dt,
+    update_between_substeps(u, *history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.result_coefficients);
   } else if (substep < number_of_substeps - 1) {
-    update_between_substeps(u, history, dt,
+    update_between_substeps(u, *history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.substep_coefficients[substep]);
   } else {
@@ -169,7 +143,8 @@ void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
   ASSERT(history->integration_order() == order(),
          "Fixed-order stepper cannot run at order "
              << history->integration_order());
-  return update_u_impl_with_tableau(u, history, time_step, butcher_tableau());
+  return update_u_impl_with_tableau(u, history, time_step, butcher_tableau(),
+                                    number_of_substeps());
 }
 
 template <typename T>
@@ -181,48 +156,21 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
          "Fixed-order stepper cannot run at order "
              << history->integration_order());
 
-  const auto& tableau = error_tableau();
-  const auto number_of_substeps = tableau.result_coefficients.size();
-  const auto number_of_substeps_for_error = tableau.error_coefficients.size();
-
-  ASSERT(number_of_substeps_for_error == number_of_substeps or
-             number_of_substeps_for_error == number_of_substeps + 1,
-         "Number of error coefficients cannot exceed number of result "
-         "coefficients by more than one (FSAL).  For extra substeps, "
-         "implement error_tableau().");
+  const auto& tableau = butcher_tableau();
+  const auto number_of_substeps = number_of_substeps_for_error();
+  update_u_impl_with_tableau(u, history, time_step, tableau,
+                             number_of_substeps);
 
   const size_t substep = (history->end() - 1).time_step_id().substep();
 
-  // If we take a fake FSAL substep we don't actually update u.  It
-  // would be nice to avoid the repeated RHS evaluation, but that
-  // would require more extensive changes to the action loop.
-  if (substep < number_of_substeps) {
-    update_u_impl_with_tableau(u, history, time_step, tableau);
-  }
-
-  if (substep < number_of_substeps_for_error - 1) {
+  if (substep < number_of_substeps - 1) {
     return false;
   }
 
   const double dt = time_step.value();
-
-  if (number_of_substeps_for_error != number_of_substeps) {
-    // The time stepper uses FSAL
-    *u_error = -tableau.error_coefficients.back() * dt *
-               *(history->end() - 1).derivative();
-  } else {
-    // No term using the final value.
-    *u_error = 0.0;
-  }
-
-  for (size_t i = 0; i < tableau.result_coefficients.size(); ++i) {
-    const double coef =
-        tableau.result_coefficients[i] - tableau.error_coefficients[i];
-    if (coef != 0.0) {
-      *u_error +=
-          coef * dt * *(history->begin() + static_cast<int>(i)).derivative();
-    }
-  }
+  *u_error = 0.0;
+  update_between_substeps(u_error, *history, dt, tableau.error_coefficients,
+                          tableau.result_coefficients);
 
   return true;
 }
@@ -251,43 +199,39 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
                                      << time << ", but already progressed past "
                                      << step_start);
 
-  // The interface doesn't tell us whether we've done an error
-  // estimate, so we have to figure that out if it matters.
-  bool using_error_tableau = false;
-  if (&butcher_tableau() != &error_tableau()) {
-    // In most cases the tableaus are the same and we never get here.
-    const auto number_of_substeps =
-        (history.end() - 2).time_step_id().substep() + 1;
-    using_error_tableau =
-        error_tableau().result_coefficients.size() == number_of_substeps;
-    ASSERT(
-        using_error_tableau or
-            butcher_tableau().result_coefficients.size() == number_of_substeps,
-        "Cannot determine which tableau to use for dense output.");
-    ASSERT(
-        not using_error_tableau or
-            butcher_tableau().result_coefficients.size() != number_of_substeps,
-        "Cannot determine which tableau to use for dense output.");
-  }
-  const auto& tableau =
-      using_error_tableau ? error_tableau() : butcher_tableau();
+  const auto& tableau = butcher_tableau();
 
-  ASSERT(tableau.dense_coefficients.size() <= history.size(),
-         "Insufficient history for dense output.  Most likely there are too "
-         "many coefficient polynomials in the tableau.");
-  for (size_t i = 0; i < std::max(tableau.dense_coefficients.size(),
-                                  tableau.result_coefficients.size());
-       ++i) {
+  // The Butcher dense output coefficients are given in terms of the
+  // start of the step, but we are passed the value at the end of the
+  // step, so we have to undo the step first.
+  for (size_t i = 0; i < tableau.result_coefficients.size(); ++i) {
+    const double coef = tableau.result_coefficients[i];
+    if (coef != 0.0) {
+      *u -= coef * step_size *
+            *(history.begin() + static_cast<int>(i)).derivative();
+    }
+  }
+
+  const auto number_of_dense_coefficients = tableau.dense_coefficients.size();
+  const size_t number_of_substep_terms = std::min(
+      tableau.result_coefficients.size(), number_of_dense_coefficients);
+  for (size_t i = 0; i < number_of_substep_terms; ++i) {
     const double coef =
-        (i < tableau.dense_coefficients.size()
-             ? evaluate_polynomial(tableau.dense_coefficients[i],
-                                   output_fraction)
-             : 0.0) -
-        (i < tableau.result_coefficients.size() ? tableau.result_coefficients[i]
-                                                : 0.0);
+        evaluate_polynomial(tableau.dense_coefficients[i], output_fraction);
     if (coef != 0.0) {
       *u += coef * step_size *
             *(history.begin() + static_cast<int>(i)).derivative();
+    }
+  }
+
+  if (number_of_dense_coefficients > number_of_substep_terms) {
+    // We use the derivative at the end of the step, which is always
+    // the last value in the history, whether or not we generated an
+    // error estimate.
+    const double coef =
+        evaluate_polynomial(tableau.dense_coefficients.back(), output_fraction);
+    if (coef != 0.0) {
+      *u += coef * step_size * *(history.end() - 1).derivative();
     }
   }
 

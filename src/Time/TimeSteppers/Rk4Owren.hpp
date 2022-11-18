@@ -59,7 +59,6 @@ class Rk4Owren : public RungeKutta {
 
   explicit Rk4Owren(CkMigrateMessage* /*msg*/);
 
- private:
   const ButcherTableau& butcher_tableau() const override;
 };
 

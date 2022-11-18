@@ -5,6 +5,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -17,6 +18,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   CHECK(stepper.error_estimate_order() == 4);
   CHECK(stepper.number_of_substeps() == 6);
   CHECK(stepper.number_of_substeps_for_error() == 7);
+  TestHelpers::RungeKutta::check_tableau(stepper);
 
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 5, 0, 1.0, 1.0e-9);
