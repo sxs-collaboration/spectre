@@ -224,6 +224,8 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - Location where the `install` target copies executables, libraries, etc. Make
     sure to set this variable before you `install`, or a default location such
     as `/usr/local` is used.
+- COVERAGE
+  - Enable code coverage with GCOV and LCOV (default `OFF`)
 - DEBUG_SYMBOLS
   - Whether or not to use debug symbols (default is `ON`)
   - Disabling debug symbols will reduce compile time and total size of the build

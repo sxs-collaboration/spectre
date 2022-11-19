@@ -20,32 +20,34 @@ if(NOT LLVM_COV_ROOT)
   set(LLVM_COV_ROOT $ENV{LLVM_COV_ROOT})
 endif()
 
-if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
-  string(
-      REGEX MATCH "^[0-9]+.[0-9]+" LLVM_VERSION
-      "${CMAKE_CXX_COMPILER_VERSION}"
-  )
-  find_program(
-      LLVM_COV_BIN
-      NAMES "llvm-cov-${LLVM_VERSION}" "llvm-cov"
-      HINTS ${LLVM_COV_ROOT}
-  )
-  configure_file(
-      "${CMAKE_SOURCE_DIR}/tools/llvm-gcov.sh"
-      "${CMAKE_BINARY_DIR}/llvm-gcov.sh"
-  )
-  set(GCOV "${CMAKE_BINARY_DIR}/llvm-gcov.sh")
-elseif( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
-  find_program(GCOV gcov)
-endif()
-
-find_program( LCOV lcov )
-find_program( GENHTML genhtml )
-find_program( SED sed )
+option(COVERAGE "Enable code coverage analysis." OFF)
 
 # Code coverage analysis only supported if all prerequisites found and the user
 # has requested it via the cmake variable COVERAGE=on..
-if(COVERAGE AND GCOV AND LCOV AND GENHTML AND SED)
+if(COVERAGE)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+    string(
+      REGEX MATCH "^[0-9]+.[0-9]+" LLVM_VERSION
+      "${CMAKE_CXX_COMPILER_VERSION}"
+      )
+    find_program(
+      LLVM_COV_BIN
+      NAMES "llvm-cov-${LLVM_VERSION}" "llvm-cov"
+      HINTS ${LLVM_COV_ROOT}
+      )
+    configure_file(
+      "${CMAKE_SOURCE_DIR}/tools/llvm-gcov.sh"
+      "${CMAKE_BINARY_DIR}/llvm-gcov.sh"
+      )
+    set(GCOV "${CMAKE_BINARY_DIR}/llvm-gcov.sh")
+  elseif( CMAKE_CXX_COMPILER_ID STREQUAL "GNU" )
+    find_program(GCOV gcov REQUIRED)
+  endif()
+
+  find_program(LCOV lcov REQUIRED)
+  find_program(GENHTML genhtml REQUIRED)
+  find_program(SED sed REQUIRED)
+
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 
@@ -59,6 +61,6 @@ if(COVERAGE AND GCOV AND LCOV AND GENHTML AND SED)
   include(CodeCoverage)
 elseif(COVERAGE)
   message(FATAL_ERROR "Failed to enable code coverage analysis. Not all "
-      "prerequisites found: gcov:${GCOV}, lcov:${LCOV}, genhtml:${GENHTML},"
-      " sed:${SED}")
+    "prerequisites found: gcov:${GCOV}, lcov:${LCOV}, genhtml:${GENHTML},"
+    " sed:${SED}")
 endif()
