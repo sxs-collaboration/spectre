@@ -28,10 +28,13 @@ target_link_libraries(
   PRIVATE
   Boost::boost
   DataStructures
+  Domain
+  DomainCreators
   H5
   Informer
   IO
   IoTestHelpers
+  Parallel
   Spectral
   Utilities
   )

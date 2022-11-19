@@ -9,6 +9,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Index.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Tags.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/TensorData.hpp"
@@ -23,6 +26,7 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -300,9 +304,27 @@ struct ContributeVolumeDataToWriter {
         for (const auto& id_and_element : volume_data) {
           dg_elements.push_back(id_and_element.second);
         }
+        // Serialize domain, ignoring versioning for now. See issue:
+        // https://github.com/sxs-collaboration/spectre/issues/3937
+        // The domain is retrieved from the global cache using the standard
+        // domain tag. If more flexibility is required here later, then the
+        // domain can be passed along with the `ContributeVolumeData` action.
+        const auto serialized_domain = serialize(
+            db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box));
+        const auto serialized_functions_of_time =
+            [&box]() -> std::optional<std::vector<char>> {
+          if constexpr (db::tag_is_retrievable_v<domain::Tags::FunctionsOfTime,
+                                                 db::DataBox<DbTagsList>>) {
+            return serialize(db::get<domain::Tags::FunctionsOfTime>(box));
+          } else {
+            (void)box;
+            return std::nullopt;
+          }
+        }();
         // Write the data to the file
-        volume_file.write_volume_data(observation_id.hash(),
-                                      observation_id.value(), dg_elements);
+        volume_file.write_volume_data(
+            observation_id.hash(), observation_id.value(), dg_elements,
+            serialized_domain, serialized_functions_of_time);
       }
       volume_file_lock->unlock();
     }

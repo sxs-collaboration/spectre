@@ -61,6 +61,15 @@ namespace h5 {
  * `h5::offset_and_length_for_grid` function to compute the offset into the
  * contiguous dataset that corresponds to a particular grid.
  *
+ * \par Domain and FunctionsOfTime
+ * A serialized representation of the domain and the functions of time can be
+ * written into the subfile alongside the tensor data. Reconstructing the domain
+ * (specifically the block maps) is needed for accurate interpolation of the
+ * tensor data to another set of points. The domain is currently stored as a
+ * `std::vector<char>`, and it is up to the calling code to serialize and
+ * deserialize the data, taking into account that files may be written and read
+ * with different versions of the code.
+ *
  * \warning Currently the topology of the grids is assumed to be tensor products
  * of lines, i.e. lines, quadrilaterals, and hexahedrons. However, this can be
  * extended in the future. If support for more topologies is required, please
@@ -94,9 +103,14 @@ class VolumeData : public h5::Object {
   uint32_t get_version() const { return version_; }
 
   /// Insert tensor components at `observation_id` with floating point value
-  /// `observation_value`
-  void write_volume_data(size_t observation_id, double observation_value,
-                         const std::vector<ElementVolumeData>& elements);
+  /// `observation_value`. Optionally write a serialized representation of the
+  /// domain and the functions of time into the subfile as well.
+  void write_volume_data(
+      size_t observation_id, double observation_value,
+      const std::vector<ElementVolumeData>& elements,
+      const std::optional<std::vector<char>>& serialized_domain = std::nullopt,
+      const std::optional<std::vector<char>>& serialized_functions_of_time =
+          std::nullopt);
 
   /// List all the integral observation ids in the subfile
   ///
@@ -169,6 +183,15 @@ class VolumeData : public h5::Object {
 
   /// Return the quadrature being used for each element along each axis
   std::vector<std::vector<std::string>> get_quadratures(
+      size_t observation_id) const;
+
+  /// Get the serialized domain in the subfile at this observation ID, or
+  /// `std::nullopt` if no domain was written.
+  std::optional<std::vector<char>> get_domain(size_t observation_id) const;
+
+  /// Get the serialized functions of time in the subfile at this observation
+  /// ID, or `std::nullopt` if none were written.
+  std::optional<std::vector<char>> get_functions_of_time(
       size_t observation_id) const;
 
   const std::string& subfile_path() const override { return path_; }

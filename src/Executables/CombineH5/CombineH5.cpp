@@ -91,6 +91,8 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
     element_data.reserve(vector_dim);
 
     double obs_val = 0.0;
+    std::optional<std::vector<char>> serialized_domain{};
+    std::optional<std::vector<char>> serialized_functions_of_time{};
 
     // Loops over input files to append element data into a single vector to be
     // stored in a single H5
@@ -100,6 +102,9 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
       const auto& original_volume_file =
           original_file.get<h5::VolumeData>("/" + subfile_name);
       obs_val = original_volume_file.get_observation_value(obs_id);
+      serialized_domain = original_volume_file.get_domain(obs_id);
+      serialized_functions_of_time =
+          original_volume_file.get_functions_of_time(obs_id);
 
       // Get vector of element data for this `obs_id` and `file_name`
       std::vector<ElementVolumeData> data_by_element =
@@ -118,7 +123,9 @@ void combine_h5(const std::string& file_prefix, const std::string& subfile_name,
 
     h5::H5File<h5::AccessType::ReadWrite> new_file(output + "0.h5", true);
     auto& new_volume_file = new_file.get<h5::VolumeData>("/" + subfile_name);
-    new_volume_file.write_volume_data(obs_id, obs_val, element_data);
+    new_volume_file.write_volume_data(obs_id, obs_val, element_data,
+                                      serialized_domain,
+                                      serialized_functions_of_time);
     new_file.close_current_object();
   }
 }
