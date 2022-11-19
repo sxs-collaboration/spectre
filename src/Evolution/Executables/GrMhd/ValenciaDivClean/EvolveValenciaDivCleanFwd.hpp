@@ -22,6 +22,7 @@ class SmoothFlow;
 namespace AnalyticData {
 class BlastWave;
 class BondiHoyleAccretion;
+class CcsnCollapse;
 class KhInstability;
 class MagneticFieldLoop;
 class MagneticRotor;
