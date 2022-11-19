@@ -72,7 +72,7 @@ void test_rotation_control_system(const bool newtonian) {
       "    Controller:\n"
       "      UpdateFraction: 0.3\n"
       "    TimescaleTuner:\n"
-      "      InitialTimescales: [0.5, 0.5, 0.5]\n"
+      "      InitialTimescales: 0.5\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 2.0\n"

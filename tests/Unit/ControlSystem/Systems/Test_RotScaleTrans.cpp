@@ -45,15 +45,15 @@ using CoordMap =
                           RotationMap, TranslationMap>;
 
 std::string create_input_string(const std::string& name) {
-  const std::string base_string1{"  "s + name +
-                                 ":\n"
-                                 "    Averager:\n"
-                                 "      AverageTimescaleFraction: 0.25\n"
-                                 "      Average0thDeriv: true\n"
-                                 "    Controller:\n"
-                                 "      UpdateFraction: 0.3\n"
-                                 "    TimescaleTuner:\n"};
-  const std::string base_string2{
+  const std::string name_str = "  "s + name + ":\n"s;
+  const std::string base_string1{
+      "    Averager:\n"
+      "      AverageTimescaleFraction: 0.25\n"
+      "      Average0thDeriv: true\n"
+      "    Controller:\n"
+      "      UpdateFraction: 0.3\n"
+      "    TimescaleTuner:\n"
+      "      InitialTimescales: 0.5\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 2.0\n"
@@ -62,12 +62,7 @@ std::string create_input_string(const std::string& name) {
       "      DecreaseFactor: 0.99\n"
       "    ControlError:\n"};
 
-  const std::string timescales =
-      (name == "Rotation"s or name == "Translation"s)
-          ? "      InitialTimescales: [0.5, 0.5, 0.5]\n"
-          : "      InitialTimescales: [0.5]\n";
-
-  return base_string1 + timescales + base_string2;
+  return name_str + base_string1;
 }
 
 template <size_t TranslationDerivOrder, size_t RotationDerivOrder,

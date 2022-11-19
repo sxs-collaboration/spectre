@@ -127,9 +127,17 @@ class FakeCreator : public DomainCreator<3> {
         all_functions_of_time{};
 
     for (const auto& [name, num_components] : num_components_map_) {
-      all_functions_of_time[name] =
-          std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
-              0.0, std::array<DataVector, 1>{{{num_components, 0.0}}}, 1.0);
+      if (name == "Rotation") {
+        // Rotation always has 3
+        all_functions_of_time[name] = std::make_unique<
+            domain::FunctionsOfTime::QuaternionFunctionOfTime<2>>(
+            0.0, std::array<DataVector, 1>{{{1.0, 0.0, 0.0, 0.0}}},
+            std::array<DataVector, 3>{{{3, 0.0}, {3, 0.0}, {3, 0.0}}}, 1.0);
+      } else {
+        all_functions_of_time[name] =
+            std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
+                0.0, std::array<DataVector, 1>{{{num_components, 0.0}}}, 1.0);
+      }
     }
 
     return all_functions_of_time;
