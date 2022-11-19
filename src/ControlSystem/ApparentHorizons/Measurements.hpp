@@ -21,6 +21,7 @@
 #include "ParallelAlgorithms/Interpolation/Interpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -52,9 +53,7 @@ struct BothHorizons : tt::ConformsTo<protocols::Measurement> {
         return "ControlSystemAh" + ::ah::name(Horizon);
       }
 
-      struct temporal_id : db::SimpleTag {
-        using type = LinkedMessageId<double>;
-      };
+      using temporal_id = ::Tags::TimeAndPrevious;
 
       using vars_to_interpolate_to_target =
           ::ah::vars_to_interpolate_to_target<3, ::Frame::Grid>;
