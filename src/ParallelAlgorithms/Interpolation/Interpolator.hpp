@@ -43,20 +43,15 @@ struct Interpolator {
       detail::get_interpolation_target_tag<tmpl::_1>>;
   using all_temporal_ids = tmpl::remove_duplicates<tmpl::transform<
       all_interpolation_target_tags, detail::get_temporal_id<tmpl::_1>>>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<Actions::InitializeInterpolator<
-                         tmpl::transform<
-                             all_temporal_ids,
-                             tmpl::bind<Tags::VolumeVarsInfo,
-                                        tmpl::pin<Metavariables>, tmpl::_1>>,
-                         Tags::InterpolatedVarsHolders<Metavariables>>,
-                     Parallel::Actions::TerminatePhase>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::PostFailureCleanup,
-          tmpl::list<Actions::DumpInterpolatorVolumeData<all_temporal_ids>,
-                     Parallel::Actions::TerminatePhase>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<
+          Actions::InitializeInterpolator<
+              tmpl::transform<all_temporal_ids,
+                              tmpl::bind<Tags::VolumeVarsInfo,
+                                         tmpl::pin<Metavariables>, tmpl::_1>>,
+              Tags::InterpolatedVarsHolders<Metavariables>>,
+          Parallel::Actions::TerminatePhase>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
