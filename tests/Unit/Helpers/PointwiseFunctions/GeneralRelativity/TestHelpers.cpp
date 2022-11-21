@@ -13,7 +13,7 @@ namespace TestHelpers::gr {
 template <typename DataType>
 Scalar<DataType> random_lapse(const gsl::not_null<std::mt19937*> generator,
                               const DataType& used_for_size) {
-  std::uniform_real_distribution<> distribution(0.0, 3.0);
+  std::uniform_real_distribution<> distribution(0.1, 3.0);
   return make_with_random_values<Scalar<DataType>>(
       generator, make_not_null(&distribution), used_for_size);
 }
