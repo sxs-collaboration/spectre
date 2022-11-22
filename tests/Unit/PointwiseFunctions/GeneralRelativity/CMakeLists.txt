@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_InterfaceNullNormal.cpp
   Test_KerrSchildCoords.cpp
   Test_ProjectionOperators.cpp
+  Test_Psi4.cpp
   Test_Ricci.cpp
   Test_Tags.cpp
   Test_Transform.cpp
