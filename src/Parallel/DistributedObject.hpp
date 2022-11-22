@@ -485,7 +485,10 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       const auto check_for_phase = [](auto phase_dep_v) {
         using PhaseDep = decltype(phase_dep_v);
         constexpr Parallel::Phase phase = PhaseDep::phase;
-        if (alg::count(metavariables::default_phase_order, phase) == 0) {
+        // PostFailureCleanup is never in the default phase order, but is
+        // controlled by Main rather than PhaseControl
+        if (alg::count(metavariables::default_phase_order, phase) == 0 and
+            phase != Parallel::Phase::PostFailureCleanup) {
           Parallel::printf(
               "NOTE: Phase::%s is in the phase dependent action list of\n"
               "component %s,\nbut not in the default_phase_order specified by "
