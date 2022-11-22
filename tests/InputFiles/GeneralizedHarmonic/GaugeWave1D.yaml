@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhGaugeWave1D
+# Executable: EvolveGhNoBlackHole1D
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
@@ -27,6 +27,11 @@ PhaseChangeAndTriggers:
     - - CheckpointAndExitAfterWallclock:
           WallclockHours: None
 
+InitialData: &InitialData
+  GaugeWave:
+    Amplitude: 0.5
+    Wavelength: 6.283185307179586
+
 DomainCreator:
   RotatedIntervals:
     LowerBound: [0.0]
@@ -39,13 +44,12 @@ DomainCreator:
          InitialTime: 0.0
          Velocity: [0.5]
     BoundaryConditions:
-      LowerBoundary:  DirichletAnalytic
-      UpperBoundary:  DirichletAnalytic
-
-AnalyticSolution:
-  GaugeWave:
-    Amplitude: 0.5
-    Wavelength: 6.283185307179586
+      LowerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      UpperBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 EvolutionSystem:
   GeneralizedHarmonic:

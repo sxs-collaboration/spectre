@@ -14,5 +14,14 @@ add_test_library(
   ${LIBRARY}
   "PointwiseFunctions/AnalyticSolutions/GrMhd"
   "${LIBRARY_SOURCES}"
-  "GrMhdSolutions;Options;Utilities"
+  ""
+  )
+
+target_link_libraries(
+  ${LIBRARY}
+  PRIVATE
+  GrMhdSolutions
+  Options
+  Utilities
+  ValenciaDivClean
   )

@@ -88,6 +88,7 @@
 #include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Factory.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/SphericalKerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -98,6 +99,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
@@ -142,9 +144,9 @@ template <bool UseDampedHarmonicRollon, typename EvolutionMetavarsDerived>
 struct GeneralizedHarmonicTemplateBase;
 
 namespace detail {
-template <typename InitialData>
+template <bool UseNumericalInitialData>
 constexpr auto make_default_phase_order() {
-  if constexpr (evolution::is_numeric_initial_data_v<InitialData>) {
+  if constexpr (UseNumericalInitialData) {
     return std::array{Parallel::Phase::Initialization,
                       Parallel::Phase::RegisterWithElementDataReader,
                       Parallel::Phase::ImportInitialData,
@@ -165,16 +167,15 @@ constexpr auto make_default_phase_order() {
 }  // namespace detail
 
 template <bool UseDampedHarmonicRollon,
-          template <size_t, typename, typename> class EvolutionMetavarsDerived,
-          size_t VolumeDim, typename InitialData, typename BoundaryConditions>
+          template <size_t, bool> class EvolutionMetavarsDerived,
+          size_t VolumeDim, bool UseNumericalInitialData>
 struct GeneralizedHarmonicTemplateBase<
     UseDampedHarmonicRollon,
-    EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>> {
+    EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>> {
   using derived_metavars =
-      EvolutionMetavarsDerived<VolumeDim, InitialData, BoundaryConditions>;
+      EvolutionMetavarsDerived<VolumeDim, UseNumericalInitialData>;
   static constexpr size_t volume_dim = VolumeDim;
   static constexpr bool use_damped_harmonic_rollon = UseDampedHarmonicRollon;
-  using initial_data = InitialData;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   static constexpr dg::Formulation dg_formulation =
@@ -195,11 +196,12 @@ struct GeneralizedHarmonicTemplateBase<
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) {}
-  using analytic_solution_tag = Tags::AnalyticSolution<BoundaryConditions>;
 
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
-                                                analytic_solution_fields>;
+  using initial_data_list =
+      GeneralizedHarmonic::Solutions::all_solutions<volume_dim>;
+
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_solution_fields, initial_data_list>;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,
@@ -275,6 +277,7 @@ struct GeneralizedHarmonicTemplateBase<
                        volume_dim>,
                    GeneralizedHarmonic::BoundaryConditions::
                        standard_boundary_conditions<volume_dim>>,
+        tmpl::pair<evolution::initial_data::InitialData, initial_data_list>,
         tmpl::pair<LtsTimeStepper, TimeSteppers::lts_time_steppers>,
         tmpl::pair<PhaseChange,
                    tmpl::list<PhaseControl::VisitAndReturn<
@@ -302,7 +305,7 @@ struct GeneralizedHarmonicTemplateBase<
   // A tmpl::list of tags to be added to the GlobalCache by the
   // metavariables
   using const_global_cache_tags = tmpl::list<
-      analytic_solution_tag,
+      evolution::initial_data::Tags::InitialData,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -314,7 +317,7 @@ struct GeneralizedHarmonicTemplateBase<
       tmpl::list<observers::Actions::RegisterEventsWithObservers>;
 
   static constexpr auto default_phase_order =
-      detail::make_default_phase_order<initial_data>();
+      detail::make_default_phase_order<UseNumericalInitialData>();
 
   using step_actions = tmpl::list<
       evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
@@ -347,7 +350,7 @@ struct GeneralizedHarmonicTemplateBase<
                                             override_functions_of_time>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
-          evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
+          UseNumericalInitialData, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<
               domain::Tags::Coordinates<volume_dim, Frame::ElementLogical>>>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<
@@ -370,7 +373,7 @@ struct GeneralizedHarmonicTemplateBase<
           Parallel::PhaseActions<Parallel::Phase::Initialization,
                                  initialization_actions>,
           tmpl::conditional_t<
-              evolution::is_numeric_initial_data_v<initial_data>,
+              UseNumericalInitialData,
               tmpl::list<
                   Parallel::PhaseActions<
                       Parallel::Phase::RegisterWithElementDataReader,
@@ -411,7 +414,7 @@ struct GeneralizedHarmonicTemplateBase<
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<derived_metavars>,
       observers::ObserverWriter<derived_metavars>,
-      std::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
+      std::conditional_t<UseNumericalInitialData,
                          importers::ElementDataReader<derived_metavars>,
                          tmpl::list<>>,
       gh_dg_element_array>>;

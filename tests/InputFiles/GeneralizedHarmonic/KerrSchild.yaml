@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhKerrSchild
+# Executable: EvolveGhSingleBlackHole
 # Check: parse;execute_check_output
 # Timeout: 8
 # ExpectedOutput:
@@ -37,6 +37,12 @@ PhaseChangeAndTriggers:
     - - CheckpointAndExitAfterWallclock:
           WallclockHours: None
 
+InitialData: &InitialData
+  KerrSchild:
+    Mass: 1.0
+    Spin: [0.0, 0.0, 0.0]
+    Center: [0.0, 0.0, 0.0]
+
 DomainCreator:
   Shell:
     InnerRadius: 1.9
@@ -50,14 +56,12 @@ DomainCreator:
     WhichWedges: All
     TimeDependence: None
     BoundaryConditions:
-      InnerBoundary: DirichletAnalytic
-      OuterBoundary: DirichletAnalytic
-
-AnalyticSolution:
-  KerrSchild:
-    Mass: 1.0
-    Spin: [0.0, 0.0, 0.0]
-    Center: [0.0, 0.0, 0.0]
+      InnerBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
+      OuterBoundary:
+        DirichletAnalytic:
+          AnalyticPrescription: *InitialData
 
 EvolutionSystem:
   GeneralizedHarmonic:

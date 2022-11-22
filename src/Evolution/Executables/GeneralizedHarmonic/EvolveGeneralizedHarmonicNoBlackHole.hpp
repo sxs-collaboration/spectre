@@ -22,20 +22,15 @@
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 
-// Second template parameter specifies the source of the initial data, which
-// could be an analytic solution, analytic data, or imported numerical data.
-// Third template parameter specifies the analytic solution used when imposing
-// dirichlet boundary conditions or against which to compute error norms.
-template <size_t VolumeDim, typename InitialData, typename BoundaryConditions>
+template <size_t VolumeDim, bool UseNumericalInitialData>
 struct EvolutionMetavars
     : public GeneralizedHarmonicTemplateBase<
-          false,
-          EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>> {
+          false, EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
   using gh_base = GeneralizedHarmonicTemplateBase<
-      false, EvolutionMetavars<VolumeDim, InitialData, BoundaryConditions>>;
+      false, EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
+  using typename gh_base::component_list;
   using typename gh_base::const_global_cache_tags;
   using typename gh_base::observed_reduction_data_tags;
-  using typename gh_base::component_list;
   template <typename ParallelComponent>
   using registration_list =
       typename gh_base::template registration_list<ParallelComponent>;
@@ -46,7 +41,8 @@ struct EvolutionMetavars
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::time_dependence::register_derived_with_charm,
     &domain::FunctionsOfTime::register_derived_with_charm,

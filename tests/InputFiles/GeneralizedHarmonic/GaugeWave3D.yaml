@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveGhGaugeWave3D
+# Executable: EvolveGhNoBlackHole3D
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
@@ -27,6 +27,11 @@ PhaseChangeAndTriggers:
     - - CheckpointAndExitAfterWallclock:
           WallclockHours: None
 
+InitialData: &InitialData
+  GaugeWave:
+    Amplitude: 0.1
+    Wavelength: 1.0
+
 DomainCreator:
   Brick:
     LowerBound: [0.0, 0.0, 0.0]
@@ -35,11 +40,6 @@ DomainCreator:
     InitialGridPoints: [5, 5, 5]
     TimeDependence: None
     BoundaryCondition: Periodic
-
-AnalyticSolution:
-  GaugeWave:
-    Amplitude: 0.1
-    Wavelength: 1.0
 
 EvolutionSystem:
   GeneralizedHarmonic:
