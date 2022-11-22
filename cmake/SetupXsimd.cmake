@@ -1,12 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# QUIET silences warning
-find_package(xsimd 8.1.0 QUIET)
+option(USE_XSIMD "Use xsimd if it is available" OFF)
 
-option(USE_XSIMD "Use xsimd if it is available" ON)
+if(USE_XSIMD)
+  find_package(xsimd 8.1 REQUIRED)
 
-if(USE_XSIMD AND xsimd_FOUND)
   message(STATUS "xsimd incld: ${xsimd_INCLUDE_DIRS}")
   message(STATUS "xsimd vers: ${xsimd_VERSION}")
 
@@ -27,10 +26,17 @@ if(USE_XSIMD AND xsimd_FOUND)
     APPEND PROPERTY
     INTERFACE_COMPILE_OPTIONS
     -DSPECTRE_USE_XSIMD
+    -DBLAZE_USE_XSIMD=1
     )
 
   set_property(
     GLOBAL APPEND PROPERTY SPECTRE_THIRD_PARTY_LIBS
+    xsimd
+    )
+
+  target_link_libraries(
+    Blaze
+    INTERFACE
     xsimd
     )
 endif()
