@@ -153,6 +153,14 @@ struct SpatialRicciScalar : db::SimpleTag {
 };
 
 /*!
+ * \brief Computes the real part of \f$\Psi_4\f$
+ */
+template <typename DataType>
+struct Psi4Real : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief The energy density \f$E=n_a n_b T^{ab}\f$, where \f$n_a\f$ denotes the
  * normal to the spatial hypersurface
  */

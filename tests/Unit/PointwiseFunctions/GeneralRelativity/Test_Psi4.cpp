@@ -24,6 +24,53 @@
 #include "PointwiseFunctions/GeneralRelativity/WeylPropagating.hpp"
 
 namespace {
+template <typename RealDataType>
+void test_compute_item_in_databox(const RealDataType& used_for_size_real) {
+  TestHelpers::db::test_compute_tag<gr::Tags::Psi4RealCompute<Frame::Inertial>>(
+      "Psi4Real");
+
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(0.1, 3.0);
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_distribution = make_not_null(&distribution);
+
+  const auto spatial_ricci =
+      make_with_random_values<tnsr::ii<RealDataType, 3, Frame::Inertial>>(
+          nn_generator, nn_distribution, used_for_size_real);
+  const auto extrinsic_curvature =
+      make_with_random_values<tnsr::ii<RealDataType, 3, Frame::Inertial>>(
+          nn_generator, nn_distribution, used_for_size_real);
+  const auto cov_deriv_extrinsic_curvature =
+      make_with_random_values<tnsr::ijj<RealDataType, 3, Frame::Inertial>>(
+          nn_generator, nn_distribution, used_for_size_real);
+  const auto spatial_metric =
+      TestHelpers::gr::random_spatial_metric<3, RealDataType, Frame::Inertial>(
+          nn_generator, used_for_size_real);
+  const auto inv_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+  const auto inertial_coords =
+      make_with_random_values<tnsr::I<RealDataType, 3, Frame::Inertial>>(
+          nn_generator, nn_distribution, used_for_size_real);
+
+  const auto box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::SpatialRicci<3, Frame::Inertial, RealDataType>,
+          gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, RealDataType>,
+          ::Tags::deriv<
+              gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, RealDataType>,
+              tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::SpatialMetric<3, Frame::Inertial, RealDataType>,
+          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, RealDataType>,
+          domain::Tags::Coordinates<3, Frame::Inertial>>,
+      db::AddComputeTags<gr::Tags::Psi4RealCompute<Frame::Inertial>>>(
+      spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
+      spatial_metric, inv_spatial_metric, inertial_coords);
+  const auto expected = gr::psi_4_real(
+      spatial_ricci, extrinsic_curvature, cov_deriv_extrinsic_curvature,
+      spatial_metric, inv_spatial_metric, inertial_coords);
+  CHECK((db::get<gr::Tags::Psi4Real<RealDataType>>(box)) == expected);
+}
+
 template <typename RealDataType, typename ComplexDataType>
 void test_psi_4(const RealDataType& used_for_size_real,
                 const ComplexDataType& /*used_for_size_complex*/) {
@@ -74,4 +121,5 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Psi4.",
   const ComplexDataVector used_for_size_complex_dv =
       ComplexDataVector(size, std::numeric_limits<double>::signaling_NaN());
   test_psi_4(used_for_size_real_dv, used_for_size_complex_dv);
+  test_compute_item_in_databox(used_for_size_real_dv);
 }
