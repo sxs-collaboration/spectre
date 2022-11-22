@@ -258,8 +258,8 @@
  * #### Creating a DataBox
  *
  * You should never call the constructor of a DataBox directly. DataBox
- * construction is quite complicated and the helper functions `db::create` and
- * `db::create_from` should be used instead. `db::create` is used to construct a
+ * construction is quite complicated and the helper function `db::create`
+ * should be used instead. `db::create` is used to construct a
  * new DataBox. It takes two typelists as explicit template parameters, the
  * first being a list of the simple tags to add and the second being a list of
  * compute tags to add. If no compute tags are being added then only the simple
@@ -272,27 +272,6 @@
  * assertion will trigger. Here is an example of how to use `db::create`:
  *
  * \snippet Test_DataBox.cpp create_databox
- *
- * To create a new DataBox from an existing one use the `db::create_from`
- * function. The only time a new DataBox needs to be created is when tags need
- * to be removed or added. Like `db::create`, `db::create_from` also takes
- * typelists as explicit template parameter. The first template parameter is the
- * list of tags to be removed, which is passed using `db::RemoveTags`, second is
- * the list of simple tags to add, and the third is the list of compute tags to
- * add. If tags are only removed then only the first template parameter needs to
- * be specified. If tags are being removed and only simple tags are being added
- * then only the first two template parameters need to be specified. Here is an
- * example of removing a tag or compute tag:
- *
- * \snippet Test_DataBox.cpp create_from_remove
- *
- * Adding a simple tag is done using:
- *
- * \snippet Test_DataBox.cpp create_from_add_item
- *
- * Adding a compute tag is done using:
- *
- * \snippet Test_DataBox.cpp create_from_add_compute_item
  *
  * #### Accessing and Mutating Items
  *
@@ -371,10 +350,6 @@
  * Notice that we are able to retrieve `ArrayComputeBase<0>` with `ArrayBase<0>`
  * and `Array<0>`. We were also able to mutate `Vector<0>` using
  * `VectorBase<0>`.
- *
- * We can even remove tags using their base tags with `db::create_from`:
- *
- * \snippet Test_BaseTags.cpp remove_using_base
  *
  * The base tags infrastructure even works with Subitems. Even if you mutate the
  * subitem of a parent using a base tag, the appropriate compute item caches

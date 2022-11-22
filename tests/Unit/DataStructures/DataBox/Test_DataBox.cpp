@@ -186,43 +186,6 @@ struct PointerToSumCompute : PointerToSum, db::ComputeTag {
 };
 }  // namespace test_databox_tags
 
-using EmptyBox = decltype(db::create<db::AddSimpleTags<>>());
-static_assert(std::is_same_v<decltype(db::create_from<db::RemoveTags<>>(
-                                 std::declval<EmptyBox>())),
-                             EmptyBox>,
-              "Wrong create_from result type");
-
-using Box_t = db::DataBox<tmpl::list<
-    test_databox_tags::Tag0, test_databox_tags::Tag1, test_databox_tags::Tag2,
-    test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-    test_databox_tags::Tag4Compute, test_databox_tags::Tag5Compute>>;
-
-static_assert(
-    std::is_same<
-        decltype(
-            db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(Box_t{})),
-        db::DataBox<
-            tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag2,
-                       test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                       test_databox_tags::Tag4Compute,
-                       test_databox_tags::Tag5Compute>>>::value,
-    "Failed testing removal of item");
-
-static_assert(
-    std::is_same<
-        decltype(
-            db::create_from<db::RemoveTags<test_databox_tags::Tag5>>(Box_t{})),
-        db::DataBox<
-            tmpl::list<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                       test_databox_tags::Tag2,
-                       test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
-                       test_databox_tags::Tag4Compute>>>::value,
-    "Failed testing removal of compute item");
-
-static_assert(std::is_same<decltype(db::create_from<db::RemoveTags<>>(Box_t{})),
-                           Box_t>::value,
-              "Failed testing no-op create_from");
-
 void test_databox() {
   INFO("test databox");
   const auto create_original_box = []() {
@@ -240,23 +203,19 @@ void test_databox() {
   };
   {
     INFO("Default-construction");
-    auto simple_box = db::create<
+    auto box = db::create<
         db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>>();
-    CHECK(db::get<test_databox_tags::Tag0>(simple_box) == 0.);
-    CHECK(db::get<test_databox_tags::Tag1>(simple_box).empty());
-    CHECK(db::get<test_databox_tags::Tag2>(simple_box).empty());
+                          test_databox_tags::Tag2, test_databox_tags::Tag3>,
+        db::AddComputeTags<test_databox_tags::Tag4Compute>>();
+    CHECK(db::get<test_databox_tags::Tag0>(box) == 0.);
+    CHECK(db::get<test_databox_tags::Tag1>(box).empty());
+    CHECK(db::get<test_databox_tags::Tag2>(box).empty());
     db::mutate<test_databox_tags::Tag0, test_databox_tags::Tag2>(
-        make_not_null(&simple_box), [](const gsl::not_null<double*> val,
-                                       const gsl::not_null<std::string*> str) {
+        make_not_null(&box), [](const gsl::not_null<double*> val,
+                                const gsl::not_null<std::string*> str) {
           *val = 1.5;
           *str = "My Sample String";
         });
-    const auto& box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<test_databox_tags::Tag3>,
-                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
-            std::move(simple_box));
     CHECK(db::get<test_databox_tags::Tag3>(box).empty());
     CHECK(db::get<test_databox_tags::Tag0>(box) == 1.5);
     CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
@@ -285,84 +244,6 @@ void test_databox() {
           "My Sample String6.28"s);
     CHECK(db::get<test_databox_tags::Lambda0>(original_box) == 3.0 * 3.14);
     CHECK(db::get<test_databox_tags::Lambda1>(original_box) == 7.0);
-  }
-  // No removal
-  {
-    auto original_box = create_original_box();
-    const auto& box =
-        db::create_from<db::RemoveTags<>>(std::move(original_box));
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
-  }
-  {
-    // [create_from_remove]
-    auto original_box = create_original_box();
-    const auto& box = db::create_from<db::RemoveTags<test_databox_tags::Tag1>>(
-        std::move(original_box));
-    // [create_from_remove]
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
-  }
-  {
-    // [create_from_add_item]
-    auto original_box = create_original_box();
-    const auto& box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<test_databox_tags::Tag3>>(
-            std::move(original_box), "Yet another test string"s);
-    // [create_from_add_item]
-    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::Tag5>(box) == "My Sample String6.28"s);
-    CHECK(db::get<test_databox_tags::Lambda0>(box) == 3.0 * 3.14);
-  }
-  {
-    // [create_from_add_compute_item]
-    auto simple_box = db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>>(
-        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    const auto& box =
-        db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
-            std::move(simple_box));
-    // [create_from_add_compute_item]
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::Tag4>(box) == 6.28);
-  }
-  {
-    auto simple_box = db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>>(
-        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    const auto& box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<test_databox_tags::Tag3>,
-                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
-            std::move(simple_box), "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    // Check retrieving compute item result
-    CHECK(db::get<test_databox_tags::Tag4>(box) == 6.28);
-  }
-  {
-    auto simple_box = db::create<
-        db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                          test_databox_tags::Tag2>>(
-        3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
-    const auto& box =
-        db::create_from<db::RemoveTags<test_databox_tags::Tag1>,
-                        db::AddSimpleTags<test_databox_tags::Tag3>,
-                        db::AddComputeTags<test_databox_tags::Tag4Compute>>(
-            std::move(simple_box), "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag3>(box) == "Yet another test string"s);
-    CHECK(db::get<test_databox_tags::Tag2>(box) == "My Sample String"s);
-    // Check retrieving compute item result
-    CHECK(6.28 == db::get<test_databox_tags::Tag4>(box));
   }
   {
     const auto box = db::create<
@@ -2023,25 +1904,6 @@ void test_subitems() {
       CHECK(*db::get<Second<1>>(move_box) == 24.);
     }
 
-    static_assert(
-        std::is_same_v<
-            decltype(box),
-            decltype(db::create_from<db::RemoveTags<Parent<2>>>(
-                db::create_from<db::RemoveTags<>, db::AddSimpleTags<Parent<2>>>(
-                    std::move(box),
-                    std::make_pair(Boxed<int>(5), Boxed<double>(3.5)))))>,
-        "Failed testing that adding and removing a simple subitem does "
-        "not change the type of the DataBox");
-
-    static_assert(
-        std::is_same_v<
-            decltype(box),
-            decltype(db::create_from<db::RemoveTags<ParentCompute<2>>>(
-                db::create_from<db::RemoveTags<>, db::AddSimpleTags<>,
-                                db::AddComputeTags<ParentCompute<2>>>(
-                    std::move(box))))>,
-        "Failed testing that adding and removing a compute subitem does "
-        "not change the type of the DataBox");
   }
   {
     INFO("Default-construction with subitems");
