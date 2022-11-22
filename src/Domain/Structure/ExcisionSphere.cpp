@@ -27,9 +27,16 @@ ExcisionSphere<VolumeDim>::ExcisionSphere(
 
 template <size_t VolumeDim>
 void ExcisionSphere<VolumeDim>::pup(PUP::er& p) {
-  p | radius_;
-  p | center_;
-  p | abutting_directions_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible.
+  if (version >= 0) {
+    p | radius_;
+    p | center_;
+    p | abutting_directions_;
+  }
 }
 
 template <size_t VolumeDim>

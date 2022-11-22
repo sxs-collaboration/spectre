@@ -436,8 +436,15 @@ class CoordinateMap
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) override {
-    CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
-    p | maps_;
+    size_t version = 0;
+    p | version;
+    // Remember to increment the version number when making changes to this
+    // function. Retain support for unpacking data written by previous versions
+    // whenever possible.
+    if (version >= 0) {
+      CoordinateMapBase<SourceFrame, TargetFrame, dim>::pup(p);
+      p | maps_;
+    }
   }
 
  private:
