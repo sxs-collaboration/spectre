@@ -331,4 +331,37 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.QuaternionFunctionOfTime",
                                    custom_approx);
     }
   }
+  {
+    INFO("QuaternionFunctionOfTime: No updates");
+    const double initial_time = 0.0;
+    const double final_time = 100.0;
+
+    DataVector init_quat{1.0, 0.0, 0.0, 0.0};
+    // We use zero because we are only concerned about checking the quaternion
+    // at late times when it hasn't been updated
+    DataVector three_zero{3, 0.0};
+    // Construct QuaternionFunctionOfTime
+    domain::FunctionsOfTime::QuaternionFunctionOfTime<3> qfot{
+        initial_time, std::array<DataVector, 1>{init_quat},
+        std::array<DataVector, 4>{three_zero, three_zero, three_zero,
+                                  three_zero},
+        std::numeric_limits<double>::infinity()};
+
+    const std::array<DataVector, 3> quat_func_and_2_derivs =
+        qfot.func_and_2_derivs(final_time);
+
+    DataVector four_zero{4, 0.0};
+    {
+      INFO("  Compare quaternion");
+      CHECK_ITERABLE_APPROX(quat_func_and_2_derivs[0], init_quat);
+    }
+    {
+      INFO("  Compare derivative of quaternion");
+      CHECK_ITERABLE_APPROX(quat_func_and_2_derivs[1], four_zero);
+    }
+    {
+      INFO("  Compare second derivative of quaternion");
+      CHECK_ITERABLE_APPROX(quat_func_and_2_derivs[2], four_zero);
+    }
+  }
 }
