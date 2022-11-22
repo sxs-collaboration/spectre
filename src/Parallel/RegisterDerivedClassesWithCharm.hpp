@@ -10,6 +10,7 @@
 #include <typeinfo>
 
 #include "Parallel/CharmPupable.hpp"
+#include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Parallel {
@@ -21,10 +22,22 @@ void register_classes_with_charm(
     const tmpl::list<Registrants...> /*meta*/ = {}) {
   const auto helper = [](auto class_v) {
     using class_to_register = typename decltype(class_v)::type;
-    // We use PUPable_reg2 because this takes as a second argument the name of
-    // the class as a `const char*`, while PUPable_reg converts the argument
-    // verbatim to a string using the `#` preprocessor operator.
-    PUPable_reg2(class_to_register, typeid(class_to_register).name());
+    // Notes:
+    // - We use PUPable_reg2 because this takes as a second argument the name of
+    //   the class (as a `const char*`), while PUPable_reg converts the argument
+    //   verbatim to a string using the `#` preprocessor operator.
+    // - We use pretty_type to get a string representation of the class that is
+    //   somewhat reliable: across invocations of the same program, across
+    //   different compilers, and across different executables. This reliability
+    //   is important when we serialize PUPable classes to disk and read them
+    //   back in. Note that typeid().name() provides no such guarantees. To
+    //   improve reliability further in the future (e.g. to guard against
+    //   changing pretty_type output) we may call a dedicated function on
+    //   `class_to_register`, such as `static std::string registration_name()`,
+    //   which is expected to return a unique name (including any template
+    //   parameters etc).
+    PUPable_reg2(class_to_register,
+                 pretty_type::get_name<class_to_register>().c_str());
   };
   (void)helper;
   EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Registrants>{}));
