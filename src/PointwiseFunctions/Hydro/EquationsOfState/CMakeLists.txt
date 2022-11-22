@@ -8,6 +8,7 @@ spectre_target_sources(
   Enthalpy.cpp
   HybridEos.cpp
   IdealFluid.cpp
+  PiecewisePolytropicFluid.cpp
   PolytropicFluid.cpp
   RegisterDerivedWithCharm.cpp
   Spectral.cpp
@@ -23,6 +24,7 @@ spectre_target_headers(
   Factory.hpp
   HybridEos.hpp
   IdealFluid.hpp
+  PiecewisePolytropicFluid.hpp
   PolytropicFluid.hpp
   RegisterDerivedWithCharm.hpp
   Spectral.hpp
