@@ -84,12 +84,8 @@ namespace Initialization {
  *   - `domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>`
  * - Removes: nothing
  * - Modifies: nothing
- *
- * \note If OverrideCubicFunctionsOfTime == true, then cubic functions
- * of time are overriden via `read_spec_piecewise_polynomial()`
  */
-template <size_t Dim, bool OverrideCubicFunctionsOfTime = false,
-          bool UseControlSystems = false>
+template <size_t Dim, bool UseControlSystems = false>
 struct Domain {
   using initialization_tags =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
