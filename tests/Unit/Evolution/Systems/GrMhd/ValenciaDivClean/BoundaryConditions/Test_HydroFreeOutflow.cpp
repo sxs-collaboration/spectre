@@ -96,5 +96,5 @@ SPECTRE_TEST_CASE("Unit.GrMhd.BoundaryConditions.HydroFreeOutflow",
           "flux_tilde_s", "flux_tilde_b", "flux_tilde_phi", "lapse", "shift",
           "inv_spatial_metric"},
       "HydroFreeOutflow:\n", face_mesh_index, box_with_gridless_tags,
-      tuples::TaggedTuple<>{});
+      tuples::TaggedTuple<>{}, 1.0e-10);
 }
