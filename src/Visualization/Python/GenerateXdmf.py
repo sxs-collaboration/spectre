@@ -246,6 +246,10 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 components.remove('grid_names')
                 components.remove('bases')
                 components.remove('quadratures')
+                if 'domain' in components:
+                    components.remove('domain')
+                if 'functions_of_time' in components:
+                    components.remove('functions_of_time')
 
                 # Write the tensors that are to be visualized.
                 for component in components:
