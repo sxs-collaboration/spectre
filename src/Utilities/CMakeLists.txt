@@ -27,6 +27,7 @@ spectre_target_headers(
   Blas.hpp
   CachedFunction.hpp
   CallWithDynamicType.hpp
+  CleanupRoutine.hpp
   CloneUniquePtrs.hpp
   ConstantExpressions.hpp
   ContainerHelpers.hpp
