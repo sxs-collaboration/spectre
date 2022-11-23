@@ -1,0 +1,20 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Python packages needed to run the Python bindings.
+#
+# Make sure that you are working in a Python venv. You can set one up like this
+# in a directory of your choice:
+#
+#   $ python3 -m venv path/to/env
+#   $ . path/to/env/bin/activate
+#
+# Then, install the Python dependencies into the environment like this:
+#
+#   $ pip3 install -r support/Python/requirements.txt
+
+h5py
+numpy
+matplotlib
+pyyaml
+scipy

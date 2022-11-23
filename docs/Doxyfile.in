@@ -129,6 +129,8 @@ EXCLUDE_SYMBOLS        = charm_init_*                                 \
 EXAMPLE_PATH           = @PROJECT_SOURCE_DIR@/tests/ \
                          @PROJECT_SOURCE_DIR@/src/Executables/Examples/ \
                          @PROJECT_SOURCE_DIR@/support/DevEnvironments/spack.yaml \
+                         @PROJECT_SOURCE_DIR@/support/Python/dev_requirements.txt \
+                         @PROJECT_SOURCE_DIR@/support/Python/requirements.txt \
                          @PROJECT_SOURCE_DIR@/citation.bib
 
 EXAMPLE_PATTERNS       =
