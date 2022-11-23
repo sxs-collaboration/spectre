@@ -22,6 +22,7 @@
 #include "DataStructures/DataBox/Subitems.hpp"
 #include "DataStructures/DataBox/TagName.hpp"
 #include "DataStructures/DataBox/TagTraits.hpp"
+#include "Utilities/CleanupRoutine.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/StaticAssert.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -728,7 +729,6 @@ decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
         "error occurs when mutating a DataBox from inside the invokable "
         "passed to the mutate function.");
   }
-  box->mutate_locked_box_ = true;
   using mutate_tags_list =
       tmpl::list<detail::first_matching_tag<TagList, MutateTags>...>;
   // For all the tags in the DataBox, check if one of their subtags is
@@ -763,41 +763,20 @@ decltype(auto) mutate(const gsl::not_null<DataBox<TagList>*> box,
                                               tmpl::pin<full_mutated_items>,
                                               tmpl::get_source<tmpl::_1>>>,
                       tmpl::get_destination<tmpl::_1>>>;
-  if constexpr (not std::is_same_v<
-                    decltype(invokable(
-                        make_not_null(
-                            &box->template get_item<detail::first_matching_tag<
-                                 TagList, MutateTags>>()
-                                 .mutate())...,
-                        std::forward<Args>(args)...)),
-                    void>) {
-    decltype(auto) return_value = invokable(
-        make_not_null(&box->template get_item<
-                              detail::first_matching_tag<TagList, MutateTags>>()
-                           .mutate())...,
-        std::forward<Args>(args)...);
 
+  const CleanupRoutine unlock_box = [&box]() {
+    box->mutate_locked_box_ = false;
     EXPAND_PACK_LEFT_TO_RIGHT(box->template mutate_mutable_subitems<MutateTags>(
         typename Subitems<MutateTags>::type{}));
     box->template reset_compute_items_after_mutate(
         first_compute_items_to_reset{});
-
-    box->mutate_locked_box_ = false;
-    return return_value;
-  } else {
-    invokable(
-        make_not_null(&box->template get_item<
-                              detail::first_matching_tag<TagList, MutateTags>>()
-                           .mutate())...,
-        std::forward<Args>(args)...);
-
-    EXPAND_PACK_LEFT_TO_RIGHT(box->template mutate_mutable_subitems<MutateTags>(
-        typename Subitems<MutateTags>::type{}));
-    box->template reset_compute_items_after_mutate(
-        first_compute_items_to_reset{});
-
-    box->mutate_locked_box_ = false;
-  }
+  };
+  box->mutate_locked_box_ = true;
+  return invokable(
+      make_not_null(&box->template get_item<
+                            detail::first_matching_tag<TagList, MutateTags>>()
+                         .mutate())...,
+      std::forward<Args>(args)...);
 }
 
 ////////////////////////////////////////////////////////////////
