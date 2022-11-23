@@ -255,7 +255,7 @@ struct TimeDerivative {
           evolution::dg::subcell::correct_package_data<true>(
               make_not_null(&lower_packaged_data),
               make_not_null(&upper_packaged_data), i, element, subcell_mesh,
-              db::get<evolution::dg::Tags::MortarData<3>>(*box));
+              db::get<evolution::dg::Tags::MortarData<3>>(*box), 0);
 
           // Compute the corrections on the faces. We only need to
           // compute this once because we can just flip the normal

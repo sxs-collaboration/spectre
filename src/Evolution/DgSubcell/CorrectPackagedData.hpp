@@ -63,6 +63,11 @@ namespace evolution::dg::subcell {
  * discontinuities, strict conservation is not necessary between DG and FD/FV
  * regions. This was also observed with a block-adaptive finite difference AMR
  * code \cite CHEN2016604
+ *
+ * The variable `variables_to_offset_in_dg_grid` is used in cases like the
+ * combined generalized harmonic and GRMHD system where the DG grid uses
+ * boundary corrections for both GH and GRMHD, but the subcell grid only does
+ * GRMHD.
  */
 template <bool OverwriteInternalMortarData, size_t Dim,
           typename DgPackageFieldTags>
@@ -74,7 +79,8 @@ void correct_package_data(
     const std::unordered_map<
         std::pair<Direction<Dim>, ElementId<Dim>>,
         evolution::dg::MortarData<Dim>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& mortar_data) {
+        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& mortar_data,
+    const size_t variables_to_offset_in_dg_grid) {
   const Direction<Dim> upper_direction{logical_dimension_to_operate_in,
                                        Side::Upper};
   const Direction<Dim> lower_direction{logical_dimension_to_operate_in,
@@ -99,12 +105,17 @@ void correct_package_data(
 
   const auto project_dg_data_to_subcells =
       [logical_dimension_to_operate_in, &subcell_extents_with_faces,
-       &subcell_face_mesh](const gsl::not_null<Variables<DgPackageFieldTags>*>
-                               subcell_packaged_data,
-                           const size_t subcell_index,
-                           const Mesh<Dim - 1>& neighbor_face_mesh,
-                           const std::vector<double>& neighbor_data) {
-        const double* slice_data = neighbor_data.data();
+       &subcell_face_mesh, variables_to_offset_in_dg_grid](
+          const gsl::not_null<Variables<DgPackageFieldTags>*>
+              subcell_packaged_data,
+          const size_t subcell_index, const Mesh<Dim - 1>& neighbor_face_mesh,
+          const std::vector<double>& neighbor_data) {
+        const size_t dg_variables_offset_size =
+            variables_to_offset_in_dg_grid *
+            neighbor_face_mesh.number_of_grid_points();
+        const double* slice_data =
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            neighbor_data.data() + dg_variables_offset_size;
         // Warning: projected_data can't be inside the `if constexpr` since that
         // would lead to a dangling pointer.
         std::vector<double> projected_data{};
@@ -114,7 +125,11 @@ void correct_package_data(
               subcell_face_mesh.number_of_grid_points());
           evolution::dg::subcell::fd::detail::project_impl(
               gsl::make_span(projected_data.data(), projected_data.size()),
-              gsl::make_span(neighbor_data.data(), neighbor_data.size()),
+              gsl::make_span(
+                  slice_data,
+                  Variables<
+                      DgPackageFieldTags>::number_of_independent_components *
+                      neighbor_face_mesh.number_of_grid_points()),
               neighbor_face_mesh, subcell_face_mesh.extents());
           slice_data = projected_data.data();
         } else {
