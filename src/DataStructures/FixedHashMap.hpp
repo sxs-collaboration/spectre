@@ -180,8 +180,15 @@ class FixedHashMap {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
-    p | data_;
-    p | size_;
+    size_t version = 0;
+    p | version;
+    // Remember to increment the version number when making changes to this
+    // function. Retain support for unpacking data written by previous versions
+    // whenever possible.
+    if (version >= 0) {
+      p | data_;
+      p | size_;
+    }
   }
 
  private:

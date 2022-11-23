@@ -144,8 +144,15 @@ std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) {
 
 template <size_t VolumeDim>
 void Domain<VolumeDim>::pup(PUP::er& p) {
-  p | blocks_;
-  p | excision_spheres_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible.
+  if (version >= 0) {
+    p | blocks_;
+    p | excision_spheres_;
+  }
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

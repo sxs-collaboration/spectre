@@ -147,15 +147,22 @@ void Block<VolumeDim>::inject_time_dependent_map(
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
-  p | stationary_map_;
-  p | moving_mesh_logical_to_grid_map_;
-  p | moving_mesh_grid_to_inertial_map_;
-  p | moving_mesh_grid_to_distorted_map_;
-  p | moving_mesh_distorted_to_inertial_map_;
-  p | id_;
-  p | neighbors_;
-  p | external_boundaries_;
-  p | external_boundary_conditions_;
+  size_t version = 0;
+  p | version;
+  // Remember to increment the version number when making changes to this
+  // function. Retain support for unpacking data written by previous versions
+  // whenever possible.
+  if (version >= 0) {
+    p | stationary_map_;
+    p | moving_mesh_logical_to_grid_map_;
+    p | moving_mesh_grid_to_inertial_map_;
+    p | moving_mesh_grid_to_distorted_map_;
+    p | moving_mesh_distorted_to_inertial_map_;
+    p | id_;
+    p | neighbors_;
+    p | external_boundaries_;
+    p | external_boundary_conditions_;
+  }
 }
 
 template <size_t VolumeDim>
