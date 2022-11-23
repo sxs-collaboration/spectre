@@ -3,12 +3,9 @@
 
 from spectre.Spectral import Mesh1D, Mesh2D, Mesh3D
 from spectre.Spectral import Basis, Quadrature
-try:
-    import cPickle as pickle  # Use cPickle on Python 2.7
-except ImportError:
-    import pickle
 
 import numpy as np
+import pickle
 import unittest
 import random
 
@@ -77,8 +74,7 @@ class TestMesh(unittest.TestCase):
                 ]
 
                 mesh = Mesh(extents, bases, quadratures)
-                # Use pickle protocol 2 for Py2 compatibility
-                mesh = pickle.loads(pickle.dumps(mesh, protocol=2))
+                mesh = pickle.loads(pickle.dumps(mesh))
                 self.check_extents(mesh, extents)
                 self.check_basis(mesh, bases)
                 self.check_quadrature(mesh, quadratures)

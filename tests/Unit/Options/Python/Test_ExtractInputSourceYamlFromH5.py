@@ -10,12 +10,6 @@ import unittest
 import os
 import h5py
 
-# For Py2 compatibility
-try:
-    unittest.TestCase.assertRaisesRegex
-except AttributeError:
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
-
 
 class TestExtractInputSourceYAMLFromH5(unittest.TestCase):
     def test_read_input_source_from_h5(self):

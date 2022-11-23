@@ -7,7 +7,6 @@ import glob
 import h5py
 import logging
 import numpy as np
-import sys
 
 
 def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
@@ -16,12 +15,6 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
     Generate one XDMF file that ParaView and VisIt can use to load the data
     out of the HDF5 files.
     """
-    if sys.version_info < (3, 0):
-        logging.warning("You are attempting to run this script with "
-                        "python 2, which is deprecated. GenerateXdmf.py might "
-                        "hang or run very slowly using python 2. Please use "
-                        "python 3 instead.")
-
     h5files = [(h5py.File(filename, 'r'), filename)
                for filename in glob.glob(file_prefix + "[0-9]*.h5")]
 

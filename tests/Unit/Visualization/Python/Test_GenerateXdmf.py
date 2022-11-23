@@ -7,12 +7,6 @@ import spectre.Informer as spectre_informer
 import unittest
 import os
 
-# For Py2 compatibility
-try:
-    unittest.TestCase.assertRaisesRegex
-except AttributeError:
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
-
 
 class TestGenerateXdmf(unittest.TestCase):
     def test_generate_xdmf(self):

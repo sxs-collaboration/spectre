@@ -2,11 +2,8 @@
 # See LICENSE.txt for details.
 
 from spectre import Informer
-try:
-    # Fallback for Py2 that provides `assertRegex`
-    import unittest2 as unittest
-except:
-    import unittest
+
+import unittest
 
 VERSION_PATTERN = r'\d{4}\.\d{2}\.\d{2}(\.\d+)?'
 

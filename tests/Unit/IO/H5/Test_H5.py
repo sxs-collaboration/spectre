@@ -7,11 +7,6 @@ import unittest
 import numpy as np
 import os
 import numpy.testing as npt
-# For Py2 compatibility
-try:
-    unittest.TestCase.assertRaisesRegex
-except AttributeError:
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
 
 
 class TestIOH5File(unittest.TestCase):
