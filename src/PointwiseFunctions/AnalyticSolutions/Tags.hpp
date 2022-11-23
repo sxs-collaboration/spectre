@@ -234,6 +234,7 @@ struct Subitem<Tag, ParentTag,
   static void function(const gsl::not_null<typename base::type*> result,
                        const typename parent_tag::type& vars) {
     if (vars.has_value()) {
+      result->reset();
       *result = typename base::type::value_type{};
       const auto& tensor =
           get<typename detail::AnalyticImpl<typename Tag::tag>>(*vars);
@@ -259,6 +260,7 @@ struct Subitem<Tag, ParentTag, Requires<detail::is_errors_v<ParentTag>>>
   static void function(const gsl::not_null<typename base::type*> result,
                        const typename parent_tag::type& vars) {
     if (vars.has_value()) {
+      result->reset();
       *result = typename base::type::value_type{};
       const auto& tensor =
           get<typename detail::ErrorImpl<typename Tag::tag>>(*vars);
