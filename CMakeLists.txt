@@ -51,6 +51,10 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 include(SpectreGetGitHash)
 include(SpectreSetSiteName)
 
+# We need Python in the build system and throughout the code. Setting it up
+# early so we can rely on a consistent Python version in the build system.
+find_package(Python 3.7 REQUIRED)
+
 option(BUILD_DOCS "Enable building documentation" ON)
 option(
   DOCS_ONLY
