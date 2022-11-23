@@ -7,7 +7,6 @@ if(NOT YAPF_ROOT)
   set(YAPF_ROOT $ENV{YAPF_ROOT})
 endif()
 
-find_package(Python)
 get_filename_component(PYTHON_BIN_DIR ${Python_EXECUTABLE} DIRECTORY)
 
 # Look for an executable called yapf

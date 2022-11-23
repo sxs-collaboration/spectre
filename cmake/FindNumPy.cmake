@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Python REQUIRED)
-
 execute_process(COMMAND "${Python_EXECUTABLE}" "-c"
   "import numpy as n; print(n.__version__); print(n.get_include());"
   RESULT_VARIABLE RESULT

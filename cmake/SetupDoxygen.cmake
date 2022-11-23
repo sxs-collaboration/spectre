@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-find_package(Python REQUIRED)
-
 # Targets to preprocess the documentation
 # - Convert all `.ipynb` files in `docs/` to markdown, so they get picked up by
 #   Doxygen.

@@ -41,8 +41,6 @@ add_custom_target(unit-tests)
 
 spectre_define_test_timeout_factor_option(UNIT "unit")
 
-find_package(Python REQUIRED)
-
 # Environment variables for test
 set(_TEST_ENV_VARS "")
 # - Disable ASAN's leak sanitizer because Charm++ has false positives

@@ -2,10 +2,7 @@
 # See LICENSE.txt for details.
 
 # Allow disabling the Git hooks because if you are running the code in a
-# container the host may not have all the right things installed. For example,
-# if you are using python2 in the container, the host may not have python2
-# installed and we should instead be setting up hooks from the host or an
-# environment suitably similar to where the commits will be made.
+# container the host may not have all the right things installed.
 option(
   USE_GIT_HOOKS
   "Set up the git hooks for sanity checks."
@@ -19,8 +16,6 @@ if(USE_GIT_HOOKS)
 
   # The logic is inverted because shell
   if(NOT CHECK_SOURCE_DIR_WRITABLE_RESULT AND EXISTS ${CMAKE_SOURCE_DIR}/.git)
-    find_package(Python REQUIRED)
-
     # We use several client-side git hooks to ensure commits are correct as
     # early as possible.
     configure_file(
