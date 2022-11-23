@@ -285,9 +285,8 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
           typename InterpolationTargetTags::vars_to_interpolate_to_target...>>>;
 
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
-                                                analytic_solution_fields>;
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_solution_fields, false>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::push_back<

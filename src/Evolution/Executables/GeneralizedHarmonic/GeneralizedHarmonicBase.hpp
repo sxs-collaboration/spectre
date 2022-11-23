@@ -201,7 +201,7 @@ struct GeneralizedHarmonicTemplateBase<
       GeneralizedHarmonic::Solutions::all_solutions<volume_dim>;
 
   using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
-      volume_dim, analytic_solution_fields, initial_data_list>;
+      volume_dim, analytic_solution_fields, false, initial_data_list>;
   using deriv_compute = ::Tags::DerivCompute<
       typename system::variables_tag,
       domain::Tags::InverseJacobian<volume_dim, Frame::ElementLogical,

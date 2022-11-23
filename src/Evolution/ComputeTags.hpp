@@ -13,6 +13,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialData.hpp"
@@ -31,7 +32,7 @@ namespace evolution::Tags {
  * `evolution::initial_data::Tags::InitialData` is retrieved and downcast to the
  * initial data for computing the errors.
  */
-template <size_t Dim, typename AnalyticFieldsTagList,
+template <size_t Dim, typename AnalyticFieldsTagList, bool UsingDgSubcell,
           typename InitialDataList = tmpl::list<>>
 struct AnalyticSolutionsCompute
     : ::Tags::AnalyticSolutions<AnalyticFieldsTagList>,
@@ -43,7 +44,11 @@ struct AnalyticSolutionsCompute
       tmpl::conditional_t<std::is_same_v<InitialDataList, tmpl::list<>>,
                           ::Tags::AnalyticSolutionOrData,
                           evolution::initial_data::Tags::InitialData>,
-      domain::Tags::Coordinates<Dim, Frame::Inertial>, ::Tags::Time>;
+      tmpl::conditional_t<
+          UsingDgSubcell,
+          Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
+          domain::Tags::Coordinates<Dim, Frame::Inertial>>,
+      ::Tags::Time>;
 
   template <typename AnalyticSolution>
   static void function(

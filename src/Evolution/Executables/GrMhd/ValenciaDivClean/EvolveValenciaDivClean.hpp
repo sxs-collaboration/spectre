@@ -232,9 +232,8 @@ struct EvolutionMetavars {
 
   using interpolation_target_tags = tmpl::list<InterpolationTargetTags...>;
 
-  using analytic_compute =
-      evolution::Tags::AnalyticSolutionsCompute<volume_dim,
-                                                analytic_variables_tags>;
+  using analytic_compute = evolution::Tags::AnalyticSolutionsCompute<
+      volume_dim, analytic_variables_tags, use_dg_subcell>;
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<

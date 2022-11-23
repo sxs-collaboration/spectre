@@ -133,7 +133,7 @@ struct EvolutionMetavars {
       typename system::gradient_variables>;
   using analytic_compute =
       evolution::Tags::AnalyticSolutionsCompute<Dim, analytic_solution_fields,
-                                                initial_data_list>;
+                                                false, initial_data_list>;
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
 
