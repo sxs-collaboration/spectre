@@ -211,9 +211,12 @@ void test_functions_of_time_tag() {
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
-  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
-  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
+  OptionHolder<1> option_holder1(false, averager, controller, tuner1,
+                                 control_error);
+  OptionHolder<2> option_holder2(true, averager, controller, tuner1,
+                                 control_error);
+  OptionHolder<3> option_holder3(true, averager, controller, tuner2,
+                                 control_error);
 
   // First test construction with only control systems and no
   // override_functions_of_time
@@ -223,7 +226,7 @@ void test_functions_of_time_tag() {
       option_holder3);
 
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
-        initial_time + update_fraction * timescale);
+        std::numeric_limits<double>::infinity());
   CHECK(functions_of_time.at("Controlled2")->time_bounds()[1] ==
         initial_time + update_fraction * timescale);
   CHECK(functions_of_time.at("Controlled3")->time_bounds()[1] ==
@@ -326,7 +329,7 @@ void test_functions_of_time_tag() {
             creator, std::nullopt, test_name_map, initial_time,
             initial_time_step, option_holder1, option_holder2, option_holder3);
     CHECK(no_replace_functions_of_time.at("Controlled1")->time_bounds()[1] ==
-          initial_time + update_fraction * timescale);
+          std::numeric_limits<double>::infinity());
     CHECK(no_replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
           initial_time + update_fraction * timescale);
     CHECK(no_replace_functions_of_time.at("Controlled3")->time_bounds()[1] ==
@@ -407,13 +410,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
         const Controller<2> controller(update_fraction);
         const control_system::TestHelpers::ControlError control_error{};
 
-        OptionHolder<1> option_holder1(averager, controller, tuner,
+        OptionHolder<1> option_holder1(true, averager, controller, tuner,
                                        control_error);
-        OptionHolder<2> option_holder2(averager, controller, tuner,
+        OptionHolder<2> option_holder2(true, averager, controller, tuner,
                                        control_error);
-        OptionHolder<3> option_holder3(averager, controller, tuner,
+        OptionHolder<3> option_holder3(true, averager, controller, tuner,
                                        control_error);
-        OptionHolder<4> option_holder4(averager, controller, tuner,
+        OptionHolder<4> option_holder4(true, averager, controller, tuner,
                                        control_error);
 
         const double initial_time_step = 1.0;
@@ -438,11 +441,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
         const Controller<2> controller(update_fraction);
         const control_system::TestHelpers::ControlError control_error{};
 
-        OptionHolder<1> option_holder1(averager, controller, tuner,
+        OptionHolder<1> option_holder1(true, averager, controller, tuner,
                                        control_error);
-        OptionHolder<2> option_holder2(averager, controller, tuner,
+        OptionHolder<2> option_holder2(true, averager, controller, tuner,
                                        control_error);
-        OptionHolder<3> option_holder3(averager, controller, tuner,
+        OptionHolder<3> option_holder3(true, averager, controller, tuner,
                                        control_error);
 
         const double initial_time_step = 1.0;

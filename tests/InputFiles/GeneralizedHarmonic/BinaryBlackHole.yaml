@@ -250,6 +250,7 @@ ApparentHorizons:
 ControlSystems:
   WriteDataToDisk: true
   Expansion:
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false
@@ -265,6 +266,7 @@ ControlSystems:
       DecreaseFactor: 0.98
     ControlError:
   Rotation:
+    IsActive: true
     Averager:
       AverageTimescaleFraction: 0.25
       Average0thDeriv: false

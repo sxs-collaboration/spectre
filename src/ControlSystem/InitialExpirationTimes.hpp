@@ -4,6 +4,7 @@
 #pragma once
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -29,6 +30,9 @@ namespace control_system {
  * supplied from the TimescaleTuner (\f$\tau_\mathrm{damp}\f$ is a DataVector
  * with as many components as the corresponding function of time, thus
  * \f$\tau_\mathrm{exp}\f$ will also be a DataVector of the same length).
+ *
+ * If the control system isn't active then expiration time is
+ * `std::numeric_limits<double>::infinity()`.
  *
  * To protect against bad inputs, if the initial expiration time that is
  * calculated is smaller than the initial time step, then the expiration time is
@@ -56,8 +60,13 @@ std::unordered_map<std::string, double> initial_expiration_times(
         const double update_fraction = controller.get_update_fraction();
         const double curr_timescale = min(tuner.current_timescale());
         const double initial_expiration_time = update_fraction * curr_timescale;
+        // Don't have to worry about if functions of time are being overridden
+        // because that will be taken care of elsewhere.
         initial_expiration_times[name] =
-            initial_time + std::max(initial_time_step, initial_expiration_time);
+            option_holder.is_active
+                ? initial_time +
+                      std::max(initial_time_step, initial_expiration_time)
+                : std::numeric_limits<double>::infinity();
       };
 
   EXPAND_PACK_LEFT_TO_RIGHT(gather_initial_expiration_times(option_holders));

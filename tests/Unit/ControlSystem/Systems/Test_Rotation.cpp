@@ -66,6 +66,7 @@ void test_rotation_control_system(const bool newtonian) {
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  Rotation:\n"
+      "    IsActive: true\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
       "      Average0thDeriv: true\n"

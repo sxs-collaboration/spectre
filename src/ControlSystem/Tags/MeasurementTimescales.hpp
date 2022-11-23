@@ -62,6 +62,10 @@ namespace Tags {
 /// Each function of time associated with a control system has a corresponding
 /// set of timescales here, represented as `PiecewisePolynomial<0>` with the
 /// same components as the function itself.
+///
+/// If the control system isn't active or the function of time is being
+/// overridden from inputs, then the measurement timescale and expiration time
+/// are `std::numeric_limits<double>::infinity()`.
 struct MeasurementTimescales : db::SimpleTag {
   using type = std::unordered_map<
       std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>;
@@ -134,6 +138,15 @@ struct MeasurementTimescales : db::SimpleTag {
                       std::numeric_limits<double>::infinity();
                 }
               }
+            }
+          }
+
+          // If the control system isn't active, set measurement timescale to be
+          // infinity. The expiration time is already infinity in that case
+          if (not option_holder.is_active) {
+            for (size_t i = 0; i < measurement_timescales.size(); i++) {
+              measurement_timescales[i] =
+                  std::numeric_limits<double>::infinity();
             }
           }
 

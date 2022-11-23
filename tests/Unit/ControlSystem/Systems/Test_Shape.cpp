@@ -242,6 +242,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  ShapeA:\n"
+      "    IsActive: true\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
       "      Average0thDeriv: true\n"

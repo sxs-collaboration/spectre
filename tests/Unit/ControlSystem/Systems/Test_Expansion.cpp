@@ -65,6 +65,7 @@ void test_expansion_control_system() {
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
       "  Expansion:\n"
+      "    IsActive: true\n"
       "    Averager:\n"
       "      AverageTimescaleFraction: 0.25\n"
       "      Average0thDeriv: true\n"

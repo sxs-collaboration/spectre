@@ -61,12 +61,23 @@ void test_all_tags() {
   // The create_from_options function doesn't actually use the metavars, only
   // the option_list type alias uses the metavars, so we pass an empty struct
   // here.
-  CHECK(active_tag::create_from_options<MetavarsEmpty>());
+  const control_system::OptionHolder<system> active_holder{};
+  const control_system::OptionHolder<system> inactive_holder{
+      false, {}, {}, {}, {}};
+  CHECK(active_tag::create_from_options<MetavarsEmpty>(active_holder));
+  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(inactive_holder));
   CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
-      {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
-  CHECK(active_tag::create_from_options<MetavarsEmpty>({"/fake/path"}, {}));
+      active_holder, {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
+  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
+      inactive_holder, {"/fake/path"}, {{"FakeSpecName", "LabelA"}}));
+  CHECK(active_tag::create_from_options<MetavarsEmpty>(active_holder,
+                                                       {"/fake/path"}, {}));
+  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
+      inactive_holder, {"/fake/path"}, {}));
   CHECK(active_tag::create_from_options<MetavarsEmpty>(
-      std::nullopt, {{"FakeSpecName", "LabelA"}}));
+      active_holder, std::nullopt, {{"FakeSpecName", "LabelA"}}));
+  CHECK_FALSE(active_tag::create_from_options<MetavarsEmpty>(
+      inactive_holder, std::nullopt, {{"FakeSpecName", "LabelA"}}));
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
@@ -90,6 +101,7 @@ void test_control_sys_inputs() {
 
   const auto input_holder = TestHelpers::test_option_tag<
       control_system::OptionTags::ControlSystemInputs<system>>(
+      "IsActive: false\n"
       "Averager:\n"
       "  AverageTimescaleFraction: 0.25\n"
       "  Average0thDeriv: true\n"
@@ -104,6 +116,7 @@ void test_control_sys_inputs() {
       "  IncreaseFactor: 1.01\n"
       "  DecreaseFactor: 0.99\n"
       "ControlError:\n");
+  CHECK_FALSE(input_holder.is_active);
   CHECK(expected_averager == input_holder.averager);
   CHECK(expected_controller == input_holder.controller);
   CHECK(expected_tuner == input_holder.tuner);
@@ -137,6 +150,7 @@ void test_individual_tags() {
   };
 
   const std::string tuner_str =
+      "IsActive: true\n"
       "Averager:\n"
       "  AverageTimescaleFraction: 0.25\n"
       "  Average0thDeriv: true\n"
