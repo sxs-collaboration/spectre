@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <mutex>
 #include <type_traits>
 
 #include "DataStructures/ComplexDataVector.hpp"
@@ -195,10 +196,9 @@ void ConformalFactor::operator()(
   SpinWeighted<ComplexModalVector, 2> goldberg_modes{square(l_max + 1)};
   if (use_input_modes_) {
     if (input_mode_filename_.has_value()) {
-      hdf5_lock->lock();
+      const std::lock_guard hold_lock(*hdf5_lock);
       read_modes_from_input_file(make_not_null(&(goldberg_modes.data())),
                                  input_mode_filename_.value());
-      hdf5_lock->unlock();
     } else {
       ASSERT(input_modes_.size() <= goldberg_modes.size(),
              "The size of the input modes is too large. Specify at most  "

@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <mutex>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -190,45 +191,46 @@ struct ContributeVolumeDataToWriter {
     Parallel::NodeLock* volume_data_lock = nullptr;
     size_t observations_registered_with_id = std::numeric_limits<size_t>::max();
 
-    node_lock->lock();
-    db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData,
-               Tags::VolumeDataLock, Tags::H5FileLock>(
-        make_not_null(&box),
-        [&observation_id, &observations_registered_with_id, &observer_group_id,
-         &all_volume_data, &volume_observers_contributed, &volume_data_lock,
-         &volume_file_lock](
-            const gsl::not_null<std::unordered_map<
-                observers::ObservationId,
-                std::unordered_map<observers::ArrayComponentId,
-                                   ElementVolumeData>>*>
-                volume_data_ptr,
-            const gsl::not_null<std::unordered_map<
-                ObservationId, std::unordered_set<ArrayComponentId>>*>
-                volume_observers_contributed_ptr,
-            const gsl::not_null<Parallel::NodeLock*> volume_data_lock_ptr,
-            const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
-            const std::unordered_map<ObservationKey,
-                                     std::unordered_set<ArrayComponentId>>&
-                observations_registered) {
-          const ObservationKey& key{observation_id.observation_key()};
-          const auto& registered_group_ids = observations_registered.at(key);
-          if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
-                       registered_group_ids.end())) {
-            ERROR("The observer group id "
-                  << observer_group_id
-                  << " was not registered for the observation id "
-                  << observation_id);
-          }
+    {
+      const std::lock_guard hold_lock(*node_lock);
+      db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData,
+                 Tags::VolumeDataLock, Tags::H5FileLock>(
+          make_not_null(&box),
+          [&observation_id, &observations_registered_with_id,
+           &observer_group_id, &all_volume_data, &volume_observers_contributed,
+           &volume_data_lock, &volume_file_lock](
+              const gsl::not_null<std::unordered_map<
+                  observers::ObservationId,
+                  std::unordered_map<observers::ArrayComponentId,
+                                     ElementVolumeData>>*>
+                  volume_data_ptr,
+              const gsl::not_null<std::unordered_map<
+                  ObservationId, std::unordered_set<ArrayComponentId>>*>
+                  volume_observers_contributed_ptr,
+              const gsl::not_null<Parallel::NodeLock*> volume_data_lock_ptr,
+              const gsl::not_null<Parallel::NodeLock*> volume_file_lock_ptr,
+              const std::unordered_map<ObservationKey,
+                                       std::unordered_set<ArrayComponentId>>&
+                  observations_registered) {
+            const ObservationKey& key{observation_id.observation_key()};
+            const auto& registered_group_ids = observations_registered.at(key);
+            if (UNLIKELY(registered_group_ids.find(observer_group_id) ==
+                         registered_group_ids.end())) {
+              ERROR("The observer group id "
+                    << observer_group_id
+                    << " was not registered for the observation id "
+                    << observation_id);
+            }
 
-          all_volume_data = &*volume_data_ptr;
-          volume_observers_contributed = &*volume_observers_contributed_ptr;
-          volume_data_lock = &*volume_data_lock_ptr;
-          observations_registered_with_id =
-              observations_registered.at(key).size();
-          volume_file_lock = &*volume_file_lock_ptr;
-        },
-        db::get<Tags::ExpectedContributorsForObservations>(box));
-    node_lock->unlock();
+            all_volume_data = &*volume_data_ptr;
+            volume_observers_contributed = &*volume_observers_contributed_ptr;
+            volume_data_lock = &*volume_data_lock_ptr;
+            observations_registered_with_id =
+                observations_registered.at(key).size();
+            volume_file_lock = &*volume_file_lock_ptr;
+          },
+          db::get<Tags::ExpectedContributorsForObservations>(box));
+    }
 
     ASSERT(all_volume_data != nullptr,
            "Failed to set all_volume_data in the mutate");
@@ -243,38 +245,40 @@ struct ContributeVolumeDataToWriter {
         "Failed to set observations_registered_with_id when mutating the "
         "DataBox. This is a bug in the code.");
 
-    volume_data_lock->lock();
-    auto& contributed_group_ids =
-        (*volume_observers_contributed)[observation_id];
-
-    if (UNLIKELY(contributed_group_ids.find(observer_group_id) !=
-                 contributed_group_ids.end())) {
-      ERROR("Already received reduction data to observation id "
-            << observation_id << " from array component id "
-            << observer_group_id);
-    }
-    contributed_group_ids.insert(observer_group_id);
-
-    if (all_volume_data->find(observation_id) == all_volume_data->end()) {
-      // We haven't been called before on this processing element.
-      all_volume_data->operator[](observation_id) =
-          std::move(received_volume_data);
-    } else {
-      auto& current_data = all_volume_data->at(observation_id);
-      current_data.insert(std::make_move_iterator(received_volume_data.begin()),
-                          std::make_move_iterator(received_volume_data.end()));
-    }
-    // Check if we have received all "volume" data from the Observer
-    // group. If so we write to disk.
     bool perform_write = false;
-    if (volume_observers_contributed->at(observation_id).size() ==
-        observations_registered_with_id) {
-      perform_write = true;
-      volume_data = std::move(all_volume_data->operator[](observation_id));
-      all_volume_data->erase(observation_id);
-      volume_observers_contributed->erase(observation_id);
+    {
+      const std::lock_guard hold_lock(*volume_data_lock);
+      auto& contributed_group_ids =
+          (*volume_observers_contributed)[observation_id];
+
+      if (UNLIKELY(contributed_group_ids.find(observer_group_id) !=
+                   contributed_group_ids.end())) {
+        ERROR("Already received reduction data to observation id "
+              << observation_id << " from array component id "
+              << observer_group_id);
+      }
+      contributed_group_ids.insert(observer_group_id);
+
+      if (all_volume_data->find(observation_id) == all_volume_data->end()) {
+        // We haven't been called before on this processing element.
+        all_volume_data->operator[](observation_id) =
+            std::move(received_volume_data);
+      } else {
+        auto& current_data = all_volume_data->at(observation_id);
+        current_data.insert(
+            std::make_move_iterator(received_volume_data.begin()),
+            std::make_move_iterator(received_volume_data.end()));
+      }
+      // Check if we have received all "volume" data from the Observer
+      // group. If so we write to disk.
+      if (volume_observers_contributed->at(observation_id).size() ==
+          observations_registered_with_id) {
+        perform_write = true;
+        volume_data = std::move(all_volume_data->operator[](observation_id));
+        all_volume_data->erase(observation_id);
+        volume_observers_contributed->erase(observation_id);
+      }
     }
-    volume_data_lock->unlock();
 
     if (perform_write) {
       ASSERT(not volume_data.empty(),
@@ -284,7 +288,7 @@ struct ContributeVolumeDataToWriter {
       // disks are, what other users are doing, etc.) and we want to be able
       // to continue to work on the nodegroup while we are writing data to
       // disk.
-      volume_file_lock->lock();
+      const std::lock_guard hold_lock(*volume_file_lock);
       {
         // Scoping is for closing HDF5 file before we release the lock.
         const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
@@ -326,7 +330,6 @@ struct ContributeVolumeDataToWriter {
             observation_id.hash(), observation_id.value(), dg_elements,
             serialized_domain, serialized_functions_of_time);
       }
-      volume_file_lock->unlock();
     }
   }
 };
@@ -364,11 +367,10 @@ struct WriteVolumeData {
                     std::vector<ElementVolumeData>&& volume_data) {
     auto& volume_file_lock =
         db::get_mutable_reference<Tags::H5FileLock>(make_not_null(&box));
-    volume_file_lock.lock();
+    const std::lock_guard hold_lock(volume_file_lock);
     VolumeActions_detail::write_data(
         h5_file_name, observers::input_source_from_cache(cache), subfile_path,
         observation_id, std::move(volume_data));
-    volume_file_lock.unlock();
   }
 };
 }  // namespace ThreadedActions

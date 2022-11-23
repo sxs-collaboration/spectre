@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <mutex>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -40,18 +41,19 @@ struct WriteSimpleData {
                     const std::vector<std::string>& file_legend,
                     const std::vector<double>& data_row,
                     const std::string& subfile_name) {
-    node_lock->lock();
     Parallel::NodeLock* file_lock = nullptr;
-    db::mutate<Tags::H5FileLock>(
-        make_not_null(&box),
-        [&file_lock](const gsl::not_null<Parallel::NodeLock*> in_file_lock) {
-          file_lock = in_file_lock;
-        });
-    node_lock->unlock();
+    {
+      const std::lock_guard hold_lock(*node_lock);
+      db::mutate<Tags::H5FileLock>(
+          make_not_null(&box),
+          [&file_lock](const gsl::not_null<Parallel::NodeLock*> in_file_lock) {
+            file_lock = in_file_lock;
+          });
+    }
 
-    file_lock->lock();
     // scoped to close file
     {
+      const std::lock_guard hold_lock(*file_lock);
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
       auto& my_proxy =
           Parallel::get_parallel_component<ParallelComponent>(cache);
@@ -67,7 +69,6 @@ struct WriteSimpleData {
       output_dataset.append(data_row);
       h5file.close_current_object();
     }
-    file_lock->unlock();
   }
 };
 }  // namespace ThreadedActions
