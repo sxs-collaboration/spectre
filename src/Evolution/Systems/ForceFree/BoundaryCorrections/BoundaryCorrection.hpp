@@ -15,6 +15,10 @@ namespace ForceFree {
  */
 namespace BoundaryCorrections {
 
+/// \cond
+class Rusanov;
+/// \endcond
+
 /*!
  * \brief The base class used to create boundary corrections from input files
  * and store them in the global cache.
@@ -33,7 +37,7 @@ class BoundaryCorrection : public PUP::able {
   WRAPPED_PUPable_abstract(BoundaryCorrection);  // NOLINT
   /// \endcond
 
-  using creatable_classes = tmpl::list<>;
+  using creatable_classes = tmpl::list<Rusanov>;
 
   virtual std::unique_ptr<BoundaryCorrection> get_clone() const = 0;
 };
