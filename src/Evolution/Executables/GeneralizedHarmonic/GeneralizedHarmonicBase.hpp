@@ -97,8 +97,10 @@
 #include "PointwiseFunctions/GeneralRelativity/DetAndInverseSpatialMetric.hpp"
 #include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ConstraintGammas.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Psi4Real.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/WeylElectric.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Tags/InitialData.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeSlabSize.hpp"
@@ -247,16 +249,23 @@ struct GeneralizedHarmonicTemplateBase<
       // The 4-index constraint is only implemented in 3d
       tmpl::conditional_t<
           volume_dim == 3,
-          tmpl::list<GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-                         3, frame>,
-                     GeneralizedHarmonic::Tags::FConstraintCompute<3, frame>,
-                     ::Tags::PointwiseL2NormCompute<
-                         GeneralizedHarmonic::Tags::FConstraint<3, frame>>,
-                     ::Tags::PointwiseL2NormCompute<
-                         GeneralizedHarmonic::Tags::FourIndexConstraint<3,
-                                                                        frame>>,
-                     GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
-                                                                        frame>>,
+          tmpl::list<
+              GeneralizedHarmonic::Tags::
+                  FourIndexConstraintCompute<3, frame>,
+              GeneralizedHarmonic::Tags::
+                  FConstraintCompute<3, frame>,
+              ::Tags::PointwiseL2NormCompute<
+                  GeneralizedHarmonic::Tags::FConstraint<3, frame>>,
+              ::Tags::PointwiseL2NormCompute<
+                  GeneralizedHarmonic::Tags::FourIndexConstraint<3, frame>>,
+              GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3, frame>,
+              GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3, frame>,
+              ::Tags::DerivTensorCompute<
+                  gr::Tags::ExtrinsicCurvature<3, frame>,
+                  ::domain::Tags::InverseJacobian<
+                      volume_dim, Frame::ElementLogical, Frame::Inertial>>,
+              gr::Tags::WeylElectricCompute<3, Frame::Inertial, DataVector>,
+              gr::Tags::Psi4RealCompute<Frame::Inertial>>,
           tmpl::list<>>>;
   using non_tensor_compute_tags =
       tmpl::list<::Events::Tags::ObserverMeshCompute<volume_dim>,

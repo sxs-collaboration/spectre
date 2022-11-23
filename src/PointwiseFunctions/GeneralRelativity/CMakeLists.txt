@@ -18,6 +18,8 @@ spectre_target_sources(
   KerrSchildCoords.cpp
   Lapse.cpp
   ProjectionOperators.cpp
+  Psi4.cpp
+  Psi4Real.cpp
   Ricci.cpp
   Shift.cpp
   SpacetimeMetric.cpp
@@ -48,6 +50,8 @@ spectre_target_headers(
   Lapse.hpp
   ProjectionOperators.hpp
   Ricci.hpp
+  Psi4.hpp
+  Psi4Real.hpp
   Shift.hpp
   SpacetimeMetric.hpp
   SpacetimeNormalOneForm.hpp
