@@ -9,6 +9,8 @@
 #include <exception>
 #include <initializer_list>
 #include <limits>
+#include <mutex>
+#include <optional>
 #include <ostream>
 #include <pup.h>
 #include <sstream>
@@ -734,23 +736,23 @@ void DistributedObject<
   try {
     (void)Parallel::charmxx::RegisterReductionAction<
         ParallelComponent, Action, std::decay_t<Arg>>::registrar;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.lock();
-    }
-    if (performing_action_) {
-      ERROR(
-          "Already performing an Action and cannot execute additional Actions "
-          "from inside of an Action. This is only possible if the "
-          "reduction_action function is not invoked via a proxy, which makes "
-          "no sense for a reduction.");
-    }
-    performing_action_ = true;
-    arg.finalize();
-    forward_tuple_to_action<Action>(
-        std::move(arg.data()), std::make_index_sequence<Arg::pack_size()>{});
-    performing_action_ = false;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.unlock();
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
+      }
+      if (performing_action_) {
+        ERROR(
+            "Already performing an Action and cannot execute additional "
+            "Actions from inside of an Action. This is only possible if the "
+            "reduction_action function is not invoked via a proxy, which makes "
+            "no sense for a reduction.");
+      }
+      performing_action_ = true;
+      arg.finalize();
+      forward_tuple_to_action<Action>(
+          std::move(arg.data()), std::make_index_sequence<Arg::pack_size()>{});
+      performing_action_ = false;
     }
     perform_algorithm();
   } catch (const std::exception& exception) {
@@ -766,22 +768,22 @@ void DistributedObject<ParallelComponent,
   try {
     (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent, Action,
                                                   Args...>::registrar;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.lock();
-    }
-    if (performing_action_) {
-      ERROR(
-          "Already performing an Action and cannot execute additional Actions "
-          "from inside of an Action. This is only possible if the "
-          "simple_action function is not invoked via a proxy, which "
-          "we do not allow.");
-    }
-    performing_action_ = true;
-    forward_tuple_to_action<Action>(
-        std::move(args), std::make_index_sequence<sizeof...(Args)>{});
-    performing_action_ = false;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.unlock();
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
+      }
+      if (performing_action_) {
+        ERROR(
+            "Already performing an Action and cannot execute additional "
+            "Actions from inside of an Action. This is only possible if the "
+            "simple_action function is not invoked via a proxy, which "
+            "we do not allow.");
+      }
+      performing_action_ = true;
+      forward_tuple_to_action<Action>(
+          std::move(args), std::make_index_sequence<sizeof...(Args)>{});
+      performing_action_ = false;
     }
     perform_algorithm();
   } catch (const std::exception& exception) {
@@ -797,23 +799,23 @@ void DistributedObject<
   try {
     (void)Parallel::charmxx::RegisterSimpleAction<ParallelComponent,
                                                   Action>::registrar;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.lock();
-    }
-    if (performing_action_) {
-      ERROR(
-          "Already performing an Action and cannot execute additional Actions "
-          "from inside of an Action. This is only possible if the "
-          "simple_action function is not invoked via a proxy, which "
-          "we do not allow.");
-    }
-    performing_action_ = true;
-    Action::template apply<ParallelComponent>(
-        box_, *Parallel::local_branch(global_cache_proxy_),
-        static_cast<const array_index&>(array_index_));
-    performing_action_ = false;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.unlock();
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
+      }
+      if (performing_action_) {
+        ERROR(
+            "Already performing an Action and cannot execute additional "
+            "Actions from inside of an Action. This is only possible if the "
+            "simple_action function is not invoked via a proxy, which "
+            "we do not allow.");
+      }
+      performing_action_ = true;
+      Action::template apply<ParallelComponent>(
+          box_, *Parallel::local_branch(global_cache_proxy_),
+          static_cast<const array_index&>(array_index_));
+      performing_action_ = false;
     }
     perform_algorithm();
   } catch (const std::exception& exception) {
@@ -860,17 +862,17 @@ void DistributedObject<ParallelComponent,
   try {
     (void)Parallel::charmxx::RegisterReceiveData<ParallelComponent,
                                                  ReceiveTag>::registrar;
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.lock();
-    }
-    if (enable_if_disabled) {
-      set_terminate(false);
-    }
-    ReceiveTag::insert_into_inbox(
-        make_not_null(&tuples::get<ReceiveTag>(inboxes_)), instance,
-        std::forward<ReceiveDataType>(t));
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.unlock();
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
+      }
+      if (enable_if_disabled) {
+        set_terminate(false);
+      }
+      ReceiveTag::insert_into_inbox(
+          make_not_null(&tuples::get<ReceiveTag>(inboxes_)), instance,
+          std::forward<ReceiveDataType>(t));
     }
     perform_algorithm();
   } catch (const std::exception& exception) {
@@ -890,36 +892,37 @@ void DistributedObject<
 #ifdef SPECTRE_CHARM_PROJECTIONS
     non_action_time_start_ = sys::wall_time();
 #endif
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.lock();
-    }
-    const auto invoke_for_phase = [this](auto phase_dep_v) {
-      using PhaseDep = decltype(phase_dep_v);
-      constexpr Parallel::Phase phase = PhaseDep::phase;
-      using actions_list = typename PhaseDep::action_list;
-      if (phase_ == phase) {
-        while (
-            tmpl::size<actions_list>::value > 0 and not get_terminate() and
-            not halt_algorithm_until_next_phase_ and
-            iterate_over_actions<PhaseDep>(
-                std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
-        }
-        tmpl::for_each<actions_list>([this](auto action_v) {
-          using action = tmpl::type_from<decltype(action_v)>;
-          if (algorithm_step_ == tmpl::index_of<actions_list, action>::value) {
-            deadlock_analysis_next_iterable_action_ =
-                pretty_type::name<action>();
-          }
-        });
+    {
+      std::optional<std::lock_guard<Parallel::NodeLock>> hold_lock{};
+      if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
+        hold_lock.emplace(node_lock_);
       }
-    };
-    // Loop over all phases, once the current phase is found we perform the
-    // algorithm in that phase until we are no longer able to because we are
-    // waiting on data to be sent or because the algorithm has been marked as
-    // terminated.
-    EXPAND_PACK_LEFT_TO_RIGHT(invoke_for_phase(PhaseDepActionListsPack{}));
-    if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-      node_lock_.unlock();
+      const auto invoke_for_phase = [this](auto phase_dep_v) {
+        using PhaseDep = decltype(phase_dep_v);
+        constexpr Parallel::Phase phase = PhaseDep::phase;
+        using actions_list = typename PhaseDep::action_list;
+        if (phase_ == phase) {
+          while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
+                 not halt_algorithm_until_next_phase_ and
+                 iterate_over_actions<PhaseDep>(
+                     std::make_index_sequence<
+                         tmpl::size<actions_list>::value>{})) {
+          }
+          tmpl::for_each<actions_list>([this](auto action_v) {
+            using action = tmpl::type_from<decltype(action_v)>;
+            if (algorithm_step_ ==
+                tmpl::index_of<actions_list, action>::value) {
+              deadlock_analysis_next_iterable_action_ =
+                  pretty_type::name<action>();
+            }
+          });
+        }
+      };
+      // Loop over all phases, once the current phase is found we perform the
+      // algorithm in that phase until we are no longer able to because we are
+      // waiting on data to be sent or because the algorithm has been marked as
+      // terminated.
+      EXPAND_PACK_LEFT_TO_RIGHT(invoke_for_phase(PhaseDepActionListsPack{}));
     }
 #ifdef SPECTRE_CHARM_PROJECTIONS
     traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
@@ -1173,11 +1176,8 @@ void DistributedObject<ParallelComponent,
     initiate_shutdown(const std::exception& exception) {
   // In order to make it so that we can later run other actions for cleanup
   // (e.g. dumping data) we need to make sure that we enable running actions
-  // again _and_ that we are not locking the node (only matters for nodegroups)
+  // again
   performing_action_ = false;
-  if constexpr (std::is_same_v<Parallel::NodeLock, decltype(node_lock_)>) {
-    node_lock_.unlock();
-  }
   // Send message to `Main` that we received an exception and set termination.
   auto* global_cache = Parallel::local_branch(global_cache_proxy_);
   if (UNLIKELY(global_cache == nullptr)) {

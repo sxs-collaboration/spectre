@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -29,13 +31,12 @@ struct GetLockPointer {
   static return_type apply(db::DataBox<DbTagList>& box,
                            const gsl::not_null<Parallel::NodeLock*> node_lock) {
     Parallel::NodeLock* result_lock;
-    node_lock->lock();
+    const std::lock_guard hold_lock(*node_lock);
     db::mutate<LockTag>(
         make_not_null(&box),
         [&result_lock](const gsl::not_null<Parallel::NodeLock*> lock) {
           result_lock = lock;
         });
-    node_lock->unlock();
     return result_lock;
   }
 };

@@ -2902,6 +2902,86 @@ void test_remove_item() {
           "Cannot mutate 'Tag1' as it has been removed from the DataBox."));
 #endif
 }
+
+void test_exception_safety() {
+  struct FakeError {};
+
+  using test_databox_tags::ScalarTag;
+  using vars1_tag = Tags::Variables<tmpl::list<ScalarTag>>;
+  const auto make_vars1 = [](const size_t num_points, const double value) {
+    vars1_tag::type vars(num_points);
+    get(get<ScalarTag>(vars)) = value;
+    return vars;
+  };
+  using test_databox_tags::ScalarTag2;
+  using vars2_tag = Tags::Variables<tmpl::list<ScalarTag2>>;
+  const auto make_vars2 = [](const size_t num_points, const double value) {
+    vars2_tag::type vars(num_points);
+    get(get<ScalarTag2>(vars)) = value;
+    return vars;
+  };
+
+  auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Tag0, vars1_tag, vars2_tag>,
+      db::AddComputeTags<test_databox_tags::Tag4Compute>>(
+      1.0, make_vars1(1, 1.0), make_vars2(1, 1.0));
+  // Make sure everything is evaluated
+  CHECK(db::get<test_databox_tags::Tag4>(box) == 2.0);
+  CHECK(db::get<ScalarTag>(box) == Scalar<DataVector>(DataVector(1, 1.0)));
+  CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 1.0)));
+  try {
+    db::mutate<test_databox_tags::Tag0, vars1_tag, ScalarTag2>(
+        make_not_null(&box),
+        [&make_vars1](const gsl::not_null<double*> tag0,
+                      const gsl::not_null<vars1_tag::type*> vars,
+                      const gsl::not_null<Scalar<DataVector>*> scalar) {
+          *tag0 = 2.0;
+          *vars = make_vars1(2, 2.0);
+          get(*scalar) = 2.0;
+          throw FakeError{};
+        });
+  } catch (FakeError) {
+  }
+  CHECK(db::get<test_databox_tags::Tag4>(box) == 4.0);
+  CHECK(db::get<vars1_tag>(box).data() == get(db::get<ScalarTag>(box)).data());
+  CHECK(db::get<ScalarTag>(box) == Scalar<DataVector>(DataVector(2, 2.0)));
+  CHECK(db::get<vars2_tag>(box).data() == get(db::get<ScalarTag2>(box)).data());
+  CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 2.0)));
+  try {
+    db::mutate_apply<tmpl::list<test_databox_tags::Tag0, vars1_tag, ScalarTag2>,
+                     tmpl::list<>>(
+        [&make_vars1](const gsl::not_null<double*> tag0,
+                      const gsl::not_null<vars1_tag::type*> vars,
+                      const gsl::not_null<Scalar<DataVector>*> scalar) {
+          *tag0 = 3.0;
+          *vars = make_vars1(3, 3.0);
+          get(*scalar) = 3.0;
+          throw FakeError{};
+        },
+        make_not_null(&box));
+  } catch (FakeError) {
+  }
+  CHECK(db::get<test_databox_tags::Tag4>(box) == 6.0);
+  CHECK(db::get<vars1_tag>(box).data() == get(db::get<ScalarTag>(box)).data());
+  CHECK(db::get<ScalarTag>(box) == Scalar<DataVector>(DataVector(3, 3.0)));
+  CHECK(db::get<vars2_tag>(box).data() == get(db::get<ScalarTag2>(box)).data());
+  CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 3.0)));
+  // Make sure the box is still usable
+  db::mutate<test_databox_tags::Tag0, vars1_tag, ScalarTag2>(
+      make_not_null(&box),
+      [&make_vars1](const gsl::not_null<double*> tag0,
+                    const gsl::not_null<vars1_tag::type*> vars,
+                    const gsl::not_null<Scalar<DataVector>*> scalar) {
+        *tag0 = 4.0;
+        *vars = make_vars1(4, 4.0);
+        get(*scalar) = 4.0;
+      });
+  CHECK(db::get<test_databox_tags::Tag4>(box) == 8.0);
+  CHECK(db::get<vars1_tag>(box).data() == get(db::get<ScalarTag>(box)).data());
+  CHECK(db::get<ScalarTag>(box) == Scalar<DataVector>(DataVector(4, 4.0)));
+  CHECK(db::get<vars2_tag>(box).data() == get(db::get<ScalarTag2>(box)).data());
+  CHECK(db::get<ScalarTag2>(box) == Scalar<DataVector>(DataVector(1, 4.0)));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
@@ -2928,6 +3008,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
   test_get_mutable_reference();
   test_output();
   test_remove_item();
+  test_exception_safety();
 }
 
 // Test`tag_is_retrievable_v`
