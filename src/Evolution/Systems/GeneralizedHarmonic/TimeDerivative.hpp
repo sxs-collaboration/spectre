@@ -100,9 +100,10 @@ struct TimeDerivative {
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
       Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>, Tags::Gamma1Gamma2,
-      Tags::PiTwoNormals, Tags::NormalDotOneIndexConstraint, Tags::Gamma1Plus1,
-      Tags::PiOneNormal<Dim>, Tags::GaugeConstraint<Dim, Frame::Inertial>,
-      Tags::PhiTwoNormals<Dim>, Tags::ShiftDotThreeIndexConstraint<Dim>,
+      Tags::HalfPiTwoNormals, Tags::NormalDotOneIndexConstraint,
+      Tags::Gamma1Plus1, Tags::PiOneNormal<Dim>,
+      Tags::GaugeConstraint<Dim, Frame::Inertial>, Tags::HalfPhiTwoNormals<Dim>,
+      Tags::ShiftDotThreeIndexConstraint<Dim>,
       Tags::MeshVelocityDotThreeIndexConstraint<Dim>, Tags::PhiOneNormal<Dim>,
       Tags::PiSecondIndexUp<Dim>,
       Tags::ThreeIndexConstraint<Dim, Frame::Inertial>,
@@ -140,12 +141,12 @@ struct TimeDerivative {
       gsl::not_null<tnsr::ab<DataVector, Dim>*>
           temp_spacetime_deriv_gauge_function,
       gsl::not_null<Scalar<DataVector>*> gamma1gamma2,
-      gsl::not_null<Scalar<DataVector>*> pi_two_normals,
+      gsl::not_null<Scalar<DataVector>*> half_half_pi_two_normals,
       gsl::not_null<Scalar<DataVector>*> normal_dot_gauge_constraint,
       gsl::not_null<Scalar<DataVector>*> gamma1_plus_1,
       gsl::not_null<tnsr::a<DataVector, Dim>*> pi_one_normal,
       gsl::not_null<tnsr::a<DataVector, Dim>*> gauge_constraint,
-      gsl::not_null<tnsr::i<DataVector, Dim>*> phi_two_normals,
+      gsl::not_null<tnsr::i<DataVector, Dim>*> half_phi_two_normals,
       gsl::not_null<tnsr::aa<DataVector, Dim>*>
           shift_dot_three_index_constraint,
       gsl::not_null<tnsr::aa<DataVector, Dim>*>

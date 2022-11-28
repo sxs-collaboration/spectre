@@ -88,19 +88,26 @@ void wrap_damped_harmonic_rollon(
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
     const tnsr::a<DataVector, SpatialDim, Frame>& gauge_h_init,
     const tnsr::ab<DataVector, SpatialDim, Frame>& dgauge_h_init,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    tnsr::aa<DataVector, SpatialDim, Frame> spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, double time,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const double rollon_start_time, const double rollon_width,
     const double sigma_r) {
+  get<0, 0>(spacetime_metric) -= 1.0;
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    spacetime_metric.get(i + 1, i + 1) += 1.0;
+  }
+  const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+  const auto [det_spatial_metric, inverse_spatial_metric] =
+      determinant_and_inverse(spatial_metric);
+  const Scalar<DataVector> sqrt_det_spatial_metric{
+      DataVector{sqrt(get(det_spatial_metric))}};
+  const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
+  const auto lapse = gr::lapse(shift, spacetime_metric);
+  const auto spacetime_unit_normal_one_form =
+      gr::spacetime_normal_one_form<SpatialDim, Frame>(lapse);
   GeneralizedHarmonic::gauges::damped_harmonic_rollon(
       gauge_h, d4_gauge_h, gauge_h_init, dgauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
@@ -113,18 +120,26 @@ template <size_t SpatialDim, typename Frame>
 void wrap_damped_harmonic(
     const gsl::not_null<tnsr::a<DataVector, SpatialDim, Frame>*> gauge_h,
     const gsl::not_null<tnsr::ab<DataVector, SpatialDim, Frame>*> d4_gauge_h,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+    tnsr::aa<DataVector, SpatialDim, Frame> spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataVector, SpatialDim, Frame>& phi,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double amp_coef_L1, const double amp_coef_L2, const double amp_coef_S,
     const double sigma_r) {
+  get<0, 0>(spacetime_metric) -= 1.0;
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    spacetime_metric.get(i + 1, i + 1) += 1.0;
+  }
+
+  const auto spatial_metric = gr::spatial_metric(spacetime_metric);
+  const auto [det_spatial_metric, inverse_spatial_metric] =
+      determinant_and_inverse(spatial_metric);
+  const Scalar<DataVector> sqrt_det_spatial_metric{
+      DataVector{sqrt(get(det_spatial_metric))}};
+  const auto shift = gr::shift(spacetime_metric, inverse_spatial_metric);
+  const auto lapse = gr::lapse(shift, spacetime_metric);
+  const auto spacetime_unit_normal_one_form =
+      gr::spacetime_normal_one_form<SpatialDim, Frame>(lapse);
   GeneralizedHarmonic::gauges::damped_harmonic(
       gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
       sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi,
@@ -143,7 +158,7 @@ void test_with_python(const DataVector& used_for_size) {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function_rollon",
        "spacetime_deriv_damped_harmonic_gauge_source_function_rollon"},
-      {{{0.1, 1.}}}, used_for_size);
+      {{{-0.01, 0.01}}}, used_for_size);
 
   pypp::check_with_random_values<1>(
       &wrap_damped_harmonic<SpatialDim, Frame>,
@@ -151,7 +166,7 @@ void test_with_python(const DataVector& used_for_size) {
       "DampedHarmonic",
       {"damped_harmonic_gauge_source_function",
        "spacetime_deriv_damped_harmonic_gauge_source_function"},
-      {{{0.1, 1.}}}, used_for_size);
+      {{{-0.01, 0.01}}}, used_for_size);
 }
 
 template <size_t Dim>
