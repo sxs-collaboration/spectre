@@ -169,7 +169,7 @@ void test(const Spectral::Quadrature quadrature) {
                      tmpl::list<::domain::Tags::FunctionsOfTimeInitialize>>);
   static_assert(std::is_same_v<
                 typename evolution::dg::Initialization::Domain<
-                    Dim, false, true>::mutable_global_cache_tags,
+                    Dim, true>::mutable_global_cache_tags,
                 tmpl::list<control_system::Tags::FunctionsOfTimeInitialize>>);
 
   PUPable_reg(SINGLE_ARG(

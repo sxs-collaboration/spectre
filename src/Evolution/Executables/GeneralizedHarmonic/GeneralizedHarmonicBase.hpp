@@ -184,10 +184,6 @@ struct GeneralizedHarmonicTemplateBase<
       dg::Formulation::StrongInertial;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  // Set override_functions_of_time to true to override the
-  // 2nd or 3rd order piecewise polynomial functions of time using
-  // `read_spec_piecewise_polynomial()`
-  static constexpr bool override_functions_of_time = false;
 
   using analytic_solution_fields = typename system::variables_tag::tags_list;
 
@@ -355,8 +351,7 @@ struct GeneralizedHarmonicTemplateBase<
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::TimeAndTimeStep<derived_metavars>,
-      evolution::dg::Initialization::Domain<volume_dim,
-                                            override_functions_of_time>,
+      evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           UseNumericalInitialData, tmpl::list<>,
