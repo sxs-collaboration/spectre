@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   Characteristics.cpp
   Fluxes.cpp
+  Sources.cpp
   )
 
 spectre_target_headers(
@@ -18,6 +19,7 @@ spectre_target_headers(
   HEADERS
   Characteristics.hpp
   Fluxes.hpp
+  Sources.hpp
   Tags.hpp
   )
 
