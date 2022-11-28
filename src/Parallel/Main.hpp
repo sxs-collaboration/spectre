@@ -701,7 +701,8 @@ void Main<Metavariables>::execute_next_phase() {
 
     // Errored during execution. Go to cleanup
     current_phase_ = Parallel::Phase::PostFailureCleanup;
-    Parallel::printf("Entering phase: %s\n", current_phase_);
+    Parallel::printf("Entering phase: %s at time %s\n", current_phase_,
+                     sys::pretty_wall_time());
   } else {
     if (Parallel::Phase::Exit == current_phase_) {
       ERROR("Current phase is Exit, but program did not exit!");
@@ -719,8 +720,8 @@ void Main<Metavariables>::execute_next_phase() {
     if (next_phase.has_value()) {
       // Only print info if there was an actual phase change.
       if (current_phase_ != next_phase.value()) {
-        Parallel::printf("Entering phase from phase control: %s\n",
-                         next_phase.value());
+        Parallel::printf("Entering phase from phase control: %s at time %s\n",
+                         next_phase.value(), sys::pretty_wall_time());
         current_phase_ = next_phase.value();
       }
     } else {
@@ -741,7 +742,8 @@ void Main<Metavariables>::execute_next_phase() {
       }
       current_phase_ = *std::next(it);
 
-      Parallel::printf("Entering phase: %s\n", current_phase_);
+      Parallel::printf("Entering phase: %s at time %s\n", current_phase_,
+                       sys::pretty_wall_time());
     }
   }
 
