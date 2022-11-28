@@ -24,5 +24,6 @@ target_link_libraries(
   DataStructures
   Domain
   ForceFree
+  GeneralRelativityHelpers
   Utilities
   )
