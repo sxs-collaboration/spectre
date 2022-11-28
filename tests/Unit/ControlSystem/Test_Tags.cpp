@@ -28,8 +28,11 @@
 
 namespace {
 struct LabelA {};
+struct Rotation {};
 using system = control_system::TestHelpers::System<
     2, LabelA, control_system::TestHelpers::Measurement<LabelA>>;
+using quat_system = control_system::TestHelpers::System<
+    2, Rotation, control_system::TestHelpers::Measurement<Rotation>>;
 
 struct MetavarsEmpty {
   static constexpr size_t volume_dim = 3;
@@ -117,19 +120,23 @@ void test_control_sys_inputs() {
 }
 
 void test_individual_tags() {
-  const double decrease_timescale_threshold = 1.0e-2;
-  const double increase_timescale_threshold = 1.0e-4;
-  const double increase_factor = 1.01;
-  const double decrease_factor = 0.99;
-  const double max_timescale = 10.0;
-  const double min_timescale = 1.0e-3;
-  const TimescaleTuner expected_tuner(
-      std::vector<double>{1.0, 1.0}, max_timescale, min_timescale,
-      decrease_timescale_threshold, increase_timescale_threshold,
-      increase_factor, decrease_factor);
+  const auto create_expected_tuner = [](const size_t num_components) {
+    const double decrease_timescale_threshold = 1.0e-2;
+    const double increase_timescale_threshold = 1.0e-4;
+    const double increase_factor = 1.01;
+    const double decrease_factor = 0.99;
+    const double max_timescale = 10.0;
+    const double min_timescale = 1.0e-3;
+    return TimescaleTuner{std::vector<double>(num_components, 1.0),
+                          max_timescale,
+                          min_timescale,
+                          decrease_timescale_threshold,
+                          increase_timescale_threshold,
+                          increase_factor,
+                          decrease_factor};
+  };
 
-  const auto holder = TestHelpers::test_option_tag<
-      control_system::OptionTags::ControlSystemInputs<system>>(
+  const std::string tuner_str =
       "Averager:\n"
       "  AverageTimescaleFraction: 0.25\n"
       "  Average0thDeriv: true\n"
@@ -143,18 +150,28 @@ void test_individual_tags() {
       "  IncreaseThreshold: 1e-4\n"
       "  IncreaseFactor: 1.01\n"
       "  DecreaseFactor: 0.99\n"
-      "ControlError:\n");
+      "ControlError:\n";
 
   using tuner_tag = control_system::Tags::TimescaleTuner<system>;
+  using quat_tuner_tag = control_system::Tags::TimescaleTuner<quat_system>;
+
+  const auto holder = TestHelpers::test_option_tag<
+      control_system::OptionTags::ControlSystemInputs<system>>(tuner_str);
+  const auto quat_holder = TestHelpers::test_option_tag<
+      control_system::OptionTags::ControlSystemInputs<quat_system>>(tuner_str);
 
   const std::unique_ptr<DomainCreator<3>> creator =
-      std::make_unique<FakeCreator>(
-          std::unordered_map<std::string, size_t>{{system::name(), 2}});
+      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
+          {system::name(), 2}, {quat_system::name(), 3}});
 
   const TimescaleTuner created_tuner =
       tuner_tag::create_from_options<MetavarsEmpty>(holder, creator, 0.0);
+  const TimescaleTuner quat_created_tuner =
+      quat_tuner_tag::create_from_options<MetavarsEmpty>(quat_holder, creator,
+                                                         0.0);
 
-  CHECK(created_tuner == expected_tuner);
+  CHECK(created_tuner == create_expected_tuner(2));
+  CHECK(quat_created_tuner == create_expected_tuner(3));
 
   using controller_tag = control_system::Tags::Controller<system>;
 
