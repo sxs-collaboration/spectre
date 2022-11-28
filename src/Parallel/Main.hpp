@@ -680,6 +680,17 @@ void Main<Metavariables>::
 template <typename Metavariables>
 void Main<Metavariables>::execute_next_phase() {
   if (not exception_messages_.empty()) {
+    // Print exceptions whether we errored during execution or cleanup
+    Parallel::printf(
+        "\n\n###############################\n"
+        "The following exceptions were reported during the phase: %s\n",
+        current_phase_);
+    for (const std::string& exception_message : exception_messages_) {
+      Parallel::printf("%s\n\n", exception_message);
+    }
+    exception_messages_.clear();
+
+    // Errored during cleanup. Can't have this, so just abort
     if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
       Parallel::printf(
           "Received termination while cleaning up a previous termination. This "
@@ -687,6 +698,8 @@ void Main<Metavariables>::execute_next_phase() {
           "cleanly without errors.");
       sys::abort("");
     }
+
+    // Errored during execution. Go to cleanup
     current_phase_ = Parallel::Phase::PostFailureCleanup;
     Parallel::printf("Entering phase: %s\n", current_phase_);
   } else {
@@ -730,16 +743,6 @@ void Main<Metavariables>::execute_next_phase() {
 
       Parallel::printf("Entering phase: %s\n", current_phase_);
     }
-  }
-
-  if (current_phase_ == Parallel::Phase::PostFailureCleanup) {
-    Parallel::printf(
-        "\n\n###############################\n"
-        "The following exceptions were reported:\n");
-    for (const std::string& exception_message : exception_messages_) {
-      Parallel::printf("%s\n\n", exception_message);
-    }
-    exception_messages_.clear();
   }
 
   if (Parallel::Phase::Exit == current_phase_) {
