@@ -15,6 +15,9 @@
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/ComputeTags.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
+#include "Evolution/DgSubcell/Tags/Coordinates.hpp"
+#include "Evolution/DgSubcell/Tags/ObserverCoordinates.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -96,9 +99,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           ::Tags::AnalyticSolution<TestAnalyticSolution>,
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<
-            evolution::Tags::AnalyticSolutionsCompute<1, tmpl::list<FieldTag>>,
-            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
+                               1, tmpl::list<FieldTag>, false>,
+                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords, TestAnalyticSolution{}, current_time, vars);
     const DataVector expected{2., 4., 6., 8.};
     const DataVector expected_error{1., -1., -3., -5.};
@@ -108,15 +111,55 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           expected_error);
   }
   {
+    INFO("Test analytic solution with analytic solution tag for dg-subcell");
+    tnsr::I<DataVector, 1, Frame::Inertial> subcell_inertial_coords{
+        {{{1., 1.5, 2., 2.5, 3., 3.5, 4.}}}};
+    auto box = db::create<
+        db::AddSimpleTags<
+            domain::Tags::Coordinates<1, Frame::Inertial>,
+            evolution::dg::subcell::Tags::Coordinates<1, Frame::Inertial>,
+            evolution::dg::subcell::Tags::ActiveGrid,
+            ::Tags::AnalyticSolution<TestAnalyticSolution>, Tags::Time,
+            ::Tags::Variables<tmpl::list<FieldTag>>>,
+        db::AddComputeTags<evolution::dg::subcell::Tags::
+                               ObserverCoordinatesCompute<1, Frame::Inertial>,
+                           evolution::Tags::AnalyticSolutionsCompute<
+                               1, tmpl::list<FieldTag>, true>,
+                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        inertial_coords, subcell_inertial_coords,
+        evolution::dg::subcell::ActiveGrid::Dg, TestAnalyticSolution{},
+        current_time, vars);
+    const DataVector expected{2., 4., 6., 8.};
+    const DataVector expected_error{1., -1., -3., -5.};
+    CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
+                          expected);
+    CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
+                          expected_error);
+    db::mutate<evolution::dg::subcell::Tags::ActiveGrid,
+               ::Tags::Variables<tmpl::list<FieldTag>>>(
+        make_not_null(&box),
+        [](const auto active_grid_ptr, const auto vars_ptr) {
+          *active_grid_ptr = evolution::dg::subcell::ActiveGrid::Subcell;
+          vars_ptr->initialize(7);
+          *vars_ptr = Variables<tmpl::list<FieldTag>>{7, 3.};
+        });
+    const DataVector subcell_expected{2., 3., 4., 5., 6., 7., 8.};
+    const DataVector subcell_expected_error{1., 0., -1., -2., -3., -4., -5.};
+    CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
+                          subcell_expected);
+    CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
+                          subcell_expected_error);
+  }
+  {
     INFO("Test analytic solution with base class");
     const auto box = db::create<
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           evolution::initial_data::Tags::InitialData,
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<
-            evolution::Tags::AnalyticSolutionsCompute<
-                1, tmpl::list<FieldTag>, tmpl::list<TestAnalyticSolution>>,
-            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
+                               1, tmpl::list<FieldTag>, false,
+                               tmpl::list<TestAnalyticSolution>>,
+                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords,
         std::unique_ptr<evolution::initial_data::InitialData>{
             std::make_unique<TestAnalyticSolution>()},
@@ -134,9 +177,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           ::Tags::AnalyticData<TestAnalyticData>, Tags::Time,
                           ::Tags::Variables<tmpl::list<FieldTag>>>,
-        db::AddComputeTags<
-            evolution::Tags::AnalyticSolutionsCompute<1, tmpl::list<FieldTag>>,
-            Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
+        db::AddComputeTags<evolution::Tags::AnalyticSolutionsCompute<
+                               1, tmpl::list<FieldTag>, false>,
+                           Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords, TestAnalyticData{}, current_time, vars);
     CHECK_FALSE(get<Tags::Analytic<FieldTag>>(box).has_value());
     CHECK_FALSE(get<Tags::Error<FieldTag>>(box).has_value());
@@ -149,7 +192,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>>,
         db::AddComputeTags<
             evolution::Tags::AnalyticSolutionsCompute<
-                1, tmpl::list<FieldTag>, tmpl::list<TestAnalyticData>>,
+                1, tmpl::list<FieldTag>, false, tmpl::list<TestAnalyticData>>,
             Tags::ErrorsCompute<tmpl::list<FieldTag>>>>(
         inertial_coords,
         std::unique_ptr<evolution::initial_data::InitialData>{
@@ -159,7 +202,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeTags", "[Unit][Evolution]") {
     CHECK_FALSE(get<Tags::Error<FieldTag>>(box).has_value());
   }
 
-  TestHelpers::db::test_compute_tag<
-      evolution::Tags::AnalyticSolutionsCompute<1, tmpl::list<FieldTag>>>(
-      "AnalyticSolutions");
+  TestHelpers::db::test_compute_tag<evolution::Tags::AnalyticSolutionsCompute<
+      1, tmpl::list<FieldTag>, false>>("AnalyticSolutions");
 }

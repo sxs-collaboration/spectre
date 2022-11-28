@@ -57,7 +57,7 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
     get<Tags::detail::AnalyticImpl<FieldTag>>(solution.value()) =
         Scalar<DataVector>{current_time * get<0>(inertial_coords)};
 
-    const auto box = db::create<
+    auto box = db::create<
         db::AddSimpleTags<domain::Tags::Coordinates<1, Frame::Inertial>,
                           Tags::Time, ::Tags::Variables<tmpl::list<FieldTag>>,
                           solutions_tag>,
@@ -69,6 +69,15 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.Tags", "[Unit][PointwiseFunctions]") {
                           expected);
     CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
                           expected_error);
+    db::mutate<::Tags::Variables<tmpl::list<FieldTag>>>(
+        make_not_null(&box), [](const auto vars_ptr) {
+          *vars_ptr = Variables<tmpl::list<FieldTag>>{4, 4.};
+        });
+    const DataVector new_expected_error{2., 0., -2., -4.};
+    CHECK_ITERABLE_APPROX(get(get<Tags::Analytic<FieldTag>>(box).value()),
+                          expected);
+    CHECK_ITERABLE_APPROX(get(get<Tags::Error<FieldTag>>(box).value()),
+                          new_expected_error);
   }
   {
     INFO("Test analytic data");
