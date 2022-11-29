@@ -143,20 +143,27 @@ class Trigger : public DenseTrigger {
   }
 
  private:
-  static double next_measurement(
+  double next_measurement(
       const double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
           measurement_timescales) {
-    return time +
-           tmpl::as_pack<ControlSystems>(
-               [&measurement_timescales, &time](auto... control_systems) {
-                 return std::min({min(
-                     measurement_timescales
-                         .at(tmpl::type_from<decltype(control_systems)>::name())
-                         ->func(time)[0])...});
-               });
+    const double min_measure_time = tmpl::as_pack<ControlSystems>(
+        [&measurement_timescales, &time](auto... control_systems) {
+          // LCOV_EXCL_START
+          return std::min(
+              {min(measurement_timescales
+                       .at(tmpl::type_from<decltype(control_systems)>::name())
+                       ->func(time)[0])...});
+          // LCOV_EXCL_STOP
+        });
+
+    if (min_measure_time == std::numeric_limits<double>::infinity()) {
+      return min_measure_time;
+    }
+
+    return time + min_measure_time;
   }
 
   std::optional<double> next_trigger_{};
