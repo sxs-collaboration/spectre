@@ -94,14 +94,14 @@ struct Initialize {
   using const_global_cache_tags = tmpl::list<Tags::SubcellOptions>;
 
   using simple_tags =
-      tmpl::list<Tags::Mesh<Dim>, Tags::ActiveGrid, Tags::DidRollback,
+      tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
                  ::Tags::RollbackValue<typename System::variables_tag>,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
                  Tags::TciStatus, Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                  fd::Tags::DetInverseJacobianLogicalToGrid>;
   using compute_tags =
-      tmpl::list<Tags::LogicalCoordinatesCompute<Dim>,
+      tmpl::list<Tags::MeshCompute<Dim>, Tags::LogicalCoordinatesCompute<Dim>,
                  ::domain::Tags::MappedCoordinates<
                      ::domain::Tags::ElementMap<Dim, Frame::Grid>,
                      subcell::Tags::Coordinates<Dim, Frame::ElementLogical>,
@@ -121,7 +121,7 @@ struct Initialize {
       const ParallelComponent* const /*meta*/) {
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
-    const Mesh<Dim> subcell_mesh = fd::mesh(dg_mesh);
+    const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
 
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
@@ -136,13 +136,12 @@ struct Initialize {
                              subcell_enabled_at_external_boundary);
 
     db::mutate_apply<
-        tmpl::list<subcell::Tags::Mesh<Dim>, Tags::ActiveGrid,
-                   Tags::DidRollback, typename System::variables_tag,
-                   subcell::Tags::TciStatus, subcell::Tags::DataForRdmpTci>,
+        tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
+                   typename System::variables_tag, subcell::Tags::TciStatus,
+                   subcell::Tags::DataForRdmpTci>,
         typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
          &subcell_mesh, &subcell_options](
-            const gsl::not_null<Mesh<Dim>*> subcell_mesh_ptr,
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto active_vars_ptr,
@@ -153,7 +152,6 @@ struct Initialize {
           // subcells as a normal solve.
           *did_rollback_ptr = false;
 
-          *subcell_mesh_ptr = subcell_mesh;
           *active_grid_ptr = ActiveGrid::Dg;
 
           destructive_resize_components(tci_status_ptr,
