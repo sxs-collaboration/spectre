@@ -122,6 +122,12 @@ struct TimeStep : db::SimpleTag {
 /// dense-output calculations may temporarily change the value.
 struct Time : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::InitialTime>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double initial_time) {
+    return initial_time;
+  }
 };
 
 /// @{

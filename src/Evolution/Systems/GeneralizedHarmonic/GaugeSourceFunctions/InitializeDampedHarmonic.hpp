@@ -81,7 +81,7 @@ namespace GeneralizedHarmonic::gauges::Actions {
  *
  * DataBox:
  * - Uses:
- *   - `Initialization::Tags::InitialTime`
+ *   - `::Tags::Time`
  *   - `domain::Tags::ElementMap<Dim, Frame::Grid>`
  *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim,
  *      Frame::Grid, Frame::Inertial>`
@@ -239,8 +239,7 @@ struct InitializeDampedHarmonic {
                                                  std::move(initial_d4_gauge_h));
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     } else {
-      const double initial_time =
-          db::get<::Initialization::Tags::InitialTime>(box);
+      const double initial_time = db::get<::Tags::Time>(box);
       const auto inertial_coords = db::get<
           ::domain::CoordinateMaps::Tags::CoordinateMap<
               Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(box)(

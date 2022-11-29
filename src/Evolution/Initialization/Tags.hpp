@@ -15,16 +15,6 @@ namespace Initialization {
 /// \ingroup InitializationGroup
 /// \brief %Tags used during initialization of parallel components.
 namespace Tags {
-struct InitialTime : db::SimpleTag {
-  using type = double;
-  using option_tags = tmpl::list<OptionTags::InitialTime>;
-
-  static constexpr bool pass_metavariables = false;
-  static double create_from_options(const double initial_time) {
-    return initial_time;
-  }
-};
-
 struct InitialTimeDelta : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::InitialTimeStep>;

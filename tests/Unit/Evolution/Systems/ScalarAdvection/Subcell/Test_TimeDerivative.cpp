@@ -112,7 +112,7 @@ void test_subcell_timederivative() {
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       fd::Tags::Reconstructor<Dim>,
       evolution::Tags::BoundaryCorrection<System<Dim>>,
-      Initialization::Tags::InitialTime,
+      ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,

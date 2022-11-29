@@ -71,7 +71,7 @@ struct component {
                                                Frame::Inertial>,
                  typename Metavariables::variables_tag>,
       tmpl::list<
-          ::Initialization::Tags::InitialTime, Tags::Time,
+          Tags::Time,
           domain::Tags::Mesh<Dim>,
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
           domain::Tags::Coordinates<Dim, Frame::Grid>,
@@ -255,7 +255,7 @@ void test(const gsl::not_null<std::mt19937*> generator) {
 
     ActionTesting::emplace_component_and_initialize<comp>(
         &runner, 0,
-        {time, time, mesh, logical_coords, grid_coords, inertial_coords,
+        {time, mesh, logical_coords, grid_coords, inertial_coords,
          ElementMap<Dim, Frame::Grid>{
              ElementId<Dim>{0},
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(

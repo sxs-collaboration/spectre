@@ -90,7 +90,7 @@ struct Component {
   using const_global_cache_tag_list = tmpl::list<>;
 
   using initial_tags =
-      tmpl::list<Initialization::Tags::InitialTime, Tags::Time,
+      tmpl::list<Tags::Time,
                  domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
                  domain::Tags::FunctionsOfTimeInitialize,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
@@ -211,7 +211,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
 
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
-      {initial_time, initial_time, dg_mesh, element,
+      {initial_time, dg_mesh, element,
        clone_unique_ptrs(functions_of_time), logical_coords,
        std::move(logical_to_grid_map), grid_to_inertial_map->get_clone(), var,
        Variables<tmpl::list<::Tags::dt<Var1>>>{

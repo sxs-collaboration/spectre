@@ -73,7 +73,7 @@ SPECTRE_TEST_CASE(
           0.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}}, 10.0);
 
   auto box = db::create<db::AddSimpleTags<
-      Initialization::Tags::InitialTime, evolution::dg::subcell::Tags::Mesh<3>,
+      ::Tags::Time, evolution::dg::subcell::Tags::Mesh<3>,
       domain::Tags::ElementMap<3, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<3, Frame::Grid,
                                                   Frame::Inertial>,

@@ -21,11 +21,6 @@
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-namespace Initialization {
-namespace Tags {
-struct InitialTime;
-}  // namespace Tags
-}  // namespace Initialization
 namespace Tags {
 struct AnalyticSolutionOrData;
 }  // namespace Tags
@@ -69,7 +64,7 @@ struct InitializeM1Tags {
     using M1Vars = typename m1_variables_tag::type;
 
     static constexpr size_t dim = System::volume_dim;
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const double initial_time = db::get<::Tags::Time>(box);
     const size_t num_grid_points =
         db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
     const auto& inertial_coords =

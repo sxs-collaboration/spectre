@@ -30,11 +30,6 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Initialization {
-namespace Tags {
-struct InitialTime;
-}  // namespace Tags
-}  // namespace Initialization
 namespace Tags {
 struct AnalyticSolutionOrData;
 }  // namespace Tags
@@ -76,7 +71,7 @@ namespace subcell {
  */
 template <typename System, size_t Dim>
 struct GrTagsForHydro {
-  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Tags::Time>;
 
   using gr_tag = typename System::spacetime_variables_tag;
   using subcell_gr_tag = evolution::dg::subcell::Tags::Inactive<gr_tag>;
@@ -88,7 +83,7 @@ struct GrTagsForHydro {
 
   using return_tags = tmpl::list<subcell_gr_tag, subcell_faces_gr_tag>;
   using argument_tags = tmpl::list<
-      Initialization::Tags::InitialTime,
+      ::Tags::Time,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
