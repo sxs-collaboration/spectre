@@ -10,6 +10,7 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/DiagnosticInfo.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/OptionTags.hpp"
@@ -18,9 +19,11 @@
 #include "Domain/Tags.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/Numeric.hpp"
@@ -47,7 +50,8 @@ struct DefaultElementsAllocator
     : tt::ConformsTo<Parallel::protocols::ArrayElementsAllocator> {
   template <typename ParallelComponent>
   using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<Dim>>;
+      tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
+                 domain::Tags::InitialExtents<Dim>>;
 
   template <typename ParallelComponent, typename Metavariables,
             typename... InitializationTags>
@@ -58,24 +62,55 @@ struct DefaultElementsAllocator
     auto& local_cache = *Parallel::local_branch(global_cache);
     auto& element_array =
         Parallel::get_parallel_component<ParallelComponent>(local_cache);
+    const auto& initial_extents =
+        get<domain::Tags::InitialExtents<Dim>>(initialization_items);
+
     const auto& domain = Parallel::get<domain::Tags::Domain<Dim>>(local_cache);
     const auto& initial_refinement_levels =
         get<domain::Tags::InitialRefinementLevels<Dim>>(initialization_items);
-    const size_t num_of_procs_to_use =
-        static_cast<size_t>(sys::number_of_procs()) - procs_to_ignore.size();
+
+    const size_t number_of_procs =
+        Parallel::number_of_procs<size_t>(local_cache);
+    const size_t number_of_nodes =
+        Parallel::number_of_nodes<size_t>(local_cache);
+    const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
+
     const domain::BlockZCurveProcDistribution<Dim> element_distribution{
         num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
+
+    // Will be used to print domain diagnostic info
+    std::vector<size_t> elements_per_core(number_of_procs, 0_st);
+    std::vector<size_t> elements_per_node(number_of_nodes, 0_st);
+    std::vector<size_t> grid_points_per_core(number_of_procs, 0_st);
+    std::vector<size_t> grid_points_per_node(number_of_nodes, 0_st);
+
     for (const auto& block : domain.blocks()) {
+      const size_t grid_points_per_element = alg::accumulate(
+          initial_extents[block.id()], 1_st, std::multiplies<size_t>());
+
       const std::vector<ElementId<Dim>> element_ids = initial_element_ids(
           block.id(), initial_refinement_levels[block.id()]);
+
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);
         element_array(element_id)
             .insert(global_cache, initialization_items, target_proc);
+
+        const size_t target_node =
+            Parallel::node_of<size_t>(target_proc, local_cache);
+        ++elements_per_core[target_proc];
+        ++elements_per_node[target_node];
+        grid_points_per_core[target_proc] += grid_points_per_element;
+        grid_points_per_node[target_node] += grid_points_per_element;
       }
     }
     element_array.doneInserting();
+
+    Parallel::printf(
+        "\n%s\n", domain::diagnostic_info(
+                      domain, local_cache, elements_per_core, elements_per_node,
+                      grid_points_per_core, grid_points_per_node));
   }
 };
 
