@@ -8,8 +8,6 @@
 #include <pup.h>
 #include <type_traits>
 
-#include "DataStructures/DataBox/PrefixHelpers.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/MathWrapper.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/History.hpp"
@@ -50,26 +48,24 @@ class TimeStepper : public PUP::able {
 #define TIME_STEPPER_DECLARE_VIRTUALS_IMPL(_, data)                        \
   virtual void update_u_forward(                                           \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
-      const gsl::not_null<                                                 \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const = 0;                               \
   virtual bool update_u_forward(                                           \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,       \
-      const gsl::not_null<                                                 \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const = 0;                               \
   virtual bool dense_update_u_forward(                                     \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history,                                                         \
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history,                                                 \
       const double time) const = 0;                                        \
   virtual bool can_change_step_size_forward(                               \
       const TimeStepId& time_id,                                           \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history) const = 0;
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history) const = 0;
 
   GENERATE_INSTANTIATIONS(TIME_STEPPER_DECLARE_VIRTUALS_IMPL,
                           (MATH_WRAPPER_TYPES))
@@ -83,17 +79,15 @@ class TimeStepper : public PUP::able {
   /// ```
   /// template <typename T>
   /// void update_u_impl(gsl::not_null<T*> u,
-  ///                    gsl::not_null<UntypedHistory<T>*> history,
+  ///                    const MutableUntypedHistory<T>& history,
   ///                    const TimeDelta& time_step) const;
   /// ```
   template <typename Vars>
-  void update_u(
-      const gsl::not_null<Vars*> u,
-      const gsl::not_null<
-          TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>*>
-          history,
-      const TimeDelta& time_step) const {
-    return update_u_forward(&*make_math_wrapper(u), &*history, time_step);
+  void update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
+    return update_u_forward(&*make_math_wrapper(u), history->untyped(),
+                            time_step);
   }
 
   /// Add the change for the current substep to u; report the error measure when
@@ -110,20 +104,19 @@ class TimeStepper : public PUP::able {
   /// ```
   /// template <typename T>
   /// bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-  ///                    gsl::not_null<UntypedHistory<T>*> history,
+  ///                    const MutableUntypedHistory<T>& history,
   ///                    const TimeDelta& time_step) const;
   /// ```
   template <typename Vars, typename ErrVars>
-  bool update_u(
-      const gsl::not_null<Vars*> u, const gsl::not_null<ErrVars*> u_error,
-      const gsl::not_null<
-          TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>*>
-          history,
-      const TimeDelta& time_step) const {
+  bool update_u(const gsl::not_null<Vars*> u,
+                const gsl::not_null<ErrVars*> u_error,
+                const gsl::not_null<TimeSteppers::History<Vars>*> history,
+                const TimeDelta& time_step) const {
     static_assert(
         std::is_same_v<math_wrapper_type<Vars>, math_wrapper_type<ErrVars>>);
     return update_u_forward(&*make_math_wrapper(u),
-                            &*make_math_wrapper(u_error), &*history, time_step);
+                            &*make_math_wrapper(u_error), history->untyped(),
+                            time_step);
   }
 
   /// Compute the solution value at a time between steps.  To evaluate
@@ -137,16 +130,15 @@ class TimeStepper : public PUP::able {
   /// ```
   /// template <typename T>
   /// bool dense_update_u_impl(
-  ///     gsl::not_null<T*> u,
-  ///     const UntypedHistory<T>& history, double time) const;
+  ///     gsl::not_null<T*> u, const ConstUntypedHistory<T>& history,
+  ///     double time) const;
   /// ```
   template <typename Vars>
-  bool dense_update_u(
-      const gsl::not_null<Vars*> u,
-      const TimeSteppers::History<db::prefix_variables<::Tags::dt, Vars>>&
-          history,
-      const double time) const {
-    return dense_update_u_forward(&*make_math_wrapper(u), history, time);
+  bool dense_update_u(const gsl::not_null<Vars*> u,
+                      const TimeSteppers::History<Vars>& history,
+                      const double time) const {
+    return dense_update_u_forward(&*make_math_wrapper(u), history.untyped(),
+                                  time);
   }
 
   /// The convergence order of the stepper
@@ -191,14 +183,14 @@ class TimeStepper : public PUP::able {
   ///
   /// ```
   /// template <typename T>
-  /// bool can_change_step_size_impl(const TimeStepId& time_id,
-  ///                                const UntypedHistory<T>& history) const;
+  /// bool can_change_step_size_impl(
+  ///     const TimeStepId& time_id,
+  ///     const ConstUntypedHistory<T>& history) const;
   /// ```
-  template <typename DerivVars>
-  bool can_change_step_size(
-      const TimeStepId& time_id,
-      const TimeSteppers::History<DerivVars>& history) const {
-    return can_change_step_size_forward(time_id, history);
+  template <typename Vars>
+  bool can_change_step_size(const TimeStepId& time_id,
+                            const TimeSteppers::History<Vars>& history) const {
+    return can_change_step_size_forward(time_id, history.untyped());
   }
 };
 
@@ -206,56 +198,52 @@ class TimeStepper : public PUP::able {
 #define TIME_STEPPER_DECLARE_OVERLOADS_IMPL(_, data)                       \
   void update_u_forward(                                                   \
       gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
-      gsl::not_null<                                                       \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const override;                          \
   bool update_u_forward(                                                   \
       gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
       gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,             \
-      gsl::not_null<                                                       \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const override;                          \
   bool dense_update_u_forward(                                             \
       gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,                   \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history,                                                         \
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history,                                                 \
       double time) const override;                                         \
   bool can_change_step_size_forward(                                       \
       const TimeStepId& time_id,                                           \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history) const override;
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history) const override;
 
 #define TIME_STEPPER_DEFINE_OVERLOADS_IMPL(_, data)                        \
   void TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
-      const gsl::not_null<                                                 \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const {                                  \
     return update_u_impl(u, history, time_step);                           \
   }                                                                        \
   bool TIME_STEPPER_DERIVED_CLASS(data)::update_u_forward(                 \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u_error,       \
-      const gsl::not_null<                                                 \
-          TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>*>  \
-          history,                                                         \
+      const TimeSteppers::MutableUntypedHistory<TIME_STEPPER_WRAPPED_TYPE( \
+          data)>& history,                                                 \
       const TimeDelta& time_step) const {                                  \
     return update_u_impl(u, u_error, history, time_step);                  \
   }                                                                        \
   bool TIME_STEPPER_DERIVED_CLASS(data)::dense_update_u_forward(           \
       const gsl::not_null<TIME_STEPPER_WRAPPED_TYPE(data)*> u,             \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history,                                                         \
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history,                                                 \
       const double time) const {                                           \
     return dense_update_u_impl(u, history, time);                          \
   }                                                                        \
   bool TIME_STEPPER_DERIVED_CLASS(data)::can_change_step_size_forward(     \
       const TimeStepId& time_id,                                           \
-      const TimeSteppers::UntypedHistory<TIME_STEPPER_WRAPPED_TYPE(data)>& \
-          history) const {                                                 \
+      const TimeSteppers::ConstUntypedHistory<TIME_STEPPER_WRAPPED_TYPE(   \
+          data)>& history) const {                                         \
     return can_change_step_size_impl(time_id, history);                    \
   }
 /// \endcond

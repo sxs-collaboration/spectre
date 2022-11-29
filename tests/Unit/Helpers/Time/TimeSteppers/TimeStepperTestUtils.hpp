@@ -62,7 +62,7 @@ void initialize_history(
     time -= step_size;
     history->insert_initial(
         TimeStepId(step_size.is_positive(), slab_number, time),
-        rhs(analytic(time.value()), time.value()));
+        analytic(time.value()), rhs(analytic(time.value()), time.value()));
   }
 }
 

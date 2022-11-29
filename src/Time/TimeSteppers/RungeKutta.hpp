@@ -16,7 +16,9 @@
 class TimeDelta;
 namespace TimeSteppers {
 template <typename T>
-class UntypedHistory;
+class ConstUntypedHistory;
+template <typename T>
+class MutableUntypedHistory;
 }  // namespace TimeSteppers
 /// \endcond
 
@@ -94,21 +96,22 @@ class RungeKutta : public TimeStepper {
  private:
   template <typename T>
   void update_u_impl(gsl::not_null<T*> u,
-                     gsl::not_null<UntypedHistory<T>*> history,
+                     const MutableUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
 
   template <typename T>
   bool update_u_impl(gsl::not_null<T*> u, gsl::not_null<T*> u_error,
-                     gsl::not_null<UntypedHistory<T>*> history,
+                     const MutableUntypedHistory<T>& history,
                      const TimeDelta& time_step) const;
 
   template <typename T>
   bool dense_update_u_impl(gsl::not_null<T*> u,
-                           const UntypedHistory<T>& history, double time) const;
+                           const ConstUntypedHistory<T>& history,
+                           double time) const;
 
   template <typename T>
   bool can_change_step_size_impl(const TimeStepId& time_id,
-                                 const UntypedHistory<T>& history) const;
+                                 const ConstUntypedHistory<T>& history) const;
 
   TIME_STEPPER_DECLARE_OVERLOADS
 };

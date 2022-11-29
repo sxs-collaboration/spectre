@@ -1195,7 +1195,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   }
   using dt_variables_tags = tmpl::list<::Tags::dt<Var1>, ::Tags::dt<Var2<Dim>>>;
   Variables<dt_variables_tags> dt_evolved_vars{mesh.number_of_grid_points()};
-  const ::TimeSteppers::History<Variables<dt_variables_tags>> history{1};
+  const ::TimeSteppers::History<decltype(evolved_vars)> history{1};
 
   // Compute expected volume fluxes
   [[maybe_unused]] const auto expected_fluxes = [&evolved_vars, &inv_jac, &mesh,

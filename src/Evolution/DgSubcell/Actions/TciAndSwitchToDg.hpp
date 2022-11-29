@@ -270,18 +270,12 @@ struct TciAndSwitchToDg {
 
             // Reconstruct the DG solution for each time in the time stepper
             // history
-            TimeSteppers::History<
-                typename db::add_tag_prefix<::Tags::dt, variables_tag>::type>
-                dg_history{active_history_ptr->integration_order()};
-            const auto end_it = active_history_ptr->derivatives_end();
-            for (auto it = active_history_ptr->derivatives_begin();
-                 it != end_it; ++it) {
-              dg_history.insert(
-                  it.time_step_id(),
-                  fd::reconstruct(*it, dg_mesh, subcell_mesh.extents(),
-                                  subcell_options.reconstruction_method()));
-            }
-            *active_history_ptr = std::move(dg_history);
+            active_history_ptr->map_entries(
+                [&dg_mesh, &subcell_mesh, &subcell_options](const auto entry) {
+                  *entry =
+                      fd::reconstruct(*entry, dg_mesh, subcell_mesh.extents(),
+                                      subcell_options.reconstruction_method());
+                });
             *active_grid_ptr = ActiveGrid::Dg;
 
             // Clear the neighbor data needed for subcell reconstruction since

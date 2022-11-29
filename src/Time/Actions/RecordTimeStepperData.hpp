@@ -44,10 +44,12 @@ void record_time_stepper_data(const gsl::not_null<db::DataBox<DbTags>*> box) {
       box,
       [](const gsl::not_null<typename history_tag::type*> history,
          const TimeStepId& time_step_id,
+         const typename variables_tag::type& vars,
          const typename dt_variables_tag::type& dt_vars) {
-        history->insert(time_step_id, dt_vars);
+        history->insert(time_step_id, vars, dt_vars);
       },
-      db::get<Tags::TimeStepId>(*box), db::get<dt_variables_tag>(*box));
+      db::get<Tags::TimeStepId>(*box), db::get<variables_tag>(*box),
+      db::get<dt_variables_tag>(*box));
 
   // Not all executables perform rollbacks, so only save the data if
   // something uses it.  (In which case it is that code's job to make

@@ -278,15 +278,31 @@ void test_impl(
   if (rdmp_fails) {
     get(get<Var1>(evolved_vars))[0] = 100.0;
   }
-  TimeSteppers::History<Variables<dt_evolved_vars_tags>> time_stepper_history{};
-  for (size_t i = 0; i < time_stepper->order(); ++i) {
-    Variables<dt_evolved_vars_tags> dt_vars{
-        subcell_mesh.number_of_grid_points()};
-    get(get<Tags::dt<Var1>>(dt_vars)) =
-        (i + 20.0) * get<0>(logical_coordinates(subcell_mesh));
-    time_stepper_history.insert(
-        {false, 1, Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}}},
-        dt_vars);
+  TimeSteppers::History<Variables<evolved_vars_tags>> time_stepper_history{4};
+  {
+    constexpr size_t history_size = 5;
+    constexpr size_t history_substeps = 3;
+    Time step_time{};
+    for (size_t i = 0; i < history_size; ++i) {
+      step_time = Time{Slab{1.0, 2.0}, {static_cast<int>(5 - i), 10}};
+      Variables<dt_evolved_vars_tags> dt_vars{
+          subcell_mesh.number_of_grid_points()};
+      get(get<Tags::dt<Var1>>(dt_vars)) =
+          (i + 20.0) * get<0>(logical_coordinates(subcell_mesh));
+      time_stepper_history.insert({false, 1, step_time}, i * evolved_vars,
+                                  dt_vars);
+    }
+    for (size_t i = 0; i < history_substeps; ++i) {
+      Variables<dt_evolved_vars_tags> dt_vars{
+          subcell_mesh.number_of_grid_points()};
+      get(get<Tags::dt<Var1>>(dt_vars)) =
+          (i + 40.0) * get<0>(logical_coordinates(subcell_mesh));
+      time_stepper_history.insert({false, 1, step_time, i + 1, step_time},
+                                  -i * evolved_vars, dt_vars);
+    }
+    time_stepper_history.discard_value(time_stepper_history[2].time_step_id);
+    time_stepper_history.discard_value(
+        time_stepper_history.substeps()[1].time_step_id);
   }
   Variables<evolved_vars_tags> vars{subcell_mesh.number_of_grid_points()};
   get(get<Var1>(vars)) =
@@ -366,24 +382,50 @@ void test_impl(
   }
 
   if (active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg) {
-    for (auto expected_it = time_stepper_history.derivatives_begin(),
-              box_it = time_stepper_history_from_box.derivatives_begin();
-         expected_it != time_stepper_history.derivatives_end();
-         ++expected_it, ++box_it) {
-      CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(evolution::dg::subcell::fd::reconstruct(*expected_it, dg_mesh,
-                                                    subcell_mesh.extents(),
-                                                    recons_method) == *box_it);
+    CHECK(time_stepper_history_from_box.size() == time_stepper_history.size());
+    CHECK(time_stepper_history_from_box.substeps().size() ==
+          time_stepper_history.substeps().size());
+    CHECK(time_stepper_history_from_box.integration_order() ==
+          time_stepper_history.integration_order());
+    {
+      const auto check_box_record = [&](const auto& original_record) {
+        const auto& record_from_box =
+            time_stepper_history_from_box[original_record.time_step_id];
+        CHECK(record_from_box.derivative ==
+              evolution::dg::subcell::fd::reconstruct(
+                  original_record.derivative, dg_mesh, subcell_mesh.extents(),
+                  recons_method));
+        if (original_record.value.has_value()) {
+          CHECK(record_from_box.value ==
+                std::optional{evolution::dg::subcell::fd::reconstruct(
+                    *original_record.value, dg_mesh, subcell_mesh.extents(),
+                    recons_method)});
+        } else {
+          CHECK(not record_from_box.value.has_value());
+        }
+      };
+      for (const auto& original_record : time_stepper_history) {
+        check_box_record(original_record);
+      }
+      for (const auto& original_record : time_stepper_history.substeps()) {
+        check_box_record(original_record);
+      }
     }
     CHECK(tci_grid_history_from_box.empty());
   } else {
     // TCI failed
-    for (auto expected_it = time_stepper_history.derivatives_begin(),
-              box_it = time_stepper_history_from_box.derivatives_begin();
-         expected_it != time_stepper_history.derivatives_end();
-         ++expected_it, ++box_it) {
-      CHECK(expected_it.time_step_id() == box_it.time_step_id());
-      CHECK(*expected_it == *box_it);
+    CHECK(time_stepper_history_from_box.size() == time_stepper_history.size());
+    CHECK(time_stepper_history_from_box.substeps().size() ==
+          time_stepper_history.substeps().size());
+    CHECK(time_stepper_history_from_box.integration_order() ==
+          time_stepper_history.integration_order());
+    for (const auto& original_record : time_stepper_history) {
+      CHECK(time_stepper_history_from_box[original_record.time_step_id] ==
+            original_record);
+    }
+    for (const auto& original_record : time_stepper_history.substeps()) {
+      CHECK(time_stepper_history_from_box[original_record.time_step_id] ==
+            original_record);
     }
     if (avoid_switch_to_dg) {
       CHECK(tci_grid_history_from_box.front() ==

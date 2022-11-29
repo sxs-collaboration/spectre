@@ -77,7 +77,8 @@ TimeStepId RungeKutta::next_time_id_for_error(
 namespace {
 template <typename T>
 void update_between_substeps(const gsl::not_null<T*> u,
-                             const UntypedHistory<T>& history, const double dt,
+                             const ConstUntypedHistory<T>& history,
+                             const double dt,
                              const std::vector<double>& coeffs_last,
                              const std::vector<double>& coeffs_this) {
   const size_t number_of_substeps =
@@ -91,40 +92,43 @@ void update_between_substeps(const gsl::not_null<T*> u,
       coef -= coeffs_last[i];
     }
     if (coef != 0.0) {
-      *u += coef * dt * *(history.begin() + static_cast<int>(i)).derivative();
+      *u += coef * dt *
+            (i == 0 ? history.front() : history.substeps()[i - 1]).derivative;
     }
   }
 }
 
 template <typename T>
 void update_u_impl_with_tableau(const gsl::not_null<T*> u,
-                                const gsl::not_null<UntypedHistory<T>*> history,
+                                const MutableUntypedHistory<T>& history,
                                 const TimeDelta& time_step,
                                 const RungeKutta::ButcherTableau& tableau,
                                 const size_t number_of_substeps) {
-  const size_t substep = (history->end() - 1).time_step_id().substep();
-
   // Clean up old history
-  if (substep == 0) {
-    history->mark_unneeded(history->end() - 1);
+  if (history.at_step_start()) {
+    history.clear_substeps();
+    if (history.size() > 1) {
+      history.pop_front();
+    }
   }
+  ASSERT(history.size() == 1, "Have more than one step after cleanup.");
 
   const double dt = time_step.value();
 
   ASSERT(number_of_substeps > 1,
          "Implementing Euler's method is not supported by RungeKutta.");
 
+  const auto substep = history.substeps().size();
   if (substep == 0) {
     ASSERT(tableau.substep_coefficients[0].size() == 1,
            "First substep should use one derivative.");
-    *u += tableau.substep_coefficients[0][0] * dt *
-          *history->begin().derivative();
+    *u += tableau.substep_coefficients[0][0] * dt * history.front().derivative;
   } else if (substep == number_of_substeps - 1) {
-    update_between_substeps(u, *history, dt,
+    update_between_substeps(u, history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.result_coefficients);
   } else if (substep < number_of_substeps - 1) {
-    update_between_substeps(u, *history, dt,
+    update_between_substeps(u, history, dt,
                             tableau.substep_coefficients[substep - 1],
                             tableau.substep_coefficients[substep]);
   } else {
@@ -136,11 +140,11 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
 
 template <typename T>
 void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
-                               const gsl::not_null<UntypedHistory<T>*> history,
+                               const MutableUntypedHistory<T>& history,
                                const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == order(),
+  ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
-             << history->integration_order());
+             << history.integration_order());
   return update_u_impl_with_tableau(u, history, time_step, butcher_tableau(),
                                     number_of_substeps());
 }
@@ -148,18 +152,18 @@ void RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 template <typename T>
 bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
                                const gsl::not_null<T*> u_error,
-                               const gsl::not_null<UntypedHistory<T>*> history,
+                               const MutableUntypedHistory<T>& history,
                                const TimeDelta& time_step) const {
-  ASSERT(history->integration_order() == order(),
+  ASSERT(history.integration_order() == order(),
          "Fixed-order stepper cannot run at order "
-             << history->integration_order());
+             << history.integration_order());
 
   const auto& tableau = butcher_tableau();
   const auto number_of_substeps = number_of_substeps_for_error();
   update_u_impl_with_tableau(u, history, time_step, tableau,
                              number_of_substeps);
 
-  const size_t substep = (history->end() - 1).time_step_id().substep();
+  const size_t substep = history.substeps().size();
 
   if (substep < number_of_substeps - 1) {
     return false;
@@ -167,7 +171,7 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 
   const double dt = time_step.value();
   *u_error = 0.0;
-  update_between_substeps(u_error, *history, dt, tableau.error_coefficients,
+  update_between_substeps(u_error, history, dt, tableau.error_coefficients,
                           tableau.result_coefficients);
 
   return true;
@@ -175,13 +179,13 @@ bool RungeKutta::update_u_impl(const gsl::not_null<T*> u,
 
 template <typename T>
 bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
-                                     const UntypedHistory<T>& history,
+                                     const ConstUntypedHistory<T>& history,
                                      const double time) const {
-  if ((history.end() - 1).time_step_id().substep() != 0) {
+  if (not history.at_step_start()) {
     return false;
   }
-  const double step_start = history[0].value();
-  const double step_end = history[history.size() - 1].value();
+  const double step_start = history.front().time_step_id.step_time().value();
+  const double step_end = history.back().time_step_id.step_time().value();
   if (time == step_end) {
     // Special case necessary for dense output at the initial time,
     // before taking a step.
@@ -206,7 +210,7 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
     const double coef = tableau.result_coefficients[i];
     if (coef != 0.0) {
       *u -= coef * step_size *
-            *(history.begin() + static_cast<int>(i)).derivative();
+            (i == 0 ? history.front() : history.substeps()[i - 1]).derivative;
     }
   }
 
@@ -218,18 +222,16 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
         evaluate_polynomial(tableau.dense_coefficients[i], output_fraction);
     if (coef != 0.0) {
       *u += coef * step_size *
-            *(history.begin() + static_cast<int>(i)).derivative();
+            (i == 0 ? history.front() : history.substeps()[i - 1]).derivative;
     }
   }
 
   if (number_of_dense_coefficients > number_of_substep_terms) {
-    // We use the derivative at the end of the step, which is always
-    // the last value in the history, whether or not we generated an
-    // error estimate.
+    // We use the derivative at the end of the step.
     const double coef =
         evaluate_polynomial(tableau.dense_coefficients.back(), output_fraction);
     if (coef != 0.0) {
-      *u += coef * step_size * *(history.end() - 1).derivative();
+      *u += coef * step_size * history.back().derivative;
     }
   }
 
@@ -238,7 +240,8 @@ bool RungeKutta::dense_update_u_impl(const gsl::not_null<T*> u,
 
 template <typename T>
 bool RungeKutta::can_change_step_size_impl(
-    const TimeStepId& time_id, const UntypedHistory<T>& /*history*/) const {
+    const TimeStepId& time_id,
+    const ConstUntypedHistory<T>& /*history*/) const {
   return time_id.substep() == 0;
 }
 

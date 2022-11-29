@@ -211,17 +211,11 @@ struct TciAndRollback {
 
           // Project the time stepper history to the subcells, excluding the
           // most recent inadmissible history.
-          TimeSteppers::History<
-              typename db::add_tag_prefix<::Tags::dt, variables_tag>::type>
-              subcell_history{active_history_ptr->integration_order()};
-          const auto end_it = std::prev(active_history_ptr->derivatives_end());
-          for (auto it = active_history_ptr->derivatives_begin(); it != end_it;
-               ++it) {
-            subcell_history.insert(
-                it.time_step_id(),
-                fd::project(*it, dg_mesh, subcell_mesh.extents()));
-          }
-          *active_history_ptr = std::move(subcell_history);
+          active_history_ptr->undo_latest();
+          active_history_ptr->map_entries(
+              [&dg_mesh, &subcell_mesh](const auto entry) {
+                *entry = fd::project(*entry, dg_mesh, subcell_mesh.extents());
+              });
           *active_grid_ptr = ActiveGrid::Subcell;
           *did_rollback_ptr = true;
           // Project the neighbor data we were sent for reconstruction since
