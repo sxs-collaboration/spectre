@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <iterator>
 #include <mutex>
+#include <optional>
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -162,6 +163,23 @@ void write_data(const std::string& h5_file_name,
 struct ContributeVolumeDataToWriter {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& box,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<Parallel::NodeLock*> node_lock,
+                    const observers::ObservationId& observation_id,
+                    ArrayComponentId observer_group_id,
+                    const std::string& subfile_name,
+                    std::unordered_map<observers::ArrayComponentId,
+                                       std::vector<ElementVolumeData>>&&
+                        received_volume_data) {
+    apply_impl<Tags::InterpolatorTensorData, ParallelComponent>(
+        box, cache, node_lock, observation_id, observer_group_id, subfile_name,
+        received_volume_data);
+  }
+
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
   static void apply(
       db::DataBox<DbTagsList>& box, Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
@@ -170,6 +188,22 @@ struct ContributeVolumeDataToWriter {
       ArrayComponentId observer_group_id, const std::string& subfile_name,
       std::unordered_map<observers::ArrayComponentId, ElementVolumeData>&&
           received_volume_data) {
+    apply_impl<Tags::TensorData, ParallelComponent>(
+        box, cache, node_lock, observation_id, observer_group_id, subfile_name,
+        received_volume_data);
+  }
+
+ private:
+  template <typename TensorDataTag, typename ParallelComponent,
+            typename DbTagsList, typename Metavariables,
+            typename VolumeDataAtObsId>
+  static void apply_impl(db::DataBox<DbTagsList>& box,
+                         Parallel::GlobalCache<Metavariables>& cache,
+                         const gsl::not_null<Parallel::NodeLock*> node_lock,
+                         const observers::ObservationId& observation_id,
+                         ArrayComponentId observer_group_id,
+                         const std::string& subfile_name,
+                         const VolumeDataAtObsId& received_volume_data) {
     // The below gymnastics with pointers is done in order to minimize the
     // time spent locking the entire node, which is necessary because the
     // DataBox does not allow any functions calls, both get and mutate, during
@@ -179,12 +213,8 @@ struct ContributeVolumeDataToWriter {
     // consistent state. To this end, we create pointers and assign to them
     // the data in the DataBox which is guaranteed to be pointer stable. The
     // data itself is guaranteed to be stable inside the VolumeDataLock.
-    std::unordered_map<observers::ObservationId,
-                       std::unordered_map<observers::ArrayComponentId,
-                                          ElementVolumeData>>* all_volume_data =
-        nullptr;
-    std::unordered_map<observers::ArrayComponentId, ElementVolumeData>
-        volume_data;
+    typename TensorDataTag::type* all_volume_data = nullptr;
+    VolumeDataAtObsId volume_data;
     Parallel::NodeLock* volume_file_lock = nullptr;
     std::unordered_map<ObservationId, std::unordered_set<ArrayComponentId>>*
         volume_observers_contributed = nullptr;
@@ -193,16 +223,13 @@ struct ContributeVolumeDataToWriter {
 
     {
       const std::lock_guard hold_lock(*node_lock);
-      db::mutate<Tags::TensorData, Tags::ContributorsOfTensorData,
+      db::mutate<TensorDataTag, Tags::ContributorsOfTensorData,
                  Tags::VolumeDataLock, Tags::H5FileLock>(
           make_not_null(&box),
           [&observation_id, &observations_registered_with_id,
            &observer_group_id, &all_volume_data, &volume_observers_contributed,
            &volume_data_lock, &volume_file_lock](
-              const gsl::not_null<std::unordered_map<
-                  observers::ObservationId,
-                  std::unordered_map<observers::ArrayComponentId,
-                                     ElementVolumeData>>*>
+              const gsl::not_null<typename TensorDataTag::type*>
                   volume_data_ptr,
               const gsl::not_null<std::unordered_map<
                   ObservationId, std::unordered_set<ArrayComponentId>>*>
@@ -283,6 +310,31 @@ struct ContributeVolumeDataToWriter {
     if (perform_write) {
       ASSERT(not volume_data.empty(),
              "Failed to populate volume_data before trying to write it.");
+
+      std::vector<ElementVolumeData> volume_data_to_write;
+
+      if constexpr (std::is_same_v<tmpl::at_c<VolumeDataAtObsId, 1>,
+                                   ElementVolumeData>) {
+        volume_data_to_write.reserve(volume_data.size());
+        for (const auto& [id, element] : volume_data) {
+          (void)id;  // avoid compiler warnings
+          volume_data_to_write.push_back(element);
+        }
+      } else {
+        size_t total_size = 0;
+        for (const auto& [id, vec_elements] : volume_data) {
+          (void)id;  // avoid compiler warnings
+          total_size += vec_elements.size();
+        }
+        volume_data_to_write.reserve(total_size);
+
+        for (const auto& [id, vec_elements] : volume_data) {
+          (void)id;  // avoid compiler warnings
+          volume_data_to_write.insert(volume_data_to_write.end(),
+                                      vec_elements.begin(), vec_elements.end());
+        }
+      }
+
       // Write to file. We use a separate node lock because writing can be
       // very time consuming (it's network dependent, depends on how full the
       // disks are, what other users are doing, etc.) and we want to be able
@@ -303,11 +355,7 @@ struct ContributeVolumeDataToWriter {
         constexpr size_t version_number = 0;
         auto& volume_file =
             h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
-        std::vector<ElementVolumeData> dg_elements;
-        dg_elements.reserve(volume_data.size());
-        for (const auto& id_and_element : volume_data) {
-          dg_elements.push_back(id_and_element.second);
-        }
+
         // Serialize domain, ignoring versioning for now. See issue:
         // https://github.com/sxs-collaboration/spectre/issues/3937
         // The domain is retrieved from the global cache using the standard
@@ -327,7 +375,7 @@ struct ContributeVolumeDataToWriter {
         }();
         // Write the data to the file
         volume_file.write_volume_data(
-            observation_id.hash(), observation_id.value(), dg_elements,
+            observation_id.hash(), observation_id.value(), volume_data_to_write,
             serialized_domain, serialized_functions_of_time);
       }
     }
