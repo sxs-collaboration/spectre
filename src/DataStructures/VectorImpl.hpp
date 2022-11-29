@@ -824,3 +824,9 @@ void make_const_view(const gsl::not_null<const VectorType*> view,
               + offset,                                                // NOLINT
           extent);
 }
+
+template <typename T, typename VectorType, size_t StaticSize>
+inline bool contains_allocations(
+    const VectorImpl<T, VectorType, StaticSize>& value) {
+  return value.size() > StaticSize and value.is_owning();
+}

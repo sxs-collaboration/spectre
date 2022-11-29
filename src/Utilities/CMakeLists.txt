@@ -32,6 +32,7 @@ spectre_target_headers(
   CloneUniquePtrs.hpp
   ConstantExpressions.hpp
   ContainerHelpers.hpp
+  ContainsAllocations.hpp
   DereferenceWrapper.hpp
   EqualWithinRoundoff.hpp
   FileSystem.hpp
