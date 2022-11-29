@@ -236,8 +236,7 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<Dim>,
       Initialization::Actions::GrTagsForHydro<system>,
-      Initialization::Actions::ConservativeSystem<system,
-                                                  equation_of_state_tag>,
+      Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
@@ -288,7 +287,8 @@ struct EvolutionMetavars {
                  observers::ObserverWriter<EvolutionMetavars>,
                  dg_element_array>;
 
-  using const_global_cache_tags = tmpl::list<initial_data_tag>;
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag, equation_of_state_tag>;
 
   static constexpr Options::String help{
       "Evolve the Valencia formulation of RelativisticEuler system.\n\n"};

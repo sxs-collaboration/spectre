@@ -434,8 +434,7 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<3>,
       Initialization::Actions::GrTagsForHydro<system>,
-      Initialization::Actions::ConservativeSystem<system,
-                                                  equation_of_state_tag>,
+      Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<3, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
@@ -513,7 +512,7 @@ struct EvolutionMetavars {
               ::Tags::VariableFixer<grmhd::ValenciaDivClean::FixConservatives>,
               grmhd::ValenciaDivClean::subcell::Tags::TciOptions>,
           tmpl::list<>>,
-      initial_data_tag,
+      initial_data_tag, equation_of_state_tag,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter>;
 
   static constexpr Options::String help{

@@ -22,7 +22,6 @@ void register_derived_with_charm() {
   register_derived_subset_with_charm<true, 1>();
   register_derived_subset_with_charm<false, 1>();
   register_derived_subset_with_charm<true, 2>();
-  // The next one doesn't exist yet
-  // register_derived_subset_with_charm<false, 2>();
+  register_derived_subset_with_charm<false, 2>();
 }
 }  // namespace EquationsOfState

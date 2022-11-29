@@ -64,6 +64,17 @@ struct EquationOfStateBase : db::BaseTag {};
 template <typename EquationOfStateType>
 struct EquationOfState : EquationOfStateBase, db::SimpleTag {
   using type = EquationOfStateType;
+
+  template <typename Metavariables>
+  using option_tags = tmpl::list<
+      tmpl::front<typename Metavariables::initial_data_tag::option_tags>>;
+  static constexpr bool pass_metavariables = true;
+
+  template <typename Metavariables>
+  static type create_from_options(
+      const typename Metavariables::initial_data_tag::type& initial_data) {
+    return initial_data.equation_of_state().get_clone();
+  }
 };
 
 /// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is

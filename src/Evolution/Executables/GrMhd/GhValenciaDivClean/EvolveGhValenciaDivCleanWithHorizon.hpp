@@ -40,6 +40,8 @@
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/ApparentHorizon.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/RegisterDerivedWithCharm.hpp"
 #include "Time/StepControllers/Factory.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Blas.hpp"
@@ -109,6 +111,8 @@ struct EvolutionMetavars
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
+      typename GhValenciaDivCleanTemplateBase<
+          EvolutionMetavars>::equation_of_state_tag,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -146,6 +150,7 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &grmhd::GhValenciaDivClean::BoundaryCorrections::
         register_derived_with_charm,
     &GeneralizedHarmonic::ConstraintDamping::register_derived_with_charm,
+    &EquationsOfState::register_derived_with_charm,
     &Parallel::register_factory_classes_with_charm<metavariables>};
 
 static const std::vector<void (*)()> charm_init_proc_funcs{
