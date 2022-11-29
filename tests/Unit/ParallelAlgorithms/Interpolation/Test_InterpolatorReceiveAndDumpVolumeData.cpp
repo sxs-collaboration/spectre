@@ -51,6 +51,7 @@
 #include "ParallelAlgorithms/Interpolation/Actions/TryToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "ParallelAlgorithms/Interpolation/Interpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/ComputeVarsToInterpolate.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Targets/LineSegment.hpp"
@@ -271,20 +272,23 @@ template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
-  using array_index = size_t;
+  using array_index = int;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
       intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          Parallel::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
-      Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
-      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>,
-      Parallel::PhaseActions<
-          Parallel::Phase::PostFailureCleanup,
-          tmpl::list<intrp::Actions::DumpInterpolatorVolumeData<
-              tmpl::list<::Tags::TimeStepId>>>>>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<
+                     Parallel::Phase::Initialization,
+                     tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::Register,
+                     tmpl::list<intrp::Actions::RegisterWithObserverWriter<
+                         ::Tags::TimeStepId>>>,
+                 Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>,
+                 Parallel::PhaseActions<
+                     Parallel::Phase::PostFailureCleanup,
+                     tmpl::list<intrp::Actions::DumpInterpolatorVolumeData<
+                         tmpl::list<::Tags::TimeStepId>>>>>;
   using component_being_mocked = void;  // not needed.
 };
 
@@ -464,6 +468,12 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < element_ids.size(); ++i) {
     runner.simple_action<interp_component, intrp::Actions::RegisterElement>(0);
   }
+
+  // Register interpolator with observer writer
+  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  ActionTesting::invoke_queued_simple_action<observer_writer>(
+      make_not_null(&runner), 0);
+
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
   create_volume_data_and_send_it_to_interpolator<interp_component>(
