@@ -44,6 +44,8 @@ struct Var2 : db::SimpleTag {
 template <size_t Dim>
 void test() {
   TestHelpers::db::test_simple_tag<subcell::Tags::Mesh<Dim>>("Subcell(Mesh)");
+  TestHelpers::db::test_compute_tag<subcell::Tags::MeshCompute<Dim>>(
+      "Subcell(Mesh)");
   TestHelpers::db::test_simple_tag<
       subcell::Tags::NeighborDataForReconstruction<Dim>>(
       "NeighborDataForReconstruction");
@@ -72,12 +74,15 @@ void test() {
       ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                     Frame::Inertial>>>(
       "InertialCoordinates");
-  Mesh<Dim> subcell_mesh(5, Spectral::Basis::FiniteDifference,
-                         Spectral::Quadrature::CellCentered);
+  Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
+                    Spectral::Quadrature::GaussLobatto);
   const auto logical_coords_box = db::create<
-      db::AddSimpleTags<subcell::Tags::Mesh<Dim>>,
-      db::AddComputeTags<subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
-      subcell_mesh);
+      db::AddSimpleTags<::domain::Tags::Mesh<Dim>>,
+      db::AddComputeTags<subcell::Tags::MeshCompute<Dim>,
+                         subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
+      dg_mesh);
+  const auto subcell_mesh =
+      db::get<subcell::Tags::Mesh<Dim>>(logical_coords_box);
   CHECK(db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
             logical_coords_box) == logical_coordinates(subcell_mesh));
 
