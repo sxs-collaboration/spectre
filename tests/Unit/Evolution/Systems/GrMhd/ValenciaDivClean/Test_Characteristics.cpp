@@ -112,9 +112,7 @@ void test_with_normal_along_coordinate_axes(const DataVector& used_for_size) {
   }
 }
 
-struct SomeEosType {
-  static constexpr size_t thermodynamic_dim = 3;
-};
+struct SomeEosType {};
 
 }  // namespace
 
@@ -130,6 +128,6 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.Characteristics",
   test_with_normal_along_coordinate_axes(dv);
 
   TestHelpers::db::test_compute_tag<
-      grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute<SomeEosType>>(
+      grmhd::ValenciaDivClean::Tags::CharacteristicSpeedsCompute>(
       "CharacteristicSpeeds");
 }
