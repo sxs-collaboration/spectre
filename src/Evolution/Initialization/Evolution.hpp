@@ -89,13 +89,6 @@ struct TimeAndTimeStep {
                                 ::Tags::StepChoosers, ::Tags::StepController>,
                      tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
 
-  using initialization_tags_to_keep =
-      tmpl::flatten<tmpl::list<tmpl::conditional_t<
-          Metavariables::local_time_stepping,
-          tmpl::list<::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepChoosers,
-                     ::Tags::StepController, Tags::InitialTime>,
-          tmpl::list<::Tags::TimeStepper<TimeStepper>, Tags::InitialTime>>>>;
-
   using simple_tags =
       tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
                       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,

@@ -14,7 +14,6 @@ spectre_target_headers(
   Goto.hpp
   MutateApply.hpp
   RandomizeVariables.hpp
-  RemoveOptionsAndTerminatePhase.hpp
   SetData.hpp
   TerminatePhase.hpp
   UpdateMessageQueue.hpp

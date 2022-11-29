@@ -13,7 +13,6 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -37,11 +36,11 @@ struct ControlComponent {
 
   using metavariables = Metavariables;
 
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Parallel::Phase::Initialization,
-      tmpl::list<
-          control_system::Actions::Initialize<Metavariables, ControlSystem>,
-          Initialization::Actions::RemoveOptionsAndTerminatePhase>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Initialization,
+                             tmpl::list<control_system::Actions::Initialize<
+                                            Metavariables, ControlSystem>,
+                                        Parallel::Actions::TerminatePhase>>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;

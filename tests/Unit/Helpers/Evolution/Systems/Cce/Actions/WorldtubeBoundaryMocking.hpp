@@ -13,7 +13,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Parallel/Phase.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Cce {
@@ -45,7 +45,7 @@ struct mock_h5_worldtube_boundary {
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -74,7 +74,7 @@ struct mock_gh_worldtube_boundary {
 
   using initialize_action_list = tmpl::list<
       Actions::InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

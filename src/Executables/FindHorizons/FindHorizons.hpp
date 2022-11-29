@@ -37,7 +37,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/CleanUpInterpolator.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InitializeInterpolationTarget.hpp"
@@ -271,10 +270,9 @@ struct Metavariables {
       tmpl::list<
           Parallel::PhaseActions<
               Parallel::Phase::Initialization,
-              tmpl::list<
-                  elliptic::dg::Actions::InitializeDomain<Dim>,
-                  Actions::InitializeFields<Dim, adm_vars>,
-                  ::Initialization::Actions::RemoveOptionsAndTerminatePhase>>,
+              tmpl::list<elliptic::dg::Actions::InitializeDomain<Dim>,
+                         Actions::InitializeFields<Dim, adm_vars>,
+                         Parallel::Actions::TerminatePhase>>,
           Parallel::PhaseActions<
               Parallel::Phase::Register,
               tmpl::list<importers::Actions::RegisterWithElementDataReader,

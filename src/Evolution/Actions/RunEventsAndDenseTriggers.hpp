@@ -292,7 +292,6 @@ struct RunEventsAndDenseTriggers {
 struct InitializeRunEventsAndDenseTriggers {
   using initialization_tags =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
-  using initialization_tags_to_keep = initialization_tags;
   using simple_tags = tmpl::list<Tags::PreviousTriggerTime>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,

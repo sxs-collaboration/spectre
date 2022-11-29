@@ -39,7 +39,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/Events/ObserveNorms.hpp"
@@ -262,7 +261,7 @@ struct Metavariables {
           elliptic::Tags::BoundaryFieldsCompute<volume_dim, fields_tag>,
           elliptic::Tags::BoundaryFluxesCompute<volume_dim, fields_tag,
                                                 fluxes_tag>>>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
 
   template <bool Linearized>
   using build_operator_actions = elliptic::dg::Actions::apply_operator<

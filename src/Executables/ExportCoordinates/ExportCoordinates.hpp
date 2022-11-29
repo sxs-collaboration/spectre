@@ -44,7 +44,6 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
-#include "ParallelAlgorithms/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -239,8 +238,7 @@ struct Metavariables {
                       Initialization::Actions::AddComputeTags<
                           ::domain::Tags::MinimumGridSpacingCompute<
                               Dim, Frame::Inertial>>,
-                      ::Initialization::Actions::
-                          RemoveOptionsAndTerminatePhase>>,
+                      Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Parallel::Phase::Register,
                   tmpl::list<observers::Actions::RegisterWithObservers<

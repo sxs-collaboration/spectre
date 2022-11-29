@@ -61,14 +61,12 @@ namespace Actions {
 template <typename EvolvedCoordinatesVariablesTag, typename EvolvedSwshTag,
           bool local_time_stepping>
 struct InitializeCharacteristicEvolutionTime {
-  using initialization_tags_to_keep = tmpl::flatten<
+  using initialization_tags = tmpl::flatten<
       tmpl::list<Initialization::Tags::InitialSlabSize<local_time_stepping>,
                  Tags::CceEvolutionPrefix<::Tags::TimeStepper<LtsTimeStepper>>,
                  Tags::CceEvolutionPrefix<::Tags::StepChoosers>,
                  Tags::CceEvolutionPrefix<::Tags::StepController>,
                  ::Initialization::Tags::InitialTimeDelta>>;
-
-  using initialization_tags = initialization_tags_to_keep;
 
   using const_global_cache_tags = tmpl::list<>;
 

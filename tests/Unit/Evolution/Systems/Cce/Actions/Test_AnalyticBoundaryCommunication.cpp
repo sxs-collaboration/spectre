@@ -29,6 +29,7 @@
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
@@ -54,7 +55,7 @@ struct mock_analytic_worldtube_boundary {
   using initialize_action_list =
       tmpl::list<Actions::InitializeWorldtubeBoundary<
                      AnalyticWorldtubeBoundary<Metavariables>>,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+                 Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 
@@ -84,7 +85,7 @@ struct mock_characteristic_evolution {
       Actions::InitializeCharacteristicEvolutionScri<
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+      Parallel::Actions::TerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;
 

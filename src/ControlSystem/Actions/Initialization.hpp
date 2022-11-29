@@ -57,8 +57,6 @@ struct Initialize {
                  control_system::Tags::ControlError<ControlSystem>,
                  control_system::Tags::IsActive<ControlSystem>>;
 
-  using initialization_tags_to_keep = initialization_tags;
-
   using simple_tags = typename ControlSystem::simple_tags;
 
   using compute_tags = tmpl::list<>;
