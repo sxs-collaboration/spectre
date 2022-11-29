@@ -236,18 +236,22 @@ namespace detail {
 CREATE_HAS_STATIC_MEMBER_VARIABLE(override_functions_of_time)
 CREATE_HAS_STATIC_MEMBER_VARIABLE_V(override_functions_of_time)
 
-template <typename Metavariables, bool HasOverrideFunctionsOfTime>
+template <typename Metavariables, typename ControlSystem,
+          bool HasOverrideFunctionsOfTime>
 struct IsActiveOptionList {
-  using type = tmpl::conditional_t<
-      Metavariables::override_functions_of_time,
-      tmpl::list<domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
-                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>,
-      tmpl::list<>>;
+  using type = tmpl::append<
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>,
+      tmpl::conditional_t<
+          Metavariables::override_functions_of_time,
+          tmpl::list<
+              domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
+              domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>,
+          tmpl::list<>>>;
 };
 
-template <typename Metavariables>
-struct IsActiveOptionList<Metavariables, false> {
-  using type = tmpl::list<>;
+template <typename Metavariables, typename ControlSystem>
+struct IsActiveOptionList<Metavariables, ControlSystem, false> {
+  using type = tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
 };
 }  // namespace detail
 
@@ -255,9 +259,12 @@ struct IsActiveOptionList<Metavariables, false> {
 /// \ingroup ControlSystemGroup
 /// DataBox tag to determine if this control system is active.
 ///
-/// This effectively lets us choose control systems at runtime. If the
-/// metavariables specifies `static constexpr bool override_functions_of_time =
-/// true`, then this will check the
+/// This effectively lets us choose control systems at runtime. The OptionHolder
+/// has an option for whether the control system is active.
+///
+/// That option can be overridden if we are overriding the functions of time. If
+/// the metavariables specifies `static constexpr bool
+/// override_functions_of_time = true`, then this will check the
 /// `domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile` option. If the
 /// file is defined, it will loop over the map between SpEC and SpECTRE names
 /// from `domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap`. If the
@@ -275,17 +282,18 @@ struct IsActive : db::SimpleTag {
   static constexpr bool pass_metavariables = true;
   template <typename Metavariables>
   using option_tags = typename detail::IsActiveOptionList<
-      Metavariables,
+      Metavariables, ControlSystem,
       detail::has_override_functions_of_time_v<Metavariables>>::type;
 
   template <typename Metavariables>
   static bool create_from_options(
+      const control_system::OptionHolder<ControlSystem>& option_holder,
       const std::optional<std::string>& function_of_time_file,
       const std::map<std::string, std::string>& function_of_time_name_map) {
     if (not function_of_time_file.has_value()) {
       // `None` was specified as the option for the file so we aren't replacing
       // anything
-      return true;
+      return option_holder.is_active;
     }
 
     const std::string& name = ControlSystem::name();
@@ -296,12 +304,13 @@ struct IsActive : db::SimpleTag {
       }
     }
 
-    return true;
+    return option_holder.is_active;
   }
 
   template <typename Metavariables>
-  static bool create_from_options() {
-    return true;
+  static bool create_from_options(
+      const control_system::OptionHolder<ControlSystem>& option_holder) {
+    return option_holder.is_active;
   }
 };
 }  // namespace Tags
@@ -318,6 +327,14 @@ struct OptionHolder {
                 ControlSystem, control_system::protocols::ControlSystem>);
   using control_system = ControlSystem;
   static constexpr size_t deriv_order = control_system::deriv_order;
+  struct IsActive {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Whether the control system is actually active. If it isn't active, no "
+        "measurements (horizon finds) will be done and the functions of time "
+        "will never expire."};
+  };
+
   struct Averager {
     using type = ::Averager<deriv_order - 1>;
     static constexpr Options::String help = {
@@ -347,14 +364,16 @@ struct OptionHolder {
   };
 
   using options =
-      tmpl::list<Averager, Controller, TimescaleTuner, ControlError>;
+      tmpl::list<IsActive, Averager, Controller, TimescaleTuner, ControlError>;
   static constexpr Options::String help = {"Options for a control system."};
 
-  OptionHolder(::Averager<deriv_order - 1> input_averager,
+  OptionHolder(const bool input_is_active,
+               ::Averager<deriv_order - 1> input_averager,
                ::Controller<deriv_order> input_controller,
                ::TimescaleTuner input_tuner,
                typename ControlSystem::control_error input_control_error)
-      : averager(std::move(input_averager)),
+      : is_active(input_is_active),
+        averager(std::move(input_averager)),
         controller(std::move(input_controller)),
         tuner(std::move(input_tuner)),
         control_error(std::move(input_control_error)) {}
@@ -368,6 +387,7 @@ struct OptionHolder {
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) {
+    p | is_active;
     p | averager;
     p | controller;
     p | tuner;
@@ -376,6 +396,7 @@ struct OptionHolder {
 
   // These members are specifically made public for easy access during
   // initialization
+  bool is_active{true};
   ::Averager<deriv_order - 1> averager{};
   ::Controller<deriv_order> controller{};
   ::TimescaleTuner tuner{};

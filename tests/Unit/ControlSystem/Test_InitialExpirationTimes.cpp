@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <limits>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -70,9 +71,12 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
   const Controller<2> controller(update_fraction);
   const control_system::TestHelpers::ControlError control_error{};
 
-  OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
-  OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
-  OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
+  OptionHolder<1> option_holder1(true, averager, controller, tuner1,
+                                 control_error);
+  OptionHolder<2> option_holder2(false, averager, controller, tuner1,
+                                 control_error);
+  OptionHolder<3> option_holder3(true, averager, controller, tuner2,
+                                 control_error);
 
   using FakeCreator = control_system::TestHelpers::FakeCreator;
 
@@ -125,7 +129,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
             {FakeControlSystem<1>::name(),
              initial_time + update_fraction * timescale},
             {FakeControlSystem<2>::name(),
-             initial_time + update_fraction * timescale},
+             std::numeric_limits<double>::infinity()},
             {FakeControlSystem<3>::name(), initial_time + initial_time_step}};
 
     check_expiration_times(expected_initial_expiration_times,

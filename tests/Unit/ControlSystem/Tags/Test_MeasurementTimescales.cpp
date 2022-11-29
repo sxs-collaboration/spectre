@@ -110,9 +110,14 @@ void test_measurement_tag() {
     const Controller<2> controller(update_fraction);
     const control_system::TestHelpers::ControlError control_error{};
 
-    OptionHolder<1> option_holder1(averager, controller, tuner1, control_error);
-    OptionHolder<2> option_holder2(averager, controller, tuner1, control_error);
-    OptionHolder<3> option_holder3(averager, controller, tuner2, control_error);
+    OptionHolder<1> option_holder1(true, averager, controller, tuner1,
+                                   control_error);
+    // Control system 2 is not active so the measurement timescale and
+    // expiration time should both be infinity
+    OptionHolder<2> option_holder2(false, averager, controller, tuner1,
+                                   control_error);
+    OptionHolder<3> option_holder3(true, averager, controller, tuner2,
+                                   control_error);
 
     const std::unique_ptr<DomainCreator<3>> creator =
         std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
@@ -136,8 +141,6 @@ void test_measurement_tag() {
             creator, initial_time, time_step, option_holder1, option_holder2,
             option_holder3);
     CHECK(timescales.size() == 3);
-    // The lack of expiration is a placeholder until the control systems
-    // have been implemented sufficiently to manage their timescales.
     const double expr_time1 = initial_time + update_fraction * timescale1;
     const double expr_time2 = initial_time + time_step;
     const double measure_time1 =
@@ -150,11 +153,11 @@ void test_measurement_tag() {
     CHECK(timescales.at("Controlled1")->func(3.0)[0] ==
           DataVector{measure_time1});
     CHECK(timescales.at("Controlled2")->time_bounds() ==
-          std::array{initial_time, expr_time1});
+          std::array{initial_time, std::numeric_limits<double>::infinity()});
     CHECK(timescales.at("Controlled2")->func(2.0)[0] ==
-          DataVector{measure_time1});
+          DataVector{std::numeric_limits<double>::infinity()});
     CHECK(timescales.at("Controlled2")->func(3.0)[0] ==
-          DataVector{measure_time1});
+          DataVector{std::numeric_limits<double>::infinity()});
     CHECK(timescales.at("Controlled3")->time_bounds() ==
           std::array{initial_time, expr_time2});
     CHECK(timescales.at("Controlled3")->func(1.1)[0] ==
@@ -162,7 +165,7 @@ void test_measurement_tag() {
 
     // Replace Controlled2 with something read in from an h5 file. This means
     // the measurement timescale and expiration time for Controlled2 is
-    // infinity.
+    // infinity still, but for a different reason.
     static_assert(
         std::is_same_v<
             measurement_tag::option_tags<MetavariablesReplace>,
@@ -198,11 +201,11 @@ void test_measurement_tag() {
         const Controller<2> controller(0.3);
         const control_system::TestHelpers::ControlError control_error{};
 
-        OptionHolder<1> option_holder1(averager, controller, tuner1,
+        OptionHolder<1> option_holder1(true, averager, controller, tuner1,
                                        control_error);
-        OptionHolder<2> option_holder2(averager, controller, tuner1,
+        OptionHolder<2> option_holder2(true, averager, controller, tuner1,
                                        control_error);
-        OptionHolder<3> option_holder3(averager, controller, tuner2,
+        OptionHolder<3> option_holder3(true, averager, controller, tuner2,
                                        control_error);
 
         const std::unique_ptr<DomainCreator<3>> creator =
