@@ -55,6 +55,17 @@ include(SpectreSetSiteName)
 # early so we can rely on a consistent Python version in the build system.
 find_package(Python 3.7 REQUIRED)
 
+# Define the location of Python code in the build directory. Unit tests etc. can
+# add this location to their `PYTHONPATH`.
+set(SPECTRE_PYTHON_PREFIX_PARENT "${CMAKE_BINARY_DIR}/bin/python")
+get_filename_component(
+  SPECTRE_PYTHON_PREFIX_PARENT "${SPECTRE_PYTHON_PREFIX_PARENT}" ABSOLUTE)
+set(PYTHONPATH "${SPECTRE_PYTHON_PREFIX_PARENT}")
+if(DEFINED ENV{PYTHONPATH})
+  set(PYTHONPATH "${PYTHONPATH}:$ENV{PYTHONPATH}")
+endif()
+message(STATUS "PYTHONPATH: ${PYTHONPATH}")
+
 option(BUILD_DOCS "Enable building documentation" ON)
 option(
   DOCS_ONLY

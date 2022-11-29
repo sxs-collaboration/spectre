@@ -1,7 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-execute_process(COMMAND "${Python_EXECUTABLE}" "-c"
+execute_process(COMMAND ${CMAKE_COMMAND} -E env
+  PYTHONPATH=${PYTHONPATH} ${Python_EXECUTABLE} "-c"
   "import numpy as n; print(n.__version__); print(n.get_include());"
   RESULT_VARIABLE RESULT
   OUTPUT_VARIABLE OUTPUT

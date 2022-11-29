@@ -14,13 +14,7 @@ function(configure_or_symlink_py_file SOURCE_FILE TARGET_FILE)
   endif()
 endfunction()
 
-set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
-get_filename_component(
-  SPECTRE_PYTHON_PREFIX
-  "${SPECTRE_PYTHON_PREFIX}" ABSOLUTE)
-get_filename_component(
-  SPECTRE_PYTHON_PREFIX_PARENT
-  "${SPECTRE_PYTHON_PREFIX}/.." ABSOLUTE)
+set(SPECTRE_PYTHON_PREFIX "${SPECTRE_PYTHON_PREFIX_PARENT}/spectre")
 
 # Create the root __init__.py file
 if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
@@ -64,7 +58,7 @@ endif()
 file(WRITE
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
   "#!/bin/sh\n"
-  "export PYTHONPATH=$PYTHONPATH:${SPECTRE_PYTHON_PREFIX_PARENT}\n"
+  "export PYTHONPATH=${PYTHONPATH}\n"
   ${_JEMALLOC_MESSAGE}
   )
 configure_file(
@@ -427,12 +421,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS
 
   spectre_test_timeout(TIMEOUT PYTHON 2)
 
-  set(_PYTHONPATH "${SPECTRE_PYTHON_PREFIX_PARENT}")
-  # Avoid "uninitialized variable" warnings
-  if(DEFINED ENV{PYTHONPATH})
-    set(_PYTHONPATH "${_PYTHONPATH}:$ENV{PYTHONPATH}")
-  endif()
-  set(_TEST_ENV_VARS "PYTHONPATH=${_PYTHONPATH}")
+  set(_TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
   if(BUILD_PYTHON_BINDINGS AND
       "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
     list(APPEND
