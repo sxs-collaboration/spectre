@@ -35,7 +35,7 @@ class Item {
 // A mutable item in a DataBox
 //
 // A mutable item is an item in a DataBox that is initialized when the DataBox
-// is constructed using either db::create or db::create_from
+// is constructed using either db::create
 //
 // Its value may be fetched by calling db::get (which calls get)
 //

@@ -514,21 +514,10 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       this->setMigratable(true);
     }
     global_cache_proxy_ = global_cache_proxy;
-    auto temp_box = db::create<
-        db::AddSimpleTags<tmpl::flatten<
-            tmpl::list<Tags::MetavariablesImpl<metavariables>,
-                       Tags::GlobalCacheProxy<metavariables>,
-                       typename ParallelComponent::initialization_tags>>>,
-        db::AddComputeTags<
-            Tags::GlobalCacheImplCompute<metavariables>,
-            db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>>>(
-        metavariables{}, global_cache_proxy_,
+    ::Initialization::mutate_assign<tmpl::list<
+        Tags::GlobalCacheProxy<metavariables>, InitializationTags...>>(
+        make_not_null(&box_), global_cache_proxy_,
         std::move(get<InitializationTags>(initialization_items))...);
-    box_ = db::create_from<
-        tmpl::list<>,
-        Algorithm_detail::action_list_simple_tags<ParallelComponent>,
-        Algorithm_detail::action_list_compute_tags<ParallelComponent>>(
-        std::move(temp_box));
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }

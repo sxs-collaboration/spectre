@@ -31,6 +31,7 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
+#include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
@@ -358,18 +359,9 @@ class MockDistributedObject {
         array_index_(index),
         global_cache_(cache),
         inboxes_(inboxes) {
-    auto temp_box = db::create<
-        db::AddSimpleTags<Parallel::Tags::MetavariablesImpl<metavariables>,
-                          Parallel::Tags::GlobalCacheImpl<metavariables>,
-                          initialization_tags>,
-        db::AddComputeTags<
-            db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>>>(
-        metavariables{}, global_cache_, std::forward<Options>(opts)...);
-    box_ = db::create_from<
-        tmpl::list<>,
-        Parallel::Algorithm_detail::action_list_simple_tags<Component>,
-        Parallel::Algorithm_detail::action_list_compute_tags<Component>>(
-        std::move(temp_box));
+    ::Initialization::mutate_assign<tmpl::push_front<
+        initialization_tags, Parallel::Tags::GlobalCacheImpl<metavariables>>>(
+        make_not_null(&box_), global_cache_, std::forward<Options>(opts)...);
   }
 
   void set_phase(Parallel::Phase phase) {

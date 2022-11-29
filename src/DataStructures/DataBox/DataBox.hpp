@@ -163,13 +163,12 @@ struct create_dependency_graph {
  * \ingroup DataBoxGroup
  * \brief A DataBox stores objects that can be retrieved by using Tags
  * \warning
- * The order of the tags in DataBoxes returned by db::create and
- * db::create_from depends on implementation-defined behavior, and
- * therefore should not be specified in source files. If explicitly
- * naming a DataBox type is necessary they should be generated using
- * db::compute_databox_type.
+ * The order of the tags in DataBoxes returned by db::create depends on
+ * implementation-defined behavior, and therefore should not be specified in
+ * source files. If explicitly naming a DataBox type is necessary they should be
+ * generated using db::compute_databox_type.
  *
- * \see db::create db::create_from
+ * \see db::create
  *
  * @tparam Tags list of DataBoxTag's
  */
@@ -276,13 +275,6 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
     pup_impl(p, non_subitems_tags{}, immutable_item_creation_tags{});
   }
 
-  template <typename Box, typename KeepTagsList, typename... AddMutableItemTags,
-            typename... AddImmutableItemTags, typename... Args>
-  constexpr DataBox(Box&& old_box, KeepTagsList /*meta*/,
-                    tmpl::list<AddMutableItemTags...> /*meta*/,
-                    tmpl::list<AddImmutableItemTags...> /*meta*/,
-                    Args&&... args);
-
   template <typename... AddMutableItemTags, typename AddImmutableItemTagsList,
             typename... Args>
   constexpr DataBox(tmpl::list<AddMutableItemTags...> /*meta*/,
@@ -335,15 +327,6 @@ class DataBox<tmpl::list<Tags...>> : private detail::Item<Tags>... {
                         tmpl::list<AddMutableItemTags...> /*meta*/,
                         std::index_sequence<Is...> /*meta*/,
                         tmpl::list<AddImmutableItemTags...> /*meta*/);
-
-  // Merging DataBox's using create_from requires that all instantiations of
-  // DataBox be friends with each other.
-  template <typename OtherTags>
-  friend class DataBox;
-
-  template <typename Box, typename... TagsToCopy>
-  constexpr void merge_old_box(Box&& old_box,
-                               tmpl::list<TagsToCopy...> /*meta*/);
 
   // clang-tidy: no non-const references
   template <typename... NonSubitemsTags, typename... ComputeTags>
@@ -555,40 +538,6 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
   add_items_to_box(args_tuple, tmpl::list<AddMutableItemTags...>{},
                    std::make_index_sequence<sizeof...(AddMutableItemTags)>{},
                    AddImmutableItemTagsList{});
-}
-
-////////////////////////////////////////////////////////////////
-// Construct DataBox from an existing one
-template <typename... Tags>
-template <typename Box, typename... TagsToCopy>
-constexpr void DataBox<tmpl::list<Tags...>>::merge_old_box(
-    Box&& old_box, tmpl::list<TagsToCopy...> /*meta*/) {
-  EXPAND_PACK_LEFT_TO_RIGHT(get_item<TagsToCopy>() = std::move(
-                                old_box.template get_item<TagsToCopy>()));
-}
-
-template <typename... Tags>
-template <typename Box, typename KeepTagsList, typename... AddMutableItemTags,
-          typename... AddImmutableItemTags, typename... Args>
-constexpr DataBox<tmpl::list<Tags...>>::DataBox(
-    Box&& old_box, KeepTagsList /*meta*/,
-    tmpl::list<AddMutableItemTags...> /*meta*/,
-    tmpl::list<AddImmutableItemTags...> /*meta*/, Args&&... args) {
-#ifdef SPECTRE_DEBUG
-  if constexpr (sizeof...(Args) > 0) {
-    expand_pack(detail::check_initialization_argument_type<
-                AddMutableItemTags, typename AddMutableItemTags::type,
-                std::decay_t<Args>>()...);
-  }
-#endif  // SPECTRE_DEBUG
-
-  merge_old_box(std::forward<Box>(old_box), KeepTagsList{});
-
-  std::tuple<Args&&...> args_tuple(std::forward<Args>(args)...);
-
-  add_items_to_box(args_tuple, tmpl::list<AddMutableItemTags...>{},
-                   std::make_index_sequence<sizeof...(AddMutableItemTags)>{},
-                   tmpl::list<AddImmutableItemTags...>{});
 }
 /// \endcond
 
@@ -1044,113 +993,6 @@ SPECTRE_ALWAYS_INLINE constexpr auto create(Args&&... args) {
   return db::DataBox<tmpl::append<mutable_item_tags, immutable_item_tags>>(
       AddMutableItemTags{}, AddImmutableItemTags{},
       std::forward<Args>(args)...);
-}
-
-namespace detail {
-template <typename RemoveTags, typename AddMutableItemTags,
-          typename AddImmutableItemTags, typename Box, typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr auto create_from(Box&& box, Args&&... args) {
-  static_assert(sizeof...(Args) == 0 or
-                    sizeof...(Args) == tmpl::size<AddMutableItemTags>::value,
-                "Must pass in as many arguments as AddMutableItemTags to "
-                "db::create_from, or none to default-construct them.");
-
-  // 1. Full list of old tags, and the derived tags list of the RemoveTags
-  using old_tags = typename std::decay_t<Box>::tags_list;
-  static_assert(
-      tmpl::all<RemoveTags, has_unique_matching_tag<tmpl::pin<old_tags>,
-                                                    tmpl::_1>>::value,
-      "One of the tags being removed could not be found in the DataBox or "
-      "is a base tag identifying more than one tag.");
-  using remove_tags =
-      tmpl::transform<RemoveTags, tmpl::bind<first_matching_tag,
-                                             tmpl::pin<old_tags>, tmpl::_1>>;
-
-  // 2. Expand subitems of tags to remove
-  using immutable_item_tags_to_remove = expand_subitems<
-      tmpl::filter<remove_tags, db::is_immutable_item_tag<tmpl::_1>>>;
-  using mutable_item_tags_to_remove = expand_subitems<
-      tmpl::filter<remove_tags, db::is_mutable_item_tag<tmpl::_1>>>;
-
-  // 3. Expand subitems of tags to add
-  using mutable_item_tags_to_add = expand_subitems<AddMutableItemTags>;
-  using immutable_item_tags_to_add = expand_subitems<AddImmutableItemTags>;
-
-  // 4. Create lists of tags to keep
-  using mutable_item_tags_to_keep =
-      tmpl::list_difference<typename std::decay_t<Box>::mutable_item_tags,
-                            mutable_item_tags_to_remove>;
-  using immutable_item_tags_to_keep =
-      tmpl::list_difference<typename std::decay_t<Box>::immutable_item_tags,
-                            immutable_item_tags_to_remove>;
-  using old_tags_to_keep =
-      tmpl::append<mutable_item_tags_to_keep, immutable_item_tags_to_keep>;
-
-  // 5. List of the new tags
-  using new_tags =
-      tmpl::append<mutable_item_tags_to_keep, mutable_item_tags_to_add,
-                   immutable_item_tags_to_keep, immutable_item_tags_to_add>;
-
-  DEBUG_STATIC_ASSERT(
-      tmpl::size<
-          tmpl::list_difference<AddMutableItemTags, RemoveTags>>::value ==
-          tmpl::size<AddMutableItemTags>::value,
-      "Use db::mutate to mutate mutable items, do not remove and add them with "
-      "db::create_from.");
-
-#ifdef SPECTRE_DEBUG
-  // Check that we're not removing a subitem itself, should remove the parent.
-  using old_immutable_subitem_tags =
-      tmpl::filter<typename std::decay_t<Box>::immutable_item_tags,
-                   tt::is_a<::Tags::Subitem, tmpl::_1>>;
-  using old_subitem_tags =
-      tmpl::append<typename std::decay_t<Box>::mutable_subitem_tags,
-                   old_immutable_subitem_tags>;
-  using remove_tags_minus_old_subitem_tags =
-      tmpl::list_difference<remove_tags, old_subitem_tags>;
-  static_assert(tmpl::size<remove_tags_minus_old_subitem_tags>::value ==
-                    tmpl::size<remove_tags>::value,
-                "You are not allowed to remove a subitem of an item from the "
-                "DataBox using db::create_from.");
-#endif  // ifdef SPECTRE_DEBUG
-
-  return DataBox<new_tags>(std::forward<Box>(box), old_tags_to_keep{},
-                           AddMutableItemTags{}, AddImmutableItemTags{},
-                           std::forward<Args>(args)...);
-}
-}  // namespace detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Create a new DataBox from an existing one adding or removing items
- *
- * \example
- * Removing an item is done using:
- * \snippet Test_DataBox.cpp create_from_remove
- * Adding a mutable item is done using:
- * \snippet Test_DataBox.cpp create_from_add_item
- * Adding an immutable item is done using:
- * \snippet Test_DataBox.cpp create_from_add_compute_item
- *
- * \see create DataBox
- *
- * \tparam RemoveTags typelist of Tags to remove
- * \tparam AddMutableItemTags typelist of Tags for mutable items corresponding
- *         to the arguments to be added
- * \tparam AddImmutableItemTags list of \ref ComputeTag "compute item tags" and
- *         \ref ReferenceTag "refernce item tags" to add to the DataBox
- * \param box the DataBox the new box should be based off
- * \param args the initial values for the mutable items to add to the DataBox
- * \return the new DataBox
- */
-template <typename RemoveTags, typename AddMutableItemTags = tmpl::list<>,
-          typename AddImmutableItemTags = tmpl::list<>, typename TagsList,
-          typename... Args>
-SPECTRE_ALWAYS_INLINE constexpr auto create_from(db::DataBox<TagsList>&& box,
-                                                 Args&&... args) {
-  return detail::create_from<RemoveTags, AddMutableItemTags,
-                             AddImmutableItemTags>(std::move(box),
-                                                   std::forward<Args>(args)...);
 }
 
 namespace detail {
