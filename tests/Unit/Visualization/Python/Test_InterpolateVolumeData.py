@@ -147,14 +147,7 @@ class TestInterpolateH5(unittest.TestCase):
         vol = file.get_vol(target_volume_name)
 
         self.assertEqual(vol.get_dimension(), 3)
-
-        #python2 support...
-        try:
-            self.assertItemsEqual(vol.list_observation_ids(),
-                                  self.observation_ids)
-        except AttributeError:
-            self.assertCountEqual(vol.list_observation_ids(),
-                                  self.observation_ids)
+        self.assertCountEqual(vol.list_observation_ids(), self.observation_ids)
 
         for i, obs in enumerate(self.observation_ids):
             self.assertEqual(vol.get_grid_names(obs), self.element_names)

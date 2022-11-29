@@ -163,11 +163,6 @@ void bind_datavector(py::module& m) {
            +[](const DataVector& self, const double other) {
              return DataVector{other * self};
            })
-      // Need __div__ for python 2 and __truediv__ for python 3.
-      .def("__div__",
-           +[](const DataVector& self, const double other) {
-             return DataVector{self / other};
-           })
       .def("__truediv__",
            +[](const DataVector& self, const double other) {
              return DataVector{self / other};

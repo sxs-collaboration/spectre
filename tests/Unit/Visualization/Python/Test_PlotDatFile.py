@@ -8,12 +8,6 @@ import numpy as np
 import os
 import unittest
 
-# For Py2 compatibility
-try:
-    unittest.TestCase.assertRaisesRegex
-except AttributeError:
-    unittest.TestCase.assertRaisesRegex = unittest.TestCase.assertRaisesRegexp
-
 
 class TestPlotDatFile(unittest.TestCase):
     def test_available_subfiles(self):

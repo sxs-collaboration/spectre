@@ -8,13 +8,8 @@ import logging
 import numpy as np
 import numpy.testing as npt
 import os
+import unittest
 import yaml
-
-# For Py2 compatibility
-try:
-    import unittest2 as unittest
-except:
-    import unittest
 
 
 class H5Check:

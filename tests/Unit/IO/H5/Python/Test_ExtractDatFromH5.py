@@ -23,8 +23,7 @@ class TestExtractDatFromH5(unittest.TestCase):
                                                 "extracted_DatTestData")
         self.created_dir_input = os.path.join(self.test_dir, "WinterIsComing")
 
-        if not os.path.exists(self.test_dir):
-            os.makedirs(self.test_dir)
+        os.makedirs(self.test_dir, exist_ok=True)
         if os.path.exists(self.created_dir_default):
             shutil.rmtree(self.created_dir_default)
         if os.path.exists(self.created_dir_input):

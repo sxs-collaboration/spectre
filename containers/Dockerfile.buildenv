@@ -99,7 +99,7 @@ RUN apt-get update -y \
 # - We need `coverxygen`, `beautifulsoup4` and `pybtex` to build documentation
 #   on CI. `nbconvert` is used to process ipynb files.
 # - We need `yapf` so the CI can check Python formatting. We use a specific
-# version of it in order to avoid formatting differences between versions.
+#   version of it in order to avoid formatting differences between versions.
 RUN add-apt-repository universe \
     && apt-get update -y \
     && apt-get install -y python3-pip python-is-python3 \
@@ -295,7 +295,7 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
     && apt-get update -y && apt-get install -y clang-13
 
-# python2 for backwards compatibility
+# python2 for backwards compatibility (can be removed once PRs are rebased)
 RUN apt-get update -y \
     && apt-get install -y curl python2 python2-dev \
     && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
@@ -303,6 +303,12 @@ RUN apt-get update -y \
     && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
       pyyaml \
     && pip2 --no-cache-dir install unittest2
+
+# Python 3.7 for backwards compatibility
+RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update -y \
+    && apt-get install -y python3.7 python3.7-dev python3.7-distutils \
+    && python3.7 -m pip --no-cache-dir install \
+        pybind11~=2.6.1 numpy scipy h5py matplotlib pyyaml
 
 # Also install our minimum required CMake version so we can test it on CI.
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4.tar.gz \

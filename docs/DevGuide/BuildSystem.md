@@ -310,14 +310,10 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     reproducibility of results.
     (default is `ON`)
 - USE_GIT_HOOKS
-  - Use git hooks to perform certain sanity checks so that small goofs are
-    caught before getting to CI. Most situations where the hooks can cause
-    problems are handled automatically. The exception is when the build
-    directory is inside a (Singularity) container, we use Python 2 and the host
-    machine (where we make the commits) does not have Python 2. Except for these
-    types of cases, we strongly encourage you to keep the hooks enabled since
-    the same checks are performed during CI and there is a good reason why the
-    checks exist in the first place.
+  - Use git hooks to perform some sanity checks so that small goofs are caught
+    before they are committed. These checks are particularly useful because they
+    also run automatically on \ref github_actions_guide "CI" and must pass
+    before pull requests are merged.
     (default is `ON`)
 - USE_IWYU
   - Enable [include-what-you-use (IWYU)](https://github.com/include-what-you-use/include-what-you-use)

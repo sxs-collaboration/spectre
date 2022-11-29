@@ -38,8 +38,7 @@ def extract_dat_files(filename, **kwargs):
         dat_dir = out_dir + "/".join(split_path[:-1])
         dat_filename = out_dir + dat_path
 
-        if not os.path.exists(dat_dir):
-            os.makedirs(dat_dir)
+        os.makedirs(dat_dir, exist_ok=True)
 
         dat_file = h5file.get_dat(dat_path[:-4])
 
