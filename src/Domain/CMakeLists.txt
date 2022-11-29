@@ -31,6 +31,7 @@ spectre_target_headers(
   Block.hpp
   BlockLogicalCoordinates.hpp
   CreateInitialElement.hpp
+  DiagnosticInfo.hpp
   Domain.hpp
   DomainHelpers.hpp
   ElementDistribution.hpp
