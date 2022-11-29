@@ -6,9 +6,9 @@ set(LIBRARY "Test_DomainTimeDependence")
 set(LIBRARY_SOURCES
   Test_CubicScale.cpp
   Test_None.cpp
+  Test_RotationAboutZAxis.cpp
   Test_ScalingAndZRotation.cpp
   Test_SphericalCompression.cpp
-  Test_UniformRotationAboutZAxis.cpp
   Test_UniformTranslation.cpp
   )
 

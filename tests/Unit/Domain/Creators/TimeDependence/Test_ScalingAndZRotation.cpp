@@ -327,7 +327,7 @@ void test(const bool use_linear_scaling) {
       "CubicScale"s + (use_linear_scaling ? "" : "A");
   const std::string f_of_t_name1 =
       "CubicScale"s + (use_linear_scaling ? "" : "B");
-  // This name must match the hard coded one in UniformRotationAboutZAxis
+  // This name must match the hard coded one in RotationAboutZAxis
   const std::string f_of_t_name2 = "Rotation";
 
   const std::unique_ptr<
