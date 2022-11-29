@@ -9,7 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ControlSystem/InitialExpirationTimes.hpp"
+#include "ControlSystem/CalculateMeasurementTimescales.hpp"
+#include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
@@ -55,17 +56,17 @@ void check_expiration_times(
           expected_expiration_time);
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
-                  "[ControlSystem][Unit]") {
+void test_expiration_time_construction() {
   const double initial_time = 0.9;
   const double initial_time_step = 0.1;
+  constexpr int measurements_per_update = 4;
 
   const double timescale = 2.0;
   const TimescaleTuner tuner1(std::vector<double>{timescale}, 10.0, 1.0e-3,
                               1.0e-2, 1.0e-4, 1.01, 0.99);
-  const TimescaleTuner tuner2(0.1, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  TimescaleTuner tuner2(0.1, 10.0, 1.0e-3, 1.0e-2, 1.0e-4, 1.01, 0.99);
+  tuner2.resize_timescales(2);
   const Averager<1> averager(0.25, true);
   const double update_fraction = 0.3;
   const Controller<2> controller(update_fraction);
@@ -94,8 +95,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
   {
     INFO("No control systems");
     const auto initial_expiration_times =
-        control_system::initial_expiration_times(initial_time,
-                                                 initial_time_step, creator1);
+        control_system::initial_expiration_times(
+            initial_time, initial_time_step, measurements_per_update, creator1);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{};
@@ -107,12 +108,18 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
     INFO("One control system");
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, creator2, option_holder1);
+            initial_time, initial_time_step, measurements_per_update, creator2,
+            option_holder1);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{
             {FakeControlSystem<1>::name(),
-             initial_time + update_fraction * timescale}};
+             // This is ok to use here because we test it below
+             control_system::function_of_time_expiration_time(
+                 initial_time, DataVector{0.0},
+                 control_system::calculate_measurement_timescales(
+                     controller, tuner1, measurements_per_update),
+                 measurements_per_update)}};
 
     check_expiration_times(expected_initial_expiration_times,
                            initial_expiration_times);
@@ -121,13 +128,17 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
     INFO("Three control system");
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, creator3, option_holder1,
-            option_holder2, option_holder3);
+            initial_time, initial_time_step, measurements_per_update, creator3,
+            option_holder1, option_holder2, option_holder3);
 
     const std::unordered_map<std::string, double>
         expected_initial_expiration_times{
             {FakeControlSystem<1>::name(),
-             initial_time + update_fraction * timescale},
+             control_system::function_of_time_expiration_time(
+                 initial_time, DataVector{0.0},
+                 control_system::calculate_measurement_timescales(
+                     controller, tuner1, measurements_per_update),
+                 measurements_per_update)},
             {FakeControlSystem<2>::name(),
              std::numeric_limits<double>::infinity()},
             {FakeControlSystem<3>::name(), initial_time + initial_time_step}};
@@ -135,4 +146,38 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.ConstructInitialExpirationTimes",
     check_expiration_times(expected_initial_expiration_times,
                            initial_expiration_times);
   }
+}
+
+void test_fot_measurement_expr_time() {
+  const DataVector old_measurement_timescales{2.2, 3.3, 1.1};
+  const DataVector new_measurement_timescales{1.2, 2.3, 3.4};
+
+  const double time = 0.6;
+  const int measurements_per_update = 3;
+
+  const double fot_expr_time = control_system::function_of_time_expiration_time(
+      time, old_measurement_timescales, new_measurement_timescales,
+      measurements_per_update);
+  const double expected_fot_expr_time =
+      time + min(old_measurement_timescales) +
+      measurements_per_update * min(new_measurement_timescales);
+
+  CHECK(fot_expr_time == expected_fot_expr_time);
+
+  const double measurement_expr_time =
+      control_system::measurement_expiration_time(
+          time, old_measurement_timescales, new_measurement_timescales,
+          measurements_per_update);
+  const double expected_measurement_expr_time =
+      time + min(old_measurement_timescales) +
+      (double(measurements_per_update) - 0.5) * min(new_measurement_timescales);
+
+  CHECK(measurement_expr_time == expected_measurement_expr_time);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.ControlSystem.ExpirationTimes",
+                  "[ControlSystem][Unit]") {
+  test_expiration_time_construction();
+  test_fot_measurement_expr_time();
 }

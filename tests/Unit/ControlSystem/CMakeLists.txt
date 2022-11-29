@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
   Test_Controller.cpp
   Test_DataVectorHelpers.cpp
   Test_EventTriggerMetafunctions.cpp
-  Test_InitialExpirationTimes.cpp
+  Test_ExpirationTimes.cpp
   Test_Measurement.cpp
   Test_Metafunctions.cpp
   Test_Tags.cpp

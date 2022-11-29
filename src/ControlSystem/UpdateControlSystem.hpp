@@ -6,7 +6,9 @@
 #include <cmath>
 
 #include "ControlSystem/Averager.hpp"
+#include "ControlSystem/CalculateMeasurementTimescales.hpp"
 #include "ControlSystem/Controller.hpp"
+#include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/MeasurementTimescales.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -39,41 +41,41 @@ namespace control_system {
  * - \link Tags::TimescaleTuner TimescaleTuner \endlink
  * - \link Tags::ControlError ControlError \endlink
  * - \link Tags::WriteDataToDisk WriteDataToDisk \endlink
+ * - \link Tags::CurrentNumberOfMeasurements CurrentNumberOfMeasurements
+ *   \endlink
  *
- * If these are not in the DataBox, an error will occur.
+ * And the \link control_system::Tags::MeasurementsPerUpdate \endlink must be in
+ * the GlobalCache. If these tags are not present, a build error will occur.
  *
  * The algorithm to determine whether or not to update the functions of time is
  * as follows:
  * 1. Ensure this control system is active. If it isn't, end here and don't
  *    process the measurements.
- * 2. Determine if we need to update now. This is done by checking if the next
- *    measurement scheduled to happen will be after the current expiration time
- *    of the function of time we are controlling. If it is, we need to update
- *    now, otherwise the functions of time will be expired the next time we
- *    measure.
- * 3. Determine if we should store the current measurement. Not all control
- *    systems are on the same timescale; some are on shorter timescales (like
- *    characteristic speed control), some are on longer timescales (like
- *    Rotation). The ones on longer timescales don't need to record measurements
- *    as often as the ones on shorter timescales. If they did, this could
- *    introduce unnecessary noise into the measurements. It also causes the
- *    control errors to be calculated based off only measurements from the end
- *    of the update interval. This is not what we want. We want measurements
- *    throughout the update interval. If we don't need to store the current
- *    measurement and we don't need to update now, end here.
- * 4. Calculate the control error and update the averager (store the current
- *    measurement).
- * 5. Determine if we need to update. We only want to update at the very end of
- *    the update interval, not sooner. If we don't need to update, end here.
- * 6. Compute control signal using the control error and its derivatives.
- * 7. Determine the new expiration time.
- * 8. Update the function of time.
- * 9. Update the damping timescale using the control error and one derivative.
- * 10. Determine the new measurement timescale for this function of time using
- *     the new damping timescale.
- * 11. Update the measurement timescale.
- * 12. Write the function of time, control error, their derivatives, and the
- *     control signal to disk if specified in the input file.
+ * 2. Increment the current measurement stored by
+ *    `control_system::Tags::CurrentNumberOfMeasurements`. This keeps track of
+ *    which measurement we are on out of
+ *    `control_system::Tags::MeasurementsPerUpdate`.
+ * 3. Calculate the control error and update the averager (store the current
+ *    measurement). If the averager doesn't have enough information to determine
+ *    the derivatives of the control error, exit now (this usually only happens
+ *    for the first couple measurements of a simulation).
+ * 4. If the `control_system::Tags::WriteDataToDisk` tag is set to `true`, write
+ *    the time, function of time values, and the control error and its
+ *    derivative to disk.
+ * 5. Determine if we need to update. We only want to update when the current
+ *    measurement is equal to the number of measurements per update. If it's not
+ *    time to update, exit now. Once we determine that it is time to update, set
+ *    the current measurement back to 0.
+ * 6. Update the damping timescales in the TimescaleTuner and compute the
+ *    control signal using the control error and its derivatives.
+ * 7. Calculate the new measurement timescale based off the updated damping
+ *    timescales and the number of measurements per update.
+ * 8. Determine the new expiration times for the
+ *    `::domain::Tags::FunctionsOfTime` and
+ *    `control_system::Tags::MeasurementTimescales`. Update the MaxDeriv of the
+ *    functions of time with the control signal and update the measurement
+ *    timescales with the new measurement timescale (both of these are
+ *    `Parallel::mutate` calls).
  */
 template <typename ControlSystem>
 struct UpdateControlSystem {
@@ -92,31 +94,17 @@ struct UpdateControlSystem {
     }
 
     // Begin step 2
+    const int measurements_per_update =
+        get<control_system::Tags::MeasurementsPerUpdate>(cache);
+    int& current_measurement = db::get_mutable_reference<
+        control_system::Tags::CurrentNumberOfMeasurements>(box);
+
+    ++current_measurement;
+
     const auto& functions_of_time =
         Parallel::get<::domain::Tags::FunctionsOfTime>(cache);
-    const auto& measurement_timescales =
-        Parallel::get<Tags::MeasurementTimescales>(cache);
     const std::string& function_of_time_name = ControlSystem::name();
     const auto& function_of_time = functions_of_time.at(function_of_time_name);
-
-    const double current_expiration_time = function_of_time->time_bounds()[1];
-    // We need the min over all functions of time because that's when the next
-    // measurement will be
-    double current_min_time_between_measurements{
-        std::numeric_limits<double>::max()};
-    for (const auto& [name, measurement_timescale_fot] :
-         measurement_timescales) {
-      // Avoid compiler warning with gcc-7
-      (void)name;
-      current_min_time_between_measurements =
-          std::min(current_min_time_between_measurements,
-                   min(measurement_timescale_fot->func(time)[0]));
-    }
-
-    // If the next time we are going to measure is after the current
-    // expiration time, we have to update things now
-    const bool need_to_update_now =
-        current_expiration_time < time + current_min_time_between_measurements;
 
     // Begin step 3
     // Get the averager, controller, tuner, and control error from the box
@@ -130,36 +118,53 @@ struct UpdateControlSystem {
         control_system::Tags::ControlError<ControlSystem>>(box);
     const DataVector& current_timescale = tuner.current_timescale();
 
-    // Check if we actually need to use the measurement. If a control system
-    // is on a longer timescale, we don't need to store frequent measurements
-    if (not(averager.is_ready(time) or need_to_update_now)) {
-      return;
-    }
-
-    // Begin step 4
     // Compute control error
     const DataVector Q =
         control_error(cache, time, function_of_time_name, data);
 
-    // Update the averager. We do this before we call controller.is_ready()
-    // because we still want the averager to be up to date even if we aren't
-    // updating at this time
+    // Update the averager. We do this for every measurement because we still
+    // want the averager to be up-to-date even if we aren't updating at this
+    // time
     averager.update(time, Q, current_timescale);
 
-    // Begin step 5
-    // Check if it is time to update
-    if (not(controller.is_ready(time) or need_to_update_now)) {
-      return;
-    }
-
-    // Begin step 6
     // Get the averaged values of the control error and its derivatives
     const auto& opt_avg_values = averager(time);
 
+    if (not opt_avg_values.has_value()) {
+      return;
+    }
+
+    // Begin step 4
+    // Write data for every measurement
+    std::array<DataVector, 2> q_and_dtq{{Q, {Q.size(), 0.0}}};
+    q_and_dtq[0] = (*opt_avg_values)[0];
+    if constexpr (deriv_order > 1) {
+      q_and_dtq[1] = (*opt_avg_values)[1];
+    }
+
+    if (db::get<control_system::Tags::WriteDataToDisk>(*box)) {
+      // LCOV_EXCL_START
+      write_components_to_disk<ControlSystem>(time, cache, function_of_time,
+                                              q_and_dtq);
+      // LCOV_EXCL_STOP
+    }
+
+    // Begin step 5
+    // Check if it is time to update
+    if (current_measurement != measurements_per_update) {
+      return;
+    }
+
+    // Set current measurement back to 0 because we're updating now
+    current_measurement = 0;
+
+    // Begin step 6
     const double time_offset =
         averager.last_time_updated() - averager.average_time(time);
     const double time_offset_0th =
         averager.using_average_0th_deriv_of_q() ? time_offset : 0.0;
+
+    tuner.update_timescale(q_and_dtq);
 
     // Calculate the control signal which will be used to update the highest
     // derivative of the FunctionOfTime
@@ -168,46 +173,44 @@ struct UpdateControlSystem {
                    time_offset_0th, time_offset);
 
     // Begin step 7
-    // Calculate the next expiration time based on the current one
-    const double new_expiration_time =
-        controller.next_expiration_time(current_expiration_time);
-
-    // Begin step 8
-    // Actually update the FunctionOfTime
-    Parallel::mutate<::domain::Tags::FunctionsOfTime, UpdateFunctionOfTime>(
-        cache, function_of_time_name, current_expiration_time, control_signal,
-        new_expiration_time);
-
-    // Begin step 9
-    // Update the damping timescales with the newly calculated control error
-    // and its derivative
-    std::array<DataVector, 2> q_and_dtq{
-        {(*opt_avg_values)[0], {(*opt_avg_values)[0].size(), 0.0}}};
-    if constexpr (deriv_order > 1) {
-      q_and_dtq[1] = (*opt_avg_values)[1];
-    }
-    tuner.update_timescale(q_and_dtq);
-
-    // Begin step 10
     // Calculate new measurement timescales with updated damping timescales
     const DataVector new_measurement_timescale =
-        calculate_measurement_timescales(controller, tuner);
+        calculate_measurement_timescales(controller, tuner,
+                                         measurements_per_update);
 
-    // Begin step 11
-    // Update the measurement timescales
+    const auto& measurement_timescales =
+        Parallel::get<Tags::MeasurementTimescales>(cache);
+    const auto& measurement_timescale =
+        measurement_timescales.at(function_of_time_name);
+    const double current_fot_expiration_time =
+        function_of_time->time_bounds()[1];
+    const double current_measurement_expiration_time =
+        measurement_timescale->time_bounds()[1];
+    // This call is ok because the measurement timescales are still valid
+    // because the measurement timescales expire half a measurement after this
+    // time.
+    const DataVector old_measurement_timescale =
+        measurement_timescale->func(time)[0];
+
+    // Begin step 8
+    // Calculate the next expiration times for both the functions of time and
+    // the measurement timescales based on the current time. Then, actually
+    // update the functions of time and measurement timescales
+    const double new_fot_expiration_time = function_of_time_expiration_time(
+        time, old_measurement_timescale, new_measurement_timescale,
+        measurements_per_update);
+
+    const double new_measurement_expiration_time = measurement_expiration_time(
+        time, old_measurement_timescale, new_measurement_timescale,
+        measurements_per_update);
+
+    Parallel::mutate<::domain::Tags::FunctionsOfTime, UpdateFunctionOfTime>(
+        cache, function_of_time_name, current_fot_expiration_time,
+        control_signal, new_fot_expiration_time);
+
     Parallel::mutate<Tags::MeasurementTimescales, UpdateFunctionOfTime>(
-        cache, function_of_time_name, current_expiration_time,
-        new_measurement_timescale, new_expiration_time);
-
-    // Now that the measurement timescales have been updated, tell the
-    // averager when to expect the next measurement
-    averager.assign_time_between_measurements(min(new_measurement_timescale));
-
-    // Begin step 12
-    if (db::get<control_system::Tags::WriteDataToDisk>(*box)) {
-      write_components_to_disk<ControlSystem>(time, cache, function_of_time,
-                                              q_and_dtq);
-    }
+        cache, function_of_time_name, current_measurement_expiration_time,
+        new_measurement_timescale, new_measurement_expiration_time);
   }
 };
 }  // namespace control_system

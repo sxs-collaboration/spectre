@@ -65,6 +65,7 @@ void test_rotation_control_system(const bool newtonian) {
       "      Rotation: 3\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
+      "  MeasurementsPerUpdate: 4\n"
       "  Rotation:\n"
       "    IsActive: true\n"
       "    Averager:\n"
@@ -99,7 +100,7 @@ void test_rotation_control_system(const bool newtonian) {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<rotation_component>(

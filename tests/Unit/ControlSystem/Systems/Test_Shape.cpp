@@ -77,7 +77,7 @@ void test_shape_control(
   const auto& init_shape_tuple = system_helper->template init_tuple<system>();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<shape_component>(
@@ -241,6 +241,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       "\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
+      "  MeasurementsPerUpdate: 4\n"
       "  ShapeA:\n"
       "    IsActive: true\n"
       "    Averager:\n"
@@ -249,7 +250,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       "    Controller:\n"
       "      UpdateFraction: 0.3\n"
       "    TimescaleTuner:\n"
-      "      InitialTimescales: 0.5\n"
+      "      InitialTimescales: 0.3\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 4e-3\n"
@@ -491,7 +492,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Shape", "[ControlSystem][Unit]") {
   // constant offset in the control error.
   const double custom_approx_looser_eps = 5.0e-3;
   // For everything else, we can use a stricter epsilon
-  const double custom_approx_stricter_eps = 5.0e-8;
+  const double custom_approx_stricter_eps = 5.0e-7;
 
   std::vector<size_t> ells_to_test{2, 5};
   for (const auto& ell : ells_to_test) {

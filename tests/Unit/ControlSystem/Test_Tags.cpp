@@ -81,6 +81,15 @@ void test_all_tags() {
 
   using measurement_tag = control_system::Tags::MeasurementTimescales;
   TestHelpers::db::test_simple_tag<measurement_tag>("MeasurementTimescales");
+
+  using measurements_per_update_tag =
+      control_system::Tags::MeasurementsPerUpdate;
+  TestHelpers::db::test_simple_tag<measurements_per_update_tag>(
+      "MeasurementsPerUpdate");
+  using current_measurement_tag =
+      control_system::Tags::CurrentNumberOfMeasurements;
+  TestHelpers::db::test_simple_tag<current_measurement_tag>(
+      "CurrentNumberOfMeasurements");
 }
 
 void test_control_sys_inputs() {

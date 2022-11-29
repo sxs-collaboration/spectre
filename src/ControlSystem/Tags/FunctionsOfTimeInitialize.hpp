@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "ControlSystem/InitialExpirationTimes.hpp"
+#include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
@@ -42,6 +42,7 @@ struct OptionList {
       tmpl::size<option_holders>::value > 0;
 
   using type = tmpl::flatten<tmpl::list<
+      control_system::OptionTags::MeasurementsPerUpdate,
       tmpl::conditional_t<NeedDomainCreator,
                           tmpl::list<domain::OptionTags::DomainCreator<
                               Metavariables::volume_dim>>,
@@ -69,6 +70,7 @@ struct OptionList<Metavariables, NeedDomainCreator, false> {
       tmpl::size<option_holders>::value > 0;
 
   using type = tmpl::flatten<tmpl::list<
+      control_system::OptionTags::MeasurementsPerUpdate,
       tmpl::conditional_t<NeedDomainCreator,
                           tmpl::list<domain::OptionTags::DomainCreator<
                               Metavariables::volume_dim>>,
@@ -114,6 +116,7 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
   /// are control systems in the metavariables
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
+      const int measurements_per_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const std::optional<std::string>& function_of_time_file,
@@ -122,7 +125,8 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
       const OptionHolders&... option_holders) {
     const auto initial_expiration_times =
         control_system::initial_expiration_times(
-            initial_time, initial_time_step, domain_creator, option_holders...);
+            initial_time, initial_time_step, measurements_per_update,
+            domain_creator, option_holders...);
 
     // We need to check the expiration times before we replace functions of
     // time (if we're going to do so) so we can ensure a proper domain creator
@@ -147,6 +151,7 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
   /// are no control systems in the metavariables
   template <typename Metavariables>
   static type create_from_options(
+      const int measurements_per_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const std::optional<std::string>& function_of_time_file,
@@ -154,8 +159,8 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
     // Just use 0.0 for initial time and time step. Since there are no
     // control systems, these values won't be used anyways
     return FunctionsOfTimeInitialize::create_from_options<Metavariables>(
-        domain_creator, function_of_time_file, function_of_time_name_map, 0.0,
-        0.0);
+        measurements_per_update, domain_creator, function_of_time_file,
+        function_of_time_name_map, 0.0, 0.0);
   }
 
   /// This version of create_from_options is used if the metavariables did not
@@ -163,13 +168,14 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
   /// and it is `false`, and the metavariables did define control systems
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
+      const int measurements_per_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time, const double initial_time_step,
       const OptionHolders&... option_holders) {
     return FunctionsOfTimeInitialize::create_from_options<Metavariables>(
-        domain_creator, std::nullopt, {}, initial_time, initial_time_step,
-        option_holders...);
+        measurements_per_update, domain_creator, std::nullopt, {}, initial_time,
+        initial_time_step, option_holders...);
   }
 
   /// This version of create_from_options is used if the metavariables did not
@@ -177,6 +183,7 @@ struct FunctionsOfTimeInitialize : domain::Tags::FunctionsOfTime,
   /// and it is `false`, and the metavariables did not define control systems
   template <typename Metavariables>
   static type create_from_options(
+      const int /*measurements_per_update*/,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator) {
     return domain_creator->functions_of_time();

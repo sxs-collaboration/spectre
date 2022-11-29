@@ -201,10 +201,12 @@ template <typename ControlSys>
 using ControlSysInputs =
     control_system::OptionTags::ControlSystemInputs<ControlSys>;
 
+constexpr int measurements_per_update = 4;
+
 void test_functions_of_time_tag() {
   INFO("Test FunctionsOfTimeInitialize tag");
   using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  using Creator = tmpl::front<fot_tag::option_tags<Metavariables>>::type;
+  using Creator = std::unique_ptr<::DomainCreator<1>>;
 
   const Creator creator = std::make_unique<TestCreator>(true);
 
@@ -232,8 +234,8 @@ void test_functions_of_time_tag() {
   // override_functions_of_time
   const double initial_time_step = 1.0;
   fot_tag::type functions_of_time = fot_tag::create_from_options<Metavariables>(
-      creator, initial_time, initial_time_step, option_holder1, option_holder2,
-      option_holder3);
+      measurements_per_update, creator, initial_time, initial_time_step,
+      option_holder1, option_holder2, option_holder3);
 
   CHECK(functions_of_time.at("Controlled1")->time_bounds()[1] ==
         std::numeric_limits<double>::infinity());
@@ -248,6 +250,7 @@ void test_functions_of_time_tag() {
       std::is_same_v<
           fot_tag::option_tags<Metavariables>,
           tmpl::list<
+              control_system::OptionTags::MeasurementsPerUpdate,
               domain::OptionTags::DomainCreator<Metavariables::volume_dim>,
               ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
               ControlSysInputs<FakeControlSystem<1>>,
@@ -311,6 +314,7 @@ void test_functions_of_time_tag() {
         std::is_same_v<
             fot_tag::option_tags<MetavariablesReplace>,
             tmpl::list<
+                control_system::OptionTags::MeasurementsPerUpdate,
                 domain::OptionTags::DomainCreator<
                     MetavariablesReplace::volume_dim>,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
@@ -321,8 +325,9 @@ void test_functions_of_time_tag() {
                 ControlSysInputs<FakeControlSystem<3>>>>);
     auto replace_functions_of_time =
         fot_tag::create_from_options<MetavariablesReplace>(
-            creator, {test_filename}, test_name_map, initial_time,
-            initial_time_step, option_holder1, option_holder2, option_holder3);
+            measurements_per_update, creator, {test_filename}, test_name_map,
+            initial_time, initial_time_step, option_holder1, option_holder2,
+            option_holder3);
 
     const double final_time = expected_times[number_of_times - 1];
     CHECK(replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
@@ -336,8 +341,9 @@ void test_functions_of_time_tag() {
     // had control systems but not override_functions_of_time
     auto no_replace_functions_of_time =
         fot_tag::create_from_options<MetavariablesReplace>(
-            creator, std::nullopt, test_name_map, initial_time,
-            initial_time_step, option_holder1, option_holder2, option_holder3);
+            measurements_per_update, creator, std::nullopt, test_name_map,
+            initial_time, initial_time_step, option_holder1, option_holder2,
+            option_holder3);
     CHECK(no_replace_functions_of_time.at("Controlled1")->time_bounds()[1] ==
           std::numeric_limits<double>::infinity());
     CHECK(no_replace_functions_of_time.at("Controlled2")->time_bounds()[1] ==
@@ -365,13 +371,15 @@ void test_functions_of_time_tag() {
         std::is_same_v<
             fot_tag::option_tags<MetavariablesNoControlSystemsReplace>,
             tmpl::list<
+                control_system::OptionTags::MeasurementsPerUpdate,
                 domain::OptionTags::DomainCreator<
                     MetavariablesNoControlSystemsReplace::volume_dim>,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap>>);
     auto no_control_sys_replaced_fot =
         fot_tag::create_from_options<MetavariablesNoControlSystemsReplace>(
-            not_controlled_creator, {test_filename}, test_name_map);
+            measurements_per_update, not_controlled_creator, {test_filename},
+            test_name_map);
 
     CHECK(no_control_sys_replaced_fot.size() == 1);
     CHECK(no_control_sys_replaced_fot.count("Uncontrolled") == 1);
@@ -381,13 +389,14 @@ void test_functions_of_time_tag() {
 
     // Last test construction without control systems and without
     // override_functions_of_time
-    static_assert(
-        std::is_same_v<fot_tag::option_tags<MetavariablesNoControlSystems>,
-                       tmpl::list<domain::OptionTags::DomainCreator<
-                           MetavariablesNoControlSystems::volume_dim>>>);
+    static_assert(std::is_same_v<
+                  fot_tag::option_tags<MetavariablesNoControlSystems>,
+                  tmpl::list<control_system::OptionTags::MeasurementsPerUpdate,
+                             domain::OptionTags::DomainCreator<
+                                 MetavariablesNoControlSystems::volume_dim>>>);
     auto no_control_sys_fot =
         fot_tag::create_from_options<MetavariablesNoControlSystems>(
-            not_controlled_creator);
+            measurements_per_update, not_controlled_creator);
     CHECK(no_control_sys_fot.size() == 1);
     CHECK(no_control_sys_fot.count("Uncontrolled") == 1);
     // -3.0 comes from the TestCreator above
@@ -407,7 +416,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
   test_functions_of_time_tag();
 
   using fot_tag = control_system::Tags::FunctionsOfTimeInitialize;
-  using Creator = tmpl::front<fot_tag::option_tags<Metavariables>>::type;
+  using Creator = std::unique_ptr<::DomainCreator<1>>;
 
   CHECK_THROWS_WITH(
       []() {
@@ -432,8 +441,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
         const double initial_time_step = 1.0;
         fot_tag::type functions_of_time =
             fot_tag::create_from_options<Metavariables>(
-                creator, initial_time, initial_time_step, option_holder1,
-                option_holder2, option_holder3, option_holder4);
+                measurements_per_update, creator, initial_time,
+                initial_time_step, option_holder1, option_holder2,
+                option_holder3, option_holder4);
       }(),
       Catch::Contains(
           "is not controlling a function of time. Check that the DomainCreator "
@@ -461,8 +471,9 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Tags.FunctionsOfTimeInitialize",
         const double initial_time_step = 1.0;
         fot_tag::type functions_of_time =
             fot_tag::create_from_options<Metavariables>(
-                creator, initial_time, initial_time_step, option_holder1,
-                option_holder2, option_holder3);
+                measurements_per_update, creator, initial_time,
+                initial_time_step, option_holder1, option_holder2,
+                option_holder3);
       }(),
       Catch::Contains("It is possible that the DomainCreator you are using "
                       "isn't compatible with the control systems"));
