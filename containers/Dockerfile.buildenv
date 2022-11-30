@@ -6,15 +6,15 @@
 # different images in this Dockerfile. Here is how to build them:
 # 1. `dev`
 #
-#   cd $SPECTRE_HOME/containers
+#   cd $SPECTRE_HOME
 #   docker build --target dev -t sxscollaboration/spectre:dev \
-#                 -f ./Dockerfile.buildenv .
+#                 -f ./containers/Dockerfile.buildenv .
 #
 # 2. `ci` (this should use the `dev` image you just built for most of it)
 #
-#   cd $SPECTRE_HOME/containers
+#   cd $SPECTRE_HOME
 #   docker build --target ci -t sxscollaboration/spectre:ci \
-#                 -f ./Dockerfile.buildenv .
+#                 -f ./containers/Dockerfile.buildenv .
 #
 # 3. `demo` To build this, it is recommended to first push the `dev` and `ci`
 #    images to DockerHub as the `demo` image uses the remote `dev` image.
@@ -96,18 +96,14 @@ RUN apt-get update -y \
 #   scripts use `/usr/bin/env python` to find python so restore it.
 # - We pin the Numpy version because v1.22 segfaults in Pypp tests, see issue
 #   https://github.com/sxs-collaboration/spectre/issues/3844
-# - We need `coverxygen`, `beautifulsoup4` and `pybtex` to build documentation
-#   on CI. `nbconvert` is used to process ipynb files.
-# - We need `yapf` so the CI can check Python formatting. We use a specific
-#   version of it in order to avoid formatting differences between versions.
+COPY support/Python/requirements.txt requirements.txt
+COPY support/Python/dev_requirements.txt dev_requirements.txt
 RUN add-apt-repository universe \
     && apt-get update -y \
     && apt-get install -y python3-pip python-is-python3 \
-    && pip3 --no-cache-dir install -U pip \
-    && pip3 --no-cache-dir install pybind11~=2.6.1 \
-      numpy~=1.21.5 scipy h5py matplotlib \
-      coverxygen beautifulsoup4 pybtex pyyaml nbconvert \
-    && pip3 --no-cache-dir install yapf==0.29.0
+    && pip3 --no-cache-dir install pybind11~=2.6.1 numpy~=1.21.5 \
+    && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
+    && rm requirements.txt dev_requirements.txt
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y \
@@ -295,20 +291,14 @@ RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main' \
     && apt-get update -y && apt-get install -y clang-13
 
-# python2 for backwards compatibility (can be removed once PRs are rebased)
-RUN apt-get update -y \
-    && apt-get install -y curl python2 python2-dev \
-    && curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py \
-    && python2 get-pip.py && rm get-pip.py \
-    && pip2 --no-cache-dir install pybind11~=2.6.1 numpy scipy h5py matplotlib \
-      pyyaml \
-    && pip2 --no-cache-dir install unittest2
-
 # Python 3.7 for backwards compatibility
+COPY support/Python/requirements.txt requirements.txt
+COPY support/Python/dev_requirements.txt dev_requirements.txt
 RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update -y \
     && apt-get install -y python3.7 python3.7-dev python3.7-distutils \
-    && python3.7 -m pip --no-cache-dir install \
-        pybind11~=2.6.1 numpy scipy h5py matplotlib pyyaml
+    && python3.7 -m pip --no-cache-dir install pybind11~=2.6.1 \
+    && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
+    && rm requirements.txt dev_requirements.txt
 
 # Also install our minimum required CMake version so we can test it on CI.
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4.tar.gz \
