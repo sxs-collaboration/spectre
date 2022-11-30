@@ -7,21 +7,17 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
-namespace gr {
-namespace Solutions {
+namespace gr::Solutions {
 
 /*!
- * \brief Radius of Kerr horizon in Kerr-Schild coordinates.
+ * \brief The Kerr-Schild radius corresponding to a Boyer-Lindquist radius.
  *
- * \details Computes the radius of a Kerr black hole as a function of
- * angles.  The input argument `theta_phi` is typically the output of
- * the `theta_phi_points()` method of a `YlmSpherepack` object; i.e.,
+ * \details Computes the radius of a surface of constant Boyer-Lindquist radius
+ * as a function of angles.  The input argument `theta_phi` is typically the
+ * output of the `theta_phi_points()` method of a `YlmSpherepack` object; i.e.,
  * a std::array of two DataVectors containing the values of theta and
  * phi at each point on a Strahlkorper.
  *
- * \note If the spin is nearly extremal, this function has accuracy
- *       limited to roughly \f$10^{-8}\f$, because of roundoff amplification
- *       from computing \f$M + \sqrt{M^2-a^2}\f$.
  *
  * Derivation:
  *
@@ -39,8 +35,7 @@ namespace Solutions {
  * \f$\hat{x}\f$ means \f$(x/r,y/r,z/r)\f$, and the dot product is
  * taken as in flat space.
  *
- * The horizon is a surface of constant \f$r_{BL}\f$. Therefore
- * we can solve the above equation for \f$r^2\f$ as a function of angles,
+ * We solve the above equation for \f$r^2\f$ as a function of angles,
  * yielding
  * \f[
  *     r^2 = \frac{r_{BL}^2 (r_{BL}^2 + a^2)}
@@ -48,19 +43,30 @@ namespace Solutions {
  * \f]
  * where the angles are encoded in \f$\hat x\f$ and everything else on the
  * right-hand side is constant.
+ */
+template <typename DataType>
+Scalar<DataType> kerr_schild_radius_from_boyer_lindquist(
+    const double boyer_lindquist_radius,
+    const std::array<DataType, 2>& theta_phi, double mass,
+    const std::array<double, 3>& dimensionless_spin);
+/*!
+ * \brief The Kerr-Schild radius corresponding to a Kerr horizon.
  *
- * `kerr_horizon_radius` evaluates \f$r\f$ using the above equation, and
+ * \details `kerr_horizon_radius` evaluates \f$r\f$ using the above equation in
+ * the documentation for `kerr_schild_radius_from_boyer_lindquist`, and
  * using the standard expression for the Boyer-Lindquist radius of the
  * Kerr horizon:
  * \f[
  *   r_{BL} = r_+ = M + \sqrt{M^2-a^2}.
  * \f]
  *
+ * \note If the spin is nearly extremal, this function has accuracy
+ *       limited to roughly \f$10^{-8}\f$, because of roundoff amplification
+ *       from computing \f$M + \sqrt{M^2-a^2}\f$.
  */
 template <typename DataType>
 Scalar<DataType> kerr_horizon_radius(
     const std::array<DataType, 2>& theta_phi, double mass,
     const std::array<double, 3>& dimensionless_spin);
 
-}  // namespace Solutions
-}  // namespace gr
+}  // namespace gr::Solutions
