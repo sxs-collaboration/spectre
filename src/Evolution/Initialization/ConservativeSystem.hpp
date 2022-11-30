@@ -66,7 +66,7 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename System, typename EquationOfStateTag = NoSuchType>
+template <typename System>
 struct ConservativeSystem {
  private:
   static constexpr size_t dim = System::volume_dim;
@@ -82,8 +82,7 @@ struct ConservativeSystem {
   template <typename LocalSystem>
   struct simple_tags_impl<LocalSystem, true> {
     using type =
-        tmpl::list<variables_tag, typename System::primitive_variables_tag,
-                   EquationOfStateTag>;
+        tmpl::list<variables_tag, typename System::primitive_variables_tag>;
   };
 
  public:
@@ -109,12 +108,8 @@ struct ConservativeSystem {
 
       PrimitiveVars primitive_vars{
           db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
-      auto equation_of_state = db::get<::Tags::AnalyticSolutionOrData>(box)
-                                   .equation_of_state()
-                                   .get_clone();
       Initialization::mutate_assign<simple_tags>(
-          make_not_null(&box), std::move(vars), std::move(primitive_vars),
-          std::move(equation_of_state));
+          make_not_null(&box), std::move(vars), std::move(primitive_vars));
     } else {
       Initialization::mutate_assign<simple_tags>(make_not_null(&box),
                                                  std::move(vars));

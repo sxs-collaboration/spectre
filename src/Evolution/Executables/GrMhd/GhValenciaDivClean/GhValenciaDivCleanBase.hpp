@@ -347,6 +347,7 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<evolution::is_numeric_initial_data_v<initial_data>,
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
+      equation_of_state_tag,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -382,8 +383,7 @@ struct GhValenciaDivCleanTemplateBase<
       Initialization::Actions::TimeAndTimeStep<derived_metavars>,
       evolution::dg::Initialization::Domain<3>,
       Initialization::Actions::GrTagsForHydro<system>,
-      Initialization::Actions::ConservativeSystem<system,
-                                                  equation_of_state_tag>,
+      Initialization::Actions::ConservativeSystem<system>,
       std::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,
           evolution::Initialization::Actions::SetVariables<

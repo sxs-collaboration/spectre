@@ -249,8 +249,7 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::flatten<tmpl::list<
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<Dim>,
-      Initialization::Actions::ConservativeSystem<system,
-                                                  equation_of_state_tag>,
+      Initialization::Actions::ConservativeSystem<system>,
       evolution::Initialization::Actions::SetVariables<
           domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
@@ -398,7 +397,7 @@ struct EvolutionMetavars {
           use_dg_subcell,
           tmpl::list<NewtonianEuler::fd::Tags::Reconstructor<volume_dim>>,
           tmpl::list<>>,
-      initial_data_tag,
+      initial_data_tag, equation_of_state_tag,
       tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>>;
 
   static constexpr Options::String help{

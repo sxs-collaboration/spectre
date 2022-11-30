@@ -130,7 +130,6 @@ namespace Tags {
 /// GRMHD with divergence cleaning.
 ///
 /// \details see grmhd::ValenciaDivClean::characteristic_speeds
-template <typename EquationOfStateType>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                                      db::ComputeTag {
   using base = Tags::CharacteristicSpeeds;
@@ -144,13 +143,13 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                  hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
                  gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<3>>,
-                 hydro::Tags::EquationOfState<EquationOfStateType>>;
+                 hydro::Tags::EquationOfStateBase>;
 
-  using volume_tags =
-      tmpl::list<hydro::Tags::EquationOfState<EquationOfStateType>>;
+  using volume_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;
 
   using return_type = std::array<DataVector, 9>;
 
+  template <size_t ThermodynamicDim>
   static constexpr void function(
       const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& rest_mass_density,
@@ -163,9 +162,9 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
       const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
       const tnsr::i<DataVector, 3>& unit_normal,
-      const EquationsOfState::EquationOfState<
-          true, EquationOfStateType::thermodynamic_dim>& equation_of_state) {
-    characteristic_speeds<EquationOfStateType::thermodynamic_dim>(
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) {
+    characteristic_speeds<ThermodynamicDim>(
         result, rest_mass_density, specific_internal_energy, specific_enthalpy,
         spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
         spatial_metric, unit_normal, equation_of_state);

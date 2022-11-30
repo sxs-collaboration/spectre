@@ -59,7 +59,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<typename Metavariables::equation_of_state_tag>;
 
   using initial_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
 
@@ -67,8 +68,7 @@ struct component {
       Parallel::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<initial_tags>,
                  Initialization::Actions::ConservativeSystem<
-                     typename Metavariables::system,
-                     typename Metavariables::equation_of_state_tag>>>>;
+                     typename Metavariables::system>>>>;
 };
 
 template <size_t Dim, bool HasPrimitives>
@@ -92,10 +92,6 @@ void check_primitives(std::true_type /*has_prims*/, const Runner& runner,
   SystemAnalyticSolution system_analytic_solution{};
   CHECK(ActionTesting::get_databox_tag<comp, prim_vars_tag>(runner, 0)
             .number_of_grid_points() == number_of_grid_points);
-  CHECK(dynamic_cast<const EquationsOfState::PolytropicFluid<true>&>(
-            ActionTesting::get_databox_tag<
-                comp, typename Metavariables<Dim, true>::equation_of_state_tag>(
-                runner, 0)) == system_analytic_solution.equation_of_state());
 }
 
 template <size_t Dim, typename Runner>
