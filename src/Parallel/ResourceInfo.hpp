@@ -8,8 +8,10 @@
 #include <ios>
 #include <optional>
 #include <pup.h>
+#include <set>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 #include <utility>
 
@@ -18,6 +20,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Algorithms/AlgorithmSingletonDeclarations.hpp"
 #include "Parallel/Info.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/TypeTraits.hpp"
@@ -29,12 +32,15 @@
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits/CreateHasTypeAlias.hpp"
 
 /// \cond
 namespace Parallel::Tags {
 template <typename Component>
 struct SingletonInfo;
 struct AvoidGlobalProc0;
+template <typename Metavariables>
+struct ResourceInfo;
 }  // namespace Parallel::Tags
 /// \endcond
 
@@ -108,12 +114,27 @@ struct SingletonInfoHolder {
   bool is_exclusive() const { return exclusive_; }
 
  private:
+  template <typename ParallelComponent>
+  friend bool operator==(const SingletonInfoHolder<ParallelComponent>& lhs,
+                         const SingletonInfoHolder<ParallelComponent>& rhs);
   // We use size_t here because we want a non-negative integer, but we use int
   // in the option because we want to protect against negative numbers. And a
   // negative size_t is actually a really large value (it wraps around)
   std::optional<size_t> proc_{std::nullopt};
   bool exclusive_{false};
 };
+
+template <typename ParallelComponent>
+bool operator==(const SingletonInfoHolder<ParallelComponent>& lhs,
+                const SingletonInfoHolder<ParallelComponent>& rhs) {
+  return lhs.proc_ == rhs.proc_ and lhs.exclusive_ == rhs.exclusive_;
+}
+
+template <typename ParallelComponent>
+bool operator!=(const SingletonInfoHolder<ParallelComponent>& lhs,
+                const SingletonInfoHolder<ParallelComponent>& rhs) {
+  return not(lhs == rhs);
+}
 
 template <typename ParallelComponents>
 struct SingletonPack;
@@ -206,14 +227,50 @@ struct SingletonPack<tmpl::list<ParallelComponents...>> {
   }
 
  private:
+  template <typename... Components>
+  friend bool operator==(const SingletonPack<tmpl::list<Components...>>& lhs,
+                         const SingletonPack<tmpl::list<Components...>>& rhs);
+
   tuples::tagged_tuple_from_typelist<local_tags> procs_{};
 };
 
+template <typename... Components>
+bool operator==(const SingletonPack<tmpl::list<Components...>>& lhs,
+                const SingletonPack<tmpl::list<Components...>>& rhs) {
+  return lhs.procs_ == rhs.procs_;
+}
+
+template <typename... Components>
+bool operator!=(const SingletonPack<tmpl::list<Components...>>& lhs,
+                const SingletonPack<tmpl::list<Components...>>& rhs) {
+  return not(lhs == rhs);
+}
+
 namespace detail {
+// This whole gymnastics with type aliases is necessary because ResourceInfo is
+// inside the GlobalCache. There are a lot of places that use the GlobalCache
+// that haven't defined the initialization_tags type alias (like the testing
+// framework). And even though we don't call the entry method on the GlobalCache
+// related to ResourceInfo, all the type aliases inside ResourceInfo are still
+// constructed regardless. So rather than changing every mock component to have
+// an empty type alias, we just treat no type alias as not having the tag we are
+// looking for.
+CREATE_HAS_TYPE_ALIAS(initialization_tags)
+CREATE_HAS_TYPE_ALIAS_V(initialization_tags)
+
+template <typename Component, typename Tag,
+          bool HasInitializationTags = has_initialization_tags_v<Component>>
+struct has_tag : std::false_type {};
+
+template <typename Component, typename Tag>
+struct has_tag<Component, Tag, true>
+    : std::bool_constant<
+          tmpl::list_contains_v<typename Component::initialization_tags, Tag>> {
+};
+
 template <typename Component>
 using component_has_singleton_info_tag =
-    tmpl::list_contains<typename Component::initialization_tags,
-                        Parallel::Tags::SingletonInfo<Component>>;
+    has_tag<Component, Parallel::Tags::SingletonInfo<Component>>;
 
 template <typename Metavariables>
 using singleton_components =
@@ -222,14 +279,17 @@ using singleton_components =
 
 template <typename Component>
 using contains_avoid_global_proc_0 =
-    tmpl::list_contains<typename Component::initialization_tags,
-                        Parallel::Tags::AvoidGlobalProc0>;
+    has_tag<Component, Parallel::Tags::AvoidGlobalProc0>;
 
 template <typename Metavariables>
 constexpr bool avoid_global_proc_0 =
     tmpl::size<tmpl::filter<
         typename Metavariables::component_list,
         tmpl::bind<contains_avoid_global_proc_0, tmpl::_1>>>::value > 0;
+
+template <typename Metavariables>
+constexpr bool has_resource_info_tag = Parallel::is_in_const_global_cache<
+    Metavariables, Parallel::Tags::ResourceInfo<Metavariables>>;
 
 template <typename SingletonList>
 using singletons_with_singleton_info =
@@ -239,6 +299,7 @@ using singletons_with_singleton_info =
 template <typename Metavariables>
 constexpr bool using_resource_info =
     avoid_global_proc_0<Metavariables> or
+    has_resource_info_tag<Metavariables> or
     tmpl::size<singletons_with_singleton_info<
         singleton_components<Metavariables>>>::value > 0;
 
@@ -255,18 +316,27 @@ constexpr bool using_resource_info =
  * in the singleton. To specify whether to avoid placing array elements and
  * singletons on the global proc 0, add the `Parallel::Tags::AvoidGlobalProc0`
  * tag to the `initialization_tags` of the parallel components in your
- * executable.
+ * executable. If you don't want either of these things and just want access to
+ * the ResourceInfo, add the `Parallel::Tags::ResourceInfo` tag to the const
+ * global cache tags.
  *
- * If you only add the `Parallel::Tags::AvoidGlobalProc0` tag to the
- * initialization tags, you'll need the following block in the input file:
+ * If you only add the `Parallel::Tags::ResourceInfo` tag to the const global
+ * cache tags, you'll need the following block in the input file:
+ *
+ * \code {.yaml}
+ * ResourceInfo:
+ * \endcode
+ *
+ * If you add the `Parallel::Tags::AvoidGlobalProc0` tag to the initialization
+ * tags, you'll need the following block in the input file:
  *
  * \code {.yaml}
  * ResourceInfo:
  *   AvoidGlobalProc0: true
  * \endcode
  *
- * If you only have `Parallel::Tags::SingletonInfo` tags in the initialization
- * tags, you'll need the following block in the input file:
+ * If you have `Parallel::Tags::SingletonInfo` tags in the initialization tags,
+ * you'll need the following block in the input file:
  *
  * \code {.yaml}
  * ResourceInfo:
@@ -426,6 +496,10 @@ struct ResourceInfo {
   /// `allocate_array` function of the array component
   const std::unordered_set<size_t>& procs_to_ignore() const;
 
+  /// Returns a `std::set<size_t>` that has all processors available to put
+  /// elements on, meaning processors that aren't ignored.
+  const std::set<size_t>& procs_available_for_elements() const;
+
   /// Returns the proc that the singleton `Component` should be placed on.
   template <typename Component>
   size_t proc_for() const;
@@ -439,13 +513,21 @@ struct ResourceInfo {
   /// that means the checks that require knowing the number of nodes now occur
   /// at runtime instead of option parsing. This is why the
   /// `singleton_map_has_been_set_` bool is necessary and why we check if this
-  /// function has been called in get_singleton_info(), procs_to_ignore(), and
-  /// proc_for().
+  /// function has been called in most other member functions.
+  ///
+  /// To avoid a cyclic dependency between the GlobalCache and ResourceInfo, we
+  /// template this function rather than explicitly use the GlobalCache because
+  /// the GlobalCache depends on ResourceInfo
   ///
   /// This function should only be called once.
-  void build_singleton_map(const Parallel::GlobalCache<Metavariables>& cache);
+  template <typename Cache>
+  void build_singleton_map(const Cache& cache);
 
  private:
+  template <typename Metavars>
+  friend bool operator==(const ResourceInfo<Metavars>& lhs,
+                         const ResourceInfo<Metavars>& rhs);
+
   void singleton_map_not_built() const {
     ERROR(
         "The singleton map has not been built yet. You must call "
@@ -462,6 +544,7 @@ struct ResourceInfo {
   std::unordered_multiset<size_t> requested_nonexclusive_procs_{};
   // Procs that are exclusive. These may or may not be specifically requested
   std::unordered_set<size_t> procs_to_ignore_{};
+  std::set<size_t> procs_available_for_elements_{};
   // For each singleton (whether it has a SingletonInfo or not), maps whether
   // it's exclusive and what proc it is on.
   tuples::tagged_tuple_from_typelist<local_tags> singleton_map_{};
@@ -589,6 +672,7 @@ void ResourceInfo<Metavariables>::pup(PUP::er& p) {
   p | num_requested_nonexclusive_singletons_;
   p | requested_nonexclusive_procs_;
   p | procs_to_ignore_;
+  p | procs_available_for_elements_;
   p | singleton_map_;
 }
 
@@ -614,6 +698,15 @@ const std::unordered_set<size_t>& ResourceInfo<Metavariables>::procs_to_ignore()
 }
 
 template <typename Metavariables>
+const std::set<size_t>&
+ResourceInfo<Metavariables>::procs_available_for_elements() const {
+  if (not singleton_map_has_been_set_) {
+    singleton_map_not_built();
+  }
+  return procs_available_for_elements_;
+}
+
+template <typename Metavariables>
 template <typename Component>
 size_t ResourceInfo<Metavariables>::proc_for() const {
   if (not singleton_map_has_been_set_) {
@@ -622,9 +715,34 @@ size_t ResourceInfo<Metavariables>::proc_for() const {
   return *tuples::get<LocalTag<Component>>(singleton_map_).second;
 }
 
+template <typename Metavars>
+bool operator==(const ResourceInfo<Metavars>& lhs,
+                const ResourceInfo<Metavars>& rhs) {
+  return lhs.avoid_global_proc_0_ == rhs.avoid_global_proc_0_ and
+         lhs.singleton_map_has_been_set_ == rhs.singleton_map_has_been_set_ and
+         lhs.num_exclusive_singletons_ == rhs.num_exclusive_singletons_ and
+         lhs.num_procs_to_ignore_ == rhs.num_procs_to_ignore_ and
+         lhs.num_requested_exclusive_singletons_ ==
+             rhs.num_requested_exclusive_singletons_ and
+         lhs.num_requested_nonexclusive_singletons_ ==
+             rhs.num_requested_nonexclusive_singletons_ and
+         lhs.requested_nonexclusive_procs_ ==
+             rhs.requested_nonexclusive_procs_ and
+         lhs.procs_to_ignore_ == rhs.procs_to_ignore_ and
+         lhs.procs_available_for_elements_ ==
+             rhs.procs_available_for_elements_ and
+         lhs.singleton_map_ == rhs.singleton_map_;
+}
+
+template <typename Metavars>
+bool operator!=(const ResourceInfo<Metavars>& lhs,
+                const ResourceInfo<Metavars>& rhs) {
+  return not(lhs == rhs);
+}
+
 template <typename Metavariables>
-void ResourceInfo<Metavariables>::build_singleton_map(
-    const Parallel::GlobalCache<Metavariables>& cache) {
+template <typename Cache>
+void ResourceInfo<Metavariables>::build_singleton_map(const Cache& cache) {
   const size_t num_procs = Parallel::number_of_procs<size_t>(cache);
   const size_t num_nodes = Parallel::number_of_nodes<size_t>(cache);
 
@@ -764,6 +882,14 @@ break_auto_exclusive_loops:
          "Not all auto exclusive singletons have been allocated. The remaining "
          "number of auto exclusive singletons to be allocated is "
              << alg::accumulate(auto_exclusive_singletons_on_each_node, 0_st));
+
+  // procs_to_ignore_ is now complete. Now construct
+  // procs_available_for_elements_
+  for (size_t i = 0; i < num_procs; i++) {
+    if (procs_to_ignore_.find(i) == procs_to_ignore_.end()) {
+      procs_available_for_elements_.insert(i);
+    }
+  }
 
   // At this point, all auto exclusive singletons have been allocated. Now the
   // only singletons left are auto non-exclusive. We use vectors of

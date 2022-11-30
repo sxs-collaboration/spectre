@@ -23,6 +23,7 @@
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -43,6 +44,10 @@
 namespace Parallel {
 template <typename Metavariables>
 struct GlobalCache;
+namespace Tags {
+template <typename Metavariables>
+struct ResourceInfo;
+}  // namespace Tags
 }  // namespace Parallel
 namespace mem_monitor {
 template <typename Metavariables>
@@ -467,6 +472,13 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   /// framework. Trying to do either of these will result in an ERROR.
   void compute_size_for_memory_monitor(const double time);
 
+  /// Entry method that will set the value of the Parallel::Tags::ResourceInfo
+  /// tag to the value passed in (if the tag exists in the GlobalCache)
+  ///
+  /// This is only meant to be called once.
+  void set_resource_info(
+      const Parallel::ResourceInfo<Metavariables>& resource_info);
+
   /// Retrieve the proxy to the global cache
   proxy_type get_this_proxy();
 
@@ -549,6 +561,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   MutableGlobalCache<Metavariables>* mutable_global_cache_{nullptr};
   mutable_global_cache_proxy_type mutable_global_cache_proxy_{};
   bool parallel_components_have_been_set_{false};
+  bool resource_info_has_been_set_{false};
   std::optional<main_proxy_type> main_proxy_;
   // Defaults for testing framework
   int my_proc_{0};
@@ -659,6 +672,20 @@ void GlobalCache<Metavariables>::compute_size_for_memory_monitor(
         "GlobalCache::compute_size_for_memory_monitor can only be called if "
         "the MemoryMonitor is in the component list in the metavariables.\n");
   }
+}
+
+template <typename Metavariables>
+void GlobalCache<Metavariables>::set_resource_info(
+    const Parallel::ResourceInfo<Metavariables>& resource_info) {
+  ASSERT(not resource_info_has_been_set_,
+         "Can only set the resource info once");
+  if constexpr (tmpl::list_contains_v<
+                    tags_list, Parallel::Tags::ResourceInfo<Metavariables>>) {
+    tuples::get<Tags::ResourceInfo<Metavariables>>(const_global_cache_) =
+        resource_info;
+  }
+  resource_info_has_been_set_ = true;
+  (void)resource_info;
 }
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
@@ -781,6 +808,7 @@ void GlobalCache<Metavariables>::pup(PUP::er& p) {
   p | mutable_global_cache_proxy_;
   p | main_proxy_;
   p | parallel_components_have_been_set_;
+  p | resource_info_has_been_set_;
   p | my_proc_;
   p | my_node_;
   p | my_local_rank_;
