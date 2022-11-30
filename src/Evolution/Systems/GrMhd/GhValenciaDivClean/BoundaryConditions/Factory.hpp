@@ -6,6 +6,7 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ProductOfConditions.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Utilities/TMPL.hpp"
@@ -56,4 +57,9 @@ using standard_boundary_conditions = tmpl::push_back<
             typename grmhd::ValenciaDivClean::BoundaryConditions::
                 standard_boundary_conditions>>::type,
     domain::BoundaryConditions::Periodic<BoundaryCondition>>;
+
+/// Boundary conditions that work with finite difference.
+using standard_fd_boundary_conditions =
+    tmpl::list<DirichletAnalytic,
+               domain::BoundaryConditions::Periodic<BoundaryCondition>>;
 }  // namespace grmhd::GhValenciaDivClean::BoundaryConditions
