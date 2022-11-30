@@ -1009,7 +1009,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     // profiling is fairly small (<2%), we still avoid it when we aren't
     // tracing.
 #ifdef SPECTRE_CHARM_PROJECTIONS
-    if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
+    if constexpr (Parallel::is_array<parallel_component>::value) {
       if (not this->thisProxy[array_index_]
                   .template invoke_iterable_action<
                       this_action, std::integral_constant<size_t, phase_index>,
@@ -1090,7 +1090,7 @@ bool DistributedObject<
   using actions_list = typename phase_dep_action::action_list;
 
 #ifdef SPECTRE_CHARM_PROJECTIONS
-  if constexpr (Parallel::is_array_proxy<cproxy_type>::value) {
+  if constexpr (Parallel::is_array<parallel_component>::value) {
     (void)Parallel::charmxx::RegisterInvokeIterableAction<
         ParallelComponent, ThisAction, PhaseIndex, DataBoxIndex>::registrar;
   }
