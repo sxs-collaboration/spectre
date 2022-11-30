@@ -66,7 +66,7 @@ void test_zero_crossing_predictor() {
   CHECK(predictor == serialize_and_deserialize(predictor));
   CHECK_FALSE(predictor != serialize_and_deserialize(predictor));
 
-  Approx custom_approx = Approx::custom().epsilon(1e-6);
+  Approx custom_approx = Approx::custom().epsilon(5e-6).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       predictor.zero_crossing_time(x_values.back()),
       SINGLE_ARG(DataVector{expected_zero_crossing_value1,
