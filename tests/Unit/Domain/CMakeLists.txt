@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_BlockAndElementLogicalCoordinates.cpp
   Test_CoordinatesTag.cpp
   Test_CreateInitialElement.cpp
+  Test_DiagnosticInfo.cpp
   Test_Domain.cpp
   Test_DomainHelpers.cpp
   Test_DomainTestHelpers.cpp

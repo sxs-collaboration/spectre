@@ -6,7 +6,6 @@
 #include <optional>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"

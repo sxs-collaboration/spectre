@@ -9,6 +9,7 @@
 
 #include "Domain/Block.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/DiagnosticInfo.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementDistribution.hpp"
 #include "Domain/OptionTags.hpp"
@@ -17,9 +18,11 @@
 #include "Domain/Tags.hpp"
 #include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/Local.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
+#include "Parallel/Printf.hpp"
 #include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
@@ -59,7 +62,8 @@ struct DgElementArray {
                  Parallel::Tags::ResourceInfo<Metavariables>>;
 
   using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>>;
+      tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>,
+                 domain::Tags::InitialExtents<volume_dim>>;
 
   using initialization_tags =
       tmpl::append<Parallel::get_initialization_tags<
@@ -92,45 +96,79 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   auto& local_cache = *Parallel::local_branch(global_cache);
   auto& dg_element_array =
       Parallel::get_parallel_component<DgElementArray>(local_cache);
+
   const auto& domain =
       Parallel::get<domain::Tags::Domain<volume_dim>>(local_cache);
   const auto& initial_refinement_levels =
       get<domain::Tags::InitialRefinementLevels<volume_dim>>(
           initialization_items);
+  const auto& initial_extents =
+      get<domain::Tags::InitialExtents<volume_dim>>(initialization_items);
+
   bool use_z_order_distribution = true;
   if constexpr (detail::has_use_z_order_distribution_v<Metavariables>) {
     use_z_order_distribution = Metavariables::use_z_order_distribution;
   }
-  const size_t total_number_of_procs =
-      static_cast<size_t>(sys::number_of_procs());
-  const size_t num_of_procs_to_use =
-      total_number_of_procs - procs_to_ignore.size();
-  size_t which_proc = 0;
+
+  const size_t number_of_procs = Parallel::number_of_procs<size_t>(local_cache);
+  const size_t number_of_nodes = Parallel::number_of_nodes<size_t>(local_cache);
+  const size_t num_of_procs_to_use = number_of_procs - procs_to_ignore.size();
+
   const domain::BlockZCurveProcDistribution<volume_dim> element_distribution{
       num_of_procs_to_use, initial_refinement_levels, procs_to_ignore};
+
+  // Will be used to print domain diagnostic info
+  std::vector<size_t> elements_per_core(number_of_procs, 0_st);
+  std::vector<size_t> elements_per_node(number_of_nodes, 0_st);
+  std::vector<size_t> grid_points_per_core(number_of_procs, 0_st);
+  std::vector<size_t> grid_points_per_node(number_of_nodes, 0_st);
+
+  size_t which_proc = 0;
   for (const auto& block : domain.blocks()) {
-    const auto initial_ref_levs = initial_refinement_levels[block.id()];
+    const auto& initial_ref_levs = initial_refinement_levels[block.id()];
+    const size_t grid_points_per_element = alg::accumulate(
+        initial_extents[block.id()], 1_st, std::multiplies<size_t>());
+
     const std::vector<ElementId<volume_dim>> element_ids =
         initial_element_ids(block.id(), initial_ref_levs);
+
     if (use_z_order_distribution) {
       for (const auto& element_id : element_ids) {
         const size_t target_proc =
             element_distribution.get_proc_for_element(element_id);
         dg_element_array(element_id)
             .insert(global_cache, initialization_items, target_proc);
+
+        const size_t target_node =
+            Parallel::node_of<size_t>(target_proc, local_cache);
+        ++elements_per_core[target_proc];
+        ++elements_per_node[target_node];
+        grid_points_per_core[target_proc] += grid_points_per_element;
+        grid_points_per_node[target_node] += grid_points_per_element;
       }
     } else {
       while (procs_to_ignore.find(which_proc) != procs_to_ignore.end()) {
-        which_proc =
-            which_proc + 1 == total_number_of_procs ? 0 : which_proc + 1;
+        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
       }
       for (size_t i = 0; i < element_ids.size(); ++i) {
         dg_element_array(ElementId<volume_dim>(element_ids[i]))
             .insert(global_cache, initialization_items, which_proc);
-        which_proc =
-            which_proc + 1 == total_number_of_procs ? 0 : which_proc + 1;
+        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
+
+        const size_t target_node =
+            Parallel::node_of<size_t>(which_proc, local_cache);
+        ++elements_per_core[which_proc];
+        ++elements_per_node[target_node];
+        grid_points_per_core[which_proc] += grid_points_per_element;
+        grid_points_per_node[target_node] += grid_points_per_element;
       }
     }
   }
+
   dg_element_array.doneInserting();
+
+  Parallel::printf(
+      "\n%s\n", domain::diagnostic_info(domain, local_cache, elements_per_core,
+                                        elements_per_node, grid_points_per_core,
+                                        grid_points_per_node));
 }
