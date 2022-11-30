@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class RungeKutta3.
-
 #pragma once
 
 #include <cstddef>
@@ -22,18 +19,18 @@ namespace TimeSteppers {
 /// 5.7.
 ///
 /// The CFL factor/stable step size is 1.25637266330916.
-class RungeKutta3 : public RungeKutta {
+class Rk3HesthavenSsp : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "A third-order strong stability-preserving Runge-Kutta time-stepper."};
 
-  RungeKutta3() = default;
-  RungeKutta3(const RungeKutta3&) = default;
-  RungeKutta3& operator=(const RungeKutta3&) = default;
-  RungeKutta3(RungeKutta3&&) = default;
-  RungeKutta3& operator=(RungeKutta3&&) = default;
-  ~RungeKutta3() override = default;
+  Rk3HesthavenSsp() = default;
+  Rk3HesthavenSsp(const Rk3HesthavenSsp&) = default;
+  Rk3HesthavenSsp& operator=(const Rk3HesthavenSsp&) = default;
+  Rk3HesthavenSsp(Rk3HesthavenSsp&&) = default;
+  Rk3HesthavenSsp& operator=(Rk3HesthavenSsp&&) = default;
+  ~Rk3HesthavenSsp() override = default;
 
   size_t order() const override;
 
@@ -41,21 +38,21 @@ class RungeKutta3 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
+  WRAPPED_PUPable_decl_template(Rk3HesthavenSsp);  // NOLINT
 
-  explicit RungeKutta3(CkMigrateMessage* /*unused*/) {}
+  explicit Rk3HesthavenSsp(CkMigrateMessage* /*unused*/) {}
 
  private:
   const ButcherTableau& butcher_tableau() const override;
 };
 
-inline bool constexpr operator==(const RungeKutta3& /*lhs*/,
-                                 const RungeKutta3& /*rhs*/) {
+inline bool constexpr operator==(const Rk3HesthavenSsp& /*lhs*/,
+                                 const Rk3HesthavenSsp& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const RungeKutta3& /*lhs*/,
-                                 const RungeKutta3& /*rhs*/) {
+inline bool constexpr operator!=(const Rk3HesthavenSsp& /*lhs*/,
+                                 const Rk3HesthavenSsp& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers

@@ -30,7 +30,7 @@
 #include "Parallel/Phase.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -196,7 +196,7 @@ void test_gh_initialization() {
 void test_analytic_initialization() {
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
+  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
       {l_max, 100.0, 0.0}};
 
@@ -206,7 +206,7 @@ void test_analytic_initialization() {
       AnalyticBoundaryDataManager{
           12_st, 20.0, std::make_unique<Solutions::RotatingSchwarzschild>()},
       static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::RungeKutta3>()));
+          std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
@@ -238,7 +238,7 @@ SPECTRE_TEST_CASE(
 SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
                   "[Utilities][Unit]") {
   ERROR_TEST();
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
+  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
   using component = mock_analytic_worldtube_boundary<AnalyticMetavariables>;
   const size_t l_max = 8;
   ActionTesting::MockRuntimeSystem<AnalyticMetavariables> runner{
@@ -249,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.Cce.Actions.InitializeWorldtubeBoundary.RtFail",
       AnalyticBoundaryDataManager{
           12_st, 20.0, std::make_unique<Solutions::RobinsonTrautman>()},
       static_cast<std::unique_ptr<TimeStepper>>(
-          std::make_unique<::TimeSteppers::RungeKutta3>()));
+          std::make_unique<::TimeSteppers::Rk3HesthavenSsp>()));
   // this should run the initialization
   for (size_t i = 0; i < 3; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);

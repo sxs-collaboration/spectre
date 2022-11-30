@@ -12,7 +12,7 @@ ResourceInfo:
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.001
-  TimeStepper: RungeKutta3
+  TimeStepper: Rk3HesthavenSsp
 
 PhaseChangeAndTriggers:
 

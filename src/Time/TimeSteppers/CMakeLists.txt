@@ -8,11 +8,11 @@ spectre_target_sources(
   ClassicalRungeKutta4.cpp
   DormandPrince5.cpp
   Heun2.cpp
+  Rk3HesthavenSsp.cpp
   Rk3Owren.cpp
   Rk4Owren.cpp
   Rk5Owren.cpp
   RungeKutta.cpp
-  RungeKutta3.cpp
   )
 
 spectre_target_headers(
@@ -25,10 +25,10 @@ spectre_target_headers(
   Factory.hpp
   Heun2.hpp
   LtsTimeStepper.hpp
+  Rk3HesthavenSsp.hpp
   Rk3Owren.hpp
   Rk4Owren.hpp
   Rk5Owren.hpp
   RungeKutta.hpp
-  RungeKutta3.hpp
   TimeStepper.hpp
   )

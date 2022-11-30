@@ -23,7 +23,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -68,10 +68,10 @@ struct Component {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
+  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {std::make_unique<TimeSteppers::RungeKutta3>()}};
+      {std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
 
   ActionTesting::emplace_component_and_initialize<Component>(&runner, 0, {});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);

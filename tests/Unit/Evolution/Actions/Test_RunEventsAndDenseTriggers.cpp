@@ -42,7 +42,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -446,7 +446,8 @@ void test(const bool time_runs_forward) {
 
   // Missing dense output data
   const auto check_missing_dense_data = [&](const bool data_needed) {
-    MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+    MockRuntimeSystem runner{
+        {std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
     set_up_component(&runner, {{step_center, true, done_time, data_needed}});
     {
       auto& box =
@@ -661,7 +662,7 @@ struct PostprocessEvolved {
 SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndDenseTriggers",
                   "[Unit][Evolution][Actions]") {
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
-                                        TimeSteppers::RungeKutta3>();
+                                        TimeSteppers::Rk3HesthavenSsp>();
   Parallel::register_factory_classes_with_charm<Metavariables<tmpl::list<>>>();
 
   for (const auto time_runs_forward : {true, false}) {
