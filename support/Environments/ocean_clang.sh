@@ -88,6 +88,7 @@ spectre_run_cmake() {
           -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           -D USE_PCH=ON \
+          -D BOOTSTRAP_PY_DEPS=ON \
           "$@" \
           $SPECTRE_HOME
 }
