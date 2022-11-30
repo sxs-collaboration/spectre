@@ -32,6 +32,68 @@ struct PreviousTriggerTime;
 }  // namespace evolution::Tags
 /// \endcond
 
+namespace OptionTags {
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+template <typename StepperType>
+struct TimeStepper {
+  static std::string name() { return "TimeStepper"; }
+  static constexpr Options::String help{"The time stepper"};
+  using type = std::unique_ptr<StepperType>;
+  using group = evolution::OptionTags::Group;
+};
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+struct StepChoosers {
+  static constexpr Options::String help{"Limits on LTS step size"};
+  using type =
+      std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
+  static size_t lower_bound_on_size() { return 1; }
+  using group = evolution::OptionTags::Group;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+struct StepController {
+  static constexpr Options::String help{"The LTS step controller"};
+  using type = std::unique_ptr<::StepController>;
+  using group = evolution::OptionTags::Group;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+/// \brief The time at which to start the simulation
+struct InitialTime {
+  using type = double;
+  static constexpr Options::String help = {
+      "The time at which the evolution is started."};
+  static type suggested_value() { return 0.0; }
+  using group = evolution::OptionTags::Group;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+/// \brief The initial time step taken by the time stepper. This may be
+/// overridden by an adaptive stepper
+struct InitialTimeStep {
+  using type = double;
+  static constexpr Options::String help =
+      "The initial time step, before local stepping adjustment";
+  using group = evolution::OptionTags::Group;
+};
+
+/// \ingroup OptionTagsGroup
+/// \ingroup TimeGroup
+/// \brief The initial slab size
+struct InitialSlabSize {
+  using type = double;
+  static constexpr Options::String help = "The initial slab size";
+  static type lower_bound() { return 0.; }
+  using group = evolution::OptionTags::Group;
+};
+}  // namespace OptionTags
+
 namespace Tags {
 
 /// \ingroup DataBoxTagsGroup
@@ -60,6 +122,12 @@ struct TimeStep : db::SimpleTag {
 /// dense-output calculations may temporarily change the value.
 struct Time : db::SimpleTag {
   using type = double;
+  using option_tags = tmpl::list<OptionTags::InitialTime>;
+
+  static constexpr bool pass_metavariables = false;
+  static double create_from_options(const double initial_time) {
+    return initial_time;
+  }
 };
 
 /// @{
@@ -166,72 +234,6 @@ struct BoundaryHistory : db::SimpleTag {
       TimeSteppers::BoundaryHistory<LocalVars, RemoteVars, CouplingResult>;
 };
 
-}  // namespace Tags
-
-namespace OptionTags {
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-template <typename StepperType>
-struct TimeStepper {
-  static std::string name() { return "TimeStepper"; }
-  static constexpr Options::String help{"The time stepper"};
-  using type = std::unique_ptr<StepperType>;
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-struct StepChoosers {
-  static constexpr Options::String help{"Limits on LTS step size"};
-  using type =
-      std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
-  static size_t lower_bound_on_size() { return 1; }
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-struct StepController {
-  static constexpr Options::String help{"The LTS step controller"};
-  using type = std::unique_ptr<::StepController>;
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-/// \brief The time at which to start the simulation
-struct InitialTime {
-  using type = double;
-  static constexpr Options::String help = {
-      "The time at which the evolution is started."};
-  static type suggested_value() { return 0.0; }
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-/// \brief The initial time step taken by the time stepper. This may be
-/// overridden by an adaptive stepper
-struct InitialTimeStep {
-  using type = double;
-  static constexpr Options::String help =
-      "The initial time step, before local stepping adjustment";
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-/// \brief The initial slab size
-struct InitialSlabSize {
-  using type = double;
-  static constexpr Options::String help = "The initial slab size";
-  static type lower_bound() { return 0.; }
-  using group = evolution::OptionTags::Group;
-};
-}  // namespace OptionTags
-
-namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for a ::TimeStepper of type `StepperType`.

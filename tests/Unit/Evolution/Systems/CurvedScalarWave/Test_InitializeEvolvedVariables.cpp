@@ -53,7 +53,7 @@ void test_initialize_evolved_variables(
       get<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>>(lapse_and_shift);
 
   auto box = db::create<db::AddSimpleTags<
-      ::Initialization::Tags::InitialTime,
+      ::Tags::Time,
       domain::Tags::Coordinates<Dim, Frame::Inertial>,
       Tags::AnalyticData<InitialData>, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>, evolved_var_tag>>(

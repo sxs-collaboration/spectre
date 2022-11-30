@@ -56,7 +56,7 @@ namespace Actions {
 ///   * System::primitive_variables_tag (if system has primitive variables)
 template <typename LogicalCoordinatesTag>
 struct SetVariables {
-  using initialization_tags = tmpl::list<::Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Tags::Time>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -96,8 +96,7 @@ struct SetVariables {
   template <typename Metavariables, typename DbTagsList, typename T>
   static void impl(const gsl::not_null<db::DataBox<DbTagsList>*> box,
                    const T& solution_or_data) {
-    const double initial_time =
-        db::get<::Initialization::Tags::InitialTime>(*box);
+    const double initial_time = db::get<::Tags::Time>(*box);
     const auto inertial_coords =
         db::get<::domain::CoordinateMaps::Tags::CoordinateMap<
             Metavariables::volume_dim, Frame::Grid, Frame::Inertial>>(*box)(

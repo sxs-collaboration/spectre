@@ -81,7 +81,7 @@ namespace Actions {
 template <typename Metavariables>
 struct TimeAndTimeStep {
   using initialization_tags = tmpl::flatten<
-      tmpl::list<Tags::InitialTime, Tags::InitialTimeDelta,
+      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>,
                  tmpl::conditional_t<
                      Metavariables::local_time_stepping,
@@ -92,7 +92,7 @@ struct TimeAndTimeStep {
   using simple_tags =
       tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
                       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                      ::Tags::Time, ::Tags::TimeStep,
+                      ::Tags::TimeStep,
                       ::Tags::Next<::Tags::TimeStep>>;
   using compute_tags = tmpl::list<>;
 
@@ -104,7 +104,7 @@ struct TimeAndTimeStep {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const double initial_time_value = db::get<Tags::InitialTime>(box);
+    const double initial_time_value = db::get<::Tags::Time>(box);
     const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
     const double initial_slab_size =
         db::get<Tags::InitialSlabSize<Metavariables::local_time_stepping>>(box);
@@ -132,9 +132,9 @@ struct TimeAndTimeStep {
         initial_time);
 
     Initialization::mutate_assign<tmpl::list<
-        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time,
+        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
         ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
-        make_not_null(&box), TimeStepId{}, time_id, initial_time.value(),
+        make_not_null(&box), TimeStepId{}, time_id,
         initial_dt, initial_dt);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

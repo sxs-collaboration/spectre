@@ -57,7 +57,7 @@ void test() {
 
   // create a DataBox
   auto box = db::create<db::AddSimpleTags<
-      Initialization::Tags::InitialTime,
+      ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,

@@ -46,7 +46,7 @@ namespace ScalarAdvection::subcell {
  *
  * Uses:
  * - DataBox:
- *   * `Initialization::Tags::InitialTime`
+ *   * `Tags::Time`
  *   * `evolution::dg::subcell::Tags::Mesh<Dim>`
  *   * `domain::Tags::ElementMap<Dim, Frame::Grid>`
  *   * `Tags::CoordinateMap<Dim, Frame::Grid, Frame::Inertial>`
@@ -67,7 +67,7 @@ namespace ScalarAdvection::subcell {
  */
 template <size_t Dim>
 struct VelocityAtFace {
-  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Tags::Time>;
 
   using velocity_field = ::ScalarAdvection::Tags::VelocityField<Dim>;
   using subcell_velocity_field =
@@ -83,7 +83,7 @@ struct VelocityAtFace {
       tmpl::list<subcell_velocity_field, subcell_faces_velocity_field>;
 
   using argument_tags = tmpl::list<
-      Initialization::Tags::InitialTime,
+      ::Tags::Time,
       evolution::dg::subcell::Tags::Mesh<Dim>,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,

@@ -24,11 +24,6 @@ namespace Frame {
 struct Grid;
 struct Inertial;
 }  // namespace Frame
-namespace Initialization {
-namespace Tags {
-struct InitialTime;
-}  // namespace Tags
-}  // namespace Initialization
 namespace Tags {
 struct AnalyticSolutionOrData;
 }  // namespace Tags
@@ -61,7 +56,7 @@ namespace Actions {
 /// - Modifies: nothing
 template <typename System>
 struct GrTagsForHydro {
-  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<::Tags::Time>;
 
   static constexpr size_t dim = System::volume_dim;
   using gr_tag = typename System::spacetime_variables_tag;
@@ -78,7 +73,7 @@ struct GrTagsForHydro {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const double initial_time = db::get<::Tags::Time>(box);
     using GrVars = typename gr_tag::type;
 
     const size_t num_grid_points =

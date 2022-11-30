@@ -230,7 +230,7 @@ struct component {
   using const_global_cache_tag_list = tmpl::list<>;
 
   using initial_tags =
-      tmpl::list<Initialization::Tags::InitialTime,
+      tmpl::list<Tags::Time,
                  domain::Tags::FunctionsOfTimeInitialize,
                  domain::Tags::Coordinates<Dim, Frame::ElementLogical>,
                  domain::Tags::ElementMap<Dim, Frame::Grid>,
