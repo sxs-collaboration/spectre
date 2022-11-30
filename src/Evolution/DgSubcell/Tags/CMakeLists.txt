@@ -30,4 +30,5 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   ObserverMesh.cpp
+  Mesh.cpp
   )
