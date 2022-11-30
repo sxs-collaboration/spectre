@@ -29,7 +29,7 @@
 #include "Time/StepChoosers/ElementSizeCfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -84,7 +84,7 @@ std::pair<double, bool> get_suggestion(
                              compute_largest_characteristic_speed>>(
       Metavariables<Dim>{}, characteristic_speed,
       std::unique_ptr<TimeStepper>{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(2)},
+          std::make_unique<TimeSteppers::AdamsBashforth>(2)},
       std::move(element_map),
       ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
           ::domain::CoordinateMaps::Identity<Dim>{}),

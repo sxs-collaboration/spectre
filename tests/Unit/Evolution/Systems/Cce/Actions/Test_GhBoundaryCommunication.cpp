@@ -49,7 +49,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -221,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.GhBoundaryCommunication",
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
       static_cast<std::unique_ptr<StepController>>(
           std::make_unique<StepControllers::BinaryFraction>()),

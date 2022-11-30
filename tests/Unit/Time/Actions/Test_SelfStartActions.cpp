@@ -31,7 +31,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
@@ -294,7 +294,7 @@ void test_actions(const size_t order, const int step_denominator) {
   const double initial_value = -1.;
 
   MockRuntimeSystem<> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
+      {std::make_unique<TimeSteppers::AdamsBashforth>(order)}};
   emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
                                    initial_time, initial_time_step, order,
                                    initial_value);
@@ -404,7 +404,7 @@ double error_in_step(const size_t order, const double step) {
 
   using component = Component<Metavariables<TestPrimitives, MultipleHistories>>;
   MockRuntimeSystem<TestPrimitives, MultipleHistories> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
+      {std::make_unique<TimeSteppers::AdamsBashforth>(order)}};
   emplace_component_and_initialize<TestPrimitives, MultipleHistories>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
@@ -437,7 +437,7 @@ void test_convergence(const size_t order, const bool forward_in_time) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   for (size_t order = 1; order < 5; ++order) {
     CAPTURE(order);
     for (const int step_denominator : {1, -1, 2, -2, 20, -20}) {

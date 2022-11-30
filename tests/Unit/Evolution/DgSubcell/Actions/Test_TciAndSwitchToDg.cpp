@@ -47,7 +47,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -155,7 +155,7 @@ bool Metavariables<Dim>::tci_invoked = false;
 std::unique_ptr<TimeStepper> make_time_stepper(
     const bool multistep_time_stepper) {
   if (multistep_time_stepper) {
-    return std::make_unique<TimeSteppers::AdamsBashforthN>(2);
+    return std::make_unique<TimeSteppers::AdamsBashforth>(2);
   } else {
     return std::make_unique<TimeSteppers::RungeKutta3>();
   }
@@ -382,7 +382,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
   // 5. Check if RDMP is not triggered, but tci_mutator is, we stay on subcell
   // 6. check if RDMP & TCI not triggered, switch to DG.
   // 7. check if DidRollBack=True, stay in subcell.
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
                                         TimeSteppers::RungeKutta3>();
   test<1>();
   test<2>();

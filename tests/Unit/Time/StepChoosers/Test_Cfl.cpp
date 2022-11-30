@@ -26,7 +26,7 @@
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -94,7 +94,7 @@ std::pair<double, bool> get_suggestion(const size_t stepper_order,
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
                 Spectral::Quadrature::GaussLobatto),
       std::unique_ptr<TimeStepper>{
-          std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)});
+          std::make_unique<TimeSteppers::AdamsBashforth>(stepper_order)});
 
   const double grid_spacing =
       get<domain::Tags::MinimumGridSpacing<dim, frame>>(box);

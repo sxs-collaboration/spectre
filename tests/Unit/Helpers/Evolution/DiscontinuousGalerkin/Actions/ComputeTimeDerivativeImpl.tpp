@@ -69,7 +69,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
@@ -1019,7 +1019,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
                                  UseMovingMesh, HasPrims, PassVariables>;
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   Parallel::register_factory_classes_with_charm<metavars>();
 
@@ -1324,7 +1324,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              std::make_unique<StepControllers::SplitRemaining>()),
          std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+             std::make_unique<TimeSteppers::AdamsBashforth>(5)),
          typename ::Tags::RollbackValue<variables_tag>::type{}});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
@@ -1359,7 +1359,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  std::make_unique<StepControllers::SplitRemaining>()),
              std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+                 std::make_unique<TimeSteppers::AdamsBashforth>(5)),
              typename ::Tags::RollbackValue<variables_tag>::type{}});
       }
     }
@@ -1390,7 +1390,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::CoordinateMaps::Identity<Dim>{})},
          false,
          static_cast<std::unique_ptr<LtsTimeStepper>>(
-             std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
+             std::make_unique<TimeSteppers::AdamsBashforth>(5))});
     for (const auto& [direction, neighbor_ids] : neighbors) {
       (void)direction;
       for (const auto& neighbor_id : neighbor_ids) {
@@ -1421,7 +1421,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                      domain::CoordinateMaps::Identity<Dim>{})},
              false,
              static_cast<std::unique_ptr<LtsTimeStepper>>(
-                 std::make_unique<TimeSteppers::AdamsBashforthN>(5))});
+                 std::make_unique<TimeSteppers::AdamsBashforth>(5))});
       }
     }
   }

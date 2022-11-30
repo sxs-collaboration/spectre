@@ -27,7 +27,7 @@
 #include "Time/TakeStep.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -104,7 +104,7 @@ void test_gts() {
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
       initial_values, DataVector{5, 0.0}, std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+          std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       false);
   // update the rhs
   db::mutate<Tags::dt<EvolvedVariable>>(make_not_null(&box), update_rhs,
@@ -173,9 +173,9 @@ void test_lts() {
       initial_values, initial_values, DataVector{5, 0.0}, DataVector{},
       DataVector{}, std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<TimeSteppers::AdamsBashforthN>(5)),
+          std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),
-      1.0 / TimeSteppers::AdamsBashforthN{5}.stable_step(),
+      1.0 / TimeSteppers::AdamsBashforth{5}.stable_step(),
       static_cast<std::unique_ptr<StepController>>(
           std::make_unique<StepControllers::BinaryFraction>()),
       true, false);
@@ -219,7 +219,7 @@ void test_lts() {
   // alter the grid spacing so that the CFL condition will cause rejection.
   db::mutate<domain::Tags::MinimumGridSpacing<1, Frame::Inertial>>(
       make_not_null(&box), [](const gsl::not_null<double*> grid_spacing) {
-        *grid_spacing = 0.15 / TimeSteppers::AdamsBashforthN{5}.stable_step();
+        *grid_spacing = 0.15 / TimeSteppers::AdamsBashforth{5}.stable_step();
       });
   take_step<typename Metavariables::system, true>(make_not_null(&box));
   // check that the state is as expected

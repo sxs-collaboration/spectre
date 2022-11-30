@@ -4,7 +4,7 @@
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  AdamsBashforthN.cpp
+  AdamsBashforth.cpp
   Cerk3.cpp
   Cerk4.cpp
   Cerk5.cpp
@@ -19,7 +19,7 @@ spectre_target_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  AdamsBashforthN.hpp
+  AdamsBashforth.hpp
   Cerk3.hpp
   Cerk4.hpp
   Cerk5.hpp

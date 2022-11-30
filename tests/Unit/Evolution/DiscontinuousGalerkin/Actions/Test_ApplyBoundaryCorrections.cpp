@@ -40,7 +40,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -390,7 +390,7 @@ struct component {
 
   using simple_tags = tmpl::list<
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      Tags::TimeStepper<TimeSteppers::AdamsBashforthN>,
+      Tags::TimeStepper<TimeSteppers::AdamsBashforth>,
       db::add_tag_prefix<::Tags::dt,
                          typename Metavariables::system::variables_tag>,
       typename Metavariables::system::variables_tag,
@@ -467,7 +467,7 @@ void test_impl(const Spectral::Quadrature quadrature,
 
   // Use a second-order time stepper so that we test the local Jacobian and
   // normal magnitude history is handled correctly.
-  const TimeSteppers::AdamsBashforthN time_stepper{2};
+  const TimeSteppers::AdamsBashforth time_stepper{2};
 
   // The reference element in 2d denoted by X below:
   // ^ eta
@@ -574,7 +574,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   ActionTesting::emplace_component_and_initialize<comp>(
       &runner, self_id,
       {time_step_id, local_next_time_step_id, time_step,
-       std::make_unique<TimeSteppers::AdamsBashforthN>(time_stepper),
+       std::make_unique<TimeSteppers::AdamsBashforth>(time_stepper),
        dt_evolved_vars, evolved_vars, mesh, element, inertial_coords, inv_jac,
        quadrature, typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
 
@@ -989,7 +989,7 @@ void test() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
                   "[Unit][Evolution][Actions]") {
-  PUPable_reg(TimeSteppers::AdamsBashforthN);
+  PUPable_reg(TimeSteppers::AdamsBashforth);
   test<1, false>();
   test<1, true>();
   test<2, false>();

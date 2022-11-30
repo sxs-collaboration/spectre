@@ -41,7 +41,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -372,7 +372,7 @@ void test(const bool time_runs_forward) {
     const double invalid_time = start_time - step_size;
 
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     set_up_component(&runner,
                      {{invalid_time, std::nullopt, std::nullopt, false}});
     {
@@ -390,7 +390,7 @@ void test(const bool time_runs_forward) {
   // No triggers
   {
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     set_up_component(&runner, {});
     CHECK(run_if_ready(make_not_null(&runner)));
     TestEvent::check_calls({});
@@ -400,7 +400,7 @@ void test(const bool time_runs_forward) {
   const auto check_not_reached = [&set_up_component, &start_time, &step_size](
                                      const std::optional<bool>& is_triggered) {
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     set_up_component(&runner, {{start_time + 1.5 * step_size, is_triggered,
                                 std::nullopt, false}});
     CHECK(run_if_ready(make_not_null(&runner)));
@@ -413,7 +413,7 @@ void test(const bool time_runs_forward) {
   // Trigger isn't ready
   {
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     set_up_component(&runner, {{step_center, std::nullopt, start_time, false}});
     CHECK(not run_if_ready(make_not_null(&runner)));
     TestEvent::check_calls({});
@@ -422,7 +422,7 @@ void test(const bool time_runs_forward) {
   // Variables not needed
   const auto check_not_needed = [&](const bool reschedule) {
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     const auto next_check =
         reschedule ? std::optional{done_time} : std::nullopt;
     set_up_component(&runner, {{step_center, true, next_check, false}});
@@ -435,7 +435,7 @@ void test(const bool time_runs_forward) {
   // Variables needed
   const auto check_needed = [&](const bool reschedule) {
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     const auto next_check =
         reschedule ? std::optional{done_time} : std::nullopt;
     set_up_component(&runner, {{step_center, true, next_check, true}});
@@ -476,7 +476,7 @@ void test(const bool time_runs_forward) {
   {
     const double second_trigger = start_time + 0.75 * step_size;
     MockRuntimeSystem runner{
-        {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+        {std::make_unique<TimeSteppers::AdamsBashforth>(1)}};
     set_up_component(&runner, {{step_center, true, done_time, true},
                                {second_trigger, true, done_time, true}});
     TestCase::check_dense(
@@ -660,7 +660,7 @@ struct PostprocessEvolved {
 
 SPECTRE_TEST_CASE("Unit.Evolution.RunEventsAndDenseTriggers",
                   "[Unit][Evolution][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN,
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth,
                                         TimeSteppers::RungeKutta3>();
   Parallel::register_factory_classes_with_charm<Metavariables<tmpl::list<>>>();
 
