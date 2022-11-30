@@ -35,18 +35,18 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.0.
  */
-class Cerk2 : public RungeKutta {
+class Heun2 : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
-      "A 2nd order accurate continuous extension Runge-Kutta method.."};
+      "Heun's method, a 2nd order Runge-Kutta method."};
 
-  Cerk2() = default;
-  Cerk2(const Cerk2&) = default;
-  Cerk2& operator=(const Cerk2&) = default;
-  Cerk2(Cerk2&&) = default;
-  Cerk2& operator=(Cerk2&&) = default;
-  ~Cerk2() override = default;
+  Heun2() = default;
+  Heun2(const Heun2&) = default;
+  Heun2& operator=(const Heun2&) = default;
+  Heun2(Heun2&&) = default;
+  Heun2& operator=(Heun2&&) = default;
+  ~Heun2() override = default;
 
   size_t order() const override;
 
@@ -54,19 +54,19 @@ class Cerk2 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(Cerk2);  // NOLINT
+  WRAPPED_PUPable_decl_template(Heun2);  // NOLINT
 
-  explicit Cerk2(CkMigrateMessage* /*unused*/) {}
+  explicit Heun2(CkMigrateMessage* /*unused*/) {}
 
  private:
   const ButcherTableau& butcher_tableau() const override;
 };
 
-inline bool constexpr operator==(const Cerk2& /*lhs*/, const Cerk2& /*rhs*/) {
+inline bool constexpr operator==(const Heun2& /*lhs*/, const Heun2& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const Cerk2& /*lhs*/, const Cerk2& /*rhs*/) {
+inline bool constexpr operator!=(const Heun2& /*lhs*/, const Heun2& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers
