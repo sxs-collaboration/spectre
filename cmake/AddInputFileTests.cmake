@@ -8,9 +8,7 @@ set(_TEST_ENV_VARS "")
 # - Disable ASAN's leak sanitizer because Charm++ has false positives
 list(APPEND _TEST_ENV_VARS "ASAN_OPTIONS=detect_leaks=0")
 # - Set PYTHONPATH to find Python modules
-if(DEFINED ENV{PYTHONPATH})
-  list(APPEND _TEST_ENV_VARS "PYTHONPATH=$ENV{PYTHONPATH}")
-endif()
+list(APPEND _TEST_ENV_VARS "PYTHONPATH=${PYTHONPATH}")
 
 function(add_single_input_file_test INPUT_FILE EXECUTABLE COMMAND_LINE_ARGS
                                     CHECK_TYPE TIMEOUT)
