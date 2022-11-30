@@ -13,7 +13,7 @@
 #
 #   $ pip3 install -r support/Python/requirements.txt
 
-h5py
+h5py >= 3.0.0
 numpy
 matplotlib
 pyyaml
