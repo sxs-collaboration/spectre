@@ -4,6 +4,7 @@
 set(LIBRARY "Test_GeneralizedHarmonicGaugeSourceFunctions")
 
 set(LIBRARY_SOURCES
+  Test_AnalyticChristoffel.cpp
   Test_DampedHarmonic.cpp
   Test_DampedWaveHelpers.cpp
   Test_HalfPiPhiTwoNormals.cpp
