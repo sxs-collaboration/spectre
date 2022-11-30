@@ -1,14 +1,14 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/TimeSteppers/Cerk4.hpp"
+#include "Time/TimeSteppers/Rk4Owren.hpp"
 
 namespace TimeSteppers {
-Cerk4::Cerk4(CkMigrateMessage* /*msg*/) {}
+Rk4Owren::Rk4Owren(CkMigrateMessage* /*msg*/) {}
 
-size_t Cerk4::order() const { return 4; }
+size_t Rk4Owren::order() const { return 4; }
 
-size_t Cerk4::error_estimate_order() const { return 3; }
+size_t Rk4Owren::error_estimate_order() const { return 3; }
 
 // The stability polynomial is
 //
@@ -18,9 +18,9 @@ size_t Cerk4::error_estimate_order() const { return 3; }
 //  alpha_5 = 5 (1 - 2 c_3) c_4
 // The stability limit as compared to a forward Euler method is given by finding
 // the root for |p(-2 z)|-1=0. For forward Euler this is 1.0.
-double Cerk4::stable_step() const { return 1.4367588951002057; }
+double Rk4Owren::stable_step() const { return 1.4367588951002057; }
 
-const RungeKutta::ButcherTableau& Cerk4::butcher_tableau() const {
+const RungeKutta::ButcherTableau& Rk4Owren::butcher_tableau() const {
   static const ButcherTableau tableau{
       // Substep times
       {{1, 6}, {11, 37}, {11, 17}, {13, 15}},
@@ -50,4 +50,4 @@ const RungeKutta::ButcherTableau& Cerk4::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::Cerk4::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID TimeSteppers::Rk4Owren::my_PUP_ID = 0;  // NOLINT

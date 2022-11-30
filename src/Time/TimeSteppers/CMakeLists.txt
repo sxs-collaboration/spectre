@@ -5,12 +5,12 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   AdamsBashforth.cpp
-  Cerk3.cpp
-  Cerk4.cpp
-  Cerk5.cpp
   ClassicalRungeKutta4.cpp
   DormandPrince5.cpp
   Heun2.cpp
+  Rk3Owren.cpp
+  Rk4Owren.cpp
+  Rk5Owren.cpp
   RungeKutta.cpp
   RungeKutta3.cpp
   )
@@ -20,14 +20,14 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   AdamsBashforth.hpp
-  Cerk3.hpp
-  Cerk4.hpp
-  Cerk5.hpp
   ClassicalRungeKutta4.hpp
   DormandPrince5.hpp
   Factory.hpp
   Heun2.hpp
   LtsTimeStepper.hpp
+  Rk3Owren.hpp
+  Rk4Owren.hpp
+  Rk5Owren.hpp
   RungeKutta.hpp
   RungeKutta3.hpp
   TimeStepper.hpp

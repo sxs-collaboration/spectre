@@ -36,18 +36,18 @@ namespace TimeSteppers {
  *
  * The CFL factor/stable step size is 1.4367588951002057.
  */
-class Cerk4 : public RungeKutta {
+class Rk4Owren : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
       "A 4th-order continuous extension Runge-Kutta time stepper."};
 
-  Cerk4() = default;
-  Cerk4(const Cerk4&) = default;
-  Cerk4& operator=(const Cerk4&) = default;
-  Cerk4(Cerk4&&) = default;
-  Cerk4& operator=(Cerk4&&) = default;
-  ~Cerk4() override = default;
+  Rk4Owren() = default;
+  Rk4Owren(const Rk4Owren&) = default;
+  Rk4Owren& operator=(const Rk4Owren&) = default;
+  Rk4Owren(Rk4Owren&&) = default;
+  Rk4Owren& operator=(Rk4Owren&&) = default;
+  ~Rk4Owren() override = default;
 
   size_t order() const override;
 
@@ -55,19 +55,21 @@ class Cerk4 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(Cerk4);  // NOLINT
+  WRAPPED_PUPable_decl_template(Rk4Owren);  // NOLINT
 
-  explicit Cerk4(CkMigrateMessage* /*msg*/);
+  explicit Rk4Owren(CkMigrateMessage* /*msg*/);
 
  private:
   const ButcherTableau& butcher_tableau() const override;
 };
 
-inline bool constexpr operator==(const Cerk4& /*lhs*/, const Cerk4& /*rhs*/) {
+inline bool constexpr operator==(const Rk4Owren& /*lhs*/,
+                                 const Rk4Owren& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const Cerk4& /*lhs*/, const Cerk4& /*rhs*/) {
+inline bool constexpr operator!=(const Rk4Owren& /*lhs*/,
+                                 const Rk4Owren& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers
