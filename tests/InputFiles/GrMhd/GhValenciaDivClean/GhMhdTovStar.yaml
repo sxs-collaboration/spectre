@@ -180,3 +180,6 @@ EventsAndTriggers:
 Observers:
   VolumeFileName: "GhMhdTovStarVolume"
   ReductionFileName: "GhMhdTovStarReductions"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false

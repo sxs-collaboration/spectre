@@ -273,6 +273,8 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockGroupChare;
   using array_index = int;
+  using const_global_cache_tags =
+      tmpl::list<intrp::Tags::DumpVolumeDataOnFailure>;
   using simple_tags = typename intrp::Actions::InitializeInterpolator<
       intrp::Tags::VolumeVarsInfo<Metavariables, ::Tags::TimeStepId>,
       intrp::Tags::InterpolatedVarsHolders<Metavariables>>::simple_tags;
@@ -380,9 +382,7 @@ void create_volume_data_and_send_it_to_interpolator(
   }
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Interpolator.ReceiveAndDumpVolumeData",
-    "[Unit]") {
+void test(const bool dump_vol_data) {
   domain::creators::register_derived_with_charm();
 
   using metavars = MockMetavariables;
@@ -431,7 +431,7 @@ SPECTRE_TEST_CASE(
   }
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
-      {domain_creator.create_domain(), filename}};
+      {domain_creator.create_domain(), dump_vol_data, filename}};
   ActionTesting::emplace_group_component_and_initialize<interp_component>(
       &runner,
       {0_st,
@@ -530,43 +530,50 @@ SPECTRE_TEST_CASE(
                            Parallel::Phase::PostFailureCleanup);
 
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  // Only one threaded action because we only have one temporal Id type and one
-  // time
-  ActionTesting::invoke_queued_threaded_action<observer_writer>(
-      make_not_null(&runner), 0);
 
-  {
-    const h5::H5File<h5::AccessType::ReadOnly> h5file{filename + "0.h5"s};
-    const auto& vol_file =
-        h5file.get<h5::VolumeData>("/InterpolatorVolumeData_TimeStepId", 0);
-    const auto written_data = vol_file.get_data_by_element(
-        std::nullopt, std::nullopt,
-        std::vector<std::string>{db::tag_name<gr::Tags::Lapse<DataVector>>()});
-    // Only wrote data for one time
-    CHECK(written_data.size() == 1);
-    const auto& written_tuple = written_data[0];
-    const auto& observation_value = get<1>(written_tuple);
-    const auto& vec_element_vol_data = get<2>(written_tuple);
+  CHECK(ActionTesting::number_of_queued_threaded_actions<observer_writer>(
+            runner, 0) == (dump_vol_data ? 1 : 0));
 
-    CHECK(
-        observation_value ==
-        intrp::InterpolationTarget_detail::get_temporal_id_value(temporal_id));
+  if (dump_vol_data) {
+    // Only one threaded action because we only have one temporal Id type and
+    // one time
+    ActionTesting::invoke_queued_threaded_action<observer_writer>(
+        make_not_null(&runner), 0);
 
-    for (const auto& [temporal_id_val, info_map] : volume_vars_info) {
-      for (const auto& [element_id, info] : info_map) {
-        const std::string element_name = MakeString{} << element_id;
+    {
+      const h5::H5File<h5::AccessType::ReadOnly> h5file{filename + "0.h5"s};
+      const auto& vol_file =
+          h5file.get<h5::VolumeData>("/InterpolatorVolumeData_TimeStepId", 0);
+      const auto written_data = vol_file.get_data_by_element(
+          std::nullopt, std::nullopt,
+          std::vector<std::string>{
+              db::tag_name<gr::Tags::Lapse<DataVector>>()});
+      // Only wrote data for one time
+      CHECK(written_data.size() == 1);
+      const auto& written_tuple = written_data[0];
+      const auto& observation_value = get<1>(written_tuple);
+      const auto& vec_element_vol_data = get<2>(written_tuple);
 
-        const ElementVolumeData written_element_vol_data = *alg::find_if(
-            vec_element_vol_data,
-            [&element_name](const ElementVolumeData& volume_data) {
-              return volume_data.element_name == element_name;
-            });
+      CHECK(observation_value ==
+            intrp::InterpolationTarget_detail::get_temporal_id_value(
+                temporal_id));
 
-        const ElementVolumeData element_vol_data =
-            intrp::Actions::detail::construct_element_volume_data<
-                ::Tags::TimeStepId, metavars>(element_id, info);
+      for (const auto& [temporal_id_val, info_map] : volume_vars_info) {
+        for (const auto& [element_id, info] : info_map) {
+          const std::string element_name = MakeString{} << element_id;
 
-        CHECK(element_vol_data == written_element_vol_data);
+          const ElementVolumeData written_element_vol_data = *alg::find_if(
+              vec_element_vol_data,
+              [&element_name](const ElementVolumeData& volume_data) {
+                return volume_data.element_name == element_name;
+              });
+
+          const ElementVolumeData element_vol_data =
+              intrp::Actions::detail::construct_element_volume_data<
+                  ::Tags::TimeStepId, metavars>(element_id, info);
+
+          CHECK(element_vol_data == written_element_vol_data);
+        }
       }
     }
   }
@@ -607,4 +614,12 @@ SPECTRE_TEST_CASE(
     file_system::rm(filename + "0.h5", true);
   }
 }
+
+SPECTRE_TEST_CASE(
+    "Unit.NumericalAlgorithms.Interpolator.ReceiveAndDumpVolumeData",
+    "[Unit]") {
+  test(true);
+  test(false);
+}
+
 }  // namespace

@@ -51,3 +51,6 @@ Observers:
   VolumeFileName: "FindHorizons3DVolume"
   ReductionFileName: "FindHorizons3DReductions"
   SurfaceFileName: "FindHorizons3DSurfaces"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false

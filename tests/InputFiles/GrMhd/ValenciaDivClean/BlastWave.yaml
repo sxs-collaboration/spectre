@@ -95,6 +95,9 @@ Observers:
   VolumeFileName: "ValenciaDivCleanBlastWaveVolume"
   ReductionFileName: "ValenciaDivCleanBlastWaveReductions"
 
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
 EventsAndTriggers:
   - - Slabs:
         Specified:

@@ -214,3 +214,6 @@ ApparentHorizons:
 Observers:
   VolumeFileName: "GhMhdBondiMichelVolume"
   ReductionFileName: "GhMhdBondiMichelReductions"
+
+Interpolator:
+  DumpVolumeDataOnFailure: false

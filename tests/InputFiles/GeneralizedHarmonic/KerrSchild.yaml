@@ -173,6 +173,9 @@ Observers:
   ReductionFileName: "GhKerrSchildReductions"
   SurfaceFileName: "GhKerrSchildSurfaces"
 
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
 ApparentHorizons:
   AhA:
     InitialGuess:

@@ -225,6 +225,9 @@ Observers:
   ReductionFileName: "GhBinaryBlackHoleReductionData"
   SurfaceFileName: "GhBinaryBlackHoleSurfacesData"
 
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
 ApparentHorizons:
   AhA: &AhA
     InitialGuess:
