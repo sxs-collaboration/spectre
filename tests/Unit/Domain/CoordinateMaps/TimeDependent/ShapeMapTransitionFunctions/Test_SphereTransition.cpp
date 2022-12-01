@@ -14,6 +14,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Shape.SphereTransition",
   SphereTransition sphere_transition{2., 4.};
   const std::array<double, 3> lower_bound{{2., 0., 0.}};
   CHECK(sphere_transition(lower_bound) == approx(1.));
+  const std::array<double, 3> midpoint{{3., 0., 0.}};
+  CHECK(sphere_transition(midpoint) == approx(1. / 3.));
   const std::array<double, 3> upper_bound{{4., 0., 0.}};
   CHECK(sphere_transition(upper_bound) == approx(0.));
 }
