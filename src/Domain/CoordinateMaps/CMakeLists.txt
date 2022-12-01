@@ -33,6 +33,7 @@ spectre_target_sources(
   SpecialMobius.cpp
   SphericalTorus.cpp
   UniformCylindricalEndcap.cpp
+  UniformCylindricalFlatEndcap.cpp
   UniformCylindricalSide.cpp
   Wedge.cpp
   )
@@ -74,6 +75,7 @@ spectre_target_headers(
   Tags.hpp
   TimeDependentHelpers.hpp
   UniformCylindricalEndcap.hpp
+  UniformCylindricalFlatEndcap.hpp
   UniformCylindricalSide.hpp
   Wedge.hpp
   )
