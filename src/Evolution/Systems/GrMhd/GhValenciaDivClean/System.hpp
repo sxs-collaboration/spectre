@@ -11,7 +11,8 @@
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Characteristics.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveFromConservative.hpp"
@@ -72,7 +73,7 @@ struct System {
           OrderedListOfPrimitiveRecoverySchemes>;
 
   using compute_largest_characteristic_speed =
-      gh_system::compute_largest_characteristic_speed;
+      Tags::ComputeLargestCharacteristicSpeed<>;
 
   using inverse_spatial_metric_tag =
       typename gh_system::inverse_spatial_metric_tag;
