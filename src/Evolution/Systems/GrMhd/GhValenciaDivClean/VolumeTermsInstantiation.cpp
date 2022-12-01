@@ -64,11 +64,7 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-    const Scalar<DataVector>& tilde_phi,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& pressure,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
@@ -76,6 +72,5 @@ template void volume_terms<::grmhd::GhValenciaDivClean::TimeDerivativeTerms>(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& electron_fraction,
     const Scalar<DataVector>& specific_enthalpy,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double& constraint_damping_parameter);
 }  // namespace evolution::dg::Actions::detail
