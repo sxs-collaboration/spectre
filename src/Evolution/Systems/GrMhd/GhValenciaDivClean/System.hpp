@@ -10,7 +10,6 @@
 #include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryCorrections/BoundaryCorrection.hpp"
-#include "Evolution/Systems/GrMhd/GhValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Characteristics.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
@@ -28,6 +27,10 @@ namespace grmhd {
 /// Namespace associated with utilities for the combined Generalized Harmonic
 /// and Valencia formulation of ideal GRMHD with divergence cleaning systems.
 namespace GhValenciaDivClean {
+/// \cond
+struct TimeDerivativeTerms;
+/// \endcond
+
 struct System {
   using boundary_conditions_base = BoundaryConditions::BoundaryCondition;
   using boundary_correction_base = BoundaryCorrections::BoundaryCorrection;
