@@ -5,6 +5,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Poloidal.cpp
+  Toroidal.cpp
   )
 
 spectre_target_headers(
@@ -13,4 +14,5 @@ spectre_target_headers(
   HEADERS
   InitialMagneticField.hpp
   Poloidal.hpp
+  Toroidal.hpp
   )
