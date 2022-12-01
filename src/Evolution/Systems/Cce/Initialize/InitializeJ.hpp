@@ -260,7 +260,7 @@ double iteratively_adapt_angular_coordinates(
           "Exited after %zu iterations, achieving final maximum over "
           "collocation points for deviation from target of %e\n"
           "Proceeding with evolution using the partial result from partial "
-          "angular solve.",
+          "angular solve.\n",
           tolerance, max_steps, max_error);
     }
   }
