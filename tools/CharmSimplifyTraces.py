@@ -28,9 +28,14 @@ def extract_first_template_parameter(string):
         if string[i] == '<':
             depth = depth + 1
         if string[i] == '>':
-            assert (depth > 1)
+            assert depth > 0, (
+                "In the process of extracting first template parameter. "
+                f"Depth is {depth} which is not > 0. Parsing string: "
+                f"{string}")
             depth = depth - 1
-    assert (depth == 0)
+    assert depth == 0, (
+        "At end of extracting first template parameter. Depth should be 0 "
+        f"but is {depth} instead. Parsing string: {string}")
     return string[:i]
 
 
