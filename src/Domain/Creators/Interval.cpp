@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
@@ -19,6 +20,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 
 namespace Frame {
 struct Inertial;
@@ -70,6 +73,12 @@ Interval::Interval(
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<1>>();
   }
+  if ((lower_boundary_condition_ == nullptr) !=
+      (upper_boundary_condition_ == nullptr)) {
+    PARSE_ERROR(context,
+                "Both upper and lower boundary conditions must be specified, "
+                "or neither.");
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(lower_boundary_condition_) or
       is_none(upper_boundary_condition_)) {
@@ -88,41 +97,16 @@ Interval::Interval(
   }
   if (is_periodic(lower_boundary_condition_)) {
     is_periodic_in_x_[0] = true;
-    lower_boundary_condition_ = nullptr;
-    upper_boundary_condition_ = nullptr;
   }
 }
 
 Domain<1> Interval::create_domain() const {
-  std::vector<DirectionMap<
-      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (lower_boundary_condition_ != nullptr or
-      upper_boundary_condition_ != nullptr) {
-    ASSERT(lower_boundary_condition_ != nullptr and
-               upper_boundary_condition_ != nullptr,
-           "Both upper and lower boundary conditions must be specified, or "
-           "neither.");
-    ASSERT(not is_periodic_in_x_[0],
-           "Can't specify both periodic and boundary conditions. Did you "
-           "introduce a new constructor to reach this state?");
-    DirectionMap<1,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions{};
-    boundary_conditions[Direction<1>::lower_xi()] =
-        lower_boundary_condition_->get_clone();
-    boundary_conditions[Direction<1>::upper_xi()] =
-        upper_boundary_condition_->get_clone();
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-  }
-
   Domain<1> domain{
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}
-                           : std::vector<PairOfFaces>{},
-      std::move(boundary_conditions_all_blocks)};
+                           : std::vector<PairOfFaces>{}};
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
         0, std::move(time_dependence_->block_maps_grid_to_inertial(1)[0]),
@@ -130,6 +114,25 @@ Domain<1> Interval::create_domain() const {
         std::move(time_dependence_->block_maps_distorted_to_inertial(1)[0]));
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Interval::external_boundary_conditions() const {
+  if (upper_boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{1};
+  if (is_periodic_in_x_[0]) {
+    return boundary_conditions;
+  }
+  boundary_conditions[0][Direction<1>::lower_xi()] =
+      lower_boundary_condition_->get_clone();
+  boundary_conditions[0][Direction<1>::upper_xi()] =
+      upper_boundary_condition_->get_clone();
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 1>> Interval::initial_extents() const {

@@ -45,8 +45,6 @@ class FunctionOfTime;
 }  // namespace domain::FunctionsOfTime
 
 namespace {
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
 using ExpirationTimeMap = std::unordered_map<std::string, double>;
 using Object = domain::creators::BinaryCompactObject::Object;
 using Excision = domain::creators::BinaryCompactObject::Excision;
@@ -81,89 +79,6 @@ create_outer_boundary_condition() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::upper_zeta(), 50);
-}
-
-auto create_boundary_conditions(const bool excise_A, const bool excise_B,
-                                const bool need_cube_to_sphere_transition) {
-  size_t total_blocks = 44;
-  if (need_cube_to_sphere_transition) {
-    total_blocks += 10;
-  }
-  if (not excise_A) {
-    total_blocks++;
-  }
-  if (not excise_B) {
-    total_blocks++;
-  }
-  BoundaryCondVector boundary_conditions_all_blocks{total_blocks};
-  if (excise_A) {
-    for (size_t block_id = 0; block_id < 6; ++block_id) {
-      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-          create_inner_boundary_condition();
-    }
-  }
-  if (excise_B) {
-    const size_t block_offset = 12;
-    for (size_t block_id = block_offset; block_id < block_offset + 6;
-         ++block_id) {
-      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-          create_inner_boundary_condition();
-    }
-  }
-  size_t block_offset = 34;
-  if (need_cube_to_sphere_transition) {
-    block_offset += 10;
-  }
-  for (size_t block_id = block_offset; block_id < block_offset + 10;
-       ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_outer_boundary_condition();
-  }
-  return boundary_conditions_all_blocks;
-}
-
-template <typename... FuncsOfTime>
-void test_binary_compact_object_construction(
-    const domain::creators::BinaryCompactObject& binary_compact_object,
-    double time = std::numeric_limits<double>::signaling_NaN(),
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = {},
-    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
-        expected_functions_of_time = {},
-    const BoundaryCondVector& expected_external_boundary_conditions = {},
-    const ExpirationTimeMap& initial_expiration_times = {}) {
-  const auto domain = binary_compact_object.create_domain();
-  test_initial_domain(domain,
-                      binary_compact_object.initial_refinement_levels());
-  test_physical_separation(binary_compact_object.create_domain().blocks(), time,
-                           functions_of_time);
-  for (size_t block_id = 0;
-       block_id < expected_external_boundary_conditions.size(); ++block_id) {
-    CAPTURE(block_id);
-    const auto& block = domain.blocks()[block_id];
-    REQUIRE(block.external_boundaries().size() ==
-            expected_external_boundary_conditions[block_id].size());
-    for (const auto& [direction, expected_bc_ptr] :
-         expected_external_boundary_conditions[block_id]) {
-      CAPTURE(direction);
-      REQUIRE(block.external_boundary_conditions().count(direction) == 1);
-      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      const auto& bc =
-          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                           TestBoundaryCondition<3>&>(
-              *block.external_boundary_conditions().at(direction));
-      const auto& expected_bc =
-          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                           TestBoundaryCondition<3>&>(*expected_bc_ptr);
-      CHECK(bc.direction() == expected_bc.direction());
-      CHECK(bc.block_id() == expected_bc.block_id());
-    }
-  }
-
-  TestHelpers::domain::creators::test_functions_of_time(
-      binary_compact_object, expected_functions_of_time,
-      initial_expiration_times);
 }
 
 void test_connectivity() {
@@ -243,6 +158,10 @@ void test_connectivity() {
               radial_distribution_outer_shell,
               with_boundary_conditions ? create_outer_boundary_condition()
                                        : nullptr};
+
+          const auto domain =
+              TestHelpers::domain::creators::test_domain_creator(
+                  binary_compact_object, with_boundary_conditions);
 
           std::vector<std::string> expected_block_names{
               "ObjectAShellUpperZ",       "ObjectAShellLowerZ",
@@ -342,25 +261,13 @@ void test_connectivity() {
                                    {16, Direction<3>::lower_zeta()},
                                    {17, Direction<3>::lower_zeta()}}});
           }
-          CHECK(binary_compact_object.create_domain().excision_spheres() ==
-                expected_excision_spheres);
-
-          test_binary_compact_object_construction(
-              binary_compact_object,
-              std::numeric_limits<double>::signaling_NaN(), {}, {},
-              with_boundary_conditions
-                  ? create_boundary_conditions(excise_interiorA,
-                                               excise_interiorB, true)
-                  : BoundaryCondVector{});
+          CHECK(domain.excision_spheres() == expected_excision_spheres);
 
           // Also check whether the radius of the inner boundary of Layer 5 is
           // chosen correctly.
           // Compute the radius of a point in the grid frame on this boundary.
           // Block 44 is one block whose -zeta face is on this boundary.
-          const auto map{binary_compact_object.create_domain()
-                             .blocks()[44]
-                             .stationary_map()
-                             .get_clone()};
+          const auto map{domain.blocks()[44].stationary_map().get_clone()};
           tnsr::I<double, 3, Frame::BlockLogical> logical_point(
               std::array<double, 3>{{0.0, 0.0, -1.0}});
           const double layer_5_inner_radius =
@@ -585,6 +492,9 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
 
 void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
                                      const bool with_control_systems) {
+  INFO("BBH time dependent factory");
+  CAPTURE(with_boundary_conditions);
+  CAPTURE(with_control_systems);
   const auto binary_compact_object = [&with_boundary_conditions]() {
     if (with_boundary_conditions) {
       return TestHelpers::test_option_tag<domain::OptionTags::DomainCreator<3>,
@@ -694,13 +604,14 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
           initial_time, lambda_factor_b0_coefs,
           initial_expiration_times[size_b_name]);
 
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      *binary_compact_object, with_boundary_conditions);
   for (const double time : times_to_check) {
-    test_binary_compact_object_construction(
-        dynamic_cast<const domain::creators::BinaryCompactObject&>(
-            *binary_compact_object),
-        time, functions_of_time, expected_functions_of_time,
-        with_boundary_conditions ? create_boundary_conditions(true, true, false)
-                                 : BoundaryCondVector{},
+    CAPTURE(time);
+    test_det_jac_positive(domain.blocks(), time, functions_of_time);
+    test_physical_separation(domain.blocks(), time, functions_of_time);
+    TestHelpers::domain::creators::test_functions_of_time(
+        *binary_compact_object, expected_functions_of_time,
         with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
   }
 }
@@ -720,9 +631,8 @@ void test_binary_factory() {
             Metavariables<3, false, false>>(opt_string);
       }
     }();
-    test_binary_compact_object_construction(
-        dynamic_cast<const domain::creators::BinaryCompactObject&>(
-            *binary_compact_object));
+    TestHelpers::domain::creators::test_domain_creator(
+        *binary_compact_object, with_boundary_conditions);
   };
   for (const bool with_boundary_conds : {true, false}) {
     check_impl(create_option_string(true, true, false, false, 2, 0, 2,

@@ -74,123 +74,6 @@ create_outer_boundary_condition() {
       Direction<3>::upper_eta(), 314);
 }
 
-auto create_boundary_conditions(const bool include_sphere_E) {
-  size_t total_blocks = 46;
-  if (include_sphere_E) {
-    total_blocks += 13;
-  }
-
-  BoundaryCondVector boundary_conditions_all_blocks{total_blocks};
-
-  // CA Filled Cylinder
-  for (size_t block_id = 0; block_id < 5; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_outer_boundary_condition();
-  }
-
-  // CA Cylinder
-  for (size_t block_id = 5; block_id < 9; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-        create_outer_boundary_condition();
-  }
-
-  // EA Filled Cylinder
-  for (size_t block_id = 9; block_id < 14; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-        create_inner_boundary_condition();
-  }
-
-  // EA Cylinder
-  for (size_t block_id = 14; block_id < 18; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-        create_inner_boundary_condition();
-  }
-
-  // EB Filled Cylinder
-  for (size_t block_id = 18; block_id < 23; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-        create_inner_boundary_condition();
-  }
-
-  // EB Cylinder
-  for (size_t block_id = 23; block_id < 27; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-        create_inner_boundary_condition();
-  }
-
-  // MA Filled Cylinder
-  for (size_t block_id = 27; block_id < 32; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_inner_boundary_condition();
-  }
-
-  // MB Filled Cylinder
-  for (size_t block_id = 32; block_id < 37; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_inner_boundary_condition();
-  }
-
-  // CB Filled Cylinder
-  for (size_t block_id = 37; block_id < 42; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_outer_boundary_condition();
-  }
-
-  // CB Cylinder
-  for (size_t block_id = 42; block_id < 46; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-        create_outer_boundary_condition();
-  }
-
-  return boundary_conditions_all_blocks;
-}
-
-template <typename... FuncsOfTime>
-void test_binary_compact_object_construction(
-    const domain::creators::CylindricalBinaryCompactObject&
-        binary_compact_object,
-    double time = std::numeric_limits<double>::signaling_NaN(),
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time = {},
-    const std::tuple<std::pair<std::string, FuncsOfTime>...>&
-        expected_functions_of_time = {},
-    const BoundaryCondVector& expected_external_boundary_conditions = {},
-    const ExpirationTimeMap& initial_expiration_times = {}) {
-  const auto domain = binary_compact_object.create_domain();
-  test_initial_domain(domain,
-                      binary_compact_object.initial_refinement_levels());
-  test_det_jac_positive(domain.blocks(), time, functions_of_time);
-  test_physical_separation(domain.blocks(), time, functions_of_time);
-
-  for (size_t block_id = 0;
-       block_id < expected_external_boundary_conditions.size(); ++block_id) {
-    CAPTURE(block_id);
-    const auto& block = domain.blocks()[block_id];
-    REQUIRE(block.external_boundaries().size() ==
-            expected_external_boundary_conditions[block_id].size());
-    for (const auto& [direction, expected_bc_ptr] :
-         expected_external_boundary_conditions[block_id]) {
-      CAPTURE(direction);
-      REQUIRE(block.external_boundary_conditions().count(direction) == 1);
-      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      const auto& bc =
-          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                           TestBoundaryCondition<3>&>(
-              *block.external_boundary_conditions().at(direction));
-      const auto& expected_bc =
-          dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                           TestBoundaryCondition<3>&>(*expected_bc_ptr);
-      CHECK(bc.direction() == expected_bc.direction());
-      CHECK(bc.block_id() == expected_bc.block_id());
-    }
-  }
-
-  TestHelpers::domain::creators::test_functions_of_time(
-      binary_compact_object, expected_functions_of_time,
-      initial_expiration_times);
-}
-
 void test_connectivity() {
   // ObjectA:
   constexpr double inner_radius_objectA = 1.0;
@@ -282,11 +165,8 @@ void test_connectivity() {
                   "EBFilledCylinderCenter", "MBFilledCylinderNorth",
                   "MBFilledCylinderSouth"}}});
 
-      test_binary_compact_object_construction(
-          binary_compact_object, std::numeric_limits<double>::signaling_NaN(),
-          {}, {},
-          with_boundary_conditions ? create_boundary_conditions(with_sphere_e)
-                                   : BoundaryCondVector{});
+      TestHelpers::domain::creators::test_domain_creator(
+          binary_compact_object, with_boundary_conditions);
 
       if (with_boundary_conditions) {
         CHECK_THROWS_WITH(
@@ -394,6 +274,9 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
           create_option_string(true, false, false, with_boundary_conditions));
     }
   }();
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      *binary_compact_object, with_boundary_conditions);
+
   const std::array<double, 4> times_to_check{{0.0, 4.4, 7.8}};
 
   constexpr double initial_time = 0.0;
@@ -423,14 +306,12 @@ void test_bbh_time_dependent_factory(const bool with_boundary_conditions,
           initial_time, function_of_time_coefficients,
           initial_expiration_times[f_of_t_name]);
 
+  TestHelpers::domain::creators::test_functions_of_time(
+      *binary_compact_object, expected_functions_of_time,
+      initial_expiration_times);
   for (const double time : times_to_check) {
-    test_binary_compact_object_construction(
-        dynamic_cast<const domain::creators::CylindricalBinaryCompactObject&>(
-            *binary_compact_object),
-        time, functions_of_time, expected_functions_of_time,
-        with_boundary_conditions ? create_boundary_conditions(false)
-                                 : BoundaryCondVector{},
-        with_control_systems ? initial_expiration_times : ExpirationTimeMap{});
+    test_det_jac_positive(domain.blocks(), time, functions_of_time);
+    test_physical_separation(domain.blocks(), time, functions_of_time);
   }
 }
 
@@ -455,9 +336,8 @@ void test_binary_factory() {
             opt_string);
       }
     }();
-    test_binary_compact_object_construction(
-        dynamic_cast<const domain::creators::CylindricalBinaryCompactObject&>(
-            *binary_compact_object));
+    TestHelpers::domain::creators::test_domain_creator(
+        *binary_compact_object, with_boundary_conditions);
   };
   for (const bool with_boundary_conds : {true, false}) {
     for (const bool with_additional_outer_radial_refinement : {false, true}) {

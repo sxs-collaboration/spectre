@@ -18,6 +18,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeFixedSources.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
@@ -199,6 +200,7 @@ void test_dg_operator(
 
   // Get a list of all elements in the domain
   auto domain = domain_creator.create_domain();
+  auto boundary_conditions = domain_creator.external_boundary_conditions();
   const auto initial_ref_levs = domain_creator.initial_refinement_levels();
   const auto initial_extents = domain_creator.initial_extents();
   std::unordered_set<ElementId<Dim>> all_element_ids{};
@@ -210,13 +212,12 @@ void test_dg_operator(
     }
   }
 
-  ActionTesting::MockRuntimeSystem<Metavars> runner{
-      tuples::TaggedTuple<domain::Tags::Domain<Dim>,
-                          ::elliptic::dg::Tags::PenaltyParameter,
-                          ::elliptic::dg::Tags::Massive,
-                          ::Tags::AnalyticSolution<AnalyticSolution>>{
-          std::move(domain), penalty_parameter, use_massive_dg_operator,
-          analytic_solution}};
+  ActionTesting::MockRuntimeSystem<Metavars> runner{tuples::TaggedTuple<
+      domain::Tags::Domain<Dim>, domain::Tags::ExternalBoundaryConditions<Dim>,
+      ::elliptic::dg::Tags::PenaltyParameter, ::elliptic::dg::Tags::Massive,
+      ::Tags::AnalyticSolution<AnalyticSolution>>{
+      std::move(domain), std::move(boundary_conditions), penalty_parameter,
+      use_massive_dg_operator, analytic_solution}};
 
   // DataBox shortcuts
   const auto get_tag = [&runner](

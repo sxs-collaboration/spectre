@@ -17,6 +17,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryConditionType.hpp"
 #include "Elliptic/DiscontinuousGalerkin/SubdomainOperator/SubdomainOperator.hpp"
@@ -241,11 +242,12 @@ class MinusLaplacian
       return *bc_signatures_;
     }
     bc_signatures_ = std::vector<BoundaryConditionsSignature>{};
-    const auto& blocks = db::get<domain::Tags::Domain<Dim>>(box).blocks();
+    const auto& all_boundary_conditions =
+        db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(box);
     const auto collect_bc_signatures = [&bc_signatures = *bc_signatures_,
                                         &override_boundary_condition_type =
                                             boundary_condition_type_,
-                                        &blocks](
+                                        &all_boundary_conditions](
                                            const BoundaryId& boundary_id) {
       if (not bc_signatures.empty() and
           bc_signatures[0].find(boundary_id) != bc_signatures[0].end()) {
@@ -260,10 +262,7 @@ class MinusLaplacian
       const auto& [block_id, direction] = boundary_id;
       const auto original_boundary_condition = dynamic_cast<
           const elliptic::BoundaryConditions::BoundaryCondition<Dim>*>(
-          blocks.at(block_id)
-              .external_boundary_conditions()
-              .at(direction)
-              .get());
+          all_boundary_conditions.at(block_id).at(direction).get());
       ASSERT(original_boundary_condition != nullptr,
              "The boundary condition in block "
                  << block_id << ", direction " << direction

@@ -104,7 +104,6 @@ double test(const size_t num_dg_pts) {
                                                 Frame::Inertial>(
                    Affine3D{affine_map, affine_map, affine_map}),
                0,
-               {},
                {}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 

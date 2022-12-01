@@ -120,7 +120,6 @@ void test_shape_control_error() {
   // Fake domain
   Domain<3> fake_domain{
       {},
-      {},
       {{excision_sphere_A_name,
         ExcisionSphere<3>{excision_radius,
                           origin,

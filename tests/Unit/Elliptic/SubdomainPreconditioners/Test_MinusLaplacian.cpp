@@ -189,44 +189,37 @@ auto make_databox_with_boundary_conditions() {
   //   order (Block 0 top, Block 0 left, Block 1 left).
 
   // Boundary conditions
-  DirectionMap<Dim,
-               std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-      block_0_boundary_conditions{};
-  block_0_boundary_conditions[Direction<Dim>::upper_eta()] =
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{2};
+  boundary_conditions[0][Direction<Dim>::upper_eta()] =
       std::make_unique<BoundaryCondition<Dim>>(BoundaryCondition<Dim>{
           {3, elliptic::BoundaryConditionType::Dirichlet}});
-  block_0_boundary_conditions[Direction<Dim>::lower_xi()] =
+  boundary_conditions[0][Direction<Dim>::lower_xi()] =
       std::make_unique<BoundaryCondition<Dim>>(
           BoundaryCondition<Dim>{{elliptic::BoundaryConditionType::Neumann,
                                   elliptic::BoundaryConditionType::Dirichlet,
                                   elliptic::BoundaryConditionType::Dirichlet}});
-  DirectionMap<Dim,
-               std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-      block_1_boundary_conditions{};
-  block_1_boundary_conditions[Direction<Dim>::lower_xi()] =
+  boundary_conditions[1][Direction<Dim>::lower_xi()] =
       std::make_unique<BoundaryCondition<Dim>>(
           BoundaryCondition<Dim>{{elliptic::BoundaryConditionType::Dirichlet,
                                   elliptic::BoundaryConditionType::Neumann,
                                   elliptic::BoundaryConditionType::Neumann}});
   // only needed for completeness, not used in test
-  block_0_boundary_conditions[Direction<Dim>::upper_xi()] =
+  boundary_conditions[0][Direction<Dim>::upper_xi()] =
       std::make_unique<BoundaryCondition<Dim>>(BoundaryCondition<Dim>{
           {3, elliptic::BoundaryConditionType::Dirichlet}});
-  block_1_boundary_conditions[Direction<Dim>::upper_xi()] =
+  boundary_conditions[1][Direction<Dim>::upper_xi()] =
       std::make_unique<BoundaryCondition<Dim>>(BoundaryCondition<Dim>{
           {3, elliptic::BoundaryConditionType::Dirichlet}});
-  block_1_boundary_conditions[Direction<Dim>::lower_eta()] =
+  boundary_conditions[1][Direction<Dim>::lower_eta()] =
       std::make_unique<BoundaryCondition<Dim>>(BoundaryCondition<Dim>{
           {3, elliptic::BoundaryConditionType::Dirichlet}});
   // Blocks
-  Block<Dim> block_0{make_block_map<Dim>(),
-                     0,
-                     {{Direction<Dim>::lower_eta(), {1, {}}}},
-                     std::move(block_0_boundary_conditions)};
-  Block<Dim> block_1{make_block_map<Dim>(),
-                     1,
-                     {{Direction<Dim>::upper_eta(), {0, {}}}},
-                     std::move(block_1_boundary_conditions)};
+  Block<Dim> block_0{
+      make_block_map<Dim>(), 0, {{Direction<Dim>::lower_eta(), {1, {}}}}};
+  Block<Dim> block_1{
+      make_block_map<Dim>(), 1, {{Direction<Dim>::upper_eta(), {0, {}}}}};
   // Domain
   std::vector<Block<Dim>> blocks{};
   blocks.emplace_back(std::move(block_0));
@@ -250,11 +243,11 @@ auto make_databox_with_boundary_conditions() {
        std::move(right_element)},
       {{Direction<Dim>::lower_eta(), bottom_element_id},
        std::move(bottom_element)}};
-  return db::create<
-      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::Element<Dim>,
-                 LinearSolver::Schwarz::Tags::Overlaps<
-                     domain::Tags::Element<Dim>, Dim, OptionsGroup>>>(
-      std::move(domain), std::move(central_element),
+  return db::create<tmpl::list<
+      domain::Tags::ExternalBoundaryConditions<Dim>, domain::Tags::Element<Dim>,
+      LinearSolver::Schwarz::Tags::Overlaps<domain::Tags::Element<Dim>, Dim,
+                                            OptionsGroup>>>(
+      std::move(boundary_conditions), std::move(central_element),
       std::move(overlap_elements));
 }
 
@@ -264,6 +257,9 @@ auto make_databox_without_boundary_conditions() {
   std::vector<Block<Dim>> blocks{};
   blocks.emplace_back(std::move(block));
   Domain<Dim> domain{std::move(blocks)};
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{domain.blocks().size()};
   const std::vector<std::array<size_t, Dim>> refinement{{{2, 2}}};
   const ElementId<Dim> central_element_id{0, {{{2, 1}, {2, 1}}}};
   const ElementId<Dim> right_element_id{0, {{{2, 2}, {2, 1}}}};
@@ -274,11 +270,11 @@ auto make_databox_without_boundary_conditions() {
   LinearSolver::Schwarz::OverlapMap<Dim, Element<Dim>> overlap_elements{
       {{Direction<Dim>::upper_xi(), right_element_id},
        std::move(right_element)}};
-  return db::create<
-      tmpl::list<domain::Tags::Domain<Dim>, domain::Tags::Element<Dim>,
-                 LinearSolver::Schwarz::Tags::Overlaps<
-                     domain::Tags::Element<Dim>, Dim, OptionsGroup>>>(
-      std::move(domain), std::move(central_element),
+  return db::create<tmpl::list<
+      domain::Tags::ExternalBoundaryConditions<Dim>, domain::Tags::Element<Dim>,
+      LinearSolver::Schwarz::Tags::Overlaps<domain::Tags::Element<Dim>, Dim,
+                                            OptionsGroup>>>(
+      std::move(boundary_conditions), std::move(central_element),
       std::move(overlap_elements));
 }
 }  // namespace

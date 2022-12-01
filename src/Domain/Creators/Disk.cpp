@@ -4,6 +4,9 @@
 #include "Domain/Creators/Disk.hpp"
 
 #include <cmath>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
@@ -19,6 +22,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -127,10 +131,23 @@ Domain<2> Disk::create_domain() const {
     boundary_conditions_all_blocks.emplace_back();
   }
 
-  return Domain<2>{std::move(coord_maps),
-                   corners,
-                   {},
-                   std::move(boundary_conditions_all_blocks)};
+  return Domain<2>{std::move(coord_maps), corners};
+}
+
+std::vector<DirectionMap<
+    2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Disk::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{5};
+  for (size_t i = 0; i < 4; ++i) {
+    boundary_conditions[i][Direction<2>::upper_xi()] =
+        boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 2>> Disk::initial_extents() const {

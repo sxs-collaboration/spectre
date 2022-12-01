@@ -3,7 +3,11 @@
 
 #include "Domain/Creators/RotatedIntervals.hpp"
 
+#include <array>
+#include <cstddef>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
@@ -16,6 +20,7 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 
 namespace domain::creators {
@@ -69,6 +74,13 @@ RotatedIntervals::RotatedIntervals(
     time_dependence_ =
         std::make_unique<domain::creators::time_dependence::None<1>>();
   }
+  if ((lower_boundary_condition_ == nullptr) !=
+      (upper_boundary_condition_ == nullptr)) {
+    PARSE_ERROR(
+        context,
+        "Both upper and lower boundary conditions must be specified, or "
+        "neither.");
+  }
   using domain::BoundaryConditions::is_none;
   if (is_none(lower_boundary_condition_) or
       is_none(upper_boundary_condition_)) {
@@ -87,8 +99,6 @@ RotatedIntervals::RotatedIntervals(
   }
   if (is_periodic(lower_boundary_condition_)) {
     is_periodic_in_[0] = true;
-    lower_boundary_condition_ = nullptr;
-    upper_boundary_condition_ = nullptr;
   }
 }
 
@@ -96,33 +106,8 @@ Domain<1> RotatedIntervals::create_domain() const {
   std::vector<DirectionMap<
       1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
       boundary_conditions_all_blocks{};
-  if (lower_boundary_condition_ != nullptr or
-      upper_boundary_condition_ != nullptr) {
-    ASSERT(lower_boundary_condition_ != nullptr and
-               upper_boundary_condition_ != nullptr,
-           "Both upper and lower boundary conditions must be specified, or "
-           "neither.");
-    ASSERT(not is_periodic_in_[0],
-           "Can't specify both periodic and boundary conditions. Did you "
-           "introduce a new constructor to reach this state?");
-    boundary_conditions_all_blocks.resize(2);
-    DirectionMap<1,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions_block0{};
-    boundary_conditions_block0[Direction<1>::lower_xi()] =
-        lower_boundary_condition_->get_clone();
-    boundary_conditions_all_blocks[0] = std::move(boundary_conditions_block0);
-    DirectionMap<1,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions_block1{};
-    boundary_conditions_block1[Direction<1>::lower_xi()] =
-        upper_boundary_condition_->get_clone();
-    boundary_conditions_all_blocks[1] = std::move(boundary_conditions_block1);
-  }
-
   Domain<1> domain = rectilinear_domain<1>(
-      Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}},
-      std::move(boundary_conditions_all_blocks), {},
+      Index<1>{2}, {{{lower_x_[0], midpoint_x_[0], upper_x_[0]}}}, {},
       {OrientationMap<1>{}, OrientationMap<1>{std::array<Direction<1>, 1>{
                                 {Direction<1>::lower_xi()}}}},
       is_periodic_in_);
@@ -142,6 +127,25 @@ Domain<1> RotatedIntervals::create_domain() const {
     }
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+RotatedIntervals::external_boundary_conditions() const {
+  if (upper_boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{2};
+  if (is_periodic_in_[0]) {
+    return boundary_conditions;
+  }
+  boundary_conditions[0][Direction<1>::lower_xi()] =
+      lower_boundary_condition_->get_clone();
+  boundary_conditions[1][Direction<1>::lower_xi()] =
+      upper_boundary_condition_->get_clone();
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 1>> RotatedIntervals::initial_extents() const {

@@ -86,7 +86,6 @@ Brick::Brick(
     is_periodic_in_xyz_[0] = true;
     is_periodic_in_xyz_[1] = true;
     is_periodic_in_xyz_[2] = true;
-    boundary_condition_ = nullptr;
   }
 }
 
@@ -104,26 +103,13 @@ Domain<3> Brick::create_domain() const {
     identifications.push_back({{0, 1, 2, 3}, {4, 5, 6, 7}});
   }
 
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    DirectionMap<3,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions{};
-    for (const auto& direction : Direction<3>::all_directions()) {
-      boundary_conditions[direction] = boundary_condition_->get_clone();
-    }
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-  }
-
   Domain<3> domain{
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., lower_xyz_[0], upper_xyz_[0]},
                    Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
                    Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
       std::vector<std::array<size_t, 8>>{{{0, 1, 2, 3, 4, 5, 6, 7}}},
-      identifications, std::move(boundary_conditions_all_blocks)};
+      identifications};
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
@@ -132,6 +118,24 @@ Domain<3> Brick::create_domain() const {
         std::move(time_dependence_->block_maps_distorted_to_inertial(1)[0]));
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Brick::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{1};
+  if (is_periodic_in_xyz_[0]) {
+    return boundary_conditions;
+  }
+  for (const auto& direction : Direction<3>::all_directions()) {
+    boundary_conditions[0][direction] = boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> Brick::initial_extents() const {

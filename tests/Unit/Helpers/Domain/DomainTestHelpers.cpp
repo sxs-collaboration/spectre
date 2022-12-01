@@ -383,79 +383,28 @@ void test_domain_construction(
         functions_of_time,
     const std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
-        expected_grid_to_inertial_maps,
-    const std::vector<DirectionMap<
-        VolumeDim,
-        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions) {
-  const auto perform_checks =
-      [&expected_block_neighbors, &expected_external_boundaries, &expected_maps,
-       &time, &functions_of_time, &expected_grid_to_inertial_maps,
-       &expected_boundary_conditions](const auto& local_domain) {
-        const auto& blocks = local_domain.blocks();
-        CHECK(blocks.size() == expected_external_boundaries.size());
-        CHECK(blocks.size() == expected_block_neighbors.size());
-        CHECK(blocks.size() == expected_maps.size());
-        for (size_t i = 0; i < blocks.size(); ++i) {
-          const auto& block = blocks[i];
-          CHECK(block.id() == i);
-          CHECK(block.neighbors() == expected_block_neighbors[i]);
-          CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-          dispatch_check_if_maps_are_equal(block, *expected_maps[i], time,
-                                           functions_of_time);
-          if (std::is_same<TargetFrameGridOrInertial, Frame::Grid>::value) {
-            if (expected_grid_to_inertial_maps.size() != blocks.size()) {
-              ERROR("Need at least one grid to inertial map for each block ("
-                    << blocks.size() << " blocks in total) but received "
-                    << expected_grid_to_inertial_maps.size() << " instead.");
-            }
-            dispatch_check_if_maps_are_equal(block,
-                                             *expected_grid_to_inertial_maps[i],
-                                             time, functions_of_time);
-          }
-        }
-        if (not expected_boundary_conditions.empty()) {
-          for (size_t block_id = 0;
-               block_id < expected_boundary_conditions.size(); ++block_id) {
-            CAPTURE(block_id);
-            REQUIRE(expected_boundary_conditions[block_id].size() ==
-                    expected_external_boundaries[block_id].size());
-            REQUIRE(expected_boundary_conditions[block_id].size() ==
-                    blocks[block_id].external_boundary_conditions().size());
-            const auto& boundary_conditions_in_block =
-                blocks[block_id].external_boundary_conditions();
-            for (const auto& [direction, expected_boundary_condition_ptr] :
-                 expected_boundary_conditions[block_id]) {
-              CAPTURE(direction);
-              CAPTURE(boundary_conditions_in_block.size());
-              REQUIRE(boundary_conditions_in_block.count(direction) == 1);
-              REQUIRE(boundary_conditions_in_block.at(direction) != nullptr);
-              const auto& boundary_condition_in_direction =
-                  dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                                   TestBoundaryCondition<VolumeDim>&>(
-                      *boundary_conditions_in_block.at(direction));
-              const auto& expected_boundary_condition =
-                  dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                                   TestBoundaryCondition<VolumeDim>&>(
-                      *expected_boundary_condition_ptr);
-              CHECK(expected_boundary_condition.direction() ==
-                    boundary_condition_in_direction.direction());
-              CHECK(expected_boundary_condition.block_id() ==
-                    boundary_condition_in_direction.block_id());
-            }
-          }
-        }
-      };
-  perform_checks(domain);
-  domain::creators::register_derived_with_charm();
-  TestHelpers::domain::BoundaryConditions::register_derived_with_charm();
-  {
-    INFO("Serialization");
-    test_serialization(domain);
-    perform_checks(serialize_and_deserialize(domain));
+        expected_grid_to_inertial_maps) {
+  const auto& blocks = domain.blocks();
+  CHECK(blocks.size() == expected_external_boundaries.size());
+  CHECK(blocks.size() == expected_block_neighbors.size());
+  CHECK(blocks.size() == expected_maps.size());
+  for (size_t i = 0; i < blocks.size(); ++i) {
+    const auto& block = blocks[i];
+    CHECK(block.id() == i);
+    CHECK(block.neighbors() == expected_block_neighbors[i]);
+    CHECK(block.external_boundaries() == expected_external_boundaries[i]);
+    dispatch_check_if_maps_are_equal(block, *expected_maps[i], time,
+                                     functions_of_time);
+    if (std::is_same<TargetFrameGridOrInertial, Frame::Grid>::value) {
+      if (expected_grid_to_inertial_maps.size() != blocks.size()) {
+        ERROR("Need at least one grid to inertial map for each block ("
+              << blocks.size() << " blocks in total) but received "
+              << expected_grid_to_inertial_maps.size() << " instead.");
+      }
+      dispatch_check_if_maps_are_equal(
+          block, *expected_grid_to_inertial_maps[i], time, functions_of_time);
+    }
   }
-  // test operator !=
-  CHECK_FALSE(domain != domain);
 }
 
 template <size_t VolumeDim>
@@ -464,10 +413,13 @@ void test_physical_separation(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
+  INFO("Test physical separation");
   double tolerance = 1e-10;
   for (size_t i = 0; i < blocks.size() - 1; i++) {
     for (size_t j = i + 1; j < blocks.size(); j++) {
       if (domain::blocks_are_neighbors(blocks[i], blocks[j])) {
+        CAPTURE(i);
+        CAPTURE(j);
         CHECK(domain::physical_separation(blocks[i], blocks[j], time,
                                           functions_of_time) < tolerance);
       }
@@ -483,6 +435,7 @@ void test_det_jac_positive(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         functions_of_time) {
+  INFO("Test determinant of Jacobian is positive");
   std::array<tnsr::I<double, VolumeDim, Frame::BlockLogical>,
              two_to_the(VolumeDim)>
       corner_points{};
@@ -615,11 +568,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
           functions_of_time,                                                 \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<           \
           Frame::Grid, Frame::Inertial, DIM(data)>>>&                        \
-          expected_logical_to_grid_maps,                                     \
-      const std::vector<DirectionMap<                                        \
-          DIM(data),                                                         \
-          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&  \
-          expected_boundary_conditions);
+          expected_logical_to_grid_maps);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 

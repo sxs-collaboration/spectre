@@ -22,13 +22,11 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace {
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_boundary_condition() {
   return std::make_unique<
@@ -42,54 +40,6 @@ std::string boundary_conditions_string() {
       "    TestBoundaryCondition:\n"
       "      Direction: upper-zeta\n"
       "      BlockId: 50\n"};
-}
-
-auto create_boundary_conditions() {
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{10};
-  const auto boundary_condition = create_boundary_condition();
-  for (auto& block : boundary_conditions_all_blocks) {
-    block[Direction<3>::lower_zeta()] = boundary_condition->get_clone();
-    block[Direction<3>::upper_zeta()] = boundary_condition->get_clone();
-  }
-  return boundary_conditions_all_blocks;
-}
-
-void test_frustal_cloak_construction(
-    const domain::creators::FrustalCloak& frustal_cloak,
-    const BoundaryCondVector& expected_external_boundary_conditions) {
-  Parallel::register_classes_with_charm(
-      typename domain::creators::FrustalCloak::maps_list{});
-
-  const auto test_impl = [&expected_external_boundary_conditions,
-                          &frustal_cloak](const auto& domain) {
-    test_initial_domain(domain, frustal_cloak.initial_refinement_levels());
-    test_physical_separation(frustal_cloak.create_domain().blocks());
-
-    for (size_t block_id = 0;
-         block_id < expected_external_boundary_conditions.size(); ++block_id) {
-      const auto& block = domain.blocks()[block_id];
-      REQUIRE(block.external_boundaries().size() ==
-              expected_external_boundary_conditions[block_id].size());
-      for (const auto& [direction, expected_bc_ptr] :
-           expected_external_boundary_conditions[block_id]) {
-        REQUIRE(block.external_boundary_conditions().count(direction) == 1);
-        REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-        const auto& bc =
-            dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                             TestBoundaryCondition<3>&>(
-                *block.external_boundary_conditions().at(direction));
-        const auto& expected_bc =
-            dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                             TestBoundaryCondition<3>&>(*expected_bc_ptr);
-        CHECK(bc.direction() == expected_bc.direction());
-        CHECK(bc.block_id() == expected_bc.block_id());
-      }
-    }
-  };
-  test_impl(frustal_cloak.create_domain());
-  test_impl(serialize_and_deserialize(frustal_cloak.create_domain()));
 }
 
 void test_factory() {
@@ -120,10 +70,8 @@ void test_factory() {
                     3, domain::creators::FrustalCloak>>(opt_string);
       }
     }();
-    test_frustal_cloak_construction(
-        dynamic_cast<const domain::creators::FrustalCloak&>(*frustal_cloak),
-        with_boundary_conditions ? create_boundary_conditions()
-                                 : BoundaryCondVector{});
+    TestHelpers::domain::creators::test_domain_creator(
+        *frustal_cloak, with_boundary_conditions);
   }
 }
 
@@ -146,9 +94,8 @@ void test_connectivity() {
           length_outer_cube,
           origin_preimage,
           with_boundary_conditions ? create_boundary_condition() : nullptr};
-      test_frustal_cloak_construction(
-          frustal_cloak, with_boundary_conditions ? create_boundary_conditions()
-                                                  : BoundaryCondVector{});
+      TestHelpers::domain::creators::test_domain_creator(
+          frustal_cloak, with_boundary_conditions);
     }
   }
 

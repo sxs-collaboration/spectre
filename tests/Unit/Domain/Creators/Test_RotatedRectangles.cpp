@@ -28,6 +28,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
@@ -44,13 +45,11 @@ void test_rotated_rectangles_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
         expected_external_boundaries,
-    const std::vector<DirectionMap<
-        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {}) {
-  const auto domain = rotated_rectangles.create_domain();
+    const bool expect_boundary_conditions = false,
+    const bool is_periodic = false) {
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      rotated_rectangles, expect_boundary_conditions, is_periodic);
 
-  CHECK(domain.blocks().size() == expected_extents.size());
-  CHECK(domain.blocks().size() == expected_refinement_level.size());
   CHECK(rotated_rectangles.initial_extents() == expected_extents);
   CHECK(rotated_rectangles.initial_refinement_levels() ==
         expected_refinement_level);
@@ -85,43 +84,7 @@ void test_rotated_rectangles_construction(
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps,
-                           std::numeric_limits<double>::signaling_NaN(), {}, {},
-                           expected_boundary_conditions);
-  test_initial_domain(domain, rotated_rectangles.initial_refinement_levels());
-
-  Parallel::register_classes_with_charm(
-      typename domain::creators::RotatedRectangles::maps_list{});
-  test_serialization(domain);
-}
-
-auto create_boundary_conditions() {
-  std::vector<DirectionMap<
-      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      expected_boundary_conditions{4};
-  const auto boundary_condition = std::make_unique<
-      TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
-      Direction<2>::lower_xi(), 2);
-  expected_boundary_conditions[0][Direction<2>::lower_xi()] =
-      boundary_condition->get_clone();
-  expected_boundary_conditions[0][Direction<2>::lower_eta()] =
-      boundary_condition->get_clone();
-
-  expected_boundary_conditions[1][Direction<2>::lower_xi()] =
-      boundary_condition->get_clone();
-  expected_boundary_conditions[1][Direction<2>::upper_eta()] =
-      boundary_condition->get_clone();
-
-  expected_boundary_conditions[2][Direction<2>::upper_xi()] =
-      boundary_condition->get_clone();
-  expected_boundary_conditions[2][Direction<2>::upper_eta()] =
-      boundary_condition->get_clone();
-
-  expected_boundary_conditions[3][Direction<2>::lower_xi()] =
-      boundary_condition->get_clone();
-  expected_boundary_conditions[3][Direction<2>::upper_eta()] =
-      boundary_condition->get_clone();
-  return expected_boundary_conditions;
+                           expected_external_boundaries, coord_maps);
 }
 
 void test_rotated_rectangles() {
@@ -165,7 +128,6 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
-  test_physical_separation(rotated_rectangles.create_domain().blocks());
 
   const creators::RotatedRectangles rotated_rectangles_boundary_conditions{
       lower_bound,
@@ -177,9 +139,6 @@ void test_rotated_rectangles() {
       std::make_unique<
           TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<2>>(
           Direction<2>::lower_xi(), 2)};
-  const std::vector<DirectionMap<
-      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      expected_boundary_conditions = create_boundary_conditions();
 
   test_rotated_rectangles_construction(
       rotated_rectangles_boundary_conditions, lower_bound, midpoint,
@@ -198,7 +157,7 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
           {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
-      expected_boundary_conditions);
+      true);
 
   const creators::RotatedRectangles rotated_periodic_rectangles{
       lower_bound,
@@ -228,7 +187,8 @@ void test_rotated_rectangles() {
            {Direction<2>::lower_eta(), {2, half_turn}},
            {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
            {Direction<2>::upper_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}}, false,
+      true);
 
   const creators::RotatedRectangles
       periodic_rotated_rectangles_boundary_conditions{
@@ -260,7 +220,8 @@ void test_rotated_rectangles() {
            {Direction<2>::lower_eta(), {2, half_turn}},
            {Direction<2>::lower_xi(), {1, quarter_turn_cw}},
            {Direction<2>::upper_eta(), {2, half_turn}}}},
-      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
+      std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}}, true,
+      true);
 
   CHECK_THROWS_WITH(
       creators::RotatedRectangles(
@@ -322,9 +283,6 @@ void test_rotated_rectangles_factory() {
   }
   {
     INFO("With boundary condition");
-    const std::vector<DirectionMap<
-        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        expected_boundary_conditions = create_boundary_conditions();
     const auto domain_creator = TestHelpers::test_option_tag<
         domain::OptionTags::DomainCreator<2>,
         TestHelpers::domain::BoundaryConditions::
@@ -360,7 +318,7 @@ void test_rotated_rectangles_factory() {
             {Direction<2>::lower_xi(), Direction<2>::upper_eta()},
             {Direction<2>::upper_xi(), Direction<2>::upper_eta()},
             {Direction<2>::lower_xi(), Direction<2>::upper_eta()}},
-        expected_boundary_conditions);
+        true);
   }
 }
 }  // namespace

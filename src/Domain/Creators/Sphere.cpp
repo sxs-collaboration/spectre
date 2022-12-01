@@ -3,8 +3,12 @@
 
 #include "Domain/Creators/Sphere.hpp"
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "Domain/Block.hpp"
 #include "Domain/BoundaryConditions/None.hpp"
@@ -22,6 +26,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -115,26 +121,7 @@ Domain<3> Sphere::create_domain() const {
                        use_equiangular_map_}));
   }
 
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    boundary_conditions_all_blocks.resize(7);
-    ASSERT(coord_maps.size() == 7,
-           "The number of blocks for which coordinate maps and boundary "
-           "conditions are specified should be 7 but the coordinate maps is: "
-               << coord_maps.size());
-    for (size_t block_id = 0;
-         block_id < boundary_conditions_all_blocks.size() - 1; ++block_id) {
-      boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-          boundary_condition_->get_clone();
-    }
-  }
-
-  Domain<3> domain{std::move(coord_maps),
-                   corners,
-                   {},
-                   std::move(boundary_conditions_all_blocks)};
+  Domain<3> domain{std::move(coord_maps), corners};
 
   if (not time_dependence_->is_none()) {
     const size_t number_of_blocks = domain.blocks().size();
@@ -153,6 +140,22 @@ Domain<3> Sphere::create_domain() const {
   }
 
   return domain;
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Sphere::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{7};
+  for (size_t i = 0; i < 6; ++i) {
+    boundary_conditions[i][Direction<3>::upper_zeta()] =
+        boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> Sphere::initial_extents() const {

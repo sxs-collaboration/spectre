@@ -62,11 +62,7 @@ void test_domain_construction(
         functions_of_time = {},
     const std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
-        expected_grid_to_inertial_maps = {},
-    const std::vector<DirectionMap<
-        VolumeDim,
-        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {});
+        expected_grid_to_inertial_maps = {});
 
 // Test that two neighboring Blocks abut each other.
 template <size_t VolumeDim>

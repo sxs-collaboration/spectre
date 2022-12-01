@@ -62,12 +62,11 @@ void test_rectangle_construction(
         expected_functions_of_time = {},
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::Grid, Frame::Inertial, 2>>>& expected_grid_to_inertial_maps = {},
-    const std::vector<DirectionMap<
-        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {},
+    const bool expect_boundary_conditions = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
-  const auto domain = rectangle.create_domain();
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      rectangle, expect_boundary_conditions);
 
   CHECK(rectangle.initial_extents() == expected_extents);
   CHECK(rectangle.initial_refinement_levels() == expected_refinement_level);
@@ -80,15 +79,9 @@ void test_rectangle_construction(
                                       Frame::Inertial, Frame::Grid>>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}})),
-      10.0, rectangle.functions_of_time(), expected_grid_to_inertial_maps,
-      expected_boundary_conditions);
-  test_initial_domain(domain, rectangle.initial_refinement_levels());
+      10.0, rectangle.functions_of_time(), expected_grid_to_inertial_maps);
   TestHelpers::domain::creators::test_functions_of_time(
       rectangle, expected_functions_of_time, initial_expiration_times);
-
-  domain::creators::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
-  test_serialization(domain);
 }
 
 void test_rectangle() {
@@ -137,7 +130,7 @@ void test_rectangle() {
              {Direction<2>::upper_xi()},
              {Direction<2>::lower_eta()},
              {Direction<2>::upper_eta()}}},
-        {}, {}, expected_boundary_conditions);
+        {}, {}, true);
   }
 
   {
@@ -194,7 +187,7 @@ void test_rectangle() {
              {Direction<2>::upper_xi(), {0, aligned_orientation}},
              {Direction<2>::lower_eta(), {0, aligned_orientation}},
              {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
-        std::vector<std::unordered_set<Direction<2>>>{{}});
+        std::vector<std::unordered_set<Direction<2>>>{{}}, {}, {}, true);
   }
   CHECK_THROWS_WITH(
       creators::Rectangle(
@@ -274,7 +267,7 @@ void test_rectangle_factory() {
         std::vector<std::unordered_set<Direction<2>>>{
             {{Direction<2>::lower_xi(), Direction<2>::upper_xi(),
               Direction<2>::lower_eta(), Direction<2>::upper_eta()}}},
-        {}, {}, expected_boundary_conditions);
+        {}, {}, true);
   }
   {
     INFO("Rectangle factory time dependent");
@@ -331,7 +324,7 @@ void test_rectangle_factory() {
                  initial_expiration_times[f_of_t_name]}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation2D{f_of_t_name}),
-        {}, initial_expiration_times);
+        false, initial_expiration_times);
   }
   {
     INFO("Rectangle factory time dependent, with boundary conditions");
@@ -377,7 +370,7 @@ void test_rectangle_factory() {
                  std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation2D{f_of_t_name}),
-        expected_boundary_conditions);
+        true);
     // with expiration times
     test_rectangle_construction(
         *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},
@@ -394,7 +387,7 @@ void test_rectangle_factory() {
                  initial_expiration_times[f_of_t_name]}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation2D{f_of_t_name}),
-        expected_boundary_conditions, initial_expiration_times);
+        true, initial_expiration_times);
   }
 }  // namespace domain
 }  // namespace

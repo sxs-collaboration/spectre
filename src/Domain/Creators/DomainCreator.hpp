@@ -15,10 +15,14 @@
 #include <vector>
 
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 
 /// \cond
 template <size_t>
 class Domain;
+namespace domain::BoundaryConditions {
+class BoundaryCondition;
+}
 /// \endcond
 
 namespace domain {
@@ -40,6 +44,12 @@ class DomainCreator {
   virtual ~DomainCreator() = default;
 
   virtual Domain<VolumeDim> create_domain() const = 0;
+
+  /// The set of external boundary condition for every block in the domain
+  virtual std::vector<DirectionMap<
+      VolumeDim,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const = 0;
 
   /// A human-readable name for every block, or empty if the domain creator
   /// doesn't support block names (yet).

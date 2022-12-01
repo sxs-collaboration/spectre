@@ -21,6 +21,7 @@
 #include "Domain/CoordinateMaps/Distribution.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Auto.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -645,6 +646,10 @@ class BinaryCompactObject : public DomainCreator<3> {
   ~BinaryCompactObject() override = default;
 
   Domain<3> create_domain() const override;
+
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const override {
     return initial_number_of_grid_points_;

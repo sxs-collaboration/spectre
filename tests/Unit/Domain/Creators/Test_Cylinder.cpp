@@ -31,14 +31,13 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace domain {
 namespace {
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
 using PeriodicBc =
     TestHelpers::domain::BoundaryConditions::TestPeriodicBoundaryCondition<3>;
 using NoneBc =
@@ -83,23 +82,6 @@ std::string boundary_conditions_string(const bool is_periodic_in_z) {
          "        BlockId: 50\n";
 }
 
-auto create_boundary_conditions(const bool periodic_in_z) {
-  BoundaryCondVector boundary_conditions_all_blocks{5};
-  // z-direction
-  for (size_t block_id = 0; not periodic_in_z and block_id < 5; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-        create_lower_z_boundary_condition();
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-        create_upper_z_boundary_condition();
-  }
-  // radial direction
-  for (size_t block_id = 1; block_id < 5; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-        create_mantle_boundary_condition();
-  }
-  return boundary_conditions_all_blocks;
-}
-
 void test_cylinder_construction(
     const creators::Cylinder& cylinder, const double inner_radius,
     const double outer_radius, const double lower_z_bound,
@@ -107,8 +89,10 @@ void test_cylinder_construction(
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
     const bool use_equiangular_map,
-    const BoundaryCondVector& expected_boundary_conditions = {}) {
-  const auto domain = cylinder.create_domain();
+    const bool expect_boundary_conditions = false) {
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      cylinder, expect_boundary_conditions, is_periodic_in_z);
+
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
@@ -245,15 +229,7 @@ void test_cylinder_construction(
                    Distribution::Linear}}));
 
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps,
-                           std::numeric_limits<double>::signaling_NaN(), {}, {},
-                           expected_boundary_conditions);
-
-  test_initial_domain(domain, cylinder.initial_refinement_levels());
-
-  Parallel::register_classes_with_charm(
-      typename creators::Cylinder::maps_list{});
-  test_serialization(domain);
+                           expected_external_boundaries, coord_maps);
 }
 
 void test_cylinder_no_refinement() {
@@ -274,10 +250,6 @@ void test_cylinder_no_refinement() {
         const double upper_z_bound = 5.0;
         const size_t refinement_level = 2;
         const std::array<size_t, 3> grid_points{{4, 4, 3}};
-
-        const BoundaryCondVector expected_boundary_conditions =
-            with_boundary_conditions ? create_boundary_conditions(periodic_in_z)
-                                     : BoundaryCondVector{};
 
         const auto cylinder =
             with_boundary_conditions
@@ -307,6 +279,9 @@ void test_cylinder_no_refinement() {
                                      equiangular_map,
                                      {},
                                      {}};
+        const auto domain = TestHelpers::domain::creators::test_domain_creator(
+            cylinder, with_boundary_conditions, periodic_in_z);
+
         CHECK(cylinder.block_names() ==
               std::vector<std::string>{"InnerCube", "East", "North", "West",
                                        "South"});
@@ -314,12 +289,11 @@ void test_cylinder_no_refinement() {
               std::unordered_map<std::string, std::unordered_set<std::string>>{
                   {"Wedges", {"East", "North", "West", "South"}}});
 
-        test_physical_separation(cylinder.create_domain().blocks());
-        test_cylinder_construction(
-            cylinder, inner_radius, outer_radius, lower_z_bound, upper_z_bound,
-            periodic_in_z, {5, grid_points},
-            {5, make_array<3>(refinement_level)}, equiangular_map,
-            expected_boundary_conditions);
+        test_cylinder_construction(cylinder, inner_radius, outer_radius,
+                                   lower_z_bound, upper_z_bound, periodic_in_z,
+                                   {5, grid_points},
+                                   {5, make_array<3>(refinement_level)},
+                                   equiangular_map, with_boundary_conditions);
 
         const std::string opt_string{
             "Cylinder:\n"
@@ -364,7 +338,7 @@ void test_cylinder_no_refinement() {
             inner_radius, outer_radius, lower_z_bound, upper_z_bound,
             periodic_in_z, {5, grid_points},
             {5, make_array<3>(refinement_level)}, equiangular_map,
-            expected_boundary_conditions);
+            with_boundary_conditions);
 
         if (with_boundary_conditions) {
           CHECK_THROWS_WITH(
@@ -479,6 +453,9 @@ void test_refined_cylinder_boundaries(
       {domain::CoordinateMaps::Distribution::Linear, outer_radial_distribution},
       {domain::CoordinateMaps::Distribution::Linear,
        uppermost_distribution_in_z}};
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      refined_cylinder, true);
+
   CHECK(refined_cylinder.block_names() ==
         std::vector<std::string>{
             "Layer0InnerCube", "Layer0Shell0East", "Layer0Shell0North",
@@ -519,9 +496,6 @@ void test_refined_cylinder_boundaries(
              {"Layer1Shell1East", "Layer1Shell1North", "Layer1Shell1West",
               "Layer1Shell1South"}}});
 
-  test_physical_separation(refined_cylinder.create_domain().blocks());
-
-  const auto domain = refined_cylinder.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
@@ -660,28 +634,6 @@ void test_refined_cylinder_boundaries(
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta()},
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta()},
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta()}};
-
-  BoundaryCondVector expected_boundary_conditions{};
-  for (const auto& external_boundaries_in_block :
-       expected_external_boundaries) {
-    DirectionMap<3,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions_in_block{};
-    for (const auto& direction_in_block : external_boundaries_in_block) {
-      if (direction_in_block == Direction<3>::lower_zeta()) {
-        boundary_conditions_in_block[direction_in_block] =
-            create_lower_z_boundary_condition();
-      } else if (direction_in_block == Direction<3>::upper_zeta()) {
-        boundary_conditions_in_block[direction_in_block] =
-            create_upper_z_boundary_condition();
-      } else if (direction_in_block == Direction<3>::upper_xi()) {
-        boundary_conditions_in_block[direction_in_block] =
-            create_mantle_boundary_condition();
-      }
-    }
-    expected_boundary_conditions.push_back(
-        std::move(boundary_conditions_in_block));
-  }
 
   const std::vector<std::array<size_t, 3>>& expected_extents{
       {{expected_wedge_extents[1], expected_wedge_extents[1],
@@ -879,15 +831,7 @@ void test_refined_cylinder_boundaries(
                    uppermost_distribution_in_z, lower_z_bound}}));
 
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps,
-                           std::numeric_limits<double>::signaling_NaN(), {}, {},
-                           expected_boundary_conditions);
-
-  test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
-
-  Parallel::register_classes_with_charm(
-      typename creators::Cylinder::maps_list{});
-  test_serialization(domain);
+                           expected_external_boundaries, coord_maps);
 }
 
 void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
@@ -926,8 +870,9 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
                                             partitioning_in_z,
                                             radial_distribution,
                                             distribution_in_z};
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      refined_cylinder, true, true);
 
-  const auto domain = refined_cylinder.create_domain();
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw(std::array<Direction<3>, 3>{
       {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
@@ -1083,22 +1028,6 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
                                                     {Direction<3>::upper_xi()},
                                                     {Direction<3>::upper_xi()},
                                                     {Direction<3>::upper_xi()}};
-
-  BoundaryCondVector expected_boundary_conditions{};
-  for (const auto& external_boundaries_in_block :
-       expected_external_boundaries) {
-    DirectionMap<3,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions_in_block{};
-    for (const auto& direction_in_block : external_boundaries_in_block) {
-      if (direction_in_block == Direction<3>::upper_xi()) {
-        boundary_conditions_in_block[direction_in_block] =
-            create_mantle_boundary_condition();
-      }
-    }
-    expected_boundary_conditions.push_back(
-        std::move(boundary_conditions_in_block));
-  }
 
   const std::vector<std::array<size_t, 3>>& expected_extents{
       {{expected_wedge_extents[1], expected_wedge_extents[1],
@@ -1287,15 +1216,7 @@ void test_refined_cylinder_periodic_boundaries(const bool use_equiangular_map) {
                    distribution_in_z.at(1), lower_z_bound}}));
 
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps,
-                           std::numeric_limits<double>::signaling_NaN(), {}, {},
-                           expected_boundary_conditions);
-
-  test_initial_domain(domain, refined_cylinder.initial_refinement_levels());
-
-  Parallel::register_classes_with_charm(
-      typename creators::Cylinder::maps_list{});
-  test_serialization(domain);
+                           expected_external_boundaries, coord_maps);
 }
 
 }  // namespace

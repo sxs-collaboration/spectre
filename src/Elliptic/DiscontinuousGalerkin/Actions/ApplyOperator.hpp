@@ -20,6 +20,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
 #include "Domain/Tags/SurfaceJacobian.hpp"
@@ -175,6 +176,8 @@ struct PrepareAndSendMortarData<
       tmpl::list<TemporalIdTag, PrimalFieldsTag, PrimalFluxesTag,
                  OperatorAppliedToFieldsTag, all_mortar_data_tag>;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<domain::Tags::ExternalBoundaryConditions<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -194,10 +197,9 @@ struct PrepareAndSendMortarData<
     const size_t num_points = mesh.number_of_grid_points();
     const auto& mortar_meshes =
         db::get<::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>>(box);
-    const auto& domain = db::get<domain::Tags::Domain<Dim>>(box);
-    const auto& boundary_conditions = domain.blocks()
-                                          .at(element_id.block_id())
-                                          .external_boundary_conditions();
+    const auto& boundary_conditions =
+        db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(box).at(
+            element_id.block_id());
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
             const Direction<Dim>& direction, const auto... fields_and_fluxes) {
@@ -516,7 +518,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
  public:
   using const_global_cache_tags =
       tmpl::list<elliptic::dg::Tags::PenaltyParameter,
-                 elliptic::dg::Tags::Massive>;
+                 elliptic::dg::Tags::Massive,
+                 domain::Tags::ExternalBoundaryConditions<Dim>>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -530,10 +533,9 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
     const auto get_items = [](const auto&... args) {
       return std::forward_as_tuple(args...);
     };
-    const auto& domain = db::get<domain::Tags::Domain<Dim>>(box);
-    const auto& boundary_conditions = domain.blocks()
-                                          .at(element_id.block_id())
-                                          .external_boundary_conditions();
+    const auto& boundary_conditions =
+        db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(box).at(
+            element_id.block_id());
     const auto apply_boundary_condition =
         [&box, &boundary_conditions, &element_id](
             const Direction<Dim>& direction, const auto... fields_and_fluxes) {

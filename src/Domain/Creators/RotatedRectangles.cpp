@@ -3,12 +3,19 @@
 
 #include "Domain/Creators/RotatedRectangles.hpp"
 
+#include <array>
+#include <cstddef>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "DataStructures/Index.hpp"  // for Index
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
@@ -58,55 +65,16 @@ RotatedRectangles::RotatedRectangles(
   if (is_periodic(boundary_condition_)) {
     is_periodic_in_[0] = true;
     is_periodic_in_[1] = true;
-    boundary_condition_ = nullptr;
   }
 }
 
 Domain<2> RotatedRectangles::create_domain() const {
-  std::vector<DirectionMap<
-      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    ASSERT(is_periodic_in_[0] == false and is_periodic_in_[1] == false,
-           "Cannot have a boundary condition and periodic boundaries. Did you "
-           "add a new constructor violating this constraint?");
-    using DirMap = DirectionMap<
-        2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-    DirMap boundary_conditions{};
-    boundary_conditions[Direction<2>::lower_xi()] =
-        boundary_condition_->get_clone();
-    boundary_conditions[Direction<2>::lower_eta()] =
-        boundary_condition_->get_clone();
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-
-    boundary_conditions = DirMap{};
-    boundary_conditions[Direction<2>::lower_xi()] =
-        boundary_condition_->get_clone();
-    boundary_conditions[Direction<2>::upper_eta()] =
-        boundary_condition_->get_clone();
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-
-    boundary_conditions = DirMap{};
-    boundary_conditions[Direction<2>::upper_xi()] =
-        boundary_condition_->get_clone();
-    boundary_conditions[Direction<2>::upper_eta()] =
-        boundary_condition_->get_clone();
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-
-    boundary_conditions = DirMap{};
-    boundary_conditions[Direction<2>::lower_xi()] =
-        boundary_condition_->get_clone();
-    boundary_conditions[Direction<2>::upper_eta()] =
-        boundary_condition_->get_clone();
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-  }
-
   return rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{
           {{lower_xy_[0], midpoint_xy_[0], upper_xy_[0]},
            {lower_xy_[1], midpoint_xy_[1], upper_xy_[1]}}},
-      std::move(boundary_conditions_all_blocks), {},
+      {},
       std::vector<OrientationMap<2>>{
           OrientationMap<2>{},
           OrientationMap<2>{
@@ -116,6 +84,37 @@ Domain<2> RotatedRectangles::create_domain() const {
           OrientationMap<2>{
               std::array{Direction<2>::upper_eta(), Direction<2>::lower_xi()}}},
       is_periodic_in_);
+}
+
+std::vector<DirectionMap<
+    2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+RotatedRectangles::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{4};
+  if (is_periodic_in_[0]) {
+    return boundary_conditions;
+  }
+  boundary_conditions[0][Direction<2>::lower_xi()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[0][Direction<2>::lower_eta()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[1][Direction<2>::lower_xi()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[1][Direction<2>::upper_eta()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[2][Direction<2>::upper_xi()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[2][Direction<2>::upper_eta()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[3][Direction<2>::lower_xi()] =
+      boundary_condition_->get_clone();
+  boundary_conditions[3][Direction<2>::upper_eta()] =
+      boundary_condition_->get_clone();
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const {

@@ -2215,31 +2215,31 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                    System::has_inverse_spatial_metric>;
 
   Domain<Dim> domain{};
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      external_boundary_conditions{1};
   {
     // For the initial tests, set the boundary conditions to:
     // lower_xi: DemandOutgoingCharSpeeds
     // upper_xi: DemandOutgoingCharSpeeds
-    DirectionMap<Dim,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions{};
-    boundary_conditions[Direction<Dim>::lower_xi()] =
+    external_boundary_conditions[0][Direction<Dim>::lower_xi()] =
         std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
-    boundary_conditions[Direction<Dim>::upper_xi()] =
+    external_boundary_conditions[0][Direction<Dim>::upper_xi()] =
         std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
     domain = Domain<Dim>{make_vector(Block<Dim>{
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
         0,
-        {},
-        std::move(boundary_conditions)})};
+        {}})};
     domain.inject_time_dependent_map_for_block(
         0, grid_to_inertial_map->get_clone());
   }
 
   using simple_tags = tmpl::list<
       Parallel::Tags::MetavariablesImpl<Metavariables<System>>,
-      domain::Tags::Domain<Dim>, domain::Tags::Mesh<Dim>,
-      domain::Tags::Element<Dim>, domain::Tags::ElementMap<Dim, Frame::Grid>,
+      domain::Tags::Domain<Dim>, domain::Tags::ExternalBoundaryConditions<Dim>,
+      domain::Tags::Mesh<Dim>, domain::Tags::Element<Dim>,
+      domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                   Frame::Inertial>,
       ::Tags::Time, domain::Tags::FunctionsOfTimeInitialize,
@@ -2254,7 +2254,8 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
   using compute_tags = tmpl::list<>;
 
   auto box = db::create<simple_tags, compute_tags>(
-      Metavariables<System>{}, std::move(domain), mesh, element,
+      Metavariables<System>{}, std::move(domain),
+      std::move(external_boundary_conditions), mesh, element,
       std::move(element_map), grid_to_inertial_map->get_clone(), time,
       clone_unique_ptrs(functions_of_time), mesh_velocity, inv_jacobian,
       det_inv_jacobian, normal_covector_and_magnitude, evolved_vars,
@@ -2342,9 +2343,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                 outgoing_direction) {
     INFO("Ghost");
     CAPTURE(outgoing_direction);
-    db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
+    db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>, dt_variables_tag>(
         make_not_null(&box),
-        [&moving_mesh, &outgoing_direction](const auto domain_ptr,
+        [&moving_mesh, &outgoing_direction](const auto all_boundary_conditions,
                                             const auto dt_vars_ptr) {
           DirectionMap<Dim, std::unique_ptr<
                                 domain::BoundaryConditions::BoundaryCondition>>
@@ -2353,13 +2354,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
               std::make_unique<Ghost<System>>(moving_mesh);
           boundary_conditions[outgoing_direction] =
               std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
-          *domain_ptr = Domain<Dim>{make_vector(
-              Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                          Frame::Inertial>(
-                             domain::CoordinateMaps::Identity<Dim>{}),
-                         0,
-                         {},
-                         std::move(boundary_conditions)})};
+          (*all_boundary_conditions)[0] = std::move(boundary_conditions);
 
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         });
@@ -2424,9 +2419,9 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                           outgoing_direction) {
     INFO("TimeDerivative");
     CAPTURE(outgoing_direction);
-    db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
+    db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>, dt_variables_tag>(
         make_not_null(&box),
-        [&moving_mesh, &outgoing_direction](const auto domain_ptr,
+        [&moving_mesh, &outgoing_direction](const auto all_boundary_conditions,
                                             const auto dt_vars_ptr) {
           DirectionMap<Dim, std::unique_ptr<
                                 domain::BoundaryConditions::BoundaryCondition>>
@@ -2436,13 +2431,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                                                        offset_dt_evolved_vars);
           boundary_conditions[outgoing_direction] =
               std::make_unique<DemandOutgoingCharSpeeds<System>>(moving_mesh);
-          *domain_ptr = Domain<Dim>{make_vector(
-              Block<Dim>{domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                          Frame::Inertial>(
-                             domain::CoordinateMaps::Identity<Dim>{}),
-                         0,
-                         {},
-                         std::move(boundary_conditions)})};
+          (*all_boundary_conditions)[0] = std::move(boundary_conditions);
 
           fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
         });
@@ -2493,12 +2482,13 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
             make_not_null(&expected_dt_on_boundary), expected_dt_evolved_vars,
             mesh, ghost_direction.opposite());
 
-        db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
+        db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
+                   dt_variables_tag>(
             make_not_null(&box),
             [&expected_dt_var1 =
                  get<::Tags::dt<Tags::Var1>>(expected_dt_on_boundary),
-             &moving_mesh,
-             &ghost_direction](const auto domain_ptr, const auto dt_vars_ptr) {
+             &moving_mesh, &ghost_direction](const auto all_boundary_conditions,
+                                             const auto dt_vars_ptr) {
               DirectionMap<Dim,
                            std::unique_ptr<
                                domain::BoundaryConditions::BoundaryCondition>>
@@ -2508,13 +2498,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
                       moving_mesh, get(expected_dt_var1)[0]);
               boundary_conditions[ghost_direction] =
                   std::make_unique<Ghost<System>>(moving_mesh);
-              *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
-                  domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                   Frame::Inertial>(
-                      domain::CoordinateMaps::Identity<Dim>{}),
-                  0,
-                  {},
-                  std::move(boundary_conditions)})};
+              (*all_boundary_conditions)[0] = std::move(boundary_conditions);
 
               fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
             });
@@ -2553,10 +2537,11 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
         // they both receive the dt_vars _without_ either boundary condition
         // applied, which is different from way Ghost and TimeDerivative are
         // applied in different directions.
-        db::mutate<domain::Tags::Domain<Dim>, dt_variables_tag>(
+        db::mutate<domain::Tags::ExternalBoundaryConditions<Dim>,
+                   dt_variables_tag>(
             make_not_null(&box),
-            [&moving_mesh, &outgoing_direction](const auto domain_ptr,
-                                                const auto dt_vars_ptr) {
+            [&moving_mesh, &outgoing_direction](
+                const auto all_boundary_conditions, const auto dt_vars_ptr) {
               DirectionMap<Dim,
                            std::unique_ptr<
                                domain::BoundaryConditions::BoundaryCondition>>
@@ -2566,13 +2551,7 @@ void test_1d(const bool moving_mesh, const dg::Formulation formulation,
               boundary_conditions[outgoing_direction] =
                   std::make_unique<DemandOutgoingCharSpeeds<System>>(
                       moving_mesh);
-              *domain_ptr = Domain<Dim>{make_vector(Block<Dim>{
-                  domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                   Frame::Inertial>(
-                      domain::CoordinateMaps::Identity<Dim>{}),
-                  0,
-                  {},
-                  std::move(boundary_conditions)})};
+              (*all_boundary_conditions)[0] = std::move(boundary_conditions);
 
               fill_variables(dt_vars_ptr, offset_dt_evolved_vars);
             });

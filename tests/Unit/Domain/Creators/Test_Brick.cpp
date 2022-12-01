@@ -61,12 +61,11 @@ void test_brick_construction(
         expected_functions_of_time = {},
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::Grid, Frame::Inertial, 3>>>& expected_grid_to_inertial_maps = {},
-    const std::vector<DirectionMap<
-        3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {},
+    const bool expect_boundary_conditions = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
-  const auto domain = brick.create_domain();
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      brick, expect_boundary_conditions);
 
   CHECK(brick.initial_extents() == expected_extents);
   CHECK(brick.initial_refinement_levels() == expected_refinement_level);
@@ -80,15 +79,10 @@ void test_brick_construction(
           Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]},
                    Affine{-1., 1., lower_bound[2], upper_bound[2]}})),
-      10.0, brick.functions_of_time(), expected_grid_to_inertial_maps,
-      expected_boundary_conditions);
-  test_initial_domain(domain, brick.initial_refinement_levels());
+      10.0, brick.functions_of_time(), expected_grid_to_inertial_maps);
+
   TestHelpers::domain::creators::test_functions_of_time(
       brick, expected_functions_of_time, initial_expiration_times);
-
-  domain::creators::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
-  test_serialization(domain);
 }
 
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
@@ -96,18 +90,6 @@ create_boundary_condition() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::upper_zeta(), 2);
-}
-
-auto create_boundary_conditions() {
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{1};
-  const auto boundary_condition = create_boundary_condition();
-  for (const auto& direction : Direction<3>::all_directions()) {
-    boundary_conditions_all_blocks[0][direction] =
-        boundary_condition->get_clone();
-  }
-  return boundary_conditions_all_blocks;
 }
 
 void test_brick() {
@@ -149,7 +131,7 @@ void test_brick() {
                                {Direction<3>::upper_eta()},
                                {Direction<3>::lower_zeta()},
                                {Direction<3>::upper_zeta()}}},
-                          {}, {}, create_boundary_conditions());
+                          {}, {}, true);
 
   const creators::Brick periodic_x_brick{
       lower_bound, upper_bound, refinement_level[0], grid_points[0],
@@ -267,7 +249,7 @@ void test_brick() {
            {Direction<3>::upper_eta(), {0, aligned_orientation}},
            {Direction<3>::lower_zeta(), {0, aligned_orientation}},
            {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
-      std::vector<std::unordered_set<Direction<3>>>{{}});
+      std::vector<std::unordered_set<Direction<3>>>{{}}, {}, {}, true);
 
   // Test serialization of the map
   creators::register_derived_with_charm();
@@ -350,7 +332,7 @@ void test_brick_factory() {
                                  {Direction<3>::upper_eta()},
                                  {Direction<3>::lower_zeta()},
                                  {Direction<3>::upper_zeta()}}},
-                            {}, {}, create_boundary_conditions());
+                            {}, {}, true);
   }
   {
     INFO("Brick factory time dependent");
@@ -462,7 +444,7 @@ void test_brick_factory() {
                  std::numeric_limits<double>::infinity()}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation3D{f_of_t_name}),
-        create_boundary_conditions());
+        true);
     // with expiration times
     test_brick_construction(
         *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
@@ -483,7 +465,7 @@ void test_brick_factory() {
                  initial_expiration_times[f_of_t_name]}}),
         make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
             Translation3D{f_of_t_name}),
-        create_boundary_conditions(), initial_expiration_times);
+        true, initial_expiration_times);
   }
 }
 }  // namespace

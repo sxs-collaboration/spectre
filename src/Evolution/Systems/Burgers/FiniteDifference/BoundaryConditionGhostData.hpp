@@ -22,6 +22,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
@@ -77,9 +78,9 @@ void BoundaryConditionGhostData::apply(
     const gsl::not_null<db::DataBox<DbTagsList>*> box,
     const Element<1>& element,
     const Burgers::fd::Reconstructor& reconstructor) {
-  const ::Domain<1>& domain = db::get<domain::Tags::Domain<1>>(*box);
   const auto& external_boundary_condition =
-      domain.blocks()[element.id().block_id()].external_boundary_conditions();
+      db::get<domain::Tags::ExternalBoundaryConditions<1>>(*box).at(
+          element.id().block_id());
 
   // Check if the element is on the external boundary. If not, the caller is
   // doing something wrong (e.g. trying to compute FD ghost data with boundary
@@ -94,11 +95,6 @@ void BoundaryConditionGhostData::apply(
   const size_t ghost_zone_size{reconstructor.ghost_zone_size()};
 
   for (const auto& direction : element.external_boundaries()) {
-    ASSERT(external_boundary_condition.at(direction) != nullptr,
-           "Boundary condition is not set (the pointer is null) in block "
-               << element.id().block_id() << ", direction: " << direction
-               << " (Burgers::fd::BoundaryConditionGhostData)");
-
     const auto& boundary_condition_at_direction =
         *external_boundary_condition.at(direction);
 

@@ -13,8 +13,9 @@
 #include "DataStructures/Index.hpp"
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -211,6 +212,11 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
   ~AlignedLattice() override = default;
 
   Domain<VolumeDim> create_domain() const override;
+
+  std::vector<DirectionMap<
+      VolumeDim,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override;
 
   std::vector<std::array<size_t, VolumeDim>> initial_extents() const override;
 

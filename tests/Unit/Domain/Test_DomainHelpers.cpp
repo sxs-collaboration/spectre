@@ -13,7 +13,6 @@
 
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -40,39 +39,6 @@
 
 namespace domain {
 namespace {
-template <size_t Dim>
-class TestBoundaryCondition : public BoundaryConditions::BoundaryCondition {
- public:
-  TestBoundaryCondition() = default;
-  explicit TestBoundaryCondition(Direction<Dim> direction)
-      : direction_(std::move(direction)) {}
-  TestBoundaryCondition(TestBoundaryCondition&&) = default;
-  TestBoundaryCondition& operator=(TestBoundaryCondition&&) = default;
-  TestBoundaryCondition(const TestBoundaryCondition&) = default;
-  TestBoundaryCondition& operator=(const TestBoundaryCondition&) = default;
-  ~TestBoundaryCondition() override = default;
-  explicit TestBoundaryCondition(CkMigrateMessage* const msg)
-      : BoundaryConditions::BoundaryCondition(msg) {}
-
-  WRAPPED_PUPable_decl_base_template(BoundaryConditions::BoundaryCondition,
-                                     TestBoundaryCondition<Dim>);
-
-  const Direction<Dim>& direction() const { return direction_; }
-
-  auto get_clone() const -> std::unique_ptr<BoundaryCondition> override {
-    return std::make_unique<TestBoundaryCondition>(*this);
-  }
-
-  void pup(PUP::er& p) override {
-    BoundaryConditions::BoundaryCondition::pup(p);
-  }
-
- private:
-  Direction<Dim> direction_;
-};
-
-template <size_t Dim>
-PUP::able::PUP_ID TestBoundaryCondition<Dim>::my_PUP_ID = 0;  // NOLINT
 
 void test_periodic_same_block() {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
@@ -1327,25 +1293,6 @@ void test_maps_for_rectilinear_domains() {
   }
 }
 
-template <size_t Dim>
-auto compute_boundary_conditions(
-    const std::vector<std::unordered_set<Direction<Dim>>>&
-        external_boundaries) {
-  using MapType = DirectionMap<
-      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-  std::vector<MapType> boundary_conditions{external_boundaries.size()};
-  for (size_t i = 0; i < external_boundaries.size(); ++i) {
-    const auto& external_boundaries_of_block = external_boundaries[i];
-    MapType t{};
-    for (const auto& direction : external_boundaries_of_block) {
-      t.emplace(direction,
-                std::make_unique<TestBoundaryCondition<Dim>>(direction));
-    }
-    boundary_conditions[i] = std::move(t);
-  }
-  return boundary_conditions;
-}
-
 void test_set_cartesian_periodic_boundaries_1() {
   // 9x9 cube with the central block removed. Periodic is xi.
   const std::vector<std::unordered_set<Direction<3>>>
@@ -1380,7 +1327,6 @@ void test_set_cartesian_periodic_boundaries_1() {
       Index<3>{3, 3, 3},
       std::array<std::vector<double>, 3>{
           {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
-      compute_boundary_conditions(expected_external_boundaries),
       {Index<3>{1, 1, 1}}, {}, std::array<bool, 3>{{true, false, false}}, {});
 
   // Issue 1018 describes a memory bug that is caused by incorrect indexing
@@ -1405,21 +1351,11 @@ void test_set_cartesian_periodic_boundaries_1() {
                                               {0.0, 1.0, 2.0, 3.0}}},
           {Index<3>{1, 1, 1}}, {});
 
-  const auto expected_external_boundary_conditions =
-      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
-    INFO(i);
+    CAPTURE(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
-    for (const auto& direction : expected_external_boundaries[i]) {
-      CAPTURE(direction);
-      CHECK(
-          direction ==
-          dynamic_cast<const TestBoundaryCondition<3>&>(
-              *domain.blocks()[i].external_boundary_conditions().at(direction))
-              .direction());
-    }
   }
 }
 
@@ -1438,8 +1374,7 @@ void test_set_cartesian_periodic_boundaries_2() {
   const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      compute_boundary_conditions(expected_external_boundaries), {},
-      orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
       false);
 
   const std::vector<std::unique_ptr<
@@ -1450,21 +1385,11 @@ void test_set_cartesian_periodic_boundaries_2() {
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
           {}, orientations_of_all_blocks, false);
 
-  const auto expected_external_boundary_conditions =
-      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
-    INFO(i);
+    CAPTURE(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
-    for (const auto& direction : expected_external_boundaries[i]) {
-      CAPTURE(direction);
-      CHECK(
-          direction ==
-          dynamic_cast<const TestBoundaryCondition<2>&>(
-              *domain.blocks()[i].external_boundary_conditions().at(direction))
-              .direction());
-    }
   }
 }
 
@@ -1486,8 +1411,8 @@ void test_set_cartesian_periodic_boundaries_3() {
   const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      compute_boundary_conditions(expected_external_boundaries), {},
-      orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {}, false);
+      {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
+      false);
 
   const std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
       {{Direction<2>::upper_xi(), {1, flipped}},
@@ -1514,22 +1439,12 @@ void test_set_cartesian_periodic_boundaries_3() {
               {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
           {}, orientations_of_all_blocks, false);
 
-  const auto expected_external_boundary_conditions =
-      compute_boundary_conditions(expected_external_boundaries);
   for (size_t i = 0; i < domain.blocks().size(); i++) {
-    INFO(i);
+    CAPTURE(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
-    for (const auto& direction : expected_external_boundaries[i]) {
-      CAPTURE(direction);
-      CHECK(
-          direction ==
-          dynamic_cast<const TestBoundaryCondition<2>&>(
-              *domain.blocks()[i].external_boundary_conditions().at(direction))
-              .direction());
-    }
   }
 }
 

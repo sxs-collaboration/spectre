@@ -28,49 +28,17 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
 namespace domain {
 namespace {
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_boundary_condition() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::upper_zeta(), 2);
-}
-
-auto create_boundary_conditions() {
-  BoundaryCondVector boundary_conditions_all_blocks{8};
-  std::vector<std::unordered_set<Direction<3>>>
-      external_boundaries_in_each_block{
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()},
-          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-           Direction<3>::lower_zeta()},
-          {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
-           Direction<3>::upper_zeta()}};
-  for (size_t block_id = 0; block_id < 8; ++block_id) {
-    for (const Direction<3>& direction :
-         external_boundaries_in_each_block[block_id]) {
-      boundary_conditions_all_blocks[block_id][direction] =
-          create_boundary_condition();
-    }
-  }
-  return boundary_conditions_all_blocks;
 }
 
 void test_rotated_bricks_construction(
@@ -84,13 +52,11 @@ void test_rotated_bricks_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries,
-    const std::vector<DirectionMap<
-        3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {}) {
-  const auto domain = rotated_bricks.create_domain();
+    const bool expect_boundary_conditions = false,
+    const bool is_periodic = false) {
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      rotated_bricks, expect_boundary_conditions, is_periodic);
 
-  CHECK(domain.blocks().size() == expected_extents.size());
-  CHECK(domain.blocks().size() == expected_refinement_level.size());
   CHECK(rotated_bricks.initial_extents() == expected_extents);
   CHECK(rotated_bricks.initial_refinement_levels() ==
         expected_refinement_level);
@@ -153,14 +119,7 @@ void test_rotated_bricks_construction(
           Affine3D(upper_x_map, upper_y_map, upper_z_map)));
 
   test_domain_construction(domain, expected_block_neighbors,
-                           expected_external_boundaries, coord_maps,
-                           std::numeric_limits<double>::signaling_NaN(), {}, {},
-                           expected_boundary_conditions);
-  test_initial_domain(domain, rotated_bricks.initial_refinement_levels());
-
-  Parallel::register_classes_with_charm(
-      typename domain::creators::RotatedBricks::maps_list{});
-  test_serialization(domain);
+                           expected_external_boundaries, coord_maps);
 }
 
 void test_rotated_bricks() {
@@ -191,6 +150,7 @@ void test_rotated_bricks() {
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
   for (const bool with_boundary_conditions : {true, false}) {
+    CAPTURE(with_boundary_conditions);
     const creators::RotatedBricks rotated_bricks = [&]() {
       if (with_boundary_conditions) {
         return creators::RotatedBricks{
@@ -262,9 +222,7 @@ void test_rotated_bricks() {
              Direction<3>::lower_zeta()},
             {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
              Direction<3>::upper_zeta()}},
-        with_boundary_conditions ? create_boundary_conditions()
-                                 : BoundaryCondVector{});
-    test_physical_separation(rotated_bricks.create_domain().blocks());
+        with_boundary_conditions);
 
     const creators::RotatedBricks rotated_periodic_bricks = [&]() {
       if (with_boundary_conditions) {
@@ -346,7 +304,8 @@ void test_rotated_bricks() {
              {Direction<3>::lower_zeta(),
               {3, rotation_R_then_U.inverse_map()}}}},
         std::vector<std::unordered_set<Direction<3>>>{
-            {}, {}, {}, {}, {}, {}, {}, {}});
+            {}, {}, {}, {}, {}, {}, {}, {}},
+        with_boundary_conditions, true);
   }
 
   CHECK_THROWS_WITH(
@@ -476,8 +435,7 @@ void test_rotated_bricks_factory() {
              Direction<3>::lower_zeta()},
             {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
              Direction<3>::upper_zeta()}},
-        with_boundary_conditions ? create_boundary_conditions()
-                                 : BoundaryCondVector{});
+        with_boundary_conditions);
   }
 }
 }  // namespace

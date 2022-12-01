@@ -12,15 +12,105 @@
 #include <unordered_map>
 #include <utility>
 
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/TimeDependence/RegisterDerivedWithCharm.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Framework/TestHelpers.hpp"
+#include "Helpers/Domain/DomainTestHelpers.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Tuple.hpp"
 
-namespace TestHelpers {
-namespace domain {
-namespace creators {
-template <typename Creator, typename... ExpectedFunctionsOfTime>
+namespace TestHelpers::domain::creators {
+
+template <size_t Dim>
+Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
+                                const bool expect_boundary_conditions,
+                                const bool is_periodic = false) {
+  INFO("Test domain creator consistency");
+  CAPTURE(Dim);
+  auto domain = domain_creator.create_domain();
+  const auto block_names = domain_creator.block_names();
+  const auto block_groups = domain_creator.block_groups();
+  const auto all_boundary_conditions =
+      domain_creator.external_boundary_conditions();
+  const auto initial_refinement_levels =
+      domain_creator.initial_refinement_levels();
+  const auto initial_extents = domain_creator.initial_extents();
+
+  const auto& blocks = domain.blocks();
+  REQUIRE(initial_refinement_levels.size() == blocks.size());
+  REQUIRE(initial_extents.size() == blocks.size());
+  {
+    CAPTURE(block_names);
+    CHECK((block_names.empty() or (block_names.size() == blocks.size())));
+    {
+      INFO("Test block names are unique");
+      auto sorted_block_names = block_names;
+      alg::sort(sorted_block_names);
+      CHECK(std::adjacent_find(sorted_block_names.begin(),
+                               sorted_block_names.end()) ==
+            sorted_block_names.end());
+    }
+    {
+      INFO("Test block groups contain valid block names");
+      for (const auto& [block_group, block_names_in_group] : block_groups) {
+        CAPTURE(block_group);
+        for (const auto& block_name : block_names_in_group) {
+          CAPTURE(block_name);
+          CHECK(alg::find(block_names, block_name) != block_names.end());
+        }
+      }
+    }
+  }
+
+  ::domain::creators::register_derived_with_charm();
+  ::domain::creators::time_dependence::register_derived_with_charm();
+  test_serialization(domain);
+
+  test_initial_domain(domain, initial_refinement_levels);
+  if (not domain.is_time_dependent()) {
+    if (not is_periodic) {
+      test_physical_separation(domain.blocks());
+    }
+    // The 1D RotatedIntervals domain creator violates this condition
+    if constexpr (Dim != 1) {
+      test_det_jac_positive(domain.blocks());
+    }
+  }
+
+  if (expect_boundary_conditions) {
+    INFO("Boundary conditions");
+    REQUIRE(all_boundary_conditions.size() == blocks.size());
+    for (size_t block_id = 0; block_id < blocks.size(); ++block_id) {
+      CAPTURE(block_id);
+      const auto& block = blocks[block_id];
+      const auto& boundary_conditions = all_boundary_conditions[block_id];
+      const auto& external_boundaries = block.external_boundaries();
+      REQUIRE(boundary_conditions.size() == external_boundaries.size());
+      for (const auto& direction : Direction<Dim>::all_directions()) {
+        CAPTURE(direction);
+        if (external_boundaries.find(direction) == external_boundaries.end()) {
+          INFO("Internal boundary should not specify a boundary condition");
+          CHECK(boundary_conditions.find(direction) ==
+                boundary_conditions.end());
+        } else {
+          INFO("External boundary is missing a boundary condition");
+          REQUIRE(boundary_conditions.find(direction) !=
+                  boundary_conditions.end());
+          REQUIRE(boundary_conditions.at(direction) != nullptr);
+        }
+      }
+    }
+  } else {
+    CHECK(all_boundary_conditions.empty());
+  }
+
+  return domain;
+}
+
+template <size_t Dim, typename... ExpectedFunctionsOfTime>
 void test_functions_of_time(
-    const Creator& creator,
+    const DomainCreator<Dim>& creator,
     const std::tuple<std::pair<std::string, ExpectedFunctionsOfTime>...>&
         expected_functions_of_time,
     const std::unordered_map<std::string, double>& initial_expiration_times =
@@ -49,6 +139,4 @@ void test_functions_of_time(
                }
              });
 }
-}  // namespace creators
-}  // namespace domain
-}  // namespace TestHelpers
+}  // namespace TestHelpers::domain::creators

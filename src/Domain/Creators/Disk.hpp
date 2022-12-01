@@ -12,6 +12,7 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -127,6 +128,10 @@ class Disk : public DomainCreator<2> {
   ~Disk() override = default;
 
   Domain<2> create_domain() const override;
+
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override;
 
   std::vector<std::array<size_t, 2>> initial_extents() const override;
 

@@ -4,8 +4,11 @@
 #include "Domain/Creators/Shell.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
@@ -20,6 +23,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -146,30 +151,6 @@ Domain<3> Shell::create_domain() const {
           radial_partitioning_, radial_distribution_, which_wedges_),
       compression);
 
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-
-  if (inner_boundary_condition_ != nullptr) {
-    // This assumes 6 wedges making up the shell. If you need to support the
-    // FourOnEquator or OneAlongMinusX configurations the below code needs to be
-    // updated. This would require adding more boundary condition options to the
-    // domain creator.
-    const size_t blocks_per_layer =
-        which_wedges_ == ShellWedges::All             ? 6
-        : which_wedges_ == ShellWedges::FourOnEquator ? 4
-                                                      : 1;
-
-    boundary_conditions_all_blocks.resize(blocks_per_layer * number_of_layers_);
-    for (size_t block_id = 0; block_id < blocks_per_layer; ++block_id) {
-      boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-          inner_boundary_condition_->get_clone();
-      boundary_conditions_all_blocks[boundary_conditions_all_blocks.size() -
-                                     block_id - 1][Direction<3>::upper_zeta()] =
-          outer_boundary_condition_->get_clone();
-    }
-  }
-
   // Excision spheres
   // - The first 6 blocks enclose the excised sphere, see
   //   sph_wedge_coordinate_maps
@@ -191,7 +172,6 @@ Domain<3> Shell::create_domain() const {
       corners_for_radially_layered_domains(
           number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_),
       {},
-      std::move(boundary_conditions_all_blocks),
       std::move(excision_spheres)};
 
   if (not time_dependence_->is_none()) {
@@ -210,6 +190,38 @@ Domain<3> Shell::create_domain() const {
     }
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Shell::external_boundary_conditions() const {
+  if (inner_boundary_condition_ == nullptr) {
+    return {};
+  }
+  // This assumes 6 wedges making up the shell. If you need to support the
+  // FourOnEquator or OneAlongMinusX configurations the below code needs to be
+  // updated. This would require adding more boundary condition options to the
+  // domain creator.
+  if (which_wedges_ != ShellWedges::All) {
+    ERROR_NO_TRACE(
+        "Boundary conditions for incomplete spherical shells are not currently "
+        "implemented. Add support to the Shell domain creator.");
+  }
+  const size_t blocks_per_layer = which_wedges_ == ShellWedges::All ? 6
+                                  : which_wedges_ == ShellWedges::FourOnEquator
+                                      ? 4
+                                      : 1;
+  const size_t num_blocks = blocks_per_layer * number_of_layers_;
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{num_blocks};
+  for (size_t i = 0; i < blocks_per_layer; ++i) {
+    boundary_conditions[i][Direction<3>::lower_zeta()] =
+        inner_boundary_condition_->get_clone();
+    boundary_conditions[num_blocks - i - 1][Direction<3>::upper_zeta()] =
+        outer_boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> Shell::initial_extents() const {

@@ -13,6 +13,7 @@
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -150,42 +151,36 @@ AlignedLattice<VolumeDim>::AlignedLattice(
 
 template <size_t VolumeDim>
 Domain<VolumeDim> AlignedLattice<VolumeDim>::create_domain() const {
-  using BoundaryCondVector = std::vector<DirectionMap<
-      VolumeDim,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
+  return rectilinear_domain<VolumeDim>(
+      number_of_blocks_by_dim_, block_bounds_,
+      {std::vector<Index<VolumeDim>>(blocks_to_exclude_.begin(),
+                                     blocks_to_exclude_.end())},
+      {}, is_periodic_in_, {}, false);
+}
 
-  const auto compute_domain = [this](BoundaryCondVector boundary_conditions) {
-    if (blocks_to_exclude_.empty()) {
-      return rectilinear_domain<VolumeDim>(
-          number_of_blocks_by_dim_, block_bounds_,
-          std::move(boundary_conditions), {}, {}, is_periodic_in_, {}, false);
-    } else {
-      return rectilinear_domain<VolumeDim>(
-          number_of_blocks_by_dim_, block_bounds_,
-          std::move(boundary_conditions),
-          {std::vector<Index<VolumeDim>>(blocks_to_exclude_.begin(),
-                                         blocks_to_exclude_.end())},
-          {}, make_array<VolumeDim>(false), {}, false);
-    }
-  };
-  Domain<VolumeDim> domain = compute_domain({});
-
-  if (boundary_condition_ != nullptr) {
-    // Set boundary conditions by using the computed domain's external
-    // boundaries
-    const auto& blocks = domain.blocks();
-    BoundaryCondVector boundary_conditions{blocks.size()};
-    for (size_t block_id = 0; block_id < blocks.size(); ++block_id) {
-      for (const Direction<VolumeDim>& external_direction :
-           blocks[block_id].external_boundaries()) {
-        boundary_conditions[block_id][external_direction] =
-            boundary_condition_->get_clone();
-      }
-    }
-    domain = compute_domain(std::move(boundary_conditions));
+template <size_t VolumeDim>
+std::vector<DirectionMap<
+    VolumeDim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+AlignedLattice<VolumeDim>::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
   }
-
-  return domain;
+  // Set boundary conditions by using the computed domain's external
+  // boundaries
+  const auto domain = create_domain();
+  const auto& blocks = domain.blocks();
+  std::vector<DirectionMap<
+      VolumeDim,
+      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{blocks.size()};
+  for (size_t i = 0; i < blocks.size(); ++i) {
+    for (const Direction<VolumeDim>& external_direction :
+         blocks[i].external_boundaries()) {
+      boundary_conditions[i][external_direction] =
+          boundary_condition_->get_clone();
+    }
+  }
+  return boundary_conditions;
 }
 
 namespace {

@@ -6,9 +6,10 @@
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <utility>
 #include <vector>
 
-#include "Domain/Block.hpp"                   // IWYU pragma: keep
+#include "Domain/Block.hpp"  // IWYU pragma: keep
 #include "Domain/BoundaryConditions/None.hpp"
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -18,6 +19,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
@@ -75,24 +78,27 @@ Domain<3> FrustalCloak::create_domain() const {
           frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
                                   use_equiangular_map_, origin_preimage_,
                                   projection_factor_));
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    boundary_conditions_all_blocks.resize(10);
-    for (auto& boundary_conditions : boundary_conditions_all_blocks) {
-      boundary_conditions[Direction<3>::lower_zeta()] =
-          boundary_condition_->get_clone();
-      boundary_conditions[Direction<3>::upper_zeta()] =
-          boundary_condition_->get_clone();
-    }
-  }
-
   return Domain<3>{std::move(coord_maps),
                    corners_for_biradially_layered_domains(
-                       0, 1, false, false, {{1, 2, 3, 4, 5, 6, 7, 8}}),
-                   {},
-                   std::move(boundary_conditions_all_blocks)};
+                       0, 1, false, false, {{1, 2, 3, 4, 5, 6, 7, 8}})};
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+FrustalCloak::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{10};
+  for (size_t i = 0; i < 10; ++i) {
+    boundary_conditions[i][Direction<3>::lower_zeta()] =
+        boundary_condition_->get_clone();
+    boundary_conditions[i][Direction<3>::upper_zeta()] =
+        boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const {

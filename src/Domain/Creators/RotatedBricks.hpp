@@ -13,6 +13,7 @@
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -191,6 +192,10 @@ class RotatedBricks : public DomainCreator<3> {
   ~RotatedBricks() override = default;
 
   Domain<3> create_domain() const override;
+
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const override;
 
