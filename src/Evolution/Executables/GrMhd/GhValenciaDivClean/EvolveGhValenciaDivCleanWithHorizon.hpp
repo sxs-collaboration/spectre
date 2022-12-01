@@ -53,9 +53,26 @@
 
 template <typename InitialData, typename... InterpolationTargetTags>
 struct EvolutionMetavars
-    : public virtual GhValenciaDivCleanDefaults,
-      public GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars<InitialData, InterpolationTargetTags...>> {
+    : public GhValenciaDivCleanTemplateBase<
+          EvolutionMetavars<InitialData, InterpolationTargetTags...>, false> {
+  static constexpr bool use_dg_subcell = false;
+
+  using defaults = GhValenciaDivCleanDefaults<use_dg_subcell>;
+  static constexpr size_t volume_dim = defaults::volume_dim;
+  using domain_frame = typename defaults::domain_frame;
+  static constexpr bool use_damped_harmonic_rollon =
+      defaults::use_damped_harmonic_rollon;
+  using temporal_id = typename defaults::temporal_id;
+  static constexpr bool local_time_stepping = defaults::local_time_stepping;
+  using system = typename defaults::system;
+  using analytic_variables_tags = typename defaults::analytic_variables_tags;
+  using analytic_solution_fields = typename defaults::analytic_solution_fields;
+  using ordered_list_of_primitive_recovery_schemes =
+      typename defaults::ordered_list_of_primitive_recovery_schemes;
+  using limiter = typename defaults::limiter;
+  using initialize_initial_data_dependent_quantities_actions =
+      typename defaults::initialize_initial_data_dependent_quantities_actions;
+
   static constexpr Options::String help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning, coupled to a dynamic spacetime evolved with the Generalized "
@@ -91,22 +108,26 @@ struct EvolutionMetavars
                  GeneralizedHarmonic::Tags::Pi<volume_dim, domain_frame>,
                  GeneralizedHarmonic::Tags::Phi<volume_dim, domain_frame>>;
 
-  using observe_fields = typename GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars>::observe_fields;
+  using observe_fields =
+      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
+                                              use_dg_subcell>::observe_fields;
 
   struct factory_creation
       : tt::ConformsTo<Options::protocols::FactoryCreation> {
     using factory_classes = Options::add_factory_classes<
         typename GhValenciaDivCleanTemplateBase<
-            EvolutionMetavars>::factory_creation::factory_classes,
+            EvolutionMetavars,
+            use_dg_subcell>::factory_creation::factory_classes,
         tmpl::pair<Event, tmpl::list<intrp::Events::Interpolate<
                               3, AhA, interpolator_source_vars>>>>;
   };
 
   using initial_data =
-      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars>::initial_data;
-  using initial_data_tag = typename GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars>::initial_data_tag;
+      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
+                                              use_dg_subcell>::initial_data;
+  using initial_data_tag =
+      typename GhValenciaDivCleanTemplateBase<EvolutionMetavars,
+                                              use_dg_subcell>::initial_data_tag;
 
   using const_global_cache_tags = tmpl::flatten<tmpl::list<
       GeneralizedHarmonic::gauges::Tags::GaugeCondition,
@@ -114,7 +135,7 @@ struct EvolutionMetavars
                           tmpl::list<>, initial_data_tag>,
       grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
       typename GhValenciaDivCleanTemplateBase<
-          EvolutionMetavars>::equation_of_state_tag,
+          EvolutionMetavars, use_dg_subcell>::equation_of_state_tag,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma0<
           volume_dim, Frame::Grid>,
       GeneralizedHarmonic::ConstraintDamping::Tags::DampingFunctionGamma1<
@@ -126,20 +147,21 @@ struct EvolutionMetavars
       tmpl::at<typename factory_creation::factory_classes, Event>>;
 
   using dg_registration_list = typename GhValenciaDivCleanTemplateBase<
-      EvolutionMetavars>::dg_registration_list;
+      EvolutionMetavars, use_dg_subcell>::dg_registration_list;
 
   template <typename ParallelComponent>
   struct registration_list {
     using type = std::conditional_t<
-        std::is_same_v<ParallelComponent,
-                       typename GhValenciaDivCleanTemplateBase<
-                           EvolutionMetavars>::dg_element_array_component>,
+        std::is_same_v<
+            ParallelComponent,
+            typename GhValenciaDivCleanTemplateBase<
+                EvolutionMetavars, use_dg_subcell>::dg_element_array_component>,
         dg_registration_list, tmpl::list<>>;
   };
 
   using component_list =
       tmpl::push_back<typename GhValenciaDivCleanTemplateBase<
-                          EvolutionMetavars>::component_list,
+                          EvolutionMetavars, use_dg_subcell>::component_list,
                       intrp::InterpolationTarget<EvolutionMetavars, AhA>>;
 };
 

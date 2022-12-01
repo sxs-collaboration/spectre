@@ -217,3 +217,5 @@ Observers:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+
+EventsAndDenseTriggers:

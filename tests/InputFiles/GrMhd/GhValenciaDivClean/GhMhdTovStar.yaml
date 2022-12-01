@@ -44,10 +44,7 @@ DomainCreator:
     InitialGridPoints: [3, 3, 3]
     TimeDependence: None
     BoundaryCondition:
-      ProductDirichletAnalyticAndDirichletAnalytic:
-        GeneralizedHarmonicDirichletAnalytic:
-            AnalyticPrescription: *InitialData
-        ValenciaDirichletAnalytic:
+      DirichletAnalytic:
 
 VariableFixing:
   FixConservatives:
@@ -62,12 +59,6 @@ VariableFixing:
     DensityCutoff: 1.0e-12
     TransitionDensityCutoff: 1.0e-11
     MaxVelocityMagnitude: 1.0e-4
-
-Limiter:
-  Minmod:
-    Type: Muscl
-    TvbConstant: 50.0
-    DisableForDebugging: false
 
 EvolutionSystem:
   ValenciaDivClean:
@@ -97,13 +88,35 @@ EvolutionSystem:
 
 
 SpatialDiscretization:
-  DiscontinuousGalerkin:
-    Formulation: StrongInertial
-    Quadrature: GaussLobatto
   BoundaryCorrection:
     ProductUpwindPenaltyAndRusanov:
       UpwindPenalty:
       Rusanov:
+  DiscontinuousGalerkin:
+    Formulation: StrongInertial
+    Quadrature: GaussLobatto
+    Subcell:
+      RdmpDelta0: 1.0e-7
+      RdmpEpsilon: 1.0e-3
+      PerssonExponent: 4.0
+      InitialData:
+        RdmpDelta0: 1.0e-7
+        RdmpEpsilon: 1.0e-3
+        PerssonExponent: 4.0
+      AlwaysUseSubcells: true
+      SubcellToDgReconstructionMethod: DimByDim
+    TciOptions:
+      MinimumValueOfD: 1.0e-20
+      MinimumValueOfYe: 1.0e-20
+      MinimumValueOfTildeTau: 1.0e-50
+      AtmosphereDensity: 1.01e-15
+      SafetyFactorForB: 1.0e-12
+      MagneticFieldCutoff: DoNotCheckMagneticField
+  SubcellSolver:
+    Reconstructor:
+      MonotonisedCentralPrim:
+    FilterOptions:
+      SpacetimeDissipation: 0.1
 
 EventsAndTriggers:
   - - Slabs:
@@ -183,3 +196,5 @@ Observers:
 
 Interpolator:
   DumpVolumeDataOnFailure: false
+
+EventsAndDenseTriggers:
