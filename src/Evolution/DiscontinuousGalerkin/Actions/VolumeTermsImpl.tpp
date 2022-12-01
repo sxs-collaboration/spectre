@@ -6,13 +6,15 @@
 #include <cstddef>
 #include <optional>
 #include <ostream>
+#include <type_traits>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "Evolution/PassVariables.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MetricIdentityJacobian.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
@@ -126,14 +128,31 @@ void volume_terms(
   dt_vars_ptr->initialize(mesh.number_of_grid_points(), 0.0);
 
   // Compute volume du/dt and fluxes
-  ComputeVolumeTimeDerivativeTerms::apply(
-      make_not_null(&get<::Tags::dt<VariablesTags>>(*dt_vars_ptr))...,
-      make_not_null(&get<::Tags::Flux<FluxVariablesTags, tmpl::size_t<Dim>,
-                                      Frame::Inertial>>(*volume_fluxes))...,
-      make_not_null(&get<TemporaryTags>(*temporaries))...,
-      get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>, Frame::Inertial>>(
-          *partial_derivs)...,
-      time_derivative_args...);
+  if constexpr (std::is_base_of_v<evolution::PassVariables,
+                                  ComputeVolumeTimeDerivativeTerms>) {
+    if constexpr (sizeof...(FluxVariablesTags) != 0) {
+      ComputeVolumeTimeDerivativeTerms::apply(
+          dt_vars_ptr, volume_fluxes, temporaries,
+          get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>,
+                            Frame::Inertial>>(*partial_derivs)...,
+          time_derivative_args...);
+    } else {
+      ComputeVolumeTimeDerivativeTerms::apply(
+          dt_vars_ptr, temporaries,
+          get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>,
+                            Frame::Inertial>>(*partial_derivs)...,
+          time_derivative_args...);
+    }
+  } else {
+    ComputeVolumeTimeDerivativeTerms::apply(
+        make_not_null(&get<::Tags::dt<VariablesTags>>(*dt_vars_ptr))...,
+        make_not_null(&get<::Tags::Flux<FluxVariablesTags, tmpl::size_t<Dim>,
+                                        Frame::Inertial>>(*volume_fluxes))...,
+        make_not_null(&get<TemporaryTags>(*temporaries))...,
+        get<::Tags::deriv<PartialDerivTags, tmpl::size_t<Dim>,
+                          Frame::Inertial>>(*partial_derivs)...,
+        time_derivative_args...);
+  }
 
   // Add volume terms for moving meshes
   if (mesh_velocity.has_value()) {

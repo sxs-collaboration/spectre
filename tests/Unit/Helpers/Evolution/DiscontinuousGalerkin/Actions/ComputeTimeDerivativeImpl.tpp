@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/TaggedContainers.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -40,6 +41,7 @@
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ProjectToBoundary.hpp"
+#include "Evolution/PassVariables.hpp"
 #include "Evolution/Systems/Burgers/BoundaryConditions/BoundaryCondition.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Helpers/Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeImpl.hpp"
@@ -230,6 +232,8 @@ struct TimeDerivativeTerms {
     }
   }
   /// [dt_con]
+
+  // with prims
   static void apply(
       const gsl::not_null<Scalar<DataVector>*> dt_var1,
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> dt_var2,
@@ -336,6 +340,129 @@ struct TimeDerivativeTerms {
   }
   /// [dt_mp]
 };
+
+template <size_t Dim, SystemType system_type, bool HasPrimitiveVars>
+struct TimeDerivativeTermsWithVariables
+    : public ::evolution::PassVariables,
+      private TimeDerivativeTerms<Dim, system_type, HasPrimitiveVars> {
+  using base = TimeDerivativeTerms<Dim, system_type, HasPrimitiveVars>;
+
+  using temporary_tags = typename base::temporary_tags;
+  using argument_tags = typename base::argument_tags;
+
+  using dt_var1 = ::Tags::dt<Var1>;
+  using dt_var2 = ::Tags::dt<Var2<Dim>>;
+  using flux_var1 = ::Tags::Flux<Var1, tmpl::size_t<Dim>, Frame::Inertial>;
+  using flux_var2 = ::Tags::Flux<Var2<Dim>, tmpl::size_t<Dim>, Frame::Inertial>;
+
+  /// [dt_con_variables]
+  static void apply(
+      // Time derivatives returned by reference. All the tags in the
+      // variables_tag in the system struct.
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+
+      // Fluxes returned by reference. Listed in the system struct as
+      // flux_variables.
+      const gsl::not_null<Variables<tmpl::list<flux_var1, flux_var2>>*>
+          flux_vars,
+
+      // Temporaries returned by reference. Listed in temporary_tags above.
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+
+      // Arguments listed in argument_tags above
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    // just forward to other implementation to reduce code duplication
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<flux_var1>(flux_vars), get<flux_var2>(flux_vars),
+                get<Var3Squared>(temporaries), var1, var2, var3);
+  }
+  /// [dt_con_variables]
+
+  // with prims
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+
+      const gsl::not_null<Variables<tmpl::list<flux_var1, flux_var2>>*>
+          flux_vars,
+
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3, const Scalar<DataVector>& prim_var1) {
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<flux_var1>(flux_vars), get<flux_var2>(flux_vars),
+                get<Var3Squared>(temporaries), var1, var2, var3, prim_var1);
+  }
+
+  // Nonconservative system
+  /// [dt_nc_variables]
+  static void apply(
+      // Time derivatives returned by reference. All the tags in the
+      // variables_tag in the system struct.
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+
+      // Temporaries returned by reference. Listed in temporary_tags above.
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+
+      // Partial derivative arguments. Listed in the system struct as
+      // gradient_variables.
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+      const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_var2,
+
+      // Arguments listed in argument_tags above
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    // just forward to other implementation to reduce code duplication
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<Var3Squared>(temporaries), d_var1, d_var2, var1, var2,
+                var3);
+  }
+  /// [dt_nc_variables]
+
+  // Mixed system
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+
+      const gsl::not_null<Variables<tmpl::list<flux_var2>>*> flux_vars,
+
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3) {
+    // just forward to other implementation to reduce code duplication
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<flux_var2>(flux_vars), get<Var3Squared>(temporaries),
+                d_var1, var1, var2, var3);
+  }
+
+  /// [dt_mp_variables]
+  static void apply(
+      const gsl::not_null<Variables<tmpl::list<dt_var1, dt_var2>>*> dt_vars,
+
+      const gsl::not_null<Variables<tmpl::list<flux_var2>>*> flux_vars,
+
+      const gsl::not_null<Variables<tmpl::list<Var3Squared>>*> temporaries,
+
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_var1,
+
+      const Scalar<DataVector>& var1,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& var2,
+      const Scalar<DataVector>& var3, const Scalar<DataVector>& prim_var1) {
+    // just forward to other implementation to reduce code duplication
+    base::apply(get<dt_var1>(dt_vars), get<dt_var2>(dt_vars),
+                get<flux_var2>(flux_vars), get<Var3Squared>(temporaries),
+                d_var1, var1, var2, var3, prim_var1);
+  }
+  /// [dt_mp_variables]
+};
+
 
 template <size_t Dim>
 struct NonconservativeNormalDotFlux {
@@ -713,7 +840,8 @@ PUP::able::PUP_ID DemandOutgoingCharSpeeds<Dim>::my_PUP_ID = 0;
 template <size_t Dim>
 size_t DemandOutgoingCharSpeeds<Dim>::number_of_times_called = 0;
 
-template <size_t Dim, SystemType system_type, bool HasPrimitiveVariables>
+template <size_t Dim, SystemType system_type, bool HasPrimitiveVariables,
+          bool PassVariables>
 struct System {
   static constexpr bool has_primitive_and_conservative_vars =
       HasPrimitiveVariables;
@@ -735,9 +863,12 @@ struct System {
   using primitive_variables_tag =
       Tags::Variables<tmpl::list<PrimVar1, PrimVar2<Dim>>>;
 
-  using compute_volume_time_derivative_terms =
+  using compute_volume_time_derivative_terms = tmpl::conditional_t<
+      PassVariables,
+      TimeDerivativeTermsWithVariables<Dim, system_type,
+                                       has_primitive_and_conservative_vars>,
       TimeDerivativeTerms<Dim, system_type,
-                          has_primitive_and_conservative_vars>;
+                          has_primitive_and_conservative_vars>>;
 
   using normal_dot_fluxes = NonconservativeNormalDotFlux<Dim>;
 };
@@ -830,13 +961,15 @@ struct component {
 };
 
 template <size_t Dim, SystemType SystemTypeIn, bool LocalTimeStepping,
-          bool UseMovingMesh, bool HasPrimitiveVariables>
+          bool UseMovingMesh, bool HasPrimitiveVariables, bool PassVariables>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
   static constexpr SystemType system_type = SystemTypeIn;
   static constexpr bool use_moving_mesh = UseMovingMesh;
   static constexpr bool local_time_stepping = LocalTimeStepping;
-  using system = System<Dim, system_type, HasPrimitiveVariables>;
+  static constexpr bool pass_variables = PassVariables;
+  using system =
+      System<Dim, system_type, HasPrimitiveVariables, pass_variables>;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<BoundaryTerms<Dim, HasPrimitiveVariables>>;
   using const_global_cache_tags =
@@ -875,7 +1008,7 @@ double dg_package_data(
 }
 
 template <bool LocalTimeStepping, bool UseMovingMesh, size_t Dim,
-          SystemType system_type, bool HasPrims>
+          SystemType system_type, bool HasPrims, bool PassVariables>
 void test_impl(const Spectral::Quadrature quadrature,
                const ::dg::Formulation dg_formulation) {
   CAPTURE(LocalTimeStepping);
@@ -885,7 +1018,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
-                                 UseMovingMesh, HasPrims>;
+                                 UseMovingMesh, HasPrims, PassVariables>;
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
   Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   Parallel::register_factory_classes_with_charm<metavars>();
@@ -1861,12 +1994,21 @@ void test() {
             (void)moving_mesh;
             if constexpr (not(decltype(use_prims)::value and
                               system_type == SystemType::Nonconservative)) {
+              // PassVariables == false
               test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value>(
-                  quadrature, local_dg_formulation);
+                        system_type, std::decay_t<decltype(use_prims)>::value,
+                        false>(quadrature, local_dg_formulation);
               test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
-                        system_type, std::decay_t<decltype(use_prims)>::value>(
-                  quadrature, local_dg_formulation);
+                        system_type, std::decay_t<decltype(use_prims)>::value,
+                        false>(quadrature, local_dg_formulation);
+
+              // PassVariables == true
+              test_impl<false, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                        system_type, std::decay_t<decltype(use_prims)>::value,
+                        true>(quadrature, local_dg_formulation);
+              test_impl<true, std::decay_t<decltype(moving_mesh)>::value, Dim,
+                        system_type, std::decay_t<decltype(use_prims)>::value,
+                        true>(quadrature, local_dg_formulation);
             }
           };
           prim_helper(std::integral_constant<bool, false>{});
