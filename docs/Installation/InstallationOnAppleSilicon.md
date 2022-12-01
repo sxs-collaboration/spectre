@@ -58,7 +58,8 @@ exit # close shell. conda will automatically load when new zsh shells start.
 
 Open a new terminal window. Then, install the necessary python packages.
 ```
-conda install numpy scipy matplotlib h5py pyyaml
+conda install --file support/Python/requirements.txt \
+  --file support/Python/dev_requirements.txt
 ```
 
 You might also wish to install jupyter notebook support, using

@@ -1,0 +1,23 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Optional Python packages used for development, but not for running the code.
+#
+# Make sure that you are working in a Python venv. You can set one up like this
+# in a directory of your choice:
+#
+#   $ python3 -m venv path/to/env
+#   $ . path/to/env/bin/activate
+#
+# Then, install the Python dependencies into the environment like this:
+#
+#   $ pip3 install -r support/Python/dev_requirements.txt
+
+# Building and postprocessing documentation
+beautifulsoup4
+coverxygen
+nbconvert
+pybtex
+# Code formatting. Using a specific version in order to avoid formatting
+# differences between versions.
+yapf==0.29.0

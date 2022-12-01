@@ -78,35 +78,37 @@ all of these dependencies.
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) version 0.6.3 or later.
   Building with shared library support is also recommended.
 * [Python](https://www.python.org/) 3.7 or later.
-* [NumPy](http://www.numpy.org/) 1.10 or later
-* [SciPy](https://www.scipy.org)
-* [matplotlib](https://matplotlib.org/)
-* [PyYAML](https://pyyaml.org/)
-* [h5py](https://www.h5py.org)
+* Python dependencies listed in `support/Python/requirements.txt`.
+  Install with `pip3 install -r support/Python/requirements.txt`.
+  Make sure you are working in a [Python venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
+  before installing packages.
+  <details>
+  \include support/Python/requirements.txt
+  </details>
 
 #### Optional:
 * [Pybind11](https://pybind11.readthedocs.io) 2.6.0 or later for SpECTRE Python
   bindings
 * [Doxygen](https://www.doxygen.nl/index.html) 1.9.1 or later — to
   generate documentation
-* [Python](https://www.python.org/) with
-  [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/),
-  [Pybtex](https://pybtex.org),
-  [nbconvert](https://nbconvert.readthedocs.io/)
-  — for documentation pre- and post-processing
+* Python dev dependencies listed in `support/Python/dev_requirements.txt`
+  — for documentation pre- and post-processing, formatting code, etc.
+  Install with `pip3 install -r support/Python/dev_requirements.txt`.
+  Make sure you are working in a [Python venv](https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/#creating-a-virtual-environment)
+  before installing packages.
+  <details>
+  \include support/Python/dev_requirements.txt
+  </details>
 * [Google Benchmark](https://github.com/google/benchmark) - to do
   microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
   [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
-  coverage
-* [coverxygen](https://github.com/psycofdj/coverxygen) — to check documentation
   coverage
 * [PAPI](http://icl.utk.edu/papi/) — to access hardware performance counters
 * [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) — to format C++
   code in a clear and consistent fashion
 * [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
 * [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
-* [yapf](https://github.com/google/yapf) 0.29.0 - to format python code
 * [Scotch](https://gitlab.inria.fr/scotch/scotch) - to build the `ScotchLB`
   graph partition based load balancer in charm++.
 * [ffmpeg](https://www.ffmpeg.org/) - for animating 1d simulations with matplotlib

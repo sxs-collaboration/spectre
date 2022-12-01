@@ -42,6 +42,18 @@ file(COPY "${CMAKE_BINARY_DIR}/tmp/spectre"
     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 
 # Write configuration files for installing the Python modules
+file(STRINGS
+  ${CMAKE_SOURCE_DIR}/support/Python/requirements.txt
+  SPECTRE_PY_DEPS)
+file(STRINGS
+  ${CMAKE_SOURCE_DIR}/support/Python/dev_requirements.txt
+  SPECTRE_PY_DEV_DEPS)
+list(FILTER SPECTRE_PY_DEPS EXCLUDE REGEX "^#")
+list(FILTER SPECTRE_PY_DEV_DEPS EXCLUDE REGEX "^#")
+list(REMOVE_ITEM SPECTRE_PY_DEPS "")
+list(REMOVE_ITEM SPECTRE_PY_DEV_DEPS "")
+list(JOIN SPECTRE_PY_DEPS "\n    " SPECTRE_PY_DEPS_OUTPUT)
+list(JOIN SPECTRE_PY_DEV_DEPS "\n    " SPECTRE_PY_DEV_DEPS_OUTPUT)
 configure_or_symlink_py_file(
   "${CMAKE_SOURCE_DIR}/src/PythonBindings/pyproject.toml"
   "${SPECTRE_PYTHON_PREFIX_PARENT}/pyproject.toml")

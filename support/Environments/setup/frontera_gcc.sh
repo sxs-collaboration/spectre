@@ -206,8 +206,8 @@ cat >$dep_dir/modules/spectre_python <<EOF
 setenv VIRTUAL_ENV $dep_dir/py_env
 prepend-path PATH ${VIRTUAL_ENV}/bin
 EOF
-HDF5_DIR=$TACC_HDF5_DIR pip install --no-binary=h5py h5py
-pip install yapf==0.29.0
+HDF5_DIR=$TACC_HDF5_DIR pip install --no-binary=h5py \
+  -r $SPECTRE_HOME/support/Python/requirements.txt
 
 printf "\n\nIMPORTANT!!!\nIn order to be able to use these modules you\n"
 echo "must run:"
