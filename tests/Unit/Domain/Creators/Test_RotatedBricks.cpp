@@ -482,8 +482,7 @@ void test_rotated_bricks_factory() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks", "[Domain][Unit]") {
   test_rotated_bricks();
   test_rotated_bricks_factory();
 }

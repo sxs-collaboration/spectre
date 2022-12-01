@@ -836,7 +836,7 @@ void test_parse_errors() {
 }  // namespace
 
 // [[TimeOut, 30]]
-SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject.FactoryTests",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
   test_bbh_time_dependent_factory(true, true);

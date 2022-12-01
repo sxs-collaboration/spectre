@@ -312,8 +312,7 @@ void test_disk_factory_equidistant() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk", "[Domain][Unit]") {
   test_disk_boundaries_equiangular();
   test_disk_factory_equiangular();
   test_disk_boundaries_equidistant();

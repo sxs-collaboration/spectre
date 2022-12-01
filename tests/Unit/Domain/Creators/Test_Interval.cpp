@@ -398,7 +398,7 @@ void test_interval_factory() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
   test_interval();
   test_interval_factory();
 }

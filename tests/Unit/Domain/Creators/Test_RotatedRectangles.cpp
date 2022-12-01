@@ -365,8 +365,7 @@ void test_rotated_rectangles_factory() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedRectangles.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedRectangles", "[Domain][Unit]") {
   test_rotated_rectangles();
   test_rotated_rectangles_factory();
 }

@@ -462,8 +462,7 @@ void test_rotated_intervals_factory() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedIntervals.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedIntervals", "[Domain][Unit]") {
   test_rotated_intervals();
   test_rotated_intervals_factory();
 }

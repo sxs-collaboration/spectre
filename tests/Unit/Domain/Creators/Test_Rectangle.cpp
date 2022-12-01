@@ -399,7 +399,7 @@ void test_rectangle_factory() {
 }  // namespace domain
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle", "[Domain][Unit]") {
   test_rectangle();
   test_rectangle_factory();
 }
