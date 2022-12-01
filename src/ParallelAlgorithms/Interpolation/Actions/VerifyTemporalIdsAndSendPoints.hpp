@@ -4,6 +4,8 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -234,8 +236,9 @@ struct VerifyTemporalIdsAndSendPoints {
           InterpolationTargetTag, ParallelComponent>(make_not_null(&box),
                                                      cache);
     } else {
-      if (InterpolationTarget_detail::maps_are_time_dependent<
-              InterpolationTargetTag>(cache)) {
+      const auto& domain =
+          get<domain::Tags::Domain<Metavariables::volume_dim>>(cache);
+      if (domain.is_time_dependent()) {
         if constexpr (Parallel::is_in_mutable_global_cache<
                           Metavariables, domain::Tags::FunctionsOfTime>) {
           detail::verify_temporal_ids_and_send_points_time_dependent<

@@ -101,6 +101,7 @@ void test_1d_domains() {
                                            CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 2., 0.}))));
+    CHECK_FALSE(domain_no_corners.is_time_dependent());
 
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
                                                   {{Direction<1>::upper_xi()}}};
@@ -177,6 +178,7 @@ void test_1d_domains() {
             Translation{"Translation1"}),
         translation_grid_to_distorted_map.get_clone(),
         translation_distorted_to_inertial_map.get_clone());
+    CHECK(domain_no_corners.is_time_dependent());
 
     const auto expected_logical_to_grid_maps =
         make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -470,19 +472,17 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
   test_1d_rectilinear_domains();
   test_2d_rectilinear_domains();
   test_3d_rectilinear_domains();
-}
-// [[OutputRegex, Must pass same number of maps as block corner sets]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Domain.BadArgs", "[Domain][Unit]") {
-  ASSERTION_TEST();
+
 #ifdef SPECTRE_DEBUG
-  // NOLINTNEXTLINE(bugprone-unused-raii)
-  Domain<1>(make_vector(
-                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-                    CoordinateMaps::Affine{-1., 1., -1., 1.}),
-                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-                    CoordinateMaps::Affine{-1., 1., -1., 1.})),
-            std::vector<std::array<size_t, 2>>{{{1, 2}}});
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      Domain<1>(
+          make_vector(
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -1., 1.}),
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -1., 1.})),
+          std::vector<std::array<size_t, 2>>{{{1, 2}}}),
+      Catch::Contains("Must pass same number of maps as block corner sets"));
 #endif
 }
 }  // namespace domain

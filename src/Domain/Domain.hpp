@@ -130,6 +130,8 @@ class Domain {
 
   const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
 
+  bool is_time_dependent() const;
+
   const std::unordered_map<std::string, ExcisionSphere<VolumeDim>>&
   excision_spheres() const {
     return excision_spheres_;

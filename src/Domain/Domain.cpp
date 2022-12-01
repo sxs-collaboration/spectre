@@ -11,6 +11,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"      // IWYU pragma: keep
 #include "Domain/Structure/DirectionMap.hpp"   // IWYU pragma: keep
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -117,6 +118,13 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
       std::move(moving_mesh_grid_to_inertial_map),
       std::move(moving_mesh_grid_to_distorted_map),
       std::move(moving_mesh_distorted_to_inertial_map));
+}
+
+template <size_t VolumeDim>
+bool Domain<VolumeDim>::is_time_dependent() const {
+  return alg::any_of(blocks_, [](const Block<VolumeDim>& block) {
+    return block.is_time_dependent();
+  });
 }
 
 template <size_t VolumeDim>
