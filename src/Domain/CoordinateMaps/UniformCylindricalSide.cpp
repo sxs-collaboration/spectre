@@ -7,6 +7,7 @@
 #include <limits>
 #include <optional>
 #include <pup.h>
+#include <sstream>
 #include <utility>
 
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -130,42 +131,61 @@ UniformCylindricalSide::UniformCylindricalSide(
   const double cos_theta_max_two =
       (z_plane_minus_two - center_two[2]) / radius_two;
 
+  // For some reason, codecov thinks that the following lambda never
+  // gets called, even though it is used in all of the ASSERT messages
+  // below.
+  // LCOV_EXCL_START
+  const auto param_string = [this]() -> std::string {
+    std::ostringstream buffer;
+    buffer << "\nParameters to UniformCylindricalSide:\nradius_one="
+           << radius_one_ << "\nradius_two=" << radius_two_
+           << "\ncenter_one=" << center_one_ << "\ncenter_two=" << center_two_
+           << "\nz_plane_plus_one=" << z_plane_plus_one_
+           << "\nz_plane_plus_two=" << z_plane_plus_two_
+           << "\nz_plane_minus_one=" << z_plane_minus_one_
+           << "\nz_plane_minus_two=" << z_plane_minus_two_;
+    return buffer.str();
+  };
+  // LCOV_EXCL_STOP
+
   ASSERT(cos_theta_min_one > cos(M_PI * 0.4),
          "z_plane_plus_one is too close to the center of sphere_one: "
          "cos_theta_min_one must be > "
              << cos(M_PI * 0.4) << " but is " << cos_theta_min_one
-             << " instead.");
+             << " instead." << param_string());
   ASSERT(cos_theta_max_one < cos(M_PI * 0.6),
          "z_plane_minus_one is too close to the center of sphere_one: "
          "cos_theta_max_one must be < "
              << cos(M_PI * 0.6) << " but is " << cos_theta_max_one
-             << " instead.");
+             << " instead." << param_string());
   ASSERT(cos_theta_min_one < cos(M_PI * 0.15),
          "z_plane_plus_one is too far from the center of sphere_one: "
          "cos_theta_min_one must be < "
              << cos(M_PI * 0.15) << " but is " << cos_theta_min_one
-             << " instead.");
+             << " instead." << param_string());
   ASSERT(cos_theta_max_one > cos(M_PI * 0.85),
          "z_plane_minus_one is too far from the center of sphere_one: "
          "cos_theta_max_one must be > "
              << cos(M_PI * 0.85) << " but is " << cos_theta_max_one
-             << " instead.");
+             << " instead." << param_string());
   ASSERT(cos_theta_min_two > (z_plane_plus_one_ == z_plane_plus_two_
                                   ? cos(M_PI * 0.75)
                                   : cos(M_PI * 0.4)),
          "z_plane_plus_two is too close to the south pole: theta/pi="
-             << acos(cos_theta_min_two) / M_PI);
+             << acos(cos_theta_min_two) / M_PI << param_string());
   ASSERT(cos_theta_max_two < (z_plane_minus_one_ == z_plane_minus_two_
                                   ? cos(M_PI * 0.25)
                                   : cos(M_PI * 0.6)),
          "z_plane_minus_two is too close to the north pole: theta/pi="
-             << acos(cos_theta_max_two) / M_PI);
+             << acos(cos_theta_max_two) / M_PI << param_string());
   ASSERT(cos_theta_min_two < cos(M_PI * 0.15),
          "z_plane_plus_two is too close to the north pole: theta_min_two/pi="
-             << acos(cos_theta_min_two) / M_PI << " but it should be < 0.15");
+             << acos(cos_theta_min_two) / M_PI << " but it should be < 0.15"
+             << param_string());
   ASSERT(cos_theta_max_two > cos(M_PI * 0.85),
          "z_plane_minus_two is too close to the south pole: theta_max_two/pi="
-             << acos(cos_theta_max_two) / M_PI << " but it should be > 0.85");
+             << acos(cos_theta_max_two) / M_PI << " but it should be > 0.85"
+             << param_string());
 
   const double dist_spheres = sqrt(square(center_one[0] - center_two[0]) +
                                    square(center_one[1] - center_two[1]) +
@@ -178,7 +198,7 @@ UniformCylindricalSide::UniformCylindricalSide(
              << radius_one << ", radius_two = " << radius_two
              << ", dist_spheres = " << dist_spheres
              << ", (dist_spheres+radius_one)/radius_two="
-             << (dist_spheres + radius_one) / radius_two);
+             << (dist_spheres + radius_one) / radius_two << param_string());
 
   const double horizontal_dist_spheres =
       sqrt(square(center_one[0] - center_two[0]) +
@@ -193,7 +213,7 @@ UniformCylindricalSide::UniformCylindricalSide(
            " Radius_one = "
                << radius_one << ", radius_two = " << radius_two
                << " center_one[2] = " << center_one[2]
-               << " center_two[2] = " << center_two[2]);
+               << " center_two[2] = " << center_two[2] << param_string());
   }
 
   if (z_plane_plus_two == z_plane_plus_one) {
@@ -201,7 +221,7 @@ UniformCylindricalSide::UniformCylindricalSide(
            "The map has been tested only if the sphere_two planes are far "
            "enough apart. z_plane_plus_two="
                << z_plane_plus_two << " z_plane_minus_two=" << z_plane_minus_two
-               << " radius_two=" << radius_two);
+               << " radius_two=" << radius_two << param_string());
   }
 
   if (z_plane_minus_two == z_plane_minus_one) {
@@ -209,7 +229,7 @@ UniformCylindricalSide::UniformCylindricalSide(
            "The map has been tested only if the sphere_two planes are far "
            "enough apart. z_plane_plus_two="
                << z_plane_plus_two << " z_plane_minus_two=" << z_plane_minus_two
-               << " radius_two=" << radius_two);
+               << " radius_two=" << radius_two << param_string());
   }
 
   ASSERT(horizontal_dist_spheres <=
@@ -226,7 +246,8 @@ UniformCylindricalSide::UniformCylindricalSide(
          " Radius_one = "
              << radius_one << ", radius_two = " << radius_two
              << ", dist_spheres = " << dist_spheres
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres);
+             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+             << param_string());
 
   const double theta_min_one = acos(cos_theta_min_one);
   const double theta_max_one = acos(cos_theta_max_one);
@@ -250,7 +271,8 @@ UniformCylindricalSide::UniformCylindricalSide(
              << ", theta_min_two = " << theta_min_two
              << ", max_horizontal_dist_between_circles_plus = "
              << max_horizontal_dist_between_circles_plus
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres);
+             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+             << param_string());
 
   const double alpha_minus = atan2(z_plane_minus_one - z_plane_minus_two,
                                    max_horizontal_dist_between_circles_minus);
@@ -261,7 +283,8 @@ UniformCylindricalSide::UniformCylindricalSide(
              << ", theta_max_two = " << theta_max_two
              << ", max_horizontal_dist_between_circles_minus = "
              << max_horizontal_dist_between_circles_minus
-             << ", horizontal_dist_spheres = " << horizontal_dist_spheres);
+             << ", horizontal_dist_spheres = " << horizontal_dist_spheres
+             << param_string());
 #endif
 }
 
