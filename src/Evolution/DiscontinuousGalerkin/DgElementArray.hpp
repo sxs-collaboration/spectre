@@ -65,8 +65,8 @@ struct DgElementArray {
       tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>,
                  domain::Tags::InitialExtents<volume_dim>>;
 
-  using initialization_tags =
-      tmpl::append<Parallel::get_initialization_tags<
+  using simple_tags_from_options =
+      tmpl::append<Parallel::get_simple_tags_from_options<
                        Parallel::get_initialization_actions_list<
                            phase_dependent_action_list>,
                        array_allocation_tags>,
@@ -74,7 +74,7 @@ struct DgElementArray {
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
       const std::unordered_set<size_t>& procs_to_ignore = {});
 
@@ -90,7 +90,7 @@ struct DgElementArray {
 template <class Metavariables, class PhaseDepActionList>
 void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-    const tuples::tagged_tuple_from_typelist<initialization_tags>&
+    const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
         initialization_items,
     const std::unordered_set<size_t>& procs_to_ignore) {
   auto& local_cache = *Parallel::local_branch(global_cache);

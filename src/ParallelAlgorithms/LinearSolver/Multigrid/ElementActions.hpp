@@ -50,8 +50,9 @@ struct PostSmoothingBeginLabel {};
 template <size_t Dim, typename FieldsTag, typename OptionsGroup,
           typename SourceTag>
 struct InitializeElement {
-  using initialization_tags = tmpl::list<Tags::ChildrenRefinementLevels<Dim>,
-                                         Tags::ParentRefinementLevels<Dim>>;
+  using simple_tags_from_options =
+      tmpl::list<Tags::ChildrenRefinementLevels<Dim>,
+                 Tags::ParentRefinementLevels<Dim>>;
   using simple_tags =
       tmpl::list<Tags::ParentId<Dim>, Tags::ChildIds<Dim>,
                  Tags::ParentMesh<Dim>,

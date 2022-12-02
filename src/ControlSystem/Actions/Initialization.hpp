@@ -49,7 +49,7 @@ template <typename Metavariables, typename ControlSystem>
 struct Initialize {
   static constexpr size_t deriv_order = ControlSystem::deriv_order;
 
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<control_system::Tags::WriteDataToDisk,
                  control_system::Tags::Averager<ControlSystem>,
                  control_system::Tags::Controller<ControlSystem>,

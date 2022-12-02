@@ -12,7 +12,7 @@ module AlgorithmNodegroup {
     entry AlgorithmNodegroup(
         Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
         tuples::tagged_tuple_from_typelist<
-            typename ParallelComponent::initialization_tags>
+            typename ParallelComponent::simple_tags_from_options>
             initialization_items);
 
     template <typename Action, typename... Args>

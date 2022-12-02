@@ -31,7 +31,7 @@ struct FakeSingleton {
   static std::string name() { return "FakeSingleton" + get_output(Index); }
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using initialization_tags = tmpl::list<
+  using simple_tags_from_options = tmpl::list<
       Parallel::Tags::AvoidGlobalProc0,
       Parallel::Tags::SingletonInfo<FakeSingleton<Metavariables, Index>>>;
 };
@@ -43,7 +43,7 @@ struct FakeSingletonInfoOnly {
   static std::string name() { return "FakeSingleton" + get_output(Index); }
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using initialization_tags = tmpl::list<Parallel::Tags::SingletonInfo<
+  using simple_tags_from_options = tmpl::list<Parallel::Tags::SingletonInfo<
       FakeSingletonInfoOnly<Metavariables, Index>>>;
 };
 template <typename Metavariables>
@@ -52,7 +52,7 @@ struct FakeSingletonAvoidGlobalProc0 {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using initialization_tags = tmpl::list<Parallel::Tags::AvoidGlobalProc0>;
+  using simple_tags_from_options = tmpl::list<Parallel::Tags::AvoidGlobalProc0>;
 };
 
 template <size_t... Indices>

@@ -256,7 +256,7 @@ struct TestResult {
 };
 
 struct InitializeElement {
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<domain::Tags::InitialExtents<1>,
                  domain::Tags::InitialRefinementLevels<1>>;
   using const_global_cache_tags = tmpl::list<Source>;

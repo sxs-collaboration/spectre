@@ -249,24 +249,24 @@ bool operator!=(const SingletonPack<tmpl::list<Components...>>& lhs,
 namespace detail {
 // This whole gymnastics with type aliases is necessary because ResourceInfo is
 // inside the GlobalCache. There are a lot of places that use the GlobalCache
-// that haven't defined the initialization_tags type alias (like the testing
-// framework). And even though we don't call the entry method on the GlobalCache
-// related to ResourceInfo, all the type aliases inside ResourceInfo are still
-// constructed regardless. So rather than changing every mock component to have
-// an empty type alias, we just treat no type alias as not having the tag we are
-// looking for.
-CREATE_HAS_TYPE_ALIAS(initialization_tags)
-CREATE_HAS_TYPE_ALIAS_V(initialization_tags)
+// that haven't defined the simple_tags_from_options type alias (like the
+// testing framework). And even though we don't call the entry method on the
+// GlobalCache related to ResourceInfo, all the type aliases inside ResourceInfo
+// are still constructed regardless. So rather than changing every mock
+// component to have an empty type alias, we just treat no type alias as not
+// having the tag we are looking for.
+CREATE_HAS_TYPE_ALIAS(simple_tags_from_options)
+CREATE_HAS_TYPE_ALIAS_V(simple_tags_from_options)
 
 template <typename Component, typename Tag,
-          bool HasInitializationTags = has_initialization_tags_v<Component>>
+          bool HasInitializationTags =
+              has_simple_tags_from_options_v<Component>>
 struct has_tag : std::false_type {};
 
 template <typename Component, typename Tag>
 struct has_tag<Component, Tag, true>
-    : std::bool_constant<
-          tmpl::list_contains_v<typename Component::initialization_tags, Tag>> {
-};
+    : std::bool_constant<tmpl::list_contains_v<
+          typename Component::simple_tags_from_options, Tag>> {};
 
 template <typename Component>
 using component_has_singleton_info_tag =
@@ -312,13 +312,13 @@ constexpr bool using_resource_info =
  *
  * \details This can be used for placing all singletons in an executable. To
  * have a singleton specify resource information, add the
- * `Parallel::Tags::SingletonInfo` tag to the `initialization_tags` type alias
- * in the singleton. To specify whether to avoid placing array elements and
- * singletons on the global proc 0, add the `Parallel::Tags::AvoidGlobalProc0`
- * tag to the `initialization_tags` of the parallel components in your
- * executable. If you don't want either of these things and just want access to
- * the ResourceInfo, add the `Parallel::Tags::ResourceInfo` tag to the const
- * global cache tags.
+ * `Parallel::Tags::SingletonInfo` tag to the `simple_tags_from_options` type
+ * alias in the singleton. To specify whether to avoid placing array elements
+ * and singletons on the global proc 0, add the
+ * `Parallel::Tags::AvoidGlobalProc0` tag to the `simple_tags_from_options` of
+ * the parallel components in your executable. If you don't want either of these
+ * things and just want access to the ResourceInfo, add the
+ * `Parallel::Tags::ResourceInfo` tag to the const global cache tags.
  *
  * If you only add the `Parallel::Tags::ResourceInfo` tag to the const global
  * cache tags, you'll need the following block in the input file:

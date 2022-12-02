@@ -45,7 +45,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using initialization_tags = tmpl::list<Tags::Time>;
+  using simple_tags_from_options = tmpl::list<Tags::Time>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize, OtherFunctionsOfTime>;
 

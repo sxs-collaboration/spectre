@@ -43,21 +43,21 @@ struct InitTag6 {};
 struct InitTag7 {};
 
 struct InitAction0 {
-  using initialization_tags = tmpl::list<InitTag0>;
+  using simple_tags_from_options = tmpl::list<InitTag0>;
 };
 struct InitAction1 {};
 struct InitAction2 {
-  using initialization_tags = tmpl::list<InitTag1, InitTag2>;
+  using simple_tags_from_options = tmpl::list<InitTag1, InitTag2>;
 };
 struct InitAction3 {
-  using initialization_tags = tmpl::list<InitTag0, InitTag1, InitTag3>;
+  using simple_tags_from_options = tmpl::list<InitTag0, InitTag1, InitTag3>;
 };
 
 struct ComponentInit {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
@@ -65,7 +65,7 @@ struct ComponentExecute {
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tags = tmpl::list<Tag2, Tag4>;
 };
@@ -76,7 +76,7 @@ struct ComponentInitAndExecute {
                              tmpl::list<InitAction3>>,
       Parallel::PhaseActions<Parallel::Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
@@ -85,7 +85,7 @@ struct ComponentInitWithAllocate {
       Parallel::Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
   using array_allocation_tags = tmpl::list<InitTag4, InitTag5>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
   using const_global_cache_tags = tmpl::list<Tag1, Tag5, Tag7>;
@@ -96,7 +96,7 @@ struct ComponentExecuteWithAllocate {
       tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
   using array_allocation_tags = tmpl::list<InitTag6, InitTag7>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
 };
@@ -108,7 +108,7 @@ struct ComponentInitAndExecuteWithAllocate {
       Parallel::PhaseActions<Parallel::Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
   using array_allocation_tags = tmpl::list<InitTag3, InitTag4>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
   using const_global_cache_tags = tmpl::list<Tag2, Tag4>;
@@ -212,31 +212,32 @@ static_assert(
                    tmpl::list<InitAction3>>,
     "Failed testing get_intialization_actions_list");
 
-static_assert(std::is_same_v<ComponentInit::initialization_tags,
+static_assert(std::is_same_v<ComponentInit::simple_tags_from_options,
                              tmpl::list<InitTag0, InitTag1, InitTag2>>,
-              "Failed testing get_initialization_tags");
+              "Failed testing get_simple_tags_from_options");
 
 static_assert(
-    std::is_same_v<ComponentExecute::initialization_tags, tmpl::list<>>,
-    "Failed testing get_initialization_tags");
+    std::is_same_v<ComponentExecute::simple_tags_from_options, tmpl::list<>>,
+    "Failed testing get_simple_tags_from_options");
 
-static_assert(std::is_same_v<ComponentInitAndExecute::initialization_tags,
+static_assert(std::is_same_v<ComponentInitAndExecute::simple_tags_from_options,
                              tmpl::list<InitTag0, InitTag1, InitTag3>>,
-              "Failed testing get_initialization_tags");
+              "Failed testing get_simple_tags_from_options");
 
 static_assert(std::is_same_v<
-                  ComponentInitWithAllocate::initialization_tags,
+                  ComponentInitWithAllocate::simple_tags_from_options,
                   tmpl::list<InitTag4, InitTag5, InitTag0, InitTag1, InitTag2>>,
-              "Failed testing get_initialization_tags");
-
-static_assert(std::is_same_v<ComponentExecuteWithAllocate::initialization_tags,
-                             tmpl::list<InitTag6, InitTag7>>,
-              "Failed testing get_initialization_tags");
+              "Failed testing get_simple_tags_from_options");
 
 static_assert(
-    std::is_same_v<ComponentInitAndExecuteWithAllocate::initialization_tags,
-                   tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
-    "Failed testing get_initialization_tags");
+    std::is_same_v<ComponentExecuteWithAllocate::simple_tags_from_options,
+                   tmpl::list<InitTag6, InitTag7>>,
+    "Failed testing get_simple_tags_from_options");
+
+static_assert(std::is_same_v<
+                  ComponentInitAndExecuteWithAllocate::simple_tags_from_options,
+                  tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
+              "Failed testing get_simple_tags_from_options");
 
 namespace OptionTags {
 struct Yards {
@@ -304,29 +305,31 @@ struct FullGreeting {
 }  // namespace Tags
 }  // namespace Initialization
 
-using initialization_tags_0 = tmpl::list<>;
+using simple_tags_from_options_0 = tmpl::list<>;
 
-using initialization_tags_1 =
+using simple_tags_from_options_1 =
     tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
                Initialization::Tags::Sides>;
 
-using initialization_tags_2 =
+using simple_tags_from_options_2 =
     tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
                Initialization::Tags::FullGreeting>;
 
 static_assert(
-    std::is_same_v<Parallel::get_option_tags<initialization_tags_0, NoSuchType>,
-                   tmpl::list<>>,
-    "Failed testing get_option_tags");
-
-static_assert(
-    std::is_same_v<Parallel::get_option_tags<initialization_tags_1, NoSuchType>,
-                   tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
+    std::is_same_v<
+        Parallel::get_option_tags<simple_tags_from_options_0, NoSuchType>,
+        tmpl::list<>>,
     "Failed testing get_option_tags");
 
 static_assert(
     std::is_same_v<
-        Parallel::get_option_tags<initialization_tags_2, NoSuchType>,
+        Parallel::get_option_tags<simple_tags_from_options_1, NoSuchType>,
+        tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
+    "Failed testing get_option_tags");
+
+static_assert(
+    std::is_same_v<
+        Parallel::get_option_tags<simple_tags_from_options_2, NoSuchType>,
         tmpl::list<OptionTags::Yards, OptionTags::Greeting, OptionTags::Name>>,
     "Failed testing get_option_tags");
 
@@ -337,14 +340,14 @@ template <typename Metavariables, typename... InitializationTags>
 void check_initialization_items(
     const Options::Parser<all_option_tags>& all_options,
     const tuples::TaggedTuple<InitializationTags...>& expected_items) {
-  using initialization_tags = tmpl::list<InitializationTags...>;
+  using simple_tags_from_options = tmpl::list<InitializationTags...>;
   using option_tags =
-      Parallel::get_option_tags<initialization_tags, Metavariables>;
+      Parallel::get_option_tags<simple_tags_from_options, Metavariables>;
   const auto options = all_options.apply<option_tags>([](auto... args) {
     return tuples::tagged_tuple_from_typelist<option_tags>(std::move(args)...);
   });
   CHECK(Parallel::create_from_options<Metavariables>(
-            options, initialization_tags{}) == expected_items);
+            options, simple_tags_from_options{}) == expected_items);
 }
 }  // namespace
 

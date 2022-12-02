@@ -80,7 +80,7 @@ namespace Actions {
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
 template <typename Metavariables>
 struct TimeAndTimeStep {
-  using initialization_tags = tmpl::flatten<
+  using simple_tags_from_options = tmpl::flatten<
       tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>,
                  tmpl::conditional_t<

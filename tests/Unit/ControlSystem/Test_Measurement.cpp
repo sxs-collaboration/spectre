@@ -44,7 +44,7 @@ struct MockControlSystemComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;
   using array_index = int;
-  using initialization_tags = tmpl::list<
+  using simple_tags_from_options = tmpl::list<
       control_system::TestHelpers::ExampleControlSystem::MeasurementQueue,
       control_system::TestHelpers::MeasurementResultTime,
       control_system::TestHelpers::MeasurementResultTag>;

@@ -78,7 +78,7 @@ using fields_tag = helpers_distributed::fields_tag;
 using sources_tag = helpers_distributed::sources_tag;
 
 struct InitializeElement {
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<::domain::Tags::InitialExtents<1>,
                  ::domain::Tags::InitialRefinementLevels<1>>;
   using const_global_cache_tags =

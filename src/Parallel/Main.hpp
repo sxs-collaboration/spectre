@@ -158,9 +158,8 @@ class Main : public CBase_Main<Metavariables> {
   void check_if_component_terminated_correctly();
 
   template <typename ParallelComponent>
-  using parallel_component_options =
-      Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
-                                Metavariables>;
+  using parallel_component_options = Parallel::get_option_tags<
+      typename ParallelComponent::simple_tags_from_options, Metavariables>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
       Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
@@ -531,7 +530,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         ParallelComponentProxy::ckNew(
             global_cache_proxy_,
             Parallel::create_from_options<Metavariables>(
-                options_, typename parallel_component::initialization_tags{}),
+                options_,
+                typename parallel_component::simple_tags_from_options{}),
             &global_cache_dependency);
   });
 
@@ -653,7 +653,7 @@ void Main<Metavariables>::
     auto& singleton_proxy =
         Parallel::get_parallel_component<singleton_component>(local_cache);
     auto options = Parallel::create_from_options<Metavariables>(
-        options_, typename singleton_component::initialization_tags{});
+        options_, typename singleton_component::simple_tags_from_options{});
 
     const size_t proc = resource_info_.template proc_for<singleton_component>();
     singleton_proxy[0].insert(global_cache_proxy_, std::move(options), proc);
@@ -668,7 +668,7 @@ void Main<Metavariables>::
     parallel_component::allocate_array(
         global_cache_proxy_,
         Parallel::create_from_options<Metavariables>(
-            options_, typename parallel_component::initialization_tags{}),
+            options_, typename parallel_component::simple_tags_from_options{}),
         resource_info_.procs_to_ignore());
   });
 

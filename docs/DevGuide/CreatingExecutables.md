@@ -47,7 +47,7 @@ Parallel::GlobalCache (by specifying tags in the
 `const_global_cache_tags` type alias of the metavariables, component
 and action structs), to construct items in the db::DataBox of
 components during initialization (by specifying tags in the
-`initialization_tags` type alias of action struct), or be passed to
+`simple_tags_from_options` type alias of action struct), or be passed to
 the `allocate_array` function of an array component (by specifying
 tags in the `allocation_tags` type alias of the component).
 `SingletonHelloWorld` specifies a single option

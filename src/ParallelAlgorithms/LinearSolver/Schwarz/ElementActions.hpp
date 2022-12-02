@@ -206,7 +206,7 @@ struct InitializeElement {
       OptionsGroup>;
 
  public:
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<domain::Tags::InitialExtents<Dim>, subdomain_solver_tag>;
 
   using const_global_cache_tags = tmpl::list<Tags::MaxOverlap<OptionsGroup>>;

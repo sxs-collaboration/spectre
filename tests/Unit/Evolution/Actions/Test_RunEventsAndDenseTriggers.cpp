@@ -249,7 +249,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using variables_tag = typename metavariables::system::variables_tag;
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::push_front<extra_data, Tags::TimeStepId, Tags::TimeStep, Tags::Time,
                        evolution::Tags::PreviousTriggerTime, variables_tag,
                        Tags::HistoryEvolvedVariables<variables_tag>,

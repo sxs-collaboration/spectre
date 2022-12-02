@@ -56,8 +56,8 @@ struct mock_analytic_worldtube_boundary {
       tmpl::list<Actions::InitializeWorldtubeBoundary<
                      AnalyticWorldtubeBoundary<Metavariables>>,
                  Parallel::Actions::TerminatePhase>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -86,8 +86,8 @@ struct mock_characteristic_evolution {
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
       Parallel::Actions::TerminatePhase>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;

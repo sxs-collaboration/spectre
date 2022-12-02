@@ -46,7 +46,7 @@ namespace detail {
 template <typename Initializer, typename ManagerTags,
           typename BoundaryCommunicationTagsList>
 struct InitializeWorldtubeBoundaryBase {
-  using initialization_tags = ManagerTags;
+  using simple_tags_from_options = ManagerTags;
   using const_global_cache_tags = tmpl::list<Tags::LMax>;
 
   using simple_tags =
@@ -127,7 +127,7 @@ struct InitializeWorldtubeBoundary<H5WorldtubeBoundary<Metavariables>>
   using typename base_type::simple_tags;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::EndTimeFromFile, Tags::StartTimeFromFile>;
-  using typename base_type::initialization_tags;
+  using typename base_type::simple_tags_from_options;
 };
 
 /*!
@@ -163,7 +163,7 @@ struct InitializeWorldtubeBoundary<GhWorldtubeBoundary<Metavariables>>
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, InitializationTags::ExtractionRadius,
                  Tags::NoEndTime, Tags::SpecifiedStartTime>;
-  using typename base_type::initialization_tags;
+  using typename base_type::simple_tags_from_options;
 };
 
 /*!
@@ -203,7 +203,7 @@ struct InitializeWorldtubeBoundary<AnalyticWorldtubeBoundary<Metavariables>>
   using typename base_type::simple_tags;
   using const_global_cache_tags =
       tmpl::list<Tags::LMax, Tags::SpecifiedEndTime, Tags::SpecifiedStartTime>;
-  using typename base_type::initialization_tags;
+  using typename base_type::simple_tags_from_options;
 };
 }  // namespace Actions
 }  // namespace Cce

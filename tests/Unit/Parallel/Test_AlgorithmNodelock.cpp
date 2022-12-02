@@ -242,12 +242,12 @@ struct ArrayParallelComponent {
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Register, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
       /*initialization_items*/,
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& local_cache = *Parallel::local_branch(global_cache);
@@ -288,7 +288,7 @@ struct NodegroupParallelComponent {
       Parallel::PhaseActions<Parallel::Phase::Solve, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Execute, tmpl::list<>>,
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(

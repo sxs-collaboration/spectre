@@ -28,23 +28,23 @@ struct Metavariables {
 
 struct SingletonParallelComponent {
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using chare_type = Parallel::Algorithms::Singleton;
 };
 struct ArrayParallelComponent {
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
 };
 struct GroupParallelComponent {
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using chare_type = Parallel::Algorithms::Group;
 };
 struct NodegroupParallelComponent {
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using chare_type = Parallel::Algorithms::Nodegroup;
 };
 

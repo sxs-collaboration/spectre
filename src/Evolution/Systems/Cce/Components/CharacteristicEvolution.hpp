@@ -111,8 +111,8 @@ struct CharacteristicEvolution {
           typename Metavariables::cce_boundary_component>,
       Parallel::Actions::TerminatePhase>;
 
-  using initialization_tags = tmpl::push_back<
-      Parallel::get_initialization_tags<initialize_action_list>,
+  using simple_tags_from_options = tmpl::push_back<
+      Parallel::get_simple_tags_from_options<initialize_action_list>,
       Parallel::Tags::SingletonInfo<CharacteristicEvolution<Metavariables>>>;
 
   // the list of actions that occur for each of the hypersurface-integrated

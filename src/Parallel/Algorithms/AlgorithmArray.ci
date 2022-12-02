@@ -26,7 +26,7 @@ module AlgorithmArray {
     entry AlgorithmArray(
         Parallel::CProxy_GlobalCache<typename ParallelComponent::metavariables>,
         tuples::tagged_tuple_from_typelist<
-            typename ParallelComponent::initialization_tags>
+            typename ParallelComponent::simple_tags_from_options>
             initialization_items);
 
     entry AlgorithmArray(

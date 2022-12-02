@@ -161,7 +161,7 @@ struct SingletonParallelComponent {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
@@ -174,7 +174,7 @@ struct ArrayParallelComponent {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
@@ -186,7 +186,7 @@ struct GroupParallelComponent {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
@@ -198,7 +198,7 @@ struct NodegroupParallelComponent {
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 

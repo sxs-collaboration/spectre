@@ -197,7 +197,7 @@ struct NoOpsComponent {
                      Parallel::Phase::Register,
                      tmpl::list<no_op_test::increment_count_actions_called,
                                 no_op_test::no_op>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
@@ -361,7 +361,7 @@ struct MutateComponent {
                              tmpl::list<add_remove_test::add_int_value_10,
                                         add_remove_test::increment_int0,
                                         add_remove_test::remove_int0>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
@@ -531,7 +531,7 @@ struct ReceiveComponent {
                      add_remove_test::increment_int0,
                      add_remove_test::remove_int0,
                      receive_data_test::update_instance>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
@@ -637,7 +637,7 @@ struct AnyOrderComponent {
                                         any_order::iterate_increment_int0,
                                         add_remove_test::remove_int0,
                                         receive_data_test::update_instance>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(

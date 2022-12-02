@@ -54,7 +54,7 @@ struct InitializeDomain {
   using InitializeGeometry = elliptic::dg::InitializeGeometry<Dim>;
 
  public:
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<domain::Tags::InitialExtents<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>>;
   using simple_tags = typename InitializeGeometry::return_tags;

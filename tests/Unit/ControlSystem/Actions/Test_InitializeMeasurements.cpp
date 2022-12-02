@@ -147,7 +147,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
 
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
 
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;

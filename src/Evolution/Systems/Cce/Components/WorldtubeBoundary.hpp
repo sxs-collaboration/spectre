@@ -26,9 +26,9 @@ struct WorldtubeComponentBase {
       tmpl::list<Actions::InitializeWorldtubeBoundary<WorldtubeComponent>,
                  Parallel::Actions::TerminatePhase>;
 
-  using initialization_tags =
-      tmpl::push_back<Parallel::get_initialization_tags<initialize_action_list>,
-                      Parallel::Tags::SingletonInfo<WorldtubeComponent>>;
+  using simple_tags_from_options = tmpl::push_back<
+      Parallel::get_simple_tags_from_options<initialize_action_list>,
+      Parallel::Tags::SingletonInfo<WorldtubeComponent>>;
 
   using worldtube_boundary_computation_steps = tmpl::list<>;
 
@@ -87,10 +87,10 @@ struct H5WorldtubeBoundary
   using typename base_type::chare_type;
   using const_global_cache_tags = tmpl::list<Tags::InitializeJ<
       Metavariables::uses_partially_flat_cartesian_coordinates>>;
-  using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;
   using typename base_type::phase_dependent_action_list;
+  using typename base_type::simple_tags_from_options;
   using end_time_tag = Tags::EndTimeFromFile;
 };
 
@@ -129,10 +129,10 @@ struct AnalyticWorldtubeBoundary
   using base_type::initialize;
   using typename base_type::chare_type;
   using const_global_cache_tags = tmpl::list<Tags::AnalyticInitializeJ>;
-  using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;
   using typename base_type::phase_dependent_action_list;
+  using typename base_type::simple_tags_from_options;
   using end_time_tag = Tags::SpecifiedEndTime;
 };
 
@@ -172,10 +172,10 @@ struct GhWorldtubeBoundary
   using typename base_type::chare_type;
   using const_global_cache_tags = tmpl::list<Tags::InitializeJ<
       Metavariables::uses_partially_flat_cartesian_coordinates>>;
-  using typename base_type::initialization_tags;
   using typename base_type::metavariables;
   using typename base_type::options;
   using typename base_type::phase_dependent_action_list;
+  using typename base_type::simple_tags_from_options;
   using end_time_tag = Tags::NoEndTime;
 };
 }  // namespace Cce
