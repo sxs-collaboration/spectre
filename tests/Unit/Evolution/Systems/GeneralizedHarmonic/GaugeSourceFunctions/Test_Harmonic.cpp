@@ -9,11 +9,13 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Harmonic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/RegisterDerived.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
@@ -42,10 +44,12 @@ void test() {
 
   const double time = std::numeric_limits<double>::signaling_NaN();
   const tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords(num_points);
-  dynamic_cast<const GeneralizedHarmonic::gauges::Harmonic&>(*gauge_condition)
-      .gauge_and_spacetime_derivative(make_not_null(&gauge_h),
-                                      make_not_null(&d4_gauge_h), time,
-                                      inertial_coords);
+
+  // Used dispatch with defaulted arguments that we don't need for Harmonic
+  // gauge.
+  GeneralizedHarmonic::gauges::dispatch(
+      make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
+      {}, {}, {}, Mesh<Dim>{}, time, inertial_coords, {}, *gauge_condition);
   CHECK(gauge_h == tnsr::a<DataVector, Dim, Frame::Inertial>(num_points, 0.0));
   CHECK(d4_gauge_h ==
         tnsr::ab<DataVector, Dim, Frame::Inertial>(num_points, 0.0));

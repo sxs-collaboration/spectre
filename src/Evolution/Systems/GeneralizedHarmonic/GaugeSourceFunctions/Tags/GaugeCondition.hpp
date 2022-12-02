@@ -3,11 +3,23 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
+#include "DataStructures/VariablesTag.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
+#include "ParallelAlgorithms/Events/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Time/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 
 /// \cond
 namespace GeneralizedHarmonic::OptionTags {
@@ -36,6 +48,48 @@ struct GaugeCondition : db::SimpleTag {
       const std::unique_ptr<gauges::GaugeCondition>& gauge_condition) {
     return gauge_condition->get_clone();
   }
+};
+
+/// \brief Gauge condition \f$H_a\f$ and its spacetime derivative
+/// \f$\partial_b H_a\f$
+template <size_t Dim>
+struct GaugeAndDerivativeCompute
+    : ::Tags::Variables<
+          tmpl::list<::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>,
+                     ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
+                         Dim, Frame::Inertial>>>,
+      db::ComputeTag {
+  using base = ::Tags::Variables<tmpl::list<
+      ::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>,
+      ::GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim, Frame::Inertial>>>;
+  using return_type = typename base::type;
+  using argument_tags = tmpl::list<
+      gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
+      gr::Tags::SpacetimeNormalOneForm<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::SpacetimeMetric<Dim>,
+      GeneralizedHarmonic::Tags::Pi<Dim>, GeneralizedHarmonic::Tags::Phi<Dim>,
+      ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
+      ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
+      Tags::GaugeCondition>;
+
+  static void function(
+      gsl::not_null<return_type*> gauge_and_deriv,
+      const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+      const tnsr::a<DataVector, Dim, Frame::Inertial>&
+          spacetime_unit_normal_one_form,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
+      const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
+      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
+      const Mesh<Dim>& mesh, double time,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inverse_jacobian,
+      const gauges::GaugeCondition& gauge_condition);
 };
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic::gauges
