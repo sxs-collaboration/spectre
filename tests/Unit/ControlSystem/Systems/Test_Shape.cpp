@@ -477,7 +477,7 @@ void test_names() {
   }
 }
 
-// [[Timeout, 15]]
+// [[TimeOut, 15]]
 SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.Shape", "[ControlSystem][Unit]") {
   MAKE_GENERATOR(generator);
   domain::FunctionsOfTime::register_derived_with_charm();

@@ -265,7 +265,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
 
 // Currently the test takes a long time because the logic for the control system
 // isn't the most optimal. This should be fixed in the near future.
-// [[Timeout, 25]]
+// [[TimeOut, 25]]
 SPECTRE_TEST_CASE("Unit.ControlSystem.Systems.RotScaleTrans",
                   "[ControlSystem][Unit]") {
   // For rotation deriv order 2, we need a different epsilon because controlling

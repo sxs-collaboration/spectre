@@ -200,7 +200,7 @@ void test_interpolation() {
 }
 }  // namespace
 
-// [[Timeout, 8]]
+// [[TimeOut, 8]]
 SPECTRE_TEST_CASE("Unit.DataStructures.ApplyMatrices",
                   "[DataStructures][Unit]") {
   {

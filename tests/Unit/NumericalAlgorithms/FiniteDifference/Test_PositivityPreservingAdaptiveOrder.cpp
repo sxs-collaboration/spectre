@@ -177,7 +177,7 @@ void test(const FallbackReconstructorType fallback_recons) {
 }
 }  // namespace
 
-// [[Timeout, 10]]
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.FiniteDifference.PositivityPreservingAdaptiveOrder",
                   "[Unit][NumericalAlgorithms]") {
   pypp::SetupLocalPythonEnvironment local_python_env(

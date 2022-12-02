@@ -28,7 +28,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
-// [[Timeout, 10]]
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Derivatives",
     "[Unit][Evolution]") {
