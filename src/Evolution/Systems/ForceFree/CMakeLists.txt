@@ -11,6 +11,7 @@ spectre_target_sources(
   Characteristics.cpp
   Fluxes.cpp
   Sources.cpp
+  TimeDerivativeTerms.cpp
   )
 
 spectre_target_headers(
@@ -21,6 +22,7 @@ spectre_target_headers(
   Fluxes.hpp
   Sources.hpp
   Tags.hpp
+  TimeDerivativeTerms.hpp
   )
 
 target_link_libraries(
