@@ -148,15 +148,43 @@ UniformCylindricalSide::UniformCylindricalSide(
   };
   // LCOV_EXCL_STOP
 
-  ASSERT(cos_theta_min_one > cos(M_PI * 0.4),
+  const double cos_theta_min_one_lower_limit =
+      z_plane_plus_one_ == z_plane_plus_two_
+          ? cos(M_PI * 0.59)
+          : (z_plane_minus_one_ == z_plane_minus_two_ and
+                     cos_theta_max_one > cos(M_PI * 0.6)
+                 ? cos(M_PI * 0.3)
+                 : cos(M_PI * 0.4));
+
+  const double cos_theta_max_one_upper_limit =
+      z_plane_minus_one_ == z_plane_minus_two_
+          ? cos(M_PI * 0.41)
+          : (z_plane_plus_one_ == z_plane_plus_two_ and
+                     cos_theta_min_one < cos(M_PI * 0.4)
+                 ? cos(M_PI * 0.7)
+                 : cos(M_PI * 0.6));
+
+  const double cos_theta_min_two_upper_limit =
+      z_plane_plus_one_ == z_plane_plus_two_ and
+              cos_theta_min_one < cos(M_PI * 0.4)
+          ? cos(M_PI * 0.25)
+          : cos(M_PI * 0.15);
+
+  const double cos_theta_max_two_lower_limit =
+      z_plane_minus_one_ == z_plane_minus_two_ and
+              cos_theta_max_one > cos(M_PI * 0.6)
+          ? cos(M_PI * 0.75)
+          : cos(M_PI * 0.85);
+
+  ASSERT(cos_theta_min_one > cos_theta_min_one_lower_limit,
          "z_plane_plus_one is too close to the center of sphere_one: "
          "cos_theta_min_one must be > "
-             << cos(M_PI * 0.4) << " but is " << cos_theta_min_one
+             << cos_theta_min_one_lower_limit << " but is " << cos_theta_min_one
              << " instead." << param_string());
-  ASSERT(cos_theta_max_one < cos(M_PI * 0.6),
+  ASSERT(cos_theta_max_one < cos_theta_max_one_upper_limit,
          "z_plane_minus_one is too close to the center of sphere_one: "
          "cos_theta_max_one must be < "
-             << cos(M_PI * 0.6) << " but is " << cos_theta_max_one
+             << cos_theta_max_one_upper_limit << " but is " << cos_theta_max_one
              << " instead." << param_string());
   ASSERT(cos_theta_min_one < cos(M_PI * 0.15),
          "z_plane_plus_one is too far from the center of sphere_one: "
@@ -178,14 +206,14 @@ UniformCylindricalSide::UniformCylindricalSide(
                                   : cos(M_PI * 0.6)),
          "z_plane_minus_two is too close to the north pole: theta/pi="
              << acos(cos_theta_max_two) / M_PI << param_string());
-  ASSERT(cos_theta_min_two < cos(M_PI * 0.15),
+  ASSERT(cos_theta_min_two < cos_theta_min_two_upper_limit,
          "z_plane_plus_two is too close to the north pole: theta_min_two/pi="
-             << acos(cos_theta_min_two) / M_PI << " but it should be < 0.15"
-             << param_string());
-  ASSERT(cos_theta_max_two > cos(M_PI * 0.85),
+             << acos(cos_theta_min_two) / M_PI << " but it should be >"
+             << acos(cos_theta_min_two_upper_limit) / M_PI << param_string());
+  ASSERT(cos_theta_max_two > cos_theta_max_two_lower_limit,
          "z_plane_minus_two is too close to the south pole: theta_max_two/pi="
-             << acos(cos_theta_max_two) / M_PI << " but it should be > 0.85"
-             << param_string());
+             << acos(cos_theta_max_two) / M_PI << " but it should be < "
+             << acos(cos_theta_max_two_lower_limit) / M_PI << param_string());
 
   const double dist_spheres = sqrt(square(center_one[0] - center_two[0]) +
                                    square(center_one[1] - center_two[1]) +
