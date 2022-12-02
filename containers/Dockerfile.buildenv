@@ -94,14 +94,12 @@ RUN apt-get update -y \
 # - We use python-is-python3 because on Ubuntu 20.04 /usr/bin/python was removed
 #   to aid in tracking down anything that depends on python 2. However, many
 #   scripts use `/usr/bin/env python` to find python so restore it.
-# - We pin the Numpy version because v1.22 segfaults in Pypp tests, see issue
-#   https://github.com/sxs-collaboration/spectre/issues/3844
 COPY support/Python/requirements.txt requirements.txt
 COPY support/Python/dev_requirements.txt dev_requirements.txt
 RUN add-apt-repository universe \
     && apt-get update -y \
     && apt-get install -y python3-pip python-is-python3 \
-    && pip3 --no-cache-dir install pybind11~=2.6.1 numpy~=1.21.5 \
+    && pip3 --no-cache-dir install pybind11~=2.6.1 \
     && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
 
