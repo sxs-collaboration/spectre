@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -22,6 +23,28 @@
 
 namespace intrp {
 namespace Actions {
+namespace detail {
+template <typename Metavariables, typename Tag, typename = std::void_t<>>
+struct get_interpolating_component_or_interpolator {
+  using type = Interpolator<Metavariables>;
+};
+template <typename Metavariables, typename Tag>
+struct get_interpolating_component_or_interpolator<
+    Metavariables, Tag,
+    std::void_t<
+        typename Tag::template interpolating_component<Metavariables>>> {
+  using type = typename Tag::template interpolating_component<Metavariables>;
+};
+template <typename Metavariables, typename Tag>
+using get_interpolating_component_or_interpolator_t =
+    typename get_interpolating_component_or_interpolator<Metavariables,
+                                                         Tag>::type;
+
+template <typename Metavariables, typename Tag>
+constexpr bool using_interpolator_component_v = std::is_same_v<
+    get_interpolating_component_or_interpolator_t<Metavariables, Tag>,
+    Interpolator<Metavariables>>;
+}  // namespace detail
 
 /// \ingroup ActionsGroup
 /// \brief Adds volume data from an `Element`.
@@ -65,7 +88,19 @@ struct InterpolatorReceiveVolumeData {
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&holders, &this_temporal_id_is_done, &temporal_id](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
-          if constexpr (std::is_same_v<TemporalId, typename tag::temporal_id>) {
+          // Here we decide whether this interpolation target is "done" (i.e. it
+          // does not need to interpolate) at this temporal_id. If it is "done",
+          // then we don't need to store the volume data. Usually "done" means
+          // that it has already done its interpolation at this temporal_id. But
+          // note that if an interpolation target is not using the Interpolator
+          // at all, it is considered "done", because we don't need any volume
+          // data for it and should not store it. Similarly, interpolation
+          // targets whose temporal_id has a different type than TemporalId are
+          // considered "done" because they too do not use the Interpolator and
+          // don't need volume data to be saved.
+          if constexpr (detail::using_interpolator_component_v<Metavariables,
+                                                               tag> and
+                        std::is_same_v<TemporalId, typename tag::temporal_id>) {
             const auto& finished_temporal_ids =
                 get<Vars::HolderTag<tag, Metavariables>>(holders)
                     .temporal_ids_when_data_has_been_interpolated;
