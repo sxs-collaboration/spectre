@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 
@@ -22,6 +23,28 @@
 
 namespace intrp {
 namespace Actions {
+namespace detail {
+template <typename Metavariables, typename Tag, typename = std::void_t<>>
+struct get_interpolating_component_or_interpolator {
+  using type = Interpolator<Metavariables>;
+};
+template <typename Metavariables, typename Tag>
+struct get_interpolating_component_or_interpolator<
+    Metavariables, Tag,
+    std::void_t<
+        typename Tag::template interpolating_component<Metavariables>>> {
+  using type = typename Tag::template interpolating_component<Metavariables>;
+};
+template <typename Metavariables, typename Tag>
+using get_interpolating_component_or_interpolator_t =
+    typename get_interpolating_component_or_interpolator<Metavariables,
+                                                         Tag>::type;
+
+template <typename Metavariables, typename Tag>
+constexpr bool using_interpolator_component_v = std::is_same_v<
+    get_interpolating_component_or_interpolator_t<Metavariables, Tag>,
+    Interpolator<Metavariables>>;
+}  // namespace detail
 
 /// \ingroup ActionsGroup
 /// \brief Adds volume data from an `Element`.
@@ -65,7 +88,14 @@ struct InterpolatorReceiveVolumeData {
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&holders, &this_temporal_id_is_done, &temporal_id](auto tag_v) {
           using tag = typename decltype(tag_v)::type;
-          if constexpr (std::is_same_v<TemporalId, typename tag::temporal_id>) {
+          // First off, this interpolation target must actually be using the
+          // interpolator. If it's using some other component, no sense in
+          // holding the volume data at this temporal id for this target.
+          // Second, if this isn't the temporal id we're interested in, then
+          // don't do anything.
+          if constexpr (detail::using_interpolator_component_v<Metavariables,
+                                                               tag> and
+                        std::is_same_v<TemporalId, typename tag::temporal_id>) {
             const auto& finished_temporal_ids =
                 get<Vars::HolderTag<tag, Metavariables>>(holders)
                     .temporal_ids_when_data_has_been_interpolated;

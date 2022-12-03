@@ -257,10 +257,14 @@ struct mock_interpolation_target {
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA>>;
+                     typename Metavariables::InterpolationTargetA>,
+                 intrp::Actions::InterpolationTargetReceiveVars<
+                     typename Metavariables::InterpolationTargetB>>;
   using with_these_simple_actions =
       tmpl::list<MockInterpolationTargetReceiveVars<
-          typename Metavariables::InterpolationTargetA>>;
+                     typename Metavariables::InterpolationTargetA>,
+                 MockInterpolationTargetReceiveVars<
+                     typename Metavariables::InterpolationTargetB>>;
 };
 
 template <typename Metavariables>
@@ -313,12 +317,25 @@ struct MockMetavariables {
         intrp::callbacks::ObserveTimeSeriesOnSurface<tmpl::list<>,
                                                      InterpolationTargetA>;
   };
+  // Want the same temporal id. Other type alias are arbitrary for this test
+  struct InterpolationTargetB : public InterpolationTargetA {
+    // This just needs to be something other than the interpolator. Doesn't
+    // matter what because we won't actually be doing an interpolation to this
+    // component. We just needed another target with the same temporal_id that
+    // wasn't using the interpolator to test that InterpolatorReceiveVolumeData
+    // doesn't hold onto volume data for this temporal_id that will never be
+    // used by this target.
+    template <typename Metavariables>
+    using interpolating_component = mock_observer_writer<Metavariables>;
+  };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
-  using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
+  using interpolation_target_tags =
+      tmpl::list<InterpolationTargetA, InterpolationTargetB>;
   using observed_reduction_data_tags = tmpl::list<>;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
+      mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
       mock_interpolator<MockMetavariables>,
       mock_observer_writer<MockMetavariables>>;
 };
@@ -369,6 +386,8 @@ SPECTRE_TEST_CASE(
       typename metavars::InterpolationTargetA::temporal_id::type;
   using target_component =
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
+  using unused_target_component =
+      mock_interpolation_target<metavars, metavars::InterpolationTargetB>;
   using interp_component = mock_interpolator<metavars>;
   using observer_writer = mock_observer_writer<metavars>;
 
@@ -389,6 +408,7 @@ SPECTRE_TEST_CASE(
     auto coords = block_logical_coordinates(domain, points);
     typename intrp::Tags::InterpolatedVarsHolders<metavars>::type
         vars_holders_l{};
+    // Only need to setup A because B isn't using the interpolator
     auto& vars_infos =
         get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars>>(
             vars_holders_l)
@@ -420,6 +440,11 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 2; ++i) {
     ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   }
+  ActionTesting::emplace_component<unused_target_component>(&runner, 0);
+  for (size_t i = 0; i < 2; ++i) {
+    ActionTesting::next_action<unused_target_component>(make_not_null(&runner),
+                                                        0);
+  }
   ActionTesting::emplace_nodegroup_component<observer_writer>(
       make_not_null(&runner));
   ActionTesting::next_action<observer_writer>(make_not_null(&runner), 0);
@@ -443,6 +468,19 @@ SPECTRE_TEST_CASE(
 
   create_volume_data_and_send_it_to_interpolator<interp_component>(
       make_not_null(&runner), domain_creator, domain, element_ids, temporal_id);
+
+  const auto& holders = ActionTesting::get_databox_tag<
+      interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(runner,
+                                                                        0);
+
+  // Should be done with this temporal id for TargetA. TargetB doesn't use the
+  // interpolator so it should also have this be empty
+  CHECK(get<intrp::Vars::HolderTag<metavars::InterpolationTargetA, metavars>>(
+            holders)
+            .temporal_ids_when_data_has_been_interpolated.empty());
+  CHECK(get<intrp::Vars::HolderTag<metavars::InterpolationTargetB, metavars>>(
+            holders)
+            .temporal_ids_when_data_has_been_interpolated.empty());
 
   // Should be no temporal_ids in the target box, since we never
   // put any there.
