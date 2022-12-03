@@ -17,6 +17,13 @@ compile_commands.json
 .spack-env
 /support/DevEnvironments/spack.lock
 
+# Python environments
+# These are conventional locations where people may install Python packages
+# related to the project. They are mentioned in the Python docs:
+# https://docs.python.org/3/library/venv.html
+/.venv
+/env
+
 # Temporary files
 *~
 *.swp

@@ -176,6 +176,14 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     is also easier to use a debugger when strong inlining is disabled. If you
     are encountering debugger messages like `function inlined`, then strong
     inlining should be disabled.
+- BOOTSTRAP_PY_DEPS and BOOTSTRAP_PY_DEV_DEPS
+  - Install missing Python dependencies into the build directory, as listed in
+    `support/Python/requirements.txt` and `support/Python/dev_requirements.txt`,
+    respectively. This is an alternative to creating a Python environment and
+    installing the packages yourself. If you run into problems with packages
+    like h5py, numpy or scipy you can/should still install them yourself to make
+    sure they use the correct HDF5, BLAS, etc.
+    (default is `OFF`)
 - BUILD_PYTHON_BINDINGS
   - Build python libraries to call SpECTRE C++ code from python
     (default is `OFF`)
