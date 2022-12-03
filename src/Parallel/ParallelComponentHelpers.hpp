@@ -263,17 +263,13 @@ struct get_simple_tags_from_options_from_action<
 }  // namespace detail
 
 /// \ingroup ParallelGroup
-/// \brief Given a list of initialization actions, and possibly a list of tags
-/// needed for allocation of an array component, returns a list of the
-/// unique simple_tags_from_options for all the actions (and the allocate
-/// function).
-template <typename InitializationActionsList,
-          typename AllocationTagsList = tmpl::list<>>
-using get_simple_tags_from_options = tmpl::remove_duplicates<tmpl::flatten<
-    tmpl::list<AllocationTagsList,
-               tmpl::transform<InitializationActionsList,
-                               detail::get_simple_tags_from_options_from_action<
-                                   tmpl::_1>>>>>;
+/// \brief Given a list of initialization actions, returns a list of the
+/// unique simple_tags_from_options for all the actions.
+template <typename InitializationActionsList>
+using get_simple_tags_from_options =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        InitializationActionsList,
+        detail::get_simple_tags_from_options_from_action<tmpl::_1>>>>;
 
 namespace detail {
 template <typename SimpleTag, typename Metavariables,

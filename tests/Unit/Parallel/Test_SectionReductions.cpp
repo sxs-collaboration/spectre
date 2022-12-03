@@ -143,9 +143,11 @@ struct ArrayComponent {
       // for convenient access
       Parallel::Tags::Section<ArrayComponent, EvenOrOddTag>,
       Parallel::Tags::Section<ArrayComponent, IsFirstElementTag>>;
-  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
+  using simple_tags_from_options =
+      tmpl::append<Parallel::get_simple_tags_from_options<
+                       Parallel::get_initialization_actions_list<
+                           phase_dependent_action_list>>,
+                   array_allocation_tags>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,

@@ -81,7 +81,6 @@ struct ExpectedResult {
 };
 }  // namespace OptionTags
 
-// [array_allocation_tag]
 struct LinearOperator : db::SimpleTag {
   using type = std::vector<blaze::DynamicMatrix<double>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
@@ -91,7 +90,6 @@ struct LinearOperator : db::SimpleTag {
     return linear_operator;
   }
 };
-// [array_allocation_tag]
 
 struct Source : db::SimpleTag {
   using type = std::vector<blaze::DynamicVector<double>>;

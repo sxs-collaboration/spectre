@@ -49,9 +49,7 @@ template <size_t Dim>
 struct DefaultElementsAllocator
     : tt::ConformsTo<Parallel::protocols::ArrayElementsAllocator> {
   template <typename ParallelComponent>
-  using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
-                 domain::Tags::InitialExtents<Dim>>;
+  using array_allocation_tags = tmpl::list<>;
 
   template <typename ParallelComponent, typename Metavariables,
             typename... InitializationTags>
@@ -151,8 +149,8 @@ struct DgElementArray {
   using simple_tags_from_options =
       tmpl::append<Parallel::get_simple_tags_from_options<
                        Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>,
-                       array_allocation_tags>,
+                           phase_dependent_action_list>>,
+                   array_allocation_tags,
                    tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
 
   static void allocate_array(

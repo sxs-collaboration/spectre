@@ -61,15 +61,10 @@ struct DgElementArray {
       tmpl::list<domain::Tags::Domain<volume_dim>,
                  Parallel::Tags::ResourceInfo<Metavariables>>;
 
-  using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>,
-                 domain::Tags::InitialExtents<volume_dim>>;
-
   using simple_tags_from_options =
       tmpl::append<Parallel::get_simple_tags_from_options<
                        Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>,
-                       array_allocation_tags>,
+                           phase_dependent_action_list>>,
                    tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
 
   static void allocate_array(

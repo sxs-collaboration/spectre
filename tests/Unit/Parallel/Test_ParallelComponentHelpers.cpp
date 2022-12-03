@@ -80,40 +80,6 @@ struct ComponentInitAndExecute {
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
-struct ComponentInitWithAllocate {
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      Parallel::Phase::Initialization,
-      tmpl::list<InitAction0, InitAction1, InitAction2>>>;
-  using array_allocation_tags = tmpl::list<InitTag4, InitTag5>;
-  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
-  using const_global_cache_tags = tmpl::list<Tag1, Tag5, Tag7>;
-};
-
-struct ComponentExecuteWithAllocate {
-  using phase_dependent_action_list =
-      tmpl::list<Parallel::PhaseActions<Parallel::Phase::Execute,
-                                        tmpl::list<Action0, Action1>>>;
-  using array_allocation_tags = tmpl::list<InitTag6, InitTag7>;
-  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
-};
-
-struct ComponentInitAndExecuteWithAllocate {
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<InitAction3>>,
-      Parallel::PhaseActions<Parallel::Phase::Execute,
-                             tmpl::list<InitAction2, Action0, Action2>>>;
-  using array_allocation_tags = tmpl::list<InitTag3, InitTag4>;
-  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
-  using const_global_cache_tags = tmpl::list<Tag2, Tag4>;
-};
-
 struct Metavariables0 {
   using component_list = tmpl::list<ComponentInit>;
 };
@@ -123,15 +89,6 @@ struct Metavariables1 {
   using component_list = tmpl::list<>;
 };
 
-struct Metavariables2 {
-  using component_list = tmpl::list<ComponentInitWithAllocate>;
-};
-
-struct Metavariables3 {
-  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
-  using component_list = tmpl::list<ComponentInitWithAllocate>;
-};
-
 struct Metavariables4 {
   using component_list = tmpl::list<ComponentInitAndExecute>;
 };
@@ -139,15 +96,6 @@ struct Metavariables4 {
 struct Metavariables5 {
   using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
   using component_list = tmpl::list<ComponentInitAndExecute>;
-};
-
-struct Metavariables6 {
-  using component_list = tmpl::list<ComponentInitAndExecuteWithAllocate>;
-};
-
-struct Metavariables7 {
-  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
-  using component_list = tmpl::list<ComponentInitAndExecuteWithAllocate>;
 };
 
 static_assert(
@@ -167,16 +115,6 @@ static_assert(
     "Failed testing get_const_global_cache_tags");
 
 static_assert(
-    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables2>,
-                   tmpl::list<Tag1, Tag5, Tag7>>,
-    "Failed testing get_const_global_cache_tags");
-
-static_assert(
-    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables3>,
-                   tmpl::list<Tag0, Tag4, Tag1, Tag5, Tag7>>,
-    "Failed testing get_const_global_cache_tags");
-
-static_assert(
     std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables4>,
                    tmpl::list<Tag6>>,
     "Failed testing get_const_global_cache_tags");
@@ -184,16 +122,6 @@ static_assert(
 static_assert(
     std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables5>,
                    tmpl::list<Tag0, Tag4, Tag6>>,
-    "Failed testing get_const_global_cache_tags");
-
-static_assert(
-    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables6>,
-                   tmpl::list<Tag2, Tag4, Tag6>>,
-    "Failed testing get_const_global_cache_tags");
-
-static_assert(
-    std::is_same_v<Parallel::get_const_global_cache_tags<Metavariables7>,
-                   tmpl::list<Tag0, Tag4, Tag2, Tag6>>,
     "Failed testing get_const_global_cache_tags");
 
 static_assert(std::is_same_v<Parallel::get_initialization_actions_list<
@@ -222,21 +150,6 @@ static_assert(
 
 static_assert(std::is_same_v<ComponentInitAndExecute::simple_tags_from_options,
                              tmpl::list<InitTag0, InitTag1, InitTag3>>,
-              "Failed testing get_simple_tags_from_options");
-
-static_assert(std::is_same_v<
-                  ComponentInitWithAllocate::simple_tags_from_options,
-                  tmpl::list<InitTag4, InitTag5, InitTag0, InitTag1, InitTag2>>,
-              "Failed testing get_simple_tags_from_options");
-
-static_assert(
-    std::is_same_v<ComponentExecuteWithAllocate::simple_tags_from_options,
-                   tmpl::list<InitTag6, InitTag7>>,
-    "Failed testing get_simple_tags_from_options");
-
-static_assert(std::is_same_v<
-                  ComponentInitAndExecuteWithAllocate::simple_tags_from_options,
-                  tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
               "Failed testing get_simple_tags_from_options");
 
 namespace OptionTags {

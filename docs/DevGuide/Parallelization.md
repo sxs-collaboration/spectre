@@ -223,10 +223,7 @@ Each %Parallel Component struct must have the following type aliases:
    component, or simple actions called on the parallel component.
    These tags correspond to const items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
-   node).  The alias can be omitted if the list is empty.  (See
-   `array_allocation_tags` below for specifying tags needed for the
-   `allocate_array` function, but will not be added to the
-   Parallel::GlobalCache.)
+   node).  The alias can be omitted if the list is empty.
 6. `using mutable_global_cache_tags` is set to a `tmpl::list` of tags
    that correspond to mutable items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
@@ -264,14 +261,16 @@ static void allocate_array(
 The `allocate_array` function is called by the Main parallel component
 when the execution starts and will typically insert elements into
 array parallel components. If the `allocate_array` function depends
-upon input options, the array component must specify a `using
-array_allocation_tags` type alias that is a `tmpl::list` of tags which
+upon input options that are not in the GlobalCache, the array component must
+include the appropriate tag in the `simple_tags_from_options` type alias.
+This type alias is a `tmpl::list` of tags which
 are db::SimpleTag%s that have have a `using option_tags` type alias
-and a static function `create_from_options`. If you want to ignore specific
+and a static function `create_from_options`. They only need to be explicitly
+added to the list if no initialization action has added them to its
+`simple_tags_from_options` type alias.  If you want to ignore specific
 processors when placing array elements, you can pass in a
 `std::unordered_set<size_t>` to `allocate_array` that contains all the
-processors that shouldn't have array elements on them. An example is:
-\snippet DistributedLinearSolverAlgorithmTestHelpers.hpp array_allocation_tag
+processors that shouldn't have array elements on them.
 
 The `allocate_array` functions of different
 array components are called in random order and so it is not safe to

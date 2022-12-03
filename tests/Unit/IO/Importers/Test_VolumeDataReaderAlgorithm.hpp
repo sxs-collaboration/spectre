@@ -334,7 +334,6 @@ struct ElementArray {
   using array_index = ElementId<Dim>;
   using metavariables = Metavariables;
   using simple_tags_from_options = tmpl::list<>;
-  using array_allocation_tags = tmpl::list<>;
 
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
