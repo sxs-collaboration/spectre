@@ -31,6 +31,7 @@
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryConditions/Type.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ComputeTimeDerivativeHelpers.hpp"
@@ -689,9 +690,8 @@ void apply_boundary_conditions_on_all_external_faces(
   }
 
   const auto& external_boundary_conditions =
-      db::get<domain::Tags::Domain<Dim>>(*box)
-          .blocks()[element.id().block_id()]
-          .external_boundary_conditions();
+      db::get<domain::Tags::ExternalBoundaryConditions<Dim>>(*box).at(
+          element.id().block_id());
   tmpl::for_each<derived_boundary_conditions>(
       [&boundary_correction, &box, &element, &external_boundary_conditions,
        &number_of_boundaries_left, &partial_derivs, &primitive_vars,

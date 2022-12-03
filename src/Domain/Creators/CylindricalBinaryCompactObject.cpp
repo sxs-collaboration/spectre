@@ -4,6 +4,9 @@
 #include "Domain/Creators/CylindricalBinaryCompactObject.hpp"
 
 #include <cmath>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "Domain/BoundaryConditions/Periodic.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -21,6 +24,7 @@
 #include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 
@@ -296,14 +300,9 @@ CylindricalBinaryCompactObject::CylindricalBinaryCompactObject(
 }
 
 Domain<3> CylindricalBinaryCompactObject::create_domain() const {
-  using BcMap = DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>
       coordinate_maps{};
-
-  std::vector<BcMap> boundary_conditions_all_blocks{};
 
   const OrientationMap<3> rotate_to_x_axis{std::array<Direction<3>, 3>{
       Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
@@ -371,8 +370,6 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
           {domain::CoordinateMaps::Distribution::Linear},
           CylindricalDomainParityFlip::z_direction);
 
-  enum class AddBoundaryCondition { none, inner, outer };
-
   // Lambda that takes a CylindricalEndcap map and a DiscreteRotation
   // map, composes it with the logical-to-cylinder maps, and adds it
   // to the list of coordinate maps. Also adds boundary conditions if
@@ -383,14 +380,11 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       [&coordinate_maps, &logical_to_cylinder_center_maps,
        &logical_to_cylinder_center_maps_flip_z,
        &logical_to_cylinder_surrounding_maps,
-       &logical_to_cylinder_surrounding_maps_flip_z,
-       &boundary_conditions_all_blocks,
-       this](const CoordinateMaps::CylindricalEndcap& endcap_map,
-             const CoordinateMaps::DiscreteRotation<3>& rotation_map,
-             const AddBoundaryCondition add_boundary_condition =
-                 AddBoundaryCondition::none,
-             const CylindricalDomainParityFlip parity_flip =
-                 CylindricalDomainParityFlip::none) {
+       &logical_to_cylinder_surrounding_maps_flip_z](
+          const CoordinateMaps::CylindricalEndcap& endcap_map,
+          const CoordinateMaps::DiscreteRotation<3>& rotation_map,
+          const CylindricalDomainParityFlip parity_flip =
+              CylindricalDomainParityFlip::none) {
         auto new_logical_to_cylinder_center_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -416,32 +410,6 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                 new_logical_to_cylinder_surrounding_maps.begin()),
             std::make_move_iterator(
                 new_logical_to_cylinder_surrounding_maps.end()));
-
-        // outer_boundary_condition_ == nullptr means do not add
-        // any boundary conditions at all.
-        if (outer_boundary_condition_ != nullptr) {
-          for (size_t i = 0; i < 5; ++i) {
-            BcMap bcs{};
-            if (AddBoundaryCondition::outer == add_boundary_condition) {
-              if (parity_flip == CylindricalDomainParityFlip::z_direction) {
-                bcs[Direction<3>::lower_zeta()] =
-                    outer_boundary_condition_->get_clone();
-              } else {
-                bcs[Direction<3>::upper_zeta()] =
-                    outer_boundary_condition_->get_clone();
-              }
-            } else if (AddBoundaryCondition::inner == add_boundary_condition) {
-              if (parity_flip == CylindricalDomainParityFlip::z_direction) {
-                bcs[Direction<3>::lower_zeta()] =
-                    inner_boundary_condition_->get_clone();
-              } else {
-                bcs[Direction<3>::upper_zeta()] =
-                    inner_boundary_condition_->get_clone();
-              }
-            }
-            boundary_conditions_all_blocks.push_back(std::move(bcs));
-          }
-        }
       };
 
   // Lambda that takes a CylindricalFlatEndcap map and a
@@ -450,9 +418,9 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // boundary conditions if requested.
   auto add_flat_endcap_to_list_of_maps =
       [&coordinate_maps, &logical_to_cylinder_center_maps,
-       &logical_to_cylinder_surrounding_maps, &boundary_conditions_all_blocks,
-       this](const CoordinateMaps::CylindricalFlatEndcap& endcap_map,
-             const CoordinateMaps::DiscreteRotation<3>& rotation_map) {
+       &logical_to_cylinder_surrounding_maps](
+          const CoordinateMaps::CylindricalFlatEndcap& endcap_map,
+          const CoordinateMaps::DiscreteRotation<3>& rotation_map) {
         auto new_logical_to_cylinder_center_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -472,19 +440,6 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                 new_logical_to_cylinder_surrounding_maps.begin()),
             std::make_move_iterator(
                 new_logical_to_cylinder_surrounding_maps.end()));
-
-        // inner_boundary_condition_ == nullptr means do not add
-        // any boundary conditions at all.
-        if (inner_boundary_condition_ != nullptr) {
-          for (size_t i = 0; i < 5; ++i) {
-            BcMap bcs{};
-            // Note that upper_zeta below is correct: inner boundary
-            // condition for FlatEndcaps are on upper_zeta faces.
-            bcs[Direction<3>::upper_zeta()] =
-                inner_boundary_condition_->get_clone();
-            boundary_conditions_all_blocks.push_back(std::move(bcs));
-          }
-        }
       };
 
   // Construct vector<CoordMap>s that go from logical coordinates to
@@ -520,14 +475,11 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
   // constructed, so we add a parity flip to them.
   auto add_side_to_list_of_maps =
       [&coordinate_maps, &logical_to_cylindrical_shell_maps,
-       &logical_to_cylindrical_shell_maps_flip_z,
-       &boundary_conditions_all_blocks,
-       this](const CoordinateMaps::CylindricalSide& side_map,
-             const CoordinateMaps::DiscreteRotation<3>& rotation_map,
-             const AddBoundaryCondition add_boundary_condition =
-                 AddBoundaryCondition::none,
-             const CylindricalDomainParityFlip parity_flip =
-                 CylindricalDomainParityFlip::none) {
+       &logical_to_cylindrical_shell_maps_flip_z](
+          const CoordinateMaps::CylindricalSide& side_map,
+          const CoordinateMaps::DiscreteRotation<3>& rotation_map,
+          const CylindricalDomainParityFlip parity_flip =
+              CylindricalDomainParityFlip::none) {
         auto new_logical_to_cylindrical_shell_maps =
             domain::make_vector_coordinate_map_base<Frame::BlockLogical,
                                                     Frame::Inertial, 3>(
@@ -541,25 +493,6 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                 new_logical_to_cylindrical_shell_maps.begin()),
             std::make_move_iterator(
                 new_logical_to_cylindrical_shell_maps.end()));
-
-        // outer_boundary_condition_ == nullptr means do not add
-        // any boundary conditions at all.
-        if (outer_boundary_condition_ != nullptr) {
-          for (size_t i = 0; i < 4; ++i) {
-            BcMap bcs{};
-            if (AddBoundaryCondition::outer == add_boundary_condition) {
-              bcs[Direction<3>::upper_xi()] =
-                  outer_boundary_condition_->get_clone();
-            } else if (AddBoundaryCondition::inner == add_boundary_condition) {
-              // upper_xi() below is correct, since all
-              // CylindricalSide maps with inner boundaries
-              // have the inner boundary at upper_xi.
-              bcs[Direction<3>::upper_xi()] =
-                  inner_boundary_condition_->get_clone();
-            }
-            boundary_conditions_all_blocks.push_back(std::move(bcs));
-          }
-        }
       };
 
   // z_cut_EA is the z_plane position for CA and EA endcaps.
@@ -572,8 +505,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       CoordinateMaps::CylindricalEndcap(center_EA, make_array<3>(0.0),
                                         center_cutting_plane, radius_EA,
                                         outer_radius_, z_cut_EA),
-      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::outer);
+      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
   // CA Cylinder
   // 4 blocks: 5 thru 8
@@ -581,8 +513,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       CoordinateMaps::CylindricalSide(
           center_EA, make_array<3>(0.0), center_cutting_plane, radius_EA,
           outer_radius_, z_cutting_plane_, z_cut_EA),
-      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::outer);
+      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
   // EA Filled Cylinder
   // 5 blocks: 9 thru 13
@@ -590,7 +521,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       CoordinateMaps::CylindricalEndcap(center_EA, center_A_, center_A_,
                                         radius_EA, radius_A_, z_cut_EA),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::inner, CylindricalDomainParityFlip::z_direction);
+      CylindricalDomainParityFlip::z_direction);
 
   // EA Cylinder
   // 4 blocks: 14 thru 17
@@ -599,7 +530,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                       radius_EA, radius_A_, z_cutting_plane_,
                                       z_cut_EA),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::inner, CylindricalDomainParityFlip::z_direction);
+      CylindricalDomainParityFlip::z_direction);
 
   const double z_cut_EB =
       z_cutting_plane_ + 1.5 * (center_EB[2] - z_cutting_plane_);
@@ -611,7 +542,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
           flip_about_xy_plane(center_EB), flip_about_xy_plane(center_B_),
           flip_about_xy_plane(center_B_), radius_EB, radius_B_, -z_cut_EB),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis),
-      AddBoundaryCondition::inner, CylindricalDomainParityFlip::z_direction);
+      CylindricalDomainParityFlip::z_direction);
 
   // EB Cylinder
   // 4 blocks: 23 thru 26
@@ -620,7 +551,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
                                       radius_EB, radius_B_, z_cut_EB,
                                       z_cutting_plane_),
       CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::inner, CylindricalDomainParityFlip::z_direction);
+      CylindricalDomainParityFlip::z_direction);
 
   // MA Filled Cylinder
   // 5 blocks: 27 thru 31
@@ -645,8 +576,7 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
           flip_about_xy_plane(center_EB), make_array<3>(0.0),
           flip_about_xy_plane(center_cutting_plane), radius_EB, outer_radius_,
           -z_cut_EB),
-      CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis),
-      AddBoundaryCondition::outer);
+      CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
 
   // CB Cylinder
   // 4 blocks: 42 thru 45
@@ -654,11 +584,9 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
       CoordinateMaps::CylindricalSide(
           center_EB, make_array<3>(0.0), center_cutting_plane, radius_EB,
           outer_radius_, z_cut_EB, z_cutting_plane_),
-      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis),
-      AddBoundaryCondition::outer);
+      CoordinateMaps::DiscreteRotation<3>(rotate_to_x_axis));
 
-  Domain<3> domain{std::move(coordinate_maps),
-                   std::move(boundary_conditions_all_blocks)};
+  Domain<3> domain{std::move(coordinate_maps)};
 
   if (not time_dependence_->is_none()) {
     for (size_t block = 0; block < number_of_blocks_; ++block) {
@@ -668,6 +596,52 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
     }
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+CylindricalBinaryCompactObject::external_boundary_conditions() const {
+  if (outer_boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{number_of_blocks_};
+  for (size_t i = 0; i < 5; ++i) {
+    // CA Filled Cylinder
+    boundary_conditions[i][Direction<3>::upper_zeta()] =
+        outer_boundary_condition_->get_clone();
+    // EA Filled Cylinder
+    boundary_conditions[i + 9][Direction<3>::lower_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // EB Filled Cylinder
+    boundary_conditions[i + 18][Direction<3>::lower_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // MA Filled Cylinder
+    boundary_conditions[i + 27][Direction<3>::upper_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // MB Filled Cylinder
+    boundary_conditions[i + 32][Direction<3>::upper_zeta()] =
+        inner_boundary_condition_->get_clone();
+    // CB Filled Cylinder
+    boundary_conditions[i + 37][Direction<3>::upper_zeta()] =
+        outer_boundary_condition_->get_clone();
+  }
+  for (size_t i = 0; i < 4; ++i) {
+    // CA Cylinder
+    boundary_conditions[i + 5][Direction<3>::upper_xi()] =
+        outer_boundary_condition_->get_clone();
+    // EA Cylinder
+    boundary_conditions[i + 14][Direction<3>::upper_xi()] =
+        inner_boundary_condition_->get_clone();
+    // EB Cylinder
+    boundary_conditions[i + 23][Direction<3>::upper_xi()] =
+        inner_boundary_condition_->get_clone();
+    // CB Cylinder
+    boundary_conditions[i + 42][Direction<3>::upper_xi()] =
+        outer_boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>>

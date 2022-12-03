@@ -16,7 +16,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
@@ -32,7 +31,6 @@
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -41,7 +39,6 @@
 
 namespace domain {
 namespace {
-namespace helpers = ::TestHelpers::domain::BoundaryConditions;
 
 void test_1d_domains() {
   using Translation = domain::CoordinateMaps::TimeDependent::Translation<1>;
@@ -101,6 +98,9 @@ void test_1d_domains() {
                                            CoordinateMaps::Affine>>(
                 make_coordinate_map<Frame::BlockLogical, Frame::Inertial>(
                     CoordinateMaps::Affine{-1., 1., 2., 0.}))));
+    CHECK_FALSE(domain_no_corners.is_time_dependent());
+
+    test_serialization(domain_no_corners);
 
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
                                                   {{Direction<1>::upper_xi()}}};
@@ -177,6 +177,7 @@ void test_1d_domains() {
             Translation{"Translation1"}),
         translation_grid_to_distorted_map.get_clone(),
         translation_distorted_to_inertial_map.get_clone());
+    CHECK(domain_no_corners.is_time_dependent());
 
     const auto expected_logical_to_grid_maps =
         make_vector(make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
@@ -273,6 +274,8 @@ void test_1d_domains() {
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
         std::vector<PairOfFaces>{{{1}, {2}}}};
 
+    test_serialization(domain);
+
     const auto expected_neighbors = []() {
       OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
                                     {{Direction<1>::lower_xi()}}};
@@ -287,26 +290,6 @@ void test_1d_domains() {
   }
 }
 
-template <size_t Dim>
-auto compute_boundary_conditions(
-    const std::vector<std::unordered_set<Direction<Dim>>>&
-        external_boundaries) {
-  using MapType = DirectionMap<
-      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-  std::vector<MapType> boundary_conditions{external_boundaries.size()};
-  for (size_t i = 0; i < external_boundaries.size(); ++i) {
-    const auto& external_boundaries_of_block = external_boundaries[i];
-    MapType boundary_conditions_for_block{};
-    for (const auto& direction : external_boundaries_of_block) {
-      boundary_conditions_for_block.emplace(
-          direction,
-          std::make_unique<helpers::TestBoundaryCondition<Dim>>(direction));
-    }
-    boundary_conditions[i] = std::move(boundary_conditions_for_block);
-  }
-  return boundary_conditions;
-}
-
 void test_1d_rectilinear_domains() {
   INFO("Aligned domain.") {
     const std::vector<std::unordered_set<Direction<1>>>
@@ -314,8 +297,7 @@ void test_1d_rectilinear_domains() {
             {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
-        compute_boundary_conditions(expected_external_boundaries), {}, {},
-        {{false}}, {}, true);
+        {}, {}, {{false}}, {}, true);
     const OrientationMap<1> aligned{};
     std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, aligned}}},
@@ -327,14 +309,6 @@ void test_1d_rectilinear_domains() {
       CHECK(domain.blocks()[i].external_boundaries() ==
             expected_external_boundaries[i]);
       CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
-      for (const auto& direction : expected_external_boundaries[i]) {
-        CAPTURE(direction);
-        CHECK(direction ==
-              dynamic_cast<const helpers::TestBoundaryCondition<1>&>(
-                  *domain.blocks()[i].external_boundary_conditions().at(
-                      direction))
-                  .direction());
-      }
     }
   }
   INFO("Antialigned domain.") {
@@ -347,8 +321,7 @@ void test_1d_rectilinear_domains() {
 
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
-        compute_boundary_conditions(expected_external_boundaries), {},
-        std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
+        {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
         {{false}}, {}, true);
     std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
         {{Direction<1>::upper_xi(), {1, antialigned}}},
@@ -360,14 +333,6 @@ void test_1d_rectilinear_domains() {
       CHECK(domain.blocks()[i].external_boundaries() ==
             expected_external_boundaries[i]);
       CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
-      for (const auto& direction : expected_external_boundaries[i]) {
-        CAPTURE(direction);
-        CHECK(direction ==
-              dynamic_cast<const helpers::TestBoundaryCondition<1>&>(
-                  *domain.blocks()[i].external_boundary_conditions().at(
-                      direction))
-                  .direction());
-      }
     }
   }
 }
@@ -395,8 +360,7 @@ void test_2d_rectilinear_domains() {
   const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
-      compute_boundary_conditions(expected_external_boundaries), {},
-      orientations_of_all_blocks);
+      {}, orientations_of_all_blocks);
   std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
       {{Direction<2>::upper_xi(), {1, half_turn}},
        {Direction<2>::upper_eta(), {2, quarter_turn_cw}}},
@@ -411,14 +375,6 @@ void test_2d_rectilinear_domains() {
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
-    for (const auto& direction : expected_external_boundaries[i]) {
-      CAPTURE(direction);
-      CHECK(
-          direction ==
-          dynamic_cast<const helpers::TestBoundaryCondition<2>&>(
-              *domain.blocks()[i].external_boundary_conditions().at(direction))
-              .direction());
-    }
   }
 }
 
@@ -439,12 +395,11 @@ void test_3d_rectilinear_domains() {
             Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
             Direction<3>::upper_zeta()}}};
 
-  const auto domain = rectilinear_domain<3>(
-      Index<3>{2, 1, 1},
-      std::array<std::vector<double>, 3>{
-          {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
-      compute_boundary_conditions(expected_external_boundaries), {},
-      orientations_of_all_blocks);
+  const auto domain =
+      rectilinear_domain<3>(Index<3>{2, 1, 1},
+                            std::array<std::vector<double>, 3>{
+                                {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
+                            {}, orientations_of_all_blocks);
   std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
       {{Direction<3>::upper_xi(), {1, quarter_turn_cw_xi}}},
       {{Direction<3>::lower_xi(), {0, quarter_turn_cw_xi.inverse_map()}}}};
@@ -453,14 +408,6 @@ void test_3d_rectilinear_domains() {
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
-    for (const auto& direction : expected_external_boundaries[i]) {
-      CAPTURE(direction);
-      CHECK(
-          direction ==
-          dynamic_cast<const helpers::TestBoundaryCondition<3>&>(
-              *domain.blocks()[i].external_boundary_conditions().at(direction))
-              .direction());
-    }
   }
 }
 }  // namespace
@@ -470,19 +417,17 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
   test_1d_rectilinear_domains();
   test_2d_rectilinear_domains();
   test_3d_rectilinear_domains();
-}
-// [[OutputRegex, Must pass same number of maps as block corner sets]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Domain.BadArgs", "[Domain][Unit]") {
-  ASSERTION_TEST();
+
 #ifdef SPECTRE_DEBUG
-  // NOLINTNEXTLINE(bugprone-unused-raii)
-  Domain<1>(make_vector(
-                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-                    CoordinateMaps::Affine{-1., 1., -1., 1.}),
-                make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-                    CoordinateMaps::Affine{-1., 1., -1., 1.})),
-            std::vector<std::array<size_t, 2>>{{{1, 2}}});
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      Domain<1>(
+          make_vector(
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -1., 1.}),
+              make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+                  CoordinateMaps::Affine{-1., 1., -1., 1.})),
+          std::vector<std::array<size_t, 2>>{{{1, 2}}}),
+      Catch::Contains("Must pass same number of maps as block corner sets"));
 #endif
 }
 }  // namespace domain

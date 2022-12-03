@@ -60,6 +60,7 @@ target_link_libraries(
   PUBLIC
   CoordinateMaps
   DataStructures
+  DomainBoundaryConditions
   DomainTimeDependence
   INTERFACE
   Domain

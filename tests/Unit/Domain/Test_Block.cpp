@@ -14,7 +14,6 @@
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -25,25 +24,11 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Framework/TestHelpers.hpp"
-#include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace domain {
 namespace {
-namespace helpers = ::TestHelpers::domain::BoundaryConditions;
-
-template <size_t Dim>
-auto create_external_bcs() {
-  DirectionMap<Dim,
-               std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-      external_boundary_conditions{};
-  for (const auto& direction : Direction<Dim>::all_directions()) {
-    external_boundary_conditions[direction] =
-        std::make_unique<helpers::TestBoundaryCondition<Dim>>(direction);
-  }
-  return external_boundary_conditions;
-}
 
 template <size_t Dim>
 void test_block_time_independent() {
@@ -55,8 +40,7 @@ void test_block_time_independent() {
                                        CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
 
-  Block<Dim> original_block(identity_map.get_clone(), 7, {},
-                            create_external_bcs<Dim>());
+  Block<Dim> original_block(identity_map.get_clone(), 7, {});
   CHECK_FALSE(original_block.is_time_dependent());
 
   const auto check_block = [](const Block<Dim>& block) {
@@ -75,14 +59,6 @@ void test_block_time_independent() {
     const tnsr::I<double, Dim, Frame::Inertial> x(1.0);
     CHECK(map(xi) == x);
     CHECK(map.inverse(x).value() == xi);
-
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      CAPTURE(direction);
-      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      CHECK(dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
-                *block.external_boundary_conditions().at(direction))
-                .direction() == direction);
-    }
   };
 
   check_block(original_block);
@@ -92,8 +68,7 @@ void test_block_time_independent() {
   test_serialization(original_block);
 
   // Test move semantics:
-  const Block<Dim> block_copy(identity_map.get_clone(), 7, {},
-                              create_external_bcs<Dim>());
+  const Block<Dim> block_copy(identity_map.get_clone(), 7, {});
   test_move_semantics(std::move(original_block), block_copy);
 }
 
@@ -134,8 +109,7 @@ void test_block_time_dependent() {
       CoordinateMaps::Identity<Dim>{}};
   const grid_to_inertial_coordinate_map translation_map =
       make_translation_map<Dim>();
-  Block<Dim> original_block(identity_map.get_clone(), 7, {},
-                            create_external_bcs<Dim>());
+  Block<Dim> original_block(identity_map.get_clone(), 7, {});
   CHECK_FALSE(original_block.is_time_dependent());
   original_block.inject_time_dependent_map(translation_map.get_clone());
   CHECK(original_block.is_time_dependent());
@@ -173,14 +147,6 @@ void test_block_time_dependent() {
               .inverse(grid_to_inertial_map.inverse(x, time, functions_of_time)
                            .value())
               .value() == xi);
-
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      CAPTURE(direction);
-      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      CHECK(dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
-                *block.external_boundary_conditions().at(direction))
-                .direction() == direction);
-    }
   };
 
   check_block(original_block);
@@ -190,8 +156,7 @@ void test_block_time_dependent() {
   test_serialization(original_block);
 
   // Test move semantics:
-  Block<Dim> block_copy(identity_map.get_clone(), 7, {},
-                        create_external_bcs<Dim>());
+  Block<Dim> block_copy(identity_map.get_clone(), 7, {});
   block_copy.inject_time_dependent_map(translation_map.get_clone());
   test_move_semantics(std::move(original_block), block_copy);
 }
@@ -233,8 +198,7 @@ void test_block_time_dependent_distorted() {
   const distorted_to_inertial_coordinate_map
       translation_distorted_to_inertial_map =
           make_translation_distorted_to_inertial_map<Dim>();
-  Block<Dim> original_block(identity_map.get_clone(), 7, {},
-                            create_external_bcs<Dim>());
+  Block<Dim> original_block(identity_map.get_clone(), 7, {});
   CHECK_FALSE(original_block.is_time_dependent());
   original_block.inject_time_dependent_map(
       translation_map.get_clone(),
@@ -305,14 +269,6 @@ void test_block_time_dependent_distorted() {
               .inverse(grid_to_inertial_map.inverse(x, time, functions_of_time)
                            .value())
               .value() == xi);
-
-    for (const auto& direction : Direction<Dim>::all_directions()) {
-      CAPTURE(direction);
-      REQUIRE(block.external_boundary_conditions().at(direction) != nullptr);
-      CHECK(dynamic_cast<const helpers::TestBoundaryCondition<Dim>&>(
-                *block.external_boundary_conditions().at(direction))
-                .direction() == direction);
-    }
   };
 
   check_block(original_block);
@@ -322,8 +278,7 @@ void test_block_time_dependent_distorted() {
   test_serialization(original_block);
 
   // Test move semantics:
-  Block<Dim> block_copy(identity_map.get_clone(), 7, {},
-                        create_external_bcs<Dim>());
+  Block<Dim> block_copy(identity_map.get_clone(), 7, {});
   block_copy.inject_time_dependent_map(
       translation_map.get_clone(),
       translation_grid_to_distorted_map.get_clone(),
@@ -333,8 +288,6 @@ void test_block_time_dependent_distorted() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
-  helpers::register_derived_with_charm();
-
   test_block_time_independent<1>();
   test_block_time_independent<2>();
   test_block_time_independent<3>();
@@ -362,11 +315,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   using coordinate_map = CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
-  auto external_boundary_conditions = create_external_bcs<2>();
-  external_boundary_conditions.erase(Direction<2>::upper_xi());
-  external_boundary_conditions.erase(Direction<2>::lower_eta());
-  const Block<2> block(identity_map.get_clone(), 3, std::move(neighbors),
-                       std::move(external_boundary_conditions));
+  const Block<2> block(identity_map.get_clone(), 3, std::move(neighbors));
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);

@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -17,6 +18,8 @@
 #include "Domain/Creators/ExpandOverBlocks.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeArray.hpp"
 
@@ -290,43 +293,6 @@ Domain<3> Cylinder::create_domain() const {
     }
   }
 
-  std::vector<DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (mantle_boundary_condition_ != nullptr) {
-    // Note: The first block in each disk is the central cube.
-    boundary_conditions_all_blocks.resize((1 + 4 * number_of_shells) *
-                                          number_of_layers);
-
-    // Boundary conditions in z
-    for (size_t block_id = 0; not is_periodic_in_z_ and
-                              block_id < boundary_conditions_all_blocks.size();
-         ++block_id) {
-      if (block_id < (1 + number_of_shells * 4)) {
-        boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-            lower_z_boundary_condition_->get_clone();
-      }
-      if (block_id >=
-          boundary_conditions_all_blocks.size() - (1 + number_of_shells * 4)) {
-        boundary_conditions_all_blocks[block_id][Direction<3>::upper_zeta()] =
-            upper_z_boundary_condition_->get_clone();
-      }
-    }
-    // Radial boundary conditions
-    for (size_t block_id = 1 + 4 * (number_of_shells - 1);
-         block_id < boundary_conditions_all_blocks.size(); ++block_id) {
-      // clang-tidy thinks we can get division by zero on the modulus operator.
-      // NOLINTNEXTLINE
-      if (block_id % (1 + 4 * number_of_shells) == 0) {
-        // skip the central cubes and the inner radial wedges
-        block_id += 4 * (number_of_shells - 1);
-        continue;
-      }
-      boundary_conditions_all_blocks[block_id][Direction<3>::upper_xi()] =
-          mantle_boundary_condition_->get_clone();
-    }
-  }
-
   return Domain<3>{
       cyl_wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, lower_z_bound_, upper_z_bound_,
@@ -334,7 +300,47 @@ Domain<3> Cylinder::create_domain() const {
           radial_distribution_, distribution_in_z_),
       corners_for_cylindrical_layered_domains(number_of_shells,
                                               number_of_layers),
-      pairs_of_faces, std::move(boundary_conditions_all_blocks)};
+      pairs_of_faces};
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Cylinder::external_boundary_conditions() const {
+  if (mantle_boundary_condition_ == nullptr) {
+    return {};
+  }
+  const size_t num_shells = 1 + radial_partitioning_.size();
+  const size_t num_layers = 1 + partitioning_in_z_.size();
+  const size_t num_blocks = (1 + 4 * num_shells) * num_layers;
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{num_blocks};
+  // Boundary conditions in z
+  for (size_t block_id = 0; not is_periodic_in_z_ and block_id < num_blocks;
+       ++block_id) {
+    if (block_id < (1 + num_shells * 4)) {
+      boundary_conditions[block_id][Direction<3>::lower_zeta()] =
+          lower_z_boundary_condition_->get_clone();
+    }
+    if (block_id >= boundary_conditions.size() - (1 + num_shells * 4)) {
+      boundary_conditions[block_id][Direction<3>::upper_zeta()] =
+          upper_z_boundary_condition_->get_clone();
+    }
+  }
+  // Radial boundary conditions
+  for (size_t block_id = 1 + 4 * (num_shells - 1);
+       block_id < boundary_conditions.size(); ++block_id) {
+    // clang-tidy thinks we can get division by zero on the modulus operator.
+    // NOLINTNEXTLINE
+    if (block_id % (1 + 4 * num_shells) == 0) {
+      // skip the central cubes and the inner radial wedges
+      block_id += 4 * (num_shells - 1);
+      continue;
+    }
+    boundary_conditions[block_id][Direction<3>::upper_xi()] =
+        mantle_boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const {

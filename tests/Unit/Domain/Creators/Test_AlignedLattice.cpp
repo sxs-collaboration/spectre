@@ -25,6 +25,7 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Helpers/Domain/Creators/TestHelpers.hpp"
 #include "Helpers/Domain/DomainTestHelpers.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 
@@ -40,49 +41,6 @@ create_boundary_condition() {
   return std::make_unique<TestHelpers::domain::BoundaryConditions::
                               TestBoundaryCondition<VolumeDim>>(
       Direction<VolumeDim>::upper_xi(), 100);
-}
-
-template <size_t VolumeDim>
-void test_aligned_blocks(
-    const creators::AlignedLattice<VolumeDim>& aligned_lattice,
-    const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>&
-        expected_boundary_condition) {
-  Parallel::register_classes_with_charm(
-      typename creators::AlignedLattice<VolumeDim>::maps_list{});
-
-  const auto test_impl = [&expected_boundary_condition,
-                          &aligned_lattice](const auto& domain) {
-    test_initial_domain(domain, aligned_lattice.initial_refinement_levels());
-
-    if (expected_boundary_condition != nullptr) {
-      const auto& blocks = domain.blocks();
-      for (size_t block_id = 0; block_id < blocks.size(); ++block_id) {
-        CAPTURE(block_id);
-        const auto& block = domain.blocks()[block_id];
-        REQUIRE(block.external_boundaries().size() ==
-                block.external_boundary_conditions().size());
-        for (const auto& direction : block.external_boundaries()) {
-          CAPTURE(direction);
-          REQUIRE(block.external_boundary_conditions().count(direction) == 1);
-          REQUIRE(block.external_boundary_conditions().at(direction) !=
-                  nullptr);
-          const auto& bc =
-              dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                               TestBoundaryCondition<VolumeDim>&>(
-                  *block.external_boundary_conditions().at(direction));
-          const auto& expected_bc =
-              dynamic_cast<const TestHelpers::domain::BoundaryConditions::
-                               TestBoundaryCondition<VolumeDim>&>(
-                  *expected_boundary_condition);
-          CHECK(bc.direction() == expected_bc.direction());
-          CHECK(bc.block_id() == expected_bc.block_id());
-        }
-      }
-    }
-  };
-
-  test_impl(aligned_lattice.create_domain());
-  test_impl(serialize_and_deserialize(aligned_lattice.create_domain()));
 }
 
 template <size_t VolumeDim>
@@ -110,19 +68,11 @@ auto make_domain_creator(const std::string& opt_string,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
+  domain::creators::register_derived_with_charm();
   TestHelpers::domain::BoundaryConditions::register_derived_with_charm();
 
   for (const bool use_boundary_condition : {true, false}) {
-    const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        expected_boundary_condition_1d =
-            use_boundary_condition ? create_boundary_condition<1>() : nullptr;
-    const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        expected_boundary_condition_2d =
-            use_boundary_condition ? create_boundary_condition<2>() : nullptr;
-    const std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
-        expected_boundary_condition_3d =
-            use_boundary_condition ? create_boundary_condition<3>() : nullptr;
-
+    CAPTURE(use_boundary_condition);
     const auto domain_creator_1d = make_domain_creator<1>(
         "AlignedLattice:\n"
         "  BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n" +
@@ -137,8 +87,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto* aligned_blocks_creator_1d =
         dynamic_cast<const creators::AlignedLattice<1>*>(
             domain_creator_1d.get());
-    test_aligned_blocks(*aligned_blocks_creator_1d,
-                        expected_boundary_condition_1d);
+    TestHelpers::domain::creators::test_domain_creator(
+        *aligned_blocks_creator_1d, use_boundary_condition);
 
     const auto domain_creator_2d = make_domain_creator<2>(
         "AlignedLattice:\n"
@@ -155,8 +105,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto* aligned_blocks_creator_2d =
         dynamic_cast<const creators::AlignedLattice<2>*>(
             domain_creator_2d.get());
-    test_aligned_blocks(*aligned_blocks_creator_2d,
-                        expected_boundary_condition_2d);
+    TestHelpers::domain::creators::test_domain_creator(
+        *aligned_blocks_creator_2d, use_boundary_condition);
 
     const auto domain_creator_3d = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -173,8 +123,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto* aligned_blocks_creator_3d =
         dynamic_cast<const creators::AlignedLattice<3>*>(
             domain_creator_3d.get());
-    test_aligned_blocks(*aligned_blocks_creator_3d,
-                        expected_boundary_condition_3d);
+    TestHelpers::domain::creators::test_domain_creator(
+        *aligned_blocks_creator_3d, use_boundary_condition);
 
     const auto cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -192,8 +142,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto* cubical_shell_creator_3d =
         dynamic_cast<const creators::AlignedLattice<3>*>(
             cubical_shell_domain.get());
-    test_aligned_blocks(*cubical_shell_creator_3d,
-                        expected_boundary_condition_3d);
+    TestHelpers::domain::creators::test_domain_creator(
+        *cubical_shell_creator_3d, use_boundary_condition);
 
     const auto unit_cubical_shell_domain = make_domain_creator<3>(
         "AlignedLattice:\n"
@@ -211,8 +161,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
     const auto* unit_cubical_shell_creator_3d =
         dynamic_cast<const creators::AlignedLattice<3>*>(
             unit_cubical_shell_domain.get());
-    test_aligned_blocks(*unit_cubical_shell_creator_3d,
-                        expected_boundary_condition_3d);
+    TestHelpers::domain::creators::test_domain_creator(
+        *unit_cubical_shell_creator_3d, use_boundary_condition);
   }
 
   const auto domain_creator_2d_periodic = TestHelpers::test_option_tag<
@@ -231,7 +181,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto* aligned_blocks_creator_2d_periodic =
       dynamic_cast<const creators::AlignedLattice<2>*>(
           domain_creator_2d_periodic.get());
-  test_aligned_blocks(*aligned_blocks_creator_2d_periodic, nullptr);
+  TestHelpers::domain::creators::test_domain_creator(
+      *aligned_blocks_creator_2d_periodic, false, true);
 
   const auto domain_creator_3d_periodic = TestHelpers::test_option_tag<
       domain::OptionTags::DomainCreator<3>,
@@ -249,7 +200,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto* aligned_blocks_creator_3d_periodic =
       dynamic_cast<const creators::AlignedLattice<3>*>(
           domain_creator_3d_periodic.get());
-  test_aligned_blocks(*aligned_blocks_creator_3d_periodic, nullptr);
+  TestHelpers::domain::creators::test_domain_creator(
+      *aligned_blocks_creator_3d_periodic, false, true);
 
   {
     // Expected domain refinement:
@@ -282,8 +234,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                         {{70.0, 91.0}, {{2, 3}}}, {{71.0, 91.0}, {{4, 5}}},
                         {{72.0, 91.0}, {{6, 7}}}, {{70.0, 92.0}, {{2, 3}}},
                         {{71.0, 92.0}, {{2, 3}}}, {{72.0, 92.0}, {{6, 7}}}};
-    const auto domain = refined_domain->create_domain();
-    test_initial_domain(domain, refined_domain->initial_refinement_levels());
+    const auto domain = TestHelpers::domain::creators::test_domain_creator(
+        *refined_domain, false);
 
     const auto& blocks = domain.blocks();
     const auto extents = refined_domain->initial_extents();
@@ -335,9 +287,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
                         {{70.0, 91.0}, {{2, 5}}}, {{71.0, 91.0}, {{3, 5}}},
                         {{72.0, 91.0}, {{4, 6}}}, {{70.0, 92.0}, {{2, 5}}},
                         {{71.0, 92.0}, {{2, 5}}}, {{72.0, 92.0}, {{4, 6}}}};
-    const auto domain = refined_domain->create_domain();
+    const auto domain = TestHelpers::domain::creators::test_domain_creator(
+        *refined_domain, false);
     const auto refinement_levels = refined_domain->initial_refinement_levels();
-    test_initial_domain(domain, refinement_levels);
 
     const auto& blocks = domain.blocks();
     REQUIRE(blocks.size() == refinement_levels.size());

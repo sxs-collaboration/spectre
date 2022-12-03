@@ -991,11 +991,11 @@ void test_impl(const Spectral::Quadrature quadrature,
     blocks[0] = Block<Dim>{
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
-        0, neighbors_block0, std::move(boundary_conditions[0])};
+        0, neighbors_block0};
     blocks[1] = Block<Dim>{
         domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
             domain::CoordinateMaps::Identity<Dim>{}),
-        1, neighbors_block1, std::move(boundary_conditions[1])};
+        1, neighbors_block1};
     Domain<Dim> domain{std::move(blocks)};
     domain.inject_time_dependent_map_for_block(
         0, grid_to_inertial_map->get_clone());
@@ -1007,7 +1007,8 @@ void test_impl(const Spectral::Quadrature quadrature,
                                               make_array<Dim>(3_st)},
          typename metavars::normal_dot_numerical_flux::type{},
          std::move(domain), dg_formulation,
-         std::make_unique<BoundaryTerms<Dim, HasPrims>>()}};
+         std::make_unique<BoundaryTerms<Dim, HasPrims>>(),
+         std::move(boundary_conditions)}};
   }();
   const auto get_tag = [&runner, &self_id](auto tag_v) -> decltype(auto) {
     using tag = std::decay_t<decltype(tag_v)>;

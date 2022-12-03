@@ -33,6 +33,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/SegmentId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/DgSubcell/GhostZoneLogicalCoordinates.hpp"
 #include "Evolution/DgSubcell/Mesh.hpp"
@@ -66,8 +67,6 @@
 
 namespace {
 
-enum class TestCases { BcPointerIsNull, AllGoodWithDomain };
-
 // Metavariables to parse the list of derived classes of boundary conditions
 struct EvolutionMetaVars {
   struct factory_creation
@@ -79,8 +78,7 @@ struct EvolutionMetaVars {
 };
 
 template <typename BoundaryConditionType>
-void test(const BoundaryConditionType& boundary_condition,
-          const TestCases test_this) {
+void test(const BoundaryConditionType& boundary_condition) {
   const size_t num_dg_pts = 3;
 
   // Create an 1D interval [-1, 1] and use it for test
@@ -93,6 +91,7 @@ void test(const BoundaryConditionType& boundary_condition,
       std::make_unique<BoundaryConditionType>(boundary_condition),
       std::make_unique<BoundaryConditionType>(boundary_condition), nullptr);
   auto domain = interval.create_domain();
+  auto boundary_conditions = interval.external_boundary_conditions();
   const auto element = domain::Initialization::create_initial_element(
       ElementId<1>{0, {SegmentId{0, 0}}}, domain.blocks().at(0),
       std::vector<std::array<size_t, 1>>{{refinement_level_x}});
@@ -184,7 +183,8 @@ void test(const BoundaryConditionType& boundary_condition,
   // create a box
   auto box = db::create<db::AddSimpleTags<
       Parallel::Tags::MetavariablesImpl<EvolutionMetaVars>,
-      domain::Tags::Domain<1>, evolution::dg::subcell::Tags::Mesh<1>,
+      domain::Tags::Domain<1>, domain::Tags::ExternalBoundaryConditions<1>,
+      evolution::dg::subcell::Tags::Mesh<1>,
       evolution::dg::subcell::Tags::Coordinates<1, Frame::ElementLogical>,
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>,
       Burgers::fd::Tags::Reconstructor, domain::Tags::MeshVelocity<1>,
@@ -194,8 +194,8 @@ void test(const BoundaryConditionType& boundary_condition,
       domain::CoordinateMaps::Tags::CoordinateMap<1, Frame::Grid,
                                                   Frame::Inertial>,
       Tags::AnalyticSolution<SolutionForTest>, Burgers::Tags::U>>(
-      EvolutionMetaVars{}, std::move(domain), subcell_mesh,
-      subcell_logical_coords, neighbor_data,
+      EvolutionMetaVars{}, std::move(domain), std::move(boundary_conditions),
+      subcell_mesh, subcell_logical_coords, neighbor_data,
       std::unique_ptr<Burgers::fd::Reconstructor>{
           std::make_unique<ReconstructorForTest>()},
       volume_mesh_velocity, normal_vectors, time,
@@ -208,29 +208,7 @@ void test(const BoundaryConditionType& boundary_condition,
           domain::CoordinateMaps::Identity<1>{}),
       solution, u_subcell);
 
-  if (test_this == TestCases::BcPointerIsNull) {
-#ifdef SPECTRE_DEBUG
-    // replace the domain inside the box with the one without boundary
-    // conditions.
-    db::mutate<domain::Tags::Domain<1>>(
-        make_not_null(&box),
-        [&lower_x, &upper_x, &refinement_level_x, &number_of_grid_points_in_x](
-            const gsl::not_null<Domain<1>*> domain_v) {
-          const auto interval_without_bc = domain::creators::Interval(
-              lower_x, upper_x, refinement_level_x, number_of_grid_points_in_x,
-              nullptr, nullptr, nullptr);
-          *domain_v = interval_without_bc.create_domain();
-        });
-    // See if the ASSERT catches this error correctly.
-    CHECK_THROWS_WITH(
-        ([&box, &element]() {
-          Burgers::fd::BoundaryConditionGhostData::apply(
-              make_not_null(&box), element, ReconstructorForTest{});
-        })(),
-        Catch::Contains("Boundary condition is not set (the pointer is null)"));
-#endif
-
-  } else if (test_this == TestCases::AllGoodWithDomain) {
+  {
     // compute FD ghost data and retrieve the result
     Burgers::fd::BoundaryConditionGhostData::apply(make_not_null(&box), element,
                                                    ReconstructorForTest{});
@@ -321,25 +299,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Fd.BCondGhostData",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/Burgers/FiniteDifference"};
 
-  for (const auto test_this :
-       {TestCases::BcPointerIsNull, TestCases::AllGoodWithDomain}) {
-    test(TestHelpers::test_creation<Burgers::BoundaryConditions::Dirichlet>(
-             "U: 0.3\n"),
-         test_this);
-    test(
-        Burgers::BoundaryConditions::DirichletAnalytic{
-            std::make_unique<Burgers::Solutions::Linear>(-0.5)},
-        test_this);
-    test(Burgers::BoundaryConditions::DemandOutgoingCharSpeeds{}, test_this);
-  }
+  test(TestHelpers::test_creation<Burgers::BoundaryConditions::Dirichlet>(
+      "U: 0.3\n"));
+  test(Burgers::BoundaryConditions::DirichletAnalytic{
+      std::make_unique<Burgers::Solutions::Linear>(-0.5)});
+  test(Burgers::BoundaryConditions::DemandOutgoingCharSpeeds{});
 
   // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
   CHECK_THROWS_WITH(([]() {
-                      test(
-                          domain::BoundaryConditions::Periodic<
-                              Burgers::BoundaryConditions::BoundaryCondition>{},
-                          TestCases::AllGoodWithDomain);
+                      test(domain::BoundaryConditions::Periodic<
+                           Burgers::BoundaryConditions::BoundaryCondition>{});
                     })(),
                     Catch::Contains("not on external boundaries"));
 #endif

@@ -21,6 +21,7 @@
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/Tags/FaceNormal.hpp"
 #include "Domain/Tags/Faces.hpp"
 #include "Domain/Tags/SurfaceJacobian.hpp"
@@ -230,7 +231,8 @@ struct SubdomainOperator
 
     // Retrieve data out of the DataBox
     using tags_to_retrieve = tmpl::flatten<tmpl::list<
-        domain::Tags::Domain<Dim>, domain::Tags::Element<Dim>,
+        domain::Tags::ExternalBoundaryConditions<Dim>,
+        domain::Tags::Element<Dim>,
         ::Tags::Mortars<domain::Tags::Mesh<Dim - 1>, Dim>,
         // Data on overlaps with neighbors
         tmpl::transform<
@@ -250,9 +252,9 @@ struct SubdomainOperator
                         ::Tags::MortarSize<Dim - 1>>,
                     make_neighbor_mortars_tag>>>,
             make_overlap_tag>>>;
-    const auto& [domain, central_element, central_mortar_meshes,
-                 all_overlap_extents, all_neighbor_elements,
-                 all_neighbor_meshes,
+    const auto& [external_boundary_conditions, central_element,
+                 central_mortar_meshes, all_overlap_extents,
+                 all_neighbor_elements, all_neighbor_meshes,
                  all_neighbor_face_normal_magnitudes,
                  all_neighbor_mortar_meshes, all_neighbor_mortar_sizes,
                  all_neighbors_neighbor_meshes,
@@ -274,16 +276,17 @@ struct SubdomainOperator
 
     // Setup boundary conditions
     const auto apply_boundary_condition =
-        [&box, &local_domain = domain, &override_boundary_conditions](
-            const ElementId<Dim>& local_element_id,
-            const Direction<Dim>& local_direction, auto is_overlap,
-            const auto& map_keys, const auto... fields_and_fluxes) {
+        [&box, &all_boundary_conditions = external_boundary_conditions,
+         &override_boundary_conditions](const ElementId<Dim>& local_element_id,
+                                        const Direction<Dim>& local_direction,
+                                        auto is_overlap, const auto& map_keys,
+                                        const auto... fields_and_fluxes) {
           constexpr bool is_overlap_v =
               std::decay_t<decltype(is_overlap)>::value;
           // Get boundary conditions from domain, or use overridden boundary
           // conditions
-          const auto& boundary_condition = [&local_domain, &local_element_id,
-                                            &local_direction,
+          const auto& boundary_condition = [&all_boundary_conditions,
+                                            &local_element_id, &local_direction,
                                             &override_boundary_conditions]()
               -> const BoundaryConditionsBase& {
             if (not override_boundary_conditions.empty()) {
@@ -303,9 +306,7 @@ struct SubdomainOperator
               return found_overridden_boundary_conditions->second;
             }
             const auto& boundary_conditions =
-                local_domain.blocks()
-                    .at(local_element_id.block_id())
-                    .external_boundary_conditions();
+                all_boundary_conditions.at(local_element_id.block_id());
             ASSERT(boundary_conditions.contains(local_direction),
                    "No boundary condition is available in block "
                        << local_element_id.block_id() << " in direction "

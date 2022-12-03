@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/ExcisionSphere.hpp"
@@ -61,20 +60,12 @@ class Domain {
    * until all pairs of abutting Blocks have had their Orientations
    * determined. For more information on setting up domains, see the
    * [domain creation tutorial](\ref tutorial_domain_creation).
-   *
-   * Can specify either one set of boundary conditions for each Block or no
-   * boundary conditions at all.
    */
-  explicit Domain(
-      std::vector<std::unique_ptr<domain::CoordinateMapBase<
-          Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
-          maps,
-      std::vector<DirectionMap<
-          VolumeDim,
-          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-          boundary_conditions = {},
-      std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
-          excision_spheres = {});
+  explicit Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
+                      Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
+                      maps,
+                  std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+                      excision_spheres = {});
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -92,9 +83,6 @@ class Domain {
    *
    * \requires `maps.size() == corners_of_all_blocks.size()`, and
    * `identifications.size()` is even.
-   *
-   * Can specify either one set of boundary conditions for each Block or no
-   * boundary conditions at all.
    */
   Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
              Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
@@ -102,10 +90,6 @@ class Domain {
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,
          const std::vector<PairOfFaces>& identifications = {},
-         std::vector<DirectionMap<
-             VolumeDim,
-             std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-             boundary_conditions = {},
          std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
              excision_spheres = {});
 
@@ -129,6 +113,8 @@ class Domain {
           moving_mesh_distorted_to_inertial_map = nullptr);
 
   const std::vector<Block<VolumeDim>>& blocks() const { return blocks_; }
+
+  bool is_time_dependent() const;
 
   const std::unordered_map<std::string, ExcisionSphere<VolumeDim>>&
   excision_spheres() const {

@@ -68,9 +68,6 @@ namespace {
 using Translation = CoordinateMaps::TimeDependent::Translation<1>;
 using Translation3D = CoordinateMaps::TimeDependent::Translation<3>;
 
-using BoundaryCondVector = std::vector<DirectionMap<
-    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>;
-
 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
 create_inner_boundary_condition() {
   return std::make_unique<
@@ -83,25 +80,6 @@ create_outer_boundary_condition() {
   return std::make_unique<
       TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>>(
       Direction<3>::upper_zeta(), 50);
-}
-
-auto create_boundary_conditions(const size_t number_of_layers,
-                                const ShellWedges wedges) {
-  if (wedges != ShellWedges::All) {
-    ERROR("Can only set boundary conditions when using all wedges, but got "
-          << wedges);
-  }
-  BoundaryCondVector boundary_conditions_all_blocks{6 * number_of_layers};
-  const auto inner_boundary_condition = create_inner_boundary_condition();
-  const auto outer_boundary_condition = create_outer_boundary_condition();
-  for (size_t block_id = 0; block_id < 6; ++block_id) {
-    boundary_conditions_all_blocks[block_id][Direction<3>::lower_zeta()] =
-        inner_boundary_condition->get_clone();
-    boundary_conditions_all_blocks[6 * number_of_layers - block_id - 1]
-                                  [Direction<3>::upper_zeta()] =
-                                      outer_boundary_condition->get_clone();
-  }
-  return boundary_conditions_all_blocks;
 }
 
 template <typename... FuncsOfTime>
@@ -117,14 +95,14 @@ void test_shell_construction(
         expected_functions_of_time = {},
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::Grid, Frame::Inertial, 3>>>& expected_grid_to_inertial_maps = {},
-    const std::vector<DirectionMap<
-        3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>&
-        expected_boundary_conditions = {},
+    const bool expect_boundary_conditions = false,
     const std::unordered_map<std::string, double>& initial_expiration_times =
         {}) {
-  Parallel::register_classes_with_charm(
-      typename domain::creators::Shell::maps_list{});
-  const auto domain = shell.create_domain();
+  const auto domain = TestHelpers::domain::creators::test_domain_creator(
+      shell, expect_boundary_conditions);
+  TestHelpers::domain::creators::test_functions_of_time(
+      shell, expected_functions_of_time, initial_expiration_times);
+
   const OrientationMap<3> aligned_orientation{};
   const OrientationMap<3> quarter_turn_ccw_about_zeta(
       std::array<Direction<3>, 3>{{Direction<3>::lower_eta(),
@@ -263,8 +241,7 @@ void test_shell_construction(
                                  ? std::numeric_limits<double>::signaling_NaN()
                                  : 10.0,
                              shell.functions_of_time(),
-                             expected_grid_to_inertial_maps,
-                             expected_boundary_conditions);
+                             expected_grid_to_inertial_maps);
 
     if constexpr (sizeof...(FuncsOfTime) == 0) {
       // We turn off the domain_no_corners test for time-dependent
@@ -272,13 +249,7 @@ void test_shell_construction(
       // maps from BlockLogical to Grid.
       const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
 
-      Domain<3> domain_no_corners =
-          expected_boundary_conditions.empty()
-              ? Domain<3>{std::move(vector_of_maps)}
-              : Domain<3>{std::move(vector_of_maps),
-                          create_boundary_conditions(
-                              expected_boundary_conditions.size() / 6,
-                              ShellWedges::All)};
+      Domain<3> domain_no_corners = Domain<3>{std::move(vector_of_maps)};
 
       test_domain_construction(
           domain_no_corners, expected_block_neighbors,
@@ -286,8 +257,7 @@ void test_shell_construction(
           expected_grid_to_inertial_maps.empty()
               ? std::numeric_limits<double>::signaling_NaN()
               : 10.0,
-          shell.functions_of_time(), expected_grid_to_inertial_maps,
-          expected_boundary_conditions);
+          shell.functions_of_time(), expected_grid_to_inertial_maps);
       test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
       test_serialization(domain_no_corners);
     }
@@ -352,29 +322,21 @@ void test_shell_construction(
                                  ? std::numeric_limits<double>::signaling_NaN()
                                  : 10.0,
                              shell.functions_of_time(),
-                             expected_grid_to_inertial_maps,
-                             expected_boundary_conditions);
+                             expected_grid_to_inertial_maps);
 
     if constexpr (sizeof...(FuncsOfTime) == 0) {
       // We turn off the domain_no_corners test for time-dependent
       // maps because Domain doesn't have a constructor that takes
       // maps from BlockLogical to Grid.
       const auto vector_of_maps_copy = clone_unique_ptrs(vector_of_maps);
-      Domain<3> domain_no_corners =
-          expected_boundary_conditions.empty()
-              ? Domain<3>{std::move(vector_of_maps)}
-              : Domain<3>{std::move(vector_of_maps),
-                          create_boundary_conditions(
-                              expected_boundary_conditions.size() / 6,
-                              ShellWedges::All)};
+      Domain<3> domain_no_corners = Domain<3>{std::move(vector_of_maps)};
       test_domain_construction(
           domain_no_corners, expected_block_neighbors,
           expected_external_boundaries, vector_of_maps_copy,
           expected_grid_to_inertial_maps.empty() == 0
               ? std::numeric_limits<double>::signaling_NaN()
               : 10.0,
-          shell.functions_of_time(), expected_grid_to_inertial_maps,
-          expected_boundary_conditions);
+          shell.functions_of_time(), expected_grid_to_inertial_maps);
 
       test_initial_domain(domain_no_corners, shell.initial_refinement_levels());
       test_serialization(domain_no_corners);
@@ -391,13 +353,6 @@ void test_shell_construction(
                                 {3, Direction<3>::lower_zeta()},
                                 {4, Direction<3>::lower_zeta()},
                                 {5, Direction<3>::lower_zeta()}}}}});
-
-  test_initial_domain(domain, shell.initial_refinement_levels());
-  TestHelpers::domain::creators::test_functions_of_time(
-      shell, expected_functions_of_time, initial_expiration_times);
-  domain::creators::register_derived_with_charm();
-  domain::creators::time_dependence::register_derived_with_charm();
-  test_serialization(domain);
 }
 
 void test_shell_boundaries() {
@@ -410,7 +365,6 @@ void test_shell_boundaries() {
   for (const auto& use_equiangular_map : {true, false}) {
     const creators::Shell shell{inner_radius, outer_radius, refinement_level,
                                 grid_points_r_angular, use_equiangular_map};
-    test_physical_separation(shell.create_domain().blocks());
     test_shell_construction(shell, inner_radius, outer_radius,
                             use_equiangular_map, grid_points_r_angular,
                             {6, make_array<3>(refinement_level)});
@@ -428,42 +382,43 @@ void test_shell_boundaries() {
         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
         create_inner_boundary_condition(),
         create_outer_boundary_condition()};
-    test_physical_separation(
-        shell_boundary_conditions.create_domain().blocks());
-    test_shell_construction(
-        shell_boundary_conditions, inner_radius, outer_radius,
-        use_equiangular_map, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
-        {}, {}, create_boundary_conditions(1, ShellWedges::All));
+    test_shell_construction(shell_boundary_conditions, inner_radius,
+                            outer_radius, use_equiangular_map,
+                            grid_points_r_angular,
+                            {6, make_array<3>(refinement_level)}, 1.0, 2, false,
+                            ShellWedges::All, {}, {}, true);
   }
 }
 
-std::string boundary_conditions_string() {
-  return {
-      "  BoundaryConditions:\n"
-      "    InnerBoundary:\n"
-      "      TestBoundaryCondition:\n"
-      "        Direction: lower-zeta\n"
-      "        BlockId: 50\n"
-      "    OuterBoundary:\n"
-      "      TestBoundaryCondition:\n"
-      "        Direction: upper-zeta\n"
-      "        BlockId: 50\n"};
+auto make_domain_creator(const std::string& opt_string,
+                         const bool use_boundary_conditions) {
+  if (use_boundary_conditions) {
+    return TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithBoundaryConditions<3, domain::creators::Shell>>(
+        opt_string + std::string{"  BoundaryConditions:\n"
+                                 "    InnerBoundary:\n"
+                                 "      TestBoundaryCondition:\n"
+                                 "        Direction: lower-zeta\n"
+                                 "        BlockId: 50\n"
+                                 "    OuterBoundary:\n"
+                                 "      TestBoundaryCondition:\n"
+                                 "        Direction: upper-zeta\n"
+                                 "        BlockId: 50\n"});
+  } else {
+    return TestHelpers::test_option_tag<
+        domain::OptionTags::DomainCreator<3>,
+        TestHelpers::domain::BoundaryConditions::
+            MetavariablesWithoutBoundaryConditions<3, domain::creators::Shell>>(
+        opt_string);
+  }
 }
 
 void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
-  const auto helper = [](const auto expected_boundary_conditions,
-                         auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<
-            decltype(use_boundary_condition)::value,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<
-                    3, domain::creators::Shell>>>(
+  for (bool use_boundary_conditions : {false, true}) {
+    const auto shell = make_domain_creator(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -474,36 +429,24 @@ void test_shell_factory_equiangular() {
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n" +
-        (expected_boundary_conditions.empty() ? std::string{}
-                                              : boundary_conditions_string()));
+        "  TimeDependence: None\n",
+        use_boundary_conditions);
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    test_shell_construction(
-        dynamic_cast<const creators::Shell&>(*shell), inner_radius,
-        outer_radius, true, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
-        {}, {}, expected_boundary_conditions);
-  };
-  helper(BoundaryCondVector{}, std::false_type{});
-  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+    test_shell_construction(dynamic_cast<const creators::Shell&>(*shell),
+                            inner_radius, outer_radius, true,
+                            grid_points_r_angular,
+                            {6, make_array<3>(refinement_level)}, 1.0, 2, false,
+                            ShellWedges::All, {}, {}, use_boundary_conditions);
+  }
 }
 
 void test_shell_factory_equiangular_time_dependent() {
   INFO("Shell factory equiangular_time_dependent");
-  const auto helper = [](const auto expected_boundary_conditions,
-                         auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<
-            decltype(use_boundary_condition)::value,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<
-                    3, domain::creators::Shell>>>(
+  for (bool use_boundary_conditions : {false, true}) {
+    const auto shell = make_domain_creator(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -517,10 +460,8 @@ void test_shell_factory_equiangular_time_dependent() {
         "  TimeDependence:\n"
         "    UniformTranslation:\n"
         "      InitialTime: 1.0\n"
-        "      Velocity: [2.3, -0.3, 1.2]\n" +
-        (expected_boundary_conditions.empty() ? std::string{}
-                                              : boundary_conditions_string()));
-    Parallel::printf("Tested option tag\n");
+        "      Velocity: [2.3, -0.3, 1.2]\n",
+        use_boundary_conditions);
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
@@ -547,7 +488,7 @@ void test_shell_factory_equiangular_time_dependent() {
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name},
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name},
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name}),
-        expected_boundary_conditions);
+        use_boundary_conditions);
     // with expiration times
     test_shell_construction(
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
@@ -564,26 +505,14 @@ void test_shell_factory_equiangular_time_dependent() {
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name},
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name},
             Translation3D{f_of_t_name}, Translation3D{f_of_t_name}),
-        expected_boundary_conditions, initial_expiration_times);
-    Parallel::printf("testing shell construction\n");
-  };
-  helper(BoundaryCondVector{}, std::false_type{});
-  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+        use_boundary_conditions, initial_expiration_times);
+  }
 }
 
 void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
-  const auto helper = [](const auto expected_boundary_conditions,
-                         auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<
-            decltype(use_boundary_condition)::value,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<
-                    3, domain::creators::Shell>>>(
+  for (bool use_boundary_conditions : {false, true}) {
+    const auto shell = make_domain_creator(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -594,21 +523,18 @@ void test_shell_factory_equidistant() {
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n" +
-        (expected_boundary_conditions.empty() ? std::string{}
-                                              : boundary_conditions_string()));
+        "  TimeDependence: None\n",
+        use_boundary_conditions);
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
     const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    test_shell_construction(
-        dynamic_cast<const creators::Shell&>(*shell), inner_radius,
-        outer_radius, false, grid_points_r_angular,
-        {6, make_array<3>(refinement_level)}, 1.0, 2, false, ShellWedges::All,
-        {}, {}, expected_boundary_conditions);
-  };
-  helper(BoundaryCondVector{}, std::false_type{});
-  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+    test_shell_construction(dynamic_cast<const creators::Shell&>(*shell),
+                            inner_radius, outer_radius, false,
+                            grid_points_r_angular,
+                            {6, make_array<3>(refinement_level)}, 1.0, 2, false,
+                            ShellWedges::All, {}, {}, use_boundary_conditions);
+  }
 }
 
 void test_shell_boundaries_aspect_ratio() {
@@ -623,7 +549,6 @@ void test_shell_boundaries_aspect_ratio() {
   const creators::Shell shell{
       inner_radius,          outer_radius, refinement_level,
       grid_points_r_angular, false,        {{aspect_ratio, index_polar_axis}}};
-  test_physical_separation(shell.create_domain().blocks());
   test_shell_construction(
       shell, inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis);
@@ -641,27 +566,16 @@ void test_shell_boundaries_aspect_ratio() {
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
-  test_physical_separation(shell_boundary_condition.create_domain().blocks());
-  test_shell_construction(shell_boundary_condition, inner_radius, outer_radius,
-                          false, grid_points_r_angular,
-                          {6, make_array<3>(refinement_level)}, aspect_ratio,
-                          index_polar_axis, false, ShellWedges::All, {}, {},
-                          create_boundary_conditions(1, ShellWedges::All));
+  test_shell_construction(
+      shell_boundary_condition, inner_radius, outer_radius, false,
+      grid_points_r_angular, {6, make_array<3>(refinement_level)}, aspect_ratio,
+      index_polar_axis, false, ShellWedges::All, {}, {}, true);
 }
 
 void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
-  const auto helper = [](const auto expected_boundary_conditions,
-                         auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<
-            decltype(use_boundary_condition)::value,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<
-                    3, domain::creators::Shell>>>(
+  for (bool use_boundary_conditions : {false, true}) {
+    const auto shell = make_domain_creator(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -674,9 +588,8 @@ void test_shell_factory_aspect_ratio() {
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Linear]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n" +
-        (expected_boundary_conditions.empty() ? std::string{}
-                                              : boundary_conditions_string()));
+        "  TimeDependence: None\n",
+        use_boundary_conditions);
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
@@ -687,10 +600,8 @@ void test_shell_factory_aspect_ratio() {
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
         {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis,
-        false, ShellWedges::All, {}, {}, expected_boundary_conditions);
-  };
-  helper(BoundaryCondVector{}, std::false_type{});
-  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+        false, ShellWedges::All, {}, {}, use_boundary_conditions);
+  }
 }
 
 void test_shell_boundaries_logarithmic_map() {
@@ -713,7 +624,6 @@ void test_shell_boundaries_logarithmic_map() {
                               {{aspect_ratio, index_polar_axis}},
                               {},
                               radial_distribution};
-  test_physical_separation(shell.create_domain().blocks());
   test_shell_construction(shell, inner_radius, outer_radius, false,
                           grid_points_r_angular,
                           {6, make_array<3>(refinement_level)}, aspect_ratio,
@@ -732,12 +642,10 @@ void test_shell_boundaries_logarithmic_map() {
       std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>{},
       create_inner_boundary_condition(),
       create_outer_boundary_condition()};
-  test_physical_separation(shell_boundary_condition.create_domain().blocks());
   test_shell_construction(
       shell_boundary_condition, inner_radius, outer_radius, false,
       grid_points_r_angular, {6, make_array<3>(refinement_level)}, aspect_ratio,
-      index_polar_axis, use_logarithmic_map, ShellWedges::All, {}, {},
-      create_boundary_conditions(1, ShellWedges::All));
+      index_polar_axis, use_logarithmic_map, ShellWedges::All, {}, {}, true);
 
   CHECK_THROWS_WITH(
       creators::Shell(
@@ -795,17 +703,8 @@ void test_shell_boundaries_logarithmic_map() {
 
 void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
-  const auto helper = [](const auto expected_boundary_conditions,
-                         auto use_boundary_condition) {
-    const auto shell = TestHelpers::test_option_tag<
-        domain::OptionTags::DomainCreator<3>,
-        tmpl::conditional_t<
-            decltype(use_boundary_condition)::value,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithBoundaryConditions<3, domain::creators::Shell>,
-            TestHelpers::domain::BoundaryConditions::
-                MetavariablesWithoutBoundaryConditions<
-                    3, domain::creators::Shell>>>(
+  for (bool use_boundary_conditions : {false, true}) {
+    const auto shell = make_domain_creator(
         "Shell:\n"
         "  InnerRadius: 1\n"
         "  OuterRadius: 3\n"
@@ -818,9 +717,8 @@ void test_shell_factory_logarithmic_map() {
         "  RadialPartitioning: []\n"
         "  RadialDistribution: [Logarithmic]\n"
         "  WhichWedges: All\n"
-        "  TimeDependence: None\n" +
-        (expected_boundary_conditions.empty() ? std::string{}
-                                              : boundary_conditions_string()));
+        "  TimeDependence: None\n",
+        use_boundary_conditions);
     const double inner_radius = 1.0;
     const double outer_radius = 3.0;
     const size_t refinement_level = 2;
@@ -832,67 +730,34 @@ void test_shell_factory_logarithmic_map() {
         dynamic_cast<const creators::Shell&>(*shell), inner_radius,
         outer_radius, false, grid_points_r_angular,
         {6, make_array<3>(refinement_level)}, aspect_ratio, index_polar_axis,
-        use_logarithmic_map, ShellWedges::All, {}, {},
-        expected_boundary_conditions);
-  };
-  helper(BoundaryCondVector{}, std::false_type{});
-  helper(create_boundary_conditions(1, ShellWedges::All), std::true_type{});
+        use_logarithmic_map, ShellWedges::All, {}, {}, use_boundary_conditions);
+  }
 
-  INFO("Test with multiple radial layers");
-  const auto shell = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithBoundaryConditions<3, domain::creators::Shell>>(
-      "Shell:\n"
-      "  InnerRadius: 1\n"
-      "  OuterRadius: 3\n"
-      "  InitialRefinement: 2\n"
-      "  InitialGridPoints: [2,3]\n"
-      "  UseEquiangularMap: false\n"
-      "  EquatorialCompression:\n"
-      "    AspectRatio: 2.0        \n"
-      "    IndexPolarAxis: 2\n"
-      "  RadialPartitioning: [1.5, 2.5]\n"
-      "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
-      "  WhichWedges: All\n"
-      "  TimeDependence: None\n" +
-      boundary_conditions_string());
-  const Domain<3> multiple_layers_domain = shell->create_domain();
-  const auto expected_boundary_conditions =
-      create_boundary_conditions(3, ShellWedges::All);
-  const auto& blocks = multiple_layers_domain.blocks();
-  REQUIRE(expected_boundary_conditions.size() == blocks.size());
-  for (size_t block_id = 0; block_id < expected_boundary_conditions.size();
-       ++block_id) {
-    CAPTURE(block_id);
-    REQUIRE(blocks[block_id].external_boundary_conditions().size() ==
-            expected_boundary_conditions[block_id].size());
-    REQUIRE(blocks[block_id].external_boundary_conditions().size() ==
-            blocks[block_id].external_boundaries().size());
-    for (const Direction<3>& direction :
-         blocks[block_id].external_boundaries()) {
-      CAPTURE(direction);
-      REQUIRE(blocks[block_id].external_boundary_conditions().count(
-                  direction) == 1);
-      REQUIRE(expected_boundary_conditions[block_id].count(direction) == 1);
-      using BcType =
-          TestHelpers::domain::BoundaryConditions::TestBoundaryCondition<3>;
-      const auto& expected_bc = dynamic_cast<const BcType&>(
-          *expected_boundary_conditions[block_id].at(direction));
-      const auto& bc = dynamic_cast<const BcType&>(
-          *blocks[block_id].external_boundary_conditions().at(direction));
-      CHECK(expected_bc.direction() == bc.direction());
-      CHECK(expected_bc.block_id() == bc.block_id());
-    }
+  {
+    INFO("Test with multiple radial layers");
+    const auto shell = make_domain_creator(
+        "Shell:\n"
+        "  InnerRadius: 1\n"
+        "  OuterRadius: 3\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  UseEquiangularMap: false\n"
+        "  EquatorialCompression:\n"
+        "    AspectRatio: 2.0        \n"
+        "    IndexPolarAxis: 2\n"
+        "  RadialPartitioning: [1.5, 2.5]\n"
+        "  RadialDistribution: [Logarithmic, Logarithmic, Logarithmic]\n"
+        "  WhichWedges: All\n"
+        "  TimeDependence: None\n",
+        true);
+    const auto domain =
+        TestHelpers::domain::creators::test_domain_creator(*shell, true);
   }
 }
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3, domain::creators::Shell>>(
+  const auto shell = make_domain_creator(
       "Shell:\n"
       "  InnerRadius: 1\n"
       "  OuterRadius: 3\n"
@@ -905,7 +770,8 @@ void test_shell_factory_wedges_four_on_equator() {
       "  RadialPartitioning: []\n"
       "  RadialDistribution: [Logarithmic]\n"
       "  WhichWedges: FourOnEquator\n"
-      "  TimeDependence: None\n");
+      "  TimeDependence: None\n",
+      false);
   const double inner_radius = 1.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -922,10 +788,7 @@ void test_shell_factory_wedges_four_on_equator() {
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = TestHelpers::test_option_tag<
-      domain::OptionTags::DomainCreator<3>,
-      TestHelpers::domain::BoundaryConditions::
-          MetavariablesWithoutBoundaryConditions<3, domain::creators::Shell>>(
+  const auto shell = make_domain_creator(
       "Shell:\n"
       "  InnerRadius: 2\n"
       "  OuterRadius: 3\n"
@@ -938,7 +801,8 @@ void test_shell_factory_wedges_one_along_minus_x() {
       "  RadialPartitioning: []\n"
       "  RadialDistribution: [Linear]\n"
       "  WhichWedges: OneAlongMinusX \n"
-      "  TimeDependence: None\n");
+      "  TimeDependence: None\n",
+      false);
   const double inner_radius = 2.0;
   const double outer_radius = 3.0;
   const size_t refinement_level = 2;

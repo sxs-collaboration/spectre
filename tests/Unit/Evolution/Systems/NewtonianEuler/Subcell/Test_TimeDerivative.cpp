@@ -89,7 +89,6 @@ auto make_element<1>() {
       Block<1>{domain::make_coordinate_map_base<Frame::BlockLogical,
                                                 Frame::Inertial>(affine_map),
                0,
-               {},
                {}},
       std::vector<std::array<size_t, 1>>{std::array<size_t, 1>{{3}}});
 }
@@ -103,7 +102,6 @@ auto make_element<2>() {
                                                 Frame::Inertial>(
                    Affine2D{affine_map, affine_map}),
                0,
-               {},
                {}},
       std::vector<std::array<size_t, 2>>{std::array<size_t, 2>{{3, 3}}});
 }
@@ -117,7 +115,6 @@ auto make_element<3>() {
                                                 Frame::Inertial>(
                    Affine3D{affine_map, affine_map, affine_map}),
                0,
-               {},
                {}},
       std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 }

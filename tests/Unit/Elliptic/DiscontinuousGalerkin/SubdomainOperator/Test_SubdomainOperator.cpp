@@ -33,6 +33,7 @@
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Elliptic/Actions/InitializeBackgroundFields.hpp"
 #include "Elliptic/BoundaryConditions/AnalyticSolution.hpp"
 #include "Elliptic/BoundaryConditions/BoundaryCondition.hpp"
@@ -477,6 +478,7 @@ void test_subdomain_operator(
     // Re-create the domain in every iteration of this loop because it's not
     // copyable
     auto domain = domain_creator.create_domain();
+    auto boundary_conditions = domain_creator.external_boundary_conditions();
     const auto initial_ref_levs = domain_creator.initial_refinement_levels();
     const auto initial_extents = domain_creator.initial_extents();
     const auto element_ids = ::initial_element_ids(initial_ref_levs);
@@ -484,11 +486,13 @@ void test_subdomain_operator(
 
     ActionTesting::MockRuntimeSystem<metavariables> runner{tuples::TaggedTuple<
         domain::Tags::Domain<Dim>,
+        domain::Tags::ExternalBoundaryConditions<Dim>,
         elliptic::Tags::Background<elliptic::analytic_data::Background>,
         LinearSolver::Schwarz::Tags::MaxOverlap<DummyOptionsGroup>,
         elliptic::dg::Tags::PenaltyParameter, elliptic::dg::Tags::Massive>{
-        std::move(domain), std::make_unique<RandomBackground<Dim>>(), overlap,
-        penalty_parameter, use_massive_dg_operator}};
+        std::move(domain), std::move(boundary_conditions),
+        std::make_unique<RandomBackground<Dim>>(), overlap, penalty_parameter,
+        use_massive_dg_operator}};
 
     // Initialize all elements, generating random subdomain data
     for (const auto& element_id : element_ids) {

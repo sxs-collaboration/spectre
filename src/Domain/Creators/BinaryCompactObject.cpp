@@ -345,21 +345,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
 
   using Maps = std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::BlockLogical, Frame::Inertial, 3>>>;
-  using BcMap = DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-
-  std::vector<BcMap> boundary_conditions_all_blocks{};
-  // Add an empty map to the boundary conditions for blocks that have no
-  // external boundaries, because the `boundary_conditions_all_blocks` expects
-  // an entry for every block. This lambda avoid code duplication below.
-  const auto add_no_boundary_conditions =
-      [this, &boundary_conditions_all_blocks](const Maps& local_maps) {
-        if (outer_boundary_condition_ != nullptr) {
-          for (size_t i = 0; i < local_maps.size(); ++i) {
-            boundary_conditions_all_blocks.emplace_back(BcMap{});
-          }
-        }
-      };
 
   const std::vector<domain::CoordinateMaps::Distribution>
       object_A_radial_distribution{
@@ -419,33 +404,11 @@ Domain<3> BinaryCompactObject::create_domain() const {
                                     0.0, use_equiangular_map_),
           translation_B);
 
-  if (outer_boundary_condition_ != nullptr) {
-    for (size_t i = 0; i < maps_center_A.size(); ++i) {
-      BcMap bcs{};
-      if (object_A_.is_excised()) {
-        bcs[Direction<3>::lower_zeta()] =
-            (*object_A_.inner_boundary_condition)->get_clone();
-      }
-      boundary_conditions_all_blocks.push_back(std::move(bcs));
-    }
-  }
   std::move(maps_center_A.begin(), maps_center_A.end(),
             std::back_inserter(maps));
-  add_no_boundary_conditions(maps_cube_A);
   std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
-  if (outer_boundary_condition_ != nullptr) {
-    for (size_t i = 0; i < maps_center_B.size(); ++i) {
-      BcMap bcs{};
-      if (object_B_.is_excised()) {
-        bcs[Direction<3>::lower_zeta()] =
-            (*object_B_.inner_boundary_condition)->get_clone();
-      }
-      boundary_conditions_all_blocks.push_back(std::move(bcs));
-    }
-  }
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
-  add_no_boundary_conditions(maps_cube_B);
   std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
 
   // --- Frustums enclosing both objects (10 blocks) ---
@@ -460,7 +423,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
       frustum_coordinate_maps(length_inner_cube_, length_outer_cube_,
                               use_equiangular_map_, {{-translation_, 0.0, 0.0}},
                               projective_scale_factor_, frustum_sphericity_));
-  add_no_boundary_conditions(maps_frustums);
   std::move(maps_frustums.begin(), maps_frustums.end(),
             std::back_inserter(maps));
 
@@ -475,7 +437,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
         radius_enveloping_cube_, radius_enveloping_sphere_, frustum_sphericity_,
         1.0, use_equiangular_map_, true, {},
         {domain::CoordinateMaps::Distribution::Linear}));
-    add_no_boundary_conditions(maps_first_outer_shell);
     std::move(maps_first_outer_shell.begin(), maps_first_outer_shell.end(),
               std::back_inserter(maps));
   }
@@ -485,15 +446,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
       Frame::BlockLogical, Frame::Inertial, 3>(sph_wedge_coordinate_maps(
       radius_enveloping_sphere_, outer_radius_domain_, 1.0, 1.0,
       use_equiangular_map_, true, {}, {radial_distribution_outer_shell_}));
-  if (outer_boundary_condition_ != nullptr) {
-    // The outer 10 wedges all have to have the outer boundary condition
-    // applied
-    for (size_t i = 0; i < maps_second_outer_shell.size(); ++i) {
-      BcMap bcs{};
-      bcs[Direction<3>::upper_zeta()] = outer_boundary_condition_->get_clone();
-      boundary_conditions_all_blocks.push_back(std::move(bcs));
-    }
-  }
   std::move(maps_second_outer_shell.begin(), maps_second_outer_shell.end(),
             std::back_inserter(maps));
 
@@ -503,10 +455,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // case the enclosing wedges configured above transition from the cube to a
   // sphere.
   if (not object_A_.is_excised()) {
-    if (outer_boundary_condition_ != nullptr) {
-      boundary_conditions_all_blocks.emplace_back(BcMap{});
-    }
-
     const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
@@ -529,10 +477,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
     }
   }
   if (not object_B_.is_excised()) {
-    if (outer_boundary_condition_ != nullptr) {
-      boundary_conditions_all_blocks.emplace_back(BcMap{});
-    }
-
     const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
       maps.emplace_back(
@@ -591,7 +535,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
                        2, num_biradial_layers, not object_A_.is_excised(),
                        not object_B_.is_excised()),
                    {},
-                   std::move(boundary_conditions_all_blocks),
                    std::move(excision_spheres)};
 
   // Inject the hard-coded time-dependence
@@ -712,6 +655,37 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
 
   return domain;
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+BinaryCompactObject::external_boundary_conditions() const {
+  if (outer_boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{number_of_blocks_};
+  // Excision surfaces
+  for (size_t i = 0; i < 6; ++i) {
+    // Block 0 - 5 wrap excision surface A
+    if (object_A_.is_excised()) {
+      boundary_conditions[i][Direction<3>::lower_zeta()] =
+          (*object_A_.inner_boundary_condition)->get_clone();
+    }
+    // Blocks 12 - 17 wrap excision surface B
+    if (object_B_.is_excised()) {
+      boundary_conditions[i + 12][Direction<3>::lower_zeta()] =
+          (*object_B_.inner_boundary_condition)->get_clone();
+    }
+  }
+  // Outer boundary
+  const size_t offset_outer_blocks = need_cube_to_sphere_transition_ ? 44 : 34;
+  for (size_t i = 0; i < 10; ++i) {
+    boundary_conditions[i + offset_outer_blocks][Direction<3>::upper_zeta()] =
+        outer_boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::unordered_map<std::string,

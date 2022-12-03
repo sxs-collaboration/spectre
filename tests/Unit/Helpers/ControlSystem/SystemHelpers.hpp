@@ -105,6 +105,11 @@ class FakeCreator : public DomainCreator<3> {
       : num_components_map_(num_components_map) {}
 
   Domain<3> create_domain() const override { ERROR(""); }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    ERROR("");
+  }
   std::vector<std::array<size_t, 3>> initial_extents() const override {
     ERROR("");
   }
@@ -475,7 +480,7 @@ struct SystemHelper {
   }
 
   void reset() {
-    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+    domain_ = Domain<3>{{}, stored_excision_spheres_};
     initial_functions_of_time_ =
         clone_unique_ptrs(stored_initial_functions_of_time_);
     initial_measurement_timescales_ =
@@ -564,7 +569,7 @@ struct SystemHelper {
                                 {3, Direction<3>::lower_zeta()},
                                 {4, Direction<3>::lower_zeta()},
                                 {5, Direction<3>::lower_zeta()}}}}};
-    domain_ = Domain<3>{{}, {}, stored_excision_spheres_};
+    domain_ = Domain<3>{{}, stored_excision_spheres_};
 
     stored_initial_functions_of_time_ =
         clone_unique_ptrs(initial_functions_of_time_);

@@ -11,10 +11,9 @@
 #include <memory>
 #include <unordered_set>
 
-#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/BlockNeighbor.hpp"       // IWYU pragma: keep
-#include "Domain/Structure/Direction.hpp"           // IWYU pragma: keep
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/Structure/BlockNeighbor.hpp"
+#include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
 
 /// \cond
@@ -48,16 +47,9 @@ class Block {
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
-  /// \param external_boundary_conditions the boundary conditions to be applied
-  ///        at external boundaries. Can be either empty or one per each
-  ///        external boundary
   Block(std::unique_ptr<domain::CoordinateMapBase<
             Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
-        size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
-        DirectionMap<
-            VolumeDim,
-            std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-            external_boundary_conditions = {});
+        size_t id, DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors);
 
   Block() = default;
   ~Block() = default;
@@ -143,14 +135,6 @@ class Block {
     return external_boundaries_;
   }
 
-  /// The boundary conditions to apply at the external boundaries of the Block.
-  const DirectionMap<
-      VolumeDim,
-      std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>&
-  external_boundary_conditions() const {
-    return external_boundary_conditions_;
-  }
-
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -180,9 +164,6 @@ class Block {
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
-  DirectionMap<VolumeDim,
-               std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-      external_boundary_conditions_;
 };
 
 template <size_t VolumeDim>

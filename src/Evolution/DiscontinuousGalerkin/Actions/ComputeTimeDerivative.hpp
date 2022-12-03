@@ -22,6 +22,7 @@
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
+#include "Domain/Tags/ExternalBoundaryConditions.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/BoundaryCorrectionTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/BoundaryConditionsImpl.hpp"
@@ -302,7 +303,8 @@ struct ComputeTimeDerivative {
       evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
   using const_global_cache_tags = tmpl::append<
       tmpl::list<::dg::Tags::Formulation,
-                 evolution::Tags::BoundaryCorrection<EvolutionSystem>>>;
+                 evolution::Tags::BoundaryCorrection<EvolutionSystem>,
+                 domain::Tags::ExternalBoundaryConditions<Dim>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,

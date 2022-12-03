@@ -15,6 +15,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 
 namespace domain::creators {
@@ -67,50 +68,17 @@ RotatedBricks::RotatedBricks(
     is_periodic_in_[0] = true;
     is_periodic_in_[1] = true;
     is_periodic_in_[2] = true;
-    boundary_condition_ = nullptr;
   }
 }
 
 Domain<3> RotatedBricks::create_domain() const {
-  using BcMap = DirectionMap<
-      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>;
-  std::vector<BcMap> boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    std::vector<std::unordered_set<Direction<3>>>
-        external_boundaries_in_each_block{
-            {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-             Direction<3>::lower_zeta()},
-            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-             Direction<3>::upper_zeta()},
-            {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-             Direction<3>::upper_zeta()},
-            {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-             Direction<3>::upper_zeta()},
-            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
-             Direction<3>::upper_zeta()},
-            {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
-             Direction<3>::upper_zeta()},
-            {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
-             Direction<3>::lower_zeta()},
-            {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
-             Direction<3>::upper_zeta()}};
-    for (const auto& block_external_boundaries :
-         external_boundaries_in_each_block) {
-      BcMap boundary_conditions{};
-      for (const Direction<3>& direction : block_external_boundaries) {
-        boundary_conditions[direction] = boundary_condition_->get_clone();
-      }
-      boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-    }
-  }
-
   return rectilinear_domain<3>(
       Index<3>{2, 2, 2},
       std::array<std::vector<double>, 3>{
           {{lower_xyz_[0], midpoint_xyz_[0], upper_xyz_[0]},
            {lower_xyz_[1], midpoint_xyz_[1], upper_xyz_[1]},
            {lower_xyz_[2], midpoint_xyz_[2], upper_xyz_[2]}}},
-      std::move(boundary_conditions_all_blocks), {},
+      {},
       std::vector<OrientationMap<3>>{
           OrientationMap<3>{},
           OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -135,6 +103,44 @@ Domain<3> RotatedBricks::create_domain() const {
               {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
                Direction<3>::upper_zeta()}}}},
       is_periodic_in_);
+}
+
+std::vector<DirectionMap<
+    3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+RotatedBricks::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{8};
+  if (is_periodic_in_[0]) {
+    return boundary_conditions;
+  }
+  std::vector<std::unordered_set<Direction<3>>>
+      external_boundaries_in_each_block{
+          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
+           Direction<3>::lower_zeta()},
+          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+           Direction<3>::upper_zeta()},
+          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
+           Direction<3>::upper_zeta()},
+          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
+           Direction<3>::upper_zeta()},
+          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
+           Direction<3>::upper_zeta()},
+          {Direction<3>::lower_xi(), Direction<3>::upper_eta(),
+           Direction<3>::upper_zeta()},
+          {Direction<3>::lower_xi(), Direction<3>::lower_eta(),
+           Direction<3>::lower_zeta()},
+          {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
+           Direction<3>::upper_zeta()}};
+  for (size_t i = 0; i < 8; ++i) {
+    for (const Direction<3>& direction : external_boundaries_in_each_block[i]) {
+      boundary_conditions[i][direction] = boundary_condition_->get_clone();
+    }
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const {

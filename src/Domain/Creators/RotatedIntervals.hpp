@@ -16,6 +16,7 @@
 #include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -164,6 +165,10 @@ class RotatedIntervals : public DomainCreator<1> {
   ~RotatedIntervals() override = default;
 
   Domain<1> create_domain() const override;
+
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override;
 
   std::vector<std::array<size_t, 1>> initial_extents() const override;
 

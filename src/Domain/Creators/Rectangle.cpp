@@ -5,6 +5,7 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
@@ -21,6 +22,8 @@
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/DirectionMap.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace Frame {
@@ -83,7 +86,6 @@ Rectangle::Rectangle(
   if (is_periodic(boundary_condition_)) {
     is_periodic_in_xy_[0] = true;
     is_periodic_in_xy_[1] = true;
-    boundary_condition_ = nullptr;
   }
 }
 
@@ -98,28 +100,11 @@ Domain<2> Rectangle::create_domain() const {
     identifications.push_back({{0, 1}, {2, 3}});
   }
 
-  std::vector<DirectionMap<
-      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-      boundary_conditions_all_blocks{};
-  if (boundary_condition_ != nullptr) {
-    ASSERT(is_periodic_in_xy_[0] == false and is_periodic_in_xy_[1] == false,
-           "Cannot have a boundary condition and periodic boundaries. Did you "
-           "add a new constructor violating this constraint?");
-    DirectionMap<2,
-                 std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>
-        boundary_conditions{};
-    for (const auto& direction : Direction<2>::all_directions()) {
-      boundary_conditions[direction] = boundary_condition_->get_clone();
-    }
-    boundary_conditions_all_blocks.push_back(std::move(boundary_conditions));
-  }
-
   Domain<2> domain{
       make_vector_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
                    Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
-      std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications,
-      std::move(boundary_conditions_all_blocks)};
+      std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
 
   if (not time_dependence_->is_none()) {
     domain.inject_time_dependent_map_for_block(
@@ -128,6 +113,24 @@ Domain<2> Rectangle::create_domain() const {
         std::move(time_dependence_->block_maps_distorted_to_inertial(1)[0]));
   }
   return domain;
+}
+
+std::vector<DirectionMap<
+    2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+Rectangle::external_boundary_conditions() const {
+  if (boundary_condition_ == nullptr) {
+    return {};
+  }
+  std::vector<DirectionMap<
+      2, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+      boundary_conditions{1};
+  if (is_periodic_in_xy_[0]) {
+    return boundary_conditions;
+  }
+  for (const auto& direction : Direction<2>::all_directions()) {
+    boundary_conditions[0][direction] = boundary_condition_->get_clone();
+  }
+  return boundary_conditions;
 }
 
 std::vector<std::array<size_t, 2>> Rectangle::initial_extents() const {

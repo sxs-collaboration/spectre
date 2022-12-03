@@ -91,6 +91,11 @@ class TestCreator : public DomainCreator<1> {
   explicit TestCreator(const bool add_controlled)
       : add_controlled_(add_controlled) {}
   Domain<1> create_domain() const override { ERROR(""); }
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    ERROR("");
+  }
   std::vector<std::array<size_t, 1>> initial_extents() const override {
     ERROR("");
   }
@@ -156,6 +161,11 @@ class TestCreator : public DomainCreator<1> {
 class BadCreator : public DomainCreator<1> {
  public:
   Domain<1> create_domain() const override { ERROR(""); }
+  std::vector<DirectionMap<
+      1, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    ERROR("");
+  }
   std::vector<std::array<size_t, 1>> initial_extents() const override {
     ERROR("");
   }

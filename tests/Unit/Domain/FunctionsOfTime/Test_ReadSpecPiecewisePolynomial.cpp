@@ -48,6 +48,11 @@ class FakeCreator : public DomainCreator<3> {
  public:
   explicit FakeCreator() {}
   Domain<3> create_domain() const override { ERROR(""); }
+  std::vector<DirectionMap<
+      3, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    ERROR("");
+  }
   std::vector<std::array<size_t, 3>> initial_extents() const override {
     ERROR("");
   }

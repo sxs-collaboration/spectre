@@ -11,6 +11,7 @@
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/Direction.hpp"      // IWYU pragma: keep
 #include "Domain/Structure/DirectionMap.hpp"   // IWYU pragma: keep
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -28,30 +29,14 @@ Domain<VolumeDim>::Domain(
     std::vector<std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
         maps,
-    std::vector<DirectionMap<
-        VolumeDim,
-        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions,
-    std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
-        excision_spheres)
+    std::unordered_map<std::string, ExcisionSphere<VolumeDim>> excision_spheres)
     : excision_spheres_(std::move(excision_spheres)) {
-  ASSERT(
-      boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
-      "There must be either one set of boundary conditions per block or none "
-      "at all specified.");
-
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks, maps);
   for (size_t i = 0; i < maps.size(); i++) {
-    if (boundary_conditions.empty()) {
-      blocks_.emplace_back(std::move(maps[i]), i,
-                           std::move(neighbors_of_all_blocks[i]));
-    } else {
-      blocks_.emplace_back(std::move(maps[i]), i,
-                           std::move(neighbors_of_all_blocks[i]),
-                           std::move(boundary_conditions[i]));
-    }
+    blocks_.emplace_back(std::move(maps[i]), i,
+                         std::move(neighbors_of_all_blocks[i]));
   }
 }
 
@@ -63,22 +48,13 @@ Domain<VolumeDim>::Domain(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     const std::vector<PairOfFaces>& identifications,
-    std::vector<DirectionMap<
-        VolumeDim,
-        std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
-        boundary_conditions,
-    std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
-        excision_spheres)
+    std::unordered_map<std::string, ExcisionSphere<VolumeDim>> excision_spheres)
     : excision_spheres_(std::move(excision_spheres)) {
   ASSERT(
       maps.size() == corners_of_all_blocks.size(),
       "Must pass same number of maps as block corner sets, but maps.size() == "
           << maps.size() << " and corners_of_all_blocks.size() == "
           << corners_of_all_blocks.size());
-  ASSERT(
-      boundary_conditions.size() == maps.size() or boundary_conditions.empty(),
-      "There must be either one set of boundary conditions per block or none "
-      "at all specified.");
   std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(&neighbors_of_all_blocks,
@@ -86,14 +62,8 @@ Domain<VolumeDim>::Domain(
   set_identified_boundaries<VolumeDim>(identifications, corners_of_all_blocks,
                                        &neighbors_of_all_blocks);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
-    if (boundary_conditions.empty()) {
-      blocks_.emplace_back(std::move(maps[i]), i,
-                           std::move(neighbors_of_all_blocks[i]));
-    } else {
-      blocks_.emplace_back(std::move(maps[i]), i,
-                           std::move(neighbors_of_all_blocks[i]),
-                           std::move(boundary_conditions[i]));
-    }
+    blocks_.emplace_back(std::move(maps[i]), i,
+                         std::move(neighbors_of_all_blocks[i]));
   }
 }
 
@@ -117,6 +87,13 @@ void Domain<VolumeDim>::inject_time_dependent_map_for_block(
       std::move(moving_mesh_grid_to_inertial_map),
       std::move(moving_mesh_grid_to_distorted_map),
       std::move(moving_mesh_distorted_to_inertial_map));
+}
+
+template <size_t VolumeDim>
+bool Domain<VolumeDim>::is_time_dependent() const {
+  return alg::any_of(blocks_, [](const Block<VolumeDim>& block) {
+    return block.is_time_dependent();
+  });
 }
 
 template <size_t VolumeDim>
