@@ -33,35 +33,38 @@ def clean_output(input_file, output_dir, force):
     """
     found_indentation = None
     missing_files = []
-    for line in open(input_file, 'r'):
-        # Iterate through the file until we find the `ExpectedOutput` comment
-        if found_indentation is None:
-            matched_indentation = re.match('#([ ]*)ExpectedOutput:', line)
-            if matched_indentation is not None:
-                found_indentation = matched_indentation.groups()[0] + '  '
-        else:
-            # Now collect the output files listed in the comment.
-            # We look for lines that are indented by two spaces relative to the
-            # preceding `ExpectedOutput` comment
-            matched_output_file = re.match('#' + found_indentation + '(.+)',
-                                           line)
-            if matched_output_file is None:
-                logging.debug("Reached end of expected output file list.")
-                break
+
+    with open(input_file, 'r') as open_input_file:
+        for line in open_input_file:
+            # Iterate through the file until we find the `ExpectedOutput`
+            # comment
+            if found_indentation is None:
+                matched_indentation = re.match('#([ ]*)ExpectedOutput:', line)
+                if matched_indentation is not None:
+                    found_indentation = matched_indentation.groups()[0] + '  '
             else:
-                expected_output_file = os.path.join(
-                    output_dir,
-                    matched_output_file.groups()[0])
-                logging.debug("Attempting to remove file {}...".format(
-                    expected_output_file))
-                if os.path.exists(expected_output_file):
-                    os.remove(expected_output_file)
-                    logging.info(
-                        "Removed file {}.".format(expected_output_file))
-                elif not force:
-                    missing_files.append(expected_output_file)
-                    logging.error("Expected file {} was not found.".format(
+                # Now collect the output files listed in the comment.
+                # We look for lines that are indented by two spaces relative to
+                # the preceding `ExpectedOutput` comment
+                matched_output_file = re.match(
+                    '#' + found_indentation + '(.+)', line)
+                if matched_output_file is None:
+                    logging.debug("Reached end of expected output file list.")
+                    break
+                else:
+                    expected_output_file = os.path.join(
+                        output_dir,
+                        matched_output_file.groups()[0])
+                    logging.debug("Attempting to remove file {}...".format(
                         expected_output_file))
+                    if os.path.exists(expected_output_file):
+                        os.remove(expected_output_file)
+                        logging.info(
+                            "Removed file {}.".format(expected_output_file))
+                    elif not force:
+                        missing_files.append(expected_output_file)
+                        logging.error("Expected file {} was not found.".format(
+                            expected_output_file))
     if found_indentation is None:
         logging.warning(
             "Input file {} does not list `ExpectedOutput` files.".format(
