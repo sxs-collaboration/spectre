@@ -70,8 +70,8 @@ struct GaugeAndDerivativeCompute
       GeneralizedHarmonic::Tags::Pi<Dim>, GeneralizedHarmonic::Tags::Phi<Dim>,
       ::Events::Tags::ObserverMesh<Dim>, ::Tags::Time,
       ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>,
-      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
-                                    Frame::Inertial>,
+      ::Events::Tags::ObserverInverseJacobian<Dim, Frame::ElementLogical,
+                                              Frame::Inertial>,
       Tags::GaugeCondition>;
 
   static void function(
