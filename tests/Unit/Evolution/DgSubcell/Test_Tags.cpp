@@ -6,9 +6,17 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/CoordinateMaps/TimeDependent/Translation.hpp"
+#include "Domain/FunctionsOfTime/Tags.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DgSubcell/Tags/Coordinates.hpp"
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
@@ -28,8 +36,7 @@
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-
-class DataVector;
+#include "Utilities/CloneUniquePtrs.hpp"
 
 namespace subcell = evolution::dg::subcell;
 
@@ -42,7 +49,7 @@ struct Var2 : db::SimpleTag {
 };
 
 template <size_t Dim>
-void test() {
+void test(const bool moving_mesh) {
   TestHelpers::db::test_simple_tag<subcell::Tags::Mesh<Dim>>("Subcell(Mesh)");
   TestHelpers::db::test_compute_tag<subcell::Tags::MeshCompute<Dim>>(
       "Subcell(Mesh)");
@@ -66,6 +73,11 @@ void test() {
   TestHelpers::db::test_simple_tag<subcell::Tags::OnSubcellFaces<
       ::Tags::Variables<tmpl::list<Var1, Var2>>, Dim>>(
       "OnSubcellFaces(Variables(Var1,Var2))");
+  TestHelpers::db::test_simple_tag<
+      ::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>>(
+      "InertialCoordinates");
+  TestHelpers::db::test_simple_tag<
+      ::Events::Tags::ObserverCoordinates<Dim, Frame::Grid>>("GridCoordinates");
 
   TestHelpers::db::test_compute_tag<
       subcell::Tags::LogicalCoordinatesCompute<Dim>>(
@@ -74,73 +86,207 @@ void test() {
       ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
                                                     Frame::Inertial>>>(
       "InertialCoordinates");
-  Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
-                    Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords_box = db::create<
-      db::AddSimpleTags<::domain::Tags::Mesh<Dim>>,
-      db::AddComputeTags<subcell::Tags::MeshCompute<Dim>,
-                         subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
-      dg_mesh);
-  const auto subcell_mesh =
-      db::get<subcell::Tags::Mesh<Dim>>(logical_coords_box);
-  CHECK(db::get<subcell::Tags::Coordinates<Dim, Frame::ElementLogical>>(
-            logical_coords_box) == logical_coordinates(subcell_mesh));
 
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::ElementLogical,
+                                                    Frame::Grid>>(
+      "InverseJacobian(ElementLogical,Grid)");
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::ElementLogical,
+                                                    Frame::Inertial>>(
+      "InverseJacobian(ElementLogical,Inertial)");
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::Grid,
+                                                    Frame::Inertial>>(
+      "InverseJacobian(Grid,Inertial)");
+
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverJacobianAndDetInvJacobian<
+          Dim, Frame::ElementLogical, Frame::Grid>>(
+      "Variables(DetInvJacobian(ElementLogical,Grid),Jacobian(ElementLogical,"
+      "Grid))");
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverJacobianAndDetInvJacobian<
+          Dim, Frame::ElementLogical, Frame::Inertial>>(
+      "Variables(DetInvJacobian(ElementLogical,Inertial),Jacobian("
+      "ElementLogical,Inertial))");
+  TestHelpers::db::test_compute_tag<
+      subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
+                                                       Frame::Inertial>>(
+      "Variables(DetInvJacobian(Grid,Inertial),Jacobian(Grid,Inertial))");
+
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time["translation"] =
+      std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+          0.0, std::array<DataVector, 3>{{{Dim, 0.0}, {Dim, -4.3}, {Dim, 0.0}}},
+          100.0);
+  const auto grid_to_inertial_map =
+      moving_mesh
+          ? domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+                domain::CoordinateMaps::TimeDependent::Translation<Dim>{
+                    "translation"})
+          : domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+                domain::CoordinateMaps::Identity<Dim>{});
+
+  const double time = 1.3;
+  const Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto);
   auto active_coords_box = db::create<
-      db::AddSimpleTags<domain::Tags::Coordinates<3, Frame::Inertial>,
-                        subcell::Tags::Coordinates<3, Frame::Inertial>,
-                        subcell::Tags::ActiveGrid>,
+      db::AddSimpleTags<domain::Tags::ElementMap<Dim, Frame::Grid>,
+                        domain::CoordinateMaps::Tags::CoordinateMap<
+                            Dim, Frame::Grid, Frame::Inertial>,
+                        domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
+                        ::domain::Tags::Mesh<Dim>, subcell::Tags::ActiveGrid>,
       db::AddComputeTags<
-          subcell::Tags::ObserverCoordinatesCompute<3, Frame::Inertial>>>(
-      tnsr::I<DataVector, 3, Frame::Inertial>{
-          {{DataVector{8, 1.0}, DataVector{8, 3.0}, DataVector{8, 8.0}}}},
-      tnsr::I<DataVector, 3, Frame::Inertial>{
-          {{DataVector{27, 2.0}, DataVector{27, 5.0}, DataVector{27, 11.0}}}},
-      subcell::ActiveGrid::Dg);
-  CHECK(db::get<::Events::Tags::ObserverCoordinates<3, Frame::Inertial>>(
-            active_coords_box) ==
-        tnsr::I<DataVector, 3, Frame::Inertial>{
-            {{DataVector{8, 1.0}, DataVector{8, 3.0}, DataVector{8, 8.0}}}});
+          domain::Tags::LogicalCoordinates<Dim>,
+          domain::Tags::MappedCoordinates<
+              domain::Tags::ElementMap<Dim, Frame::Grid>,
+              domain::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+          domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
+              domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                          Frame::Inertial>>,
+          domain::Tags::InertialFromGridCoordinatesCompute<Dim>,
+
+          subcell::Tags::MeshCompute<Dim>,
+          subcell::Tags::LogicalCoordinatesCompute<Dim>,
+          subcell::Tags::ObserverMeshCompute<Dim>,
+
+          domain::Tags::MappedCoordinates<
+              domain::Tags::ElementMap<Dim, Frame::Grid>,
+              evolution::dg::subcell::Tags::Coordinates<Dim,
+                                                        Frame::ElementLogical>,
+              evolution::dg::subcell::Tags::Coordinates>,
+          subcell::Tags::InertialCoordinatesCompute<
+              ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>>,
+
+          subcell::Tags::ObserverCoordinatesCompute<Dim, Frame::ElementLogical>,
+          subcell::Tags::ObserverCoordinatesCompute<Dim, Frame::Grid>,
+          subcell::Tags::ObserverCoordinatesCompute<Dim, Frame::Inertial>,
+
+          subcell::Tags::ObserverInverseJacobianCompute<
+              Dim, Frame::ElementLogical, Frame::Grid>,
+          subcell::Tags::ObserverInverseJacobianCompute<
+              Dim, Frame::ElementLogical, Frame::Inertial>,
+          subcell::Tags::ObserverInverseJacobianCompute<Dim, Frame::Grid,
+                                                        Frame::Inertial>,
+          subcell::Tags::ObserverJacobianAndDetInvJacobian<
+              Dim, Frame::ElementLogical, Frame::Grid>,
+          subcell::Tags::ObserverJacobianAndDetInvJacobian<
+              Dim, Frame::ElementLogical, Frame::Inertial>,
+          subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
+                                                           Frame::Inertial>>>(
+      ElementMap<Dim, Frame::Grid>{
+          ElementId<Dim>{0},
+          domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
+              domain::CoordinateMaps::Identity<Dim>{})},
+      grid_to_inertial_map->get_clone(), clone_unique_ptrs(functions_of_time),
+      time, dg_mesh, subcell::ActiveGrid::Dg);
+  const auto check_box = [&active_coords_box](const Mesh<Dim>& expected_mesh) {
+    CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_coords_box) ==
+          expected_mesh);
+    const auto expected_logical_coords = logical_coordinates(expected_mesh);
+    CHECK(db::get<
+              ::Events::Tags::ObserverCoordinates<Dim, Frame::ElementLogical>>(
+              active_coords_box) == expected_logical_coords);
+    const auto expected_grid_coords =
+        db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(active_coords_box)(
+            expected_logical_coords);
+    CHECK(db::get<::Events::Tags::ObserverCoordinates<Dim, Frame::Grid>>(
+              active_coords_box) == expected_grid_coords);
+    const auto expected_inertial_coords =
+        db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>>(
+            active_coords_box)(
+            expected_grid_coords, db::get<::Tags::Time>(active_coords_box),
+            db::get<domain::Tags::FunctionsOfTime>(active_coords_box));
+    CHECK(db::get<::Events::Tags::ObserverCoordinates<Dim, Frame::Inertial>>(
+              active_coords_box) == expected_inertial_coords);
+
+    const auto expected_inv_jac_logical_to_grid =
+        db::get<domain::Tags::ElementMap<Dim, Frame::Grid>>(active_coords_box)
+            .inv_jacobian(expected_logical_coords);
+    CHECK(db::get<::Events::Tags::ObserverInverseJacobian<
+              Dim, Frame::ElementLogical, Frame::Grid>>(active_coords_box) ==
+          expected_inv_jac_logical_to_grid);
+
+    const auto expected_inv_jac_grid_to_inertial =
+        db::get<domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
+                                                            Frame::Inertial>>(
+            active_coords_box)
+            .inv_jacobian(
+                expected_grid_coords, db::get<::Tags::Time>(active_coords_box),
+                db::get<domain::Tags::FunctionsOfTime>(active_coords_box));
+    CHECK(db::get<::Events::Tags::ObserverInverseJacobian<Dim, Frame::Grid,
+                                                          Frame::Inertial>>(
+              active_coords_box) == expected_inv_jac_grid_to_inertial);
+
+    InverseJacobian<DataVector, Dim, Frame::ElementLogical, Frame::Inertial>
+        expected_inv_jac_logical_to_inertial{};
+    for (size_t logical_i = 0; logical_i < Dim; ++logical_i) {
+      for (size_t inertial_i = 0; inertial_i < Dim; ++inertial_i) {
+        expected_inv_jac_logical_to_inertial.get(logical_i, inertial_i) =
+            expected_inv_jac_logical_to_grid.get(logical_i, 0) *
+            expected_inv_jac_grid_to_inertial.get(0, inertial_i);
+        for (size_t grid_i = 1; grid_i < Dim; ++grid_i) {
+          expected_inv_jac_logical_to_inertial.get(logical_i, inertial_i) +=
+              expected_inv_jac_logical_to_grid.get(logical_i, grid_i) *
+              expected_inv_jac_grid_to_inertial.get(grid_i, inertial_i);
+        }
+      }
+    }
+
+    CHECK(db::get<::Events::Tags::ObserverInverseJacobian<
+              Dim, Frame::ElementLogical, Frame::Inertial>>(
+              active_coords_box) == expected_inv_jac_logical_to_inertial);
+
+    const auto [expected_det_inv_jac_logical_to_grid,
+                expected_jac_logical_to_grid] =
+        determinant_and_inverse(expected_inv_jac_logical_to_grid);
+    const auto [expected_det_inv_jac_grid_to_inertial,
+                expected_jac_grid_to_inertial] =
+        determinant_and_inverse(expected_inv_jac_grid_to_inertial);
+    const auto [expected_det_inv_jac_logical_to_inertial,
+                expected_jac_logical_to_inertial] =
+        determinant_and_inverse(expected_inv_jac_logical_to_inertial);
+
+    CHECK(db::get<::Events::Tags::ObserverJacobian<Dim, Frame::ElementLogical,
+                                                   Frame::Grid>>(
+              active_coords_box) == expected_jac_logical_to_grid);
+    CHECK(db::get<::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                                         Frame::Grid>>(
+              active_coords_box) == expected_det_inv_jac_logical_to_grid);
+
+    CHECK(db::get<::Events::Tags::ObserverJacobian<Dim, Frame::Grid,
+                                                   Frame::Inertial>>(
+              active_coords_box) == expected_jac_grid_to_inertial);
+    CHECK(db::get<::Events::Tags::ObserverDetInvJacobian<Frame::Grid,
+                                                         Frame::Inertial>>(
+              active_coords_box) == expected_det_inv_jac_grid_to_inertial);
+
+    CHECK(db::get<::Events::Tags::ObserverJacobian<Dim, Frame::ElementLogical,
+                                                   Frame::Inertial>>(
+              active_coords_box) == expected_jac_logical_to_inertial);
+    CHECK(db::get<::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
+                                                         Frame::Inertial>>(
+              active_coords_box) == expected_det_inv_jac_logical_to_inertial);
+  };
+
+  check_box(db::get<domain::Tags::Mesh<Dim>>(active_coords_box));
   db::mutate<subcell::Tags::ActiveGrid>(
       make_not_null(&active_coords_box), [](const auto active_grid_ptr) {
         *active_grid_ptr = subcell::ActiveGrid::Subcell;
       });
-  CHECK(
-      db::get<::Events::Tags::ObserverCoordinates<3, Frame::Inertial>>(
-          active_coords_box) ==
-      tnsr::I<DataVector, 3, Frame::Inertial>{
-          {{DataVector{27, 2.0}, DataVector{27, 5.0}, DataVector{27, 11.0}}}});
+  check_box(db::get<subcell::Tags::Mesh<Dim>>(active_coords_box));
 
-  auto active_mesh_box = db::create<
-      db::AddSimpleTags<domain::Tags::Mesh<Dim>, subcell::Tags::Mesh<Dim>,
-                        subcell::Tags::ActiveGrid>,
-      db::AddComputeTags<subcell::Tags::ObserverMeshCompute<Dim>>>(
-      Mesh<Dim>{4, Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto},
-      Mesh<Dim>{7, Spectral::Basis::FiniteDifference,
-                Spectral::Quadrature::CellCentered},
-      subcell::ActiveGrid::Dg);
-  CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_mesh_box) ==
-        Mesh<Dim>{4, Spectral::Basis::Legendre,
-                  Spectral::Quadrature::GaussLobatto});
-  db::mutate<subcell::Tags::ActiveGrid>(
-      make_not_null(&active_mesh_box), [](const auto active_grid_ptr) {
-        *active_grid_ptr = subcell::ActiveGrid::Subcell;
-      });
-  CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_mesh_box) ==
-        Mesh<Dim>{7, Spectral::Basis::FiniteDifference,
-                  Spectral::Quadrature::CellCentered});
   TestHelpers::db::test_compute_tag<subcell::Tags::ObserverMeshCompute<Dim>>(
       "ObserverMesh");
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
-  TestHelpers::db::test_simple_tag<
-      ::Events::Tags::ObserverCoordinates<1, Frame::Inertial>>(
-      "InertialCoordinates");
-  TestHelpers::db::test_simple_tag<
-      ::Events::Tags::ObserverCoordinates<1, Frame::Grid>>("GridCoordinates");
   TestHelpers::db::test_simple_tag<subcell::Tags::ActiveGrid>("ActiveGrid");
   TestHelpers::db::test_simple_tag<
       subcell::fd::Tags::DetInverseJacobianLogicalToGrid>(
@@ -162,7 +308,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
       "TciGridHistory");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciStatus>("TciStatus");
 
-  test<1>();
-  test<2>();
-  test<3>();
+  for (const bool moving_mesh : {false, true}) {
+    test<1>(moving_mesh);
+    test<2>(moving_mesh);
+    test<3>(moving_mesh);
+  }
 }
