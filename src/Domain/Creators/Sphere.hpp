@@ -10,21 +10,17 @@
 
 #include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/BoundaryConditions/GetBoundaryConditionsBase.hpp"
-#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/TimeDependence/TimeDependence.hpp"
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
-
-// IWYU wants to include things we definitely don't need...
-// IWYU pragma: no_include <memory> // Needed in cpp file
-// IWYU pragma: no_include <pup.h>  // Not needed
-
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp" // Not needed
 
 /// \cond
 namespace domain {
 namespace CoordinateMaps {
 class Affine;
+class BulgedCube;
 class Equiangular;
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps;
@@ -42,6 +38,10 @@ namespace creators {
 /// Create a 3D Domain in the shape of a sphere consisting of six wedges
 /// and a central cube. For an image showing how the wedges are aligned in
 /// this Domain, see the documentation for Shell.
+///
+/// The inner cube is a BulgedCube except if the inner cube sphericity is
+/// exactly 0. Then an Equiangular or Affine map is used (depending on if it's
+/// equiangular or not) to avoid a root find in the BulgedCube map.
 class Sphere : public DomainCreator<3> {
  private:
   using Affine = CoordinateMaps::Affine;
@@ -49,9 +49,11 @@ class Sphere : public DomainCreator<3> {
   using Equiangular = CoordinateMaps::Equiangular;
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
+  using BulgedCube = CoordinateMaps::BulgedCube;
 
  public:
   using maps_list = tmpl::list<
+      domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, BulgedCube>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial, Affine3D>,
       domain::CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                             Equiangular3D>,
@@ -67,6 +69,16 @@ class Sphere : public DomainCreator<3> {
   struct OuterRadius {
     using type = double;
     static constexpr Options::String help = {"Radius of the Sphere."};
+  };
+
+  struct InnerCubeSphericity {
+    using type = double;
+    static constexpr Options::String help = {
+        "Sphericity of inner cube. A sphericity of 0 uses a product of 1D maps "
+        "as the map in the center. A sphericity > 0 uses a BulgedCube. A "
+        "sphericity of exactly 1 is not allowed. See BulgedCube docs for why."};
+    static double lower_bound() { return 0.0; }
+    static double upper_bound() { return 1.0; }
   };
 
   struct InitialRefinement {
@@ -87,6 +99,13 @@ class Sphere : public DomainCreator<3> {
         "Use equiangular instead of equidistant coordinates."};
   };
 
+  struct TimeDependence {
+    using type =
+        std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>;
+    static constexpr Options::String help = {
+        "The time dependence of the moving mesh domain."};
+  };
+
   template <typename BoundaryConditionsBase>
   struct BoundaryCondition {
     static std::string name() { return "BoundaryCondition"; }
@@ -95,8 +114,10 @@ class Sphere : public DomainCreator<3> {
     using type = std::unique_ptr<BoundaryConditionsBase>;
   };
 
-  using basic_options = tmpl::list<InnerRadius, OuterRadius, InitialRefinement,
-                                   InitialGridPoints, UseEquiangularMap>;
+  using basic_options =
+      tmpl::list<InnerRadius, OuterRadius, InnerCubeSphericity,
+                 InitialRefinement, InitialGridPoints, UseEquiangularMap,
+                 TimeDependence>;
 
   template <typename Metavariables>
   using options = tmpl::conditional_t<
@@ -122,10 +143,12 @@ class Sphere : public DomainCreator<3> {
       "spacings in the center block."};
 
   Sphere(typename InnerRadius::type inner_radius,
-         typename OuterRadius::type outer_radius,
+         typename OuterRadius::type outer_radius, double inner_cube_sphericity,
          typename InitialRefinement::type initial_refinement,
          typename InitialGridPoints::type initial_number_of_grid_points,
          typename UseEquiangularMap::type use_equiangular_map,
+         std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+             time_dependence = nullptr,
          std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
              boundary_condition = nullptr,
          const Options::Context& context = {});
@@ -143,12 +166,21 @@ class Sphere : public DomainCreator<3> {
 
   std::vector<std::array<size_t, 3>> initial_refinement_levels() const override;
 
+  auto functions_of_time(const std::unordered_map<std::string, double>&
+                             initial_expiration_times = {}) const
+      -> std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> override;
+
  private:
   typename InnerRadius::type inner_radius_{};
   typename OuterRadius::type outer_radius_{};
+  double inner_cube_sphericity_{};
   typename InitialRefinement::type initial_refinement_{};
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_ = false;
+  std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
+      time_dependence_;
   std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>
       boundary_condition_;
 };
