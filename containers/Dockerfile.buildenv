@@ -295,7 +295,8 @@ COPY support/Python/dev_requirements.txt dev_requirements.txt
 RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update -y \
     && apt-get install -y python3.7 python3.7-dev python3.7-distutils \
     && python3.7 -m pip --no-cache-dir install pybind11~=2.6.1 \
-    && pip3 --no-cache-dir install -r requirements.txt -r dev_requirements.txt \
+    && python3.7 -m pip --no-cache-dir install \
+        -r requirements.txt -r dev_requirements.txt \
     && rm requirements.txt dev_requirements.txt
 
 # Also install our minimum required CMake version so we can test it on CI.
