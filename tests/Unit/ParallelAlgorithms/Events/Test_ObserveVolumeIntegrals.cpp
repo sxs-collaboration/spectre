@@ -245,7 +245,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe,
       [&num_tensor_components, &vars, &expected_volume_integrals,
        &expected_reduction_names, &det_jacobian, &mesh](auto tag) {
         using tensor_tag = tmpl::type_from<decltype(tag)>;
-        const auto tensor = get<tensor_tag>(vars);
+        const auto& tensor = get<tensor_tag>(vars);
         for (size_t i = 0; i < tensor.size(); ++i) {
           expected_reduction_names.push_back("VolumeIntegral(" +
                                              db::tag_name<tensor_tag>() +

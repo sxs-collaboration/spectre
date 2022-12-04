@@ -201,6 +201,11 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) {
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(dest_vars), get<Tag>(expected_dest_vars));
     });
+
+    const DataVector result_dv = irregular_interpolant.interpolate(
+        get<0>(get<TestTags::Vector<Dim>>(src_vars)));
+    CHECK_ITERABLE_APPROX(
+        result_dv, get<0>(get<TestTags::Vector<Dim>>(expected_dest_vars)));
   }
 }
 

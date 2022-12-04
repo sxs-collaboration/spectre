@@ -56,6 +56,18 @@ class Irregular {
   Variables<TagsList> interpolate(const Variables<TagsList>& vars) const;
   /// @}
 
+  /// @{
+  /// \brief Interpolate a DataVector onto the target points.
+  ///
+  /// \note When interpolating multiple tensors, the Variables interface is more
+  /// efficient. However, this DataVector interface is useful for applications
+  /// where only some components of a Tensor or Variables need to be
+  /// interpolated.
+  void interpolate(gsl::not_null<DataVector*> result,
+                   const DataVector& input) const;
+  DataVector interpolate(const DataVector& input) const;
+  /// @}
+
  private:
   friend bool operator==(const Irregular& lhs, const Irregular& rhs) {
     return lhs.interpolation_matrix_ == rhs.interpolation_matrix_;
@@ -101,4 +113,3 @@ template <size_t Dim>
 bool operator!=(const Irregular<Dim>& lhs, const Irregular<Dim>& rhs);
 
 }  // namespace intrp
-
