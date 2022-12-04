@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ControlSystem/Averager.hpp"
+#include "ControlSystem/CalculateMeasurementTimescales.hpp"
 #include "ControlSystem/Component.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/Protocols/ControlSystem.hpp"
@@ -72,11 +73,14 @@ void test_calculate_measurement_timescales() {
   const double update_fraction = 0.25;
   const Controller<DerivOrder> controller(update_fraction);
 
+  const int measurements_per_update = 4;
   const auto measurement_timescales =
-      control_system::calculate_measurement_timescales(controller, tuner);
+      control_system::calculate_measurement_timescales(controller, tuner,
+                                                       measurements_per_update);
 
   const DataVector expected_measurement_timescales =
-      DataVector{{timescale}} * update_fraction / double(DerivOrder + 1);
+      DataVector{{timescale}} * update_fraction /
+      double(measurements_per_update);
 
   CHECK(expected_measurement_timescales == measurement_timescales);
 }
@@ -90,9 +94,9 @@ void test_measurement_tag() {
   static_assert(
       tmpl::size<
           measurement_tag::option_tags<MetavariablesNoControlSystems>>::value ==
-      1);
+      2);
   static_assert(
-      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 6);
+      tmpl::size<measurement_tag::option_tags<Metavariables>>::value == 7);
 
   using FakeCreator = control_system::TestHelpers::FakeCreator;
 
@@ -128,7 +132,8 @@ void test_measurement_tag() {
     static_assert(
         std::is_same_v<
             measurement_tag::option_tags<Metavariables>,
-            tmpl::list<domain::OptionTags::DomainCreator<3>,
+            tmpl::list<control_system::OptionTags::MeasurementsPerUpdate,
+                       domain::OptionTags::DomainCreator<3>,
                        ::OptionTags::InitialTime, ::OptionTags::InitialTimeStep,
                        control_system::OptionTags::ControlSystemInputs<
                            FakeControlSystem<1>>,
@@ -136,16 +141,20 @@ void test_measurement_tag() {
                            FakeControlSystem<2>>,
                        control_system::OptionTags::ControlSystemInputs<
                            FakeControlSystem<3>>>>);
+    const int measurements_per_update = 4;
     const measurement_tag::type timescales =
         measurement_tag::create_from_options<Metavariables>(
-            creator, initial_time, time_step, option_holder1, option_holder2,
-            option_holder3);
+            measurements_per_update, creator, initial_time, time_step,
+            option_holder1, option_holder2, option_holder3);
     CHECK(timescales.size() == 3);
-    const double expr_time1 = initial_time + update_fraction * timescale1;
-    const double expr_time2 = initial_time + time_step;
+
     const double measure_time1 =
-        control_system::calculate_measurement_timescales(controller, tuner1)[0];
-    const double measure_time2 = time_step;
+        control_system::calculate_measurement_timescales(
+            controller, tuner1, measurements_per_update)[0];
+    const double measure_time2 = time_step / measurements_per_update;
+    const double expr_time1 =
+        initial_time + update_fraction * timescale1 - 0.5 * measure_time1;
+    const double expr_time2 = initial_time + time_step - 0.5 * measure_time2;
     CHECK(timescales.at("Controlled1")->time_bounds() ==
           std::array{initial_time, expr_time1});
     CHECK(timescales.at("Controlled1")->func(2.0)[0] ==
@@ -160,7 +169,7 @@ void test_measurement_tag() {
           DataVector{std::numeric_limits<double>::infinity()});
     CHECK(timescales.at("Controlled3")->time_bounds() ==
           std::array{initial_time, expr_time2});
-    CHECK(timescales.at("Controlled3")->func(1.1)[0] ==
+    CHECK(timescales.at("Controlled3")->func(1.0)[0] ==
           DataVector{measure_time2, measure_time2});
 
     // Replace Controlled2 with something read in from an h5 file. This means
@@ -170,6 +179,7 @@ void test_measurement_tag() {
         std::is_same_v<
             measurement_tag::option_tags<MetavariablesReplace>,
             tmpl::list<
+                control_system::OptionTags::MeasurementsPerUpdate,
                 domain::OptionTags::DomainCreator<3>,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeFile,
                 domain::FunctionsOfTime::OptionTags::FunctionOfTimeNameMap,
@@ -182,7 +192,7 @@ void test_measurement_tag() {
                     FakeControlSystem<3>>>>);
     const auto replaced_timescales =
         measurement_tag::create_from_options<MetavariablesReplace>(
-            creator, {"FakeFileName"}, {{"FakeSpecName", "Controlled2"}},
+            4, creator, {"FakeFileName"}, {{"FakeSpecName", "Controlled2"}},
             initial_time, time_step, option_holder1, option_holder2,
             option_holder3);
     CHECK(replaced_timescales.at("Controlled2")->time_bounds() ==
@@ -216,7 +226,8 @@ void test_measurement_tag() {
                     {FakeControlSystem<3>::name(), 1}});
 
         measurement_tag::create_from_options<Metavariables>(
-            creator, initial_time, -1.0, option_holder1, option_holder2,
+            4, creator, initial_time, -1.0, option_holder1, option_holder2,
+
             option_holder3);
       })(),
       Catch::Contains(

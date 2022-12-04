@@ -131,7 +131,7 @@ void test_shape_control_error() {
                            {5, Direction<3>::lower_zeta()}}}}}};
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain)},
+  MockRuntimeSystem runner{{"DummyFilename", std::move(fake_domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(

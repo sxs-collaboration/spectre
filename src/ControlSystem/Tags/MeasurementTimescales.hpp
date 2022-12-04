@@ -10,8 +10,9 @@
 #include <string>
 #include <unordered_map>
 
+#include "ControlSystem/CalculateMeasurementTimescales.hpp"
 #include "ControlSystem/Controller.hpp"
-#include "ControlSystem/InitialExpirationTimes.hpp"
+#include "ControlSystem/ExpirationTimes.hpp"
 #include "ControlSystem/Tags.hpp"
 #include "ControlSystem/Tags/FunctionsOfTimeInitialize.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -29,31 +30,7 @@ template <class Metavariables, typename ControlSystem>
 struct ControlComponent;
 /// \endcond
 
-namespace control_system {
-/*!
- * \ingroup ControlSystemGroup
- * \brief Calculate the measurement timescale based on the damping timescale,
- * update fraction, and DerivOrder of the control system
- *
- * The update timescale is \f$\tau_\mathrm{update} = \alpha_\mathrm{update}
- * \tau_\mathrm{damp}\f$ where \f$\tau_\mathrm{damp}\f$ is the damping timescale
- * (from the TimescaleTuner) and \f$\alpha_\mathrm{update}\f$ is the update
- * fraction (from the controller). For an Nth order control system, the averager
- * requires at least N measurements in order to perform its finite
- * differencing to calculate the derivatives of the control error. This implies
- * that the largest the measurement timescale can be is \f$\tau_\mathrm{m} =
- * \tau_\mathrm{update} / N\f$. To ensure that we have sufficient measurements,
- * we calculate the measurement timescales as \f$\tau_\mathrm{m} =
- * \tau_\mathrm{update} / (N+1)\f$
- */
-template <size_t DerivOrder>
-DataVector calculate_measurement_timescales(
-    const ::Controller<DerivOrder>& controller, const ::TimescaleTuner& tuner) {
-  return tuner.current_timescale() * controller.get_update_fraction() *
-         (1.0 / static_cast<double>(DerivOrder + 1));
-}
-
-namespace Tags {
+namespace control_system::Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ControlSystemGroup
 /// \brief The measurement timescales associated with
@@ -82,6 +59,7 @@ struct MeasurementTimescales : db::SimpleTag {
   /// and there are control systems in the metavariables
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
+      const int measurements_per_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const std::optional<std::string>& function_of_time_file,
@@ -91,14 +69,11 @@ struct MeasurementTimescales : db::SimpleTag {
     std::unordered_map<std::string,
                        std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
         timescales{};
-    const auto initial_expiration_times =
-        control_system::initial_expiration_times(
-            initial_time, initial_time_step, domain_creator, option_holders...);
 
     [[maybe_unused]] const auto construct_measurement_timescales =
         [&timescales, &initial_time, &initial_time_step, &domain_creator,
-         &initial_expiration_times, &function_of_time_file,
-         &function_of_time_name_map](const auto& option_holder) {
+         &function_of_time_file, &function_of_time_name_map,
+         &measurements_per_update](const auto& option_holder) {
           // This check is intentionally inside the lambda so that it will not
           // trigger for domains without control systems.
           if (initial_time_step <= 0.0) {
@@ -114,15 +89,17 @@ struct MeasurementTimescales : db::SimpleTag {
           Tags::detail::initialize_tuner(make_not_null(&tuner), domain_creator,
                                          initial_time, name);
 
-          DataVector measurement_timescales =
-              calculate_measurement_timescales(controller, tuner);
-          // At a minimum, we can only measure once a time step with GTS.
+          DataVector measurement_timescales = calculate_measurement_timescales(
+              controller, tuner, measurements_per_update);
           for (size_t i = 0; i < measurement_timescales.size(); i++) {
             measurement_timescales[i] =
-                std::max(initial_time_step, measurement_timescales[i]);
+                std::max(initial_time_step / measurements_per_update,
+                         measurement_timescales[i]);
           }
 
-          double expr_time = initial_expiration_times.at(name);
+          double expr_time = measurement_expiration_time(
+              initial_time, DataVector{measurement_timescales.size(), 0.0},
+              measurement_timescales, measurements_per_update);
 
           // If we are reading this function of time in from a file, set the
           // measurement timescales to be infinity, and to never expire.
@@ -141,9 +118,10 @@ struct MeasurementTimescales : db::SimpleTag {
             }
           }
 
-          // If the control system isn't active, set measurement timescale to be
-          // infinity. The expiration time is already infinity in that case
+          // If the control system isn't active, set measurement timescale and
+          // expiration time to be infinity.
           if (not option_holder.is_active) {
+            expr_time = std::numeric_limits<double>::infinity();
             for (size_t i = 0; i < measurement_timescales.size(); i++) {
               measurement_timescales[i] =
                   std::numeric_limits<double>::infinity();
@@ -167,18 +145,18 @@ struct MeasurementTimescales : db::SimpleTag {
   /// and it is `false`, and the metavariables did define control systems
   template <typename Metavariables, typename... OptionHolders>
   static type create_from_options(
+      const int measurements_per_update,
       const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
           domain_creator,
       const double initial_time, const double initial_time_step,
       const OptionHolders&... option_holders) {
     return MeasurementTimescales::create_from_options<Metavariables>(
-        domain_creator, std::nullopt, {}, initial_time, initial_time_step,
-        option_holders...);
+        measurements_per_update, domain_creator, std::nullopt, {}, initial_time,
+        initial_time_step, option_holders...);
   }
 
   // We don't define a `create_from_options` for when there aren't control
   // systems in the metavariables because it doesn't make sense to have
   // measurement timescales without control systems
 };
-}  // namespace Tags
-}  // namespace control_system
+}  // namespace control_system::Tags

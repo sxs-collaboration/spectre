@@ -57,7 +57,12 @@ struct Initialize {
                  control_system::Tags::ControlError<ControlSystem>,
                  control_system::Tags::IsActive<ControlSystem>>;
 
-  using simple_tags = typename ControlSystem::simple_tags;
+  using const_global_cache_tags =
+      tmpl::list<control_system::Tags::MeasurementsPerUpdate>;
+
+  using simple_tags =
+      tmpl::push_back<typename ControlSystem::simple_tags,
+                      control_system::Tags::CurrentNumberOfMeasurements>;
 
   using compute_tags = tmpl::list<>;
 
@@ -77,11 +82,14 @@ struct Initialize {
     const double initial_time = measurement_timescale_func.time_bounds()[0];
     const double measurement_timescale =
         min(measurement_timescale_func.func(initial_time)[0]);
-    db::mutate<control_system::Tags::Averager<ControlSystem>>(
+    db::mutate<control_system::Tags::Averager<ControlSystem>,
+               control_system::Tags::CurrentNumberOfMeasurements>(
         make_not_null(&box),
         [&measurement_timescale](
-            const gsl::not_null<::Averager<deriv_order - 1>*> averager) {
+            const gsl::not_null<::Averager<deriv_order - 1>*> averager,
+            const gsl::not_null<int*> current_number_of_measurements) {
           averager->assign_time_between_measurements(measurement_timescale);
+          *current_number_of_measurements = 0;
         });
 
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};

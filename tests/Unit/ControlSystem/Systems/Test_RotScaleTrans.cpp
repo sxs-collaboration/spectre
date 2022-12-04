@@ -112,7 +112,8 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       "      Rotation: 3\n"
       "      Expansion: 1\n"
       "ControlSystems:\n"
-      "  WriteDataToDisk: false\n";
+      "  WriteDataToDisk: false\n"
+      "  MeasurementsPerUpdate: 4\n";
   input_options += create_input_string(translation_name);
   input_options += create_input_string(rotation_name);
   input_options += create_input_string(expansion_name);
@@ -155,7 +156,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<

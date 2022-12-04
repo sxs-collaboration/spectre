@@ -9,8 +9,10 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Averager.cpp
+  CalculateMeasurementTimescales.cpp
   Controller.cpp
   DataVectorHelpers.cpp
+  ExpirationTimes.cpp
   Tags.cpp
   TimescaleTuner.cpp
   )
@@ -20,11 +22,12 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Averager.hpp
+  CalculateMeasurementTimescales.hpp
   Component.hpp
   Controller.hpp
   DataVectorHelpers.hpp
   Event.hpp
-  InitialExpirationTimes.hpp
+  ExpirationTimes.hpp
   Metafunctions.hpp
   NamespaceDocs.hpp
   RunCallbacks.hpp

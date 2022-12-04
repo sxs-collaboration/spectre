@@ -68,7 +68,8 @@ struct MockControlComponent {
                  control_system::Tags::TimescaleTuner<mock_control_sys>,
                  control_system::Tags::WriteDataToDisk,
                  control_system::Tags::ControlError<mock_control_sys>,
-                 control_system::Tags::Controller<mock_control_sys>>;
+                 control_system::Tags::Controller<mock_control_sys>,
+                 control_system::Tags::CurrentNumberOfMeasurements>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -104,7 +105,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   const double initial_time = 0.5;
   const double expr_time = 1.0;
   const DataVector timescale =
-      control_system::calculate_measurement_timescales(controller, tuner);
+      control_system::calculate_measurement_timescales(controller, tuner, 4);
   measurement_timescales[mock_control_sys::name()] =
       std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<0>>(
           initial_time, std::array<DataVector, 1>{{timescale}}, expr_time);
@@ -113,7 +114,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
   controller.assign_time_between_updates(damping_time);
 
   tuples::tagged_tuple_from_typelist<tags> init_tuple{
-      averager, tuner, write_data, control_error, controller};
+      averager, tuner, write_data, control_error, controller, 0};
 
   MockRuntimeSystem runner{{}, {std::move(measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<component>(
@@ -126,13 +127,18 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
 
   const auto& box_averager = ActionTesting::get_databox_tag<
       component, control_system::Tags::Averager<mock_control_sys>>(runner, 0);
+  const auto& box_current_measurement = ActionTesting::get_databox_tag<
+      component, control_system::Tags::CurrentNumberOfMeasurements>(runner, 0);
 
   // Check that things haven't been initialized
   CHECK(box_averager != averager);
+  // int's are initialized to 0 anyways
+  CHECK(box_current_measurement == 0);
 
   // Now initialize everything
   runner.next_action<component>(0);
 
   // Check that box values are same as expected values
   CHECK(box_averager == averager);
+  CHECK(box_current_measurement == 0);
 }

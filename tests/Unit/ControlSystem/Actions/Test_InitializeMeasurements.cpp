@@ -148,15 +148,18 @@ struct Component {
   using array_index = int;
 
   using initialization_tags =
-      tmpl::list<Tags::TimeStepId, Tags::Time,
-                 evolution::Tags::EventsAndDenseTriggers>;
+      tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
 
+  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Time>;
+  using compute_tags = tmpl::list<Parallel::Tags::FromGlobalCache<
+      ::domain::Tags::FunctionsOfTimeInitialize>>;
   using mutable_global_cache_tags =
       tmpl::list<domain::Tags::FunctionsOfTimeInitialize>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
       tmpl::list<
+          ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
           evolution::Actions::InitializeRunEventsAndDenseTriggers,
           control_system::Actions::InitializeMeasurements<control_systems>>>>;
 };
@@ -172,7 +175,6 @@ struct Metavariables {
         tmpl::pair<DenseTrigger,
                    control_system::control_system_triggers<control_systems>>>;
   };
-
 };
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
@@ -203,10 +205,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.InitializeMeasurements",
   functions.emplace("C", timescale->get_clone());
 
   MockRuntimeSystem runner{{}, {std::move(functions), std::move(timescales)}};
-  ActionTesting::emplace_array_component<component>(
+  ActionTesting::emplace_array_component_and_initialize<component>(
       make_not_null(&runner), ActionTesting::NodeId{0},
-      ActionTesting::LocalCoreId{0}, 0, Tags::TimeStepId::type{true, 0, {}},
-      Tags::Time::type{0.0}, evolution::Tags::EventsAndDenseTriggers::type{});
+      ActionTesting::LocalCoreId{0}, 0,
+      {Tags::TimeStepId::type{true, 0, {}}, Tags::Time::type{0.0}},
+      evolution::Tags::EventsAndDenseTriggers::type{});
 
   // InitializeRunEventsAndDenseTriggers
   ActionTesting::next_action<component>(make_not_null(&runner), 0);

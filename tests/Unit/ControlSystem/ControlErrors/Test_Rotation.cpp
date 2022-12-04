@@ -46,6 +46,7 @@ void test_rotation_control_error() {
       "      Rotation: 3\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
+      "  MeasurementsPerUpdate: 4\n"
       "  Rotation:\n"
       "    IsActive: true\n"
       "    Averager:\n"
@@ -81,7 +82,7 @@ void test_rotation_control_error() {
   // Setup runner and element component because it's the easiest way to get the
   // global cache
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_array_component<element_component>(

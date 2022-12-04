@@ -249,6 +249,7 @@ ApparentHorizons:
 
 ControlSystems:
   WriteDataToDisk: true
+  MeasurementsPerUpdate: 4
   Expansion:
     IsActive: true
     Averager:

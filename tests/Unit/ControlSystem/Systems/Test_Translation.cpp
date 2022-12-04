@@ -71,6 +71,7 @@ void test_translation_control_system() {
       "      Translation: 3\n"
       "ControlSystems:\n"
       "  WriteDataToDisk: false\n"
+      "  MeasurementsPerUpdate: 4\n"
       "  Translation:\n"
       "    IsActive: true\n"
       "    Averager:\n"
@@ -79,7 +80,7 @@ void test_translation_control_system() {
       "    Controller:\n"
       "      UpdateFraction: 0.3\n"
       "    TimescaleTuner:\n"
-      "      InitialTimescales: [0.5, 0.5, 0.5]\n"
+      "      InitialTimescales: 0.3\n"
       "      MinTimescale: 0.1\n"
       "      MaxTimescale: 10.\n"
       "      DecreaseThreshold: 2.0\n"
@@ -108,7 +109,7 @@ void test_translation_control_system() {
 
   // Setup runner and all components
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  MockRuntimeSystem runner{{"DummyFileName", std::move(domain)},
+  MockRuntimeSystem runner{{"DummyFileName", std::move(domain), 4},
                            {std::move(initial_functions_of_time),
                             std::move(initial_measurement_timescales)}};
   ActionTesting::emplace_singleton_component_and_initialize<
@@ -172,7 +173,7 @@ void test_translation_control_system() {
 
   // The control system gets more accurate the longer you run for. This is
   // the accuracy we can achieve in this amount of time.
-  Approx custom_approx = Approx::custom().epsilon(1.0e-10).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(5.0e-9).scale(1.0);
   const DataVector expected_translation_2nd_deriv{3, 0.0};
   CHECK_ITERABLE_CUSTOM_APPROX(trans_and_2_derivs[2],
                                expected_translation_2nd_deriv, custom_approx);

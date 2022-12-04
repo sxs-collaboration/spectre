@@ -104,6 +104,19 @@ struct WriteDataToDisk {
       "Whether control system data should be saved during an evolution."};
   using group = ControlSystemGroup;
 };
+
+/// \ingroup OptionTagsGroup
+/// \ingroup ControlSystemGroup
+/// Option tag that determines how many measurements will occur per control
+/// system update.
+struct MeasurementsPerUpdate {
+  using type = int;
+  static constexpr Options::String help = {
+      "How many AH measurements are to be done between control system "
+      "updates."};
+  static int lower_bound() { return 1; }
+  using group = ControlSystemGroup;
+};
 }  // namespace OptionTags
 
 /// \ingroup ControlSystemGroup
@@ -229,6 +242,27 @@ struct ControlError : db::SimpleTag {
       const control_system::OptionHolder<ControlSystem>& option_holder) {
     return option_holder.control_error;
   }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// Tag that determines how many measurements will occur per control
+/// system update. This will usually be stored in the global cache.
+struct MeasurementsPerUpdate : db::SimpleTag {
+  using type = int;
+
+  using option_tags = tmpl::list<OptionTags::MeasurementsPerUpdate>;
+  static constexpr bool pass_metavariables = false;
+  static int create_from_options(const int measurements_per_update) {
+    return measurements_per_update;
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ControlSystemGroup
+/// DataBox tag that keeps track of which measurement we are on.
+struct CurrentNumberOfMeasurements : db::SimpleTag {
+  using type = int;
 };
 
 namespace detail {
