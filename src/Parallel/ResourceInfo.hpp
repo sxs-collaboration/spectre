@@ -139,34 +139,6 @@ bool operator!=(const SingletonInfoHolder<ParallelComponent>& lhs,
 template <typename ParallelComponents>
 struct SingletonPack;
 
-/// \cond
-// Special case needed when the parameter pack passed to SingletonPack is empty.
-// This is only necessary to get things to compile and shouldn't be used.
-template <>
-struct SingletonPack<tmpl::list<>> {
-  using options = tmpl::list<>;
-  static constexpr Options::String help = {
-      "Resource options for all singletons."};
-
-  // NOLINTNEXTLINE(google-runtime-references)
-  void pup(PUP::er& /*p*/) {}
-
-  template <typename Component>
-  const auto& get() const {
-    ERROR(
-        "Cannot call the get() member of a SingletonPack with an empty "
-        "component list.");
-    return fake_holder_;
-  }
-
- private:
-  // Needed so get() can return a reference to something even though an ERROR
-  // will occur if it's called
-  struct FakeComponent {};
-  SingletonInfoHolder<FakeComponent> fake_holder_{};
-};
-/// \endcond
-
 /*!
  * \ingroup ParallelGroup
  * \brief Holds options for a group of singleton components.
@@ -247,62 +219,10 @@ bool operator!=(const SingletonPack<tmpl::list<Components...>>& lhs,
 }
 
 namespace detail {
-// This whole gymnastics with type aliases is necessary because ResourceInfo is
-// inside the GlobalCache. There are a lot of places that use the GlobalCache
-// that haven't defined the simple_tags_from_options type alias (like the
-// testing framework). And even though we don't call the entry method on the
-// GlobalCache related to ResourceInfo, all the type aliases inside ResourceInfo
-// are still constructed regardless. So rather than changing every mock
-// component to have an empty type alias, we just treat no type alias as not
-// having the tag we are looking for.
-CREATE_HAS_TYPE_ALIAS(simple_tags_from_options)
-CREATE_HAS_TYPE_ALIAS_V(simple_tags_from_options)
-
-template <typename Component, typename Tag,
-          bool HasInitializationTags =
-              has_simple_tags_from_options_v<Component>>
-struct has_tag : std::false_type {};
-
-template <typename Component, typename Tag>
-struct has_tag<Component, Tag, true>
-    : std::bool_constant<tmpl::list_contains_v<
-          typename Component::simple_tags_from_options, Tag>> {};
-
-template <typename Component>
-using component_has_singleton_info_tag =
-    has_tag<Component, Parallel::Tags::SingletonInfo<Component>>;
-
 template <typename Metavariables>
 using singleton_components =
     tmpl::filter<typename Metavariables::component_list,
                  Parallel::is_singleton<tmpl::_1>>;
-
-template <typename Component>
-using contains_avoid_global_proc_0 =
-    has_tag<Component, Parallel::Tags::AvoidGlobalProc0>;
-
-template <typename Metavariables>
-constexpr bool avoid_global_proc_0 =
-    tmpl::size<tmpl::filter<
-        typename Metavariables::component_list,
-        tmpl::bind<contains_avoid_global_proc_0, tmpl::_1>>>::value > 0;
-
-template <typename Metavariables>
-constexpr bool has_resource_info_tag = Parallel::is_in_const_global_cache<
-    Metavariables, Parallel::Tags::ResourceInfo<Metavariables>>;
-
-template <typename SingletonList>
-using singletons_with_singleton_info =
-    tmpl::filter<SingletonList,
-                 tmpl::bind<component_has_singleton_info_tag, tmpl::_1>>;
-
-template <typename Metavariables>
-constexpr bool using_resource_info =
-    avoid_global_proc_0<Metavariables> or
-    has_resource_info_tag<Metavariables> or
-    tmpl::size<singletons_with_singleton_info<
-        singleton_components<Metavariables>>>::value > 0;
-
 }  // namespace detail
 
 /*!
@@ -310,36 +230,32 @@ constexpr bool using_resource_info =
  * \brief Holds resource info for all singletons and for avoiding placing array
  * elements/singletons on the global proc 0.
  *
- * \details This can be used for placing all singletons in an executable. To
- * have a singleton specify resource information, add the
- * `Parallel::Tags::SingletonInfo` tag to the `simple_tags_from_options` type
- * alias in the singleton. To specify whether to avoid placing array elements
- * and singletons on the global proc 0, add the
- * `Parallel::Tags::AvoidGlobalProc0` tag to the `simple_tags_from_options` of
- * the parallel components in your executable. If you don't want either of these
- * things and just want access to the ResourceInfo, add the
- * `Parallel::Tags::ResourceInfo` tag to the const global cache tags.
+ * \details This can be used for placing all singletons in an executable.
  *
- * If you only add the `Parallel::Tags::ResourceInfo` tag to the const global
- * cache tags, you'll need the following block in the input file:
- *
- * \code {.yaml}
- * ResourceInfo:
- * \endcode
- *
- * If you add the `Parallel::Tags::AvoidGlobalProc0` tag to the initialization
- * tags, you'll need the following block in the input file:
+ * If you have no singletons, you'll need the following block in the input file
+ * (where you can set the value of AvoidGlobalProc0 to true or false):
  *
  * \code {.yaml}
  * ResourceInfo:
  *   AvoidGlobalProc0: true
  * \endcode
  *
- * If you have `Parallel::Tags::SingletonInfo` tags in the initialization tags,
- * you'll need the following block in the input file:
+ * If you have singletons, but do not want to assign any of them to a specific
+ * proc or be exclusive on a proc, you'll need the following block in the input
+ * file (where you can set the value of AvoidGlobalProc0 to true or false):
  *
  * \code {.yaml}
  * ResourceInfo:
+ *   AvoidGlobalProc0: true
+ *   Singletons: Auto
+ * \endcode
+ *
+ * Otherwise, you will need to specify a block in the input file as below,
+ * where you will need to specify the options for each singleton:
+ *
+ * \code {.yaml}
+ * ResourceInfo:
+ *   AvoidGlobalProc0: true
  *   Singletons:
  *     MySingleton1:
  *       Proc: 2
@@ -352,22 +268,6 @@ constexpr bool using_resource_info =
  * where `MySingleton1` is the `pretty_type::name` of the singleton component
  * and the options for each singleton are described in
  * `Parallel::SingletonInfoHolder`.
- *
- * If you have both `Parallel::Tags::AvoidGlobalProc0` and
- * `Parallel::Tags::SingletonInfo` tags in the initialization tags, you can
- * combine the blocks like so:
- *
- * \code {.yaml}
- * ResourceInfo:
- *   AvoidGlobalProc0: true
- *   Singletons:
- *     MySingleton1:
- *       Proc: 2
- *       Exclusive: true
- *     MySingleton2:
- *       Proc: Auto
- *       Exclusive: false
- * \endcode
  *
  * Several consistency checks are done during option parsing to avoid user
  * error. However, some checks can't be done during option parsing because the
@@ -419,8 +319,6 @@ template <typename Metavariables>
 struct ResourceInfo {
  private:
   using singletons = detail::singleton_components<Metavariables>;
-  using singletons_with_info =
-      detail::singletons_with_singleton_info<singletons>;
 
   template <typename Component>
   struct LocalTag {
@@ -432,7 +330,7 @@ struct ResourceInfo {
 
  public:
   struct Singletons {
-    using type = SingletonPack<singletons_with_info>;
+    using type = Options::Auto<SingletonPack<singletons>>;
     static constexpr Options::String help = {
         "Resource options for all singletons."};
   };
@@ -444,11 +342,11 @@ struct ResourceInfo {
         "0."};
   };
 
-  using options = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<detail::avoid_global_proc_0<Metavariables>,
-                          tmpl::list<AvoidGlobalProc0>, tmpl::list<>>,
-      tmpl::conditional_t<tmpl::size<singletons_with_info>::value != 0,
-                          tmpl::list<Singletons>, tmpl::list<>>>>;
+  using options = tmpl::push_front<
+      tmpl::conditional_t<tmpl::size<singletons>::value != 0,
+                          tmpl::list<Singletons>, tmpl::list<>>,
+      AvoidGlobalProc0>;
+
   static constexpr Options::String help = {
       "Resource options for a simulation. This information will be used when "
       "placing Array and Singleton parallel components on the requested "
@@ -458,19 +356,13 @@ struct ResourceInfo {
   /// this one. This constructor holds all checks able to be done during option
   /// parsing.
   ResourceInfo(const bool avoid_global_proc_0,
-               const SingletonPack<singletons_with_info>& singleton_pack,
+               const std::optional<SingletonPack<singletons>>& singleton_pack,
                const Options::Context& context = {});
 
   /// This constructor is used when only AvoidGlobalProc0 is specified, but no
   /// SingletonInfoHolders are specified. Calls the main constructor with an
   /// empty SingletonPack.
   ResourceInfo(const bool avoid_global_proc_0,
-               const Options::Context& context = {});
-
-  /// This constructor is used when only SingletonInfoHolders are specified, but
-  /// no AvoidGlobalProc0. Calls the main constructor with AvoidGlobalProc0
-  /// `false`.
-  ResourceInfo(const SingletonPack<singletons_with_info>& singleton_pack,
                const Options::Context& context = {});
 
   ResourceInfo() = default;
@@ -553,7 +445,7 @@ struct ResourceInfo {
 template <typename Metavariables>
 ResourceInfo<Metavariables>::ResourceInfo(
     const bool avoid_global_proc_0,
-    const SingletonPack<singletons_with_info>& singleton_pack,
+    const std::optional<SingletonPack<singletons>>& opt_singleton_pack,
     const Options::Context& context)
     : avoid_global_proc_0_(avoid_global_proc_0) {
   if (avoid_global_proc_0_) {
@@ -561,106 +453,105 @@ ResourceInfo<Metavariables>::ResourceInfo(
     ++num_procs_to_ignore_;
   }
 
-  // Procs that were specifically requested. These may or may not be exclusive
-  std::unordered_multiset<int> requested_procs{};
+  if constexpr (tmpl::size<singletons>::value > 0) {
+    const auto& singleton_pack =
+        opt_singleton_pack.value_or(SingletonPack<singletons>{});
 
-  [[maybe_unused]] const auto parse_singletons = [this, &context,
-                                                  &singleton_pack,
-                                                  &requested_procs](
-                                                     const auto component_v) {
-    using component = tmpl::type_from<decltype(component_v)>;
-    auto& singleton_map = tuples::get<LocalTag<component>>(singleton_map_);
+    // Procs that were specifically requested. These may or may not be exclusive
+    std::unordered_multiset<int> requested_procs{};
 
-    // This singleton has a SingletonInfoHolder associated with it. Get all
-    // the info necessary from it
-    if constexpr (tmpl::list_contains_v<singletons_with_info, component>) {
-      const auto& info_holder = singleton_pack.template get<component>();
-      // Assign proc. If a specific proc is requested, add it to a map. We'll
-      // check that exclusive singletons have unique procs once we've gone
-      // through everything once
-      const auto proc = info_holder.proc();
-      singleton_map.second = proc;
+    [[maybe_unused]] const auto parse_singletons = [this, &context,
+                                                    &singleton_pack,
+                                                    &requested_procs](
+                                                       const auto component_v) {
+      using component = tmpl::type_from<decltype(component_v)>;
+      auto& singleton_map = tuples::get<LocalTag<component>>(singleton_map_);
 
-      if (proc.has_value()) {
-        requested_procs.insert(*proc);
-      }
+      // This singleton has a SingletonInfoHolder associated with it. Get all
+      // the info necessary from it
+      if constexpr (tmpl::list_contains_v<singletons, component>) {
+        const auto& info_holder = singleton_pack.template get<component>();
+        // Assign proc. If a specific proc is requested, add it to a map. We'll
+        // check that exclusive singletons have unique procs once we've gone
+        // through everything once
+        const auto proc = info_holder.proc();
+        singleton_map.second = proc;
 
-      if (info_holder.is_exclusive()) {
-        // Check that no singleton has requested to be on proc 0 while
-        // AvoidGlobalProc0 is simultaneously true.
-        if (avoid_global_proc_0_ and proc.has_value() and *proc == 0) {
-          PARSE_ERROR(context,
-                      "A singleton has requested to be exclusively on proc 0, "
-                      "but the AvoidGlobalProc0 option is also set to true.");
+        if (proc.has_value()) {
+          requested_procs.insert(*proc);
         }
 
-        // This singleton is exclusive so set it.
-        singleton_map.first = true;
-        ++num_exclusive_singletons_;
-        ++num_procs_to_ignore_;
-        // If it requested a specific proc, ignore it when assigning the rest
-        // of the singletons
-        if (proc.has_value()) {
-          procs_to_ignore_.insert(static_cast<size_t>(*proc));
-          ++num_requested_exclusive_singletons_;
+        if (info_holder.is_exclusive()) {
+          // Check that no singleton has requested to be on proc 0 while
+          // AvoidGlobalProc0 is simultaneously true.
+          if (avoid_global_proc_0_ and proc.has_value() and *proc == 0) {
+            PARSE_ERROR(
+                context,
+                "A singleton has requested to be exclusively on proc 0, "
+                "but the AvoidGlobalProc0 option is also set to true.");
+          }
+
+          // This singleton is exclusive so set it.
+          singleton_map.first = true;
+          ++num_exclusive_singletons_;
+          ++num_procs_to_ignore_;
+          // If it requested a specific proc, ignore it when assigning the rest
+          // of the singletons
+          if (proc.has_value()) {
+            procs_to_ignore_.insert(static_cast<size_t>(*proc));
+            ++num_requested_exclusive_singletons_;
+          }
+        } else {
+          // This singleton is not exclusive.
+          singleton_map.first = false;
+          if (proc.has_value()) {
+            ++num_requested_nonexclusive_singletons_;
+            requested_nonexclusive_procs_.insert(static_cast<size_t>(*proc));
+          }
         }
       } else {
-        // This singleton is not exclusive.
+        // This singleton doesn't have a SingletonInfoHolder so it automatically
+        // isn't exclusive and gets set assigned an automatic proc.
         singleton_map.first = false;
-        if (proc.has_value()) {
-          ++num_requested_nonexclusive_singletons_;
-          requested_nonexclusive_procs_.insert(static_cast<size_t>(*proc));
-        }
+        // nullopt is a sentinel for auto
+        singleton_map.second = std::nullopt;
       }
-    } else {
-      // This singleton doesn't have a SingletonInfoHolder so it automatically
-      // isn't exclusive and gets set assigned an automatic proc.
-      singleton_map.first = false;
-      // nullopt is a sentinel for auto
-      singleton_map.second = std::nullopt;
-    }
-  };
+    };
 
-  // Create a map between each singleton, whether it is exclusive, and which
-  // proc it wants to be on. Use nullopt as a sentinel for choosing the proc
-  // automatically.
-  tmpl::for_each<singletons>(parse_singletons);
-  [[maybe_unused]] const auto sanity_checks =
-      [this, &context, &requested_procs](const auto component_v) {
-        using component = tmpl::type_from<decltype(component_v)>;
-        auto& singleton_map = tuples::get<LocalTag<component>>(singleton_map_);
+    // Create a map between each singleton, whether it is exclusive, and which
+    // proc it wants to be on. Use nullopt as a sentinel for choosing the proc
+    // automatically.
+    tmpl::for_each<singletons>(parse_singletons);
+    [[maybe_unused]] const auto sanity_checks = [this, &context,
+                                                 &requested_procs](
+                                                    const auto component_v) {
+      using component = tmpl::type_from<decltype(component_v)>;
+      auto& singleton_map = tuples::get<LocalTag<component>>(singleton_map_);
 
-        const bool exclusive = singleton_map.first;
-        const auto proc = singleton_map.second;
+      const bool exclusive = singleton_map.first;
+      const auto proc = singleton_map.second;
 
-        // Check exclusive singletons that requested to be on a specific proc
-        // if any other singletons requested to be on the same proc (exclusive
-        // or not)
-        if (exclusive and proc.has_value() and
-            requested_procs.count(*proc) > 1) {
-          PARSE_ERROR(context,
-                      "Two singletons have requested to be on proc "
-                          << proc.value()
-                          << ", but at least one of them has requested to be "
-                             "exclusively on this proc.");
-        }
-      };
+      // Check exclusive singletons that requested to be on a specific proc
+      // if any other singletons requested to be on the same proc (exclusive
+      // or not)
+      if (exclusive and proc.has_value() and requested_procs.count(*proc) > 1) {
+        PARSE_ERROR(context,
+                    "Two singletons have requested to be on proc "
+                        << proc.value()
+                        << ", but at least one of them has requested to be "
+                           "exclusively on this proc.");
+      }
+    };
 
-  // Do some inter-singleton sanity checks to avoid inconsistencies
-  tmpl::for_each<singletons>(sanity_checks);
+    // Do some inter-singleton sanity checks to avoid inconsistencies
+    tmpl::for_each<singletons>(sanity_checks);
+  }
 }
 
 template <typename Metavariables>
 ResourceInfo<Metavariables>::ResourceInfo(const bool avoid_global_proc_0,
                                           const Options::Context& context)
-    : ResourceInfo(avoid_global_proc_0, SingletonPack<singletons_with_info>{},
-                   context) {}
-
-template <typename Metavariables>
-ResourceInfo<Metavariables>::ResourceInfo(
-    const SingletonPack<singletons_with_info>& singleton_pack,
-    const Options::Context& context)
-    : ResourceInfo(false, singleton_pack, context) {}
+    : ResourceInfo(avoid_global_proc_0, std::nullopt, context) {}
 
 template <typename Metavariables>
 void ResourceInfo<Metavariables>::pup(PUP::er& p) {

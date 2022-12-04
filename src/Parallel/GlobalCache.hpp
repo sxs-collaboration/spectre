@@ -25,6 +25,7 @@
 #include "Parallel/PupStlCpp17.hpp"
 #include "Parallel/ResourceInfo.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
@@ -44,10 +45,6 @@
 namespace Parallel {
 template <typename Metavariables>
 struct GlobalCache;
-namespace Tags {
-template <typename Metavariables>
-struct ResourceInfo;
-}  // namespace Tags
 }  // namespace Parallel
 namespace mem_monitor {
 template <typename Metavariables>
@@ -479,6 +476,11 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
   void set_resource_info(
       const Parallel::ResourceInfo<Metavariables>& resource_info);
 
+  /// Retrieve the resource_info
+  const Parallel::ResourceInfo<Metavariables>& get_resource_info() const {
+    return resource_info_;
+  }
+
   /// Retrieve the proxy to the global cache
   proxy_type get_this_proxy();
 
@@ -548,6 +550,7 @@ class GlobalCache : public CBase_GlobalCache<Metavariables> {
       const_global_cache_{};
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       parallel_components_{};
+  Parallel::ResourceInfo<Metavariables> resource_info_{};
   // We store both a pointer and a proxy to the MutableGlobalCache.
   // There is both a pointer and a proxy because we want to use
   // MutableGlobalCache in production (where it must be charm-aware)
@@ -679,13 +682,8 @@ void GlobalCache<Metavariables>::set_resource_info(
     const Parallel::ResourceInfo<Metavariables>& resource_info) {
   ASSERT(not resource_info_has_been_set_,
          "Can only set the resource info once");
-  if constexpr (tmpl::list_contains_v<
-                    tags_list, Parallel::Tags::ResourceInfo<Metavariables>>) {
-    tuples::get<Tags::ResourceInfo<Metavariables>>(const_global_cache_) =
-        resource_info;
-  }
+  resource_info_ = resource_info;
   resource_info_has_been_set_ = true;
-  (void)resource_info;
 }
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
@@ -980,6 +978,19 @@ struct FromGlobalCache : CacheTag, db::ReferenceTag {
   static const auto& get(
       const Parallel::GlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
+  }
+
+  using argument_tags = tmpl::list<parent_tag>;
+};
+
+template <typename Metavariables>
+struct ResourceInfoReference : ResourceInfo<Metavariables>, db::ReferenceTag {
+  using base = ResourceInfo<Metavariables>;
+  using parent_tag = GlobalCache;
+
+  static const auto& get(
+      const Parallel::GlobalCache<Metavariables>* const& cache) {
+    return cache->get_resource_info();
   }
 
   using argument_tags = tmpl::list<parent_tag>;

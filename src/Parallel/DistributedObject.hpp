@@ -200,6 +200,7 @@ class DistributedObject<ParallelComponent,
       Tags::GlobalCacheProxy<metavariables>,
       typename parallel_component::simple_tags_from_options,
       Tags::GlobalCacheImplCompute<metavariables>,
+      Tags::ResourceInfoReference<metavariables>,
       db::wrap_tags_in<Tags::FromGlobalCache, all_cache_tags>,
       Algorithm_detail::action_list_simple_tags<parallel_component>,
       Algorithm_detail::action_list_compute_tags<parallel_component>>>>;

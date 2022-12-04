@@ -7,3 +7,7 @@ VectorOfDoubles: []
 Observers:
   ReductionFileName: "Test_AlgorithmGlobalCacheReduction"
   VolumeFileName: "Test_AlgorithmGlobalCacheVolume"
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

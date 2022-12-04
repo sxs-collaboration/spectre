@@ -18,3 +18,7 @@ SerialGmres:
   Verbosity: Verbose
 
 ConvergenceReason: AbsoluteResidual
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

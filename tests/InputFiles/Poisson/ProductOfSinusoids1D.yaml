@@ -16,6 +16,7 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 Background:
   ProductOfSinusoids:

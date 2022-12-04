@@ -385,14 +385,13 @@ ResourceInfo:
       Exclusive: false
 ```
 
-First is the `AvoidGlobalProc0` option. This will be available if any Array or
-Singleton component adds the `Parallel::Tags::AvoidGlobalProc0` tag to its
-`simple_tags_from_options` type alias. This option will tell the program to not
+First is the `AvoidGlobalProc0` option. This option will tell the program to not
 put *any* Array Elements or Singletons on the global zeroth charm-core. This
 core is sometimes used to write data to disk which is typically much slower
-than the program execution. The second is the `Singletons:` option. This will be
-available for every Singleton that adds the `Parallel::Tags::SingletonInfo` tag
-to its `simple_tags_from_options` type alias. `AhA` is the `pretty_type::name()`
+than the program execution. The second is the `Singletons:` option. You can
+set the value to `Auto`, and then each singleton will have their proc be chosen
+automatically and they won't be exclusive.  Otherwise, you must specify options
+for each singleton as in the example above.  `AhA` is the `pretty_type::name()`
 of a Singleton in the program and the user has a choice of which proc to place
 the Singleton on (`Auto` will let the program decide) and whether to exclude
 Array Elements or other Singletons from being put on this core. This is useful
@@ -400,10 +399,6 @@ in case the Singleton does some expensive computation that shouldn't be slowed
 down by having lots of Array Elements on the same core. In the figure above,
 `AvoidGlobalProc0` is true, and `Sing. 2` requested to be exclusively on core
 `2`.
-
-\note If there are Singletons in your executable that don't have the
-`Parallel::Tags::SingletonInfo` tag, by default their proc will be chosen
-automatically and they won't be exclusive.
 
 # Actions {#dev_guide_parallelization_actions}
 

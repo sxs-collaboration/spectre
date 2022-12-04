@@ -8,3 +8,6 @@ PhaseChangeAndTriggers:
     - - VisitAndReturn(Register)
   - - SolveTrigger:
     - - VisitAndReturn(Solve)
+
+ResourceInfo:
+  AvoidGlobalProc0: false

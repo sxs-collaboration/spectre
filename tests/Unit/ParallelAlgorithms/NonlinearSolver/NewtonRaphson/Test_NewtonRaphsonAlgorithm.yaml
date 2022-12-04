@@ -26,3 +26,7 @@ LinearSolver:
 Observers:
   VolumeFileName: "Test_NewtonRaphsonAlgorithm_Volume"
   ReductionFileName: "Test_NewtonRaphsonAlgorithm_Reductions"
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

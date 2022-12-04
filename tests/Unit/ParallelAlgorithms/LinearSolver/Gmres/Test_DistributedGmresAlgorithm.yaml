@@ -14,6 +14,7 @@
 
 ResourceInfo:
   AvoidGlobalProc0: false
+  Singletons: Auto
 
 DomainCreator:
   Interval:

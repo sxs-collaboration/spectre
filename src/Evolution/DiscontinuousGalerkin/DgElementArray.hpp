@@ -23,7 +23,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
-#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
@@ -57,15 +56,10 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<volume_dim>,
-                 Parallel::Tags::ResourceInfo<Metavariables>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
 
-  using simple_tags_from_options =
-      tmpl::append<Parallel::get_simple_tags_from_options<
-                       Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>>,
-                   tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,

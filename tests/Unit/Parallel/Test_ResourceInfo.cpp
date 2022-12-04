@@ -31,49 +31,12 @@ struct FakeSingleton {
   static std::string name() { return "FakeSingleton" + get_output(Index); }
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using simple_tags_from_options = tmpl::list<
-      Parallel::Tags::AvoidGlobalProc0,
-      Parallel::Tags::SingletonInfo<FakeSingleton<Metavariables, Index>>>;
-};
-
-template <typename Metavariables, size_t Index>
-struct FakeSingletonInfoOnly {
-  using chare_type = Parallel::Algorithms::Singleton;
-  using metavariables = Metavariables;
-  static std::string name() { return "FakeSingleton" + get_output(Index); }
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using simple_tags_from_options = tmpl::list<Parallel::Tags::SingletonInfo<
-      FakeSingletonInfoOnly<Metavariables, Index>>>;
-};
-template <typename Metavariables>
-struct FakeSingletonAvoidGlobalProc0 {
-  using chare_type = Parallel::Algorithms::Singleton;
-  using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using simple_tags_from_options = tmpl::list<Parallel::Tags::AvoidGlobalProc0>;
+  using simple_tags_from_options = tmpl::list<>;
 };
 
 template <size_t... Indices>
-struct MetavariablesBoth {
-  using component_list =
-      tmpl::list<FakeSingleton<MetavariablesBoth, Indices>...>;
-};
-template <size_t... Indices>
-struct MetavariablesInfoOnly {
-  using component_list =
-      tmpl::list<FakeSingletonInfoOnly<MetavariablesInfoOnly, Indices>...>;
-};
-struct MetavariablesAvoidGlobalProc0 {
-  using component_list =
-      tmpl::list<FakeSingletonAvoidGlobalProc0<MetavariablesAvoidGlobalProc0>>;
-};
-
-struct MetavariablesResourceInfoOnly {
-  using get_const_global_cache_tags =
-      tmpl::list<Parallel::Tags::ResourceInfo<MetavariablesResourceInfoOnly>>;
-  using component_list = tmpl::list<>;
+struct Metavariables {
+  using component_list = tmpl::list<FakeSingleton<Metavariables, Indices>...>;
 };
 
 struct EmptyMetavars {};
@@ -166,26 +129,11 @@ void test_singleton_pack() {
 
   CHECK(serialized_pack == singleton_pack);
   CHECK_FALSE(serialized_pack != singleton_pack);
-
-  CHECK_THROWS_WITH(
-      ([]() {
-        const SingletonPack<tmpl::list<>> empty_pack{};
-        const auto serialized_empty_pack =
-            serialize_and_deserialize(empty_pack);
-        const auto& throws_error =
-            serialized_empty_pack.get<fake_singleton<0>>();
-        (void)throws_error;
-      })(),
-      Catch::Contains("Cannot call the get() member of a SingletonPack with an "
-                      "empty component list."));
 }
 
 void test_tags() {
-  using metavars = MetavariablesBoth<0>;
+  using metavars = Metavariables<0>;
 
-  TestHelpers::db::test_simple_tag<
-      Tags::SingletonInfo<FakeSingleton<metavars, 0>>>("FakeSingleton0");
-  TestHelpers::db::test_simple_tag<Tags::AvoidGlobalProc0>("AvoidGlobalProc0");
   TestHelpers::db::test_simple_tag<Tags::ResourceInfo<metavars>>(
       "ResourceInfo");
 
@@ -195,23 +143,12 @@ void test_tags() {
 
   ResourceInfo<metavars> resource_info{false, {info_holder}};
   resource_info.build_singleton_map(cache);
-
-  const bool avoid_global_proc_0 =
-      Tags::AvoidGlobalProc0::create_from_options<metavars>(resource_info);
-  CHECK_FALSE(avoid_global_proc_0);
-
-  const auto tag_info_holder = Tags::SingletonInfo<
-      FakeSingleton<metavars, 0>>::create_from_options<metavars>(resource_info);
-  CHECK(tag_info_holder == info_holder);
-
-  CHECK(Tags::ResourceInfo<metavars>::create_from_options<metavars>(
-            resource_info) == Parallel::ResourceInfo<metavars>{});
 }
 
 void test_single_core() {
   {
     INFO("AvoidGlobalProc0 and Singletons");
-    using metavars = MetavariablesBoth<0>;
+    using metavars = Metavariables<0>;
     Parallel::MutableGlobalCache<metavars> mutable_cache{};
     Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
     // Both of these should be identical since we are running on one proc
@@ -271,62 +208,37 @@ void test_single_core() {
     CHECK(info_0.is_exclusive() == serialized_info_0.is_exclusive());
   }
   {
-    INFO("Only Singletons");
-    using metavars = MetavariablesInfoOnly<0, 1>;
-    Parallel::MutableGlobalCache<metavars> mutable_cache{};
-    Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
-    // Both of these should be identical since we are running on one proc
+    INFO("Singletons::Auto");
+    using metavars = Metavariables<0, 1>;
     auto resource_info =
         TestHelpers::test_option_tag<OptionTags::ResourceInfo<metavars>>(
-            "Singletons:\n"
-            "  FakeSingleton0:\n"
-            "    Proc: 0\n"
-            "    Exclusive: false\n"
-            "  FakeSingleton1:\n"
-            "    Proc: Auto\n"
-            "    Exclusive: false\n");
-
+            "AvoidGlobalProc0: false\n"
+            "Singletons: Auto\n");
+    Parallel::MutableGlobalCache<metavars> mutable_cache{};
+    Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
     resource_info.build_singleton_map(cache);
-
     const size_t proc_0 =
-        resource_info.template proc_for<FakeSingletonInfoOnly<metavars, 0>>();
+        resource_info.template proc_for<FakeSingleton<metavars, 0>>();
     const size_t proc_1 =
-        resource_info.template proc_for<FakeSingletonInfoOnly<metavars, 1>>();
-
-    // Only running on once proc
+        resource_info.template proc_for<FakeSingleton<metavars, 1>>();
     CHECK(proc_0 == 0);
     CHECK(proc_1 == 0);
 
+    CHECK_FALSE(resource_info.avoid_global_proc_0());
     const auto& info_0 =
-        resource_info.get_singleton_info<FakeSingletonInfoOnly<metavars, 0>>();
+        resource_info.get_singleton_info<FakeSingleton<metavars, 0>>();
     const auto& info_1 =
-        resource_info.get_singleton_info<FakeSingletonInfoOnly<metavars, 1>>();
+        resource_info.get_singleton_info<FakeSingleton<metavars, 1>>();
 
     CHECK(info_0.proc().value() == 0);
     CHECK(info_1.proc().value() == 0);
     CHECK_FALSE(info_0.is_exclusive());
     CHECK_FALSE(info_1.is_exclusive());
   }
-  {
-    INFO("Only AvoidGlobalProc0");
-    const auto resource_info = TestHelpers::test_option_tag<
-        OptionTags::ResourceInfo<MetavariablesAvoidGlobalProc0>>(
-        "AvoidGlobalProc0: false\n");
-
-    CHECK_FALSE(resource_info.avoid_global_proc_0());
-  }
-  {
-    INFO("Only ResourceInfo tag");
-    const auto resource_info = TestHelpers::test_option_tag<
-        OptionTags::ResourceInfo<MetavariablesResourceInfoOnly>>("");
-
-    CHECK(resource_info ==
-          Parallel::ResourceInfo<MetavariablesResourceInfoOnly>{});
-  }
 }
 
 void test_errors() {
-  using metavars = MetavariablesBoth<0>;
+  using metavars = Metavariables<0>;
   Parallel::MutableGlobalCache<metavars> mutable_cache{};
   Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
 
@@ -359,7 +271,7 @@ void test_errors() {
   CHECK_THROWS_WITH(
       ([]() {
         const auto resource_info = TestHelpers::test_option_tag<
-            OptionTags::ResourceInfo<MetavariablesBoth<0, 1>>>(
+            OptionTags::ResourceInfo<Metavariables<0, 1>>>(
             "AvoidGlobalProc0: false\n"
             "Singletons:\n"
             "  FakeSingleton0:\n"
@@ -484,7 +396,7 @@ Parallel::ResourceInfo<Metavariables> create_resource_info(
 }
 
 constexpr size_t num_singletons = 7;
-using metavars = MetavariablesBoth<0, 1, 2, 3, 4, 5, 6>;
+using metavars = Metavariables<0, 1, 2, 3, 4, 5, 6>;
 template <size_t Index>
 using component = FakeSingleton<metavars, Index>;
 
