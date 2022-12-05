@@ -43,7 +43,6 @@ spectre_target_headers(
   ReducedWorldtubeModeRecorder.hpp
   ScriPlusInterpolationManager.hpp
   ScriPlusValues.hpp
-  SendGhWorldtubeData.hpp
   SpecBoundaryData.hpp
   SwshDerivatives.hpp
   System.hpp
@@ -80,6 +79,7 @@ add_dependencies(
 
 add_subdirectory(Actions)
 add_subdirectory(AnalyticSolutions)
+add_subdirectory(Callbacks)
 add_subdirectory(Components)
 add_subdirectory(Initialize)
 add_subdirectory(InterfaceManagers)
