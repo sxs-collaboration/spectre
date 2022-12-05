@@ -74,6 +74,11 @@ the developers of code that enabled them.
     >   which parts of SpECTRE you are using in particular, e.g. the initial
     >   data solver, the evolution scheme, the wave extraction, etc.]
     >
+    > Claims of the paper:
+    >
+    > - [Summarize the main claims you make in the paper. In particular, does
+    >   the paper make any claims about physics?]
+    >
     > Please respond with the list of co-authors to include in the paper.
     >
     > Best regards,
@@ -84,7 +89,12 @@ the developers of code that enabled them.
   are using SpECTRE.
 
   The core developers will discuss among themselves, following the guidelines
-  listed below, and will get back to you with a list of authors.
+  listed below, and will get back to you with a list of co-authors and their
+  contributions. In the spirit of transparency within the collaboration the core
+  developers will also share your description of the paper and the suggested
+  list of co-authors with the
+  [spectre-devel@black-holes.org](mailto:spectre-devel@black-holes.org) mailing
+  list.
 - Please make the paper draft available to all co-authors as early as possible,
   e.g, by sharing access to a Git repository. This allows the co-authors to
   contribute their technical expertise to the SpECTRE-related part of the paper,
@@ -100,7 +110,8 @@ the developers of code that enabled them.
   "Using the feature" means the code contributes to the result of the paper,
   either obviously like a new coordinate map in the domain, or in a more subtle
   way like an optimization that made the simulation run faster.
-- Core developers earn authorship rights to all science papers that use SpECTRE.
+- Core developers earn authorship rights to all science papers that use SpECTRE
+  for their infrastructure contributions.
 - In case of controversy, contact any person who you feel comfortable raising
   your concern with, such as one of the core developers, a member of the
   [executive committee](https://github.com/sxs-collaboration/WelcomeToSXS/blob/master/SxsPolicies.md#executive-committee),
