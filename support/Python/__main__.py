@@ -1,27 +1,49 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
+import logging
+import rich.logging
+import rich.traceback
+
 SPECTRE_VERSION = "@SPECTRE_VERSION@"
 
 
-def main():
-    import argparse
+# Load subcommands lazily, i.e., only import the module when the subcommand is
+# invoked. This is important so the CLI responds quickly.
+class Cli(click.MultiCommand):
+    def list_commands(self, ctx):
+        return ["clean-output"]
 
-    class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter,
-                        argparse.RawDescriptionHelpFormatter):
-        pass
-
-    parser = argparse.ArgumentParser(
-        prog='spectre',
-        description="SpECTRE version: {}".format(SPECTRE_VERSION),
-        formatter_class=HelpFormatter)
-
-    # Version endpoint
-    parser.add_argument('--version', action='version', version=SPECTRE_VERSION)
-
-    parser.parse_args()
-    raise NotImplementedError("No subprograms are implemented yet.")
+    def get_command(self, ctx, name):
+        if name == "clean-output":
+            from spectre.tools.CleanOutput import clean_output_command
+            return clean_output_command
+        raise NotImplementedError(f"The command '{name}' is not implemented.")
 
 
-if __name__ == '__main__':
-    main()
+# Set up CLI entry point
+@click.group(context_settings=dict(help_option_names=["-h", "--help"]),
+             help=f"SpECTRE version: {SPECTRE_VERSION}",
+             cls=Cli)
+@click.version_option(version=SPECTRE_VERSION, message="%(version)s")
+@click.option('--debug', 'log_level', flag_value=logging.DEBUG)
+@click.option('--silent', 'log_level', flag_value=logging.CRITICAL)
+def cli(log_level):
+    if log_level is None:
+        log_level = logging.INFO
+    # Configure logging
+    logging.basicConfig(level=log_level,
+                        format="%(message)s",
+                        datefmt="[%X]",
+                        handlers=[rich.logging.RichHandler()])
+    # Format tracebacks with rich
+    # - Suppress traceback entries from modules that we don't care about
+    rich.traceback.install(
+        show_locals=log_level <= logging.DEBUG,
+        extra_lines=(3 if log_level <= logging.DEBUG else 0),
+        suppress=[click])
+
+
+if __name__ == "__main__":
+    cli(prog_name="spectre")

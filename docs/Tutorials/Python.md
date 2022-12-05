@@ -26,7 +26,34 @@ supports `pip`, for instance in a
 [Anaconda](https://www.anaconda.com/distribution/) environment. You can also get
 access to the SpECTRE Python modules by adding  `BUILD_DIR/bin/python` to your
 `PYTHONPATH`. This is done automatically by sourcing the `LoadPython.sh` file
-with the command `. BUILD_DIR/bin/LoadPython.sh`. By default, SpECTRE uses
+with the command `. BUILD_DIR/bin/LoadPython.sh`.
+
+Try running the main entrypoint:
+
+```sh
+# In the build directory:
+./bin/spectre --help
+# Or, if you have (pip-)installed the package:
+spectre --help
+```
+
+The SpECTRE Python package supports autocompletion for Bash, Zsh, and Fish.
+Depending on your shell, source the corresponding file:
+
+```sh
+# In the build directory:
+# - Bash:
+. ./bin/python/shell-completion.bash
+# - Fish:
+cp ./bin/python/shell-completion.fish ~/.config/fish/completions/spectre.fish
+# - Zsh:
+. ./bin/python/shell-completion.zsh
+```
+
+You may want to source the shell completion script on startup, e.g., in your
+`.bashrc` or `.zshrc` file.
+
+By default, SpECTRE uses
 `jemalloc` which needs to be pre-loaded for the python bindings to work.
 Therefore, you need to run `LD_PRELOAD=/path/to/libjemalloc.so python`
 to execute python scripts or start python consoles. The path to your preferred

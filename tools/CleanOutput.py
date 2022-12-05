@@ -1,6 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
 import logging
 import os
 import re
@@ -22,6 +23,8 @@ def clean_output(input_file, output_dir, force):
 
     The `input_file` must list its expected output files in a comment, with the
     list of files indented by two spaces:
+
+    \b
     ```yaml
     # ExpectedOutput:
     #   Reduction.h5
@@ -30,35 +33,38 @@ def clean_output(input_file, output_dir, force):
     """
     found_indentation = None
     missing_files = []
-    for line in open(input_file, 'r'):
-        # Iterate through the file until we find the `ExpectedOutput` comment
-        if found_indentation is None:
-            matched_indentation = re.match('#([ ]*)ExpectedOutput:', line)
-            if matched_indentation is not None:
-                found_indentation = matched_indentation.groups()[0] + '  '
-        else:
-            # Now collect the output files listed in the comment.
-            # We look for lines that are indented by two spaces relative to the
-            # preceding `ExpectedOutput` comment
-            matched_output_file = re.match('#' + found_indentation + '(.+)',
-                                           line)
-            if matched_output_file is None:
-                logging.debug("Reached end of expected output file list.")
-                break
+
+    with open(input_file, 'r') as open_input_file:
+        for line in open_input_file:
+            # Iterate through the file until we find the `ExpectedOutput`
+            # comment
+            if found_indentation is None:
+                matched_indentation = re.match('#([ ]*)ExpectedOutput:', line)
+                if matched_indentation is not None:
+                    found_indentation = matched_indentation.groups()[0] + '  '
             else:
-                expected_output_file = os.path.join(
-                    output_dir,
-                    matched_output_file.groups()[0])
-                logging.debug("Attempting to remove file {}...".format(
-                    expected_output_file))
-                if os.path.exists(expected_output_file):
-                    os.remove(expected_output_file)
-                    logging.info(
-                        "Removed file {}.".format(expected_output_file))
-                elif not force:
-                    missing_files.append(expected_output_file)
-                    logging.error("Expected file {} was not found.".format(
+                # Now collect the output files listed in the comment.
+                # We look for lines that are indented by two spaces relative to
+                # the preceding `ExpectedOutput` comment
+                matched_output_file = re.match(
+                    '#' + found_indentation + '(.+)', line)
+                if matched_output_file is None:
+                    logging.debug("Reached end of expected output file list.")
+                    break
+                else:
+                    expected_output_file = os.path.join(
+                        output_dir,
+                        matched_output_file.groups()[0])
+                    logging.debug("Attempting to remove file {}...".format(
                         expected_output_file))
+                    if os.path.exists(expected_output_file):
+                        os.remove(expected_output_file)
+                        logging.info(
+                            "Removed file {}.".format(expected_output_file))
+                    elif not force:
+                        missing_files.append(expected_output_file)
+                        logging.error("Expected file {} was not found.".format(
+                            expected_output_file))
     if found_indentation is None:
         logging.warning(
             "Input file {} does not list `ExpectedOutput` files.".format(
@@ -68,30 +74,25 @@ def clean_output(input_file, output_dir, force):
         raise MissingExpectedOutputError(missing_files)
 
 
-def parse_args():
-    import argparse as ap
-    parser = ap.ArgumentParser(description="")
-    parser.add_argument('--input-file',
-                        required=True,
-                        help="Path to the input file of the run to clean up")
-    parser.add_argument('--output-dir',
-                        required=True,
-                        help="Output directory of the run to clean up")
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='count',
-                        default=0,
-                        help="Verbosity (-v, -vv, ...)")
-    parser.add_argument('--force',
-                        action='store_true',
-                        help="Suppress all errors")
-    return parser.parse_args()
+@click.command(help=clean_output.__doc__)
+@click.argument('input_file',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.option('--output-dir',
+              '-o',
+              type=click.Path(exists=True,
+                              file_okay=False,
+                              dir_okay=True,
+                              readable=True),
+              required=True,
+              help="Output directory of the run to clean up")
+@click.option('--force', '-f', is_flag=True, help="Suppress all errors")
+def clean_output_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    clean_output(**kwargs)
 
 
 if __name__ == "__main__":
-    args = parse_args()
-
-    # Set the log level
-    logging.basicConfig(level=logging.WARNING - args.verbose * 10)
-
-    clean_output(args.input_file, args.output_dir, args.force)
+    clean_output_command(help_option_names=["-h", "--help"])

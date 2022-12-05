@@ -186,11 +186,11 @@ file(
   ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
   "\
 #!/bin/sh\n\
-${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
---input-file $2 --output-dir ${CMAKE_BINARY_DIR}
+${Python_EXECUTABLE} -m spectre.tools.CleanOutput --force \
+--output-dir ${CMAKE_BINARY_DIR} $2
 ${SPECTRE_TEST_RUNNER} ${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 \${3} && \
-${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
---input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
+${Python_EXECUTABLE} -m spectre.tools.CleanOutput \
+--output-dir ${CMAKE_BINARY_DIR} $2\n"
 )
 
 # Write command to execute an input file and clean its output into a shell

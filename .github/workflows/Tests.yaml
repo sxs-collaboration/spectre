@@ -131,7 +131,8 @@ jobs:
           pip3 install -r .github/scripts/requirements-release.txt
       - name: Test tools
         run: |
-          python3 -m unittest discover -p 'Test_*' tests.tools -v
+          python3 -m unittest discover -p 'Test_CompileReleaseNotes.py' \
+            tests.tools -v
       - name: Check Python formatting
         run: |
           cd $GITHUB_WORKSPACE

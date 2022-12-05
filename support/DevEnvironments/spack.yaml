@@ -59,12 +59,14 @@ spack:
   - 'libxsmm@1.16.1:'
   - openblas
   - 'python@3.7:'
+  - py-click
   - py-h5py -mpi
   - py-nbconvert
   - py-numpy
   - py-matplotlib
   - 'py-pybind11@2.6:'
   - py-pyyaml
+  - py-rich
   - py-scipy
   - yaml-cpp@0.6.3
   concretizer:

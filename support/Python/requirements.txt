@@ -13,10 +13,15 @@
 #
 #   $ pip3 install -r support/Python/requirements.txt
 
+# Click: to compose our Python CLI, load subcommands lazily, and for
+# autocompletion
+click
 h5py >= 3.0.0
 # - We constrain the Numpy version because v1.22+ segfaults in Pypp tests, see
 #   issue: https://github.com/sxs-collaboration/spectre/issues/3844
 numpy < 1.22.0
 matplotlib
 pyyaml
+# Rich: to format CLI output and tracebacks
+rich
 scipy
