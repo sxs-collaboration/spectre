@@ -9,6 +9,7 @@ from spectre.IO.H5.ExtractDatFromH5 import (extract_dat_files,
 import spectre.Informer as spectre_informer
 import spectre.IO.H5 as spectre_h5
 import numpy as np
+import numpy.testing as npt
 import unittest
 import os
 import shutil
@@ -44,7 +45,9 @@ class TestExtractDatFromH5(unittest.TestCase):
         h5file.close()
 
         # All defaults, data should be same as expected
-        extract_dat_files(self.h5_filename, out_dir=self.created_dir)
+        extract_dat_files(self.h5_filename,
+                          out_dir=self.created_dir,
+                          num_cores=1)
 
         self.assertTrue(os.path.exists(self.created_dir))
 
@@ -55,29 +58,45 @@ class TestExtractDatFromH5(unittest.TestCase):
         memory_data = np.loadtxt(memory_data_path)
         timestep_data = np.loadtxt(timestep_data_path)
 
-        self.assertEqual(memory_data.all(), expected_memory_data.all())
-        self.assertEqual(timestep_data.all(), expected_timestep_data.all())
+        npt.assert_almost_equal(memory_data, expected_memory_data)
+        npt.assert_almost_equal(timestep_data, expected_timestep_data)
 
         # Test that we get an error if we try to run again and 'force' flag is
         # False.
         self.failUnlessRaises(ValueError,
                               extract_dat_files,
                               self.h5_filename,
-                              out_dir=self.created_dir)
+                              out_dir=self.created_dir,
+                              num_cores=1)
 
         # Try with 'force' flag True this time
         extract_dat_files(self.h5_filename,
                           out_dir=self.created_dir,
+                          num_cores=1,
                           force=True)
 
         memory_data = np.loadtxt(memory_data_path)
         timestep_data = np.loadtxt(timestep_data_path)
 
-        self.assertEqual(memory_data.all(), expected_memory_data.all())
-        self.assertEqual(timestep_data.all(), expected_timestep_data.all())
+        npt.assert_almost_equal(memory_data, expected_memory_data)
+        npt.assert_almost_equal(timestep_data, expected_timestep_data)
+
+        if os.path.exists(self.created_dir):
+            shutil.rmtree(self.created_dir)
+
+        # Parallelize. Use 2 cores (this is all we get on CI)
+        extract_dat_files(self.h5_filename,
+                          out_dir=self.created_dir,
+                          num_cores=2)
+
+        memory_data = np.loadtxt(memory_data_path)
+        timestep_data = np.loadtxt(timestep_data_path)
+
+        npt.assert_almost_equal(memory_data, expected_memory_data)
+        npt.assert_almost_equal(timestep_data, expected_timestep_data)
 
         # We don't test the '--list' flag as this is effectively just
-        # H5File.all_dat_files()
+        # available_subfiles()
 
     def test_cli(self):
         runner = CliRunner()
