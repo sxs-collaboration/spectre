@@ -24,7 +24,7 @@ def extract_dat_files(filename, out_dir, list=False, force=False):
 
     if list:
         print_str = "\n ".join(all_dat_files)
-        print("Dat files within '{}':\n {}".format(filename, print_str))
+        print(f"Dat files within '{filename}':\n {print_str}")
         return
 
     if out_dir is None:
@@ -38,8 +38,7 @@ def extract_dat_files(filename, out_dir, list=False, force=False):
             os.mkdir(out_dir)
         else:
             raise ValueError(
-                "Could not make directory '{}'. Already exists.".format(
-                    out_dir))
+                f"Could not make directory '{out_dir}'. Already exists.")
 
     for dat_path in all_dat_files:
         split_path = dat_path.split("/")
@@ -51,7 +50,7 @@ def extract_dat_files(filename, out_dir, list=False, force=False):
         dat_file = h5file.get_dat(dat_path[:-4])
 
         legend = dat_file.get_legend()
-        header = "\n".join("[{}] ".format(i) + "{}"
+        header = "\n".join(f"[{i}] " + "{}"
                            for i in range(len(legend))).format(*legend)
 
         dat_data = np.array(dat_file.get_data())
@@ -64,7 +63,7 @@ def extract_dat_files(filename, out_dir, list=False, force=False):
 
         h5file.close()
 
-    print("Successfully extracted all Dat files into '{}'".format(out_dir))
+    print(f"Successfully extracted all Dat files into '{out_dir}'")
 
 
 @click.command(help=extract_dat_files.__doc__)
