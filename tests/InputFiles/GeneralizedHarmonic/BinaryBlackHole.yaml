@@ -304,18 +304,3 @@ Importers:
       Shift: ShiftExcess
       SpatialMetric: SpatialMetric
       ExtrinsicCurvature: ExtrinsicCurvature
-
-# control.h5 should contain data for FunctionsOfTime that can be read by
-# ReadSpecPiecewisePolynomial. By default, this will override the spectre
-# control systems. To not replace any FunctionsOfTime, replace
-# "/path/to/control.h5" with None. To use spectre control systems, remove
-# Expansion or Rotation from the NameMap. Currently only Expansion and
-# Rotation control systems are supported in spectre.
-CubicFunctionOfTimeOverride:
-  FunctionOfTimeFile: "/path/to/control.h5"
-  # Note: SpEC calls the hole on the right hole A, but spectre calls hole A
-  # the hole on the left. So reverse the LambdaFactors used here
-  FunctionOfTimeNameMap: {ExpansionFactor: Expansion,
-                          RotationAngle: Rotation,
-                          LambdaFactorA0: SizeB,
-                          LambdaFactorB0: SizeA}
