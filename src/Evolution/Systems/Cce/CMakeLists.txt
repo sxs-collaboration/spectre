@@ -66,6 +66,7 @@ target_link_libraries(
   LinearOperators
   Observer
   Options
+  ParallelInterpolation
   Spectral
   Utilities
   INTERFACE
