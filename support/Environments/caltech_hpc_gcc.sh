@@ -288,6 +288,19 @@ prepend-path CMAKE_PREFIX_PATH "$dep_dir/jemalloc/"
 EOF
     fi
 
+    python3 -m venv --system-site-packages $dep_dir/py_env
+    export VIRTUAL_ENV=$dep_dir/py_env
+    export PATH=${VIRTUAL_ENV}/bin:${PATH}
+    cat >$dep_dir/modules/spectre_python <<EOF
+#%Module1.0
+setenv VIRTUAL_ENV $dep_dir/py_env
+prepend-path PATH ${VIRTUAL_ENV}/bin
+EOF
+    pip install pybind11~=2.6.1
+    # HDF5_DIR is set by the HDF5 module
+    pip install --no-binary=h5py \
+      -r $SPECTRE_HOME/support/Python/requirements.txt
+
     cd $start_dir
 
     spectre_unload_sys_modules
@@ -304,6 +317,7 @@ spectre_unload_modules() {
     module unload charm
     module unload scotch
     module unload yaml-cpp
+    module unload spectre_python
     module unload spectre_boost
     module unload spectre_gsl
     module unload jemalloc
@@ -327,6 +341,7 @@ spectre_load_modules() {
     module load jemalloc
     module load spectre_boost
     module load spectre_gsl
+    module load spectre_python
     module load yaml-cpp
     module load scotch
     module load charm
@@ -342,7 +357,7 @@ spectre_run_cmake() {
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=JEMALLOC \
-          -D BUILD_PYTHON_BINDINGS=off \
+          -D BUILD_PYTHON_BINDINGS=ON \
           -D Python_EXECUTABLE=`which python3` \
           -D USE_SCOTCH_LB=ON \
           -D OVERRIDE_ARCH=skylake-avx512 \

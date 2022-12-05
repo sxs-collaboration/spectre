@@ -398,9 +398,8 @@ Follow these steps:
      Compile `test-executables` and run `ctest` to run all tests, including
      executables. To compile `test-executables` you may have to reduce the
      number of cores you build on in parallel to avoid running out of memory.
-   - To compile the Python bindings, add the option
-     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command and compile the
-     `all-pybindings` target (see \ref spectre_using_python).
+   - To use the Python bindings, compile the `all-pybindings` target (see
+     \ref spectre_using_python).
 
 ## Code Coverage Analysis
 

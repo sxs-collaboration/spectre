@@ -99,7 +99,7 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=JEMALLOC \
           -D DEBUG_SYMBOLS=off \
-          -D BUILD_PYTHON_BINDINGS=off \
+          -D BUILD_PYTHON_BINDINGS=ON \
           -D CMAKE_CXX_FLAGS="-D_FILE_OFFSET_BITS=64 \
 -D_LARGEFILE64_SOURCE -D_LARGEFILE_SOURCE" \
           -D USE_SCOTCH_LB=ON \

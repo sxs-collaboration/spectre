@@ -14,7 +14,8 @@ generally go in a `Python` subdirectory. For example, the bindings for the
 DataStructures library would go in `src/DataStructures/Python/`. SpECTRE
 provides the `spectre_python_add_module` CMake function to make adding a new
 python module, be it with or without bindings, easy.  The python bindings are
-built only if `-D BUILD_PYTHON_BINDINGS=ON` is passed when invoking cmake.
+built only if `-D BUILD_PYTHON_BINDINGS=ON` is passed when invoking cmake
+(enabled by default).
 You can specify the Python version, interpreter and libraries used for compiling
 and testing the bindings by setting the `-D Python_EXECUTABLE` to an absolute
 path such as `/usr/bin/python3`.

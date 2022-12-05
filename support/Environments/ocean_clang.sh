@@ -40,7 +40,7 @@ spectre_unload_modules() {
     module unload hdf5-1.12.2-gcc-11.3.0-dly2yyu
     module unload binutils-2.38-gcc-11.3.0-fmchbp7
     module unload libxsmm/1.16.1
-    module unload charm-7.0.0-gnu11-clang-smp
+    module unload charm-7.0.0-gnu11-clang-smp-patch
     module unload git/2.19.6
     module unload doxygen/1.9.5
 }
@@ -70,7 +70,7 @@ spectre_load_modules() {
     module load hdf5-1.12.2-gcc-11.3.0-dly2yyu
     module load binutils-2.38-gcc-11.3.0-fmchbp7
     module load libxsmm/1.16.1
-    module load charm-7.0.0-gnu11-clang-smp
+    module load charm-7.0.0-gnu11-clang-smp-patch
     module load git/2.19.6
     module load doxygen/1.9.5
 }
@@ -88,6 +88,7 @@ spectre_run_cmake() {
           -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=${GCC_HOME}/gfortran \
           -D USE_PCH=ON \
+          -D BUILD_PYTHON_BINDINGS=ON \
           -D BOOTSTRAP_PY_DEPS=ON \
           "$@" \
           $SPECTRE_HOME
