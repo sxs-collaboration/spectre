@@ -11,10 +11,18 @@
 #include "Parallel/Invoke.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/PostInterpolationCallback.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace intrp {
+/// \cond
+namespace Tags {
+template <typename InterpolationTargetTag>
+struct Sphere;
+}
+/// \endcond
+
 namespace callbacks {
 
 /// \brief post_interpolation_callback that calls Cce::ReceiveGhWorldTubeData
@@ -32,13 +40,23 @@ namespace callbacks {
 ///
 /// \note This callback requires the temporal ID in an InterpolationTargetTag be
 /// a TimeStepId.
-template <typename CceEvolutionComponent, bool DuringSelfStart>
+template <typename CceEvolutionComponent, typename InterpolationTargetTag,
+          bool DuringSelfStart>
 struct SendGhWorldtubeData
     : tt::ConformsTo<intrp::protocols::PostInterpolationCallback> {
   template <typename DbTags, typename Metavariables, typename TemporalId>
   static void apply(const db::DataBox<DbTags>& box,
                     Parallel::GlobalCache<Metavariables>& cache,
                     const TemporalId& temporal_id) {
+    // This is an ERROR and not an ASSERT because even in Release mode we want
+    // to stop execution if there were wrong inputs.
+    if (Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache)
+            .radii.size() > 1) {
+      ERROR("SendGhWorldtubeData expects a single worldtube radius, not "
+            << Parallel::get<Tags::Sphere<InterpolationTargetTag>>(cache)
+                   .radii.size());
+    }
+
     auto& cce_gh_boundary_component = Parallel::get_parallel_component<
         Cce::GhWorldtubeBoundary<Metavariables>>(cache);
     Parallel::simple_action<typename Cce::Actions::ReceiveGhWorldtubeData<
