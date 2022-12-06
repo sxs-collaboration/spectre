@@ -35,8 +35,33 @@ void test_uniform_cylindrical_side_planes_equal(
   const double radius_two = 6.0 * (unit_dis(gen) + 1.0);
   CAPTURE(radius_two);
 
+  // Choose z_plane_frac_plus_one=(z_plane_plus_one-center_one[2])/radius_one
+  // Note here that max_angle_one_plus is > 0.5, so that
+  // z_plane_plus_one can be at a lower value of z than center_one[2],
+  // and thus z_plane_frac_plus_one may be positive or negative.
+  const double min_angle_one_plus = 0.15;
+  const double max_angle_one_plus = 0.59;
+  const double angle_one_plus =
+      min_angle_one_plus +
+      (max_angle_one_plus - min_angle_one_plus) * unit_dis(gen);
+  const double z_plane_frac_plus_one = cos(angle_one_plus * M_PI);
+
+  // Choose z_plane_frac_minus_one=(z_plane_minus_one-center_one[2])/radius_one
+  // (note that this quantity is < 0).
+  const double min_angle_one_minus = 0.15;
+  const double max_angle_one_minus = angle_one_plus > 0.4 ? 0.3 : 0.4;
+  // Note that we deliberately choose max_angle_one_plus +
+  // max_angle_one_minus < 1.  This ensures that z_plane_frac_plus_one
+  // > z_plane_frac_minus_one, which is important for
+  // max_radius_one_planes below.
+  const double z_plane_frac_minus_one =
+      -cos((min_angle_one_minus +
+            (max_angle_one_minus - min_angle_one_minus) * unit_dis(gen)) *
+           M_PI);
+
   // Choose an angle for the positive z-plane
-  const double min_angle_shared = 0.15;
+  // Don't go too close to the edge if angle_one_plus is large.
+  const double min_angle_shared = angle_one_plus > 0.4 ? 0.25 : 0.15;
   const double max_angle_shared = 0.75;
   const double z_plane_plus_two =
       center_two[2] +
@@ -68,17 +93,6 @@ void test_uniform_cylindrical_side_planes_equal(
           M_PI) *
           radius_two;
   CAPTURE(z_plane_minus_two);
-
-  // Choose z_plane_frac_minus_one=(z_plane_minus_one-center_one[2])/radius_one
-  // (note that this quantity is < 0).
-  const double min_angle = 0.15;
-  const double max_angle = 0.4;
-  const double z_plane_frac_minus_one =
-      -cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI);
-
-  // Choose z_plane_frac_plus_one=(z_plane_plus_one-center_one[2])/radius_one
-  const double z_plane_frac_plus_one =
-      cos((min_angle + (max_angle - min_angle) * unit_dis(gen)) * M_PI);
 
   // Choose radius of sphere_one.
   const double radius_one = [&z_plane_frac_plus_one, &z_plane_frac_minus_one,

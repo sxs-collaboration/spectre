@@ -584,21 +584,66 @@ namespace domain::CoordinateMaps {
  * \f$\theta_{2 \mathrm{min}}\f$ and
  * \f$\theta_{2 \mathrm{max}}\f$ are no longer required
  * to be on opposite sides of the equator of sphere 2 (see the paragraph below).
+ * Note that for unequal z planes \f$\theta_{1 \mathrm{min}}\f$ and
+ * \f$\theta_{1 \mathrm{max}}\f$ are no longer required
+ * to be on opposite sides of the equator of sphere 1, but the conditions
+ * in the paragraph below guarantee that
+ * \f$z^+_{\mathrm{P}1} \geq z^-_{\mathrm{P}1}\f$.
  *
- * As in the case with unequal z planes, we require that the
+ * Unlike the case with unequal z planes, we no longer require that the
  * z planes in the above figures lie above/below
- * the centers of the corresponding spheres and are not too close to
- * the centers or edges of those spheres, but some of the restrictions are
- * relaxed because of expected use cases.  The conditions are the
- * same as Eqs. (\f$\ref{eq:theta_1_min_res}\f$--\f$\ref{eq:theta_2_max_res}\f$)
- * except if \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$
- * we replace Eq. (\f$\ref{eq:theta_2_min_res}\f$) with
+ * the centers of the corresponding spheres, but we still require that
+ * the z planes are not too close to the edges of those spheres.
+ * The restrictions are the same as
+ * Eqs. (\f$\ref{eq:theta_1_min_res}\f$--\f$\ref{eq:theta_2_max_res}\f$)
+ * except for the following changes:
+ * If \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$,
+ * then we replace Eq. (\f$\ref{eq:theta_1_min_res}\f$) with
  * \f{align}
- *   0.15\pi &< \theta_{2 \mathrm{min}} < 0.75\pi ,
+ *   \label{eq:equal_plus_theta_1_min_res}
+ *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.59\pi,
  * \f}
- * and if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ we replace
- * Eq. (\f$\ref{eq:theta_2_max_res}\f$) with
+ * and furthermore, if \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$ and
+ * \f$\theta_{1 \mathrm{min}} > 0.4\pi\f$ we replace
+ * Eqs. (\f$\ref{eq:theta_1_max_res}\f$--\f$\ref{eq:theta_2_min_res}\f$)
+ * with
  * \f{align}
+ *   \label{eq:equal_plus_high_theta_1_max_res}
+ *   0.7\pi &< \theta_{1 \mathrm{max}} < 0.85\pi \\
+ *   \label{eq:equal_plus_high_theta_2_min_res}
+ *   0.25\pi &< \theta_{2 \mathrm{min}} < 0.75\pi,
+ * \f}
+ * but if \f$z^+_{\mathrm{P}1} = z^+_{\mathrm{P}2}\f$ and
+ * \f$\theta_{1 \mathrm{min}} \leq 0.4\pi\f$ we replace
+ * Eq. (\f$\ref{eq:theta_2_min_res}\f$)
+ * with
+ * \f{align}
+ *   \label{eq:equal_plus_low_theta_2_min_res}
+ *   0.15\pi &< \theta_{2 \mathrm{min}} < 0.75\pi.
+ * \f}
+ *
+ * Similarly, if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ we replace
+ * (\f$\ref{eq:theta_1_max_res}\f$) with
+ * \f{align}
+ *   \label{eq:equal_minus_theta_1_max_res}
+ *   0.41\pi &< \theta_{1 \mathrm{max}} < 0.85\pi,
+ * \f}
+ * and furthermore, if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ and
+ * \f$\theta_{1 \mathrm{max}} < 0.6\pi\f$ we replace
+ * Eqs. (\f$\ref{eq:theta_1_min_res}\f$) and (\f$\ref{eq:theta_2_max_res}\f$)
+ * with
+ * \f{align}
+ *   \label{eq:equal_minus_high_theta_1_min_res}
+ *   0.15\pi &< \theta_{1 \mathrm{min}} < 0.3\pi \\
+ *   \label{eq:equal_minus_high_theta_2_max_res}
+ *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.75\pi,
+ * \f}
+ * but if \f$z^-_{\mathrm{P}1} = z^-_{\mathrm{P}2}\f$ and
+ * \f$\theta_{1 \mathrm{max}} \geq 0.6\pi\f$ we replace
+ * Eq. (\f$\ref{eq:theta_2_max_res}\f$)
+ * with
+ * \f{align}
+ *   \label{eq:equal_minus_low_theta_2_max_res}
  *   0.25\pi &< \theta_{2 \mathrm{max}} < 0.85\pi .
  * \f}
  */
