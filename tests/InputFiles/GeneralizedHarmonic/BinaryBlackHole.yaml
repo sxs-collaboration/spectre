@@ -19,15 +19,9 @@ ResourceInfo:
     ControlSystemAhB:
       Proc: Auto
       Exclusive: true
-    MemoryMonitor:
-      Proc: Auto
-      Exclusive: false
-    Rotation:
-      Proc: Auto
-      Exclusive: false
-    Expansion:
-      Proc: Auto
-      Exclusive: false
+    MemoryMonitor: Auto
+    Rotation: Auto
+    Expansion: Auto
 
 Evolution:
   InitialTime: 0.0

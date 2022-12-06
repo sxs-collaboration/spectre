@@ -145,6 +145,9 @@ struct SingletonPack;
  *
  * \details The info for each singleton in the `ParallelComponents` template
  *  pack is stored in an individual `Parallel::SingletonInfoHolder`.
+ *
+ * You can pass `Auto` as an option for each singleton in an input file and each
+ * singleton will be constructed as a default `Parallel::SingletonInfoHolder`.
  */
 template <typename... ParallelComponents>
 struct SingletonPack<tmpl::list<ParallelComponents...>> {
@@ -164,7 +167,7 @@ struct SingletonPack<tmpl::list<ParallelComponents...>> {
  public:
   template <typename Component>
   struct SingletonOption {
-    using type = SingletonInfoHolder<Component>;
+    using type = Options::Auto<SingletonInfoHolder<Component>>;
     static std::string name() { return pretty_type::name<Component>(); }
     static constexpr Options::String help = {
         "Resource options for a specific singleton."};
@@ -176,10 +179,12 @@ struct SingletonPack<tmpl::list<ParallelComponents...>> {
       "Resource options for all singletons."};
 
   SingletonPack(
-      const SingletonInfoHolder<ParallelComponents>&... singleton_info_holders,
+      const std::optional<
+          SingletonInfoHolder<ParallelComponents>>&... singleton_info_holders,
       const Options::Context& /*context*/ = {})
       : procs_(tuples::tagged_tuple_from_typelist<local_tags>(
-            singleton_info_holders...)) {}
+            singleton_info_holders.value_or(
+                SingletonInfoHolder<ParallelComponents>{})...)) {}
 
   SingletonPack() = default;
   SingletonPack(const SingletonPack& /*rhs*/) = default;
@@ -260,14 +265,14 @@ using singleton_components =
  *     MySingleton1:
  *       Proc: 2
  *       Exclusive: true
- *     MySingleton2:
- *       Proc: Auto
- *       Exclusive: false
+ *     MySingleton2: Auto
  * \endcode
  *
  * where `MySingleton1` is the `pretty_type::name` of the singleton component
  * and the options for each singleton are described in
- * `Parallel::SingletonInfoHolder`.
+ * `Parallel::SingletonInfoHolder` (You can use `Auto` for each singleton that
+ * you want to have it's proc determined automatically and be non-exclusive,
+ * like `MySingleton2`).
  *
  * Several consistency checks are done during option parsing to avoid user
  * error. However, some checks can't be done during option parsing because the
