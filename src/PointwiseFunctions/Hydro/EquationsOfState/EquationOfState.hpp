@@ -144,6 +144,25 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
 
   /// @{
   /*!
+   * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
+   * the rest mass density \f$\rho\f$.
+   */
+  virtual Scalar<double> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<double>& rest_mass_density,
+      const Scalar<double>& /*temperature*/) const {
+    return make_with_value<Scalar<double>>(rest_mass_density, 0.1);
+  }
+
+  virtual Scalar<DataVector>
+  equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& /*temperature*/) const {
+    return make_with_value<Scalar<DataVector>>(rest_mass_density, 0.1);
+  }
+  /// @}
+
+  /// @{
+  /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$.
    */
   virtual Scalar<double> pressure_from_density(
@@ -232,6 +251,12 @@ class EquationOfState<IsRelativistic, 1> : public PUP::able {
   virtual Scalar<DataVector> kappa_times_p_over_rho_squared_from_density(
       const Scalar<DataVector>& /*rest_mass_density*/) const = 0;
 
+  /// The lower bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_lower_bound() const { return 0.0; }
+
+  /// The upper bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_upper_bound() const { return 0.5; }
+
   /// The lower bound of the rest mass density that is valid for this EOS
   virtual double rest_mass_density_lower_bound() const = 0;
 
@@ -284,6 +309,26 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
 
   virtual bool is_equal(
       const EquationOfState<IsRelativistic, 2>& rhs) const = 0;
+
+  /// @{
+  /*!
+   * Computes the electron fraction in beta-equilibrium \f$Y_e^{\rm eq}\f$ from
+   * the rest mass density \f$\rho\f$ and the temperature \f$T\f$.
+   */
+  virtual Scalar<double> equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<double>& rest_mass_density,
+      const Scalar<double>& /*temperature*/) const {
+    return make_with_value<Scalar<double>>(rest_mass_density, 0.1);
+  }
+
+  virtual Scalar<DataVector>
+  equilibrium_electron_fraction_from_density_temperature(
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& /*temperature*/) const {
+    return make_with_value<Scalar<DataVector>>(rest_mass_density, 0.1);
+  }
+  /// @}
+
   /// @{
   /*!
    * Computes the pressure \f$p\f$ from the rest mass density \f$\rho\f$ and the
@@ -384,6 +429,12 @@ class EquationOfState<IsRelativistic, 2> : public PUP::able {
       const Scalar<DataVector>& /*rest_mass_density*/,
       const Scalar<DataVector>& /*specific_internal_energy*/) const = 0;
   /// @}
+
+  /// The lower bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_lower_bound() const { return 0.0; }
+
+  /// The upper bound of the electron fraction that is valid for this EOS
+  virtual double electron_fraction_upper_bound() const { return 0.5; }
 
   /// The lower bound of the rest mass density that is valid for this EOS
   virtual double rest_mass_density_lower_bound() const = 0;
