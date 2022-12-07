@@ -45,7 +45,7 @@ namespace Actions {
  */
 template <typename ScriValuesToObserve, typename BoundaryComponent>
 struct InitializeCharacteristicEvolutionScri {
-  using initialization_tags = tmpl::flatten<tmpl::list<
+  using simple_tags_from_options = tmpl::flatten<tmpl::list<
       InitializationTags::ScriInterpolationOrder,
       tmpl::conditional_t<
           tt::is_a_v<AnalyticWorldtubeBoundary, BoundaryComponent>,

@@ -148,7 +148,7 @@ struct InitializeSubdomain {
   using background_fields_external = typename System::background_fields;
 
  public:
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<domain::Tags::InitialExtents<Dim>,
                  domain::Tags::InitialRefinementLevels<Dim>>;
   using const_global_cache_tags =

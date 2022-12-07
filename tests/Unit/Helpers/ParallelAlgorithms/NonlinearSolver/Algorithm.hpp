@@ -158,14 +158,12 @@ struct ElementArray {
           Parallel::Phase::Testing,
           tmpl::list<TestResult<typename nonlinear_solver::options_group>>>>;
 
-  using array_allocation_tags = tmpl::list<>;
-  using initialization_tags = Parallel::get_initialization_tags<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      array_allocation_tags>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
       const std::unordered_set<size_t>& /*procs_to_ignore*/ = {}) {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(

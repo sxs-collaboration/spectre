@@ -128,8 +128,8 @@ struct MockObserver {
   using const_global_cache_tags = tmpl::list<Tags::ObservationLMax>;
   using initialize_action_list =
       tmpl::list<observers::Actions::InitializeWriter<Metavariables>>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -159,8 +159,8 @@ struct MockCharacteristicEvolution {
           typename Metavariables::scri_values_to_observe,
           typename Metavariables::cce_boundary_component>,
       Parallel::Actions::TerminatePhase>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockSingletonChare;

@@ -290,7 +290,7 @@ struct RunEventsAndDenseTriggers {
 };
 
 struct InitializeRunEventsAndDenseTriggers {
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<evolution::Tags::EventsAndDenseTriggers>;
   using simple_tags = tmpl::list<Tags::PreviousTriggerTime>;
 

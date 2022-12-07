@@ -79,8 +79,8 @@ struct mock_characteristic_evolution {
       // advance the time so that the current `TimeStepId` is valid without
       // having to perform self-start.
       ::Actions::AdvanceTime, Parallel::Actions::TerminatePhase>;
-  using initialization_tags =
-      Parallel::get_initialization_tags<initialize_action_list>;
+  using simple_tags_from_options =
+      Parallel::get_simple_tags_from_options<initialize_action_list>;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;

@@ -251,55 +251,50 @@ using get_initialization_actions_list = tmpl::flatten<tmpl::transform<
 
 namespace detail {
 template <typename Action, typename = std::void_t<>>
-struct get_initialization_tags_from_action {
+struct get_simple_tags_from_options_from_action {
   using type = tmpl::list<>;
 };
 
 template <typename Action>
-struct get_initialization_tags_from_action<
-    Action, std::void_t<typename Action::initialization_tags>> {
-  using type = typename Action::initialization_tags;
+struct get_simple_tags_from_options_from_action<
+    Action, std::void_t<typename Action::simple_tags_from_options>> {
+  using type = typename Action::simple_tags_from_options;
 };
 }  // namespace detail
 
 /// \ingroup ParallelGroup
-/// \brief Given a list of initialization actions, and possibly a list of tags
-/// needed for allocation of an array component, returns a list of the
-/// unique initialization_tags for all the actions (and the allocate function).
-template <typename InitializationActionsList,
-          typename AllocationTagsList = tmpl::list<>>
-using get_initialization_tags = tmpl::remove_duplicates<tmpl::flatten<
-    tmpl::list<AllocationTagsList,
-               tmpl::transform<
-                   InitializationActionsList,
-                   detail::get_initialization_tags_from_action<tmpl::_1>>>>>;
+/// \brief Given a list of initialization actions, returns a list of the
+/// unique simple_tags_from_options for all the actions.
+template <typename InitializationActionsList>
+using get_simple_tags_from_options =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        InitializationActionsList,
+        detail::get_simple_tags_from_options_from_action<tmpl::_1>>>>;
 
 namespace detail {
-template <typename InitializationTag, typename Metavariables,
-          bool PassMetavariables = InitializationTag::pass_metavariables>
-struct get_option_tags_from_initialization_tag_impl {
-  using type = typename InitializationTag::option_tags;
+template <typename SimpleTag, typename Metavariables,
+          bool PassMetavariables = SimpleTag::pass_metavariables>
+struct get_option_tags_from_simple_tag_impl {
+  using type = typename SimpleTag::option_tags;
 };
-template <typename InitializationTag, typename Metavariables>
-struct get_option_tags_from_initialization_tag_impl<InitializationTag,
-                                                    Metavariables, true> {
-  using type = typename InitializationTag::template option_tags<Metavariables>;
+template <typename SimpleTag, typename Metavariables>
+struct get_option_tags_from_simple_tag_impl<SimpleTag, Metavariables, true> {
+  using type = typename SimpleTag::template option_tags<Metavariables>;
 };
 template <typename Metavariables>
-struct get_option_tags_from_initialization_tag {
-  template <typename InitializationTag>
-  using f = tmpl::type_from<get_option_tags_from_initialization_tag_impl<
-      InitializationTag, Metavariables>>;
+struct get_option_tags_from_simple_tag {
+  template <typename SimpleTag>
+  using f = tmpl::type_from<
+      get_option_tags_from_simple_tag_impl<SimpleTag, Metavariables>>;
 };
 }  // namespace detail
 
 /// \ingroup ParallelGroup
-/// \brief Given a list of initialization tags, returns a list of the
+/// \brief Given a list of simple tags, returns a list of the
 /// unique option tags required to construct them.
-template <typename InitializationTagsList, typename Metavariables>
-using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<
-    tmpl::transform<InitializationTagsList,
-                    tmpl::bind<detail::get_option_tags_from_initialization_tag<
+template <typename SimpleTagsList, typename Metavariables>
+using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+    SimpleTagsList, tmpl::bind<detail::get_option_tags_from_simple_tag<
                                    Metavariables>::template f,
                                tmpl::_1>>>>;
 

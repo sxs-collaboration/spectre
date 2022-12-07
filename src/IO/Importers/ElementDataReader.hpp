@@ -43,7 +43,7 @@ struct ElementDataReader {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<detail::InitializeElementDataReader>>>;
-  using initialization_tags = Parallel::get_initialization_tags<
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void initialize(

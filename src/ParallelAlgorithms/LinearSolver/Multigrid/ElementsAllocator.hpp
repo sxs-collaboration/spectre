@@ -72,10 +72,7 @@ struct ElementsAllocator
     : tt::ConformsTo<Parallel::protocols::ArrayElementsAllocator> {
   template <typename ElementArray>
   using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
-                 Tags::ChildrenRefinementLevels<Dim>,
-                 Tags::ParentRefinementLevels<Dim>,
-                 Parallel::Tags::Section<ElementArray, Tags::MultigridLevel>,
+      tmpl::list<Parallel::Tags::Section<ElementArray, Tags::MultigridLevel>,
                  Parallel::Tags::Section<ElementArray, Tags::IsFinestGrid>>;
 
   template <typename ElementArray, typename Metavariables,

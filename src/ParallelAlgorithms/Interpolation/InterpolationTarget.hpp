@@ -12,7 +12,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/Tags/ResourceInfo.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Interpolation/Actions/InterpolationTargetSendPoints.hpp"
 #include "ParallelAlgorithms/Interpolation/Protocols/InterpolationTargetTag.hpp"
@@ -290,12 +289,8 @@ struct InterpolationTarget {
                           InterpolationTargetTag>>>,
               Parallel::Actions::TerminatePhase>>>;
 
-  using initialization_tags =
-      tmpl::append<Parallel::get_initialization_tags<
-                       Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>>,
-                   tmpl::list<Parallel::Tags::SingletonInfo<InterpolationTarget<
-                       Metavariables, InterpolationTargetTag>>>>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       Parallel::Phase next_phase,

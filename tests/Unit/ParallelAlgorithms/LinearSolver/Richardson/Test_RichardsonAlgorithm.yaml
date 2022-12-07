@@ -16,3 +16,7 @@ SerialRichardson:
   Verbosity: Verbose
 
 ConvergenceReason: NumIterations
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

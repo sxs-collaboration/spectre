@@ -67,7 +67,7 @@ namespace ScalarAdvection::subcell {
  */
 template <size_t Dim>
 struct VelocityAtFace {
-  using initialization_tags = tmpl::list<::Tags::Time>;
+  using simple_tags_from_options = tmpl::list<::Tags::Time>;
 
   using velocity_field = ::ScalarAdvection::Tags::VelocityField<Dim>;
   using subcell_velocity_field =

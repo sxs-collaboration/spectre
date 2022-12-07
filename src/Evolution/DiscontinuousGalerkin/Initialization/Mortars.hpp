@@ -94,8 +94,9 @@ struct Mortars {
   using MortarMap = std::unordered_map<Key, MappedType, boost::hash<Key>>;
 
  public:
-  using initialization_tags = tmpl::list<::domain::Tags::InitialExtents<Dim>,
-                                         evolution::dg::Tags::Quadrature>;
+  using simple_tags_from_options =
+      tmpl::list<::domain::Tags::InitialExtents<Dim>,
+                 evolution::dg::Tags::Quadrature>;
 
   using simple_tags = tmpl::list<
       Tags::MortarData<Dim>, Tags::MortarMesh<Dim>, Tags::MortarSize<Dim>,

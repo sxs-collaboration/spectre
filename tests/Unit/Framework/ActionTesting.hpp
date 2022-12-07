@@ -118,8 +118,8 @@ struct get_array_index;
  * All emplace functions optionally take a parameter pack of
  * additional arguments that are forwarded to the constructor of the component.
  * These additional arguments are how input options (set in the
- * `initialization_tags` type alias of the parallel component) get passed to
- * parallel components.
+ * `simple_tags_from_options` type alias of the parallel component) get passed
+ * to parallel components.
  *
  * With the ATF, everything is controlled explicitly, providing the ability to
  * perform full introspection into the state of the RTS at virtually any point

@@ -25,7 +25,6 @@
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Protocols/ArrayElementsAllocator.hpp"
-#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
@@ -49,9 +48,7 @@ template <size_t Dim>
 struct DefaultElementsAllocator
     : tt::ConformsTo<Parallel::protocols::ArrayElementsAllocator> {
   template <typename ParallelComponent>
-  using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<Dim>,
-                 domain::Tags::InitialExtents<Dim>>;
+  using array_allocation_tags = tmpl::list<>;
 
   template <typename ParallelComponent, typename Metavariables,
             typename... InitializationTags>
@@ -140,24 +137,21 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<volume_dim>,
-                 Parallel::Tags::ResourceInfo<Metavariables>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
 
   using array_allocation_tags =
       typename ElementsAllocator::template array_allocation_tags<
           DgElementArray>;
 
-  using initialization_tags =
-      tmpl::append<Parallel::get_initialization_tags<
+  using simple_tags_from_options =
+      tmpl::append<Parallel::get_simple_tags_from_options<
                        Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>,
-                       array_allocation_tags>,
-                   tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
+                           phase_dependent_action_list>>,
+                   array_allocation_tags>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     ElementsAllocator::template apply<DgElementArray>(

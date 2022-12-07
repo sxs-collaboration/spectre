@@ -73,14 +73,14 @@ ACTION_TESTING_CHECK_MOCK_ACTION_LIST(threaded_actions);
 #undef ACTION_TESTING_CHECK_MOCK_ACTION_LIST
 
 template <typename Component, typename = std::void_t<>>
-struct get_initialization_tags_from_component {
+struct get_simple_tags_from_options_from_component {
   using type = tmpl::list<>;
 };
 
 template <typename Component>
-struct get_initialization_tags_from_component<
-    Component, std::void_t<typename Component::initialization_tags>> {
-  using type = typename Component::initialization_tags;
+struct get_simple_tags_from_options_from_component<
+    Component, std::void_t<typename Component::simple_tags_from_options>> {
+  using type = typename Component::simple_tags_from_options;
 };
 
 // Returns the type of `Tag` (including const and reference-ness as would be
@@ -329,11 +329,12 @@ class MockDistributedObject {
   using parallel_component = Component;
 
   using all_cache_tags = Parallel::get_const_global_cache_tags<metavariables>;
-  using initialization_tags =
-      typename detail::get_initialization_tags_from_component<Component>::type;
+  using simple_tags_from_options =
+      typename detail::get_simple_tags_from_options_from_component<
+          Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
-      Parallel::Tags::GlobalCacheImpl<metavariables>, initialization_tags,
+      Parallel::Tags::GlobalCacheImpl<metavariables>, simple_tags_from_options,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>,
       Parallel::Algorithm_detail::action_list_simple_tags<Component>,
       Parallel::Algorithm_detail::action_list_compute_tags<Component>>>;
@@ -359,8 +360,9 @@ class MockDistributedObject {
         array_index_(index),
         global_cache_(cache),
         inboxes_(inboxes) {
-    ::Initialization::mutate_assign<tmpl::push_front<
-        initialization_tags, Parallel::Tags::GlobalCacheImpl<metavariables>>>(
+    ::Initialization::mutate_assign<
+        tmpl::push_front<simple_tags_from_options,
+                         Parallel::Tags::GlobalCacheImpl<metavariables>>>(
         make_not_null(&box_), global_cache_, std::forward<Options>(opts)...);
   }
 

@@ -61,7 +61,8 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using initialization_tags = tmpl::list<LinkedMessageQueueTag, ProcessorCalls>;
+  using simple_tags_from_options =
+      tmpl::list<LinkedMessageQueueTag, ProcessorCalls>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
 };

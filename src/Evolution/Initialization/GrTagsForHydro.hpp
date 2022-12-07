@@ -62,7 +62,7 @@ namespace Actions {
 /// - Modifies: nothing
 template <typename System>
 struct GrTagsForHydro {
-  using initialization_tags = tmpl::list<::Tags::Time>;
+  using simple_tags_from_options = tmpl::list<::Tags::Time>;
 
   static constexpr size_t dim = System::volume_dim;
   using gr_tag = typename System::spacetime_variables_tag;

@@ -71,7 +71,7 @@ namespace subcell {
  */
 template <typename System, size_t Dim>
 struct GrTagsForHydro {
-  using initialization_tags = tmpl::list<::Tags::Time>;
+  using simple_tags_from_options = tmpl::list<::Tags::Time>;
 
   using gr_tag = typename System::spacetime_variables_tag;
   using subcell_gr_tag = evolution::dg::subcell::Tags::Inactive<gr_tag>;

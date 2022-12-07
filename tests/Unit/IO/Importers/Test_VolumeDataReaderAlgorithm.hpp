@@ -261,7 +261,7 @@ struct TestDataWriter {
 
                  Parallel::PhaseActions<Parallel::Phase::Testing,
                                         tmpl::list<CleanTestData>>>;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
@@ -333,8 +333,7 @@ struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = ElementId<Dim>;
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
-  using array_allocation_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
 
@@ -359,7 +358,7 @@ struct ElementArray {
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
       const std::unordered_set<size_t>& procs_to_ignore = {}) {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(

@@ -206,16 +206,16 @@ Each %Parallel Component struct must have the following type aliases:
    phase. If there are no iterable actions in a phase then a
    `PhaseAction` need not be specified for that phase. However, at
    least one `PhaseAction`, even if it is empty, must be specified.
-4. `using initialization_tags` which is a `tmpl::list` of all the tags
+4. `using simple_tags_from_options` which is a `tmpl::list` of all the tags
    that will be inserted into the initial `db::DataBox` of each component.
    These tags are db::SimpleTag%s that have have a `using option_tags`
    type alias and a static function `create_from_options` (see the
    example below).  This list can usually be constructed from the
    initialization actions of the component (i.e. the list of actions
    in the `PhaseAction` list for the `Initialization` phase) using the
-   helper function `Parallel::get_initialization_tags` (see the
+   helper function `Parallel::get_simple_tags_from_options` (see the
    examples of components below).  Each initialization action may
-   specify a type alias `using initialization_tags` which are a
+   specify a type alias `using simple_tags_from_options` which are a
    `tmpl::list` of tags that will be fetched from the db::DataBox by the
    action.
 5. `using const_global_cache_tags` is set to a `tmpl::list` of tags
@@ -223,10 +223,7 @@ Each %Parallel Component struct must have the following type aliases:
    component, or simple actions called on the parallel component.
    These tags correspond to const items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
-   node).  The alias can be omitted if the list is empty.  (See
-   `array_allocation_tags` below for specifying tags needed for the
-   `allocate_array` function, but will not be added to the
-   Parallel::GlobalCache.)
+   node).  The alias can be omitted if the list is empty.
 6. `using mutable_global_cache_tags` is set to a `tmpl::list` of tags
    that correspond to mutable items that are stored in the
    Parallel::GlobalCache (of which there is one copy per Charm++
@@ -257,21 +254,23 @@ signature of the `allocate_array` functions must be:
 \code
 static void allocate_array(
     Parallel::CProxy_GlobalCache<metavariables>& global_cache,
-    const tuples::tagged_tuple_from_typelist<initialization_tags>&
+    const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
     initialization_items,
     const std::unordered_set<size_t>& procs_to_ignore);
 \endcode
 The `allocate_array` function is called by the Main parallel component
 when the execution starts and will typically insert elements into
 array parallel components. If the `allocate_array` function depends
-upon input options, the array component must specify a `using
-array_allocation_tags` type alias that is a `tmpl::list` of tags which
+upon input options that are not in the GlobalCache, the array component must
+include the appropriate tag in the `simple_tags_from_options` type alias.
+This type alias is a `tmpl::list` of tags which
 are db::SimpleTag%s that have have a `using option_tags` type alias
-and a static function `create_from_options`. If you want to ignore specific
+and a static function `create_from_options`. They only need to be explicitly
+added to the list if no initialization action has added them to its
+`simple_tags_from_options` type alias.  If you want to ignore specific
 processors when placing array elements, you can pass in a
 `std::unordered_set<size_t>` to `allocate_array` that contains all the
-processors that shouldn't have array elements on them. An example is:
-\snippet DistributedLinearSolverAlgorithmTestHelpers.hpp array_allocation_tag
+processors that shouldn't have array elements on them.
 
 The `allocate_array` functions of different
 array components are called in random order and so it is not safe to
@@ -386,25 +385,20 @@ ResourceInfo:
       Exclusive: false
 ```
 
-First is the `AvoidGlobalProc0` option. This will be available if any Array or
-Singleton component adds the `Parallel::Tags::AvoidGlobalProc0` tag to its
-`initialization_tags` type alias. This option will tell the program to not put
-*any* Array Elements or Singletons on the global zeroth charm-core. This core
-is sometimes used to write data to disk which is typically much slower than the
-program execution. The second is the `Singletons:` option. This will be
-available for every Singleton that adds the `Parallel::Tags::SingletonInfo` tag
-to its `initialization_tags` type alias. `AhA` is the `pretty_type::name()` of
-a Singleton in the program and the user has a choice of which proc to place the
-Singleton on (`Auto` will let the program decide) and whether to exclude Array
-Elements or other Singletons from being put on this core. This is useful in
-case the Singleton does some expensive computation that shouldn't be slowed
+First is the `AvoidGlobalProc0` option. This option will tell the program to not
+put *any* Array Elements or Singletons on the global zeroth charm-core. This
+core is sometimes used to write data to disk which is typically much slower
+than the program execution. The second is the `Singletons:` option. You can
+set the value to `Auto`, and then each singleton will have their proc be chosen
+automatically and they won't be exclusive.  Otherwise, you must specify options
+for each singleton as in the example above.  `AhA` is the `pretty_type::name()`
+of a Singleton in the program and the user has a choice of which proc to place
+the Singleton on (`Auto` will let the program decide) and whether to exclude
+Array Elements or other Singletons from being put on this core. This is useful
+in case the Singleton does some expensive computation that shouldn't be slowed
 down by having lots of Array Elements on the same core. In the figure above,
 `AvoidGlobalProc0` is true, and `Sing. 2` requested to be exclusively on core
 `2`.
-
-\note If there are Singletons in your executable that don't have the
-`Parallel::Tags::SingletonInfo` tag, by default their proc will be chosen
-automatically and they won't be exclusive.
 
 # Actions {#dev_guide_parallelization_actions}
 

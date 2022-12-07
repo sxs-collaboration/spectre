@@ -23,7 +23,6 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/Printf.hpp"
-#include "Parallel/Tags/ResourceInfo.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
@@ -57,24 +56,14 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementId<volume_dim>;
 
-  using const_global_cache_tags =
-      tmpl::list<domain::Tags::Domain<volume_dim>,
-                 Parallel::Tags::ResourceInfo<Metavariables>>;
+  using const_global_cache_tags = tmpl::list<domain::Tags::Domain<volume_dim>>;
 
-  using array_allocation_tags =
-      tmpl::list<domain::Tags::InitialRefinementLevels<volume_dim>,
-                 domain::Tags::InitialExtents<volume_dim>>;
-
-  using initialization_tags =
-      tmpl::append<Parallel::get_initialization_tags<
-                       Parallel::get_initialization_actions_list<
-                           phase_dependent_action_list>,
-                       array_allocation_tags>,
-                   tmpl::list<Parallel::Tags::AvoidGlobalProc0>>;
+  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void allocate_array(
       Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
           initialization_items,
       const std::unordered_set<size_t>& procs_to_ignore = {});
 
@@ -90,7 +79,7 @@ struct DgElementArray {
 template <class Metavariables, class PhaseDepActionList>
 void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     Parallel::CProxy_GlobalCache<Metavariables>& global_cache,
-    const tuples::tagged_tuple_from_typelist<initialization_tags>&
+    const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
         initialization_items,
     const std::unordered_set<size_t>& procs_to_ignore) {
   auto& local_cache = *Parallel::local_branch(global_cache);

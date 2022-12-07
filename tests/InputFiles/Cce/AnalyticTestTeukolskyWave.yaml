@@ -18,6 +18,7 @@ Evolution:
   InitialSlabSize: 1.0
 
 ResourceInfo:
+  AvoidGlobalProc0: false
   Singletons:
     CharacteristicEvolution:
       Proc: Auto

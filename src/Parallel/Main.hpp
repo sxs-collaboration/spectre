@@ -158,10 +158,10 @@ class Main : public CBase_Main<Metavariables> {
   void check_if_component_terminated_correctly();
 
   template <typename ParallelComponent>
-  using parallel_component_options =
-      Parallel::get_option_tags<typename ParallelComponent::initialization_tags,
-                                Metavariables>;
+  using parallel_component_options = Parallel::get_option_tags<
+      typename ParallelComponent::simple_tags_from_options, Metavariables>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+      Parallel::OptionTags::ResourceInfo<Metavariables>,
       Parallel::get_option_tags<const_global_cache_tags, Metavariables>,
       Parallel::get_option_tags<mutable_global_cache_tags, Metavariables>,
       tmpl::transform<component_list,
@@ -296,7 +296,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         ;
     // clang-format on
 
-    constexpr bool has_options = tmpl::size<option_list>::value > 0;
+    // False if there are no other options besides the explicitly added
+    // Parallel::OptionTags::ResourceInfo<Metavariables>,
+    constexpr bool has_options = tmpl::size<option_list>::value > 1;
     // Add input-file option if it makes sense
     Overloader{
         [&command_line_options](std::true_type /*meta*/, auto mv,
@@ -392,7 +394,16 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
       input_file = parsed_command_line_options["input-file"].as<std::string>();
       options.parse_file(input_file);
     } else {
-      options.parse("");
+      if constexpr (tmpl::size<singleton_component_list>::value > 0) {
+        options.parse(
+            "ResourceInfo:\n"
+            "  AvoidGlobalProc0: false\n"
+            "  Singletons: Auto\n");
+      } else {
+        options.parse(
+            "ResourceInfo:\n"
+            "  AvoidGlobalProc0: false\n");
+      }
     }
 
     if (parsed_command_line_options.count("check-options") != 0) {
@@ -428,14 +439,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
               std::move(args)...);
         });
 
-    // If any component specified that it needs resource information from
-    // options, use the ResourceInfo created from options rather than the
-    // default
-    if constexpr (Parallel::detail::using_resource_info<Metavariables>) {
-      resource_info_ =
-          tuples::get<Parallel::OptionTags::ResourceInfo<Metavariables>>(
-              options_);
-    }
+    resource_info_ =
+        tuples::get<Parallel::OptionTags::ResourceInfo<Metavariables>>(
+            options_);
 
     Parallel::printf("\nOption parsing completed.\n");
   } catch (const bpo::error& e) {
@@ -480,10 +486,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
   // ResourceInfo that was created from options with the one that has all the
   // correct singleton assignments so simple tags can be created from options
   // with a valid ResourceInfo.
-  if constexpr (Parallel::detail::using_resource_info<Metavariables>) {
-    get<Parallel::OptionTags::ResourceInfo<Metavariables>>(options_) =
-        resource_info_;
-  }
+  get<Parallel::OptionTags::ResourceInfo<Metavariables>>(options_) =
+      resource_info_;
 
   at_sync_indicator_proxy_ =
       detail::CProxy_AtSyncIndicator<Metavariables>::ckNew();
@@ -531,7 +535,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) {
         ParallelComponentProxy::ckNew(
             global_cache_proxy_,
             Parallel::create_from_options<Metavariables>(
-                options_, typename parallel_component::initialization_tags{}),
+                options_,
+                typename parallel_component::simple_tags_from_options{}),
             &global_cache_dependency);
   });
 
@@ -653,7 +658,7 @@ void Main<Metavariables>::
     auto& singleton_proxy =
         Parallel::get_parallel_component<singleton_component>(local_cache);
     auto options = Parallel::create_from_options<Metavariables>(
-        options_, typename singleton_component::initialization_tags{});
+        options_, typename singleton_component::simple_tags_from_options{});
 
     const size_t proc = resource_info_.template proc_for<singleton_component>();
     singleton_proxy[0].insert(global_cache_proxy_, std::move(options), proc);
@@ -668,7 +673,7 @@ void Main<Metavariables>::
     parallel_component::allocate_array(
         global_cache_proxy_,
         Parallel::create_from_options<Metavariables>(
-            options_, typename parallel_component::initialization_tags{}),
+            options_, typename parallel_component::simple_tags_from_options{}),
         resource_info_.procs_to_ignore());
   });
 

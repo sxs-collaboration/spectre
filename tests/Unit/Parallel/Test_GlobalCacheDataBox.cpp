@@ -115,23 +115,31 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}});
   MutableGlobalCache<Metavars> mutable_cache{tuples::TaggedTuple<>{}};
   GlobalCache<Metavars> cache{std::move(tuple), &mutable_cache};
+  Parallel::ResourceInfo<Metavars> resource_info{false};
+  resource_info.build_singleton_map(cache);
+  cache.set_resource_info(resource_info);
   auto box = db::create<
       db::AddSimpleTags<Tags::GlobalCacheImpl<Metavars>>,
       db::AddComputeTags<Tags::FromGlobalCache<Tags::IntegerList>,
-                         Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>>(
-      &cache);
+                         Tags::FromGlobalCache<Tags::UniquePtrIntegerList>,
+                         Tags::ResourceInfoReference<Metavars>>>(&cache);
   CHECK(db::get<Tags::GlobalCache>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<Tags::UniquePtrIntegerListBase>(box));
+  CHECK(cache.get_resource_info() == resource_info);
+  CHECK(cache.get_resource_info() ==
+        db::get<Tags::ResourceInfo<Metavars>>(box));
   CHECK(&Parallel::get<Tags::IntegerList>(cache) ==
         &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
         &db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<Tags::UniquePtrIntegerList>(cache) ==
         &db::get<Tags::UniquePtrIntegerListBase>(box));
+  CHECK(&cache.get_resource_info() ==
+        &db::get<Tags::ResourceInfo<Metavars>>(box));
 
   tuples::TaggedTuple<Tags::IntegerList, Tags::UniquePtrIntegerList> tuple2{};
   tuples::get<Tags::IntegerList>(tuple2) = std::array<int, 3>{{10, -3, 700}};
@@ -166,5 +174,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.GlobalCacheDataBox", "[Unit][Parallel]") {
   TestHelpers::db::test_reference_tag<
       Tags::FromGlobalCache<Tags::UniquePtrIntegerList>>(
       "UniquePtrIntegerList");
+  TestHelpers::db::test_reference_tag<Tags::ResourceInfoReference<Metavars>>(
+      "ResourceInfo");
 }
 }  // namespace Parallel

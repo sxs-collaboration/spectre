@@ -5,3 +5,7 @@
 # Check: parse;execute
 
 Name: Albert Einstein
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto

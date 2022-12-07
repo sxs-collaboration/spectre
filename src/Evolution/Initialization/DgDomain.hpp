@@ -87,7 +87,7 @@ namespace Initialization {
  */
 template <size_t Dim, bool UseControlSystems = false>
 struct Domain {
-  using initialization_tags =
+  using simple_tags_from_options =
       tmpl::list<::domain::Tags::InitialExtents<Dim>,
                  ::domain::Tags::InitialRefinementLevels<Dim>,
                  evolution::dg::Tags::Quadrature>;

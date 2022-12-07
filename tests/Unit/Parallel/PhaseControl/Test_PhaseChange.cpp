@@ -50,7 +50,7 @@ struct TestComponentAlpha {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 };
 
 struct TestComponentBeta {
@@ -58,7 +58,7 @@ struct TestComponentBeta {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
   using metavariables = Metavariables;
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
 };
 
 namespace TestGlobalStateRecord {

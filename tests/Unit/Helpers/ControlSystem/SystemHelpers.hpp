@@ -202,7 +202,7 @@ struct MockObserverWriter {
   using const_global_cache_tags =
       tmpl::list<observers::Tags::ReductionFileName>;
 
-  using initialization_tags = tmpl::list<>;
+  using simple_tags_from_options = tmpl::list<>;
   using simple_tags = tmpl::list<observers::Tags::H5FileLock>;
 
   using metavariables = Metavars;
