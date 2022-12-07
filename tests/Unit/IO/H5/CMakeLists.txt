@@ -54,15 +54,10 @@ spectre_add_python_bindings_test(
   )
 
 spectre_add_python_bindings_test(
-  "Unit.IO.H5.Python.ExtractDatFromH5"
-  "Python/Test_ExtractDatFromH5.py"
-  "unit;DataStructures;IO;H5;python"
-  PyH5
-  )
-
-spectre_add_python_bindings_test(
   "Unit.IO.H5.Python.TensorData"
   "Test_TensorData.py"
   "unit;IO;H5;Python"
   PyH5
   )
+
+add_subdirectory(Python)

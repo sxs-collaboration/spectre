@@ -3,7 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Options.ExtractInputSourceYamlFromH5 import *
+from spectre.IO.H5.ExtractInputSourceYamlFromH5 import *
 
 import spectre.Informer as spectre_informer
 import unittest
@@ -26,7 +26,7 @@ class TestExtractInputSourceYAMLFromH5(unittest.TestCase):
 
         # Check extracted source input vs. the original .yaml file
         yaml_path = os.path.join(spectre_informer.unit_test_src_path(),
-                                 'Options/Python', 'InputSource.yaml')
+                                 'IO/H5/Python', 'InputSource.yaml')
         yaml_file = open(yaml_path, 'r')
         expected_input_source_yaml = yaml_file.read()
         yaml_file.close()
