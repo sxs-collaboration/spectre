@@ -43,10 +43,9 @@ DomainCreator:
 
 EvolutionSystem:
   GeneralizedHarmonic:
-    DhGaugeParameters:
-      SpatialDecayWidth: 50.0
-      Amplitudes: [1.0, 1.0, 1.0]
-      Exponents: [4, 4, 4]
+    GaugeCondition:
+      AnalyticChristoffel:
+        AnalyticPrescription: *InitialData
     DampingFunctionGamma0:
       GaussianPlusConstant:
         Constant: 1.0

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -18,7 +19,7 @@ namespace Tags {
 namespace detail {
 // A const reference to another tag, used for rerouting arguments in the
 // combined system utilities
-template <typename Tag, typename Type = typename Tag::type>
+template <typename Tag, typename Type = db::const_item_type<Tag, tmpl::list<>>>
 struct TemporaryReference {
   using tag = Tag;
   using type = const Type&;

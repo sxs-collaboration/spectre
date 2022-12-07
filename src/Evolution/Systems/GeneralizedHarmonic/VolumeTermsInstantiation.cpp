@@ -58,8 +58,11 @@ namespace evolution::dg::Actions::detail {
       const tnsr::iaa<DataVector, DIM(data)>& phi,                            \
       const Scalar<DataVector>& gamma0, const Scalar<DataVector>& gamma1,     \
       const Scalar<DataVector>& gamma2,                                       \
-      const tnsr::a<DataVector, DIM(data)>& gauge_function,                   \
-      const tnsr::ab<DataVector, DIM(data)>& spacetime_deriv_gauge_function,  \
+      const ::GeneralizedHarmonic::gauges::GaugeCondition& gauge_condition,   \
+      const Mesh<DIM(data)>& mesh_for_rhs, const double& time,                \
+      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& inertial_coords, \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,     \
+                            Frame::Inertial>& inverse_jacobian,               \
       const std::optional<tnsr::I<DataVector, DIM(data), Frame::Inertial>>&   \
           mesh_velocity_from_time_deriv_args);
 

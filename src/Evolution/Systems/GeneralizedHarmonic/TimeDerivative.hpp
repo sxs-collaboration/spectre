@@ -6,12 +6,16 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Tags.hpp"
 #include "Domain/TagsTimeDependent.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/ConstraintDamping/Tags.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/DuDtTempTags.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Tags/GaugeCondition.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -29,8 +33,6 @@ class not_null;
 template <typename, typename, typename>
 class Tensor;
 /// \endcond
-
-// IWYU pragma: no_forward_declare Tags::deriv
 
 namespace GeneralizedHarmonic {
 /*!
@@ -114,6 +116,7 @@ struct TimeDerivative {
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::DetSpatialMetric<DataVector>,
+      gr::Tags::SqrtDetSpatialMetric<DataVector>,
       gr::Tags::InverseSpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelFirstKind<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeChristoffelSecondKind<Dim, Frame::Inertial,
@@ -128,7 +131,10 @@ struct TimeDerivative {
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma0,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
-      Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>,
+      gauges::Tags::GaugeCondition, domain::Tags::Mesh<Dim>, ::Tags::Time,
+      domain::Tags::Coordinates<Dim, Frame::Inertial>,
+      domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
+                                    Frame::Inertial>,
       domain::Tags::MeshVelocity<Dim, Frame::Inertial>>;
 
   static void apply(
@@ -162,6 +168,7 @@ struct TimeDerivative {
       gsl::not_null<tnsr::ii<DataVector, Dim>*> spatial_metric,
       gsl::not_null<tnsr::II<DataVector, Dim>*> inverse_spatial_metric,
       gsl::not_null<Scalar<DataVector>*> det_spatial_metric,
+      gsl::not_null<Scalar<DataVector>*> sqrt_det_spatial_metric,
       gsl::not_null<tnsr::AA<DataVector, Dim>*> inverse_spacetime_metric,
       gsl::not_null<tnsr::abb<DataVector, Dim>*> christoffel_first_kind,
       gsl::not_null<tnsr::Abb<DataVector, Dim>*> christoffel_second_kind,
@@ -176,8 +183,11 @@ struct TimeDerivative {
       const tnsr::aa<DataVector, Dim>& pi,
       const tnsr::iaa<DataVector, Dim>& phi, const Scalar<DataVector>& gamma0,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
-      const tnsr::a<DataVector, Dim>& gauge_function,
-      const tnsr::ab<DataVector, Dim>& spacetime_deriv_gauge_function,
+      const gauges::GaugeCondition& gauge_condition, const Mesh<Dim>& mesh,
+      double time,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+      const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                            Frame::Inertial>& inverse_jacobian,
       const std::optional<tnsr::I<DataVector, Dim, Frame::Inertial>>&
           mesh_velocity);
 };

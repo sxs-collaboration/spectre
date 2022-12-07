@@ -51,6 +51,9 @@ class WrappedGr : public virtual evolution::initial_data::InitialData,
   WrappedGr& operator=(WrappedGr&& /*rhs*/) = default;
   ~WrappedGr() override = default;
 
+  explicit WrappedGr(const SolutionType& wrapped_solution)
+      : SolutionType(wrapped_solution) {}
+
   auto get_clone() const
       -> std::unique_ptr<evolution::initial_data::InitialData> override;
 
