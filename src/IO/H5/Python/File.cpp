@@ -58,6 +58,7 @@ void bind_h5file_impl(py::module& m) {  // NOLINT
                 return f.template get<h5::VolumeData>(path);
               },
               py::return_value_policy::reference, py::arg("path"))
+          .def("input_source", &H5File::input_source)
           .def("__enter__", [](H5File& file) -> H5File& { return file; })
           .def("__exit__", [](H5File& f, const py::object& /* exception_type */,
                               const py::object& /* val */,
