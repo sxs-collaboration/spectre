@@ -395,7 +395,7 @@ struct GhValenciaDivCleanTemplateBase<
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       Initialization::Actions::AddComputeTags<
           StepChoosers::step_chooser_compute_tags<
-              GhValenciaDivCleanTemplateBase>>,
+              GhValenciaDivCleanTemplateBase, local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       intrp::Actions::ElementInitInterpPoints<

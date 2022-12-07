@@ -438,8 +438,9 @@ struct EvolutionMetavars {
           typename system::gradient_variables>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
-      Initialization::Actions::AddComputeTags<tmpl::push_back<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::push_back<StepChoosers::step_chooser_compute_tags<
+              EvolutionMetavars, local_time_stepping>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,
       control_system::Actions::InitializeMeasurements<control_systems>,

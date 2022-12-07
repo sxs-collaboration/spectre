@@ -226,7 +226,8 @@ struct EvolutionMetavars {
       Actions::MutateApply<typename RadiationTransport::M1Grey::
                                ComputeM1HydroCoupling<neutrino_species>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
+                                                  local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<3>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,

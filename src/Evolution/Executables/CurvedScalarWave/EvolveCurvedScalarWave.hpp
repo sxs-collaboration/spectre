@@ -289,8 +289,9 @@ struct EvolutionMetavars {
               volume_dim>,
           CurvedScalarWave::Initialization::InitializeEvolvedVariables<
               volume_dim>>,
-      Initialization::Actions::AddComputeTags<tmpl::flatten<tmpl::list<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>>>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::flatten<tmpl::list<StepChoosers::step_chooser_compute_tags<
+              EvolutionMetavars, local_time_stepping>>>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       intrp::Actions::ElementInitInterpPoints<
           intrp::Tags::InterpPointInfo<EvolutionMetavars>>,
