@@ -166,6 +166,8 @@ void characteristic_speeds(
         get(equation_of_state.chi_from_density(rest_mass_density)) +
         get(equation_of_state.kappa_times_p_over_rho_squared_from_density(
             rest_mass_density));
+
+    get(sound_speed_squared) /= get(specific_enthalpy);
   } else if constexpr (ThermodynamicDim == 2) {
     get(sound_speed_squared) =
         get(equation_of_state.chi_from_density_and_energy(
@@ -173,10 +175,14 @@ void characteristic_speeds(
         get(equation_of_state
                 .kappa_times_p_over_rho_squared_from_density_and_energy(
                     rest_mass_density, specific_internal_energy));
+    get(sound_speed_squared) /= get(specific_enthalpy);
   } else if constexpr (ThermodynamicDim == 3) {
-      ERROR("3d EOS not implemented");
+    auto temperature = equation_of_state.temperature_from_density_and_energy(
+        rest_mass_density, specific_internal_energy, electron_fraction);
+    get(sound_speed_squared) =
+        get(equation_of_state.sound_speed_squared_from_density_and_temperature(
+            rest_mass_density, temperature, electron_fraction));
   }
-  get(sound_speed_squared) /= get(specific_enthalpy);
 
   compute_characteristic_speeds(char_speeds, lapse, shift, spatial_velocity,
                                 spatial_velocity_squared, sound_speed_squared,

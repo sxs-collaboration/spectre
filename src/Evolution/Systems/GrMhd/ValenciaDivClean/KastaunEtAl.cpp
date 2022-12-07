@@ -264,7 +264,9 @@ Primitives FunctionOfMu<ThermodynamicDim>::primitives(const double mu) const {
     p_hat = get(equation_of_state_.pressure_from_density_and_energy(
         Scalar<double>(rho_hat), Scalar<double>(epsilon_hat)));
   } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
+    p_hat = get(equation_of_state_.pressure_from_density_and_energy(
+        Scalar<double>(rho_hat), Scalar<double>(epsilon_hat),
+        Scalar<double>(electron_fraction_)));
   }
   return Primitives{rho_hat, w_hat, p_hat, epsilon_hat, q_bar, r_bar_squared};
 }

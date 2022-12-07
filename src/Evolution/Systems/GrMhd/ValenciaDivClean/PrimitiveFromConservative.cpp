@@ -148,6 +148,17 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
       }
       get(*lorentz_factor)[s] = primitive_data.value().lorentz_factor;
       get(*pressure)[s] = primitive_data.value().pressure;
+
+      if constexpr (ThermodynamicDim == 3) {
+        auto h = primitive.data.value().rho_h_w_squared /
+                 (primitive_data.value().lorentz_factor *
+                  primitive_data.value().rest_mass_density);
+        get(*specific_internal_energy)[s] =
+            h - 1. -
+            primitive_data.value().pressure /
+                primitive_data.value().rest_mass_density;
+      }
+
     } else {
       if constexpr (ErrorOnFailure) {
         ERROR("All primitive inversion schemes failed at s = "
@@ -180,11 +191,9 @@ bool PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     *specific_internal_energy =
         equation_of_state.specific_internal_energy_from_density_and_pressure(
             *rest_mass_density, *pressure);
-  } else if constexpr (ThermodynamicDim == 3) {
-    ERROR("3d EOS not implemented");
-  }
-  *specific_enthalpy = hydro::relativistic_specific_enthalpy(
-      *rest_mass_density, *specific_internal_energy, *pressure);
+  }  // else if constexpr (ThermodynamicDim == 3) {
+     // We set this already in the loop above
+  //}
   return true;
 }
 }  // namespace grmhd::ValenciaDivClean

@@ -76,14 +76,20 @@ void compute_conservatives_for_reconstruction(
   const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(*vars_on_face);
   auto& specific_internal_energy =
       get<hydro::Tags::SpecificInternalEnergy<DataVector>>(*vars_on_face);
-  if constexpr (ThermodynamicDim == 2) {
+
+  if constexpr (ThermodynamicDim == 1){
+    specific_internal_energy =
+        eos.specific_internal_energy_from_density(rest_mass_density);
+  }else if constexpr (ThermodynamicDim == 2) {
     specific_internal_energy =
         eos.specific_internal_energy_from_density_and_pressure(
             rest_mass_density, pressure);
-  } else {
+  } else { // if constexpr (ThermodynamicDim == 3)
     specific_internal_energy =
-        eos.specific_internal_energy_from_density(rest_mass_density);
+        eos.specific_internal_energy_from_density_and_pressure(
+            rest_mass_density, pressure, electron_fraction);
   }
+
   auto& specific_enthalpy =
       get<hydro::Tags::SpecificEnthalpy<DataVector>>(*vars_on_face);
   hydro::relativistic_specific_enthalpy(make_not_null(&specific_enthalpy),
