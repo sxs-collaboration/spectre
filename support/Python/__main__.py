@@ -15,6 +15,7 @@ class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
             "clean-output",
+            "extract-input",
             "generate-xdmf",
             "simplify-traces",
         ]
@@ -23,6 +24,10 @@ class Cli(click.MultiCommand):
         if name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
             return clean_output_command
+        elif name == "extract-input":
+            from spectre.IO.H5.ExtractInputSourceYamlFromH5 import (
+                extract_input_source_from_h5_command)
+            return extract_input_source_from_h5_command
         elif name == "generate-xdmf":
             from spectre.Visualization.GenerateXdmf import (
                 generate_xdmf_command)
