@@ -90,6 +90,118 @@ Tabulated3D<IsRelativistic>::get_clone() const {
 }
 
 template <bool IsRelativistic>
+void Tabulated3D<IsRelativistic>::initialize(const h5::EosTable& spectre_eos) {
+  // STEP 0: Allocate intermediate data structures for initialization
+
+  auto setup_index_variable = [&spectre_eos](std::string name) {
+    auto& available_names = spectre_eos.independent_variable_names();
+    size_t i = 0;
+    for (i = 0; i < available_names.size(); ++i) {
+      if (name == available_names[i]) {
+        break;
+      }
+    }
+
+    auto bounds = spectre_eos.independent_variable_bounds()[i];
+    if (spectre_eos.independent_variable_uses_log_spacing()[i]) {
+      for (auto& b : bounds) {
+        b = std::log(b);
+      }
+    }
+    size_t num_points = spectre_eos.independent_variable_number_of_points()[i];
+
+    std::vector<double> index_variable(num_points);
+
+    for (i = 0; i < num_points; ++i) {
+      index_variable[i] =
+          bounds[0] + (bounds[1] - bounds[0]) / (double(num_points - 1)) * i;
+    }
+
+    return index_variable;
+  };
+
+  std::vector<double> electron_fraction =
+      setup_index_variable("electron fraction");
+  std::vector<double> log_density = setup_index_variable("number density");
+  std::vector<double> log_temperature = setup_index_variable("temperature");
+
+  // Get size of table
+  size_t size =
+      electron_fraction.size() * log_density.size() * log_temperature.size();
+
+  std::vector<double> table_data(size * NumberOfVars);
+
+  // Need to setup index variables
+
+  auto pressure = spectre_eos.read_quantity("pressure");
+  auto eps = spectre_eos.read_quantity("specific internal energy");
+  auto cs2 = spectre_eos.read_quantity("sound speed squared");
+
+  auto mu_l = spectre_eos.read_quantity("lepton chemical potential");
+  //  WILL BE NEEDED FOR FUTURE PR
+  //  auto mu_q = spectre_eos.read_quantity("charge chemical potential");
+  //  auto mu_b = spectre_eos.read_quantity("baryon chemical potential");
+
+
+
+  double enthalpy_minimum = 1.e99;
+  double eps_min = 1.e99;
+
+  for (size_t s = 0; s < size; ++s) {
+    eps_min = std::min(eps_min, eps[s]);
+  }
+
+  double energy_shift = (eps_min < 0) ? 2. * eps_min : 0.;
+
+  // STEP 3: Fun with indices
+
+  // nb is in units of 1/fm^3
+  // convert to geometrical units
+  // assuming an effective mass scale
+  // set by the neutron mass
+
+  constexpr double nb_fm3_to_geom = 0.002711492496730566;
+
+  for (size_t s = 0; s < log_density.size(); ++s) {
+    log_density[s] += std::log(nb_fm3_to_geom);
+  }
+
+  // Convert table
+  for (size_t iR = 0; iR < log_density.size(); ++iR) {
+    for (size_t iT = 0; iT < log_temperature.size(); ++iT) {
+      for (size_t iY = 0; iY < electron_fraction.size(); ++iY) {
+        // Index spectre table
+       // Ye varies fastest
+        size_t index_spectre =
+           iY + electron_fraction.size() * (iR + log_density.size() * iT);
+        // Local index
+        // T varies fastest
+        size_t index_tab3D =
+            iT + log_temperature.size() * (iR + log_density.size() * iY);
+
+        constexpr double press_MeV_to_geom = 2.885900818968523e-06;
+
+        double* table_point = &(table_data[index_tab3D * NumberOfVars]);
+
+        table_point[Pressure] =
+            std::log(press_MeV_to_geom * pressure[index_spectre]);
+        table_point[Epsilon] = std::log(eps[index_spectre] - energy_shift);
+        table_point[CsSquared] = cs2[index_spectre];
+        table_point[DeltaMu] = mu_l[index_spectre];
+
+        // Determine specific enthalpy minimum
+        double h = 1. + table_point[Epsilon] +
+                 table_point[Pressure] / std::exp(log_density[iR]);
+        enthalpy_minimum = std::min(enthalpy_minimum, h);
+      }
+    }
+  }
+
+  initialize(electron_fraction, log_density, log_temperature, table_data,
+             energy_shift, enthalpy_minimum);
+}
+
+template <bool IsRelativistic>
 void Tabulated3D<IsRelativistic>::initialize(
     std::vector<double> electron_fraction, std::vector<double> log_density,
     std::vector<double> log_temperature, std::vector<double> table_data,
@@ -497,6 +609,21 @@ Tabulated3D<IsRelativistic>::
              std::move(log_temperature), std::move(table_data), energy_shift,
              enthalpy_minimum);
 }
+
+template <bool IsRelativistic>
+Tabulated3D<IsRelativistic>::Tabulated3D(const h5::EosTable& spectre_eos) {
+  initialize(spectre_eos);
+}
+
+template <bool IsRelativistic>
+Tabulated3D<IsRelativistic>::Tabulated3D(const std::string& filename,
+                                         const std::string& subfilename) {
+  h5::H5File<h5::AccessType::ReadOnly> eos_file{filename};
+  const auto& spectre_eos = eos_file.get<h5::EosTable>("/" + subfilename);
+
+  initialize(spectre_eos);
+}
+
 }  // namespace EquationsOfState
 
 template class EquationsOfState::Tabulated3D<true>;
