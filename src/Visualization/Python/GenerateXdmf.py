@@ -3,6 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
 import glob
 import h5py
 import logging
@@ -11,9 +12,13 @@ import numpy as np
 
 def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                   stride, coordinates):
-    """
-    Generate one XDMF file that ParaView and VisIt can use to load the data
-    out of the HDF5 files.
+    """Generate an XDMF file for ParaView and VisIt
+
+    The XDMF file points into HDF5 files containing volume data so ParaView and
+    VisIt can load the data out of the HDF5 files.
+
+    To load the XDMF file in ParaView you must choose the 'Xdmf Reader', NOT
+    'Xdmf3 Reader'.
     """
     h5files = [(h5py.File(filename, 'r'), filename)
                for filename in glob.glob(file_prefix + "[0-9]*.h5")]
@@ -41,9 +46,9 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
     # counter used to enforce the stride
     stride_counter = 0
     for id_and_value in temporal_ids_and_values:
-        if id_and_value[1] < start_time:
+        if start_time is not None and id_and_value[1] < start_time:
             continue
-        if id_and_value[1] > stop_time:
+        if stop_time is not None and id_and_value[1] > stop_time:
             break
 
         stride_counter += 1
@@ -306,55 +311,45 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
         xmf_file.write(xdmf_output)
 
 
-def parse_args():
-    """
-    Parse the command line arguments
-    """
-    import argparse as ap
-    parser = ap.ArgumentParser(
-        description="Generate XDMF file for visualizing SpECTRE data. "
-        "To load the XDMF file in ParaView you must choose the 'Xdmf Reader', "
-        "NOT 'Xdmf3 Reader'",
-        formatter_class=ap.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '--file-prefix',
-        required=True,
-        help="The common prefix of the H5 volume files to load, excluding "
-        "the node number integer(s)")
-    parser.add_argument(
-        '--output',
-        '-o',
-        required=True,
-        help="Output file name, an xmf extension will be added")
-    parser.add_argument(
-        '--subfile-name',
-        '-d',
-        required=True,
-        help="Name of the volume data subfile in the H5 files, excluding the "
-        "'.vol' extension")
-    parser.add_argument("--stride",
-                        default=1,
-                        type=int,
-                        help="View only every stride'th time step")
-    parser.add_argument(
-        "--start-time",
-        default=0.0,
-        type=float,
-        help="The earliest time at which to start visualizing. The start-time "
-        "value is included.")
-    parser.add_argument(
-        "--stop-time",
-        default=1e300,
-        type=float,
-        help="The time at which to stop visualizing. The stop-time value is "
-        "not included.")
-    parser.add_argument("--coordinates",
-                        default="InertialCoordinates",
-                        help="The coordinates to use for visualization")
-    return parser.parse_args()
+@click.command(help=generate_xdmf.__doc__)
+@click.option(
+    '--file-prefix',
+    required=True,
+    help=("The common prefix of the H5 volume files to load, excluding "
+          "the node number integer(s)"))
+@click.option('--output',
+              '-o',
+              required=True,
+              help="Output file name, an xmf extension will be added")
+@click.option(
+    '--subfile-name',
+    '-d',
+    required=True,
+    help=("Name of the volume data subfile in the H5 files, excluding the "
+          "'.vol' extension"))
+@click.option("--stride",
+              default=1,
+              type=int,
+              help="View only every stride'th time step")
+@click.option(
+    "--start-time",
+    type=float,
+    help=("The earliest time at which to start visualizing. The start-time "
+          "value is included."))
+@click.option(
+    "--stop-time",
+    type=float,
+    help=("The time at which to stop visualizing. The stop-time value is "
+          "not included."))
+@click.option("--coordinates",
+              default="InertialCoordinates",
+              show_default=True,
+              help="The coordinates to use for visualization")
+def generate_xdmf_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    generate_xdmf(**kwargs)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    input_args = parse_args()
-    generate_xdmf(**vars(input_args))
+    generate_xdmf_command(help_option_names=["-h", "--help"])
