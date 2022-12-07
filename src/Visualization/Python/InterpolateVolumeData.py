@@ -8,10 +8,12 @@ from spectre import Spectral, Interpolation
 import numpy as np
 import sys
 from multiprocessing import Pool
-import argparse
+import click
 import re
 import glob
 import logging
+
+logger = logging.getLogger(__name__)
 
 basis_dict = {
     "Legendre": Spectral.Basis.Legendre,
@@ -37,10 +39,10 @@ def quadrature_from_string(names):
 
 
 # Function to forward arguments to the multiprocessing Pool. We can not use a
-# lambda because the function needs to be pickled.
-# In python 3 we can switch to `starmap`.
-def forward_args(args):
-    interpolate_h5_file(**args)
+# lambda because the function needs to be pickled. Note that `starmap` only
+# works with an iterable, not with a dict.
+def forward_kwargs(kwargs):
+    interpolate_h5_file(**kwargs)
 
 
 def interpolate_h5_file(source_file_path,
@@ -61,6 +63,7 @@ def interpolate_h5_file(source_file_path,
     be the same as the `source_file_path` if the volume subfile paths are
     different.
 
+    \f
     Parameters
     ----------
     source_file_path: str
@@ -126,7 +129,7 @@ def interpolate_h5_file(source_file_path,
         grid_names = source_vol.get_grid_names(obs)
         obs_value = source_vol.get_observation_value(obs)
 
-        if components_to_interpolate is not None:
+        if components_to_interpolate:
             tensor_names = list(
                 set(tensor_name for pattern in components_to_interpolate
                     for tensor_name in tensor_names
@@ -180,170 +183,116 @@ def interpolate_h5_file(source_file_path,
         target_file.close()
 
 
-def parse_args(sys_args):
-    """
-    defines and parses the command line arguments
+@click.command(help=interpolate_h5_file.__doc__)
+@click.option(
+    "--source-file-prefix",
+    required=True,
+    help=("The prefix for the .h5 source files. All files starting with the "
+          "prefix followed by a number will be interpolated."))
+@click.option("--source-subfile-name",
+              required=True,
+              help=("The name of the volume data subfile within the "
+                    "source files in which the data is contained"))
+@click.option(
+    "--target-file-prefix",
+    default=None,
+    help=(
+        "The prefix for the target files where the interpolated data is "
+        "written. When no target file is specified, the interpolated data is "
+        "written to the corresponding source file in a new volume data "
+        "subfile."))
+@click.option("--target-subfile-name",
+              required=True,
+              help=("The name of the volume data subfile within the target "
+                    "files where the data will be written."))
+@click.option("--tensor-component",
+              "-t",
+              multiple=True,
+              help=("The names of the tensors that are to be interpolated. "
+                    "Accepts regular expression. "
+                    "If none are specified, all tensors are interpolated."))
+@click.option(
+    "--target-extents",
+    callback=(lambda ctx, param, value: list(map(int, value.split(',')))
+              if value else []),
+    required=True,
+    help=("The extents of the target grid, as a comma-separated list without "
+          "spaces. Can be different for each dimension e.g. '3,5,4'"))
+@click.option("--target-basis",
+              type=click.Choice(basis_dict.keys()),
+              callback=lambda ctx, param, value: basis_from_string(value),
+              required=True,
+              help=("The basis of the target grid."))
+@click.option("--target-quadrature",
+              type=click.Choice(quadrature_dict.keys()),
+              callback=lambda ctx, param, value: quadrature_from_string(value),
+              required=True,
+              help=("The quadrature of the target grid."))
+@click.option("--start-time",
+              type=float,
+              default=-np.inf,
+              help=("Disregard all observations with value before this point"))
+@click.option("--stop-time",
+              type=float,
+              default=np.inf,
+              help=("Disregard all observations with value after this point"))
+@click.option("--stride",
+              type=int,
+              default=1,
+              help=("Stride through observations with this step size."))
+@click.option(
+    "-j",
+    "--num-jobs",
+    type=int,
+    default=None,
+    help=("The maximum number of processes to be started. "
+          "A process is spawned for each source file up to this number."))
+def interpolate_volume_data_command(source_file_prefix, source_subfile_name,
+                                    target_file_prefix, target_subfile_name,
+                                    target_extents, target_basis,
+                                    target_quadrature, tensor_component,
+                                    start_time, stop_time, stride, num_jobs):
+    _rich_traceback_guard = True  # Hide traceback until here
 
-    Parameters
-    ----------
-    sys_args arguments passed via command line
-
-    Returns
-    -------
-    A dictionary of the parsed command line arguments
-    """
-    parser = argparse.ArgumentParser(
-        description=
-        "Interpolate the tensor components of h5 files to a desired grid")
-
-    parser.add_argument(
-        "--source-file-prefix",
-        required=True,
-        help=(
-            "The prefix for the .h5 source files. All files starting with the "
-            "prefix followed by a number will be interpolated."))
-
-    parser.add_argument("--source-subfile-name",
-                        required=True,
-                        help=("The name of the volume data subfile within the "
-                              "source files in which the data is contained"))
-
-    parser.add_argument(
-        "--target-file-prefix",
-        default=None,
-        help=
-        ("The prefix for the target files where the interpolated data is "
-         "written. When no target file is specified, the interpolated data is "
-         "written to the corresponding source file in a new volume data "
-         "subfile."))
-
-    parser.add_argument(
-        "--target-subfile-name",
-        required=True,
-        help=("The name of the volume data subfile within the target "
-              "files where the data will be written."))
-
-    parser.add_argument(
-        "--tensor-components",
-        nargs='*',
-        help=("The names of the tensors that are to be interpolated. "
-              "Accepts regular expression. "
-              "If none are specified, all tensors are interpolated."))
-
-    parser.add_argument(
-        "--target-extents",
-        type=int,
-        nargs='+',
-        required=True,
-        help=("The extents of the target grid. "
-              "Can be different for each dimension e.g. '3 5 4'"))
-
-    parser.add_argument("--target-basis",
-                        nargs='+',
-                        choices=basis_dict.keys(),
-                        required=True,
-                        help=("The basis of the target grid. "
-                              "Can be different for each dimension"))
-
-    parser.add_argument("--target-quadrature",
-                        nargs='+',
-                        choices=quadrature_dict.keys(),
-                        required=True,
-                        help=("The quadrature of the target grid. "
-                              "Can be different for each dimension"))
-
-    parser.add_argument(
-        "--start-time",
-        type=float,
-        default=-np.inf,
-        help=("Disregard all observations with value before this point"))
-
-    parser.add_argument(
-        "--stop-time",
-        type=float,
-        default=np.inf,
-        help=("Disregard all observations with value after this point"))
-
-    parser.add_argument(
-        "--stride",
-        type=int,
-        default=1,
-        help=("Stride through observations with this step size."))
-
-    parser.add_argument(
-        "-j",
-        "--jobs",
-        type=int,
-        default=None,
-        help=("The maximum number of processes to be started. "
-              "A process is spawned for each source file up to this number."))
-
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='count',
-                        default=0,
-                        help="Verbosity (-v, -vv, ...)")
-
-    return parser.parse_args(sys_args)
-
-
-if __name__ == "__main__":
-
-    parsed_args = parse_args(sys.argv[1:])
-
-    logging.basicConfig(level=logging.WARNING - parsed_args.verbose * 10)
-    source_files = glob.glob(parsed_args.source_file_prefix + "[0-9]*.h5")
+    source_files = glob.glob(source_file_prefix + "[0-9]*.h5")
     file_numbers = [
-        re.match(parsed_args.source_file_prefix + "([0-9]*).h5",
-                 source_file).group(1) for source_file in source_files
+        re.match(source_file_prefix + "([0-9]*).h5", source_file).group(1)
+        for source_file in source_files
     ]
     target_files = [
-        "{}{}.h5".format(parsed_args.target_file_prefix, number)
-        for number in file_numbers
+        f"{target_file_prefix}{number}.h5" for number in file_numbers
     ]
 
     if len(source_files) == 0:
         raise NameError("No files found matching the input pattern.")
 
-    # construct target mesh
-    target_basis = basis_from_string(parsed_args.target_basis) if len(
-        parsed_args.target_basis) > 1 else basis_from_string(
-            parsed_args.target_basis[0])
-    target_quadrature = quadrature_from_string(
-        parsed_args.target_quadrature) if len(
-            parsed_args.target_quadrature) > 1 else quadrature_from_string(
-                parsed_args.target_quadrature[0])
-    target_extents = parsed_args.target_extents[0] if len(
-        parsed_args.target_extents) == 1 else parsed_args.target_extents
-
-    # get dimension from first file
-    source_file = spectre_h5.H5File(source_files[0], "a")
-    source_vol = source_file.get_vol(parsed_args.source_subfile_name)
-    dim = source_vol.get_dimension()
-    source_file.close()
+    dim = len(target_extents)
     target_mesh = Spectral.Mesh[dim](target_extents, target_basis,
                                      target_quadrature)
 
-    interpolate_args = []
-    logging.info("Source and target files/volumes are as follows:")
+    interpolate_kwargs = []
+    logger.info("Source and target files/volumes are as follows:")
 
-    for source_file, target_file in zip(source_files, target_files):
-        interpolate_args.append(
-            dict(source_file_path=source_file,
+    for source_file_path, target_file_path in zip(source_files, target_files):
+        interpolate_kwargs.append(
+            dict(source_file_path=source_file_path,
                  target_mesh=target_mesh,
-                 target_file_path=target_file,
-                 source_volume_data=parsed_args.source_subfile_name,
-                 target_volume_data=parsed_args.target_subfile_name,
-                 components_to_interpolate=parsed_args.tensor_components,
-                 obs_start=parsed_args.start_time,
-                 obs_end=parsed_args.stop_time,
-                 obs_stride=parsed_args.stride))
+                 target_file_path=target_file_path,
+                 source_volume_data=source_subfile_name,
+                 target_volume_data=target_subfile_name,
+                 components_to_interpolate=tensor_component,
+                 obs_start=start_time,
+                 obs_end=stop_time,
+                 obs_stride=stride))
 
-        logging.info("{}{} => {}{}".format(source_file,
-                                           parsed_args.source_subfile_name,
-                                           target_file,
-                                           parsed_args.target_subfile_name))
+        logger.info("{}{} => {}{}".format(source_file_path,
+                                          source_subfile_name,
+                                          target_file_path,
+                                          target_subfile_name))
 
-    # change to p.starmap in python3
-    with Pool(parsed_args.jobs) as p:
-        p.map(forward_args, interpolate_args)
+    with Pool(num_jobs) as p:
+        p.map(forward_kwargs, interpolate_kwargs)
+
+
+if __name__ == "__main__":
+    interpolate_volume_data_command(help_option_names=["-h", "--help"])

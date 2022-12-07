@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import unittest
+from click.testing import CliRunner
 from spectre.Informer import unit_test_build_path
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import TensorComponent, ElementVolumeData
@@ -10,6 +11,7 @@ from spectre import Spectral
 from spectre.Visualization import InterpolateVolumeData
 import os
 import numpy as np
+import logging
 import shutil
 
 
@@ -184,6 +186,29 @@ class TestInterpolateH5(unittest.TestCase):
         self.assertTrue(
             np.allclose(tensor2_obs_2[64:], self.sol2 / 8., 1e-7, 1e-7))
 
+    def test_cli(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            InterpolateVolumeData.interpolate_volume_data_command, [
+                "--source-file-prefix",
+                os.path.join(self.test_dir, "interpolation_"),
+                "--source-subfile-name",
+                self.volume_name,
+                "--target-file-prefix",
+                os.path.join(self.test_dir, "interpolation_"),
+                "--target-subfile-name",
+                "/VolumeDataInterpolated",
+                "--target-extents",
+                "4,4,4",
+                "--target-basis",
+                "Legendre",
+                "--target-quadrature",
+                "Gauss",
+            ],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
 
 if __name__ == '__main__':
-    unittest.main()
+    logging.basicConfig(level=logging.DEBUG)
+    unittest.main(verbosity=2)
