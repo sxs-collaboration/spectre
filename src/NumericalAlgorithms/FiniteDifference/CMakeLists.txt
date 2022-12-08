@@ -10,6 +10,7 @@ spectre_target_sources(
   PRIVATE
   AoWeno.cpp
   FallbackReconstructorType.cpp
+  Filter.cpp
   Minmod.cpp
   MonotonicityPreserving5.cpp
   MonotonisedCentral.cpp
@@ -25,6 +26,7 @@ spectre_target_headers(
   HEADERS
   AoWeno.hpp
   FallbackReconstructorType.hpp
+  Filter.hpp
   FiniteDifference.hpp
   Minmod.hpp
   MonotonicityPreserving5.hpp
