@@ -17,6 +17,7 @@ spectre_target_headers(
   HEADERS
   FixConservativesAndComputePrims.hpp
   InitialDataTci.hpp
+  NeighborPackagedData.hpp
   PrimitiveGhostData.hpp
   PrimsAfterRollback.hpp
   ResizeAndComputePrimitives.hpp
