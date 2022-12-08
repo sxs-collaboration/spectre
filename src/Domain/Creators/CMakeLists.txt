@@ -32,6 +32,7 @@ spectre_target_headers(
   HEADERS
   AlignedLattice.hpp
   BinaryCompactObject.hpp
+  BinaryCompactObjectHelpers.hpp
   Brick.hpp
   Cylinder.hpp
   CylindricalBinaryCompactObject.hpp
