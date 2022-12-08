@@ -90,10 +90,10 @@ struct TimeAndTimeStep {
                      tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
 
   using simple_tags =
-      tmpl::push_back<StepChoosers::step_chooser_simple_tags<Metavariables>,
+      tmpl::push_back<StepChoosers::step_chooser_simple_tags<
+                          Metavariables, Metavariables::local_time_stepping>,
                       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                      ::Tags::TimeStep,
-                      ::Tags::Next<::Tags::TimeStep>>;
+                      ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

@@ -107,7 +107,7 @@ struct InitializeCharacteristicEvolutionVariables {
       Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>,
       Spectral::Swsh::Tags::SwshInterpolator<Tags::PartiallyFlatAngularCoords>>;
   using simple_tags =
-      tmpl::append<StepChoosers::step_chooser_simple_tags<Metavariables>,
+      tmpl::append<StepChoosers::step_chooser_simple_tags<Metavariables, true>,
                    simple_tags_for_evolution>;
 
   using compute_tags = tmpl::remove_duplicates<tmpl::join<

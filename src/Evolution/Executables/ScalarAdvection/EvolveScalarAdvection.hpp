@@ -311,7 +311,8 @@ struct EvolutionMetavars {
       Initialization::Actions::AddComputeTags<
           tmpl::list<ScalarAdvection::Tags::VelocityFieldCompute<Dim>>>,
       Initialization::Actions::AddComputeTags<
-          StepChoosers::step_chooser_compute_tags<EvolutionMetavars>>,
+          StepChoosers::step_chooser_compute_tags<EvolutionMetavars,
+                                                  local_time_stepping>>,
       ::evolution::dg::Initialization::Mortars<volume_dim, system>,
       Initialization::Actions::Minmod<Dim>,
       evolution::Actions::InitializeRunEventsAndDenseTriggers,

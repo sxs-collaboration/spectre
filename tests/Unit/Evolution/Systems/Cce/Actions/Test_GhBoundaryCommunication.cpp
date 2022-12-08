@@ -126,7 +126,6 @@ struct mock_characteristic_evolution {
 };
 
 struct test_metavariables {
-  static constexpr bool local_time_stepping = false;
   using evolved_swsh_tag = Tags::BondiJ;
   using evolved_swsh_dt_tag = Tags::BondiH;
   using cce_step_choosers = tmpl::list<>;
