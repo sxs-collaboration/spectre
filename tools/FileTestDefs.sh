@@ -264,6 +264,7 @@ long_lines() {
               '.patch' \
               '.travis.yml$' \
               '.xml$' \
+              '.xmf$' \
               'CITATION.cff' \
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
@@ -410,6 +411,7 @@ license() {
               '.style.yapf' \
               '.svg' \
               '.patch' \
+              '.xmf' \
               'LICENSE' \
               'citation.bib' \
               'cmake/CodeCoverage.cmake$' \

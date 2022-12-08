@@ -19,6 +19,7 @@ class TestGenerateXdmf(unittest.TestCase):
         self.test_dir = os.path.join(spectre_informer.unit_test_build_path(),
                                      'Visualization/GenerateXdmf')
         os.makedirs(self.test_dir, exist_ok=True)
+        self.maxDiff = None
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
@@ -39,6 +40,16 @@ class TestGenerateXdmf(unittest.TestCase):
         # it and it produces output without raising an error. To test more
         # details, we should refactor the script into smaller units.
         self.assertTrue(os.path.isfile(output_filename + '.xmf'))
+
+        # Also make sure that the output doesn't change. This has caught many
+        # bugs.
+        with open(output_filename + ".xmf") as open_file:
+            output = open_file.read()
+        with open(os.path.join(self.data_dir, 'VolTestData.xmf')) as open_file:
+            expected_output = open_file.read()
+            expected_output = expected_output.replace(
+                'VolTestData0.h5', data_file_prefix + '0.h5')
+        self.assertEqual(output, expected_output)
 
     def test_surface_generate_xdmf(self):
         data_file_prefix = os.path.join(self.data_dir, 'SurfaceTestData')

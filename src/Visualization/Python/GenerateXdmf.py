@@ -302,7 +302,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 # close time grid
                 xdmf_output += "  </Grid>\n"
 
-    xdmf_output += "</Grid>\n</Domain>\n</Xdmf>"
+    xdmf_output += "</Grid>\n</Domain>\n</Xdmf>\n"
 
     for h5file in h5files:
         h5file[0].close()
