@@ -46,3 +46,5 @@ target_link_libraries(
   Options
   RelativisticEulerSolutions
   )
+
+add_subdirectory(InitialMagneticFields)
