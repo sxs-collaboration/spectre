@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_AddComputeTags.cpp
   Test_AddSimpleTags.cpp
   Test_Goto.cpp
+  Test_InitializeItems.cpp
   Test_MutateApply.cpp
   Test_RandomizeVariables.cpp
   Test_SetData.cpp
