@@ -40,7 +40,13 @@ void update_u(const gsl::not_null<db::DataBox<DbTags>*> box) {
       tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
                           typename System::variables_tag, VariablesTag>;
   using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
-  if (db::get<Tags::IsUsingTimeSteppingErrorControl>(*box)) {
+  bool is_using_error_control = false;
+  if constexpr (db::tag_is_retrievable_v<Tags::IsUsingTimeSteppingErrorControl,
+                                         db::DataBox<DbTags>>) {
+    is_using_error_control =
+        db::get<Tags::IsUsingTimeSteppingErrorControl>(*box);
+  }
+  if (is_using_error_control) {
     using error_tag = ::Tags::StepperError<variables_tag>;
     using previous_error_tag = ::Tags::PreviousStepperError<variables_tag>;
     if constexpr (tmpl::list_contains_v<DbTags, error_tag>) {
