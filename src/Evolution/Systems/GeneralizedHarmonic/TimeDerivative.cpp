@@ -230,7 +230,8 @@ void TimeDerivative<Dim>::apply(
 
   gauges::dispatch<Dim>(gauge_function, spacetime_deriv_gauge_function, *lapse,
                         *shift, *normal_spacetime_one_form,
-                        *sqrt_det_spatial_metric, *inverse_spatial_metric,
+                        *normal_spacetime_vector, *sqrt_det_spatial_metric,
+                        *inverse_spatial_metric, *da_spacetime_metric,
                         spacetime_metric, pi, phi, mesh, time, inertial_coords,
                         inverse_jacobian, gauge_condition);
 

@@ -105,7 +105,7 @@ void test_gauge_wave(const Mesh<Dim>& mesh) {
   // gauge.
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
-      {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      {}, {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
       *gauge_condition);
 
   CHECK_ITERABLE_APPROX(
@@ -141,7 +141,7 @@ void test_ks(const Mesh<3>& mesh) {
   // gauge.
   GeneralizedHarmonic::gauges::dispatch(
       make_not_null(&gauge_h), make_not_null(&d4_gauge_h), {}, {}, {}, {}, {},
-      {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
+      {}, {}, {}, {}, {}, mesh, time, inertial_coords, inverse_jacobian,
       *gauge_condition);
 
   const GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>
