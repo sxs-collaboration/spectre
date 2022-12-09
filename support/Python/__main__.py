@@ -13,12 +13,16 @@ SPECTRE_VERSION = "@SPECTRE_VERSION@"
 # invoked. This is important so the CLI responds quickly.
 class Cli(click.MultiCommand):
     def list_commands(self, ctx):
-        return ["clean-output"]
+        return ["clean-output", "generate-xdmf"]
 
     def get_command(self, ctx, name):
         if name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
             return clean_output_command
+        elif name == "generate-xdmf":
+            from spectre.Visualization.GenerateXdmf import (
+                generate_xdmf_command)
+            return generate_xdmf_command
         raise NotImplementedError(f"The command '{name}' is not implemented.")
 
 
