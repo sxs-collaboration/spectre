@@ -89,7 +89,7 @@ void test_singleton_info() {
 void test_singleton_pack() {
   const auto info0 = TestHelpers::test_creation<
       Parallel::SingletonInfoHolder<fake_singleton<0>>>(
-      "Proc: 0\n"
+      "Proc: Auto\n"
       "Exclusive: false\n");
   const auto info1 = TestHelpers::test_creation<
       Parallel::SingletonInfoHolder<fake_singleton<1>>>(
@@ -102,11 +102,10 @@ void test_singleton_pack() {
 
   using pack_list =
       tmpl::list<fake_singleton<0>, fake_singleton<1>, fake_singleton<2>>;
+  // Make one singleton constructed with auto
   const auto singleton_pack =
       TestHelpers::test_creation<SingletonPack<pack_list>>(
-          "FakeSingleton0:\n"
-          "  Proc: 0\n"
-          "  Exclusive: false\n"
+          "FakeSingleton0: Auto\n"
           "FakeSingleton1:\n"
           "  Proc: 1\n"
           "  Exclusive: true\n"
@@ -141,7 +140,7 @@ void test_tags() {
   Parallel::GlobalCache<metavars> cache{{}, &mutable_cache};
   const SingletonInfoHolder<FakeSingleton<metavars, 0>> info_holder{{0}, false};
 
-  ResourceInfo<metavars> resource_info{false, {info_holder}};
+  ResourceInfo<metavars> resource_info{false, std::optional{info_holder}};
   resource_info.build_singleton_map(cache);
 }
 
@@ -163,9 +162,7 @@ void test_single_core() {
         TestHelpers::test_option_tag<OptionTags::ResourceInfo<metavars>>(
             "AvoidGlobalProc0: false\n"
             "Singletons:\n"
-            "  FakeSingleton0:\n"
-            "    Proc: Auto\n"
-            "    Exclusive: false\n");
+            "  FakeSingleton0: Auto\n");
 
     resource_info_0.build_singleton_map(cache);
     resource_info_auto.build_singleton_map(cache);
