@@ -13,6 +13,7 @@
 #include "Domain/FunctionsOfTime/RegisterDerivedWithCharm.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GetOutput.hpp"
 
 namespace {
 void test(
@@ -59,6 +60,11 @@ void test(
   const auto t_bounds = f_of_t->time_bounds();
   CHECK(t_bounds[0] == initial_time);
   CHECK(t_bounds[1] == std::numeric_limits<double>::max());
+
+  INFO("Test stream operator.");
+  CHECK(
+      get_output(*dynamic_cast<const domain::FunctionsOfTime::FixedSpeedCubic*>(
+          f_of_t.get())) == "FixedSpeedCubic(t=10, f=1, v=0.4, tau^2=25)");
 }
 
 void test_function(const double initial_function_value,
