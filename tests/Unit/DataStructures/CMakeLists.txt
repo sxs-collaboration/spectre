@@ -38,6 +38,7 @@ set(LIBRARY_SOURCES
   Test_SliceVariables.cpp
   Test_SpinWeighted.cpp
   Test_StripeIterator.cpp
+  Test_TaggedContainers.cpp
   Test_Tags.cpp
   Test_TempBuffer.cpp
   Test_Transpose.cpp
