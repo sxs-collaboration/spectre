@@ -194,5 +194,30 @@ class HydroFreeOutflow final : public BoundaryCondition {
 
       // gridless tags
       const fd::Reconstructor& reconstructor);
+
+  // have an impl to make sharing code with GH+GRMHD easy
+  static void fd_ghost_impl(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          lorentz_factor_times_spatial_velocity,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
+      gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+
+      const Direction<3>& direction,
+
+      // fd_interior_temporary_tags
+      const Mesh<3>& subcell_mesh,
+
+      // fd_interior_primitive_variables_tags
+      const Scalar<DataVector>& interior_rest_mass_density,
+      const Scalar<DataVector>& interior_electron_fraction,
+      const Scalar<DataVector>& interior_pressure,
+      const Scalar<DataVector>& interior_lorentz_factor,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_spatial_velocity,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& interior_magnetic_field,
+
+      size_t ghost_zone_size);
 };
 }  // namespace grmhd::ValenciaDivClean::BoundaryConditions
