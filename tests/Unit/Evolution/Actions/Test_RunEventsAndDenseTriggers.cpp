@@ -454,13 +454,18 @@ void test(const bool time_runs_forward) {
           ActionTesting::get_databox<component>(make_not_null(&runner), 0);
       db::mutate<Tags::HistoryEvolvedVariables<variables_tag>>(
           make_not_null(&box),
-          [&time_step_id](const gsl::not_null<History*> history) {
+          [&time_step_id](const gsl::not_null<History*> history,
+                          const TimeStepper& time_stepper) {
             *history = History(3);
-            history->insert(TimeStepId(time_step_id.time_runs_forward(), 0,
-                                       time_step_id.step_time(), 1,
-                                       time_step_id.step_time()),
-                            {1, 1.0});
-          });
+            history->insert(time_step_id, {1, 1.0});
+            history->insert(
+                time_stepper.next_time_id(
+                    time_step_id,
+                    (time_step_id.time_runs_forward() ? 1 : -1) *
+                        time_step_id.step_time().slab().duration() / 4),
+                {1, 1.0});
+          },
+          db::get<Tags::TimeStepper<>>(box));
     }
     if (data_needed) {
       TestCase::check_dense(&runner, true, {});

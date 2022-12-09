@@ -111,9 +111,9 @@ void check_substep_properties(const TimeStepper& stepper) {
   TimeStepId id(true, 3, slab.start() + slab.duration() / 2);
   TimeSteppers::History<double> history{stepper.order()};
   CHECK(stepper.can_change_step_size(id, history));
+  history.insert(id, 0.0);
   id = stepper.next_time_id(id, slab.duration() / 2);
   if (id.substep() != 0) {
-    history.insert(id, 0.0);
     CHECK(not stepper.can_change_step_size(id, history));
   }
 }
@@ -449,7 +449,7 @@ void check_dense_output(const TimeStepper& stepper,
           time_id.substep_time(), make_not_null(&history),
           [](const double t) { return exp(t); },
           [](const double v, const double /*t*/) { return v; }, step_size,
-          history_integration_order);
+          stepper.number_of_past_steps());
       auto step = step_size;
       for (;;) {
         history.insert(time_id, y);
@@ -490,7 +490,7 @@ void check_dense_output(const TimeStepper& stepper,
       const auto rhs = [](const double v, const double /*t*/) { return v; };
       initialize_history(
           time, make_not_null(&history), [](const double t) { return exp(t); },
-          rhs, time_step, history_integration_order);
+          rhs, time_step, stepper.number_of_past_steps());
       take_step(&time, &y, &history, stepper, rhs, time_step);
 
       // Some time steppers special-case the endpoints of the
