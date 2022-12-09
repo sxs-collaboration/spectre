@@ -22,6 +22,7 @@ ResourceInfo:
     MemoryMonitor: Auto
     Rotation: Auto
     Expansion: Auto
+    BondiSachsInterpolation: Auto
 
 Evolution:
   InitialTime: 0.0
@@ -254,6 +255,16 @@ ApparentHorizons:
     Verbosity: Verbose
   ControlSystemAhA: *AhA
   ControlSystemAhB: *AhB
+
+InterpolationTargets:
+  BondiSachsInterpolation:
+    Lmax: 16
+    Radius: [100, 150, 200]
+    Center: [0, 0, 0]
+    AngularOrdering: Cce
+
+Cce:
+  BondiSachsOutputFilePrefix: "BondiSachs"
 
 ControlSystems:
   WriteDataToDisk: true
