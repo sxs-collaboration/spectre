@@ -53,6 +53,15 @@ struct CceEvolutionPrefix {
   using group = Evolution;
 };
 
+struct BondiSachsOutputFilePrefix {
+  using type = std::string;
+  static constexpr Options::String help{
+      "Filename prefix for dumping Bondi-Sachs data on worltube radii. Files "
+      "will have this prefix prepended to 'CceRXXXX.h5' where XXXX will be the "
+      "zero-padded extraction radius to the nearest integer."};
+  using group = Cce;
+};
+
 struct LMax {
   using type = size_t;
   static constexpr Options::String help{
@@ -104,10 +113,10 @@ struct StandaloneExtractionRadius {
   using type = Options::Auto<double>;
 
   static constexpr Options::String help{
-    "Extraction radius of the CCE system for a standalone run. This may be "
-    "set to \"Auto\" to infer the radius from the filename (often used for "
-    "SpEC worldtube data). This option is unused if `H5IsBondiData` is "
-    "`true`, and should be \"Auto\" for such runs."};
+      "Extraction radius of the CCE system for a standalone run. This may be "
+      "set to \"Auto\" to infer the radius from the filename (often used for "
+      "SpEC worldtube data). This option is unused if `H5IsBondiData` is "
+      "`true`, and should be \"Auto\" for such runs."};
   using group = Cce;
 };
 
@@ -244,6 +253,13 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+struct FilePrefix : db::SimpleTag {
+  using type = std::string;
+  using option_tags = tmpl::list<OptionTags::BondiSachsOutputFilePrefix>;
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& option) { return option; }
+};
+
 /// Tag for duplicating functionality of another tag, but allows creation from
 /// options in the Cce::Evolution option group.
 template <typename Tag>
@@ -543,8 +559,7 @@ struct AnalyticBoundaryDataManager : db::SimpleTag {
 /// inertial-time news is difficult to compute.
 struct OutputNoninertialNews : db::SimpleTag {
   using type = bool;
-  using option_tags =
-      tmpl::list<OptionTags::AnalyticSolution>;
+  using option_tags = tmpl::list<OptionTags::AnalyticSolution>;
   static constexpr bool pass_metavariables = false;
   static bool create_from_options(
       const std::unique_ptr<Cce::Solutions::WorldtubeData>& worldtube_data) {
