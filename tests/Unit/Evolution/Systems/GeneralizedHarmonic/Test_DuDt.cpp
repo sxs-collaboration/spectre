@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/Tensor/IndexType.hpp"
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
@@ -725,13 +724,15 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       gamma2);
   CHECK_ITERABLE_APPROX(get<GeneralizedHarmonic::Tags::GaugeH<Dim>>(buffer),
                         gauge_h);
-  CHECK_ITERABLE_APPROX(
+  Approx custom_approx = Approx::custom().epsilon(1.e-10);
+  CHECK_ITERABLE_CUSTOM_APPROX(
       get<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<Dim>>(buffer),
-      d4_gauge_h);
+      d4_gauge_h, custom_approx);
 
-  CHECK_ITERABLE_APPROX(expected_dt_spacetime_metric, dt_spacetime_metric);
-  CHECK_ITERABLE_APPROX(expected_dt_pi, dt_pi);
-  CHECK_ITERABLE_APPROX(expected_dt_phi, dt_phi);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_dt_spacetime_metric,
+                               dt_spacetime_metric, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_dt_pi, dt_pi, custom_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_dt_phi, dt_phi, custom_approx);
 
   // Test the moving mesh damping terms:
   // 1. Compute 3-index constraint from existing d_spacetime_metric, phi
@@ -919,10 +920,11 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
       mesh_velocity_dot_three_index_constraint.get(a, b) *= get(gamma1);
     }
   }
-  Approx custom_approx = Approx::custom().epsilon(1.e-9).scale(1.0);
+  Approx custom_approx_mesh_constraint =
+      Approx::custom().epsilon(1.e-9).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(dt_spacetime_metric_moving_mesh,
                                mesh_velocity_dot_three_index_constraint,
-                               custom_approx);
+                               custom_approx_mesh_constraint);
   for (size_t a = 0; a < Dim + 1; ++a) {
     for (size_t b = a; b < Dim + 1; ++b) {
       mesh_velocity_dot_three_index_constraint.get(a, b) *= get(gamma2);
@@ -930,7 +932,7 @@ void test_compute_dudt(const gsl::not_null<Generator*> generator) {
   }
   CHECK_ITERABLE_CUSTOM_APPROX(dt_pi_moving_mesh,
                                mesh_velocity_dot_three_index_constraint,
-                               custom_approx);
+                               custom_approx_mesh_constraint);
 }
 }  // namespace
 
