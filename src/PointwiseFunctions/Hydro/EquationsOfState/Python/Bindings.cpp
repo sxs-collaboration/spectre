@@ -4,6 +4,7 @@
 #include <pybind11/pybind11.h>
 
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/Python/PiecewisePolytropicFluid.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Python/PolytropicFluid.hpp"
 
 PYBIND11_MODULE(_PyEquationsOfState, m) {  // NOLINT

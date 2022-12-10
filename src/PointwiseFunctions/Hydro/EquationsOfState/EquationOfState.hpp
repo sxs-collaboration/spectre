@@ -26,6 +26,8 @@ template <bool IsRelativistic>
 class IdealFluid;
 template <bool IsRelativistic>
 class PolytropicFluid;
+template <bool IsRelativistic>
+class PiecewisePolytropicFluid;
 class Spectral;
 template <typename LowDensityEoS>
 class Enthalpy;
@@ -41,12 +43,15 @@ struct DerivedClasses {};
 
 template <>
 struct DerivedClasses<true, 1> {
-  using type = tmpl::list<Spectral, Enthalpy<Spectral>, PolytropicFluid<true>>;
+  using type =
+      tmpl::list<Spectral, Enthalpy<Spectral>, PiecewisePolytropicFluid<true>,
+                 PolytropicFluid<true>>;
 };
 
 template <>
 struct DerivedClasses<false, 1> {
-  using type = tmpl::list<PolytropicFluid<false>>;
+  using type =
+      tmpl::list<PiecewisePolytropicFluid<false>, PolytropicFluid<false>>;
 };
 
 template <>

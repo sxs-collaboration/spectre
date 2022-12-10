@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Enthalpy.cpp
   Test_HybridEos.cpp
   Test_IdealFluid.cpp
+  Test_PiecewisePolytropicFluid.cpp
   Test_PolytropicFluid.cpp
   Test_SpectralEoS.cpp
   )
