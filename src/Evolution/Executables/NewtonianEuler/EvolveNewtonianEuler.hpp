@@ -340,7 +340,8 @@ struct EvolutionMetavars {
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginSubcell>,
       evolution::dg::subcell::Actions::SendDataForReconstruction<
           volume_dim,
-          NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>>,
+          NewtonianEuler::subcell::PrimitiveGhostVariables<volume_dim>,
+          local_time_stepping>,
       evolution::dg::subcell::Actions::ReceiveDataForReconstruction<volume_dim>,
       Actions::Label<
           evolution::dg::subcell::Actions::Labels::BeginSubcellAfterDgRollback>,

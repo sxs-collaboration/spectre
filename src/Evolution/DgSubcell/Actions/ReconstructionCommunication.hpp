@@ -95,7 +95,7 @@ namespace evolution::dg::subcell::Actions {
  * - Modifies:
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
  */
-template <size_t Dim, typename GhostDataMutator>
+template <size_t Dim, typename GhostDataMutator, bool LocalTimeStepping>
 struct SendDataForReconstruction {
   using inbox_tags = tmpl::list<
       evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>;
@@ -108,6 +108,13 @@ struct SendDataForReconstruction {
       Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    static_assert(
+        not LocalTimeStepping,
+        "DG-subcell does not yet support local time stepping. The "
+        "reconstruction data must be sent using dense output sometimes, and "
+        "not at all other times. However, the data for the RDMP TCI should be "
+        "sent along with the data for reconstruction each time.");
+
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "The SendDataForReconstruction action can only be called when "
            "Subcell is the active scheme.");
@@ -142,7 +149,7 @@ struct SendDataForReconstruction {
     const RdmpTciData& rdmp_tci_data = db::get<Tags::DataForRdmpTci>(box);
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
     const TimeStepId& next_time_step_id = [&box]() {
-      if (Metavariables::local_time_stepping) {
+      if (LocalTimeStepping) {
         return db::get<::Tags::Next<::Tags::TimeStepId>>(box);
       } else {
         return db::get<::Tags::TimeStepId>(box);
@@ -244,12 +251,6 @@ struct ReceiveDataForReconstruction {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    static_assert(
-        not Metavariables::local_time_stepping,
-        "DG-subcell does not yet support local time stepping. The "
-        "reconstruction data must be sent using dense output sometimes, and "
-        "not at all other times. However, the data for the RDMP TCI should be "
-        "sent along with the data for reconstruction each time.");
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
     const auto number_of_expected_messages = element.neighbors().size();
     if (UNLIKELY(number_of_expected_messages == 0)) {
