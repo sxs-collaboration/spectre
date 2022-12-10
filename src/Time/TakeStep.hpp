@@ -24,22 +24,20 @@ struct Metavariables;
 /// This function is used to encapsulate any needed logic for updating the
 /// system, and in the case for which step parameters may need to be rejected
 /// and re-tried, looping until an acceptable step is performed.
-template <typename StepChoosersToUse = AllStepChoosers,
+template <typename System, bool LocalTimeStepping,
+          typename StepChoosersToUse = AllStepChoosers,
           typename VariablesTag = NoSuchType, typename DbTags>
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
-  using metavars =
-      std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(*box))>;
-  using system = typename metavars::system;
-  record_time_stepper_data<system, VariablesTag>(box);
-  if constexpr (metavars::local_time_stepping) {
+  record_time_stepper_data<System, VariablesTag>(box);
+  if constexpr (LocalTimeStepping) {
     for (;;) {
-      update_u<system, VariablesTag>(box);
+      update_u<System, VariablesTag>(box);
       if (change_step_size<StepChoosersToUse>(box)) {
         break;
       }
       using variables_tag =
           tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
-                              typename system::variables_tag, VariablesTag>;
+                              typename System::variables_tag, VariablesTag>;
       using rollback_tag = Tags::RollbackValue<variables_tag>;
       db::mutate<variables_tag>(
           box,
@@ -50,6 +48,6 @@ void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
           db::get<rollback_tag>(*box));
     }
   } else {
-    update_u<system, VariablesTag>(box);
+    update_u<System, VariablesTag>(box);
   }
 }

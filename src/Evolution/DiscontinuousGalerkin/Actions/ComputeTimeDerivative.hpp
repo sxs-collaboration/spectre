@@ -491,7 +491,8 @@ ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers, LocalTimeStepping>::
       });
 
   if constexpr (LocalTimeStepping) {
-    take_step<DgStepChoosers>(make_not_null(&box));
+    take_step<EvolutionSystem, LocalTimeStepping, DgStepChoosers>(
+        make_not_null(&box));
   }
 
   send_data_for_fluxes<ParallelComponent>(make_not_null(&cache),
