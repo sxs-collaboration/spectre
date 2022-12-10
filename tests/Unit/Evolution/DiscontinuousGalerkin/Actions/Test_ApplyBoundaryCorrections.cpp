@@ -151,6 +151,7 @@ struct BoundaryTerms final : public BoundaryCorrection<Dim> {
 template <size_t Dim>
 PUP::able::PUP_ID BoundaryTerms<Dim>::my_PUP_ID = 0;  // NOLINT
 
+template <bool LocalTimeStepping>
 struct SetLocalMortarData {
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,
@@ -229,7 +230,7 @@ struct SetLocalMortarData {
                   std::move(type_erased_boundary_data_on_mortar));
             });
         ++count;
-        if (Metavariables::local_time_stepping) {
+        if (LocalTimeStepping) {
           const TimeStepId past_time_step_id{true, 3,
                                              Time{Slab{0.2, 3.4}, {1, 4}}};
           // When doing local time stepping we need a past history, starting an
@@ -379,6 +380,8 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementId<Metavariables::volume_dim>;
+  static constexpr bool local_time_stepping =
+      Metavariables::local_time_stepping;
 
   using internal_directions =
       domain::Tags::InternalDirections<Metavariables::volume_dim>;
@@ -411,15 +414,17 @@ struct component {
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>,
               ::evolution::dg::Initialization::Mortars<
                   Metavariables::volume_dim, typename Metavariables::system>,
-              SetLocalMortarData>>,
+              SetLocalMortarData<local_time_stepping>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
           tmpl::list<tmpl::conditional_t<
-              Metavariables::local_time_stepping,
+              local_time_stepping,
               ::evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-                  Metavariables>,
+                  typename Metavariables::system, Metavariables::volume_dim>,
               ::evolution::dg::Actions::
-                  ApplyBoundaryCorrectionsToTimeDerivative<Metavariables>>>>>;
+                  ApplyBoundaryCorrectionsToTimeDerivative<
+                      typename Metavariables::system,
+                      Metavariables::volume_dim>>>>>;
 };
 
 template <size_t Dim, TestHelpers::SystemType SystemType,
@@ -452,6 +457,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(UseLocalTimeStepping);
   Parallel::register_derived_classes_with_charm<BoundaryCorrection<Dim>>();
   using metavars = Metavariables<Dim, SystemType, UseLocalTimeStepping>;
+  using comp = component<metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using variables_tag = typename metavars::system::variables_tag;
   using variables_tags = typename variables_tag::tags_list;
@@ -565,7 +571,7 @@ void test_impl(const Spectral::Quadrature quadrature,
       {true, 3, Time{Slab{0.2, 3.4}, {6, 8}}},
       {true, 3, Time{Slab{0.2, 3.4}, {7, 8}}}};
 
-  ActionTesting::emplace_component_and_initialize<component<metavars>>(
+  ActionTesting::emplace_component_and_initialize<comp>(
       &runner, self_id,
       {time_step_id, local_next_time_step_id, time_step,
        std::make_unique<TimeSteppers::AdamsBashforthN>(time_stepper),
@@ -573,11 +579,9 @@ void test_impl(const Spectral::Quadrature quadrature,
        quadrature, typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
 
   // Initialize both the mortars
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
   // Set the local mortar data
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
   // Start testing the actual dg::ApplyBoundaryCorrections action
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
@@ -654,7 +658,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  std::optional<std::vector<double>>, ::TimeStepId>
           data{mesh, face_mesh, {}, {flux_data}, {neighbor_next_time_step_id}};
 
-      runner.template mock_distributed_objects<component<metavars>>()
+      runner.template mock_distributed_objects<comp>()
           .at(self_id)
           .template receive_data<
               evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -679,7 +683,7 @@ void test_impl(const Spectral::Quadrature quadrature,
            east_id_time_steps_index < east_id_next_time_steps.size();
            ++east_id_time_steps_index) {
         if (east_id_time_steps_index < east_id_next_time_steps.size() - 1) {
-          REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+          REQUIRE(not ActionTesting::next_action_if_ready<comp>(
               make_not_null(&runner), self_id));
         }
         insert_neighbor_data(east_id_time_steps[east_id_time_steps_index],
@@ -688,7 +692,7 @@ void test_impl(const Spectral::Quadrature quadrature,
     } else {
       // Insert the mortar data (history) running at the same speed as the
       // self_id.
-      REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+      REQUIRE(not ActionTesting::next_action_if_ready<comp>(
           make_not_null(&runner), self_id));
       if (UseLocalTimeStepping) {
         // Insert the past time, since we are using a 2nd order time stepper.
@@ -696,7 +700,7 @@ void test_impl(const Spectral::Quadrature quadrature,
         insert_neighbor_data(TimeStepId{time_step_id.time_runs_forward(),
                                         time_step_id.slab_number(), prev_time},
                              time_step_id);
-        REQUIRE(not ActionTesting::next_action_if_ready<component<metavars>>(
+        REQUIRE(not ActionTesting::next_action_if_ready<comp>(
             make_not_null(&runner), self_id));
       }
       insert_neighbor_data(time_step_id, UseLocalTimeStepping
@@ -708,28 +712,27 @@ void test_impl(const Spectral::Quadrature quadrature,
   REQUIRE(
       runner
           .template nonempty_inboxes<
-              component<metavars>,
+              comp,
               evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>()
           .size() == 1);
 
-  ActionTesting::next_action<component<metavars>>(make_not_null(&runner),
-                                                  self_id);
+  ActionTesting::next_action<comp>(make_not_null(&runner), self_id);
 
   // Check the inboxes are empty when doing global time stepping
   if (not UseLocalTimeStepping) {
-    REQUIRE(runner
-                .template nonempty_inboxes<
-                    component<metavars>,
-                    evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                        Dim>>()
-                .empty());
+    REQUIRE(
+        runner
+            .template nonempty_inboxes<
+                comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                          Dim>>()
+            .empty());
   } else {
-    CHECK(runner
-              .template nonempty_inboxes<
-                  component<metavars>,
-                  evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-                      Dim>>()
-              .size() == 1);
+    CHECK(
+        runner
+            .template nonempty_inboxes<
+                comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
+                          Dim>>()
+            .size() == 1);
   }
 
   // Now retrieve dt tag and check that values are correct

@@ -233,7 +233,7 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
                                                     AllStepChoosers>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          EvolutionMetavars>,
+          system, volume_dim>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<
@@ -250,7 +250,7 @@ struct EvolutionMetavars {
       evolution::dg::Actions::ComputeTimeDerivative<volume_dim, system,
                                                     AllStepChoosers>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-          EvolutionMetavars>,
+          system, volume_dim>,
       tmpl::conditional_t<
           local_time_stepping, tmpl::list<>,
           tmpl::list<

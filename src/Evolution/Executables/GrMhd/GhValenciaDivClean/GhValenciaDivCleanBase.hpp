@@ -387,10 +387,10 @@ struct GhValenciaDivCleanTemplateBase<
       tmpl::conditional_t<
           local_time_stepping,
           tmpl::list<evolution::dg::Actions::ApplyLtsBoundaryCorrections<
-              derived_metavars>>,
+              system, volume_dim>>,
           tmpl::list<
               evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
-                  derived_metavars>,
+                  system, volume_dim>,
               Actions::RecordTimeStepperData<>, Actions::UpdateU<>>>,
       Limiters::Actions::SendData<derived_metavars>,
       Limiters::Actions::Limit<derived_metavars>,
