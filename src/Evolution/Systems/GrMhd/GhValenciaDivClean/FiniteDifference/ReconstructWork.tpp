@@ -36,11 +36,13 @@
 #include "Utilities/TMPL.hpp"
 
 namespace grmhd::GhValenciaDivClean::fd {
-template <typename SpacetimeTagsToReconstruct, typename PrimsTags,
+template <typename SpacetimeTagsToReconstruct,
+          typename PrimTagsForReconstruction, typename PrimsTags,
           typename SpacetimeAndConsTags, typename TagsList,
           size_t ThermodynamicDim, typename HydroReconstructor,
           typename SpacetimeReconstructor,
-          typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
+          typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags,
+          typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
     const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
     const gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
@@ -54,12 +56,10 @@ void reconstruct_prims_work(
     const Element<3>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
+        Variables<PrimsTagsSentByNeighbor>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
-    const Mesh<3>& subcell_mesh, size_t ghost_zone_size) {
-  using prim_tags_for_reconstruction =
-      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
-
+    const Mesh<3>& subcell_mesh, const size_t ghost_zone_size,
+    const bool compute_conservatives) {
   ASSERT(Mesh<3>(subcell_mesh.extents(0), subcell_mesh.basis(0),
                  subcell_mesh.quadrature(0)) == subcell_mesh,
          "The subcell mesh should be isotropic but got " << subcell_mesh);
@@ -70,7 +70,7 @@ void reconstruct_prims_work(
   const size_t neighbor_num_pts =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   size_t vars_in_neighbor_count = 0;
-  tmpl::for_each<prim_tags_for_reconstruction>([&element, &neighbor_data,
+  tmpl::for_each<PrimTagsForReconstruction>([&element, &neighbor_data,
                                                 neighbor_num_pts,
                                                 &hydro_reconstructor,
                                                 reconstructed_num_pts,
@@ -123,23 +123,30 @@ void reconstruct_prims_work(
 
     DirectionMap<3, gsl::span<const double>> ghost_cell_vars{};
     for (const auto& direction : Direction<3>::all_directions()) {
-      const auto& neighbors_in_direction = element.neighbors().at(direction);
-      ASSERT(neighbors_in_direction.size() == 1,
-             "Currently only support one neighbor in each direction, but "
-             "got "
-                 << neighbors_in_direction.size() << " in direction "
-                 << direction);
-      ASSERT(not neighbor_data
-                     .at(std::pair{direction, *neighbors_in_direction.begin()})
-                     .empty(),
-             "The neighber data is empty in direction "
-                 << direction << " on element id " << element.id());
-      ghost_cell_vars[direction] = gsl::make_span(
-          &neighbor_data.at(std::pair{
-              direction,
-              *neighbors_in_direction
-                   .begin()})[vars_in_neighbor_count * neighbor_num_pts],
-          number_of_variables * neighbor_num_pts);
+      if (element.neighbors().contains(direction)) {
+        const auto& neighbors_in_direction = element.neighbors().at(direction);
+        ASSERT(neighbors_in_direction.size() == 1,
+               "Currently only support one neighbor in each direction, but "
+               "got "
+                   << neighbors_in_direction.size() << " in direction "
+                   << direction);
+        ghost_cell_vars[direction] =
+            gsl::make_span(get<tag>(neighbor_data.at(std::pair{
+                               direction, *neighbors_in_direction.begin()}))[0]
+                               .data(),
+                           number_of_variables * neighbor_num_pts);
+      } else {
+        // retrieve boundary ghost data from neighbor_data
+        ASSERT(
+            element.external_boundaries().count(direction) == 1,
+            "Element has neither neighbor nor external boundary to direction : "
+                << direction);
+        ghost_cell_vars[direction] = gsl::make_span(
+            get<tag>(neighbor_data.at(
+                std::pair{direction, ElementId<3>::external_boundary_id()}))[0]
+                .data(),
+            number_of_variables * neighbor_num_pts);
+      }
     }
 
     hydro_reconstructor(make_not_null(&upper_face_vars),
@@ -174,19 +181,31 @@ void reconstruct_prims_work(
 
         DirectionMap<3, gsl::span<const double>> ghost_cell_vars{};
         for (const auto& direction : Direction<3>::all_directions()) {
-          const auto& neighbors_in_direction =
-              element.neighbors().at(direction);
-          ASSERT(neighbors_in_direction.size() == 1,
-                 "Currently only support one neighbor in each direction, but "
-                 "got "
-                     << neighbors_in_direction.size() << " in direction "
-                     << direction);
-          ghost_cell_vars[direction] = gsl::make_span(
-              &neighbor_data.at(std::pair{
-                  direction,
-                  *neighbors_in_direction
-                       .begin()})[vars_in_neighbor_count * neighbor_num_pts],
-              number_of_variables * neighbor_num_pts);
+          if (element.neighbors().contains(direction)) {
+            const auto& neighbors_in_direction =
+                element.neighbors().at(direction);
+            ASSERT(neighbors_in_direction.size() == 1,
+                   "Currently only support one neighbor in each direction, but "
+                   "got "
+                       << neighbors_in_direction.size() << " in direction "
+                       << direction);
+            ghost_cell_vars[direction] = gsl::make_span(
+                get<tag>(neighbor_data.at(
+                    std::pair{direction, *neighbors_in_direction.begin()}))[0]
+                    .data(),
+                number_of_variables * neighbor_num_pts);
+          } else {
+            // retrieve boundary ghost data from neighbor_data
+            ASSERT(element.external_boundaries().count(direction) == 1,
+                   "Element has neither neighbor nor external boundary to "
+                   "direction : "
+                       << direction);
+            ghost_cell_vars[direction] = gsl::make_span(
+                get<tag>(neighbor_data.at(std::pair{
+                    direction, ElementId<3>::external_boundary_id()}))[0]
+                    .data(),
+                number_of_variables * neighbor_num_pts);
+          }
         }
 
         spacetime_reconstructor(make_not_null(&upper_face_vars),
@@ -203,17 +222,21 @@ void reconstruct_prims_work(
       spacetime_vars_for_grmhd(make_not_null(&gsl::at(*vars_on_upper_face, i)));
     }
 
-    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-        make_not_null(&gsl::at(*vars_on_lower_face, i)), eos);
-    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
-        make_not_null(&gsl::at(*vars_on_upper_face, i)), eos);
+    if (compute_conservatives) {
+      ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
+          make_not_null(&gsl::at(*vars_on_lower_face, i)), eos);
+      ValenciaDivClean::fd::compute_conservatives_for_reconstruction(
+          make_not_null(&gsl::at(*vars_on_upper_face, i)), eos);
+    }
   }
 }
 
 template <
-    typename TagsList, typename PrimsTags, size_t ThermodynamicDim,
-    typename LowerHydroReconstructor, typename LowerSpacetimeReconstructor,
-    typename UpperHydroReconstructor, typename UpperSpacetimeReconstructor,
+    typename SpacetimeTagsToReconstruct, typename PrimTagsForReconstruction,
+    typename PrimsTagsSentByNeighbor, typename TagsList, typename PrimsTags,
+    size_t ThermodynamicDim, typename LowerHydroReconstructor,
+    typename LowerSpacetimeReconstructor, typename UpperHydroReconstructor,
+    typename UpperSpacetimeReconstructor,
     typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
 void reconstruct_fd_neighbor_work(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
@@ -234,20 +257,14 @@ void reconstruct_fd_neighbor_work(
         std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    const size_t ghost_zone_size) {
-  using prim_tags_for_reconstruction =
-      grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
-  using spacetime_tags =
-      GhValenciaDivClean::Tags::spacetime_reconstruction_tags;
-
+    const size_t ghost_zone_size, const bool compute_conservatives) {
   const std::pair mortar_id{
       direction_to_reconstruct,
       *element.neighbors().at(direction_to_reconstruct).begin()};
   Index<3> ghost_data_extents = subcell_mesh.extents();
   ghost_data_extents[direction_to_reconstruct.dimension()] = ghost_zone_size;
-  Variables<GhValenciaDivClean::Tags::
-                primitive_grmhd_and_spacetime_reconstruction_tags>
-      neighbor_prims{ghost_data_extents.product()};
+  Variables<PrimsTagsSentByNeighbor> neighbor_prims{
+      ghost_data_extents.product()};
   {
     ASSERT(neighbor_data.contains(mortar_id),
            "The neighbor data does not contain the mortar: ("
@@ -261,7 +278,7 @@ void reconstruct_fd_neighbor_work(
               neighbor_prims.data());
   }
 
-  tmpl::for_each<prim_tags_for_reconstruction>(
+  tmpl::for_each<PrimTagsForReconstruction>(
       [&direction_to_reconstruct, &ghost_data_extents, &neighbor_prims,
        &reconstruct_lower_neighbor_hydro, &reconstruct_upper_neighbor_hydro,
        &subcell_mesh, &subcell_volume_prims, &vars_on_face](auto tag_v) {
@@ -312,7 +329,7 @@ void reconstruct_fd_neighbor_work(
         }
       });
 
-  tmpl::for_each<spacetime_tags>(
+  tmpl::for_each<SpacetimeTagsToReconstruct>(
       [&direction_to_reconstruct, &ghost_data_extents, &neighbor_prims,
        &reconstruct_lower_neighbor_spacetime,
        &reconstruct_upper_neighbor_spacetime, &subcell_mesh,
@@ -344,8 +361,12 @@ void reconstruct_fd_neighbor_work(
         }
       });
 
-  spacetime_vars_for_grmhd(vars_on_face);
-  ValenciaDivClean::fd::compute_conservatives_for_reconstruction(vars_on_face,
-                                                                 eos);
+  if constexpr (tmpl::size<SpacetimeTagsToReconstruct>::value != 0) {
+    spacetime_vars_for_grmhd(vars_on_face);
+  }
+  if (compute_conservatives) {
+    ValenciaDivClean::fd::compute_conservatives_for_reconstruction(vars_on_face,
+                                                                   eos);
+  }
 }
 }  // namespace grmhd::GhValenciaDivClean::fd

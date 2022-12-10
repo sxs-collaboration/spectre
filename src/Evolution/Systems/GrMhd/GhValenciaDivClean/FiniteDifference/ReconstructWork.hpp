@@ -41,11 +41,13 @@ namespace grmhd::GhValenciaDivClean::fd {
  * internal energy, specific enthalpy, and the conserved variables. All results
  * are written into `vars_on_lower_face` and `vars_on_upper_face`.
  */
-template <typename SpacetimeTagsToReconstruct, typename PrimsTags,
+template <typename SpacetimeTagsToReconstruct,
+          typename PrimTagsForReconstruction, typename PrimsTags,
           typename SpacetimeAndConsTags, typename TagsList,
           size_t ThermodynamicDim, typename HydroReconstructor,
           typename SpacetimeReconstructor,
-          typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
+          typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags,
+          typename PrimsTagsSentByNeighbor>
 void reconstruct_prims_work(
     gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_lower_face,
     gsl::not_null<std::array<Variables<TagsList>, 3>*> vars_on_upper_face,
@@ -59,9 +61,10 @@ void reconstruct_prims_work(
     const Element<3>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
+        Variables<PrimsTagsSentByNeighbor>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
-    const Mesh<3>& subcell_mesh, size_t ghost_zone_size);
+    const Mesh<3>& subcell_mesh, size_t ghost_zone_size,
+    bool compute_conservatives);
 
 /*!
  * \brief Reconstructs \f$\rho, p, Wv^i, B^i\f$, \f$\Phi\f$, the spacetime
@@ -73,9 +76,11 @@ void reconstruct_prims_work(
  * on the shared faces.
  */
 template <
-    typename TagsList, typename PrimsTags, size_t ThermodynamicDim,
-    typename LowerHydroReconstructor, typename LowerSpacetimeReconstructor,
-    typename UpperHydroReconstructor, typename UpperSpacetimeReconstructor,
+    typename SpacetimeTagsToReconstruct, typename PrimTagsForReconstruction,
+    typename PrimsTagsSentByNeighbor, typename TagsList, typename PrimsTags,
+    size_t ThermodynamicDim, typename LowerHydroReconstructor,
+    typename LowerSpacetimeReconstructor, typename UpperHydroReconstructor,
+    typename UpperSpacetimeReconstructor,
     typename ComputeGrmhdSpacetimeVarsFromReconstructedSpacetimeTags>
 void reconstruct_fd_neighbor_work(
     gsl::not_null<Variables<TagsList>*> vars_on_face,
@@ -96,5 +101,5 @@ void reconstruct_fd_neighbor_work(
         std::vector<double>,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
-    size_t ghost_zone_size);
+    size_t ghost_zone_size, bool compute_conservatives);
 }  // namespace grmhd::GhValenciaDivClean::fd
