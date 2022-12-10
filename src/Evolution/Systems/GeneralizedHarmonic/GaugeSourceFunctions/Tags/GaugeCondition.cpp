@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Dispatch.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/GaugeSourceFunctions/Gauges.hpp"
@@ -45,6 +46,29 @@ void GaugeAndDerivativeCompute<Dim>::function(
       get(lapse).size()};
   GeneralizedHarmonic::spacetime_derivative_of_spacetime_metric(
       make_not_null(&d4_spacetime_metric), lapse, shift, pi, phi);
+  Scalar<DataVector> half_pi_two_normals{get(lapse).size(), 0.0};
+  tnsr::i<DataVector, Dim, Frame::Inertial> half_phi_two_normals{
+      get(lapse).size(), 0.0};
+  for (size_t a = 0; a < Dim + 1; ++a) {
+    get(half_pi_two_normals) += spacetime_unit_normal.get(a) *
+                                spacetime_unit_normal.get(a) * pi.get(a, a);
+    for (size_t i = 0; i < Dim; ++i) {
+      half_phi_two_normals.get(i) += 0.5 * spacetime_unit_normal.get(a) *
+                                     spacetime_unit_normal.get(a) *
+                                     phi.get(i, a, a);
+    }
+    for (size_t b = a + 1; b < Dim + 1; ++b) {
+      get(half_pi_two_normals) += 2.0 * spacetime_unit_normal.get(a) *
+                                  spacetime_unit_normal.get(b) * pi.get(a, b);
+      for (size_t i = 0; i < Dim; ++i) {
+        half_phi_two_normals.get(i) += spacetime_unit_normal.get(a) *
+                                       spacetime_unit_normal.get(b) *
+                                       phi.get(i, a, b);
+      }
+    }
+  }
+  get(half_pi_two_normals) *= 0.5;
+
   dispatch(make_not_null(
                &get<::GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>(
                    *gauge_and_deriv)),
@@ -52,8 +76,8 @@ void GaugeAndDerivativeCompute<Dim>::function(
                              Dim, Frame::Inertial>>(*gauge_and_deriv)),
            lapse, shift, spacetime_unit_normal_one_form, spacetime_unit_normal,
            sqrt_det_spatial_metric, inverse_spatial_metric, d4_spacetime_metric,
-           spacetime_metric, pi, phi, mesh, time, inertial_coords,
-           inverse_jacobian, gauge_condition);
+           half_pi_two_normals, half_phi_two_normals, spacetime_metric, pi, phi,
+           mesh, time, inertial_coords, inverse_jacobian, gauge_condition);
 }
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)

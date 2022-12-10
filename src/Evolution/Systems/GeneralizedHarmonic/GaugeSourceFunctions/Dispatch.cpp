@@ -27,6 +27,8 @@ void dispatch(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
     const tnsr::abb<DataVector, Dim, Frame::Inertial>& d4_spacetime_metric,
+    const Scalar<DataVector>& half_pi_two_normals,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& half_phi_two_normals,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
@@ -46,7 +48,8 @@ void dispatch(
     damped_harmonic_gauge->gauge_and_spacetime_derivative(
         gauge_h, d4_gauge_h, lapse, shift, spacetime_unit_normal_one_form,
         spacetime_unit_normal, sqrt_det_spatial_metric, inverse_spatial_metric,
-        d4_spacetime_metric, spacetime_metric, pi, phi, time, inertial_coords);
+        d4_spacetime_metric, half_pi_two_normals, half_phi_two_normals,
+        spacetime_metric, pi, phi, time, inertial_coords);
   } else if (const auto* analytic_gauge =
                  dynamic_cast<const AnalyticChristoffel*>(&gauge_condition);
              analytic_gauge != nullptr) {
@@ -79,6 +82,9 @@ void dispatch(
           inverse_spatial_metric,                                              \
       const tnsr::abb<DataVector, DIM(data), Frame::Inertial>&                 \
           d4_spacetime_metric,                                                 \
+      const Scalar<DataVector>& half_pi_two_normals,                           \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                   \
+          half_phi_two_normals,                                                \
       const tnsr::aa<DataVector, DIM(data), Frame::Inertial>&                  \
           spacetime_metric,                                                    \
       const tnsr::aa<DataVector, DIM(data), Frame::Inertial>& pi,              \
