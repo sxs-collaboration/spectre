@@ -80,7 +80,7 @@ spectre_run_cmake() {
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
-          -D BUILD_PYTHON_BINDINGS=off \
+          -D BUILD_PYTHON_BINDINGS=ON \
           -D Python_EXECUTABLE=`which python3` \
           -D USE_LD=ld \
           -D SPECTRE_TEST_RUNNER="$(pwd)/bin/charmrun" \

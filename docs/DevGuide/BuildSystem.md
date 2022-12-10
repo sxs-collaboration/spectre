@@ -186,7 +186,7 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
     (default is `OFF`)
 - BUILD_PYTHON_BINDINGS
   - Build python libraries to call SpECTRE C++ code from python
-    (default is `OFF`)
+    (default is `ON`)
 - BUILD_SHARED_LIBS
   - Whether shared libraries are built instead of static libraries
     (default is `OFF`)

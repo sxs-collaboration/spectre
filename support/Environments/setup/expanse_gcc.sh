@@ -271,6 +271,7 @@ cat >$dep_dir/modules/spectre_python <<EOF
 setenv VIRTUAL_ENV $dep_dir/py_env
 prepend-path PATH ${VIRTUAL_ENV}/bin
 EOF
+pip install pybind11~=2.6.1
 HDF5_DIR=$HDF5HOME pip install --no-binary=h5py \
   -r $SPECTRE_HOME/support/Python/requirements.txt
 

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-option(BUILD_PYTHON_BINDINGS "Build the python bindings for SpECTRE" OFF)
+option(BUILD_PYTHON_BINDINGS "Build the python bindings for SpECTRE" ON)
 
 if(BUILD_PYTHON_BINDINGS)
   # Make sure to find Python first so it's consistent with pybind11
