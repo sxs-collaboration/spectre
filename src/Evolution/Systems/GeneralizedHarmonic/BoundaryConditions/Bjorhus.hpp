@@ -117,7 +117,8 @@ class ConstraintPreservingBjorhus final : public BoundaryCondition<Dim> {
       "prevent the influx of constraint violations and reflections."};
   static std::string name() { return "ConstraintPreservingBjorhus"; }
 
-  ConstraintPreservingBjorhus(detail::ConstraintPreservingBjorhusType type);
+  explicit ConstraintPreservingBjorhus(
+      detail::ConstraintPreservingBjorhusType type);
 
   ConstraintPreservingBjorhus() = default;
   /// \cond
