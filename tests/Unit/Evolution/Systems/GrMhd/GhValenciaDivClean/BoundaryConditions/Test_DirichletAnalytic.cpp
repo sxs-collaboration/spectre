@@ -183,8 +183,8 @@ void test_dg(const gsl::not_null<std::mt19937*> generator,
       make_not_null(&tilde_b_flux), make_not_null(&tilde_phi_flux),
       make_not_null(&gamma1), make_not_null(&gamma2), make_not_null(&lapse),
       make_not_null(&shift), make_not_null(&inverse_spatial_metric), {}, {}, {},
-      coords, time, analytic_solution_or_data, interior_gamma1,
-      interior_gamma2);
+      coords, interior_gamma1, interior_gamma2, time,
+      analytic_solution_or_data);
   CHECK(not result.has_value());
 
   CHECK(vars == expected_vars);

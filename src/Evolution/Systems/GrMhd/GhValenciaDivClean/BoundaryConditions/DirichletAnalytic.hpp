@@ -86,13 +86,13 @@ class DirichletAnalytic final : public BoundaryCondition {
   void pup(PUP::er& p) override;
 
   using dg_interior_evolved_variables_tags = tmpl::list<>;
-  using dg_interior_temporary_tags =
-      tmpl::list<domain::Tags::Coordinates<3, Frame::Inertial>>;
-  using dg_interior_primitive_variables_tags = tmpl::list<>;
-  using dg_gridless_tags = tmpl::list<
-      ::Tags::Time, ::Tags::AnalyticSolutionOrData,
+  using dg_interior_temporary_tags = tmpl::list<
+      domain::Tags::Coordinates<3, Frame::Inertial>,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
       ::GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2>;
+  using dg_interior_primitive_variables_tags = tmpl::list<>;
+  using dg_gridless_tags = tmpl::list<
+      ::Tags::Time, ::Tags::AnalyticSolutionOrData>;
 
   template <typename AnalyticSolutionOrData>
   std::optional<std::string> dg_ghost(
@@ -131,10 +131,10 @@ class DirichletAnalytic final : public BoundaryCondition {
           tnsr::I<DataVector, 3, Frame::Inertial>>& /*face_mesh_velocity*/,
       const tnsr::i<DataVector, 3, Frame::Inertial>& /*normal_covector*/,
       const tnsr::I<DataVector, 3, Frame::Inertial>& /*normal_vector*/,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& coords, const double time,
-      const AnalyticSolutionOrData& analytic_solution_or_data,
+      const tnsr::I<DataVector, 3, Frame::Inertial>& coords,
       const Scalar<DataVector>& interior_gamma1,
-      const Scalar<DataVector>& interior_gamma2) const {
+      const Scalar<DataVector>& interior_gamma2, const double time,
+      const AnalyticSolutionOrData& analytic_solution_or_data) const {
     *gamma1 = interior_gamma1;
     *gamma2 = interior_gamma2;
 
