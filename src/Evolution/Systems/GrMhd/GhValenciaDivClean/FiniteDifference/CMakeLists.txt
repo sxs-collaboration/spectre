@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   Derivatives.cpp
   FilterOptions.cpp
+  Filters.cpp
   MonotonisedCentral.cpp
   Reconstructor.cpp
   RegisterDerivedWithCharm.cpp
@@ -19,11 +20,12 @@ spectre_target_headers(
   Derivatives.hpp
   Factory.hpp
   FilterOptions.hpp
+  Filters.hpp
   FiniteDifference.hpp
   MonotonisedCentral.hpp
-  Reconstructor.hpp
   ReconstructWork.hpp
   ReconstructWork.tpp
+  Reconstructor.hpp
   RegisterDerivedWithCharm.hpp
   Tag.hpp
   )
