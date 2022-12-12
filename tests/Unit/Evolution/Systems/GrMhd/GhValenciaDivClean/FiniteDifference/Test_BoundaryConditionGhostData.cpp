@@ -40,6 +40,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/BoundaryCondition.hpp"
+#include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ConstraintPreservingFreeOutflow.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/DirichletAnalytic.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/GhValenciaDivClean/BoundaryConditions/ProductOfConditions.hpp"
@@ -328,13 +329,15 @@ SPECTRE_TEST_CASE(
       "PointwiseFunctions/AnalyticSolutions/"};
 
   test(grmhd::GhValenciaDivClean::BoundaryConditions::DirichletAnalytic{});
+  CHECK_THROWS_WITH(test(grmhd::GhValenciaDivClean::BoundaryConditions::
+                             ConstraintPreservingFreeOutflow{}),
+                    Catch::Contains("Not implemented because it's not trivial "
+                                    "to figure out what the right way of"));
 
 // check that the periodic BC fails
 #ifdef SPECTRE_DEBUG
-  CHECK_THROWS_WITH(([]() {
-                      test(domain::BoundaryConditions::Periodic<
-                           BoundaryConditions::BoundaryCondition>{});
-                    })(),
+  CHECK_THROWS_WITH(test(domain::BoundaryConditions::Periodic<
+                         BoundaryConditions::BoundaryCondition>{}),
                     Catch::Contains("not on external boundaries"));
 #endif
 }

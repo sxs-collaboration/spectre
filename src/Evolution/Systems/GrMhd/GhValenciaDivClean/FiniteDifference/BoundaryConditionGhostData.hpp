@@ -160,7 +160,10 @@ void BoundaryConditionGhostData::apply(
                            bcondition_gridless_tags>;
 
           if constexpr (BoundaryCondition::bc_type ==
-                        evolution::BoundaryConditions::Type::Ghost) {
+                            evolution::BoundaryConditions::Type::Ghost or
+                        BoundaryCondition::bc_type ==
+                            evolution::BoundaryConditions::Type::
+                                GhostAndTimeDerivative) {
             const auto apply_fd_ghost =
                 [&boundary_condition, &direction,
                  &ghost_data_vars](const auto&... boundary_ghost_data_args) {
