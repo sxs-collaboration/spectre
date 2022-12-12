@@ -12,6 +12,7 @@ spectre_target_headers(
   AddComputeTags.hpp
   AddSimpleTags.hpp
   Goto.hpp
+  InitializeItems.hpp
   MutateApply.hpp
   RandomizeVariables.hpp
   SetData.hpp
