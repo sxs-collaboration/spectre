@@ -66,6 +66,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -397,7 +398,8 @@ struct GeneralizedHarmonicTemplateBase<
                                  volume_dim, Frame::Inertial>>>>>>;
 
   using initialization_actions = tmpl::list<
-      Initialization::Actions::TimeAndTimeStep<derived_metavars>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepping<derived_metavars, local_time_stepping>>,
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<

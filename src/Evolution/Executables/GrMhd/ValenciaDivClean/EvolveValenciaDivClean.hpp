@@ -98,6 +98,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -430,7 +431,8 @@ struct EvolutionMetavars {
                  observers::Actions::RegisterEventsWithObservers>;
 
   using initialization_actions = tmpl::flatten<tmpl::list<
-      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>>,
       evolution::dg::Initialization::Domain<3>,
       Initialization::Actions::GrTagsForHydro<system>,
       Initialization::Actions::ConservativeSystem<system>,

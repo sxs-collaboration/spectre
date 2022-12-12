@@ -29,117 +29,126 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
-/// \endcond
+namespace Initialization {
 
-namespace Evolution_detail {
-// Global time stepping
-template <typename Metavariables, typename DbTagsList,
-          Requires<not Metavariables::local_time_stepping> = nullptr>
-TimeDelta get_initial_time_step(const Time& initial_time,
-                                const double initial_dt_value,
-                                const db::DataBox<DbTagsList>& /*box*/) {
-  return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
+namespace detail {
+inline Time initial_time(const bool time_runs_forward,
+                         const double initial_time_value,
+                         const double initial_slab_size) {
+  const Slab initial_slab =
+      time_runs_forward
+          ? Slab::with_duration_from_start(initial_time_value,
+                                           initial_slab_size)
+          : Slab::with_duration_to_end(initial_time_value, initial_slab_size);
+  return time_runs_forward ? initial_slab.start() : initial_slab.end();
 }
 
-// Local time stepping
-template <typename Metavariables, typename DbTagsList,
-          Requires<Metavariables::local_time_stepping> = nullptr>
-TimeDelta get_initial_time_step(const Time& initial_time,
-                                const double initial_dt_value,
-                                const db::DataBox<DbTagsList>& box) {
-  const auto& step_controller = db::get<Tags::StepController>(box);
-  return step_controller.choose_step(initial_time, initial_dt_value);
+template <typename TimeStepper>
+void set_next_time_step_id(const gsl::not_null<TimeStepId*> next_time_step_id,
+                           const Time& initial_time,
+                           const bool time_runs_forward,
+                           const TimeStepper& time_stepper) {
+  *next_time_step_id = TimeStepId(
+      time_runs_forward,
+      -static_cast<int64_t>(time_stepper.number_of_past_steps()), initial_time);
 }
-}  // namespace Evolution_detail
+}  // namespace detail
+
+/// \ingroup InitializationGroup
+/// \brief Initialize items related to time stepping
+///
+/// \details See the type aliases defined below for what items are added to the
+/// GlobalCache, MutableGlobalCache, and DataBox and how they are initialized
+///
+/// Since the evolution has not started yet, initialize the state
+/// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
+/// and `Tags::Next<Tags::TimeStepId>` is the initial time.
+template <typename Metavariables, bool UsingLts>
+struct TimeStepping {
+  using TimeStepperType =
+      tmpl::conditional_t<UsingLts, LtsTimeStepper, TimeStepper>;
+
+  /// Tags for constant items added to the GlobalCache.  These items are
+  /// initialized from input file options.
+  using const_global_cache_tags = tmpl::list<>;
+
+  /// Tags for mutable items added to the MutableGlobalCache.  These items are
+  /// initialized from input file options.
+  using mutable_global_cache_tags = tmpl::list<>;
+
+  /// Tags for items fetched by the DataBox and passed to the apply function
+  using argument_tags = tmpl::flatten<tmpl::list<
+      ::Tags::Time, Tags::InitialTimeDelta, Tags::InitialSlabSize<UsingLts>,
+      ::Tags::TimeStepper<TimeStepperType>,
+      tmpl::conditional_t<UsingLts, tmpl::list<::Tags::StepController>,
+                          tmpl::list<>>>>;
+
+  /// Tags for simple DataBox items that are initialized from input file options
+  using simple_tags_from_options = tmpl::flatten<
+      tmpl::list<argument_tags,
+                 tmpl::conditional_t<UsingLts, tmpl::list<::Tags::StepChoosers>,
+                                     tmpl::list<>>>>;
+
+  /// Tags for simple DataBox items that are default initialized.
+  using default_initialized_simple_tags = tmpl::push_back<
+      StepChoosers::step_chooser_simple_tags<Metavariables, UsingLts>,
+      ::Tags::TimeStepId>;
+
+  /// Tags for items in the DataBox that are mutated by the apply function
+  using return_tags =
+      tmpl::list<::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
+                 ::Tags::Next<::Tags::TimeStep>>;
+
+  /// Tags for mutable DataBox items that are either default initialized or
+  /// initialized by the apply function
+  using simple_tags =
+      tmpl::append<default_initialized_simple_tags, return_tags>;
+
+  /// Tags for immutable DataBox items (compute items or reference items) added
+  /// to the DataBox.
+  using compute_tags = tmpl::list<>;
+
+  /// Given the items fetched from a DataBox by the argument_tags when UsingLts
+  /// is true, mutate the items in the DataBox corresponding to return_tags
+  static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
+                    const gsl::not_null<TimeDelta*> time_step,
+                    const gsl::not_null<TimeDelta*> next_time_step,
+                    const double initial_time_value,
+                    const double initial_dt_value,
+                    const double initial_slab_size,
+                    const LtsTimeStepper& time_stepper,
+                    const StepController& step_controller) {
+    const bool time_runs_forward = initial_dt_value > 0.0;
+    const Time initial_time = detail::initial_time(
+        time_runs_forward, initial_time_value, initial_slab_size);
+    detail::set_next_time_step_id(next_time_step_id, initial_time,
+                                  time_runs_forward, time_stepper);
+    *time_step = step_controller.choose_step(initial_time, initial_dt_value);
+    *next_time_step = *time_step;
+  }
+
+  /// Given the items fetched from a DataBox by the argument_tags, when UsingLts
+  /// is false, mutate the items in the DataBox corresponding to return_tags
+  static void apply(const gsl::not_null<TimeStepId*> next_time_step_id,
+                    const gsl::not_null<TimeDelta*> time_step,
+                    const gsl::not_null<TimeDelta*> next_time_step,
+                    const double initial_time_value,
+                    const double initial_dt_value,
+                    const double initial_slab_size,
+                    const TimeStepper& time_stepper) {
+    const bool time_runs_forward = initial_dt_value > 0.0;
+    const Time initial_time = detail::initial_time(
+        time_runs_forward, initial_time_value, initial_slab_size);
+    detail::set_next_time_step_id(next_time_step_id, initial_time,
+                                  time_runs_forward, time_stepper);
+    *time_step = (time_runs_forward ? 1 : -1) * initial_time.slab().duration();
+    *next_time_step = *time_step;
+  }
+};
+}  // namespace Initialization
 
 namespace Initialization {
 namespace Actions {
-/// \ingroup InitializationGroup
-/// \brief Initialize items related to time, such as the time step
-///
-/// Since we have not started the evolution yet, we initialize the state
-/// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
-/// and `Tags::Next<Tags::TimeStepId>` is the initial time. `::Tags::Time` is
-/// set to the initial time so it is available to dependent compute items, e.g.,
-/// Jacobians of time-dependent domains that are needed to take numerical
-/// derivatives of initial data.
-///
-/// DataBox changes:
-/// - Adds:
-///   * Tags::TimeStepId
-///   * `Tags::Next<Tags::TimeStepId>`
-///   * Tags::TimeStep
-///   * Tags::Time
-/// - Removes: nothing
-/// - Modifies: nothing
-///
-/// \note HistoryEvolvedVariables is allocated, but needs to be initialized
-template <typename Metavariables>
-struct TimeAndTimeStep {
-  using simple_tags_from_options = tmpl::flatten<
-      tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize<Metavariables::local_time_stepping>,
-                 tmpl::conditional_t<
-                     Metavariables::local_time_stepping,
-                     tmpl::list<::Tags::TimeStepper<LtsTimeStepper>,
-                                ::Tags::StepChoosers, ::Tags::StepController>,
-                     tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
-
-  using simple_tags =
-      tmpl::push_back<StepChoosers::step_chooser_simple_tags<
-                          Metavariables, Metavariables::local_time_stepping>,
-                      ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-                      ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>;
-  using compute_tags = tmpl::list<>;
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    const double initial_time_value = db::get<::Tags::Time>(box);
-    const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
-    const double initial_slab_size =
-        db::get<Tags::InitialSlabSize<Metavariables::local_time_stepping>>(box);
-
-    const bool time_runs_forward = initial_dt_value > 0.0;
-    const Slab initial_slab =
-        time_runs_forward
-            ? Slab::with_duration_from_start(initial_time_value,
-                                             initial_slab_size)
-            : Slab::with_duration_to_end(initial_time_value, initial_slab_size);
-    const Time initial_time =
-        time_runs_forward ? initial_slab.start() : initial_slab.end();
-    const TimeDelta initial_dt =
-        Evolution_detail::get_initial_time_step<Metavariables>(
-            initial_time, initial_dt_value, box);
-
-    // The slab number is increased in the self-start phase each
-    // time one order of accuracy is obtained, and the evolution
-    // proper starts with slab 0.
-    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
-
-    const TimeStepId time_id(
-        time_runs_forward,
-        -static_cast<int64_t>(time_stepper.number_of_past_steps()),
-        initial_time);
-
-    Initialization::mutate_assign<tmpl::list<
-        ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>,
-        ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
-        make_not_null(&box), TimeStepId{}, time_id,
-        initial_dt, initial_dt);
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-  }
-};
-
 /// \ingroup InitializationGroup
 /// \brief Initialize time-stepper items
 ///

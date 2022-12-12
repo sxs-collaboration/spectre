@@ -8,7 +8,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Tensor/EagerMath/Norms.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Systems/ScalarWave/Constraints.hpp"
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
