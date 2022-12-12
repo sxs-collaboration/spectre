@@ -1,0 +1,7 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+lines.linewidth: 1
+font.size: 9
+legend.fontsize: 8
+axes.prop_cycle: cycler('linestyle', ['-', '--', '-.', 'dotted'])

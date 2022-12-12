@@ -102,9 +102,9 @@ Make sure that `Scale Mode` is set to `vector`.
 ### Visualizing and Extracting Dat Files
 
 Global quantities such as error norms are stored in `h5::Dat` subfiles in the
-reduction/global HDF5 file. A python script named `PlotDatFile` in the `bin`
-directory (copied from `Visualization/Python`) can be used to plot quantities
-from Dat files and to extract them into space-separated text files. These text
+reduction/global HDF5 file. The command-line endpoint `spectre plot-dat`
+can be used to plot quantities, and `spectre extract-dat` can be used
+to extract them into space-separated text files. These text
 files can then be read with other plotting programs or viewed in an editor.
 
 ### Reproducibility of Results

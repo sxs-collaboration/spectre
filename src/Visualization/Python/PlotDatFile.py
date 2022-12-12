@@ -3,316 +3,228 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
 import h5py
-import numpy as np
-
-# Set back to normal LaTeX math font...
-import matplotlib.style
-import matplotlib as mpl
-mpl.rcParams['mathtext.fontset'] = 'cm'
-mpl.rcParams['mathtext.rm'] = 'serif'
-
-matplotlib.use('pdf')
+import logging
 import matplotlib.pyplot as plt
+import numpy as np
+import os
+import rich
+
+logger = logging.getLogger(__name__)
 
 
-def read_and_plot_data(dat_file, args):
-    """Read the data from the dat file and generate a plot.
+def available_subfiles(h5file, path='/'):
+    """List all '.dat' subfiles in the 'h5file'.
 
-    Checks that various preconditions are met and throws
-    an error if they are not.
+    Parameters
+    ----------
+    h5file: Open h5py file
+    path: str
+      Root from where to list subfiles. Defaults to the file root.
     """
-    legend = [(x.decode('ascii') if type(x) == bytes else x)
-              for x in dat_file.attrs['Legend']]
-    all_data = np.asarray(dat_file)
-    if args['x_axis'] == None:
-        args['x_axis'] = legend[0]
-    elif not args['x_axis'] in legend:
-        raise ValueError(
-            "Unknown x-axis function '{}'\nKnown functions are:\n{}".format(
-                args['x_axis'], str(legend)))
-
-    # make sure all requested functions are in the file:
-    for i_function in range(len(args['functions'])):
-        function = args['functions'][i_function]
-        if not function in legend:
-            raise ValueError(
-                "Unknown function '{}'\nKnown functions are:\n{}".format(
-                    function, str(legend)))
-
-        this_linestyle = args['linestyles'][
-            i_function if len(args['linestyles']) > 1 else 0]
-        this_label = (dict(args['labels'])[function] if args['labels'] != None
-                      and function in args['labels'] else function)
-
-        plt.plot(all_data[:, legend.index(args['x_axis'])],
-                 all_data[:, legend.index(function)],
-                 label=this_label,
-                 linestyle=this_linestyle,
-                 linewidth=args['linewidth'])
-
-    if args['y_logscale']:
-        plt.yscale('log')
-    plt.xlabel(args['x_label'] if args['x_label'] != None else args['x_axis'],
-               fontsize=args['fontsize'])
-    if args['y_label']:
-        plt.ylabel(args['y_label'], fontsize=args['fontsize'])
-
-    _ = plt.legend(fontsize=args['fontsize'] - 1,
-                   loc='best',
-                   ncol=args['legend_ncols'])
-    plt.xticks(fontsize=args['fontsize'])
-    plt.yticks(fontsize=args['fontsize'])
-    if args['x_bounds']:
-        plt.xlim(float(args['x_bounds'][0]), float(args['x_bounds'][1]))
-    if args['y_bounds']:
-        plt.ylim(float(args['y_bounds'][0]), float(args['y_bounds'][1]))
-    if args['title'] != None:
-        plt.title(args['title'], fontsize=args['fontsize'])
-
-    print("Saving figure to '{}'".format(args['output'] + '.pdf'))
-    plt.savefig(args['output'] + '.pdf',
-                transparent=True,
-                format='pdf',
-                bbox_inches='tight')
-    return None
+    subfiles = []
+    for member in h5file.keys():
+        if type(h5file[member]) is h5py._hl.group.Group:
+            subfiles = subfiles + available_subfiles(h5file[member],
+                                                     path + member + '/')
+        elif member.endswith('.dat'):
+            subfiles.append(path + member)
+    return subfiles
 
 
-def process_subfile(dat_file, legend_only, write_dat, **kwargs):
-    """Given the read in subfile, plot the data.
+def parse_functions(ctx, param, all_values):
+    """Parse function names and their labels
 
-    If --legend-only was specified then the legend is printed
-    and execution terminated.
-
-    If --write-dat is specified then the data is written to a text dat file.
-
-    Generates a plot and writes it to disk using read_and_plot_data.
+    Functions and their labels can be specified as key-value pairs such as
+    'Error(ScalarField)=$L_2(\\phi)$'. Remember to wrap the key-value pair in
+    quotes on the command line to avoid issues with special characters or
+    spaces.
     """
-    legend = [(x.decode('ascii') if type(x) == bytes else x)
-              for x in dat_file.attrs['Legend']]
-    if legend_only:
-        print("The legend in the dat subfile '{}' is:\n{}".format(
-            dat_file.name, legend))
-        return legend
-
-    if not (write_dat is None):
-        print("Writing to text dat file '{}'".format(write_dat))
-        np.savetxt(write_dat,
-                   np.asarray(dat_file),
-                   delimiter=' ',
-                   header='\n'.join(
-                       '{}' for _ in range(len(legend))).format(*legend))
-        return None
-
-    read_and_plot_data(dat_file, kwargs)
-    return None
-
-
-def open_and_process_file(filename, subfile_name, **kwargs):
-    """Opens the specified HDF5 file.
-
-    If no subfile is specified this function prints all available Dat
-    subfiles in the root of the HDF5 and then exists. If a subfile is
-    specified, the function forwards on to process_subfile()
-    """
-    def available_subfiles(h5file, path='/'):
-        subfiles = []
-        for member in h5file.keys():
-            if type(h5file[member]) is h5py._hl.group.Group:
-                subfiles = subfiles + available_subfiles(
-                    h5file[member], path + member + '/')
-            elif member.endswith('.dat'):
-                subfiles.append(path + member)
-        return subfiles
-
-    with h5py.File(filename, 'r') as h5file:
-        if subfile_name != None:
-            dat_file = h5file.get(subfile_name + '.dat')
-            if dat_file is None:
-                raise Exception(
-                    "Unable to open dat file '%s'. Available files are:\n%s" %
-                    (subfile_name + '.dat', available_subfiles(h5file)))
-            return process_subfile(dat_file, **kwargs)
+    if all_values is None:
+        return {}
+    functions_and_labels = {}
+    for value in all_values:
+        key_and_value = value.split('=')
+        if len(key_and_value) == 1:
+            # No label specified, use name of function as label
+            functions_and_labels[key_and_value[0]] = key_and_value[0]
+        elif len(key_and_value) == 2:
+            functions_and_labels[key_and_value[0]] = key_and_value[1]
         else:
-            print("No subfile was specified. If you want to plot or write "
-                  "data, you need to specify a dat file using the "
-                  "--subfile-name option.")
-            print("Available dat files are:", available_subfiles(h5file))
-            return available_subfiles(h5file)
-    return None
+            raise click.BadParameter(
+                f"The value of '{value}' could not be parsed as a key-value "
+                "pair. It should have a single '=' or none.")
+    return functions_and_labels
 
 
-def parse_args():
-    """
-    Parse the command line arguments
-    """
-    import argparse as ap
-    import json
+@click.command()
+@click.argument('h5_file',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.option(
+    '--subfile-name',
+    '-d',
+    help=("The dat subfile to read. "
+          "If unspecified, all available dat subfiles will be printed."))
+@click.option(
+    '--output',
+    '-o',
+    type=click.Path(file_okay=True, dir_okay=False, writable=True),
+    help=("Name of the output plot file. If unspecified, the plot is "
+          "shown interactively, which only works on machines with a "
+          "window server."))
+@click.option('--legend-only',
+              '-l',
+              is_flag=True,
+              help="Print out the available quantities and exit.")
+@click.option(
+    '--functions',
+    '-y',
+    multiple=True,
+    callback=parse_functions,
+    help=("The quantities to plot. If unspecified, list all available "
+          "quantities and exit."))
+@click.option(
+    '--x-axis',
+    '-x',
+    help="Select the column in the dat file uses as the x-axis in the plot.",
+    show_default="first column in the dat file")
+# Plotting options
+@click.option('--x-label',
+              help="The label on the x-axis.",
+              show_default="name of the x-axis column")
+@click.option('--y-label',
+              required=False,
+              help="The label on the y-axis.",
+              show_default="no label")
+@click.option('--x-logscale',
+              is_flag=True,
+              help="Set the x-axis to log scale.")
+@click.option('--y-logscale',
+              is_flag=True,
+              help="Set the y-axis to log scale.")
+@click.option('--x-bounds',
+              type=float,
+              nargs=2,
+              help="The lower and upper bounds of the x-axis.")
+@click.option('--y-bounds',
+              type=float,
+              nargs=2,
+              help="The lower and upper bounds of the y-axis.")
+@click.option('--title',
+              '-t',
+              help="Title of the graph.",
+              show_default="subfile name")
+@click.option(
+    '--stylesheet',
+    '-s',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False,
+                    readable=True),
+    envvar="SPECTRE_MPL_STYLESHEET",
+    help=("Select a matplotlib stylesheet for customization of the plot, such "
+          "as linestyle cycles, linewidth, fontsize, legend, etc. "
+          "The stylesheet can also be set with the 'SPECTRE_MPL_STYLESHEET' "
+          "environment variable."))
+def plot_dat_command(h5_file, subfile_name, output, legend_only, functions,
+                     x_axis, stylesheet, x_label, y_label, x_logscale,
+                     y_logscale, x_bounds, y_bounds, title):
+    """Plot columns in '.dat' datasets in H5 files"""
+    _rich_traceback_guard = True  # Hide traceback until here
 
-    # We use a custom formatter to allow us to override the default
-    # formatting style when we want to add line breaks ourselves.
-    class SmartFormatter(ap.HelpFormatter):
-        def _split_lines(self, text, width):
-            if text.startswith('R|'):
-                return text[2:].splitlines()
-            # If the user did not ask for raw formatting use argparse's
-            # formatter instead.
-            return ap.HelpFormatter._split_lines(self, text, width)
+    with h5py.File(h5_file, 'r') as h5file:
+        # Print available subfiles and exit
+        if subfile_name is None:
+            import rich.columns
+            rich.print(rich.columns.Columns(available_subfiles(h5file)))
+            return
 
-    parser = ap.ArgumentParser(
-        description=
-        "Analyze reduction data files (.dat HDF5 subfiles) written out "
-        "by SpECTRE. Plots of the data can be generated, looking at "
-        "what variables were written to the subfile, and writing the "
-        "dat subfile to a text file on disk.",
-        formatter_class=SmartFormatter)
-    parser.add_argument('filename', help="The HDF5 file to read.")
-    parser.add_argument(
-        '--subfile-name',
-        '-d',
-        required=False,
-        help="The dat subfile to read excluding the .dat extension. "
-        "If excluded all available dat subfiles will be printed.")
+        # Open subfile
+        if not subfile_name.endswith('.dat'):
+            subfile_name += ".dat"
+        dat_file = h5file.get(subfile_name)
+        if dat_file is None:
+            raise click.UsageError(
+                f"Unable to open dat file '{subfile_name}'. Available "
+                f"files are:\n {available_subfiles(h5file)}")
 
-    action_group = parser.add_mutually_exclusive_group(required=True)
+        # Read legend from subfile
+        legend = list(dat_file.attrs['Legend'])
 
-    action_group.add_argument('--legend-only',
-                              action='store_true',
-                              help="If specified, only print out the legend")
-    action_group.add_argument(
-        '--write-dat',
-        help="If specified, writes the entire dat file to a text Dat file with "
-        "spaces as the delimiter and exits.")
+        # Select x-axis
+        if x_axis is None:
+            x_axis = legend[0]
+        elif x_axis not in legend:
+            raise click.UsageError(f"Unknown x-axis '{x_axis}'. "
+                                   f"Available columns are: {legend}")
 
-    action_group.add_argument(
-        '--output',
-        '-o',
-        help="Name of the plot file. The '.pdf' extension will "
-        "be added automatically. Note: Requires additional arguments to be "
-        "specified. Specify --help followed by '--output' or '-o' to see "
-        "the additional arguments.")
+        # Print legend and exit if requested
+        if legend_only or not functions:
+            import rich.table
+            rich.print(f"{len(legend)} columns x {len(dat_file)} data points:")
+            table = rich.table.Table(show_header=False, box=None)
+            for i, function in enumerate(legend):
+                table.add_row(
+                    # Is the quantity selected as x or y?
+                    ("x" if function == x_axis else
+                     "y" if function in functions else ""),
+                    # Name of the quantity
+                    function,
+                    # Value bounds
+                    f"[{np.min(dat_file[:, i]):g}, {np.max(dat_file[:, i]):g}]",
+                    # Highlight selected quantities
+                    style=("bold" if function == x_axis
+                           or function in functions else None))
+            rich.print(table)
+            return
 
-    import sys
-    if '--output' in sys.argv or '-o' in sys.argv:
-        parser.add_argument('--functions',
-                            required=True,
-                            nargs='+',
-                            help="The quantities to plot as a function "
-                            "of '--x-axis'.")
+        # Apply stylesheet
+        if stylesheet is not None:
+            plt.style.use(stylesheet)
 
-        # Specify all plotting options
-        parser.add_argument('--x-bounds',
-                            required=False,
-                            nargs=2,
-                            help="The lower and upper bounds of the x-axis.")
-        parser.add_argument('--y-bounds',
-                            required=False,
-                            nargs=2,
-                            help="The lower and upper bounds of the y-axis.")
-        parser.add_argument('--x-label',
-                            required=False,
-                            help="The label on the x-axis. "
-                            "Default is the name of the x-axis entry.")
-        parser.add_argument('--y-label',
-                            required=False,
-                            help="The label on the y-axis. "
-                            "Default is not having a label.")
-        parser.add_argument('--linewidth',
-                            required=False,
-                            type=float,
-                            help="The width of the lines plotted.",
-                            default=plt.rcParams['lines.linewidth'])
-        parser.add_argument(
-            '--linestyles',
-            required=False,
-            nargs='+',
-            help="The styles of the lines plotted. Must be one or "
-            "one for each function.",
-            choices=['solid', 'dashed', 'dashdot', 'dotted'],
-            default=['solid'])
-        parser.add_argument('--legend-ncols',
-                            required=False,
-                            type=int,
-                            default=1,
-                            help="Number of columns for the legend")
-        parser.add_argument('--x-axis',
-                            required=False,
-                            help="If specified, make the range be the "
-                            "values in this field of the subfile. Defaults to "
-                            "the first column in the dat file.")
-        parser.add_argument('--y-logscale',
-                            required=False,
-                            action='store_true',
-                            help="If specified, set the y-axis to log scale.")
+        # Select plotting parameters. Any further customization of the plotting
+        # style can be done with a stylesheet.
+        plot_kwargs = dict(color='black' if len(functions) == 1 else None,
+                           marker='.' if len(dat_file) < 20 else None)
 
-        parser.add_argument('--title',
-                            required=False,
-                            help="Title on the graph.")
-        parser.add_argument('--fontsize',
-                            required=False,
-                            type=int,
-                            default=16,
-                            help="The font size on the plots")
+        # Plot the selected quantities
+        for function, label in functions.items():
+            if function not in legend:
+                raise click.UsageError(f"Unknown function '{function}'. "
+                                       f"Available functions are: {legend}")
 
-        parser.add_argument(
-            '--labels',
-            required=False,
-            type=json.loads,
-            help="R|A string containing a JSON dictionary to map some of\n"
-            "the functions to specified labels. An example of what\n"
-            "to pass to the argument (including the single quotes)\n"
-            "is:\n"
-            "'{\"Error(DivergenceCleaningField)\":\"$L_2(\\\\Phi)$\",\n"
-            "\"Error(RestMassDensity)\":\"$L_2(\\\\mathcal{E}(\\\\rho))$\"}'\n"
-            "\n"
-            "Note that the double slashes (\\\\) in LaTeX are needed to \n"
-            "properly render the math.")
+            plt.plot(dat_file[:, legend.index(x_axis)],
+                     dat_file[:, legend.index(function)],
+                     label=label,
+                     **plot_kwargs)
 
-    args = parser.parse_args()
+    # Configure the axes
+    if y_logscale:
+        plt.yscale('log')
+    if x_logscale:
+        plt.xscale('log')
+    plt.xlabel(x_label if x_label else x_axis)
+    if y_label:
+        plt.ylabel(y_label)
+    plt.legend()
+    if x_bounds:
+        plt.xlim(*x_bounds)
+    if y_bounds:
+        plt.ylim(*y_bounds)
+    plt.title(title if title else subfile_name[:-4])
 
-    # Do not do additional argument parsing if we are only printing file
-    # contents or writing to a text file.
-    if args.legend_only or args.write_dat:
-        return args
-
-    if args.functions is None:
-        args.legend_only = True
-        return args
-
-    num_functions = len(args.functions)
-    num_linestyles = len(args.linestyles)
-
-    # Make sure for each specified label a function with that name exists
-    if args.labels:
-        functions = args.functions
-        for key in args.labels:
-            if not key in functions:
-                parser.error(
-                    "Unknown function '{}' specified with label '{}'. Known"
-                    " functions are:\n{}".format(key, args.labels[key],
-                                                 functions))
-
-    # Make sure the correct number of line styles were supplied
-    if num_linestyles != num_functions and num_linestyles != 1:
-        parser.error(
-            "You must supply either one line style or one line style per "
-            "function. However, {} line styles with {} functions were parsed.\n"
-            .format(num_linestyles, num_functions))
-
-    # Convert line styles to what pyplot understands. There are difficulties
-    # with parsing arguments like '--' and '-.' from the command line so
-    # parsing strings and then converting is easier.
-    if num_linestyles > 0:
-        for linestyle in args.linestyles:
-            linestyle = {
-                'solid': '-',
-                'dashed': '--',
-                'dashdot': '-.',
-                'dotted': '.'
-            }[linestyle]
-
-    return args
+    if output:
+        plt.savefig(output, format='pdf', bbox_inches='tight')
+    else:
+        if not os.environ.get("DISPLAY"):
+            logger.warning(
+                "No 'DISPLAY' environment variable is configured so plotting "
+                "interactively is unlikely to work. Write the plot to a file "
+                "with the --output/-o option.")
+        plt.show()
 
 
 if __name__ == "__main__":
-    open_and_process_file(**vars(parse_args()))
+    plot_dat_command(help_option_name=["-h", "--help"])
