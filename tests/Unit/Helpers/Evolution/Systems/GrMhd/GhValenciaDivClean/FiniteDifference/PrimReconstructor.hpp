@@ -229,23 +229,33 @@ void test_prim_reconstructor_impl(
       (subcell_mesh.extents(0) + 1) *
       subcell_mesh.extents().slice_away(0).product();
 
+  using fd_package_data_argument_tags = tmpl::remove_duplicates<tmpl::append<
+      cons_tags,
+      tmpl::push_back<
+          prims_tags,
+          hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
+      flux_tags,
+      tmpl::list<Lapse, Shift, SpatialMetric, SqrtDetSpatialMetric,
+                 InverseSpatialMetric,
+                 evolution::dg::Actions::detail::NormalVector<3>>>>;
   using dg_package_data_argument_tags = tmpl::remove_duplicates<tmpl::append<
       cons_tags,
       tmpl::push_back<
           prims_tags,
           hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>,
       flux_tags,
-      tmpl::push_back<
-          tmpl::list<Lapse, Shift, SpatialMetric, SqrtDetSpatialMetric,
-                     InverseSpatialMetric,
-                     evolution::dg::Actions::detail::NormalVector<3>>>>>;
+      tmpl::list<GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma1,
+                 GeneralizedHarmonic::ConstraintDamping::Tags::ConstraintGamma2,
+                 Lapse, Shift, SpatialMetric, SqrtDetSpatialMetric,
+                 InverseSpatialMetric,
+                 evolution::dg::Actions::detail::NormalVector<3>>>>;
 
-  std::array<Variables<dg_package_data_argument_tags>, 3> vars_on_lower_face =
+  std::array<Variables<fd_package_data_argument_tags>, 3> vars_on_lower_face =
       make_array<3>(
-          Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
-  std::array<Variables<dg_package_data_argument_tags>, 3> vars_on_upper_face =
+          Variables<fd_package_data_argument_tags>(reconstructed_num_pts));
+  std::array<Variables<fd_package_data_argument_tags>, 3> vars_on_upper_face =
       make_array<3>(
-          Variables<dg_package_data_argument_tags>(reconstructed_num_pts));
+          Variables<fd_package_data_argument_tags>(reconstructed_num_pts));
 
   Variables<prims_tags> volume_prims{subcell_mesh.number_of_grid_points()};
   Variables<cons_tags> volume_cons_vars{subcell_mesh.number_of_grid_points()};
@@ -301,7 +311,7 @@ void test_prim_reconstructor_impl(
       logical_coords_face_centered.get(i) =
           logical_coords_face_centered.get(i) + 4.0 * i;
     }
-    Variables<dg_package_data_argument_tags> expected_lower_face_values{
+    Variables<fd_package_data_argument_tags> expected_lower_face_values{
         face_centered_mesh.number_of_grid_points()};
     expected_lower_face_values.assign_subset(
         compute_prim_solution(logical_coords_face_centered));
@@ -337,7 +347,7 @@ void test_prim_reconstructor_impl(
               get<Shift>(expected_lower_face_values),
               get<SpacetimeMetric>(expected_lower_face_values));
 
-    Variables<dg_package_data_argument_tags> expected_upper_face_values =
+    Variables<fd_package_data_argument_tags> expected_upper_face_values =
         expected_lower_face_values;
     gr::spatial_metric(
         make_not_null(&get<SpatialMetric>(expected_upper_face_values)),
