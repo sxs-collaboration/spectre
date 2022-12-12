@@ -289,7 +289,7 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
             "be used, because all radius information is specified in the input "
             "file for the Bondi worldtube data format. It is recommended to "
             "set `ExtractionRadius` to `\"Auto\"` to make the input file "
-            "clearer.");
+            "clearer.\n");
       }
       return std::make_unique<BondiWorldtubeDataManager>(
           std::make_unique<BondiWorldtubeH5BufferUpdater>(filename,
