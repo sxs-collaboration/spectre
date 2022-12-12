@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -75,6 +76,9 @@ class FixedSpeedCubic : public FunctionOfTime {
  private:
   friend bool operator==(const FixedSpeedCubic& lhs,
                          const FixedSpeedCubic& rhs);
+
+  friend std::ostream& operator<<(  // NOLINT(readability-redundant-declaration
+      std::ostream& os, const FixedSpeedCubic& fixed_speed_cubic);
 
   template <size_t MaxDerivReturned = 2>
   std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const;

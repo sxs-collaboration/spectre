@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <memory>
+#include <ostream>
 
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -69,6 +70,15 @@ bool operator==(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {
          lhs.initial_time_ == rhs.initial_time_ and
          lhs.velocity_ == rhs.velocity_ and
          lhs.squared_decay_timescale_ == rhs.squared_decay_timescale_;
+}
+
+std::ostream& operator<<(
+    std::ostream& os, const FixedSpeedCubic& fixed_speed_cubic) {
+  os << "FixedSpeedCubic(t=" << fixed_speed_cubic.initial_time_
+     << ", f=" << fixed_speed_cubic.initial_function_value_
+     << ", v=" << fixed_speed_cubic.velocity_
+     << ", tau^2=" << fixed_speed_cubic.squared_decay_timescale_ << ")";
+  return os;
 }
 
 bool operator!=(const FixedSpeedCubic& lhs, const FixedSpeedCubic& rhs) {
