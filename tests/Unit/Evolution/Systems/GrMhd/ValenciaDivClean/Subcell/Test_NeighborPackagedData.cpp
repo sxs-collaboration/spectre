@@ -57,8 +57,12 @@ namespace {
 template <size_t Dim, typename... Maps, typename Solution>
 auto face_centered_gr_tags(
     const Mesh<Dim>& subcell_mesh, const double time,
-    const domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
-                                Maps...>& map,
+    const ElementMap<3, Frame::Grid>& element_map,
+    const domain::CoordinateMap<Frame::Grid, Frame::Inertial, Maps...>&
+        moving_mesh_map,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time,
     const Solution& soln) {
   std::array<typename System::flux_spacetime_variables_tag::type, Dim>
       face_centered_gr_vars{};
@@ -72,8 +76,8 @@ auto face_centered_gr_tags(
     const Mesh<Dim> face_centered_mesh{extents, basis, quadrature};
     const auto face_centered_logical_coords =
         logical_coordinates(face_centered_mesh);
-    const auto face_centered_inertial_coords =
-        map(face_centered_logical_coords);
+    const auto face_centered_inertial_coords = moving_mesh_map(
+        element_map(face_centered_logical_coords), time, functions_of_time);
 
     gsl::at(face_centered_gr_vars, d)
         .initialize(face_centered_mesh.number_of_grid_points());
@@ -87,25 +91,31 @@ auto face_centered_gr_tags(
 
 double test(const size_t num_dg_pts) {
   using variables_tag = typename System::variables_tag;
-
   using Affine = domain::CoordinateMaps::Affine;
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const Affine affine_map{-1.0, 1.0, 2.0, 3.0};
-  const auto coordinate_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-          Affine3D{affine_map, affine_map, affine_map});
+  const ElementId<3> element_id{
+      0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}};
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  Block<3> block{
+      domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+          Affine3D{affine_map, affine_map, affine_map}),
+      0,
+      {}};
+  ElementMap<3, Frame::Grid> element_map{
+      element_id, block.is_time_dependent()
+                      ? block.moving_mesh_logical_to_grid_map().get_clone()
+                      : block.stationary_map().get_to_grid_frame()};
+  const auto element = domain::Initialization::create_initial_element(
+      element_id, block,
+      std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
+
   const auto moving_mesh_map =
       domain::make_coordinate_map<Frame::Grid, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{});
-  const auto element = domain::Initialization::create_initial_element(
-      ElementId<3>{0, {SegmentId{3, 4}, SegmentId{3, 4}, SegmentId{3, 4}}},
-      Block<3>{domain::make_coordinate_map_base<Frame::BlockLogical,
-                                                Frame::Inertial>(
-                   Affine3D{affine_map, affine_map, affine_map}),
-               0,
-               {}},
-      std::vector<std::array<size_t, 3>>{std::array<size_t, 3>{{3, 3, 3}}});
 
   const grmhd::Solutions::BondiMichel soln{1.0, 5.0, 0.05, 1.4, 2.0};
 
@@ -113,7 +123,8 @@ double test(const size_t num_dg_pts) {
   const Mesh<3> dg_mesh{num_dg_pts, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
   const Mesh<3> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
-  const auto dg_coords = coordinate_map(logical_coordinates(dg_mesh));
+  const auto dg_coords = moving_mesh_map(
+      element_map(logical_coordinates(dg_mesh)), time, functions_of_time);
 
   // Neighbor data for reconstruction.
   //
@@ -134,18 +145,14 @@ double test(const size_t num_dg_pts) {
     auto neighbor_logical_coords = logical_coordinates(subcell_mesh);
     neighbor_logical_coords.get(direction.dimension()) +=
         2.0 * direction.sign();
-    auto neighbor_coords = coordinate_map(neighbor_logical_coords);
+    auto neighbor_coords = moving_mesh_map(element_map(neighbor_logical_coords),
+                                           time, functions_of_time);
     const auto neighbor_prims =
         soln.variables(neighbor_coords, time,
                        typename System::primitive_variables_tag::tags_list{});
     Variables<prims_to_reconstruct_tags> prims_to_reconstruct{
         subcell_mesh.number_of_grid_points()};
-    get<hydro::Tags::RestMassDensity<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::RestMassDensity<DataVector>>(neighbor_prims);
-    get<hydro::Tags::ElectronFraction<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::ElectronFraction<DataVector>>(neighbor_prims);
-    get<hydro::Tags::Pressure<DataVector>>(prims_to_reconstruct) =
-        get<hydro::Tags::Pressure<DataVector>>(neighbor_prims);
+    prims_to_reconstruct.assign_subset(neighbor_prims);
     get<hydro::Tags::LorentzFactorTimesSpatialVelocity<DataVector, 3>>(
         prims_to_reconstruct) =
         get<hydro::Tags::SpatialVelocity<DataVector, 3>>(neighbor_prims);
@@ -155,11 +162,6 @@ double test(const size_t num_dg_pts) {
       component *=
           get(get<hydro::Tags::LorentzFactor<DataVector>>(neighbor_prims));
     }
-    get<hydro::Tags::MagneticField<DataVector, 3>>(prims_to_reconstruct) =
-        get<hydro::Tags::MagneticField<DataVector, 3>>(neighbor_prims);
-    get<hydro::Tags::DivergenceCleaningField<DataVector>>(
-        prims_to_reconstruct) =
-        get<hydro::Tags::DivergenceCleaningField<DataVector>>(neighbor_prims);
 
     // Slice data so we can add it to the element's neighbor data
     DirectionMap<3, bool> directions_to_slice{};
@@ -173,7 +175,7 @@ double test(const size_t num_dg_pts) {
             .at(direction.opposite());
     neighbor_data[std::pair{direction,
                             *element.neighbors().at(direction).begin()}] =
-        neighbor_data_in_direction;
+        std::move(neighbor_data_in_direction);
   }
 
   Variables<typename System::spacetime_variables_tag::tags_list>
@@ -198,10 +200,27 @@ double test(const size_t num_dg_pts) {
     std::unordered_map<Direction<3>, tnsr::i<DataVector, 3, Frame::Inertial>>
         unnormalized_normal_covectors{};
     tnsr::i<DataVector, 3, Frame::Inertial> unnormalized_covector{};
+    const auto element_logical_to_grid_inv_jac =
+        element_map.inv_jacobian(face_logical_coords);
+    const auto grid_to_inertial_inv_jac = moving_mesh_map.inv_jacobian(
+        element_map(face_logical_coords), time, functions_of_time);
+    InverseJacobian<DataVector, 3, Frame::ElementLogical, Frame::Inertial>
+        element_logical_to_inertial_inv_jac{};
+    for (size_t logical_i = 0; logical_i < 3; ++logical_i) {
+      for (size_t inertial_i = 0; inertial_i < 3; ++inertial_i) {
+        element_logical_to_inertial_inv_jac.get(logical_i, inertial_i) =
+            element_logical_to_grid_inv_jac.get(logical_i, 0) *
+            grid_to_inertial_inv_jac.get(0, inertial_i);
+        for (size_t grid_i = 1; grid_i < 3; ++grid_i) {
+          element_logical_to_inertial_inv_jac.get(logical_i, inertial_i) +=
+              element_logical_to_grid_inv_jac.get(logical_i, grid_i) *
+              grid_to_inertial_inv_jac.get(grid_i, inertial_i);
+        }
+      }
+    }
     for (size_t i = 0; i < 3; ++i) {
       unnormalized_covector.get(i) =
-          coordinate_map.inv_jacobian(face_logical_coords)
-              .get(direction.dimension(), i);
+          element_logical_to_inertial_inv_jac.get(direction.dimension(), i);
     }
     unnormalized_normal_covectors[direction] = unnormalized_covector;
     Variables<tmpl::list<
@@ -210,8 +229,9 @@ double test(const size_t num_dg_pts) {
         evolution::dg::Actions::detail::OneOverNormalVectorMagnitude>>
         fields_on_face{face_mesh.number_of_grid_points()};
     fields_on_face.assign_subset(
-        soln.variables(coordinate_map(face_logical_coords), time,
-                       tmpl::list<inverse_spatial_metric_tag>{}));
+        soln.variables(moving_mesh_map(element_map(face_logical_coords), time,
+                                       functions_of_time),
+                       time, tmpl::list<inverse_spatial_metric_tag>{}));
     normal_vectors[direction] = std::nullopt;
     evolution::dg::Actions::detail::
         unit_normal_vector_and_covector_and_magnitude<System>(
@@ -246,7 +266,8 @@ double test(const size_t num_dg_pts) {
               grmhd::ValenciaDivClean::BoundaryCorrections::Hll>()},
       soln.equation_of_state(), dg_spacetime_vars, dg_prim_vars,
       typename variables_tag::type{dg_mesh.number_of_grid_points()},
-      face_centered_gr_tags(subcell_mesh, time, coordinate_map, soln),
+      face_centered_gr_tags(subcell_mesh, time, element_map, moving_mesh_map,
+                            functions_of_time, soln),
       neighbor_data, 1.0, evolution::dg::Tags::MortarData<3>::type{},
       std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
       evolution::dg::subcell::SubcellOptions{
@@ -256,7 +277,7 @@ double test(const size_t num_dg_pts) {
 
   std::vector<std::pair<Direction<3>, ElementId<3>>>
       mortars_to_reconstruct_to{};
-  for (const auto & [ direction, neighbors ] : element.neighbors()) {
+  for (const auto& [direction, neighbors] : element.neighbors()) {
     mortars_to_reconstruct_to.emplace_back(direction, *neighbors.begin());
   }
 
@@ -270,8 +291,8 @@ double test(const size_t num_dg_pts) {
                typename variables_tag::type,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       evolved_vars_errors{};
-  double max_abs_error = 0.0;
-  for (const auto & [ direction_and_id, data ] : all_packaged_data) {
+  double max_rel_error = 0.0;
+  for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.first;
     using dg_package_field_tags = typename grmhd::ValenciaDivClean::
         BoundaryCorrections::Hll::dg_package_field_tags;
@@ -287,19 +308,23 @@ double test(const size_t num_dg_pts) {
             : 0);
 
     tmpl::for_each<typename variables_tag::type::tags_list>(
-        [&sliced_vars, &max_abs_error, &packaged_data](auto tag_v) {
+        [&sliced_vars, &max_rel_error, &packaged_data](auto tag_v) {
           using tag = tmpl::type_from<decltype(tag_v)>;
           auto& sliced_tensor = get<tag>(sliced_vars);
           const auto& packaged_data_tensor = get<tag>(packaged_data);
           for (size_t tensor_index = 0; tensor_index < sliced_tensor.size();
                ++tensor_index) {
-            max_abs_error = std::max(
-                max_abs_error, max(abs(sliced_tensor[tensor_index] -
-                                       packaged_data_tensor[tensor_index])));
+            max_rel_error = std::max(
+                max_rel_error,
+                max(abs(sliced_tensor[tensor_index] -
+                        packaged_data_tensor[tensor_index])) /
+                    std::max({max(abs(sliced_tensor[tensor_index])),
+                              max(abs(packaged_data_tensor[tensor_index])),
+                              1.0e-17}));
           }
         });
   }
-  return max_abs_error;
+  return max_rel_error;
 }
 
 SPECTRE_TEST_CASE(
@@ -308,9 +333,11 @@ SPECTRE_TEST_CASE(
   // This tests sets up a cube [2,3]^3 in a Bondi-Michel spacetime and verifies
   // that the difference between the reconstructed evolved variables and the
   // sliced (exact on LGL grid) evolved variables on the interfaces decreases.
-  CHECK(test(4) > test(8));
+  const double error_4 = test(4);
+  const double error_8 = test(8);
+  CHECK(error_4 > error_8);
   // Check that the error is "reasonably small"
-  CHECK(test(4) < 1.0e-3);
+  CHECK(error_8 < 1.0e-5);
 }
 }  // namespace
 }  // namespace grmhd::ValenciaDivClean
