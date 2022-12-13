@@ -4,5 +4,6 @@
 spectre_python_add_module(
   tools
   PYTHON_FILES
+  CharmSimplifyTraces.py
   CleanOutput.py
 )
