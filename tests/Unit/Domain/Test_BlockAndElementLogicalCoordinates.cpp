@@ -643,6 +643,68 @@ void test_element_ids_are_uniquely_determined() {
   }
   CHECK(points_found == n_pts);
 }
+
+void test_block_logical_coordinates_with_roundoff_error() {
+  const auto shell = domain::creators::Shell(1., 3., 0, {{3, 3}});
+  const auto domain = shell.create_domain();
+
+  // Use this as roundoff error
+  const double eps = 1e-14;
+
+  // Choose some points on block boundaries with roundoff-error noise _in radial
+  // coords_ r, theta, phi (just to make them easier to choose)
+  std::vector<std::array<double, 3>> points{};
+  std::vector<size_t> expected_block_ids{};
+  // Block piercing z has ID 0, block piercing x has ID 4. Phi=0, Theta=Pi/4 is
+  // on their shared boundary. See also WedgeOrientations.png in the Shell docs.
+  // - Safely in block 0
+  points.push_back({{2., M_PI_4 - 0.01, 0.}});
+  expected_block_ids.push_back(0);
+  // - Safely in block 4
+  points.push_back({{2., M_PI_4 + 0.01, 0.}});
+  expected_block_ids.push_back(4);
+  // - Exactly on their boundary: should resolve to block 0
+  points.push_back({{2., M_PI_4, 0.}});
+  expected_block_ids.push_back(0);
+  // - Away from the boundary by roundoff: should resolve to block 0
+  points.push_back({{2., M_PI_4 + eps, 0.}});
+  expected_block_ids.push_back(0);
+  points.push_back({{2., M_PI_4 - eps, 0.}});
+  expected_block_ids.push_back(0);
+  // - A bit further away from the boundary
+  points.push_back({{2., M_PI_4 + 10 * eps, 0.}});
+  expected_block_ids.push_back(4);
+  points.push_back({{2., M_PI_4 - 10 * eps, 0.}});
+  expected_block_ids.push_back(0);
+
+  // Transform to a Tensor of DataVectors
+  tnsr::I<DataVector, 3> inertial_coords{points.size()};
+  for (size_t i = 0; i < points.size(); ++i) {
+    const auto& [r, theta, phi] = points[i];
+    get<0>(inertial_coords)[i] = r * cos(phi) * sin(theta);
+    get<1>(inertial_coords)[i] = r * sin(phi) * sin(theta);
+    get<2>(inertial_coords)[i] = r * cos(theta);
+  }
+
+  const auto block_logical_coords =
+      block_logical_coordinates(domain, inertial_coords);
+  for (size_t i = 0; i < points.size(); ++i) {
+    const auto& point = points[i];
+    CAPTURE(point);
+    const auto& result = block_logical_coords[i];
+    CAPTURE(result);
+    REQUIRE(result.has_value());
+    CHECK(result->id.get_index() == expected_block_ids[i]);
+  }
+  // See also WedgeOrientations.png in the Shell docs.
+  CHECK(get<0>(block_logical_coords[0]->data) < 1.0);
+  CHECK(get<1>(block_logical_coords[1]->data) < 1.0);
+  CHECK(get<0>(block_logical_coords[2]->data) == 1.0);
+  CHECK(get<0>(block_logical_coords[3]->data) == 1.0);
+  CHECK(get<0>(block_logical_coords[4]->data) == 1.0);
+  CHECK(get<1>(block_logical_coords[5]->data) < 1.0);
+  CHECK(get<0>(block_logical_coords[6]->data) < 1.0);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
@@ -657,4 +719,5 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(20);
   test_block_logical_coordinates1fail();
   test_element_ids_are_uniquely_determined();
+  test_block_logical_coordinates_with_roundoff_error();
 }
