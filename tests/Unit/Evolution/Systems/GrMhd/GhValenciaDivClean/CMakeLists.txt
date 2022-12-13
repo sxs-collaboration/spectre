@@ -5,6 +5,7 @@ set(LIBRARY "Test_GhValenciaDivClean")
 
 set(LIBRARY_SOURCES
   BoundaryConditions/Test_DirichletAnalytic.cpp
+  BoundaryConditions/Test_DirichletFreeOutflow.cpp
   BoundaryConditions/Test_ProductOfConditions.cpp
   BoundaryCorrections/Test_ProductOfCorrections.cpp
   FiniteDifference/Test_BoundaryConditionGhostData.cpp

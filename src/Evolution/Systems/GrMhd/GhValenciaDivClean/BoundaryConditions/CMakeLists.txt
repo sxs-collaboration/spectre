@@ -6,6 +6,7 @@ spectre_target_sources(
   PRIVATE
   BoundaryCondition.cpp
   DirichletAnalytic.cpp
+  DirichletFreeOutflow.cpp
   )
 
 spectre_target_headers(
@@ -14,6 +15,7 @@ spectre_target_headers(
   HEADERS
   BoundaryCondition.hpp
   DirichletAnalytic.hpp
+  DirichletFreeOutflow.hpp
   Factory.hpp
   ProductOfConditions.hpp
   )

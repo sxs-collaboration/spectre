@@ -170,14 +170,13 @@ class HydroFreeOutflow final : public BoundaryCondition {
   using fd_gridless_tags = tmpl::list<fd::Tags::Reconstructor>;
 
   static void fd_ghost(
-      const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-      const gsl::not_null<Scalar<DataVector>*> electron_fraction,
-      const gsl::not_null<Scalar<DataVector>*> pressure,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> electron_fraction,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
           lorentz_factor_times_spatial_velocity,
-      const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-          magnetic_field,
-      const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> magnetic_field,
+      gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
 
       const Direction<3>& direction,
 
