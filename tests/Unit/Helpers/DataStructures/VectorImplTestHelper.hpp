@@ -266,13 +266,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       CHECK(ref_vector == data_check);
       test_copy_semantics(ref_vector);
 
-      VectorType ref_vector_copy;
-      ref_vector_copy.set_data_ref(&ref_vector);
-      test_move_semantics(std::move(ref_vector), ref_vector_copy);
-      VectorType move_assignment_initialized;
-      move_assignment_initialized = std::move(ref_vector_copy);
-      CHECK(not move_assignment_initialized.is_owning());
-      const VectorType move_constructed{std::move(move_assignment_initialized)};
+      const VectorType move_constructed{std::move(ref_vector)};
       CHECK(not move_constructed.is_owning());
       // check the ability to make a const view
       const VectorType const_view;
@@ -292,18 +286,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       // clang-tidy : Intentionally testing use after move
       CHECK(original_vector != generated_vector);  // NOLINT
       CHECK(original_vector == generated_vector_copy);
-// Intentionally testing self-move
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-move"
-#endif  // defined(__clang__)
-      ref_original_vector = std::move(ref_original_vector);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif  // defined(__clang__)
-      CHECK(original_vector == generated_vector_copy);
-      // clang-tidy: false positive, used after it was moved
-      const VectorType data_check_vector = ref_original_vector;  // NOLINT
+      const VectorType data_check_vector = ref_original_vector;
       CHECK(data_check_vector == generated_vector_copy);
     }
     {

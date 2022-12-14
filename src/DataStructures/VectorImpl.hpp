@@ -379,23 +379,20 @@ template <typename T, typename VectorType, size_t StaticSize>
 VectorImpl<T, VectorType, StaticSize>&
 VectorImpl<T, VectorType, StaticSize>::operator=(
     VectorImpl<T, VectorType, StaticSize>&& rhs) {
+  ASSERT(rhs.is_owning(),
+         "Cannot move assign from a non-owning vector, because the correct "
+         "behavior is unclear.");
   if (this != &rhs) {
     if (owning_) {
       owned_data_ = std::move(rhs.owned_data_);
       static_owned_data_ = std::move(rhs.static_owned_data_);
-      owning_ = rhs.owning_;
       **this = std::move(*rhs);
-      if (owning_) {
-        reset_pointer_vector(size());
-      } else {
-        this->reset(data(), size());
-      }
+      reset_pointer_vector(size());
     } else {
       ASSERT(rhs.size() == size(), "Must copy into same size, not "
                                        << rhs.size() << " into " << size());
       std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
     }
-    rhs.owning_ = true;
     rhs.reset();
   }
   return *this;
