@@ -20,6 +20,11 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TimeDerivativeTerms.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/DerivSpatialMetric.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/ExtrinsicCurvature.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfLapse.hpp"
+#include "PointwiseFunctions/GeneralRelativity/GeneralizedHarmonic/SpatialDerivOfShift.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/IsA.hpp"
@@ -50,6 +55,27 @@ struct ComputeVolumeTimeDerivativeTermsHelper<
         make_not_null(&get<::Tags::dt<EvolvedTags>>(*dt_vars_ptr))...,
         make_not_null(&get<FluxTags>(*volume_fluxes))...,
         make_not_null(&get<TempTags>(*temporaries))...,
+        get<GradientTags>(partial_derivs)..., [](const auto& t) -> const auto& {
+          if constexpr (tt::is_a_v<std::unique_ptr,
+                                   std::decay_t<decltype(t)>>) {
+            return *t;
+          } else {
+            return t;
+          }
+        }(tuples::get<ArgTags>(time_derivative_args))...);
+  }
+
+  template <typename EvolvedVariables, typename FluxVariables,
+            typename TemporaryVariables, typename GradientVariables,
+            typename ArgumentVariables>
+  static void apply_packed(
+      const gsl::not_null<EvolvedVariables*> dt_vars_ptr,
+      [[maybe_unused]] const gsl::not_null<FluxVariables*> volume_fluxes,
+      const gsl::not_null<TemporaryVariables*> temporaries,
+      const GradientVariables& partial_derivs,
+      const ArgumentVariables& time_derivative_args) {
+    ComputeVolumeTimeDerivativeTerms::apply(
+        dt_vars_ptr, volume_fluxes, temporaries,
         get<GradientTags>(partial_derivs)..., [](const auto& t) -> const auto& {
           if constexpr (tt::is_a_v<std::unique_ptr,
                                    std::decay_t<decltype(t)>>) {
@@ -185,18 +211,57 @@ SPECTRE_TEST_CASE(
   tuples::tagged_tuple_from_typelist<all_valencia_arg_tags>
       all_valencia_argument_variables{};
 
-  tmpl::for_each<all_valencia_arg_tags>(
-      [&arg_variables, &expected_temp_variables,
-       &all_valencia_argument_variables](const auto tag_v) {
-        using tag = typename decltype(tag_v)::type;
-        if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
-          tuples::get<tag>(all_valencia_argument_variables) =
-              get<tag>(expected_temp_variables);
-        } else {
-          tuples::get<tag>(all_valencia_argument_variables) =
-              tuples::get<tag>(arg_variables);
-        }
-      });
+  tmpl::for_each<all_valencia_arg_tags>([&arg_variables,
+                                         &expected_temp_variables,
+                                         &all_valencia_argument_variables](
+                                            const auto tag_v) {
+    using tag = typename decltype(tag_v)::type;
+    if constexpr (tmpl::list_contains_v<gh_temp_tags, tag>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          get<tag>(expected_temp_variables);
+    } else if constexpr (std::is_same_v<tag, ::Tags::deriv<gr::Tags::Lapse<>,
+                                                           tmpl::size_t<3>,
+                                                           Frame::Inertial>>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          GeneralizedHarmonic::spatial_deriv_of_lapse(
+              get<gr::Tags::Lapse<>>(expected_temp_variables),
+              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
+              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+      get<tag>(expected_temp_variables) =
+          tuples::get<tag>(all_valencia_argument_variables);
+    } else if constexpr (std::is_same_v<tag, ::Tags::deriv<gr::Tags::Shift<3>,
+                                                           tmpl::size_t<3>,
+                                                           Frame::Inertial>>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          GeneralizedHarmonic::spatial_deriv_of_shift(
+              get<gr::Tags::Lapse<>>(expected_temp_variables),
+              get<gr::Tags::InverseSpacetimeMetric<3>>(expected_temp_variables),
+              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
+              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+      get<tag>(expected_temp_variables) =
+          tuples::get<tag>(all_valencia_argument_variables);
+    } else if constexpr (std::is_same_v<
+                             tag,
+                             ::Tags::deriv<gr::Tags::SpatialMetric<3>,
+                                           tmpl::size_t<3>, Frame::Inertial>>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          GeneralizedHarmonic::deriv_spatial_metric(
+              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+      get<tag>(expected_temp_variables) =
+          tuples::get<tag>(all_valencia_argument_variables);
+    } else if constexpr (std::is_same_v<tag, gr::Tags::ExtrinsicCurvature<3>>) {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          GeneralizedHarmonic::extrinsic_curvature(
+              get<gr::Tags::SpacetimeNormalVector<3>>(expected_temp_variables),
+              get<GeneralizedHarmonic::Tags::Pi<3>>(arg_variables),
+              get<GeneralizedHarmonic::Tags::Phi<3>>(arg_variables));
+      get<tag>(expected_temp_variables) =
+          tuples::get<tag>(all_valencia_argument_variables);
+    } else {
+      tuples::get<tag>(all_valencia_argument_variables) =
+          tuples::get<tag>(arg_variables);
+    }
+  });
 
   ComputeVolumeTimeDerivativeTermsHelper<
       grmhd::ValenciaDivClean::TimeDerivativeTerms, 3_st,
@@ -220,22 +285,17 @@ SPECTRE_TEST_CASE(
               expected_temp_variables)),
       tuples::get<hydro::Tags::RestMassDensity<DataVector>>(arg_variables),
       tuples::get<hydro::Tags::SpecificEnthalpy<DataVector>>(arg_variables),
-      get<grmhd::GhValenciaDivClean::detail::ValenciaTempTag<
-          hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>>(
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           expected_temp_variables),
-      get<grmhd::GhValenciaDivClean::detail::ValenciaTempTag<
-          hydro::Tags::MagneticFieldOneForm<DataVector, 3>>>(
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3>>(
           expected_temp_variables),
-      get<grmhd::GhValenciaDivClean::detail::ValenciaTempTag<
-          hydro::Tags::MagneticFieldSquared<DataVector>>>(
+      get<hydro::Tags::MagneticFieldSquared<DataVector>>(
           expected_temp_variables),
-      get<grmhd::GhValenciaDivClean::detail::ValenciaTempTag<
-          hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>>(
+      get<hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(
           expected_temp_variables),
       tuples::get<hydro::Tags::LorentzFactor<DataVector>>(arg_variables),
-      get<grmhd::GhValenciaDivClean::detail::ValenciaTempTag<
-          typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
-              OneOverLorentzFactorSquared>>(expected_temp_variables),
+      get<typename grmhd::ValenciaDivClean::TimeDerivativeTerms::
+              OneOverLorentzFactorSquared>(expected_temp_variables),
       tuples::get<hydro::Tags::Pressure<DataVector>>(arg_variables),
       tuples::get<gr::Tags::SpacetimeMetric<3_st>>(arg_variables),
       get<gr::Tags::Shift<3_st>>(expected_temp_variables),
@@ -255,8 +315,9 @@ SPECTRE_TEST_CASE(
       typename temp_variables_type::tags_list,
       typename gradient_variables_type::tags_list,
       typename arg_variables_type::tags_list>::
-      apply(make_not_null(&dt_variables), make_not_null(&flux_variables),
-            make_not_null(&temp_variables), gradient_variables, arg_variables);
+      apply_packed(make_not_null(&dt_variables), make_not_null(&flux_variables),
+                   make_not_null(&temp_variables), gradient_variables,
+                   arg_variables);
 
   CHECK_VARIABLES_APPROX(dt_variables, expected_dt_variables);
   CHECK_VARIABLES_APPROX(flux_variables, expected_flux_variables);
