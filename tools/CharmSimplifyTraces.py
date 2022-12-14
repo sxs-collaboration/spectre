@@ -3,6 +3,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+import click
 import re
 import json
 
@@ -170,57 +171,76 @@ def user_replacements(text, json_replacements):
     return text
 
 
-def process_sts_file(filename, output, replacements_json_file):
-    with open(filename, "r") as file:
-        text = file.readlines()
+@click.command()
+@click.argument('projections_file',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.argument('output_file', required=False, type=click.Path(writable=True))
+@click.option(
+    '--in-place',
+    '-i',
+    is_flag=True,
+    help=("Edit the 'PROJECTIONS_FILE' in place. A backup of the file is "
+          "written to the 'OUTPUT_FILE' if specified."))
+@click.option('--replacements-json-file',
+              '-r',
+              type=click.File('r'),
+              help="""
+A JSON file listing textual and regular expression replacements. The file must
+specify "BasicReplace" and "RegexReplace" dictionaries. Each dictionary has keys
+that are the name of the replacement (unused in any searches). For BasicReplace
+the value is a list of two-element lists, the first entry in the nested
+two-element list is the string to replace and the second what to replace it
+with. An example entry is:
 
-    text = generic_replacements(text)
-    if replacements_json_file:
-        text = user_replacements(text,
-                                 json.load(open(replacements_json_file, 'r')))
+  "Actions::MutateApply": [["Actions::MutateApply<", "], [">()", "()"]]
 
-    with open(output, "w") as file:
-        file.writelines(text)
+where if the line contains "Actions::MutateApply<" it and ">()" are replaced.
+The regular expression is structured similarly but the entire regex match is
+replaced.
+""")
+def simplify_traces_command(projections_file, output_file, in_place,
+                            replacements_json_file):
+    """Process Charm++ Projections trace files
 
+    Process Charm++ Projections '.sts' (not '.sum.sts') files to make the entry
+    method and Chare names easier to read in the GUI. Long template names are
+    not rendered fully making it impossible to figure out what Action and Chare
+    was being measured. The standard entry methods like 'invoke_iterable_action'
+    and 'simple_action' are simplified by default, but further textual and
+    regular expression replacements can be specified in a JSON file.
 
-def parse_args():
-    """Parse command line arguments
+    The output of this command will be written to the 'OUTPUT_FILE' if
+    specified, to stdout if unspecified, edited in-place if the '-i' flag is
+    specified. Note that you will need to replace Charm++'s .sts file with the
+    output file and the names must match.
     """
-    import argparse as ap
+    _rich_traceback_guard = True  # Hide traceback until here
 
-    parser = ap.ArgumentParser(
-        description="Process Charm++ Projections .sts (not .sum.sts) files to "
-        "make the entry method and Chare names easier to read in the GUI. Long "
-        "template names are not rendered fully making it impossible to figure "
-        "out what Action and Chare was being measured. The standard entry "
-        "methods like invoke_iterable_action and simple_action are "
-        "simplified by default, but further textual and regular expression "
-        "replacements can be specified in a JSON file.")
-    parser.add_argument('filename',
-                        help="The Charm++ Projections .sts file to read.")
-    parser.add_argument(
-        '--output',
-        '-o',
-        required=True,
-        help="The output file to write to. Note that you will need to replace "
-        "Charm++'s .sts file with the output file and the names must match.")
-    parser.add_argument(
-        '--replacements-json-file',
-        required=False,
-        help="A JSON file listing textual and regular expression replacements."
-        " The file must specify \"BasicReplace\" and \"RegexReplace\" "
-        "dictionaries. Each dictionary has keys that are the name of the "
-        "replacement (unused in any searches). For BasicReplace the value is "
-        "a list of two-element lists, the first entry in the nested "
-        "two-element list is the string to replace and the second what to "
-        "replace it with. An example entry is: \n"
-        "'\"Actions::MutateApply\": [[\"Actions::MutateApply<\", \"\"], "
-        "[\">()\", \"()\"]]'"
-        " \nwhere if the line contains \"Actions::MutateApply<\" it and "
-        "\">()\" are replaced. The regular expression is structured "
-        "similarly but the entire regex match is replaced.")
-    return parser.parse_args()
+    with open(projections_file, 'r') as open_file:
+        original_text = open_file.readlines()
+
+    text = generic_replacements(original_text)
+    if replacements_json_file:
+        text = user_replacements(text, json.load(replacements_json_file))
+
+    if in_place:
+        backup_file = output_file
+        output_file = projections_file
+    else:
+        backup_file = None
+
+    if backup_file:
+        with open(backup_file, 'w') as open_file:
+            open_file.writelines(original_text)
+    if output_file:
+        with open(output_file, 'w') as open_file:
+            open_file.writelines(text)
+    else:
+        print("\n".join(text))
 
 
 if __name__ == "__main__":
-    process_sts_file(**vars(parse_args()))
+    simplify_traces_command(help_option_name=["-h", "--help"])
