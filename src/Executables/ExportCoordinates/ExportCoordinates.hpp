@@ -235,8 +235,8 @@ struct Metavariables {
                   Parallel::Phase::Initialization,
                   tmpl::list<Initialization::Actions::InitializeItems<
                                  Initialization::TimeStepping<
-                                     Metavariables, local_time_stepping>>,
-                             evolution::dg::Initialization::Domain<Dim>,
+                                     Metavariables, local_time_stepping>,
+                                 evolution::dg::Initialization::Domain<Dim>>,
                              Initialization::Actions::AddComputeTags<
                                  ::domain::Tags::MinimumGridSpacingCompute<
                                      Dim, Frame::Inertial>>,
