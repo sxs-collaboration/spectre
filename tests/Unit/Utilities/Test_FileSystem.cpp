@@ -146,18 +146,15 @@ void test_errors() {
       Catch::Contains("Failed to find a file in the given path: '/'"));
   CHECK_THROWS_WITH(file_system::get_file_name(""),
                     Catch::Contains("Received an empty path"));
-  CHECK_THROWS_WITH(
-      trigger_nonexistent_absolute_path(),
-      Catch::Contains(
-          "No such file or directory [./get_absolute_path_nonexistent/]"));
+  CHECK_THROWS_WITH(trigger_nonexistent_absolute_path(),
+                    Catch::Contains("No such file or directory"));
   CHECK_THROWS_WITH(
       file_system::file_size("./file_size_error.txt"),
       Catch::Contains("Cannot get size of file './file_size_error.txt' because "
                       "it cannot be accessed. Either it does not exist or you "
                       "do not have the appropriate permissions."));
-  CHECK_THROWS_WITH(
-      trigger_rm_error_not_empty(),
-      Catch::Contains("remove: Directory not empty [./rm_error_not_empty]"));
+  CHECK_THROWS_WITH(trigger_rm_error_not_empty(),
+                    Catch::Contains("remove: Directory not empty"));
   CHECK_THROWS_WITH(file_system::is_file("./is_file_error"),
                     Catch::Contains("Failed to check if path points to a file "
                                     "because the path is invalid"));
