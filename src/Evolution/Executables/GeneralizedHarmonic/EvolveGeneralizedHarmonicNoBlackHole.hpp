@@ -28,12 +28,65 @@ struct EvolutionMetavars
           EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
   using gh_base = GeneralizedHarmonicTemplateBase<
       EvolutionMetavars<VolumeDim, UseNumericalInitialData>>;
-  using typename gh_base::component_list;
   using typename gh_base::const_global_cache_tags;
+  using typename gh_base::dg_registration_list;
+  using typename gh_base::initialization_actions;
+  using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::observed_reduction_data_tags;
+  using typename gh_base::step_actions;
+  using typename gh_base::system;
+
+  using gh_dg_element_array = DgElementArray<
+      EvolutionMetavars,
+      tmpl::flatten<tmpl::list<
+          Parallel::PhaseActions<Parallel::Phase::Initialization,
+                                 initialization_actions>,
+          tmpl::conditional_t<
+              UseNumericalInitialData,
+              tmpl::list<
+                  Parallel::PhaseActions<
+                      Parallel::Phase::RegisterWithElementDataReader,
+                      tmpl::list<
+                          importers::Actions::RegisterWithElementDataReader,
+                          Parallel::Actions::TerminatePhase>>,
+                  Parallel::PhaseActions<
+                      Parallel::Phase::ImportInitialData,
+                      tmpl::list<
+                          GeneralizedHarmonic::Actions::ReadNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          GeneralizedHarmonic::Actions::SetNumericInitialData<
+                              evolution::OptionTags::NumericInitialData>,
+                          Parallel::Actions::TerminatePhase>>>,
+              tmpl::list<>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::InitializeInitialDataDependentQuantities,
+              initialize_initial_data_dependent_quantities_actions>,
+          Parallel::PhaseActions<
+              Parallel::Phase::InitializeTimeStepperHistory,
+              SelfStart::self_start_procedure<step_actions, system>>,
+          Parallel::PhaseActions<Parallel::Phase::Register,
+                                 tmpl::list<dg_registration_list,
+                                            Parallel::Actions::TerminatePhase>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::Evolve,
+              tmpl::list<Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
+                         step_actions, Actions::AdvanceTime,
+                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
+
   template <typename ParallelComponent>
-  using registration_list =
-      typename gh_base::template registration_list<ParallelComponent>;
+  struct registration_list {
+    using type = std::conditional_t<
+        std::is_same_v<ParallelComponent, gh_dg_element_array>,
+        dg_registration_list, tmpl::list<>>;
+  };
+
+  using component_list = tmpl::flatten<tmpl::list<
+      observers::Observer<EvolutionMetavars>,
+      observers::ObserverWriter<EvolutionMetavars>,
+      std::conditional_t<UseNumericalInitialData,
+                         importers::ElementDataReader<EvolutionMetavars>,
+                         tmpl::list<>>,
+      gh_dg_element_array>>;
 
   static constexpr Options::String help{
       "Evolve the Einstein field equations using the Generalized Harmonic "

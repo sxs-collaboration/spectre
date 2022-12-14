@@ -84,14 +84,15 @@ struct component {
       tmpl::list<
           ActionTesting::InitializeDataBox<initial_tags>,
           evolution::dg::subcell::Actions::SendDataForReconstruction<
-              Dim, typename Metavariables::GhostDataMutator>,
+              Dim, typename Metavariables::GhostDataMutator,
+              // No local time stepping
+              false>,
           evolution::dg::subcell::Actions::ReceiveDataForReconstruction<Dim>>>>;
 };
 
 template <size_t Dim>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
-  static constexpr bool local_time_stepping = false;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using system = System<Dim>;
   using const_global_cache_tags = tmpl::list<>;

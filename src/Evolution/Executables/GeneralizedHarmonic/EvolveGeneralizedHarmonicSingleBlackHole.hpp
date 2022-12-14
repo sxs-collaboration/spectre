@@ -56,7 +56,6 @@ struct EvolutionMetavars
     : public GeneralizedHarmonicTemplateBase<
           EvolutionMetavars<VolumeDim, UseNumericalInitialData>> {
   using gh_base = GeneralizedHarmonicTemplateBase<EvolutionMetavars>;
-  using typename gh_base::frame;
   using typename gh_base::initialize_initial_data_dependent_quantities_actions;
   using typename gh_base::system;
   static constexpr size_t volume_dim = VolumeDim;
@@ -111,8 +110,6 @@ struct EvolutionMetavars
 
   using typename gh_base::step_actions;
 
-  // the dg element array needs to be re-declared to capture the new type
-  // aliases for the action lists.
   using gh_dg_element_array = DgElementArray<
       EvolutionMetavars,
       tmpl::flatten<tmpl::list<

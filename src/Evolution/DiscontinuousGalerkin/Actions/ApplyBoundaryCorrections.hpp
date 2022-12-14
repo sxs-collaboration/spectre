@@ -314,24 +314,23 @@ bool receive_boundary_data_local_time_stepping(
 
 /// Apply corrections from boundary communication.
 ///
-/// If `Metavariables::local_time_stepping` is false, updates the
-/// derivative of the variables, which should be done before taking a
-/// time step.  If `Metavariables::local_time_stepping` is true,
-/// updates the variables themselves, which should be done after the
-/// volume update.
+/// If `LocalTimeStepping` is false, updates the derivative of the variables,
+/// which should be done before taking a time step.  If
+/// `LocalTimeStepping` is true, updates the variables themselves, which should
+/// be done after the volume update.
 ///
 /// Setting \p DenseOutput to true receives data required for output
 /// at ::Tags::Time instead of performing a full step.  This is only
 /// used for local time-stepping.
-template <typename Metavariables, bool DenseOutput = false>
+template <bool LocalTimeStepping, typename System, size_t VolumeDim,
+          bool DenseOutput = false>
 struct ApplyBoundaryCorrections {
-  static constexpr bool local_time_stepping =
-      Metavariables::local_time_stepping;
+  static constexpr bool local_time_stepping = LocalTimeStepping;
   static_assert(local_time_stepping or not DenseOutput,
                 "GTS does not use ApplyBoundaryCorrections for dense output.");
 
-  using system = typename Metavariables::system;
-  static constexpr size_t volume_dim = system::volume_dim;
+  using system = System;
+  static constexpr size_t volume_dim = VolumeDim;
   using variables_tag = typename system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
   using DtVariables = typename dt_variables_tag::type;
@@ -408,8 +407,8 @@ struct ApplyBoundaryCorrections {
                dense_output_time, {});
   }
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ParallelComponent>
   static bool is_ready(
       const gsl::not_null<db::DataBox<DbTagsList>*> box,
       const gsl::not_null<tuples::TaggedTuple<InboxTags...>*> inboxes,
@@ -457,6 +456,7 @@ struct ApplyBoundaryCorrections {
       if (not using_gauss_lobatto_points) {
         get(volume_det_inv_jacobian)
             .set_data_ref(make_not_null(
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
                 &const_cast<DataVector&>(get(gts_det_inv_jacobian))));
         get(volume_det_jacobian) = 1.0 / get(volume_det_inv_jacobian);
       }
@@ -753,21 +753,17 @@ namespace Actions {
  * \brief Computes the boundary corrections for global time-stepping
  * and adds them to the time derivative.
  */
-template <typename Metavariables>
+template <typename System, size_t VolumeDim, bool DenseOutput = false>
 struct ApplyBoundaryCorrectionsToTimeDerivative {
-  static_assert(not Metavariables::local_time_stepping,
-                "LTS boundary corrections must be applied to the solution "
-                "after each time step using the ApplyLtsBoundaryCorrections "
-                "action.");
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Metavariables::volume_dim>>;
-  using const_global_cache_tags = tmpl::list<
-      evolution::Tags::BoundaryCorrection<typename Metavariables::system>,
-      ::dg::Tags::Formulation>;
+  using inbox_tags = tmpl::list<
+      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
+  using const_global_cache_tags =
+      tmpl::list<evolution::Tags::BoundaryCorrection<System>,
+                 ::dg::Tags::Formulation>;
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -787,7 +783,8 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    db::mutate_apply<ApplyBoundaryCorrections<Metavariables>>(
+    db::mutate_apply<
+        ApplyBoundaryCorrections<false, System, VolumeDim, DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -804,21 +801,17 @@ struct ApplyBoundaryCorrectionsToTimeDerivative {
  * data history, we insert the received temporal id, that is, the current time
  * of the neighbor, along with the boundary correction data.
  */
-template <typename Metavariables>
+template <typename System, size_t VolumeDim, bool DenseOutput = false>
 struct ApplyLtsBoundaryCorrections {
-  static_assert(Metavariables::local_time_stepping,
-                "GTS boundary corrections must be applied to the time "
-                "derivative before each time step using the "
-                "ApplyBoundaryCorrectionsToTimeDerivative action.");
-  using inbox_tags =
-      tmpl::list<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
-          Metavariables::volume_dim>>;
-  using const_global_cache_tags = tmpl::list<
-      evolution::Tags::BoundaryCorrection<typename Metavariables::system>,
-      ::dg::Tags::Formulation>;
+  using inbox_tags = tmpl::list<
+      evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<VolumeDim>>;
+  using const_global_cache_tags =
+      tmpl::list<evolution::Tags::BoundaryCorrection<System>,
+                 ::dg::Tags::Formulation>;
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
@@ -838,7 +831,8 @@ struct ApplyLtsBoundaryCorrections {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
 
-    db::mutate_apply<ApplyBoundaryCorrections<Metavariables>>(
+    db::mutate_apply<
+        ApplyBoundaryCorrections<true, System, VolumeDim, DenseOutput>>(
         make_not_null(&box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

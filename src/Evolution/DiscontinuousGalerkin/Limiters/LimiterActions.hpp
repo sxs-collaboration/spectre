@@ -72,10 +72,6 @@ template <typename Metavariables>
 struct Limit {
   using const_global_cache_tags = tmpl::list<typename Metavariables::limiter>;
 
-  static_assert(
-      not Metavariables::local_time_stepping,
-      "Limiter communication actions do not yet support local time stepping");
-
  public:
   using limiter_comm_tag =
       Limiters::Tags::LimiterCommunicationTag<Metavariables>;
@@ -88,6 +84,10 @@ struct Limit {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
+    static_assert(
+        not Metavariables::local_time_stepping,
+        "Limiter communication actions do not yet support local time stepping");
+
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
     const auto& local_temporal_id =
@@ -144,10 +144,6 @@ struct SendData {
   using const_global_cache_tags = tmpl::list<typename Metavariables::limiter>;
   using limiter_comm_tag =
       Limiters::Tags::LimiterCommunicationTag<Metavariables>;
-
-  static_assert(
-      not Metavariables::local_time_stepping,
-      "Limiter communication actions do not yet support local time stepping");
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
