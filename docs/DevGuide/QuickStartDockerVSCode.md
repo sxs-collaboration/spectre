@@ -186,7 +186,7 @@ directory that we can visualize in ParaView. Generate an XMF file from the
 volume data file that ParaView understands:
 
 ```
-./bin/GenerateXdmf \
+./bin/spectre generate-xdmf \
   --file-prefix ExportCoordinates3DVolume --subfile-name element_data \
   --output ExportCoordinates3DVolume
 ```
