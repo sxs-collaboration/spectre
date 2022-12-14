@@ -168,6 +168,20 @@ namespace evolution::dg::Actions {
  *
  * \snippet ComputeTimeDerivativeImpl.tpp dt_mp
  *
+ * In addition to each variable being passed individually, if the time
+ * derivative struct inherits from `evolution::PassVariables`, then the time
+ * derivatives, fluxes, and temporaries are passed as
+ * `gsl::not_null<Variables<...>>`. This is useful for systems where
+ * additional quantities are sometimes evolved, and just generally nice for
+ * keeping the number of arguments reasonable. Below are the above examples
+ * but with `Variables` being passed.
+ *
+ * \snippet ComputeTimeDerivativeImpl.tpp dt_con_variables
+ *
+ * \snippet ComputeTimeDerivativeImpl.tpp dt_nc_variables
+ *
+ * \snippet ComputeTimeDerivativeImpl.tpp dt_mp_variables
+ *
  * Uses:
  * - System:
  *   - `variables_tag`

@@ -160,6 +160,7 @@ void test_wrapper() {
   test<system_type, 3>();
 }
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
                   "[Unit][Evolution][Actions]") {
   PUPable_reg(

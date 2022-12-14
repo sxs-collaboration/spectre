@@ -19,6 +19,7 @@ spectre_target_headers(
   ComputeTags.hpp
   Evolution.hpp
   NumericInitialData.hpp
+  PassVariables.hpp
   Protocols.hpp
   Tags.hpp
   TagsDomain.hpp
