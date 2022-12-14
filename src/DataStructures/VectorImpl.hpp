@@ -256,10 +256,8 @@ class VectorImpl
   }
 
   void set_data_ref(T* const start, const size_t set_size) {
-    owned_data_.reset();
-    if (start == nullptr) {
-      (**this).reset();
-    } else {
+    clear();
+    if (start != nullptr) {
       (**this).reset(start, set_size);
     }
     owning_ = false;

@@ -563,6 +563,11 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       CHECK(ref_vector == data_check);
       test_copy_semantics(ref_vector);
 
+      VectorType empty_ref{original_vector};
+      empty_ref.set_data_ref(nullptr, 0);
+      CHECK(not empty_ref.is_owning());
+      CHECK(empty_ref.size() == 0);
+
       const VectorType move_constructed{std::move(ref_vector)};
       CHECK(not move_constructed.is_owning());
       // check the ability to make a const view
