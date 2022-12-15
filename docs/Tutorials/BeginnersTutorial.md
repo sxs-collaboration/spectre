@@ -140,14 +140,12 @@ run a BBH evolution on your laptop which probably wouldn't work because of
 memory requirements.
 
 Before we get to Paraview, we have to tell paraview how to actually use the
-coordinates in the `Volume` `H5` file. To do this we have an executable called
-`GenerateXdmf` which is automatically built whenever you build an executable
-(it's just a python script so it isn't really built). Since the executables are
-already built, so is `GenerateXdmf`! Inside the `runs` directory where you have
-the `H5` files, run
+coordinates in the `Volume` `H5` file. To do this we have a tool called
+`generate-xdmf` in our Python command-line interface. Inside the `runs`
+directory where you have the `H5` files, run
 
 ```
-GenerateXdmf \
+spectre generate-xdmf \
   --file-prefix ExportTimeDependentCoordinates3DVolume \
   --subfile-name element_data --output BBH_Coords
 ```
@@ -158,7 +156,7 @@ node number to each volume file we have. Since you're most likely running on a
 laptop, you'll only be running on one node so you should only get one output
 file for the volume. The `--subfile-name` argument is the group name inside the
 `H5` file where the data is stored (groups can be checked by
-`h5ls -r FILE_NAME`). `GenerateXdmf` will generate a file called
+`h5ls -r FILE_NAME`). `generate-xdmf` will generate a file called
 `BBH_Coords.xmf`. Make sure to keep this `.xmf` file next to the volume file it
 was generated from. It uses relative paths to find the volume file which means
 if you move it, you won't be able to visualize anything.
@@ -278,8 +276,8 @@ coordinates at a bunch of different times (a final time of `20` is reasonable.
 Depending on how many cores you run on this should take a couple minutes).
 
 Then, run the executable just like you did above (remember to move or delete the
-existing `H5` files), run `GenerateXdmf`, and open it in Paraview and apply some
-filters of your choice. We recommend using a `Slice` filter with the normal
+existing `H5` files), run `generate-xdmf`, and open it in Paraview and apply
+some filters of your choice. We recommend using a `Slice` filter with the normal
 pointing in the `-z` direction. This is because our BBH domain rotates about the
 `z` axis. Now, in the top bar of Paraview, you should see a "Play" button that
 looks like a sideways triangle (see the second image in the \ref open_xmf
@@ -451,10 +449,10 @@ EvolveScalarAdvection2D --input-file Kuzmin2D.yaml ++ppn 4
 
 ### Visualizing the Kuzmin Problem
 
-Once your run finishes, extract the volume data with `GenerateXdmf` using
+Once your run finishes, extract the volume data with `generate-xdmf` using
 
 ```
-GenerateXdmf \
+spectre generate-xdmf \
   --file-prefix ScalarAdvectionKuzmin2DVolume \
   --subfile-name VolumeData --output kuzmin_problem
 ```
