@@ -8,6 +8,7 @@ import glob
 import h5py
 import logging
 import numpy as np
+import sys
 
 
 def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
@@ -311,8 +312,13 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
     for h5file in h5files:
         h5file[0].close()
 
-    with open(output + ".xmf", "w") as xmf_file:
-        xmf_file.write(xdmf_output)
+    if output:
+        if not output.endswith(".xmf"):
+            output += ".xmf"
+        with open(output, "w") as xmf_file:
+            xmf_file.write(xdmf_output)
+    else:
+        sys.stdout.write(xdmf_output)
 
 
 @click.command(help=generate_xdmf.__doc__)
@@ -324,8 +330,9 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
                 nargs=-1)
 @click.option('--output',
               '-o',
-              required=True,
-              help="Output file name, an xmf extension will be added")
+              type=click.Path(writable=True),
+              help=("Output file name, an xmf extension will be added. "
+                    "If unspecified, the output will be written to stdout."))
 @click.option(
     '--subfile-name',
     '-d',
