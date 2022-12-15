@@ -27,7 +27,7 @@ class TestPlotDatFile(unittest.TestCase):
     def test_available_subfiles(self):
         with h5py.File(self.filename, 'r') as open_file:
             self.assertEqual(available_subfiles(open_file),
-                             ['/Group0/MemoryData.dat', '/TimeSteps2.dat'])
+                             ['Group0/MemoryData.dat', 'TimeSteps2.dat'])
 
     def test_list_subfiles(self):
         result = self.runner.invoke(plot_dat_command, [self.filename],

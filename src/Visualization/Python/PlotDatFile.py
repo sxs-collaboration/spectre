@@ -14,22 +14,20 @@ import rich
 logger = logging.getLogger(__name__)
 
 
-def available_subfiles(h5file, path='/'):
+def available_subfiles(h5file):
     """List all '.dat' subfiles in the 'h5file'.
 
     Parameters
     ----------
     h5file: Open h5py file
-    path: str
-      Root from where to list subfiles. Defaults to the file root.
     """
     subfiles = []
-    for member in h5file.keys():
-        if type(h5file[member]) is h5py._hl.group.Group:
-            subfiles = subfiles + available_subfiles(h5file[member],
-                                                     path + member + '/')
-        elif member.endswith('.dat'):
-            subfiles.append(path + member)
+
+    def visitor(name):
+        if name.endswith(".dat"):
+            subfiles.append(name)
+
+    h5file.visit(visitor)
     return subfiles
 
 
