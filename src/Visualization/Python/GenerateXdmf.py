@@ -28,9 +28,12 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
 
     h5files = [(h5py.File(filename, 'r'), filename) for filename in h5files]
 
-    element_data = h5files[0][0].get(subfile_name + '.vol')
+    if not subfile_name.endswith(".vol"):
+        subfile_name += ".vol"
+
+    element_data = h5files[0][0].get(subfile_name)
     if element_data is None:
-        raise ValueError(("Could not open subfile name '{}.vol'. Available "
+        raise ValueError(("Could not open subfile name '{}'. Available "
                           "subfiles: {}").format(subfile_name,
                                                  h5files[0][0].keys()))
     temporal_ids_and_values = [(x,
@@ -69,8 +72,7 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
         while not done:
             # loop over each h5 file
             for h5file in h5files:
-                h5temporal = h5file[0].get(subfile_name + '.vol').get(
-                    id_and_value[0])
+                h5temporal = h5file[0].get(subfile_name).get(id_and_value[0])
                 # Skip this file if the observation does not exist in it.
                 # Usually this is because the program crashed before
                 # writing it.  Data in other files will still be processed
@@ -183,7 +185,7 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
 
                 # Configure grid location
                 Grid_path = ("          {}:/".format(h5file[1]) +
-                             subfile_name + ".vol/{}".format(id_and_value[0]))
+                             subfile_name + "/{}".format(id_and_value[0]))
                 xdmf_output += (
                     "    <Grid Name=\"%s\" GridType=\"Uniform\">\n" %
                     (h5file[1]))
@@ -328,8 +330,8 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
     '--subfile-name',
     '-d',
     required=True,
-    help=("Name of the volume data subfile in the H5 files, excluding the "
-          "'.vol' extension"))
+    help=("Name of the volume data subfile in the H5 files. A '.vol' "
+          "extension is added if needed."))
 @click.option("--stride",
               default=1,
               type=int,
