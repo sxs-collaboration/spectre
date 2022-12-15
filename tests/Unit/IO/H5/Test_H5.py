@@ -201,6 +201,10 @@ class TestIOH5File(unittest.TestCase):
 
         file_spec.close()
 
+    def test_input_source(self):
+        with spectre_h5.H5File(file_name=self.file_name, mode="a") as h5file:
+            self.assertEqual(h5file.input_source(), "")
+
     def test_context_manager(self):
         with spectre_h5.H5File(file_name=self.file_name, mode="a") as f:
             self.assertEqual(f.name(), self.file_name)

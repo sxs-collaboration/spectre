@@ -4,28 +4,36 @@
 # See LICENSE.txt for details.
 
 from spectre.IO import H5 as spectre_h5
+import click
 import spectre.DataStructures
 import numpy as np
 import os
 import shutil
 
 
-def extract_dat_files(filename, **kwargs):
+def extract_dat_files(filename, out_dir, list=False, force=False):
+    """Extract dat files from an H5 file
+
+    Extract all Dat files inside a SpECTRE HDF5 file. The resulting files will
+    be put into the 'OUT_DIR'. The directory structure will be identical to the
+    group structure inside the HDF5 file.
+    """
     h5file = spectre_h5.H5File(filename, "r")
 
     all_dat_files = h5file.all_dat_files()
 
-    if kwargs["list"]:
+    if list:
         print_str = "\n ".join(all_dat_files)
         print("Dat files within '{}':\n {}".format(filename, print_str))
         return
 
-    out_dir = kwargs["output_directory"]
-
+    if out_dir is None:
+        raise ValueError(
+            "An output directory is required unless listing file content.")
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     else:
-        if kwargs["force"]:
+        if force:
             shutil.rmtree(out_dir, ignore_errors=True)
             os.mkdir(out_dir)
         else:
@@ -59,45 +67,27 @@ def extract_dat_files(filename, **kwargs):
     print("Successfully extracted all Dat files into '{}'".format(out_dir))
 
 
-def parse_args():
-    """
-    Parse the command line arguments
-    """
-    import argparse as ap
-
-    parser = ap.ArgumentParser(
-        description=
-        "Extract all Dat files inside a SpECTRE HDF5 file. The resulting files "
-        "will be put into the '--output-directory'. The directory structure "
-        "will be identical to the group structure inside the HDF5 file.")
-    parser.add_argument('filename', help="The HDF5 file.")
-    parser.add_argument(
-        '--force',
-        '-f',
-        action='store_true',
-        required=False,
-        help="If an output directory already exists, overwrite it.")
-    parser.add_argument('--list',
-                        '-l',
-                        action='store_true',
-                        required=False,
-                        help="List all dat files in the HDF5 file.")
-    parser.add_argument(
-        '--output-directory',
-        '-o',
-        required=False,
-        help="Name of directory that will hold all the extracted Dat files. "
-        "Default is 'extracted_FileName' where FileName is the name of the "
-        "HDF5 file (without the '.h5' suffix).")
-
-    args = parser.parse_args()
-
-    if args.output_directory is None:
-        # Remove ".h5" suffix
-        args.output_directory = "extracted_" + args.filename[:-3]
-
-    return args
+@click.command(help=extract_dat_files.__doc__)
+@click.argument("filename",
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.argument("out_dir",
+                type=click.Path(file_okay=False, dir_okay=True, writable=True),
+                required=False)
+@click.option('--force',
+              '-f',
+              is_flag=True,
+              help="If the output directory already exists, overwrite it.")
+@click.option('--list',
+              '-l',
+              is_flag=True,
+              help="List all dat files in the HDF5 file and exit.")
+def extract_dat_command(**kwargs):
+    _rich_traceback_guard = True  # Hide traceback until here
+    extract_dat_files(**kwargs)
 
 
 if __name__ == "__main__":
-    extract_dat_files(**vars(parse_args()))
+    extract_dat_command(help_option_names=["-h", "--help"])

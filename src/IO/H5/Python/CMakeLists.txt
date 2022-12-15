@@ -12,8 +12,9 @@ spectre_python_add_module(
   File.cpp
   TensorData.cpp
   VolumeData.cpp
-  PYTHON_EXECUTABLES
+  PYTHON_FILES
   ExtractDatFromH5.py
+  ExtractInputSourceYamlFromH5.py
   MODULE_PATH "IO"
   )
 
