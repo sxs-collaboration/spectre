@@ -10,21 +10,23 @@ import logging
 import numpy as np
 
 
-def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
-                  stride, coordinates):
+def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
+                  coordinates):
     """Generate an XDMF file for ParaView and VisIt
 
-    The XDMF file points into HDF5 files containing volume data so ParaView and
-    VisIt can load the data out of the HDF5 files.
+    Read volume data from the 'H5FILES' and generate an XDMF file. The XDMF
+    file points into the 'H5FILES' files so ParaView and VisIt can load the
+    volume data. To process multiple files suffixed with the node number,
+    specify a glob like 'VolumeData*.h5'.
 
     To load the XDMF file in ParaView you must choose the 'Xdmf Reader', NOT
     'Xdmf3 Reader'.
     """
-    h5files = [(h5py.File(filename, 'r'), filename)
-               for filename in glob.glob(file_prefix + "[0-9]*.h5")]
+    # CLI scripts should be noops when input is empy
+    if not h5files:
+        return
 
-    assert len(h5files) > 0, "No H5 files with prefix '{}' found.".format(
-        file_prefix)
+    h5files = [(h5py.File(filename, 'r'), filename) for filename in h5files]
 
     element_data = h5files[0][0].get(subfile_name + '.vol')
     if element_data is None:
@@ -312,11 +314,12 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
 
 
 @click.command(help=generate_xdmf.__doc__)
-@click.option(
-    '--file-prefix',
-    required=True,
-    help=("The common prefix of the H5 volume files to load, excluding "
-          "the node number integer(s)"))
+@click.argument('h5files',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True),
+                nargs=-1)
 @click.option('--output',
               '-o',
               required=True,

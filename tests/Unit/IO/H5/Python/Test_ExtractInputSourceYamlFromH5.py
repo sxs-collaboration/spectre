@@ -16,7 +16,7 @@ from click.testing import CliRunner
 class TestExtractInputSourceYAMLFromH5(unittest.TestCase):
     def test_cli(self):
         h5_path = os.path.join(spectre_informer.unit_test_src_path(),
-                               'Visualization/Python', 'SurfaceTestData0.h5')
+                               'Visualization/Python', 'SurfaceTestData.h5')
         output_path = os.path.join(spectre_informer.unit_test_build_path(),
                                    "IO/H5", "ExtractedInput.yaml")
 
