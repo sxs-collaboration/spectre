@@ -8,7 +8,9 @@ import glob
 import h5py
 import logging
 import numpy as np
+import rich
 import sys
+from spectre.Visualization.ReadH5 import available_subfiles
 
 
 def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
@@ -29,14 +31,21 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
 
     h5files = [(h5py.File(filename, 'r'), filename) for filename in h5files]
 
+    if not subfile_name:
+        import rich.columns
+        rich.print(
+            rich.columns.Columns(
+                available_subfiles(h5files[0][0], extension=".vol")))
+        return
+
     if not subfile_name.endswith(".vol"):
         subfile_name += ".vol"
 
     element_data = h5files[0][0].get(subfile_name)
     if element_data is None:
-        raise ValueError(("Could not open subfile name '{}'. Available "
-                          "subfiles: {}").format(subfile_name,
-                                                 h5files[0][0].keys()))
+        raise ValueError(
+            f"Could not open subfile name '{subfile_name}'. Available "
+            f"subfiles: {available_subfiles(h5files[0][0], extension='.vol')}")
     temporal_ids_and_values = [(x,
                                 element_data.get(x).attrs['observation_value'])
                                for x in element_data.keys()]
@@ -336,9 +345,9 @@ def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
 @click.option(
     '--subfile-name',
     '-d',
-    required=True,
     help=("Name of the volume data subfile in the H5 files. A '.vol' "
-          "extension is added if needed."))
+          "extension is added if needed. If unspecified, list all '.vol' "
+          "subfiles and exit."))
 @click.option("--stride",
               default=1,
               type=int,

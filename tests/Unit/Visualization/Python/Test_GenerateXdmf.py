@@ -7,6 +7,7 @@ from spectre.Visualization.GenerateXdmf import (generate_xdmf,
 import spectre.Informer as spectre_informer
 import unittest
 import glob
+import h5py
 import logging
 import os
 import shutil
@@ -96,6 +97,14 @@ class TestGenerateXdmf(unittest.TestCase):
         ],
                                catch_exceptions=False)
         self.assertEqual(result.exit_code, 0)
+
+        # List available subfiles
+        result = runner.invoke(generate_xdmf_command, [
+            *data_files,
+        ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("element_data", result.output)
 
 
 if __name__ == '__main__':
