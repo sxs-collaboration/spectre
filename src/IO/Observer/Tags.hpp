@@ -100,10 +100,17 @@ struct VolumeDataLock : db::SimpleTag {
 
 /// Volume tensor data to be written to disk.
 struct TensorData : db::SimpleTag {
+  using type = std::unordered_map<
+      observers::ObservationId,
+      std::unordered_map<observers::ArrayComponentId, ElementVolumeData>>;
+};
+
+/// Volume tensor data to be written to disk from the Interpolator
+struct InterpolatorTensorData : db::SimpleTag {
   using type =
       std::unordered_map<observers::ObservationId,
                          std::unordered_map<observers::ArrayComponentId,
-                                            ElementVolumeData>>;
+                                            std::vector<ElementVolumeData>>>;
 };
 
 /// \cond

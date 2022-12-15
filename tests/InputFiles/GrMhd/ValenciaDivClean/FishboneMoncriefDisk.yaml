@@ -128,6 +128,9 @@ Observers:
   VolumeFileName: "ValenciaDivCleanFishboneMoncriefDiskVolume"
   ReductionFileName: "ValenciaDivCleanFishboneMoncriefDiskReductions"
 
+Interpolator:
+  DumpVolumeDataOnFailure: false
+
 InterpolationTargets:
   KerrHorizon:
     Lmax: 10

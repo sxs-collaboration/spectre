@@ -33,11 +33,40 @@ namespace OptionTags {
 struct InterpolationTargets {
   static constexpr Options::String help{"Options for interpolation targets"};
 };
+
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups option tags for the Interpolator.
+ */
+struct Interpolator {
+  static constexpr Options::String help{
+      "Options related to the Interpolator parallel component"};
+};
+
+/// Option tag that determines if volume data will be dumped from the
+/// Interpolator upon a failure.
+struct DumpVolumeDataOnFailure {
+  using type = bool;
+  static constexpr Options::String help{
+      "Whether or not to dump all volume data currently stored by the "
+      "interpolator. Volume data is written to the file corresponding to the "
+      "node it was collected on."};
+  using group = Interpolator;
+};
 }  // namespace OptionTags
 
 /// Tags for items held in the `DataBox` of `InterpolationTarget` or
 /// `Interpolator`.
 namespace Tags {
+/// Tag that determines if volume data will be dumped form the Interpolator upon
+/// failure
+struct DumpVolumeDataOnFailure : db::SimpleTag {
+  using type = bool;
+  using option_tags = tmpl::list<OptionTags::DumpVolumeDataOnFailure>;
+  static constexpr bool pass_metavariables = false;
+
+  static bool create_from_options(const bool input) { return input; }
+};
 
 /// Keeps track of which points have been filled with interpolated data.
 template <typename TemporalId>

@@ -90,6 +90,10 @@ void check_observer_registration() {
   CHECK(ActionTesting::get_databox_tag<obs_writer, observers::Tags::TensorData>(
             runner, 0)
             .empty());
+  CHECK(ActionTesting::get_databox_tag<obs_writer,
+                                       observers::Tags::InterpolatorTensorData>(
+            runner, 0)
+            .empty());
   CHECK(ActionTesting::get_databox_tag<
             obs_writer, observers::Tags::NodesExpectedToContributeReductions>(
             runner, 0)
@@ -166,6 +170,10 @@ void check_observer_registration() {
             obs_writer, observers::Tags::ContributorsOfTensorData>(runner, 0)
             .empty());
   CHECK(ActionTesting::get_databox_tag<obs_writer, observers::Tags::TensorData>(
+            runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<obs_writer,
+                                       observers::Tags::InterpolatorTensorData>(
             runner, 0)
             .empty());
 

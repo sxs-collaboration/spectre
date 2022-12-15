@@ -12,6 +12,7 @@
 #include "Domain/Tags.hpp"
 #include "IO/H5/TensorData.hpp"
 #include "IO/Observer/Actions/ObserverRegistration.hpp"
+#include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -25,6 +26,7 @@
 #include "Parallel/Local.hpp"
 #include "ParallelAlgorithms/Interpolation/InterpolationTargetDetail.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -69,6 +71,9 @@ ElementVolumeData construct_element_volume_data(
  */
 template <typename AllTemporalIds>
 struct DumpInterpolatorVolumeData {
+  using const_global_cache_tags =
+      tmpl::list<intrp::Tags::DumpVolumeDataOnFailure>;
+
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -76,19 +81,22 @@ struct DumpInterpolatorVolumeData {
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    auto& observer_writer = Parallel::get_parallel_component<
-        observers::ObserverWriter<Metavariables>>(cache);
-    auto& my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
-    const auto& file_prefix =
-        Parallel::get<observers::Tags::VolumeFileName>(cache);
-    const size_t my_node =
-        Parallel::my_node<size_t>(*Parallel::local_branch(my_proxy));
-    const std::string filename{file_prefix + std::to_string(my_node)};
+    if (not Parallel::get<intrp::Tags::DumpVolumeDataOnFailure>(cache)) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
 
-    tmpl::for_each<AllTemporalIds>([&box, &observer_writer, &my_node,
-                                    &filename](auto temporal_id_v) {
+    auto& observer_writer = *Parallel::local_branch(
+        Parallel::get_parallel_component<
+            observers::ObserverWriter<Metavariables>>(cache));
+
+    const observers::ArrayComponentId array_component_id{
+        std::add_pointer_t<ParallelComponent>{nullptr},
+        Parallel::ArrayIndex<std::decay_t<ArrayIndex>>(array_index)};
+
+    tmpl::for_each<AllTemporalIds>([&box, &observer_writer,
+                                    &array_component_id](auto temporal_id_v) {
       using temporal_id_t =
           tmpl::type_from<std::decay_t<decltype(temporal_id_v)>>;
       const auto& volume_vars_info =
@@ -106,14 +114,16 @@ struct DumpInterpolatorVolumeData {
                                                                    info));
         }
 
-        // To speed up writing, call this on our own node which is guaranteed to
-        // exist because...we are on it...
-        Parallel::threaded_action<observers::ThreadedActions::WriteVolumeData>(
-            observer_writer[my_node], filename, subfile_name,
+        Parallel::threaded_action<
+            observers::ThreadedActions::ContributeVolumeDataToWriter>(
+            observer_writer,
             observers::ObservationId{
                 InterpolationTarget_detail::get_temporal_id_value(temporal_id),
                 subfile_name},
-            std::move(element_volume_data));
+            array_component_id, subfile_name,
+            std::unordered_map<observers::ArrayComponentId,
+                               std::vector<ElementVolumeData>>{
+                {array_component_id, std::move(element_volume_data)}});
       }
     });
 

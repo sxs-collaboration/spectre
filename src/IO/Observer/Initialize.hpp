@@ -69,7 +69,8 @@ struct InitializeWriter {
       tmpl::list<Tags::ExpectedContributorsForObservations,
                  Tags::ContributorsOfReductionData, Tags::ReductionDataLock,
                  Tags::ContributorsOfTensorData, Tags::VolumeDataLock,
-                 Tags::TensorData, Tags::NodesExpectedToContributeReductions,
+                 Tags::TensorData, Tags::InterpolatorTensorData,
+                 Tags::NodesExpectedToContributeReductions,
                  Tags::NodesThatContributedReductions, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<

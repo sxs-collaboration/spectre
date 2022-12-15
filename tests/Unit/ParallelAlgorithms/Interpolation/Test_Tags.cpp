@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "Framework/TestCreation.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "ParallelAlgorithms/Interpolation/PointInfoTag.hpp"
 #include "ParallelAlgorithms/Interpolation/Tags.hpp"
@@ -26,6 +27,8 @@ struct InterpolationTargetTag {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
+  TestHelpers::db::test_simple_tag<intrp::Tags::DumpVolumeDataOnFailure>(
+      "DumpVolumeDataOnFailure");
   TestHelpers::db::test_simple_tag<
       intrp::Tags::IndicesOfFilledInterpPoints<Metavars>>(
       "IndicesOfFilledInterpPoints");
@@ -48,4 +51,11 @@ SPECTRE_TEST_CASE("Unit.Interpolation.Tags", "[Unit][NumericalAlgorithms]") {
       "NumberOfElements");
   TestHelpers::db::test_simple_tag<intrp::Tags::InterpPointInfo<Metavars>>(
       "InterpPointInfo");
+
+  CHECK(
+      TestHelpers::test_option_tag<intrp::OptionTags::DumpVolumeDataOnFailure>(
+          "true"));
+  CHECK_FALSE(
+      TestHelpers::test_option_tag<intrp::OptionTags::DumpVolumeDataOnFailure>(
+          "false"));
 }
