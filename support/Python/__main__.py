@@ -18,6 +18,7 @@ class Cli(click.MultiCommand):
             "extract-dat",
             "extract-input",
             "generate-xdmf",
+            "plot-dat",
             "simplify-traces",
         ]
 
@@ -36,6 +37,9 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.GenerateXdmf import (
                 generate_xdmf_command)
             return generate_xdmf_command
+        elif name == "plot-dat":
+            from spectre.Visualization.PlotDatFile import plot_dat_command
+            return plot_dat_command
         elif name == "simplify-traces":
             from spectre.tools.CharmSimplifyTraces import (
                 simplify_traces_command)
