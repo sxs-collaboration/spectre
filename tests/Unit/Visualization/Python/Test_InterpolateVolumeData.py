@@ -189,7 +189,8 @@ class TestInterpolateH5(unittest.TestCase):
     def test_cli(self):
         runner = CliRunner()
         result = runner.invoke(
-            InterpolateVolumeData.interpolate_volume_data_command, [
+            InterpolateVolumeData.interpolate_volume_data_command,
+            [
                 "--source-file-prefix",
                 os.path.join(self.test_dir, "interpolation_"),
                 "--source-subfile-name",
@@ -197,7 +198,9 @@ class TestInterpolateH5(unittest.TestCase):
                 "--target-file-prefix",
                 os.path.join(self.test_dir, "interpolation_"),
                 "--target-subfile-name",
-                "/VolumeDataInterpolated",
+                # No leading slash but with .vol extension, to check that this
+                # is normalized correctly
+                "VolumeDataInterpolated.vol",
                 "--target-extents",
                 "4,4,4",
                 "--target-basis",

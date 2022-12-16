@@ -79,10 +79,10 @@ def interpolate_h5_file(source_file_path,
         same file, but in a different subfile specified by `target_volume_data`.
     source_volume_data: str, optional
         the name of the .vol file inside the source file where the source data
-        can be found. Requires leading `/` but no `.vol` file extension.
+        can be found.
     target_volume_data: str, optional
         the name of the .vol file inside the target file where the target data
-        is written. Requires leading `/` but no `.vol` file extension.
+        is written.
     obs_start: float, optional
         disregards all observations with observation value strictly before
         `obs_start`
@@ -92,6 +92,13 @@ def interpolate_h5_file(source_file_path,
     obs_stride: float, optional
         will only take every `obs_stride` observation
     """
+
+    source_volume_data = source_volume_data.rstrip(".vol")
+    target_volume_data = target_volume_data.rstrip(".vol")
+    if not source_volume_data.startswith("/"):
+        source_volume_data = "/" + source_volume_data
+    if not target_volume_data.startswith("/"):
+        target_volume_data = "/" + target_volume_data
 
     if target_file_path == source_file_path:
         if source_volume_data == target_volume_data:
