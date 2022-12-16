@@ -106,15 +106,15 @@ BinaryCompactObject::BinaryCompactObject(
     number_of_blocks_++;
   }
 
-  if (object_A_.x_coord >= 0.0) {
+  if (object_A_.x_coord <= 0.0) {
     PARSE_ERROR(
         context,
-        "The x-coordinate of ObjectA's center is expected to be negative.");
+        "The x-coordinate of ObjectA's center is expected to be positive.");
   }
-  if (object_B_.x_coord <= 0.0) {
+  if (object_B_.x_coord >= 0.0) {
     PARSE_ERROR(
         context,
-        "The x-coordinate of ObjectB's center is expected to be positive.");
+        "The x-coordinate of ObjectB's center is expected to be negative.");
   }
   if (length_outer_cube_ <= 2.0 * length_inner_cube_) {
     const double suggested_value = 2.0 * length_inner_cube_ * sqrt(3.0);
@@ -365,7 +365,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // Each object is surrounded by 6 inner wedges that make a sphere, and another
   // 6 outer wedges that transition to a cube.
 
-  // ObjectA/B is on the left/right, respectively.
+  // ObjectA/B is on the right/left, respectively.
   const Translation translation_A{
       Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord},
       Identity2D{}};
@@ -529,13 +529,8 @@ Domain<3> BinaryCompactObject::create_domain() const {
                            {17, Direction<3>::lower_zeta()}}});
   }
 
-  const size_t num_biradial_layers = need_cube_to_sphere_transition_ ? 3 : 2;
-  Domain<3> domain{std::move(maps),
-                   corners_for_biradially_layered_domains(
-                       2, num_biradial_layers, not object_A_.is_excised(),
-                       not object_B_.is_excised()),
-                   {},
-                   std::move(excision_spheres)};
+  // Have corners determined automatically
+  Domain<3> domain{std::move(maps), std::move(excision_spheres)};
 
   // Inject the hard-coded time-dependence
   if (enable_time_dependence_) {

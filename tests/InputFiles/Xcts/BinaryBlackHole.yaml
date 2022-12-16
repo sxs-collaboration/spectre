@@ -12,12 +12,12 @@ ResourceInfo:
 Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]
-    ObjectA: &kerr_left
+    ObjectA: &kerr_right
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
-    ObjectB: &kerr_right
+    ObjectB: &kerr_left
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
@@ -33,18 +33,6 @@ DomainCreator:
     ObjectA:
       InnerRadius: 0.8
       OuterRadius: 4.
-      XCoord: *x_left
-      Interior:
-        ExciseWithBoundaryCondition:
-          ApparentHorizon:
-            Center: [*x_left, 0., 0.]
-            Rotation: [0., 0., 0.]
-            Lapse: *kerr_left
-            NegativeExpansion: *kerr_left
-      UseLogarithmicMap: True
-    ObjectB:
-      InnerRadius: 0.8
-      OuterRadius: 4.
       XCoord: *x_right
       Interior:
         ExciseWithBoundaryCondition:
@@ -53,6 +41,18 @@ DomainCreator:
             Rotation: [0., 0., 0.]
             Lapse: *kerr_right
             NegativeExpansion: *kerr_right
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: 0.8
+      OuterRadius: 4.
+      XCoord: *x_left
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_left, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: *kerr_left
+            NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
     EnvelopingCube:
       Radius: 60.

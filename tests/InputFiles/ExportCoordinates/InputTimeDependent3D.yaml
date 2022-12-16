@@ -20,13 +20,13 @@ DomainCreator:
     ObjectA:
       InnerRadius: 0.45825
       OuterRadius: 6.0
-      XCoord: -7.683
+      XCoord: 7.683
       ExciseInterior: true
       UseLogarithmicMap: true
     ObjectB:
       InnerRadius: 0.45825
       OuterRadius: 6.0
-      XCoord: 7.683
+      XCoord: -7.683
       ExciseInterior: true
       UseLogarithmicMap: true
     EnvelopingCube:
