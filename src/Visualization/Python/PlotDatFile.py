@@ -10,25 +10,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import rich
+from spectre.Visualization.ReadH5 import available_subfiles
 
 logger = logging.getLogger(__name__)
-
-
-def available_subfiles(h5file):
-    """List all '.dat' subfiles in the 'h5file'.
-
-    Parameters
-    ----------
-    h5file: Open h5py file
-    """
-    subfiles = []
-
-    def visitor(name):
-        if name.endswith(".dat"):
-            subfiles.append(name)
-
-    h5file.visit(visitor)
-    return subfiles
 
 
 def parse_functions(ctx, param, all_values):
@@ -136,7 +120,9 @@ def plot_dat_command(h5_file, subfile_name, output, legend_only, functions,
         # Print available subfiles and exit
         if subfile_name is None:
             import rich.columns
-            rich.print(rich.columns.Columns(available_subfiles(h5file)))
+            rich.print(
+                rich.columns.Columns(
+                    available_subfiles(h5file, extension=".dat")))
             return
 
         # Open subfile
@@ -146,7 +132,7 @@ def plot_dat_command(h5_file, subfile_name, output, legend_only, functions,
         if dat_file is None:
             raise click.UsageError(
                 f"Unable to open dat file '{subfile_name}'. Available "
-                f"files are:\n {available_subfiles(h5file)}")
+                f"files are:\n {available_subfiles(h5file, extension='.dat')}")
 
         # Read legend from subfile
         legend = list(dat_file.attrs['Legend'])
