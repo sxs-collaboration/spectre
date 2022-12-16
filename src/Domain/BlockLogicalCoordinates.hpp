@@ -38,6 +38,13 @@ class IdPair;
 /// If a point is on a shared boundary of two or more `Block`s, it is
 /// returned only once, and is considered to belong to the `Block`
 /// with the smaller `BlockId`.
+///
+/// \warning Since map inverses can involve numerical roundoff error, care must
+/// be taken with points on shared block boundaries. They will be assigned to
+/// the first block (by block ID) that contains the point _within roundoff
+/// error_. Therefore, be advised to use the logical coordinates returned by
+/// this function, which are guaranteed to be in [-1, 1] and can be safely
+/// passed along to `element_logical_coordinates`.
 template <size_t Dim, typename Frame>
 auto block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,

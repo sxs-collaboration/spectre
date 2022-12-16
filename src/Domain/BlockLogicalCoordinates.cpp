@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Domain.hpp"  // IWYU pragma: keep
 #include "Domain/Structure/BlockId.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
@@ -109,10 +110,22 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
       }
       bool is_contained = true;
       for (size_t d = 0; d < Dim; ++d) {
-        // Assumes that logical coordinates go from -1 to +1 in each
-        // dimension.
-        is_contained = is_contained and x_logical.get(d) >= -1.0 and
-                       x_logical.get(d) <= 1.0;
+        // Map inverses may report logical coordinates outside [-1, 1] due to
+        // numerical roundoff error. In that case we clamp them to -1 or 1 so
+        // that a consistent block is chosen here independent of roundoff error.
+        // Without this correction, points on block boundaries where both blocks
+        // report logical coordinates outside [-1, 1] by roundoff error would
+        // not be assigned to any block at all, even though they lie in the
+        // domain.
+        if (equal_within_roundoff(x_logical.get(d), 1.0)) {
+          x_logical.get(d) = 1.0;
+          continue;
+        }
+        if (equal_within_roundoff(x_logical.get(d), -1.0)) {
+          x_logical.get(d) = -1.0;
+          continue;
+        }
+        is_contained = is_contained and abs(x_logical.get(d)) <= 1.0;
       }
       if (is_contained) {
         // Point is in this block.  Don't bother checking subsequent
