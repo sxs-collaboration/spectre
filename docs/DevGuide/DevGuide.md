@@ -34,6 +34,7 @@ Methods for creating custom coordinate maps are discussed here.
 - \subpage static_analysis_tools "Static analysis tools"
 - \subpage build_profiling_and_optimization - Getting started with improving
   compilation time and memory use
+- \subpage runtime_errors "Tips for debugging an executable"
 
 ### Foundational Concepts in SpECTRE
 Designed to give the reader an introduction to SpECTRE's most recurring concepts
