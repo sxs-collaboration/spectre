@@ -12,6 +12,17 @@ function(add_generalized_harmonic_executable_without_horizon
     )
 endfunction(add_generalized_harmonic_executable_without_horizon)
 
+function(add_generalized_harmonic_cce_executable_without_horizon
+  EXECUTABLE_NAME INITIAL_DATA LIBS_TO_LINK)
+  add_spectre_parallel_executable(
+    "EvolveGhCce${EXECUTABLE_NAME}"
+    EvolveGeneralizedHarmonicCce
+    Evolution/Executables/GeneralizedHarmonic
+    "EvolutionMetavars<3, ${INITIAL_DATA}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_generalized_harmonic_cce_executable_without_horizon)
+
 set(LIBS_TO_LINK
   CoordinateMaps
   DiscontinuousGalerkin
@@ -72,4 +83,16 @@ add_spectre_parallel_executable(
   Evolution/Executables/GeneralizedHarmonic
   "EvolutionMetavars"
   "${LIBS_TO_LINK};ControlSystem;GeneralRelativitySolutions;Importers"
+)
+
+add_generalized_harmonic_cce_executable_without_horizon(
+  GaugeWave
+  false
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions"
+)
+
+add_generalized_harmonic_cce_executable_without_horizon(
+  GaugeWaveNumericInitialData
+  true
+  "${LIBS_TO_LINK};Cce;GeneralRelativitySolutions;Importers"
 )

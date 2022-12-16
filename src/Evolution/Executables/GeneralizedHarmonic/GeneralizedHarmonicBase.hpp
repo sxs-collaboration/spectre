@@ -153,19 +153,21 @@ namespace detail {
 template <bool UseNumericalInitialData>
 constexpr auto make_default_phase_order() {
   if constexpr (UseNumericalInitialData) {
+    // Register needs to be before InitializeTimeStepperHistory so that CCE is
+    // properly registered when the self-start happens
     return std::array{Parallel::Phase::Initialization,
                       Parallel::Phase::RegisterWithElementDataReader,
                       Parallel::Phase::ImportInitialData,
                       Parallel::Phase::InitializeInitialDataDependentQuantities,
-                      Parallel::Phase::InitializeTimeStepperHistory,
                       Parallel::Phase::Register,
+                      Parallel::Phase::InitializeTimeStepperHistory,
                       Parallel::Phase::Evolve,
                       Parallel::Phase::Exit};
   } else {
     return std::array{Parallel::Phase::Initialization,
                       Parallel::Phase::InitializeInitialDataDependentQuantities,
-                      Parallel::Phase::InitializeTimeStepperHistory,
                       Parallel::Phase::Register,
+                      Parallel::Phase::InitializeTimeStepperHistory,
                       Parallel::Phase::Evolve,
                       Parallel::Phase::Exit};
   }

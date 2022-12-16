@@ -54,7 +54,8 @@ class er;
 /// \endcond
 
 template <template <typename> class BoundaryComponent>
-struct EvolutionMetavars : CharacteristicExtractDefaults {
+struct EvolutionMetavars : CharacteristicExtractDefaults<false> {
+  using system = Cce::System<uses_partially_flat_cartesian_coordinates>;
   static constexpr bool local_time_stepping = true;
   using cce_boundary_component = BoundaryComponent<EvolutionMetavars>;
 

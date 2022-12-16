@@ -9,7 +9,7 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
-#include "Evolution/Systems/Cce/Actions/InterpolateDuringSelfStart.hpp"
+#include "Evolution/Systems/Cce/Actions/SendGhVarsToCce.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/ParallelAlgorithms/Interpolation/InterpolateOnElementTestHelpers.hpp"
@@ -43,7 +43,7 @@ struct mock_element {
                                  simple_tags, compute_tags>>>,
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<Cce::Actions::InterpolateDuringSelfStart<
+          tmpl::list<Cce::Actions::SendGhVarsToCce<
               typename Metavariables::InterpolationTargetA>>>>;
 };
 
@@ -145,7 +145,7 @@ void run_test() {
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.Cce.Actions.InterpolateDuringSelfStart",
+    "Unit.Evolution.Systems.Cce.Actions.SendGhVarsToCce",
     "[Unit][Cce]") {
   domain::creators::register_derived_with_charm();
   run_test<MockMetavariables>();
