@@ -42,8 +42,8 @@ namespace ControlErrors {
  *   \delta a &= a\left( \frac{\vec{X}\cdot\vec{C}}{||\vec{C}||^2} - 1 \right)
  * \\ \delta a &= a\left( \frac{X_0}{C_0} - 1 \right) \f}
  *
- * where \f$\vec{X} = \vec{x}_B - \vec{x}_A\f$ and \f$\vec{C} = \vec{c}_B -
- * \vec{c}_A\f$. Here, object B is located on the positive x-axis and object A
+ * where \f$\vec{X} = \vec{x}_A - \vec{x}_B\f$ and \f$\vec{C} = \vec{c}_A -
+ * \vec{c}_B\f$. Here, object A is located on the positive x-axis and object B
  * is located on the negative x-axis, \f$\vec{X}\f$ is the difference in
  * positions of the centers of the mapped objects, and
  * \f$\vec{C}\f$ is the difference of the centers of the excision spheres, all
@@ -88,11 +88,11 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     const double current_position_of_B = get<center_B>(measurements)[0];
 
     // A is to the left of B in grid frame. To get positive differences,
-    // take B - A
+    // take A - B
     const double expected_expansion_factor =
         current_expansion_factor *
-        (current_position_of_B - current_position_of_A) /
-        (grid_position_of_B - grid_position_of_A);
+        (current_position_of_A - current_position_of_B) /
+        (grid_position_of_A - grid_position_of_B);
 
     return {expected_expansion_factor - current_expansion_factor};
   }

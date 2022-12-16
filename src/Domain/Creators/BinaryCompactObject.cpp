@@ -106,15 +106,15 @@ BinaryCompactObject::BinaryCompactObject(
     number_of_blocks_++;
   }
 
-  if (object_A_.x_coord >= 0.0) {
+  if (object_A_.x_coord <= 0.0) {
     PARSE_ERROR(
         context,
-        "The x-coordinate of ObjectA's center is expected to be negative.");
+        "The x-coordinate of ObjectA's center is expected to be positive.");
   }
-  if (object_B_.x_coord <= 0.0) {
+  if (object_B_.x_coord >= 0.0) {
     PARSE_ERROR(
         context,
-        "The x-coordinate of ObjectB's center is expected to be positive.");
+        "The x-coordinate of ObjectB's center is expected to be negative.");
   }
   if (length_outer_cube_ <= 2.0 * length_inner_cube_) {
     const double suggested_value = 2.0 * length_inner_cube_ * sqrt(3.0);
@@ -210,15 +210,15 @@ BinaryCompactObject::BinaryCompactObject(
       }
     }
   };
-  add_object_region("ObjectA", "Shell");  // 6 blocks
-  add_object_region("ObjectA", "Cube");   // 6 blocks
   add_object_region("ObjectB", "Shell");  // 6 blocks
   add_object_region("ObjectB", "Cube");   // 6 blocks
+  add_object_region("ObjectA", "Shell");  // 6 blocks
+  add_object_region("ObjectA", "Cube");   // 6 blocks
   add_outer_region("EnvelopingCube");     // 10 blocks
   if (need_cube_to_sphere_transition_) {
     add_outer_region("CubedShell");  // 10 blocks
   }
-  add_outer_region("OuterShell");         // 10 blocks
+  add_outer_region("OuterShell");  // 10 blocks
   if (not object_A_.is_excised()) {
     add_object_interior("ObjectA");  // 1 block
   }
@@ -365,7 +365,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // Each object is surrounded by 6 inner wedges that make a sphere, and another
   // 6 outer wedges that transition to a cube.
 
-  // ObjectA/B is on the left/right, respectively.
+  // ObjectA/B is on the right/left, respectively.
   const Translation translation_A{
       Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord},
       Identity2D{}};
@@ -404,12 +404,12 @@ Domain<3> BinaryCompactObject::create_domain() const {
                                     0.0, use_equiangular_map_),
           translation_B);
 
-  std::move(maps_center_A.begin(), maps_center_A.end(),
-            std::back_inserter(maps));
-  std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
   std::move(maps_center_B.begin(), maps_center_B.end(),
             std::back_inserter(maps));
   std::move(maps_cube_B.begin(), maps_cube_B.end(), std::back_inserter(maps));
+  std::move(maps_center_A.begin(), maps_center_A.end(),
+            std::back_inserter(maps));
+  std::move(maps_cube_A.begin(), maps_cube_A.end(), std::back_inserter(maps));
 
   // --- Frustums enclosing both objects (10 blocks) ---
   //
@@ -454,28 +454,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // Each object can optionally be filled with a cube-shaped block, in which
   // case the enclosing wedges configured above transition from the cube to a
   // sphere.
-  if (not object_A_.is_excised()) {
-    const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
-    if (use_equiangular_map_) {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A),
-                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
-                                        scaled_r_inner_A)},
-              translation_A));
-    } else {
-      maps.emplace_back(
-          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
-              Affine3D{
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
-                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A)},
-              translation_A));
-    }
-  }
   if (not object_B_.is_excised()) {
     const double scaled_r_inner_B = object_B_.inner_radius / sqrt(3.0);
     if (use_equiangular_map_) {
@@ -498,6 +476,28 @@ Domain<3> BinaryCompactObject::create_domain() const {
               translation_B));
     }
   }
+  if (not object_A_.is_excised()) {
+    const double scaled_r_inner_A = object_A_.inner_radius / sqrt(3.0);
+    if (use_equiangular_map_) {
+      maps.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              Equiangular3D{Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                        scaled_r_inner_A),
+                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                        scaled_r_inner_A),
+                            Equiangular(-1.0, 1.0, -1.0 * scaled_r_inner_A,
+                                        scaled_r_inner_A)},
+              translation_A));
+    } else {
+      maps.emplace_back(
+          make_coordinate_map_base<Frame::BlockLogical, Frame::Inertial>(
+              Affine3D{
+                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
+                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A),
+                  Affine(-1.0, 1.0, -1.0 * scaled_r_inner_A, scaled_r_inner_A)},
+              translation_A));
+    }
+  }
 
   // Excision spheres
   // - Block 0 through 5 enclose object A, and 12 through 17 enclose object B.
@@ -509,18 +509,6 @@ Domain<3> BinaryCompactObject::create_domain() const {
         "ObjectAExcisionSphere",
         ExcisionSphere<3>{object_A_.inner_radius,
                           {{object_A_.x_coord, 0.0, 0.0}},
-                          {{0, Direction<3>::lower_zeta()},
-                           {1, Direction<3>::lower_zeta()},
-                           {2, Direction<3>::lower_zeta()},
-                           {3, Direction<3>::lower_zeta()},
-                           {4, Direction<3>::lower_zeta()},
-                           {5, Direction<3>::lower_zeta()}}});
-  }
-  if (object_B_.is_excised()) {
-    excision_spheres.emplace(
-        "ObjectBExcisionSphere",
-        ExcisionSphere<3>{object_B_.inner_radius,
-                          {{object_B_.x_coord, 0.0, 0.0}},
                           {{12, Direction<3>::lower_zeta()},
                            {13, Direction<3>::lower_zeta()},
                            {14, Direction<3>::lower_zeta()},
@@ -528,12 +516,24 @@ Domain<3> BinaryCompactObject::create_domain() const {
                            {16, Direction<3>::lower_zeta()},
                            {17, Direction<3>::lower_zeta()}}});
   }
+  if (object_B_.is_excised()) {
+    excision_spheres.emplace(
+        "ObjectBExcisionSphere",
+        ExcisionSphere<3>{object_B_.inner_radius,
+                          {{object_B_.x_coord, 0.0, 0.0}},
+                          {{0, Direction<3>::lower_zeta()},
+                           {1, Direction<3>::lower_zeta()},
+                           {2, Direction<3>::lower_zeta()},
+                           {3, Direction<3>::lower_zeta()},
+                           {4, Direction<3>::lower_zeta()},
+                           {5, Direction<3>::lower_zeta()}}});
+  }
 
   const size_t num_biradial_layers = need_cube_to_sphere_transition_ ? 3 : 2;
   Domain<3> domain{std::move(maps),
                    corners_for_biradially_layered_domains(
-                       2, num_biradial_layers, not object_A_.is_excised(),
-                       not object_B_.is_excised()),
+                       2, num_biradial_layers, not object_B_.is_excised(),
+                       not object_A_.is_excised()),
                    {},
                    std::move(excision_spheres)};
 
@@ -592,11 +592,11 @@ Domain<3> BinaryCompactObject::create_domain() const {
     // Initialize the first block of the layer 1 blocks for each object
     // (specifically, initialize block 0 and block 12). If excising interior
     // A or B, the block maps for the coresponding layer 1 blocks (blocks 0-5
-    // for object A, blocks 12-17 for object B) should also include a size map.
+    // for object B, blocks 12-17 for object A) should also include a size map.
     // If not excising interior A or B, the layer 1 blocks for that object
     // will have the same map as the final block.
     if (object_A_.is_excised()) {
-      block_maps[0] = std::make_unique<
+      block_maps[12] = std::make_unique<
           CompressionAndCubicScaleAndRotationMapForComposition>(
           domain::push_back(
               CompressionMapForComposition{
@@ -612,10 +612,10 @@ Domain<3> BinaryCompactObject::create_domain() const {
                   RotationMapForComposition{
                       RotationMap3D{rotation_function_of_time_name_}})));
     } else {
-      block_maps[0] = block_maps[number_of_blocks_ - 1]->get_clone();
+      block_maps[12] = block_maps[number_of_blocks_ - 1]->get_clone();
     }
     if (object_B_.is_excised()) {
-      block_maps[12] = std::make_unique<
+      block_maps[0] = std::make_unique<
           CompressionAndCubicScaleAndRotationMapForComposition>(
           domain::push_back(
               CompressionMapForComposition{
@@ -631,7 +631,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
                   RotationMapForComposition{
                       RotationMap3D{rotation_function_of_time_name_}})));
     } else {
-      block_maps[12] = block_maps[number_of_blocks_ - 1]->get_clone();
+      block_maps[0] = block_maps[number_of_blocks_ - 1]->get_clone();
     }
 
     // Fill in the rest of the block maps by cloning the relevant maps
@@ -668,15 +668,15 @@ BinaryCompactObject::external_boundary_conditions() const {
       boundary_conditions{number_of_blocks_};
   // Excision surfaces
   for (size_t i = 0; i < 6; ++i) {
-    // Block 0 - 5 wrap excision surface A
-    if (object_A_.is_excised()) {
-      boundary_conditions[i][Direction<3>::lower_zeta()] =
-          (*object_A_.inner_boundary_condition)->get_clone();
-    }
-    // Blocks 12 - 17 wrap excision surface B
+    // Block 0 - 5 wrap excision surface B
     if (object_B_.is_excised()) {
-      boundary_conditions[i + 12][Direction<3>::lower_zeta()] =
+      boundary_conditions[i][Direction<3>::lower_zeta()] =
           (*object_B_.inner_boundary_condition)->get_clone();
+    }
+    // Blocks 12 - 17 wrap excision surface A
+    if (object_A_.is_excised()) {
+      boundary_conditions[i + 12][Direction<3>::lower_zeta()] =
+          (*object_A_.inner_boundary_condition)->get_clone();
     }
   }
   // Outer boundary

@@ -564,7 +564,7 @@ struct SystemHelper {
         std::unordered_map<std::string, ExcisionSphere<3>>{
             {"ObjectAExcisionSphere",
              ExcisionSphere<3>{excision_radius,
-                               {{-0.5 * initial_separation, 0.0, 0.0}},
+                               {{+0.5 * initial_separation, 0.0, 0.0}},
                                {{0, Direction<3>::lower_zeta()},
                                 {1, Direction<3>::lower_zeta()},
                                 {2, Direction<3>::lower_zeta()},
@@ -573,7 +573,7 @@ struct SystemHelper {
                                 {5, Direction<3>::lower_zeta()}}}},
             {"ObjectBExcisionSphere",
              ExcisionSphere<3>{excision_radius,
-                               {{+0.5 * initial_separation, 0.0, 0.0}},
+                               {{-0.5 * initial_separation, 0.0, 0.0}},
                                {{0, Direction<3>::lower_zeta()},
                                 {1, Direction<3>::lower_zeta()},
                                 {2, Direction<3>::lower_zeta()},
