@@ -29,6 +29,7 @@
 #include "Domain/OptionTags.hpp"
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Structure/ExcisionSphere.hpp"
 #include "Framework/TestCreation.hpp"
 #include "Helpers/Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Helpers/Domain/Creators/TestHelpers.hpp"
@@ -283,8 +284,18 @@ void test_connectivity_once(const bool with_sphere_e,
     CHECK(binary_compact_object.block_names() == block_names);
     CHECK(binary_compact_object.block_groups() == block_groups);
 
-    TestHelpers::domain::creators::test_domain_creator(
+    const auto domain = TestHelpers::domain::creators::test_domain_creator(
         binary_compact_object, with_boundary_conditions);
+
+    CHECK(domain.excision_spheres().size() == 2);
+    const auto& excision_sphere_a =
+        domain.excision_spheres().at("ObjectAExcisionSphere");
+    CHECK(excision_sphere_a.radius() == inner_radius_objectA);
+    CHECK(excision_sphere_a.center() == center_objectA);
+    const auto& excision_sphere_b =
+        domain.excision_spheres().at("ObjectBExcisionSphere");
+    CHECK(excision_sphere_b.radius() == inner_radius_objectB);
+    CHECK(excision_sphere_b.center() == center_objectB);
 
     // The Domain has no functions of time above, so make sure
     // that the functions_of_time function returns an empty map.
