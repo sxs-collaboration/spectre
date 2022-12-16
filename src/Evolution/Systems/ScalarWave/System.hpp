@@ -54,10 +54,5 @@ struct System {
 
   using compute_largest_characteristic_speed =
       Tags::ComputeLargestCharacteristicSpeed;
-
-  // Remove gradients_tags once ScalarWave and GH are converted over to the new
-  // dg::ComputeTimeDerivative action. We will need to remove the use of
-  // gradients_tags from Evolution/Initialization/Evolution.hpp
-  using gradients_tags = gradient_variables;
 };
 }  // namespace ScalarWave

@@ -44,6 +44,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
@@ -232,13 +233,14 @@ struct Metavariables {
           tmpl::list<
               Parallel::PhaseActions<
                   Parallel::Phase::Initialization,
-                  tmpl::list<
-                      Initialization::Actions::TimeAndTimeStep<Metavariables>,
-                      evolution::dg::Initialization::Domain<Dim>,
-                      Initialization::Actions::AddComputeTags<
-                          ::domain::Tags::MinimumGridSpacingCompute<
-                              Dim, Frame::Inertial>>,
-                      Parallel::Actions::TerminatePhase>>,
+                  tmpl::list<Initialization::Actions::InitializeItems<
+                                 Initialization::TimeStepping<
+                                     Metavariables, local_time_stepping>>,
+                             evolution::dg::Initialization::Domain<Dim>,
+                             Initialization::Actions::AddComputeTags<
+                                 ::domain::Tags::MinimumGridSpacingCompute<
+                                     Dim, Frame::Inertial>>,
+                             Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Parallel::Phase::Register,
                   tmpl::list<observers::Actions::RegisterWithObservers<

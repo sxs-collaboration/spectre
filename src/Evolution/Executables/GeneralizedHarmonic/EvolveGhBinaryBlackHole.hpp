@@ -83,6 +83,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MemoryMonitor/ContributeMemoryData.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
@@ -456,7 +457,8 @@ struct EvolutionMetavars {
               GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>>>;
 
   using initialization_actions = tmpl::list<
-      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepping<EvolutionMetavars, local_time_stepping>>,
       evolution::dg::Initialization::Domain<volume_dim, use_control_systems>,
       Initialization::Actions::NonconservativeSystem<system>,
       Initialization::Actions::AddComputeTags<::Tags::DerivCompute<

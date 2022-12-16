@@ -120,6 +120,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Actions/AddSimpleTags.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
@@ -580,7 +581,8 @@ struct GhValenciaDivCleanTemplateBase<
                           dg_step_actions>;
 
   using initialization_actions = tmpl::list<
-      Initialization::Actions::TimeAndTimeStep<derived_metavars>,
+      Initialization::Actions::InitializeItems<
+          Initialization::TimeStepping<derived_metavars, local_time_stepping>>,
       evolution::dg::Initialization::Domain<3>,
       Initialization::Actions::ConservativeSystem<system>,
       std::conditional_t<
