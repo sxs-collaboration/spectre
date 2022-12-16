@@ -15,18 +15,23 @@ supported on Apple Silicon.
 ### 0. Install the xcode command-line tools.
 
 Install the xcode command-line tools, which include the clang compiler, etc.
+Run the following command in the terminal:
 
 ```
 xcode-select --install
 ```
 
-### 1. Make a directory to install prerequisites
+### 1. Clone spectre and make a directory to install prerequisites
 
 First, make a directory to hold some prerequisites that spectre depends on.
 Name this directory whatever you like, and set `SPECTRE_DEPS_ROOT` to its value.
 These instructions, as an example, set this to the `apps` directory in the
 user's home folder.
 ```
+cd $HOME
+git clone git@github.com:sxs-collaboration/spectre.git
+cd spectre
+export SPECTRE_HOME=$(pwd)
 export SPECTRE_DEPS_ROOT=$HOME/apps
 mkdir $SPECTRE_DEPS_ROOT
 cd $SPECTRE_DEPS_ROOT
@@ -109,7 +114,7 @@ popd
 
 pushd ./src
 git clone https://github.com/Libsharp/libsharp.git
-cd Libsharp
+cd libsharp
 
 # Do not use compiler flag -march=native (unsupported on Apple Silicon)
 sed "s/-march=native//" configure.ac > configure.ac.mod
@@ -123,12 +128,12 @@ mv auto $SPECTRE_DEPS_ROOT/libsharp
 popd
 ```
 
-Next, install charm++. Note that Apple Silicon Macs require v7.0.0.
-
+Next, clone, patch, and install charm++ v7.0.0.
 ```
 git clone https://github.com/UIUC-PPL/charm
 pushd charm
 git checkout v7.0.0
+git apply ${SPECTRE_HOME}/support/Charm/v7.0.0.patch
 ./build LIBS multicore-darwin-arm8 --with-production -g3 -j
 popd
 ```
@@ -143,12 +148,11 @@ git checkout v2.13.7
 popd
 ```
 
-### 5. Clone, configure, and build SpECTRE.
+### 5. Configure and build SpECTRE.
 Next, clone SpECTRE, make a build directory, and configure. In whatever
 directory you prefer, clone SpECTRE and make a build directory, e.g.
 ```
-git clone git@github.com:sxs-collaboration/spectre.git
-cd spectre
+cd ${SPECTRE_HOME}
 mkdir build
 cd build
 ```
@@ -167,7 +171,7 @@ CMAKE_Fortran_COMPILER=gfortran -D BUILD_PYTHON_BINDINGS=ON \
 -D BLAZE_ROOT=${SPECTRE_DEPS_ROOT}/blaze/ \
 -D BRIGAND_ROOT=${SPECTRE_DEPS_ROOT}/brigand/ \
 -D LIBSHARP_ROOT=${SPECTRE_DEPS_ROOT}/libsharp/ \
--D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/include/ \
+-D CATCH_INCLUDE_DIR=${SPECTRE_DEPS_ROOT}/Catch2/single_include/catch2/ \
 -D Boost_ROOT=$(brew --prefix boost)/ \
 -D CLANG_TIDY_BIN=$(brew --prefix llvm)/bin/clang-tidy \
 -D BUILD_SHARED_LIBS=OFF \
