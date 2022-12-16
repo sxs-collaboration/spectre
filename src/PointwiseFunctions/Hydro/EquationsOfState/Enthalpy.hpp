@@ -122,7 +122,8 @@ class Enthalpy : public EquationOfState<true, 1> {
     bool operator==(const Coefficients& rhs) const;
 
     Enthalpy<LowDensityEoS>::Coefficients compute_exponential_integral(
-        const std::pair<double, double>& initial_condition);
+        const std::pair<double, double>& initial_condition,
+        const double minimum_density);
     Enthalpy<LowDensityEoS>::Coefficients compute_derivative();
     void pup(PUP::er& p);
   };
@@ -130,6 +131,10 @@ class Enthalpy : public EquationOfState<true, 1> {
  public:
   static constexpr size_t thermodynamic_dim = 1;
   static constexpr bool is_relativistic = true;
+
+  static std::string name() {
+    return "Enthalpy(" + pretty_type::name<LowDensityEoS>() + ")";
+  }
 
   struct ReferenceDensity {
     using type = double;
@@ -261,21 +266,29 @@ class Enthalpy : public EquationOfState<true, 1> {
   EQUATION_OF_STATE_FORWARD_DECLARE_MEMBER_IMPLS(1)
 
   SPECTRE_ALWAYS_INLINE
-  bool in_low_density_domain(const double density) const {
-    return density < minimum_density_;
+  bool in_low_density_domain(const double rest_mass_density) const {
+    return rest_mass_density < minimum_density_;
   }
 
-  double x_from_density(const double density) const;
+  double x_from_density(const double rest_mass_density) const;
   double density_from_x(const double x) const;
-  double energy_density_from_log_density(const double x) const;
+  double energy_density_from_log_density(const double x,
+                                         const double rest_mass_density) const;
   static double evaluate_coefficients(
-      const Enthalpy::Coefficients& coefficients, const double x);
+      const Enthalpy::Coefficients& coefficients, const double x,
+      const double exponential_prefactor =
+          std::numeric_limits<double>::signaling_NaN());
+  static Enthalpy::Coefficients compute_pressure_coefficients(
+      const typename Enthalpy::Coefficients& enthalpy,
+      const typename Enthalpy::Coefficients& energy_density);
 
-  double chi_from_density(const double density) const;
-  double specific_internal_energy_from_density(const double density) const;
-  double specific_enthalpy_from_density(const double density) const;
-  double pressure_from_density(const double density) const;
-  double pressure_from_log_density(const double x) const;
+  double chi_from_density(const double rest_mass_density) const;
+  double specific_internal_energy_from_density(
+      const double rest_mass_density) const;
+  double specific_enthalpy_from_density(const double rest_mass_density) const;
+  double pressure_from_density(const double rest_mass_density) const;
+  double pressure_from_log_density(const double x,
+                                   const double rest_mass_density) const;
   double rest_mass_density_from_enthalpy(const double specific_enthalpy) const;
 
   double reference_density_ = std::numeric_limits<double>::signaling_NaN();
@@ -287,6 +300,7 @@ class Enthalpy : public EquationOfState<true, 1> {
   Coefficients coefficients_;
   Coefficients exponential_integral_coefficients_;
   Coefficients derivative_coefficients_;
+  Coefficients pressure_coefficients_;
 };
 
 }  // namespace EquationsOfState
