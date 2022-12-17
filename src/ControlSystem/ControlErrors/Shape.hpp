@@ -39,7 +39,8 @@ namespace ControlErrors {
 namespace detail {
 template <::ah::ObjectLabel Horizon>
 std::string excision_sphere_name() {
-  return "Object"s + ::ah::name(Horizon) + "ExcisionSphere"s;
+  return Horizon == ::ah::ObjectLabel::A ? "PrimaryRightObjectAExcisionSphere"
+                                         : "SecondaryLeftObjectBExcisionSphere";
 }
 
 template <::ah::ObjectLabel Horizon>

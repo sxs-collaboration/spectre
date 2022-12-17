@@ -108,14 +108,14 @@ BinaryCompactObject::BinaryCompactObject(
 
   // Parsing checks
   if (object_A_.x_coord <= 0.0) {
-    PARSE_ERROR(
-        context,
-        "The x-coordinate of ObjectA's center is expected to be positive.");
+    PARSE_ERROR(context,
+                "The x-coordinate of PrimaryRightObjectA's center is expected "
+                "to be positive.");
   }
   if (object_B_.x_coord >= 0.0) {
-    PARSE_ERROR(
-        context,
-        "The x-coordinate of ObjectB's center is expected to be negative.");
+    PARSE_ERROR(context,
+                "The x-coordinate of SecondaryLeftObjectB's center is expected "
+                "to be negative.");
   }
   if (length_outer_cube_ <= 2.0 * length_inner_cube_) {
     const double suggested_value = 2.0 * length_inner_cube_ * sqrt(3.0);
@@ -148,11 +148,13 @@ BinaryCompactObject::BinaryCompactObject(
   }
   if (object_A_.outer_radius < object_A_.inner_radius) {
     PARSE_ERROR(context,
-                "ObjectA's inner radius must be less than its outer radius.");
+                "PrimaryRightObjectA's inner radius must be less than its "
+                "outer radius.");
   }
   if (object_B_.outer_radius < object_B_.inner_radius) {
     PARSE_ERROR(context,
-                "ObjectB's inner radius must be less than its outer radius.");
+                "SecondaryLeftObjectB's inner radius must be less than its "
+                "outer radius.");
   }
   if (object_A_.use_logarithmic_map and not object_A_.is_excised()) {
     PARSE_ERROR(
@@ -232,20 +234,20 @@ BinaryCompactObject::BinaryCompactObject(
       }
     }
   };
-  add_object_region("ObjectB", "Shell");  // 6 blocks
-  add_object_region("ObjectB", "Cube");   // 6 blocks
-  add_object_region("ObjectA", "Shell");  // 6 blocks
-  add_object_region("ObjectA", "Cube");   // 6 blocks
-  add_outer_region("EnvelopingCube");     // 10 blocks
+  add_object_region("SecondaryLeftObjectB", "Shell");  // 6 blocks
+  add_object_region("SecondaryLeftObjectB", "Cube");   // 6 blocks
+  add_object_region("PrimaryRightObjectA", "Shell");   // 6 blocks
+  add_object_region("PrimaryRightObjectA", "Cube");    // 6 blocks
+  add_outer_region("EnvelopingCube");                  // 10 blocks
   if (need_cube_to_sphere_transition_) {
     add_outer_region("CubedShell");  // 10 blocks
   }
   add_outer_region("OuterShell");  // 10 blocks
   if (not object_A_.is_excised()) {
-    add_object_interior("ObjectA");  // 1 block
+    add_object_interior("PrimaryRightObjectA");  // 1 block
   }
   if (not object_B_.is_excised()) {
-    add_object_interior("ObjectB");  // 1 block
+    add_object_interior("SecondaryLeftObjectB");  // 1 block
   }
   ASSERT(block_names_.size() == number_of_blocks_,
          "Number of block names (" << block_names_.size()
@@ -387,7 +389,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   // Each object is surrounded by 6 inner wedges that make a sphere, and another
   // 6 outer wedges that transition to a cube.
 
-  // ObjectA/B is on the right/left, respectively.
+  // PrimaryRightObjectA/B is on the right/left, respectively.
   const Translation translation_A{
       Affine{-1.0, 1.0, -1.0 + object_A_.x_coord, 1.0 + object_A_.x_coord},
       Identity2D{}};
@@ -528,7 +530,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
   if (object_A_.is_excised()) {
     excision_spheres.emplace(
-        "ObjectAExcisionSphere",
+        "PrimaryRightObjectAExcisionSphere",
         ExcisionSphere<3>{object_A_.inner_radius,
                           {{object_A_.x_coord, 0.0, 0.0}},
                           {{12, Direction<3>::lower_zeta()},
@@ -540,7 +542,7 @@ Domain<3> BinaryCompactObject::create_domain() const {
   }
   if (object_B_.is_excised()) {
     excision_spheres.emplace(
-        "ObjectBExcisionSphere",
+        "SecondaryLeftObjectBExcisionSphere",
         ExcisionSphere<3>{object_B_.inner_radius,
                           {{object_B_.x_coord, 0.0, 0.0}},
                           {{0, Direction<3>::lower_zeta()},

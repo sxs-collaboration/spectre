@@ -83,17 +83,23 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
     using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
 
-    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
+    ASSERT(domain.excision_spheres().count(
+               "PrimaryRightObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "
            "compute Expansion control error.");
-    ASSERT(domain.excision_spheres().count("ObjectBExcisionSphere") == 1,
+    ASSERT(domain.excision_spheres().count(
+               "SecondaryLeftObjectBExcisionSphere") == 1,
            "Excision sphere for ObjectB not in the domain but is needed to "
            "compute Expansion control error.");
 
     const double grid_position_of_A =
-        domain.excision_spheres().at("ObjectAExcisionSphere").center()[0];
+        domain.excision_spheres()
+            .at("PrimaryRightObjectAExcisionSphere")
+            .center()[0];
     const double grid_position_of_B =
-        domain.excision_spheres().at("ObjectBExcisionSphere").center()[0];
+        domain.excision_spheres()
+            .at("SecondaryLeftObjectBExcisionSphere")
+            .center()[0];
     const double current_position_of_A = get<center_A>(measurements)[0];
     const double current_position_of_B = get<center_B>(measurements)[0];
 

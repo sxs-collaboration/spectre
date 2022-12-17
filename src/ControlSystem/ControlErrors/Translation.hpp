@@ -95,12 +95,15 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
 
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
 
-    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
+    ASSERT(domain.excision_spheres().count(
+               "PrimaryRightObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "
            "compute Translation control error.");
 
-    const DataVector grid_position_of_A = array_to_datavector(
-        domain.excision_spheres().at("ObjectAExcisionSphere").center());
+    const DataVector grid_position_of_A =
+        array_to_datavector(domain.excision_spheres()
+                                .at("PrimaryRightObjectAExcisionSphere")
+                                .center());
     const DataVector& current_position_of_A = get<center_A>(measurements);
 
     const DataVector rotation_error =

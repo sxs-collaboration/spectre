@@ -120,21 +120,23 @@ namespace creators {
  *      compact objects. This layer can be h-refined radially,
  *      creating a layer of multiple concentric spherical shells.
  *
- * In the code and options below, `ObjectA` and `ObjectB` refer to the two
- * compact objects, and by extension, also refer to the layers that immediately
- * surround each compact object. Note that `ObjectA` is located to the right of
- * the origin (along the positive x-axis) and `ObjectB` is located to the left
- * of the origin. If both objects are excised, then `ObjectA` must be the larger
- * object (larger inner radius and x-coord smaller in magnitude). `enveloping
- * cube` refers to the outer surface of Layer 3. `outer sphere` is the radius of
- * the spherical outer boundary, which is the outer boundary of Layer 5. The
- * `enveloping cube` and `outer sphere` are both centered at the origin.
- * `cutting plane` refers to the plane along which the domain divides into two
- * hemispheres. In the final coordinates, the cutting plane always intersects
- * the x-axis at the origin.
+ * In the code and options below, `PrimaryRightObjectA` and
+ * `SecondaryLeftObjectB` refer to the two compact objects, and by extension,
+ * also refer to the layers that immediately surround each compact object. Note
+ * that `PrimaryRightObjectA` is located to the right of the origin (along the
+ * positive x-axis) and `SecondaryLeftObjectB` is located to the left of the
+ * origin. If both objects are excised, then `PrimaryRightObjectA` must be the
+ * larger object (larger inner radius and x-coord smaller in magnitude).
+ * `enveloping cube` refers to the outer surface of Layer 3. `outer sphere` is
+ * the radius of the spherical outer boundary, which is the outer boundary of
+ * Layer 5. The `enveloping cube` and `outer sphere` are both centered at the
+ * origin. `cutting plane` refers to the plane along which the domain divides
+ * into two hemispheres. In the final coordinates, the cutting plane always
+ * intersects the x-axis at the origin.
  *
- * \note The x-coordinate locations of the `ObjectA` and `ObjectB` should be
- * chosen such that the center of mass is located at x=0.
+ * \note The x-coordinate locations of the `PrimaryRightObjectA` and
+ * `SecondaryLeftObjectB` should be chosen such that the center of mass is
+ * located at x=0.
  *
  * \note When using this domain, the
  * metavariables struct can contain a struct named `domain`
@@ -148,9 +150,10 @@ namespace creators {
  * the initial time for the FunctionsOfTime controlling the map. The
  * time-dependent map itself consists of a composition of a CubicScale expansion
  * map and a Rotation map everywhere except possibly in layer 1; in that case,
- * if `ObjectA` or `ObjectB` is excised, then the time-dependent map in the
- * corresponding blocks in layer 1 is a composition of a SphericalCompression
- * size map, a CubicScale expansion map, and a Rotation map.
+ * if `PrimaryRightObjectA` or `SecondaryLeftObjectB` is excised, then the
+ * time-dependent map in the corresponding blocks in layer 1 is a composition of
+ * a SphericalCompression size map, a CubicScale expansion map, and a Rotation
+ * map.
  */
 class BinaryCompactObject : public DomainCreator<3> {
  private:
@@ -297,14 +300,14 @@ class BinaryCompactObject : public DomainCreator<3> {
     bool use_logarithmic_map;
   };
 
-  struct ObjectA {
+  struct PrimaryRightObjectA {
     using type = Object;
     static constexpr Options::String help = {
         "Options for the object to the right of the origin (along the positive "
         "x-axis)."};
   };
 
-  struct ObjectB {
+  struct SecondaryLeftObjectB {
     using type = Object;
     static constexpr Options::String help = {
         "Options for the object to the left of the origin (along the negative "
@@ -533,10 +536,10 @@ class BinaryCompactObject : public DomainCreator<3> {
 
   template <typename Metavariables>
   using time_independent_options = tmpl::append<
-      tmpl::list<ObjectA, ObjectB, RadiusEnvelopingCube, OuterRadius,
-                 InitialRefinement, InitialGridPoints, UseProjectiveMap,
-                 FrustumSphericity, RadiusEnvelopingSphere,
-                 RadialDistributionOuterShell>,
+      tmpl::list<PrimaryRightObjectA, SecondaryLeftObjectB,
+                 RadiusEnvelopingCube, OuterRadius, InitialRefinement,
+                 InitialGridPoints, UseProjectiveMap, FrustumSphericity,
+                 RadiusEnvelopingSphere, RadialDistributionOuterShell>,
       tmpl::conditional_t<
           domain::BoundaryConditions::has_boundary_conditions_base_v<
               typename Metavariables::system>,
@@ -563,8 +566,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       "The BinaryCompactObject domain is a general domain for two compact "
       "objects. The user must provide the inner and outer radii of the "
       "spherical shells surrounding each of the two compact objects A and B "
-      "(\"ObjectAShell\" and \"ObjectBShell\"). Each object is enveloped in "
-      "a cube (\"ObjectACube\" and \"ObjectBCube\")."
+      "(\"PrimaryRightObjectAShell\" and \"SecondaryLeftObjectBShell\"). Each "
+      "object is enveloped in "
+      "a cube (\"PrimaryRightObjectACube\" and \"SecondaryLeftObjectBCube\")."
       "The user must also provide the radius of the sphere that circumscribes "
       "the cube containing both compact objects (\"EnvelopingCube\"). "
       "A radial layer transitions from the enveloping cube to a sphere "
@@ -572,14 +576,16 @@ class BinaryCompactObject : public DomainCreator<3> {
       "boundary (\"OuterShell\"). The options Object{A,B}.Interior (or "
       "Object{A,B}.ExciseInterior if we're not working with boundary "
       "conditions) determine whether blocks are present inside each compact "
-      "object (\"ObjectAInterior\" and \"ObjectBInterior\"). If set to a "
+      "object (\"PrimaryRightObjectAInterior\" and "
+      "\"SecondaryLeftObjectBInterior\"). If set to a "
       "boundary condition or 'false', the region will be excised. The user "
       "specifies Object{A,B}.XCoord, the x-coordinates of the locations of the "
       "centers of each compact object. In these coordinates, the location for "
-      "the axis of rotation is x=0. ObjectA is located on the right and ObjectB"
-      "is located on the left. If both objects are excised, then ObjectA's "
-      "x-coordinates must be smaller in magnitude than ObjectB's. Please make "
-      "sure that your choices of "
+      "the axis of rotation is x=0. PrimaryRightObjectA is located on the "
+      "right and SecondaryLeftObjectB is located on the left. If both objects "
+      "are excised, then PrimaryRightObjectA's "
+      "x-coordinates must be smaller in magnitude than SecondaryLeftObjectB's. "
+      "Please make sure that your choices of "
       "x-coordinate locations are such that the resulting center of mass "
       "is located at zero.\n"
       "\n"

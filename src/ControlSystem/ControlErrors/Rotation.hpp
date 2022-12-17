@@ -74,17 +74,23 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
     using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
 
-    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
+    ASSERT(domain.excision_spheres().count(
+               "PrimaryRightObjectAExcisionSphere") == 1,
            "Excision sphere for ObjectA not in the domain but is needed to "
            "compute Rotation control error.");
-    ASSERT(domain.excision_spheres().count("ObjectBExcisionSphere") == 1,
+    ASSERT(domain.excision_spheres().count(
+               "SecondaryLeftObjectBExcisionSphere") == 1,
            "Excision sphere for ObjectB not in the domain but is needed to "
            "compute Rotation control error.");
 
-    const DataVector grid_position_of_A = array_to_datavector(
-        domain.excision_spheres().at("ObjectAExcisionSphere").center());
-    const DataVector grid_position_of_B = array_to_datavector(
-        domain.excision_spheres().at("ObjectBExcisionSphere").center());
+    const DataVector grid_position_of_A =
+        array_to_datavector(domain.excision_spheres()
+                                .at("PrimaryRightObjectAExcisionSphere")
+                                .center());
+    const DataVector grid_position_of_B =
+        array_to_datavector(domain.excision_spheres()
+                                .at("SecondaryLeftObjectBExcisionSphere")
+                                .center());
     const DataVector& current_position_of_A = get<center_A>(measurements);
     const DataVector& current_position_of_B = get<center_B>(measurements);
 

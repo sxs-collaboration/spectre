@@ -17,16 +17,16 @@ DomainCreator:
   # Spectral Einstein Code (SpEC). The time-dependent maps are given
   # arbitrary time-dependence.
   BinaryCompactObject:
-    ObjectA:
-      InnerRadius: 0.45825
-      OuterRadius: 6.0
-      XCoord: -7.683
-      ExciseInterior: true
-      UseLogarithmicMap: true
-    ObjectB:
+    PrimaryRightObjectA:
       InnerRadius: 0.45825
       OuterRadius: 6.0
       XCoord: 7.683
+      ExciseInterior: true
+      UseLogarithmicMap: true
+    SecondaryLeftObjectB:
+      InnerRadius: 0.45825
+      OuterRadius: 6.0
+      XCoord: -7.683
       ExciseInterior: true
       UseLogarithmicMap: true
     EnvelopingCube:
@@ -38,10 +38,10 @@ DomainCreator:
       OuterRadius: 300.0
       RadialDistribution: Linear
     InitialRefinement:
-      ObjectAShell:   [1, 1, 1]
-      ObjectBShell:   [1, 1, 1]
-      ObjectACube:    [1, 1, 0]
-      ObjectBCube:    [1, 1, 0]
+      PrimaryRightObjectAShell:   [1, 1, 1]
+      SecondaryLeftObjectBShell:   [1, 1, 1]
+      PrimaryRightObjectACube:    [1, 1, 0]
+      SecondaryLeftObjectBCube:    [1, 1, 0]
       EnvelopingCube: [1, 1, 1]
       OuterShell:     [1, 1, 1]
     InitialGridPoints: 3

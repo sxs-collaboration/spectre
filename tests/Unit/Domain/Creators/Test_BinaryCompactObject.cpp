@@ -113,19 +113,21 @@ void test_connectivity() {
       for (const bool excise_interiorB : {true, false}) {
         CAPTURE(excise_interiorB);
         std::unordered_map<std::string, std::array<size_t, 3>> refinement{
-            {"ObjectAShell", {{1, 1, 1}}},
-            {"ObjectACube", {{1, 1, 1}}},
-            {"ObjectBShell", {{1, 1, 1}}},
-            {"ObjectBCube", {{1, 1, 1}}},
+            {"PrimaryRightObjectAShell", {{1, 1, 1}}},
+            {"PrimaryRightObjectACube", {{1, 1, 1}}},
+            {"SecondaryLeftObjectBShell", {{1, 1, 1}}},
+            {"SecondaryLeftObjectBCube", {{1, 1, 1}}},
             {"EnvelopingCube", {{1, 1, 1}}},
             {"CubedShell", {{1, 1, 1}}},
             // Add some radial refinement in outer shell
             {"OuterShell", {{1, 1, 4}}}};
         if (not excise_interiorA) {
-          refinement["ObjectAInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+          refinement["PrimaryRightObjectAInterior"] =
+              std::array<size_t, 3>{{1, 1, 1}};
         }
         if (not excise_interiorB) {
-          refinement["ObjectBInterior"] = std::array<size_t, 3>{{1, 1, 1}};
+          refinement["SecondaryLeftObjectBInterior"] =
+              std::array<size_t, 3>{{1, 1, 1}};
         }
         for (const auto radial_distribution_outer_shell :
              {Distribution::Linear, Distribution::Logarithmic,
@@ -164,51 +166,90 @@ void test_connectivity() {
                   binary_compact_object, with_boundary_conditions);
 
           std::vector<std::string> expected_block_names{
-              "ObjectBShellUpperZ",       "ObjectBShellLowerZ",
-              "ObjectBShellUpperY",       "ObjectBShellLowerY",
-              "ObjectBShellUpperX",       "ObjectBShellLowerX",
-              "ObjectBCubeUpperZ",        "ObjectBCubeLowerZ",
-              "ObjectBCubeUpperY",        "ObjectBCubeLowerY",
-              "ObjectBCubeUpperX",        "ObjectBCubeLowerX",
-              "ObjectAShellUpperZ",       "ObjectAShellLowerZ",
-              "ObjectAShellUpperY",       "ObjectAShellLowerY",
-              "ObjectAShellUpperX",       "ObjectAShellLowerX",
-              "ObjectACubeUpperZ",        "ObjectACubeLowerZ",
-              "ObjectACubeUpperY",        "ObjectACubeLowerY",
-              "ObjectACubeUpperX",        "ObjectACubeLowerX",
-              "EnvelopingCubeUpperZLeft", "EnvelopingCubeUpperZRight",
-              "EnvelopingCubeLowerZLeft", "EnvelopingCubeLowerZRight",
-              "EnvelopingCubeUpperYLeft", "EnvelopingCubeUpperYRight",
-              "EnvelopingCubeLowerYLeft", "EnvelopingCubeLowerYRight",
-              "EnvelopingCubeUpperX",     "EnvelopingCubeLowerX",
-              "CubedShellUpperZLeft",     "CubedShellUpperZRight",
-              "CubedShellLowerZLeft",     "CubedShellLowerZRight",
-              "CubedShellUpperYLeft",     "CubedShellUpperYRight",
-              "CubedShellLowerYLeft",     "CubedShellLowerYRight",
-              "CubedShellUpperX",         "CubedShellLowerX",
-              "OuterShellUpperZLeft",     "OuterShellUpperZRight",
-              "OuterShellLowerZLeft",     "OuterShellLowerZRight",
-              "OuterShellUpperYLeft",     "OuterShellUpperYRight",
-              "OuterShellLowerYLeft",     "OuterShellLowerYRight",
-              "OuterShellUpperX",         "OuterShellLowerX"};
+              "SecondaryLeftObjectBShellUpperZ",
+              "SecondaryLeftObjectBShellLowerZ",
+              "SecondaryLeftObjectBShellUpperY",
+              "SecondaryLeftObjectBShellLowerY",
+              "SecondaryLeftObjectBShellUpperX",
+              "SecondaryLeftObjectBShellLowerX",
+              "SecondaryLeftObjectBCubeUpperZ",
+              "SecondaryLeftObjectBCubeLowerZ",
+              "SecondaryLeftObjectBCubeUpperY",
+              "SecondaryLeftObjectBCubeLowerY",
+              "SecondaryLeftObjectBCubeUpperX",
+              "SecondaryLeftObjectBCubeLowerX",
+              "PrimaryRightObjectAShellUpperZ",
+              "PrimaryRightObjectAShellLowerZ",
+              "PrimaryRightObjectAShellUpperY",
+              "PrimaryRightObjectAShellLowerY",
+              "PrimaryRightObjectAShellUpperX",
+              "PrimaryRightObjectAShellLowerX",
+              "PrimaryRightObjectACubeUpperZ",
+              "PrimaryRightObjectACubeLowerZ",
+              "PrimaryRightObjectACubeUpperY",
+              "PrimaryRightObjectACubeLowerY",
+              "PrimaryRightObjectACubeUpperX",
+              "PrimaryRightObjectACubeLowerX",
+              "EnvelopingCubeUpperZLeft",
+              "EnvelopingCubeUpperZRight",
+              "EnvelopingCubeLowerZLeft",
+              "EnvelopingCubeLowerZRight",
+              "EnvelopingCubeUpperYLeft",
+              "EnvelopingCubeUpperYRight",
+              "EnvelopingCubeLowerYLeft",
+              "EnvelopingCubeLowerYRight",
+              "EnvelopingCubeUpperX",
+              "EnvelopingCubeLowerX",
+              "CubedShellUpperZLeft",
+              "CubedShellUpperZRight",
+              "CubedShellLowerZLeft",
+              "CubedShellLowerZRight",
+              "CubedShellUpperYLeft",
+              "CubedShellUpperYRight",
+              "CubedShellLowerYLeft",
+              "CubedShellLowerYRight",
+              "CubedShellUpperX",
+              "CubedShellLowerX",
+              "OuterShellUpperZLeft",
+              "OuterShellUpperZRight",
+              "OuterShellLowerZLeft",
+              "OuterShellLowerZRight",
+              "OuterShellUpperYLeft",
+              "OuterShellUpperYRight",
+              "OuterShellLowerYLeft",
+              "OuterShellLowerYRight",
+              "OuterShellUpperX",
+              "OuterShellLowerX"};
           std::unordered_map<std::string, std::unordered_set<std::string>>
               expected_block_groups{
-                  {"ObjectAShell",
-                   {"ObjectAShellLowerZ", "ObjectAShellUpperX",
-                    "ObjectAShellLowerX", "ObjectAShellUpperY",
-                    "ObjectAShellUpperZ", "ObjectAShellLowerY"}},
-                  {"ObjectBShell",
-                   {"ObjectBShellLowerZ", "ObjectBShellUpperX",
-                    "ObjectBShellLowerX", "ObjectBShellUpperY",
-                    "ObjectBShellUpperZ", "ObjectBShellLowerY"}},
-                  {"ObjectACube",
-                   {"ObjectACubeLowerY", "ObjectACubeLowerZ",
-                    "ObjectACubeUpperY", "ObjectACubeUpperX",
-                    "ObjectACubeUpperZ", "ObjectACubeLowerX"}},
-                  {"ObjectBCube",
-                   {"ObjectBCubeLowerY", "ObjectBCubeLowerZ",
-                    "ObjectBCubeUpperY", "ObjectBCubeUpperX",
-                    "ObjectBCubeUpperZ", "ObjectBCubeLowerX"}},
+                  {"PrimaryRightObjectAShell",
+                   {"PrimaryRightObjectAShellLowerZ",
+                    "PrimaryRightObjectAShellUpperX",
+                    "PrimaryRightObjectAShellLowerX",
+                    "PrimaryRightObjectAShellUpperY",
+                    "PrimaryRightObjectAShellUpperZ",
+                    "PrimaryRightObjectAShellLowerY"}},
+                  {"SecondaryLeftObjectBShell",
+                   {"SecondaryLeftObjectBShellLowerZ",
+                    "SecondaryLeftObjectBShellUpperX",
+                    "SecondaryLeftObjectBShellLowerX",
+                    "SecondaryLeftObjectBShellUpperY",
+                    "SecondaryLeftObjectBShellUpperZ",
+                    "SecondaryLeftObjectBShellLowerY"}},
+                  {"PrimaryRightObjectACube",
+                   {"PrimaryRightObjectACubeLowerY",
+                    "PrimaryRightObjectACubeLowerZ",
+                    "PrimaryRightObjectACubeUpperY",
+                    "PrimaryRightObjectACubeUpperX",
+                    "PrimaryRightObjectACubeUpperZ",
+                    "PrimaryRightObjectACubeLowerX"}},
+                  {"SecondaryLeftObjectBCube",
+                   {"SecondaryLeftObjectBCubeLowerY",
+                    "SecondaryLeftObjectBCubeLowerZ",
+                    "SecondaryLeftObjectBCubeUpperY",
+                    "SecondaryLeftObjectBCubeUpperX",
+                    "SecondaryLeftObjectBCubeUpperZ",
+                    "SecondaryLeftObjectBCubeLowerX"}},
                   {"EnvelopingCube",
                    {"EnvelopingCubeUpperZRight", "EnvelopingCubeUpperX",
                     "EnvelopingCubeLowerZLeft", "EnvelopingCubeLowerZRight",
@@ -228,10 +269,10 @@ void test_connectivity() {
                     "OuterShellLowerYLeft", "OuterShellLowerYRight",
                     "OuterShellUpperX", "OuterShellLowerX"}}};
           if (not excise_interiorA) {
-            expected_block_names.emplace_back("ObjectAInterior");
+            expected_block_names.emplace_back("PrimaryRightObjectAInterior");
           }
           if (not excise_interiorB) {
-            expected_block_names.emplace_back("ObjectBInterior");
+            expected_block_names.emplace_back("SecondaryLeftObjectBInterior");
           }
           CHECK(binary_compact_object.block_names() == expected_block_names);
           CHECK(binary_compact_object.block_groups() == expected_block_groups);
@@ -239,7 +280,7 @@ void test_connectivity() {
               expected_excision_spheres{};
           if (excise_interiorA) {
             expected_excision_spheres.emplace(
-                "ObjectAExcisionSphere",
+                "PrimaryRightObjectAExcisionSphere",
                 ExcisionSphere<3>{inner_radius_objectA,
                                   {{xcoord_objectA, 0.0, 0.0}},
                                   {{12, Direction<3>::lower_zeta()},
@@ -251,7 +292,7 @@ void test_connectivity() {
           }
           if (excise_interiorB) {
             expected_excision_spheres.emplace(
-                "ObjectBExcisionSphere",
+                "SecondaryLeftObjectBExcisionSphere",
                 ExcisionSphere<3>{inner_radius_objectB,
                                   {{xcoord_objectB, 0.0, 0.0}},
                                   {{0, Direction<3>::lower_zeta()},
@@ -449,14 +490,14 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
                                            "        BlockId: 50\n"}
                              : ""};
   return "BinaryCompactObject:\n"
-         "  ObjectA:\n"
+         "  PrimaryRightObjectA:\n"
          "    InnerRadius: 0.4\n"
          "    OuterRadius: 2.0\n"
          "    XCoord: 2.0\n" +
          interior_A +
          "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
-         "  ObjectB:\n"
+         "  SecondaryLeftObjectB:\n"
          "    InnerRadius: 0.4\n"
          "    OuterRadius: 1.0\n"
          "    XCoord: -3.0\n" +
@@ -472,16 +513,16 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
          "    OuterRadius: 25.0\n"
          "    RadialDistribution: Linear\n" +
          outer_boundary_condition + "  InitialRefinement:\n" +
-         (excise_A ? "" : "    ObjectAInterior: [1, 1, 1]\n") +
-         (excise_B ? "" : "    ObjectBInterior: [1, 1, 1]\n") +
-         "    ObjectAShell: [1, 1, " +
+         (excise_A ? "" : "    PrimaryRightObjectAInterior: [1, 1, 1]\n") +
+         (excise_B ? "" : "    SecondaryLeftObjectBInterior: [1, 1, 1]\n") +
+         "    PrimaryRightObjectAShell: [1, 1, " +
          std::to_string(1 + additional_refinement_A) +
          "]\n"
-         "    ObjectBShell: [1, 1, " +
+         "    SecondaryLeftObjectBShell: [1, 1, " +
          std::to_string(1 + additional_refinement_B) +
          "]\n"
-         "    ObjectACube: [1, 1, 1]\n"
-         "    ObjectBCube: [1, 1, 1]\n"
+         "    PrimaryRightObjectACube: [1, 1, 1]\n"
+         "    SecondaryLeftObjectBCube: [1, 1, 1]\n"
          "    EnvelopingCube: [1, 1, 1]\n"
          "    OuterShell: [1, 1, " +
          std::to_string(1 + additional_refinement_outer) +
@@ -663,16 +704,16 @@ void test_parse_errors() {
           {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "The x-coordinate of ObjectA's center is expected to be positive."));
+      Catch::Matchers::Contains("The x-coordinate of PrimaryRightObjectA's "
+                                "center is expected to be positive."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "The x-coordinate of ObjectB's center is expected to be negative."));
+      Catch::Matchers::Contains("The x-coordinate of SecondaryLeftObjectB's "
+                                "center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
@@ -720,16 +761,16 @@ void test_parse_errors() {
           {1.2, 1.1, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "ObjectB's inner radius must be less than its outer radius."));
+      Catch::Matchers::Contains("SecondaryLeftObjectB's inner radius must be "
+                                "less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           {3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
           {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
-      Catch::Matchers::Contains(
-          "ObjectA's inner radius must be less than its outer radius."));
+      Catch::Matchers::Contains("PrimaryRightObjectA's inner radius must be "
+                                "less than its outer radius."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
           {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},

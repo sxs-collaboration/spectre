@@ -66,14 +66,15 @@ namespace domain::creators {
  * \cite Buchman:2012dw, and is illustrated in Figure 20 of that
  * paper.
  *
- * In the code and options below, `ObjectA` and `ObjectB` refer to the
- * two compact objects. In the grid frame, `ObjectA` is located to the
- * right of (i.e. a more positive value of the x-coordinate than)
- * `ObjectB`.  The inner edge of the Blocks surrounding each of
- * `ObjectA` and `ObjectB` is spherical in grid coordinates; the
- * user must specify the center and radius of this surface for both
- * `ObjectA` and `ObjectB`, and the user must specify the outer boundary
- * radius.  The outer boundary is a sphere centered at the origin.
+ * In the code and options below, `PrimaryRightObjectA` and
+ * `SecondaryLeftObjectB` refer to the two compact objects. In the grid frame,
+ * `PrimaryRightObjectA` is located to the right of (i.e. a more positive value
+ * of the x-coordinate than) `SecondaryLeftObjectB`.  The inner edge of the
+ * Blocks surrounding each of `PrimaryRightObjectA` and `SecondaryLeftObjectB`
+ * is spherical in grid coordinates; the user must specify the center and radius
+ * of this surface for both `PrimaryRightObjectA` and `SecondaryLeftObjectB`,
+ * and the user must specify the outer boundary radius.  The outer boundary is a
+ * sphere centered at the origin.
  *
  * Note that Figure 20 of \cite Buchman:2012dw illustrates additional
  * spherical shells inside the "EA" and "EB" blocks, and the caption

@@ -125,11 +125,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.Xcts.Binary",
   test_data({{-5., 6.}}, 0.02, 0.01, {{7., 8.}}, {{1.1, 0.43}}, "bbh_isotropic",
             "Binary:\n"
             "  XCoords: [-5., 6.]\n"
-            "  ObjectA:\n"
+            "  PrimaryRightObjectA:\n"
             "    Schwarzschild:\n"
             "      Mass: 1.1\n"
             "      Coordinates: Isotropic\n"
-            "  ObjectB:\n"
+            "  SecondaryLeftObjectB:\n"
             "    Schwarzschild:\n"
             "      Mass: 0.43\n"
             "      Coordinates: Isotropic\n"

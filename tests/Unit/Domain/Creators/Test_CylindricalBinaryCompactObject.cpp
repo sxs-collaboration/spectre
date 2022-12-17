@@ -75,7 +75,7 @@ create_outer_boundary_condition() {
 }
 
 void test_connectivity() {
-  // ObjectA:
+  // PrimaryRightObjectA:
   constexpr double inner_radius_objectA = 1.0;
 
   // Misc.:
@@ -87,10 +87,10 @@ void test_connectivity() {
   // loop go over {true, false}
   for (const bool with_sphere_e : {false}) {
     CAPTURE(with_sphere_e);
-    // ObjectA:
+    // PrimaryRightObjectA:
     const std::array<double, 3> center_objectA = {with_sphere_e ? 2.0 : 3.0,
                                                   0.05, 0.0};
-    // ObjectB:
+    // SecondaryLeftObjectB:
     const double inner_radius_objectB = with_sphere_e ? 0.4 : 1.0;
     const std::array<double, 3> center_objectB = {with_sphere_e ? -5.0 : -3.0,
                                                   0.05, 0.0};

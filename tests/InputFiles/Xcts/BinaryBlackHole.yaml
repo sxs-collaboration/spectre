@@ -12,12 +12,12 @@ ResourceInfo:
 Background: &background
   Binary:
     XCoords: [&x_left -8., &x_right 8.]
-    ObjectA: &kerr_left
+    PrimaryRightObjectA: &kerr_left
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
         Center: [0., 0., 0.]
-    ObjectB: &kerr_right
+    SecondaryLeftObjectB: &kerr_right
       KerrSchild:
         Mass: 0.4229
         Spin: [0., 0., 0.]
@@ -30,19 +30,7 @@ InitialGuess: *background
 
 DomainCreator:
   BinaryCompactObject:
-    ObjectA:
-      InnerRadius: 0.8
-      OuterRadius: 4.
-      XCoord: *x_left
-      Interior:
-        ExciseWithBoundaryCondition:
-          ApparentHorizon:
-            Center: [*x_left, 0., 0.]
-            Rotation: [0., 0., 0.]
-            Lapse: *kerr_left
-            NegativeExpansion: *kerr_left
-      UseLogarithmicMap: True
-    ObjectB:
+    PrimaryRightObjectA:
       InnerRadius: 0.8
       OuterRadius: 4.
       XCoord: *x_right
@@ -53,6 +41,18 @@ DomainCreator:
             Rotation: [0., 0., 0.]
             Lapse: *kerr_right
             NegativeExpansion: *kerr_right
+      UseLogarithmicMap: True
+    SecondaryLeftObjectB:
+      InnerRadius: 0.8
+      OuterRadius: 4.
+      XCoord: *x_left
+      Interior:
+        ExciseWithBoundaryCondition:
+          ApparentHorizon:
+            Center: [*x_left, 0., 0.]
+            Rotation: [0., 0., 0.]
+            Lapse: *kerr_left
+            NegativeExpansion: *kerr_left
       UseLogarithmicMap: True
     EnvelopingCube:
       Radius: 60.
@@ -67,10 +67,10 @@ DomainCreator:
     # Once the domain supports equatorial compression (or similar) this
     # h-refinement will simplify considerably.
     InitialRefinement:
-      ObjectAShell:               [1, 1, 1]
-      ObjectBShell:               [1, 1, 1]
-      ObjectACube:                [1, 1, 1]
-      ObjectBCube:                [1, 1, 1]
+      PrimaryRightObjectAShell:               [1, 1, 1]
+      SecondaryLeftObjectBShell:               [1, 1, 1]
+      PrimaryRightObjectACube:                [1, 1, 1]
+      SecondaryLeftObjectBCube:                [1, 1, 1]
       EnvelopingCubeUpperZLeft:   [1, 1, 1]
       EnvelopingCubeLowerZLeft:   [1, 1, 1]
       EnvelopingCubeUpperYLeft:   [1, 1, 1]
@@ -94,10 +94,10 @@ DomainCreator:
     # This p-refinement represents a crude manual optimization of the domain. We
     # will need AMR to optimize the domain further.
     InitialGridPoints:
-      ObjectAShell:   [6, 6, 10]
-      ObjectBShell:   [6, 6, 10]
-      ObjectACube:    [6, 6, 7]
-      ObjectBCube:    [6, 6, 7]
+      PrimaryRightObjectAShell:   [6, 6, 10]
+      SecondaryLeftObjectBShell:   [6, 6, 10]
+      PrimaryRightObjectACube:    [6, 6, 7]
+      SecondaryLeftObjectBCube:    [6, 6, 7]
       EnvelopingCube: [6, 6, 6]
       OuterShell:     [6, 6, 6]
 
