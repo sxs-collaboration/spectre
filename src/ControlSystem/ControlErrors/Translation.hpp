@@ -69,6 +69,8 @@ namespace ControlErrors {
  *   coordinate map with names "Expansion" and "Rotation", respectively.
  */
 struct Translation : tt::ConformsTo<protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 2;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for translation control. This should not "
@@ -92,6 +94,10 @@ struct Translation : tt::ConformsTo<protocols::ControlError> {
         functions_of_time.at("Expansion")->func(time)[0][0];
 
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
+
+    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
+           "Excision sphere for ObjectA not in the domain but is needed to "
+           "compute Translation control error.");
 
     const DataVector grid_position_of_A = array_to_datavector(
         domain.excision_spheres().at("ObjectAExcisionSphere").center());

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <type_traits>
 
@@ -21,12 +22,18 @@ namespace control_system::protocols {
 ///
 /// - a call operator that returns a DataVector with a signature the same as in
 ///   the example shown here:
+/// - a `static constexpr size_t expected_number_of_excisions` which specifies
+///   the number of excisions necessary in order to compute the control error.
+///
 ///   \snippet Helpers/ControlSystem/Examples.hpp ControlError
 struct ControlError {
   template <typename ConformingType>
   struct test {
     struct DummyMetavariables;
     struct DummyTupleTags;
+
+    static constexpr size_t expected_number_of_excisions =
+        ConformingType::expected_number_of_excisions;
 
     static_assert(
         std::is_same_v<

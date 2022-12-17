@@ -18,8 +18,10 @@
 #include "Domain/Creators/DomainCreator.hpp"
 #include "NumericalAlgorithms/SphericalHarmonics/Strahlkorper.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits/CreateHasStaticMemberVariable.hpp"
 
@@ -235,11 +237,53 @@ template <typename ControlSystem>
 struct ControlError : db::SimpleTag {
   using type = typename ControlSystem::control_error;
 
+  template <typename Metavariables>
   using option_tags =
-      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>>;
-  static constexpr bool pass_metavariables = false;
+      tmpl::list<OptionTags::ControlSystemInputs<ControlSystem>,
+                 domain::OptionTags::DomainCreator<Metavariables::volume_dim>>;
+  static constexpr bool pass_metavariables = true;
+
+  template <typename Metavariables>
   static type create_from_options(
-      const control_system::OptionHolder<ControlSystem>& option_holder) {
+      const control_system::OptionHolder<ControlSystem>& option_holder,
+      const std::unique_ptr<::DomainCreator<Metavariables::volume_dim>>&
+          domain_creator) {
+    const auto domain = domain_creator->create_domain();
+    const auto& excision_spheres = domain.excision_spheres();
+
+    constexpr size_t expected_number_of_excisions =
+        type::expected_number_of_excisions;
+
+    const auto print_error =
+        [&excision_spheres](const std::string& excision_sphere_name) {
+          ERROR_NO_TRACE(
+              "The control error for the"
+              << pretty_type::name<type>()
+              << " control system expected there to be at least one excision "
+                 "sphere named '"
+              << excision_sphere_name
+              << "' in the domain, but there wasn't. The existing excision "
+                 "spheres are: "
+              << keys_of(excision_spheres)
+              << ". Check that the domain you have chosen has excision spheres "
+                 "implemented.");
+        };
+
+    if constexpr (expected_number_of_excisions == 1) {
+      if (excision_spheres.count("ObjectAExcisionSphere") != 1 and
+          excision_spheres.count("ObjectBExcisionSphere") != 1) {
+        print_error("ObjectAExcisionSphere' or 'ObjectBExcisionSphere");
+      }
+    }
+    if constexpr (expected_number_of_excisions == 2) {
+      if (excision_spheres.count("ObjectAExcisionSphere") != 1) {
+        print_error("ObjectAExcisionSphere");
+      }
+      if (excision_spheres.count("ObjectBExcisionSphere") != 1) {
+        print_error("ObjectBExcisionSphere");
+      }
+    }
+
     return option_holder.control_error;
   }
 };
