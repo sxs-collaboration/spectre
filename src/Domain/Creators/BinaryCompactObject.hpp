@@ -124,12 +124,14 @@ namespace creators {
  * compact objects, and by extension, also refer to the layers that immediately
  * surround each compact object. Note that `ObjectA` is located to the right of
  * the origin (along the positive x-axis) and `ObjectB` is located to the left
- * of the origin. `enveloping cube` refers to the outer surface of Layer 3.
- * `outer sphere` is the radius of the spherical outer boundary, which is
- * the outer boundary of Layer 5. The `enveloping cube` and `outer sphere`
- * are both centered at the origin. `cutting plane` refers to the plane along
- * which the domain divides into two hemispheres. In the final coordinates, the
- * cutting plane always intersects the x-axis at the origin.
+ * of the origin. If both objects are excised, then `ObjectA` must be the larger
+ * object (larger inner radius and x-coord smaller in magnitude). `enveloping
+ * cube` refers to the outer surface of Layer 3. `outer sphere` is the radius of
+ * the spherical outer boundary, which is the outer boundary of Layer 5. The
+ * `enveloping cube` and `outer sphere` are both centered at the origin.
+ * `cutting plane` refers to the plane along which the domain divides into two
+ * hemispheres. In the final coordinates, the cutting plane always intersects
+ * the x-axis at the origin.
  *
  * \note The x-coordinate locations of the `ObjectA` and `ObjectB` should be
  * chosen such that the center of mass is located at x=0.
@@ -575,7 +577,9 @@ class BinaryCompactObject : public DomainCreator<3> {
       "specifies Object{A,B}.XCoord, the x-coordinates of the locations of the "
       "centers of each compact object. In these coordinates, the location for "
       "the axis of rotation is x=0. ObjectA is located on the right and ObjectB"
-      "is located on the left. Please make sure that your choices of "
+      "is located on the left. If both objects are excised, then ObjectA's "
+      "x-coordinates must be smaller in magnitude than ObjectB's. Please make "
+      "sure that your choices of "
       "x-coordinate locations are such that the resulting center of mass "
       "is located at zero.\n"
       "\n"

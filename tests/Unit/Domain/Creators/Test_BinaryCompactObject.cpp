@@ -83,12 +83,12 @@ create_outer_boundary_condition() {
 
 void test_connectivity() {
   // ObjectA:
-  constexpr double inner_radius_objectA = 0.3;
+  constexpr double inner_radius_objectA = 0.5;
   constexpr double outer_radius_objectA = 1.0;
   constexpr double xcoord_objectA = 3.0;
 
   // ObjectB:
-  constexpr double inner_radius_objectB = 0.5;
+  constexpr double inner_radius_objectB = 0.3;
   constexpr double outer_radius_objectB = 1.0;
   constexpr double xcoord_objectB = -3.0;
 
@@ -450,16 +450,16 @@ std::string create_option_string(const bool excise_A, const bool excise_B,
                              : ""};
   return "BinaryCompactObject:\n"
          "  ObjectA:\n"
-         "    InnerRadius: 1.0\n"
+         "    InnerRadius: 0.4\n"
          "    OuterRadius: 2.0\n"
-         "    XCoord: 3.0\n" +
+         "    XCoord: 2.0\n" +
          interior_A +
          "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
          "  ObjectB:\n"
-         "    InnerRadius: 0.2\n"
+         "    InnerRadius: 0.4\n"
          "    OuterRadius: 1.0\n"
-         "    XCoord: -2.0\n" +
+         "    XCoord: -3.0\n" +
          interior_B +
          "    UseLogarithmicMap: " + stringize(use_logarithmic_map_AB) +
          "\n"
@@ -675,6 +675,39 @@ void test_parse_errors() {
           "The x-coordinate of ObjectB's center is expected to be negative."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
+          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {-1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("ObjectB's inner radius must be positive."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          {-3.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("ObjectA's inner radius must be positive."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          {0.4, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains("ObjectA's inner radius should not be smaller "
+                                "than ObjectB's inner radius"));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
+          {0.6, 1.0, 1.5, {{create_inner_boundary_condition()}}, false},
+          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
+          create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
+      Catch::Matchers::Contains(
+          "When both objects are excised, we expect |x_A| <= |x_B|, the "
+          "x-coordinates of both objects.  We should roughly have "
+          "ObjectA.inner_radius * x_A + objectB.inner_radius * x_B = 0 (i.e. "
+          "for BBHs the center of mass should be about at the origin)."));
+  CHECK_THROWS_WITH(
+      domain::creators::BinaryCompactObject(
           {0.3, 1.0, 8.0, {{create_inner_boundary_condition()}}, false},
           {0.5, 1.0, -7.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
@@ -683,8 +716,8 @@ void test_parse_errors() {
                                 "small! The Frustums will be malformed."));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {1.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          {1.3, 1.4, 1.0, {{create_inner_boundary_condition()}}, false},
+          {1.2, 1.1, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, std::nullopt, Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains(
@@ -719,24 +752,24 @@ void test_parse_errors() {
           "of Object A"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, std::vector<std::array<size_t, 3>>{}, 6_st, true, 0.0,
           std::nullopt, Distribution::Linear, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialRefinement'"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, std::vector<std::array<size_t, 3>>{}, true, 0.0,
           std::nullopt, Distribution::Linear, create_outer_boundary_condition(),
           Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("Invalid 'InitialGridPoints'"));
   CHECK_THROWS_WITH(
       domain::creators::BinaryCompactObject(
-          {0.3, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
-          {0.5, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
+          {0.5, 1.0, 1.0, {{create_inner_boundary_condition()}}, false},
+          {0.3, 1.0, -1.0, {{create_inner_boundary_condition()}}, false}, 25.5,
           32.4, 2_st, 6_st, true, 0.0, 35., Distribution::Linear,
           create_outer_boundary_condition(), Options::Context{false, {}, 1, 1}),
       Catch::Matchers::Contains("The 'OuterShell.InnerRadius' must be within"));

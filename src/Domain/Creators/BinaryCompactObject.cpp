@@ -106,6 +106,7 @@ BinaryCompactObject::BinaryCompactObject(
     number_of_blocks_++;
   }
 
+  // Parsing checks
   if (object_A_.x_coord <= 0.0) {
     PARSE_ERROR(
         context,
@@ -123,6 +124,27 @@ BinaryCompactObject::BinaryCompactObject(
         "The radius for the enveloping cube is too small! The Frustums will be "
         "malformed. A recommended radius is:\n"
             << suggested_value);
+  }
+  if (object_A_.inner_radius <= 0.0) {
+    PARSE_ERROR(context, "ObjectA's inner radius must be positive.");
+  }
+  if (object_B_.inner_radius <= 0.0) {
+    PARSE_ERROR(context, "ObjectB's inner radius must be positive.");
+  }
+  if (object_A_.is_excised() and object_B_.is_excised()) {
+    if (object_A_.inner_radius < object_B_.inner_radius) {
+      PARSE_ERROR(context,
+                  "ObjectA's inner radius should not be smaller than ObjectB's "
+                  "inner radius");
+    }
+    if (std::abs(object_A_.x_coord) > std::abs(object_B_.x_coord)) {
+      PARSE_ERROR(
+          context,
+          "When both objects are excised, we expect |x_A| <= |x_B|, the "
+          "x-coordinates of both objects.  We should roughly have "
+          "ObjectA.inner_radius * x_A + objectB.inner_radius * x_B = 0 (i.e. "
+          "for BBHs the center of mass should be about at the origin).");
+    }
   }
   if (object_A_.outer_radius < object_A_.inner_radius) {
     PARSE_ERROR(context,
