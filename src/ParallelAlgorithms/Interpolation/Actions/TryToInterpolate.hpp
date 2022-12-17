@@ -120,13 +120,24 @@ void interpolate_data(
             const auto& element_coord_holder = element_coord_pair.second;
             intrp::Irregular<Metavariables::volume_dim> interpolator(
                 volume_info.mesh, element_coord_holder.element_logical_coords);
-            if constexpr (InterpolationTarget_detail::
-                              has_compute_vars_to_interpolate_v<
-                                  InterpolationTargetTag>) {
+            // This first branch is used if compute_vars_to_interpolate exists
+            // or if the vars_to_interpolate_to_target is a subset of the
+            // interpolator_source_vars.
+            if constexpr (
+                InterpolationTarget_detail::has_compute_vars_to_interpolate_v<
+                    InterpolationTargetTag> or
+                not std::is_same_v<
+                    tmpl::list_difference<
+                        typename Metavariables::interpolator_source_vars,
+                        typename InterpolationTargetTag::
+                            vars_to_interpolate_to_target>,
+                    tmpl::list<>>) {
               interp_info.vars.emplace_back(
                   interpolator.interpolate(vars_to_interpolate));
             } else {
-              // If compute_vars_to_interpolate does not exist, then
+              // If compute_vars_to_interpolate does not exist and
+              // vars_to_interpolate_to_target isn't a subset of
+              // interpolator_source_vars, then
               // volume_info.source_vars_from_element is the same as
               // volume_info.vars_to_interpolate.
               interp_info.vars.emplace_back(interpolator.interpolate(
