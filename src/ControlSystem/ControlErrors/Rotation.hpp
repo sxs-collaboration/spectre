@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -54,6 +55,8 @@ namespace ControlErrors {
  *   control_system::Systems::Rotation Rotation \endlink control system
  */
 struct Rotation : tt::ConformsTo<protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 2;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for rotation control. This should not "
@@ -70,6 +73,13 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
 
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
     using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
+
+    ASSERT(domain.excision_spheres().count("ObjectAExcisionSphere") == 1,
+           "Excision sphere for ObjectA not in the domain but is needed to "
+           "compute Rotation control error.");
+    ASSERT(domain.excision_spheres().count("ObjectBExcisionSphere") == 1,
+           "Excision sphere for ObjectB not in the domain but is needed to "
+           "compute Rotation control error.");
 
     const DataVector grid_position_of_A = array_to_datavector(
         domain.excision_spheres().at("ObjectAExcisionSphere").center());

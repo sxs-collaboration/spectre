@@ -43,6 +43,7 @@ void test_translation_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Translation: 3\n"
       "ControlSystems:\n"

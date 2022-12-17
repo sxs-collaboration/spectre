@@ -30,7 +30,9 @@ namespace {
 struct LabelA {};
 struct Rotation {};
 using system = control_system::TestHelpers::System<
-    2, LabelA, control_system::TestHelpers::Measurement<LabelA>>;
+    2, LabelA, control_system::TestHelpers::Measurement<LabelA>, 1>;
+using system2 = control_system::TestHelpers::System<
+    2, LabelA, control_system::TestHelpers::Measurement<LabelA>, 2>;
 using quat_system = control_system::TestHelpers::System<
     2, Rotation, control_system::TestHelpers::Measurement<Rotation>>;
 
@@ -180,12 +182,16 @@ void test_individual_tags() {
 
   const auto holder = TestHelpers::test_option_tag<
       control_system::OptionTags::ControlSystemInputs<system>>(tuner_str);
+  const auto holder2 = TestHelpers::test_option_tag<
+      control_system::OptionTags::ControlSystemInputs<system2>>(tuner_str);
   const auto quat_holder = TestHelpers::test_option_tag<
       control_system::OptionTags::ControlSystemInputs<quat_system>>(tuner_str);
 
   const std::unique_ptr<DomainCreator<3>> creator =
-      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{
-          {system::name(), 2}, {quat_system::name(), 3}});
+      std::make_unique<FakeCreator>(
+          std::unordered_map<std::string, size_t>{{system::name(), 2},
+                                                  {quat_system::name(), 3}},
+          2);
 
   const TimescaleTuner created_tuner =
       tuner_tag::create_from_options<MetavarsEmpty>(holder, creator, 0.0);
@@ -195,6 +201,31 @@ void test_individual_tags() {
 
   CHECK(created_tuner == create_expected_tuner(2));
   CHECK(quat_created_tuner == create_expected_tuner(3));
+
+  using control_error_tag = control_system::Tags::ControlError<system>;
+  using control_error_tag2 = control_system::Tags::ControlError<system2>;
+
+  // We're only checking for errors here, so the fact that it doesn't error is
+  // enough of a check. We test errors below.
+  [[maybe_unused]] const control_error_tag::type created_control_error =
+      control_error_tag::create_from_options<MetavarsEmpty>(holder, creator);
+  [[maybe_unused]] const control_error_tag2::type created_control_error2 =
+      control_error_tag2::create_from_options<MetavarsEmpty>(holder2, creator);
+
+  const std::unique_ptr<DomainCreator<3>> creator_error_0 =
+      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
+                                    0);
+  const std::unique_ptr<DomainCreator<3>> creator_error_1 =
+      std::make_unique<FakeCreator>(std::unordered_map<std::string, size_t>{},
+                                    1);
+
+  CHECK_THROWS_WITH(
+      control_error_tag::create_from_options<MetavarsEmpty>(holder,
+                                                            creator_error_0),
+      Catch::Contains("ObjectAExcisionSphere' or 'ObjectBExcisionSphere"));
+  CHECK_THROWS_WITH(control_error_tag2::create_from_options<MetavarsEmpty>(
+                        holder2, creator_error_1),
+                    Catch::Contains("'ObjectBExcisionSphere'"));
 
   using controller_tag = control_system::Tags::Controller<system>;
 

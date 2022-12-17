@@ -98,6 +98,8 @@ struct ExampleMeasurement
 /// [ControlError]
 struct ExampleControlError
     : tt::ConformsTo<control_system::protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 1;
+
   void pup(PUP::er& /*p*/) {}
 
   template <typename Metavariables, typename... QueueTags>
