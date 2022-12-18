@@ -18,16 +18,16 @@
 
 namespace {
 void test_table(const io::ComposeTable& compose_table) {
-  CHECK(compose_table.number_density_bounds()[0] ==
-        approx(0.10000000000000001));
-  CHECK(compose_table.number_density_bounds()[1] == approx(158.0));
   CHECK(compose_table.temperature_bounds()[0] ==
+        approx(0.10000000000000001));
+  CHECK(compose_table.temperature_bounds()[1] == approx(158.0));
+  CHECK(compose_table.number_density_bounds()[0] ==
         approx(1.0000000000000000e-12));
-  CHECK(compose_table.temperature_bounds()[1] == approx(1.9));
+  CHECK(compose_table.number_density_bounds()[1] == approx(1.9));
   CHECK(compose_table.electron_fraction_bounds()[0] == approx(0.01));
   CHECK(compose_table.electron_fraction_bounds()[1] == approx(0.6));
-  CHECK(compose_table.number_density_number_of_points() == 2);
-  CHECK(compose_table.temperature_number_of_points() == 4);
+  CHECK(compose_table.number_density_number_of_points() == 4);
+  CHECK(compose_table.temperature_number_of_points() == 2);
   CHECK(compose_table.electron_fraction_number_of_points() == 3);
   CHECK(compose_table.beta_equilibrium() == false);
   CHECK(compose_table.number_density_log_spacing() == true);
