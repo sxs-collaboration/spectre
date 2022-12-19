@@ -33,18 +33,23 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
   TestHelpers::db::test_simple_tag<
       importers::Tags::ObservationValue<ExampleVolumeData>>(
       "ObservationValue(ExampleVolumeData)");
+  TestHelpers::db::test_simple_tag<
+      importers::Tags::EnableInterpolation<ExampleVolumeData>>(
+      "EnableInterpolation(ExampleVolumeData)");
 
   Options::Parser<
       tmpl::list<importers::OptionTags::FileGlob<ExampleVolumeData>,
                  importers::OptionTags::Subgroup<ExampleVolumeData>,
-                 importers::OptionTags::ObservationValue<ExampleVolumeData>>>
+                 importers::OptionTags::ObservationValue<ExampleVolumeData>,
+                 importers::OptionTags::EnableInterpolation<ExampleVolumeData>>>
       opts("");
   opts.parse(
       "Importers:\n"
       "  ExampleVolumeData:\n"
       "    FileGlob: File.name\n"
       "    Subgroup: data.group\n"
-      "    ObservationValue: 1.");
+      "    ObservationValue: 1.\n"
+      "    Interpolate: True");
   CHECK(opts.get<importers::OptionTags::FileGlob<ExampleVolumeData>>() ==
         "File.name");
   CHECK(opts.get<importers::OptionTags::Subgroup<ExampleVolumeData>>() ==
@@ -54,6 +59,8 @@ SPECTRE_TEST_CASE("Unit.IO.Importers.Tags", "[Unit][IO]") {
           opts.get<
               importers::OptionTags::ObservationValue<ExampleVolumeData>>()) ==
       1.);
+  CHECK(opts.get<
+        importers::OptionTags::EnableInterpolation<ExampleVolumeData>>());
 
   CHECK(std::get<importers::ObservationSelector>(
             TestHelpers::test_option_tag<

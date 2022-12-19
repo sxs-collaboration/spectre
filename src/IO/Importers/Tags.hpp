@@ -77,6 +77,28 @@ struct ObservationValue {
       "The observation value at which to read data";
   using group = ImporterOptionsGroup;
 };
+
+/*!
+ * \brief Toggle interpolation of numeric data to the target domain
+ */
+template <typename ImporterOptionsGroup>
+struct EnableInterpolation {
+  static std::string name() { return "Interpolate"; }
+  static_assert(
+      std::is_same_v<typename ImporterOptionsGroup::group, Group>,
+      "The importer options should be placed in the 'Importers' option "
+      "group. Add a type alias `using group = importers::OptionTags::Group`.");
+  using type = bool;
+  static constexpr Options::String help =
+      "Enable to interpolate the volume data to the target domain. Disable to "
+      "load volume data directly into elements with the same name. "
+      "For example, you can disable interpolation if you have generated data "
+      "on the target points, or if you have already interpolated your data. "
+      "When interpolation is disabled, datasets "
+      "'InertialCoordinates(_x,_y,_z)' must exist in the files. They are used "
+      "to verify that the target points indeed match the source data.";
+  using group = ImporterOptionsGroup;
+};
 }  // namespace OptionTags
 
 /// The \ref DataBoxGroup tags associated with the data importer
@@ -130,6 +152,25 @@ struct ObservationValue : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& observation_value) {
     return observation_value;
+  }
+};
+
+/*!
+ * \brief Toggle interpolation of numeric data to the target domain
+ */
+template <typename ImporterOptionsGroup>
+struct EnableInterpolation : db::SimpleTag {
+  static std::string name() {
+    return "EnableInterpolation(" + pretty_type::name<ImporterOptionsGroup>() +
+           ")";
+  }
+  using type = bool;
+  using option_tags =
+      tmpl::list<OptionTags::EnableInterpolation<ImporterOptionsGroup>>;
+
+  static constexpr bool pass_metavariables = false;
+  static bool create_from_options(const bool enable_interpolation) {
+    return enable_interpolation;
   }
 };
 
