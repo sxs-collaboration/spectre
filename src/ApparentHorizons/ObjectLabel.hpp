@@ -8,7 +8,12 @@
 
 namespace ah {
 /// Labels for the objects in a binary system.
-enum class ObjectLabel { A, B };
+enum class ObjectLabel {
+  /// The object along the positive x-axis in the grid frame
+  A,
+  /// The object along the negative x-axis in the grid frame
+  B
+};
 
 std::string name(const ObjectLabel x);
 
