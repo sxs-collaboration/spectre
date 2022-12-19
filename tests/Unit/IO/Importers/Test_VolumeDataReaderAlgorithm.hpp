@@ -382,6 +382,8 @@ struct ElementArray {
 /// [metavars]
 template <size_t Dim>
 struct Metavariables {
+  static constexpr size_t volume_dim = Dim;
+
   using component_list =
       tmpl::list<ElementArray<Dim, Grid::Fine, Metavariables>,
                  ElementArray<Dim, Grid::Coarse, Metavariables>,

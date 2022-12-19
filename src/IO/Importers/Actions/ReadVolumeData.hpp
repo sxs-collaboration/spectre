@@ -40,7 +40,7 @@ namespace importers {
 template <typename Metavariables>
 struct ElementDataReader;
 namespace Actions {
-template <typename ImporterOptionsGroup, typename FieldTagsList,
+template <size_t Dim, typename ImporterOptionsGroup, typename FieldTagsList,
           typename ReceiveComponent>
 struct ReadAllVolumeDataAndDistribute;
 }  // namespace Actions
@@ -100,20 +100,19 @@ struct ReadVolumeData {
                  Tags::ObservationValue<ImporterOptionsGroup>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+            size_t Dim, typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ElementId<Dim>& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // Not using `ckLocalBranch` here to make sure the simple action invocation
     // is asynchronous.
     auto& reader_component = Parallel::get_parallel_component<
         importers::ElementDataReader<Metavariables>>(cache);
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
-        ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
+        Dim, ImporterOptionsGroup, FieldTagsList, ParallelComponent>>(
         reader_component);
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
@@ -161,7 +160,7 @@ struct ReadVolumeData {
  *
  * \see Dev guide on \ref dev_guide_importing
  */
-template <typename ImporterOptionsGroup, typename FieldTagsList,
+template <size_t Dim, typename ImporterOptionsGroup, typename FieldTagsList,
           typename ReceiveComponent>
 struct ReadAllVolumeDataAndDistribute {
   template <typename ParallelComponent, typename DataBox,

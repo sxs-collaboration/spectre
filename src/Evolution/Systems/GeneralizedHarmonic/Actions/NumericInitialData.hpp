@@ -170,7 +170,8 @@ struct ReadNumericInitialData {
     auto& reader_component = Parallel::get_parallel_component<
         importers::ElementDataReader<Metavariables>>(cache);
     Parallel::simple_action<importers::Actions::ReadAllVolumeDataAndDistribute<
-        ImporterOptionsGroup, detail::all_numeric_vars, ParallelComponent>>(
+        Metavariables::volume_dim, ImporterOptionsGroup,
+        detail::all_numeric_vars, ParallelComponent>>(
         reader_component, std::move(selected_fields));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }

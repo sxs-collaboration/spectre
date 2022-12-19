@@ -81,10 +81,12 @@ struct MockVolumeDataReader {
   using array_index = size_t;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
-      tmpl::list<importers::detail::InitializeElementDataReader>>>;
+      tmpl::list<importers::detail::InitializeElementDataReader<
+          metavariables::volume_dim>>>>;
 };
 
 struct Metavariables {
+  static constexpr size_t volume_dim = 2;
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
 };
