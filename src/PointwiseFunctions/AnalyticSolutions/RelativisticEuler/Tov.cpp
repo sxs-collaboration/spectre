@@ -103,10 +103,6 @@ void lindblom_rhs(
       d_log_conformal_factor = -0.25 * d_mass_over_radius;
     }
   } else {
-    // This statement is triggered by one of the test examples,
-    // Test_Tov.cpp: void {anonymous}::test_rueter()
-    // Test_Tov.cpp: void {anonymous}::test_baumgarte_shapiro()
-    // not sure what to do about that
     if constexpr (CoordSystem == TovCoordinates::Schwarzschild) {
       ASSERT(mass_over_radius < .5,
              "Compactness of Star is greater than BH"
@@ -220,8 +216,8 @@ void TovSolution::integrate(
       // Transform observed radius to isotropic, so we use the isotropic radius
       // for all interpolations below
       observer.radius[i] /= square(observer.conformal_factor[i]);
-      // The interpolation is not safe otherwise
     }
+    // The interpolation is not safe otherwise
     observer.radius.back() = outer_radius_;
     conformal_factor_interpolant_ = intrp::BarycentricRational(
         observer.radius, observer.conformal_factor, 5);
@@ -229,8 +225,6 @@ void TovSolution::integrate(
 
   mass_over_radius_interpolant_ =
       intrp::CubicSpline(observer.radius, observer.mass_over_radius);
-  // log_enthalpy(radius) is almost linear so an interpolant of order 3
-  // maximizes precision
   log_enthalpy_interpolant_ =
       intrp::CubicSpline(observer.radius, observer.log_enthalpy);
 }
