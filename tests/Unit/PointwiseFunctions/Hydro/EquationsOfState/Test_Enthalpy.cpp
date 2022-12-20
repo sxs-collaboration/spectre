@@ -3,6 +3,7 @@
 
 #include "Framework/TestingFramework.hpp"
 
+#include <cmath>
 #include <limits>
 #include <pup.h>
 #include <vector>
@@ -16,7 +17,6 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
-
 namespace EquationsOfState {
 namespace {
 
@@ -158,6 +158,30 @@ void check_exact() {
     const auto rho_from_enthalpy = eos.rest_mass_density_from_enthalpy(
         hydro::relativistic_specific_enthalpy(rho, eps, p));
     CHECK(get(rho) == approx(get(rho_from_enthalpy)));
+  }
+  {
+    // Guarantee that the root find has the correct bracket by explicitly
+    // nonsensical there, so if the correct braket
+    const auto oscillating_eos = Enthalpy<Spectral>{
+      0.5,
+      2.0,
+      1.0,
+      M_PI/log(2.0),
+      std::vector<double>{3.5},
+      std::vector<double>{0.0},
+      std::vector<double>{0.5},
+      Spectral{.5, .25, std::vector<double>{2.0}, 1.0},
+      0.0};
+    //cos(pi)) = -1, so the enthalpy is just 1 at z=log(2.0),
+    // which is rho =1.0
+    // If the rootfinder had the wrong braket z in [0, log(4)] it would
+    // not find the root bracketed, as cos(0) = 1, cos(log(4)*pi/log(2)) =
+    // cos(2*pi) = 1, so at these bounds h = 2.0 > 1.25
+    const Scalar<double> target_enthalpy{3.25};
+    const Scalar<double> target_rho{pow(2.0, 1.0/3.0)};
+    const auto rho_from_enthalpy =
+        oscillating_eos.rest_mass_density_from_enthalpy(target_enthalpy);
+    CHECK(get(target_rho) == approx(get(rho_from_enthalpy)));
   }
   // Test bounds
   CHECK(0.0 == eos.rest_mass_density_lower_bound());
