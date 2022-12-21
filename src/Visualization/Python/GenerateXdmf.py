@@ -8,29 +8,44 @@ import glob
 import h5py
 import logging
 import numpy as np
+import rich
+import sys
+from spectre.Visualization.ReadH5 import available_subfiles
 
 
-def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
-                  stride, coordinates):
+def generate_xdmf(h5files, output, subfile_name, start_time, stop_time, stride,
+                  coordinates):
     """Generate an XDMF file for ParaView and VisIt
 
-    The XDMF file points into HDF5 files containing volume data so ParaView and
-    VisIt can load the data out of the HDF5 files.
+    Read volume data from the 'H5FILES' and generate an XDMF file. The XDMF
+    file points into the 'H5FILES' files so ParaView and VisIt can load the
+    volume data. To process multiple files suffixed with the node number,
+    specify a glob like 'VolumeData*.h5'.
 
     To load the XDMF file in ParaView you must choose the 'Xdmf Reader', NOT
     'Xdmf3 Reader'.
     """
-    h5files = [(h5py.File(filename, 'r'), filename)
-               for filename in glob.glob(file_prefix + "[0-9]*.h5")]
+    # CLI scripts should be noops when input is empy
+    if not h5files:
+        return
 
-    assert len(h5files) > 0, "No H5 files with prefix '{}' found.".format(
-        file_prefix)
+    h5files = [(h5py.File(filename, 'r'), filename) for filename in h5files]
 
-    element_data = h5files[0][0].get(subfile_name + '.vol')
+    if not subfile_name:
+        import rich.columns
+        rich.print(
+            rich.columns.Columns(
+                available_subfiles(h5files[0][0], extension=".vol")))
+        return
+
+    if not subfile_name.endswith(".vol"):
+        subfile_name += ".vol"
+
+    element_data = h5files[0][0].get(subfile_name)
     if element_data is None:
-        raise ValueError(("Could not open subfile name '{}.vol'. Available "
-                          "subfiles: {}").format(subfile_name,
-                                                 h5files[0][0].keys()))
+        raise ValueError(
+            f"Could not open subfile name '{subfile_name}'. Available "
+            f"subfiles: {available_subfiles(h5files[0][0], extension='.vol')}")
     temporal_ids_and_values = [(x,
                                 element_data.get(x).attrs['observation_value'])
                                for x in element_data.keys()]
@@ -67,8 +82,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
         while not done:
             # loop over each h5 file
             for h5file in h5files:
-                h5temporal = h5file[0].get(subfile_name + '.vol').get(
-                    id_and_value[0])
+                h5temporal = h5file[0].get(subfile_name).get(id_and_value[0])
                 # Skip this file if the observation does not exist in it.
                 # Usually this is because the program crashed before
                 # writing it.  Data in other files will still be processed
@@ -181,7 +195,7 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
 
                 # Configure grid location
                 Grid_path = ("          {}:/".format(h5file[1]) +
-                             subfile_name + ".vol/{}".format(id_and_value[0]))
+                             subfile_name + "/{}".format(id_and_value[0]))
                 xdmf_output += (
                     "    <Grid Name=\"%s\" GridType=\"Uniform\">\n" %
                     (h5file[1]))
@@ -302,31 +316,38 @@ def generate_xdmf(file_prefix, output, subfile_name, start_time, stop_time,
                 # close time grid
                 xdmf_output += "  </Grid>\n"
 
-    xdmf_output += "</Grid>\n</Domain>\n</Xdmf>"
+    xdmf_output += "</Grid>\n</Domain>\n</Xdmf>\n"
 
     for h5file in h5files:
         h5file[0].close()
 
-    with open(output + ".xmf", "w") as xmf_file:
-        xmf_file.write(xdmf_output)
+    if output:
+        if not output.endswith(".xmf"):
+            output += ".xmf"
+        with open(output, "w") as xmf_file:
+            xmf_file.write(xdmf_output)
+    else:
+        sys.stdout.write(xdmf_output)
 
 
 @click.command(help=generate_xdmf.__doc__)
-@click.option(
-    '--file-prefix',
-    required=True,
-    help=("The common prefix of the H5 volume files to load, excluding "
-          "the node number integer(s)"))
+@click.argument('h5files',
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True),
+                nargs=-1)
 @click.option('--output',
               '-o',
-              required=True,
-              help="Output file name, an xmf extension will be added")
+              type=click.Path(writable=True),
+              help=("Output file name, an xmf extension will be added. "
+                    "If unspecified, the output will be written to stdout."))
 @click.option(
     '--subfile-name',
     '-d',
-    required=True,
-    help=("Name of the volume data subfile in the H5 files, excluding the "
-          "'.vol' extension"))
+    help=("Name of the volume data subfile in the H5 files. A '.vol' "
+          "extension is added if needed. If unspecified, list all '.vol' "
+          "subfiles and exit."))
 @click.option("--stride",
               default=1,
               type=int,

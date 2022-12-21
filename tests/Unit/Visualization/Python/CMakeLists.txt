@@ -23,6 +23,12 @@ if(${BUILD_PYTHON_BINDINGS})
     )
 endif()
 
+spectre_add_python_bindings_test(
+  "Unit.Visualization.Python.ReadH5"
+  Test_ReadH5.py
+  "unit;visualization;python"
+  None)
+
 spectre_add_python_test(
   "Unit.Visualization.Python.Render1D"
   Test_Render1D.py

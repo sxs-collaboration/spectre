@@ -1,8 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-from spectre.Visualization.PlotDatFile import (available_subfiles,
-                                               plot_dat_command)
+from spectre.Visualization.PlotDatFile import plot_dat_command
 
 import click
 import h5py
@@ -23,11 +22,6 @@ class TestPlotDatFile(unittest.TestCase):
         self.test_dir = os.path.join(spectre_informer.unit_test_build_path(),
                                      'Visualization/Python/PlotDatFile')
         self.runner = CliRunner()
-
-    def test_available_subfiles(self):
-        with h5py.File(self.filename, 'r') as open_file:
-            self.assertEqual(available_subfiles(open_file),
-                             ['Group0/MemoryData.dat', 'TimeSteps2.dat'])
 
     def test_list_subfiles(self):
         result = self.runner.invoke(plot_dat_command, [self.filename],

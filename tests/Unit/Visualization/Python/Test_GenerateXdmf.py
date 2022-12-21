@@ -6,6 +6,8 @@ from spectre.Visualization.GenerateXdmf import (generate_xdmf,
 
 import spectre.Informer as spectre_informer
 import unittest
+import glob
+import h5py
 import logging
 import os
 import shutil
@@ -19,15 +21,16 @@ class TestGenerateXdmf(unittest.TestCase):
         self.test_dir = os.path.join(spectre_informer.unit_test_build_path(),
                                      'Visualization/GenerateXdmf')
         os.makedirs(self.test_dir, exist_ok=True)
+        self.maxDiff = None
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
     def test_generate_xdmf(self):
-        data_file_prefix = os.path.join(self.data_dir, 'VolTestData')
+        data_files = glob.glob(os.path.join(self.data_dir, 'VolTestData*.h5'))
         output_filename = os.path.join(self.test_dir,
                                        'Test_GenerateXdmf_output')
-        generate_xdmf(file_prefix=data_file_prefix,
+        generate_xdmf(h5files=data_files,
                       output=output_filename,
                       subfile_name="element_data",
                       start_time=0.,
@@ -40,11 +43,21 @@ class TestGenerateXdmf(unittest.TestCase):
         # details, we should refactor the script into smaller units.
         self.assertTrue(os.path.isfile(output_filename + '.xmf'))
 
+        # Also make sure that the output doesn't change. This has caught many
+        # bugs.
+        with open(output_filename + ".xmf") as open_file:
+            output = open_file.read()
+        with open(os.path.join(self.data_dir, 'VolTestData.xmf')) as open_file:
+            expected_output = open_file.read()
+            expected_output = expected_output.replace('VolTestData0.h5',
+                                                      data_files[0])
+        self.assertEqual(output, expected_output)
+
     def test_surface_generate_xdmf(self):
-        data_file_prefix = os.path.join(self.data_dir, 'SurfaceTestData')
+        data_files = [os.path.join(self.data_dir, 'SurfaceTestData.h5')]
         output_filename = os.path.join(self.test_dir,
                                        'Test_SurfaceGenerateXdmf_output')
-        generate_xdmf(file_prefix=data_file_prefix,
+        generate_xdmf(h5files=data_files,
                       output=output_filename,
                       subfile_name="AhA",
                       start_time=0.,
@@ -58,11 +71,11 @@ class TestGenerateXdmf(unittest.TestCase):
         self.assertTrue(os.path.isfile(output_filename + '.xmf'))
 
     def test_subfile_not_found(self):
-        data_file_prefix = os.path.join(self.data_dir, 'VolTestData')
+        data_files = glob.glob(os.path.join(self.data_dir, 'VolTestData*.h5'))
         output_filename = os.path.join(self.test_dir,
                                        'Test_GenerateXdmf_subfile_not_found')
         with self.assertRaisesRegex(ValueError, 'Could not open subfile'):
-            generate_xdmf(file_prefix=data_file_prefix,
+            generate_xdmf(h5files=data_files,
                           output=output_filename,
                           subfile_name="unknown_subfile",
                           start_time=0.,
@@ -71,13 +84,12 @@ class TestGenerateXdmf(unittest.TestCase):
                           coordinates='InertialCoordinates')
 
     def test_cli(self):
-        data_file_prefix = os.path.join(self.data_dir, 'VolTestData')
+        data_files = glob.glob(os.path.join(self.data_dir, 'VolTestData*.h5'))
         output_filename = os.path.join(self.test_dir,
                                        'Test_GenerateXdmf_output')
         runner = CliRunner()
         result = runner.invoke(generate_xdmf_command, [
-            "--file-prefix",
-            data_file_prefix,
+            *data_files,
             "-o",
             output_filename,
             "-d",
@@ -85,6 +97,14 @@ class TestGenerateXdmf(unittest.TestCase):
         ],
                                catch_exceptions=False)
         self.assertEqual(result.exit_code, 0)
+
+        # List available subfiles
+        result = runner.invoke(generate_xdmf_command, [
+            *data_files,
+        ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("element_data", result.output)
 
 
 if __name__ == '__main__':
