@@ -45,9 +45,9 @@ void make_boundary_data(const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
       [&expected, &l_max](const gsl::not_null<
                           typename Tags::BoundaryValue<BondiValueTag>::type*>
                               boundary) {
-        get(*boundary).data() = ComplexDataVector{
+        get(*boundary).data().set_data_ref(
             expected->data(),
-            Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+            Spectral::Swsh::number_of_swsh_collocation_points(l_max));
       });
 }
 

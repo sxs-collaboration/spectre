@@ -256,10 +256,8 @@ class VectorImpl
   }
 
   void set_data_ref(T* const start, const size_t set_size) {
-    owned_data_.reset();
-    if (start == nullptr) {
-      (**this).reset();
-    } else {
+    clear();
+    if (start != nullptr) {
       (**this).reset(start, set_size);
     }
     owning_ = false;
@@ -291,6 +289,9 @@ class VectorImpl
 
   /// Returns true if the class owns the data
   bool is_owning() const { return owning_; }
+
+  /// Put the class in the default-constructed state.
+  void clear();
 
   /// Serialization for Charm++
   // NOLINTNEXTLINE(google-runtime-references)
@@ -354,7 +355,9 @@ VectorImpl<T, VectorType, StaticSize>::operator=(
       ASSERT(rhs.size() == size(), "Must copy into same size, not "
                                        << rhs.size() << " into " << size());
     }
-    std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+    if (LIKELY(data() != rhs.data())) {
+      std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+    }
   }
   return *this;
 }
@@ -371,32 +374,31 @@ VectorImpl<T, VectorType, StaticSize>::VectorImpl(
   } else {
     this->reset(data(), size());
   }
-  rhs.owning_ = true;
-  rhs.reset();
+  rhs.clear();
 }
 
 template <typename T, typename VectorType, size_t StaticSize>
 VectorImpl<T, VectorType, StaticSize>&
 VectorImpl<T, VectorType, StaticSize>::operator=(
     VectorImpl<T, VectorType, StaticSize>&& rhs) {
+  ASSERT(rhs.is_owning(),
+         "Cannot move assign from a non-owning vector, because the correct "
+         "behavior is unclear.");
   if (this != &rhs) {
     if (owning_) {
       owned_data_ = std::move(rhs.owned_data_);
       static_owned_data_ = std::move(rhs.static_owned_data_);
-      owning_ = rhs.owning_;
       **this = std::move(*rhs);
-      if (owning_) {
-        reset_pointer_vector(size());
-      } else {
-        this->reset(data(), size());
-      }
+      reset_pointer_vector(size());
+      rhs.clear();
     } else {
       ASSERT(rhs.size() == size(), "Must copy into same size, not "
                                        << rhs.size() << " into " << size());
-      std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+      if (LIKELY(data() != rhs.data())) {
+        std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+        rhs.clear();
+      }
     }
-    rhs.owning_ = true;
-    rhs.reset();
   }
   return *this;
 }
@@ -448,6 +450,14 @@ VectorImpl<T, VectorType, StaticSize>&
 VectorImpl<T, VectorType, StaticSize>::operator=(const T& rhs) {
   **this = rhs;
   return *this;
+}
+
+template <typename T, typename VectorType, size_t StaticSize>
+void VectorImpl<T, VectorType, StaticSize>::clear() {
+  BaseType::clear();
+  owning_ = true;
+  owned_data_.reset();
+  // The state of static_owned_data_ doesn't matter.
 }
 
 template <typename T, typename VectorType, size_t StaticSize>

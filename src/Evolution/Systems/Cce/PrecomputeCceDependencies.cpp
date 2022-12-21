@@ -31,9 +31,8 @@ void angular_derivative_of_r_divided_by_r_impl(
   // first set the first angular view
   SpinWeighted<ComplexDataVector,
                Spectral::Swsh::Tags::derivative_spin_weight<DerivKind>>
-      d_r_divided_by_r_boundary;
-  d_r_divided_by_r_boundary.data() = ComplexDataVector{
-      d_r_divided_by_r->data().data(), number_of_angular_points};
+      d_r_divided_by_r_boundary{
+          {d_r_divided_by_r->data().data(), number_of_angular_points}};
   Spectral::Swsh::angular_derivatives<tmpl::list<DerivKind>>(
       l_max, 1, make_not_null(&d_r_divided_by_r_boundary), boundary_r);
   d_r_divided_by_r_boundary.data() /= boundary_r.data();

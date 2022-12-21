@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>  // IWYU pragma: keep
 #include <random>
+#include <sstream>
 #include <tuple>
 #include <utility>
 #include <variant>
@@ -32,6 +33,297 @@
 
 namespace TestHelpers {
 namespace VectorImpl {
+namespace detail {
+template <typename T, typename... Ts>
+bool check_ownership_ok_impl(const size_t checked, const T& t,
+                             const Ts&... ts) {
+  if (checked < sizeof...(ts) + 1) {
+    bool result = check_ownership_ok_impl(checked + 1, ts..., t);
+    if (t.is_owning()) {
+      result =
+          result and (... and (not ts.is_owning() or t.data() != ts.data()));
+    } else {
+      result = result and (... or (ts.is_owning() and t.data() == ts.data()));
+    }
+    return result;
+  }
+  return true;
+}
+
+template <typename T, typename... Ts>
+bool check_ownership_ok(const T& t, const Ts&... ts) {
+  std::stringstream vector_info{};
+  vector_info << t.is_owning() << " " << t.size() << " " << t.data() << "\n";
+  (vector_info << ...
+               << (MakeString{} << ts.is_owning() << " " << ts.size() << " "
+                                << ts.data() << "\n"));
+  INFO(vector_info.str());
+  const bool result = check_ownership_ok_impl(0, t, ts...);
+  CHECK(result);
+  return result;
+}
+
+template <typename VectorType>
+void test_unowning_construct_and_assign() {
+  auto make_vector = [counter = 0]() mutable {  // NOLINT(spectre-mutable)
+    return VectorType(VectorType::static_size + 1, ++counter);
+  };
+
+  struct VectorState {
+    VectorState(const VectorType& v)
+        : owning_(v.is_owning()),
+          data_(v.data()),
+          size_(v.size()),
+          value_(v[0]) {}
+
+    bool check_is_same(const VectorType& v) const {
+      CHECK(owning_ == v.is_owning());
+      CHECK(data_ == v.data());
+      CHECK(size_ == v.size());
+      CHECK(value_ == v[0]);
+      return owning_ == v.is_owning() and data_ == v.data() and
+             size_ == v.size() and value_ == v[0];
+    }
+
+    bool check_is_same_except_value(const VectorType& v) const {
+      CHECK(owning_ == v.is_owning());
+      CHECK(data_ == v.data());
+      CHECK(size_ == v.size());
+      CHECK(value_ != v[0]);
+      return owning_ == v.is_owning() and data_ == v.data() and
+             size_ == v.size() and value_ != v[0];
+    }
+
+   private:
+    bool owning_;
+    const typename VectorType::value_type* data_;
+    size_t size_;
+    typename VectorType::value_type value_;
+  };
+
+  {
+    INFO("copy construct from owning");
+    VectorType v1 = make_vector();
+    const VectorState v1_state(v1);
+    VectorType v2 = v1;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v2.is_owning());
+    CHECK(v2.data() != v1.data());
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2));
+  }
+
+  {
+    INFO("copy assign owning -> owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    const VectorState v1_state(v1);
+    v2 = v1;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v2.is_owning());
+    CHECK(v2.data() != v1.data());
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2));
+  }
+
+  {
+    INFO("move construct from owning");
+    VectorType v1 = make_vector();
+    const VectorState v1_state(v1);
+    VectorType v2 = std::move(v1);
+    CHECK(v1_state.check_is_same(v2));
+    CHECK(v1.is_owning());
+    CHECK(v1.size() == 0);
+    CHECK(check_ownership_ok(v1, v2));
+  }
+
+  {
+    INFO("move assign owning -> owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    const VectorState v1_state(v1);
+    v2 = std::move(v1);
+    CHECK(v1_state.check_is_same(v2));
+    CHECK(v1.is_owning());
+    CHECK(v1.size() == 0);
+    CHECK(check_ownership_ok(v1, v2));
+  }
+
+  {
+    INFO("copy construct from non-owning");
+    VectorType v1 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    const VectorState v1_state(v1);
+    const VectorState v1_ref_state(v1_ref);
+    VectorType v2 = v1_ref;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v1_ref_state.check_is_same(v1_ref));
+    CHECK(v2.is_owning());
+    CHECK(v2.data() != v1.data());
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2, v1_ref));
+  }
+
+  {
+    INFO("copy assign non-owning -> owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    const VectorState v1_state(v1);
+    const VectorState v1_ref_state(v1_ref);
+    v2 = v1;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v1_ref_state.check_is_same(v1_ref));
+    CHECK(v2.is_owning());
+    CHECK(v2.data() != v1.data());
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2, v1_ref));
+  }
+
+  {
+    INFO("move construct from non-owning");
+    VectorType v1 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    const VectorState v1_state(v1);
+    const VectorState v1_ref_state(v1_ref);
+    VectorType v2 = std::move(v1_ref);
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v1_ref_state.check_is_same(v2));
+    CHECK(v1_ref.is_owning());
+    CHECK(v1_ref.size() == 0);
+    CHECK(check_ownership_ok(v1, v2, v1_ref));
+  }
+
+  {
+    INFO("move assign non-owning -> owning");
+#ifdef SPECTRE_DEBUG
+    VectorType v1 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    VectorType v2 = make_vector();
+    CHECK_THROWS_WITH(
+        v2 = std::move(v1_ref),
+        Catch::Contains("Cannot move assign from a non-owning vector"));
+#endif  // SPECTRE_DEBUG
+  }
+
+  {
+    INFO("copy assign owning -> non-owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    VectorType v2_ref(v2.data(), v2.size());
+    const VectorState v1_state(v1);
+    const VectorState v2_state(v2);
+    const VectorState v2_ref_state(v2_ref);
+    v2_ref = v1;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v2_state.check_is_same_except_value(v2));
+    CHECK(v2_ref_state.check_is_same_except_value(v2_ref));
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2, v2_ref));
+  }
+
+  {
+    INFO("copy assign non-owning -> non-owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    VectorType v2_ref(v2.data(), v2.size());
+    const VectorState v1_state(v1);
+    const VectorState v2_state(v2);
+    const VectorState v1_ref_state(v1_ref);
+    const VectorState v2_ref_state(v2_ref);
+    v2_ref = v1_ref;
+    CHECK(v1_state.check_is_same(v1));
+    CHECK(v1_ref_state.check_is_same(v1_ref));
+    CHECK(v2_state.check_is_same_except_value(v2));
+    CHECK(v2_ref_state.check_is_same_except_value(v2_ref));
+    CHECK(v2 == v1);
+    CHECK(check_ownership_ok(v1, v2, v1_ref, v2_ref));
+  }
+
+  {
+    INFO("move assign owning -> non-owning");
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    VectorType v2_ref(v2.data(), v2.size());
+    const VectorState v2_state(v2);
+    const VectorState v2_ref_state(v2_ref);
+    v2_ref = std::move(v1);
+    CHECK(v2_ref_state.check_is_same_except_value(v2_ref));
+    CHECK(v2_state.check_is_same_except_value(v2));
+    CHECK(v1.is_owning());
+    CHECK(v1.size() == 0);
+    CHECK(check_ownership_ok(v1, v2, v2_ref));
+  }
+
+  {
+    INFO("move assign non-owning -> non-owning");
+#ifdef SPECTRE_DEBUG
+    VectorType v1 = make_vector();
+    VectorType v2 = make_vector();
+    VectorType v1_ref(v1.data(), v1.size());
+    VectorType v2_ref(v2.data(), v2.size());
+    CHECK_THROWS_WITH(
+        v2_ref = std::move(v1_ref),
+        Catch::Contains("Cannot move assign from a non-owning vector"));
+#endif  // SPECTRE_DEBUG
+  }
+
+  {
+    INFO("self copy assign owning -> non-owning");
+    VectorType v = make_vector();
+    VectorType v_ref(v.data(), v.size());
+    const VectorState v_state(v);
+    const VectorState v_ref_state(v_ref);
+    v_ref = v;
+    CHECK(v_state.check_is_same(v));
+    CHECK(v_ref_state.check_is_same(v_ref));
+    CHECK(check_ownership_ok(v, v_ref));
+  }
+
+  {
+    INFO("self copy assign non-owning -> owning");
+    VectorType v = make_vector();
+    VectorType v_ref(v.data(), v.size());
+    const VectorState v_state(v);
+    const VectorState v_ref_state(v_ref);
+    v = v_ref;
+    CHECK(v_state.check_is_same(v));
+    CHECK(v_ref_state.check_is_same(v_ref));
+    CHECK(check_ownership_ok(v, v_ref));
+  }
+
+  {
+    INFO("self copy assign non-owning -> non-owning");
+    VectorType v = make_vector();
+    VectorType v_ref(v.data(), v.size());
+    VectorType v_ref2(v.data(), v.size());
+    const VectorState v_state(v);
+    const VectorState v_ref_state(v_ref);
+    const VectorState v_ref2_state(v_ref);
+    v_ref = v_ref2;
+    CHECK(v_state.check_is_same(v));
+    CHECK(v_ref_state.check_is_same(v_ref));
+    CHECK(v_ref2_state.check_is_same(v_ref2));
+    CHECK(check_ownership_ok(v, v_ref, v_ref2));
+  }
+
+  {
+    INFO("self move assign owning -> non-owning");
+    // It's not entirely clear what the result of this should be, but
+    // v = std::move(v) is a no-op, so it seems reasonable for this to
+    // be too.
+    VectorType v = make_vector();
+    VectorType v_ref(v.data(), v.size());
+    const VectorState v_state(v);
+    const VectorState v_ref_state(v_ref);
+    v_ref = std::move(v);
+    CHECK(v_state.check_is_same(v));
+    CHECK(v_ref_state.check_is_same(v_ref));
+    CHECK(check_ownership_ok(v, v_ref));
+  }
+}
+}  // namespace detail
 
 /// \ingroup TestingFrameworkGroup
 /// \brief test construction and assignment of a `VectorType` with a `ValueType`
@@ -41,6 +333,8 @@ void vector_test_construct_and_assign(
         tt::get_fundamental_type_t<ValueType>{-100.0},
     tt::get_fundamental_type_t<ValueType> high =
         tt::get_fundamental_type_t<ValueType>{100.0}) {
+  detail::test_unowning_construct_and_assign<VectorType>();
+
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
                                                                         high};
@@ -163,6 +457,9 @@ void vector_test_construct_and_assign(
     move_constructed.destructive_resize(move_constructed.size() + 1);
     CHECK(move_constructed != destructive_resize_check_copy);
     CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);
+
+    move_constructed.clear();
+    CHECK(move_constructed == VectorType{});
   }
 }
 
@@ -266,13 +563,12 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       CHECK(ref_vector == data_check);
       test_copy_semantics(ref_vector);
 
-      VectorType ref_vector_copy;
-      ref_vector_copy.set_data_ref(&ref_vector);
-      test_move_semantics(std::move(ref_vector), ref_vector_copy);
-      VectorType move_assignment_initialized;
-      move_assignment_initialized = std::move(ref_vector_copy);
-      CHECK(not move_assignment_initialized.is_owning());
-      const VectorType move_constructed{std::move(move_assignment_initialized)};
+      VectorType empty_ref{original_vector};
+      empty_ref.set_data_ref(nullptr, 0);
+      CHECK(not empty_ref.is_owning());
+      CHECK(empty_ref.size() == 0);
+
+      const VectorType move_constructed{std::move(ref_vector)};
       CHECK(not move_constructed.is_owning());
       // check the ability to make a const view
       const VectorType const_view;
@@ -292,18 +588,7 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
       // clang-tidy : Intentionally testing use after move
       CHECK(original_vector != generated_vector);  // NOLINT
       CHECK(original_vector == generated_vector_copy);
-// Intentionally testing self-move
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-move"
-#endif  // defined(__clang__)
-      ref_original_vector = std::move(ref_original_vector);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif  // defined(__clang__)
-      CHECK(original_vector == generated_vector_copy);
-      // clang-tidy: false positive, used after it was moved
-      const VectorType data_check_vector = ref_original_vector;  // NOLINT
+      const VectorType data_check_vector = ref_original_vector;
       CHECK(data_check_vector == generated_vector_copy);
     }
     {
