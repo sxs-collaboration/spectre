@@ -149,4 +149,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.CubicSpline",
   test_with_natural_boundary(10, 1.e-1);
   test_with_natural_boundary(100, 1.e-5);
   test_with_natural_boundary(1000, 1.e-9);
+
+  {
+    INFO("Test default-construction");
+    const intrp::CubicSpline interpolant{};
+    test_serialization(interpolant);
+  }
 }

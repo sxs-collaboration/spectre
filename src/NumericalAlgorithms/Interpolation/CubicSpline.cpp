@@ -55,6 +55,10 @@ void CubicSpline::gsl_spline_deleter::operator()(
 }
 
 void CubicSpline::initialize_interpolant() {
+  if (x_values_.empty()) {
+    // Do nothing for default-initialized objects
+    return;
+  }
   const size_t num_points = x_values_.size();
   acc_ = std::unique_ptr<gsl_interp_accel, gsl_interp_accel_deleter>{
       gsl_interp_accel_alloc()};
