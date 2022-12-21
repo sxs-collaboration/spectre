@@ -6,7 +6,6 @@
 #include <limits>
 #include <ostream>
 
-#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
 #include "NumericalAlgorithms/Interpolation/CubicSpline.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
@@ -251,7 +250,7 @@ class TovSolution {
   double injection_energy_{std::numeric_limits<double>::signaling_NaN()};
   intrp::CubicSpline mass_over_radius_interpolant_;
   intrp::CubicSpline log_enthalpy_interpolant_;
-  intrp::BarycentricRational conformal_factor_interpolant_;
+  intrp::CubicSpline conformal_factor_interpolant_;
 };
 
 }  // namespace RelativisticEuler::Solutions

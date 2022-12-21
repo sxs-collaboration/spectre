@@ -223,8 +223,8 @@ void TovSolution::integrate(
       // The interpolation is not safe otherwise
     }
     observer.radius.back() = outer_radius_;
-    conformal_factor_interpolant_ = intrp::BarycentricRational(
-        observer.radius, observer.conformal_factor, 5);
+    conformal_factor_interpolant_ =
+        intrp::CubicSpline(observer.radius, observer.conformal_factor);
   }
 
   mass_over_radius_interpolant_ =
@@ -300,7 +300,9 @@ void TovSolution::pup(PUP::er& p) {  // NOLINT
   p | injection_energy_;
   p | mass_over_radius_interpolant_;
   p | log_enthalpy_interpolant_;
-  p | conformal_factor_interpolant_;
+  if (coordinate_system_ == TovCoordinates::Isotropic) {
+    p | conformal_factor_interpolant_;
+  }
 }
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
