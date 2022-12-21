@@ -65,6 +65,7 @@ void serialize_and_deserialize(const gsl::not_null<T*> result, const T& t) {
 /// \snippet Test_PupStlCpp11.cpp example_serialize_comparable
 template <typename T>
 void test_serialization(const T& t) {
+  INFO("Serialization");
   static_assert(tt::has_equivalence_v<T>, "No operator== for T");
   CHECK(t == serialize_and_deserialize(t));
 }
@@ -93,6 +94,7 @@ void test_serialization_via_base(Args&&... args) {
 /// Test for copy semantics assuming operator== is implement correctly
 template <typename T>
 void test_copy_semantics(const T& a) {
+  INFO("Copy semantics");
   static_assert(tt::has_equivalence_v<T>,
                 "Class has no operator== implemented");
   static_assert(std::is_copy_assignable<T>::value,
@@ -128,6 +130,7 @@ void test_copy_semantics(const T& a) {
 template <typename T, Requires<tt::has_equivalence<T>::value> = nullptr,
           typename... Args>
 void test_move_semantics(T&& a, const T& comparison, Args&&... args) {
+  INFO("Move semantics");
   static_assert(std::is_rvalue_reference<decltype(a)>::value,
                 "Must move into test_move_semantics");
   static_assert(std::is_move_assignable<T>::value);
