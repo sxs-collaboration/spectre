@@ -39,6 +39,10 @@ class TestTov(unittest.TestCase):
                             np.array([0., 0.]),
                             atol=1e-14,
                             rtol=0.0)
+        # Test accessing interpolants
+        self.assertTrue(len(tov.mass_over_radius_interpolant.y_values()) > 0)
+        self.assertTrue(
+            len(tov.log_specific_enthalpy_interpolant.y_values()) > 0)
 
 
 if __name__ == '__main__':

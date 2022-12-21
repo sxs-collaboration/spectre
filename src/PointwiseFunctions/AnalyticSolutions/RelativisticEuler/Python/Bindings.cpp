@@ -5,6 +5,10 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/Python/Tov.hpp"
 
+namespace py = pybind11;
+
 PYBIND11_MODULE(_PyRelativisticEulerSolutions, m) {  // NOLINT
+  py::module_::import("spectre.Interpolation");
+  py::module_::import("spectre.PointwiseFunctions.Hydro.EquationsOfState");
   RelativisticEuler::Solutions::py_bindings::bind_tov(m);
 }

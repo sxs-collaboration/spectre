@@ -233,6 +233,16 @@ class TovSolution {
   template <typename DataType>
   DataType conformal_factor(const DataType& r) const;
 
+  const intrp::CubicSpline& mass_over_radius_interpolant() const {
+    return mass_over_radius_interpolant_;
+  }
+  const intrp::CubicSpline& log_specific_enthalpy_interpolant() const {
+    return log_enthalpy_interpolant_;
+  }
+  const intrp::CubicSpline& conformal_factor_interpolant() const {
+    return conformal_factor_interpolant_;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
