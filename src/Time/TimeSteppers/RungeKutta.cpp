@@ -110,6 +110,9 @@ void update_u_impl_with_tableau(const gsl::not_null<T*> u,
     if (history.size() > 1) {
       history.pop_front();
     }
+    history.discard_value(history.back().time_step_id);
+  } else {
+    history.discard_value(history.substeps().back().time_step_id);
   }
   ASSERT(history.size() == 1, "Have more than one step after cleanup.");
 

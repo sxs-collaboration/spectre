@@ -188,6 +188,18 @@ OrderVector<double> get_coefficients(const Iterator& times_begin,
 
   return variable_coefficients(control_times);
 }
+
+template <typename T>
+void clean_history(const MutableUntypedHistory<T>& history) {
+  ASSERT(history.size() >= history.integration_order(),
+         "Insufficient data to take an order-" << history.integration_order()
+         << " step.  Have " << history.size() << " times, need "
+         << history.integration_order());
+  while (history.size() > history.integration_order()) {
+    history.pop_front();
+  }
+  history.discard_value(history.back().time_step_id);
+}
 }  // namespace
 
 AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
@@ -236,13 +248,7 @@ template <typename T>
 void AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const MutableUntypedHistory<T>& history,
     const TimeDelta& time_step) const {
-  ASSERT(history.size() >= history.integration_order(),
-         "Insufficient data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  while (history.size() > history.integration_order()) {
-    history.pop_front();
-  }
+  clean_history(history);
   update_u_common(u, history, time_step, history.integration_order());
 }
 
@@ -250,13 +256,7 @@ template <typename T>
 bool AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
     const MutableUntypedHistory<T>& history, const TimeDelta& time_step) const {
-  ASSERT(history.size() >= history.integration_order(),
-         "Insufficient data to take an order-" << history.integration_order()
-         << " step.  Have " << history.size() << " times, need "
-         << history.integration_order());
-  while (history.size() > history.integration_order()) {
-    history.pop_front();
-  }
+  clean_history(history);
   *u_error = *u;
   update_u_common(u, history, time_step, history.integration_order());
   // the error estimate is only useful once the history has enough elements to
