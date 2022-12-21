@@ -54,6 +54,7 @@
 #include "PointwiseFunctions/InitialDataUtilities/AnalyticSolution.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/Background.hpp"
 #include "PointwiseFunctions/InitialDataUtilities/InitialGuess.hpp"
+#include "PointwiseFunctions/MathFunctions/Factory.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Functional.hpp"
@@ -172,6 +173,9 @@ struct Metavariables {
                    Poisson::Solutions::all_analytic_solutions<volume_dim>>,
         tmpl::pair<elliptic::analytic_data::AnalyticSolution,
                    Poisson::Solutions::all_analytic_solutions<volume_dim>>,
+        tmpl::pair<
+            ::MathFunction<volume_dim, Frame::Inertial>,
+            MathFunctions::all_math_functions<volume_dim, Frame::Inertial>>,
         tmpl::pair<
             elliptic::BoundaryConditions::BoundaryCondition<volume_dim>,
             Poisson::BoundaryConditions::standard_boundary_conditions<system>>,
