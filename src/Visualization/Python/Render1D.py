@@ -5,12 +5,14 @@
 
 import glob
 import h5py
-import argparse
 import sys
 import os
 import numpy as np
 import logging
 import matplotlib as mpl
+import click
+import rich
+from spectre.Visualization.ReadH5 import available_subfiles
 
 
 def find_extrema_over_data_set(arr):
@@ -22,124 +24,7 @@ def find_extrema_over_data_set(arr):
     return (np.nanmin(arr), np.nanmax(arr))
 
 
-def parse_cmd_line():
-    '''
-    parse command-line arguments
-    :return: dictionary of the command-line args, dashes are underscores
-    '''
-
-    parser = argparse.ArgumentParser(
-        description='Render 1-dimensional data',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    group_files = parser.add_mutually_exclusive_group(required=True)
-    group_files.add_argument(
-        '--file-prefix',
-        type=str,
-        help="Common prefix of all h5 files being used "
-        "in the case of a single h5 file, it is the file name "
-        "without the .h5 extension")
-    group_files.add_argument('--filename-list',
-                             type=str,
-                             nargs='+',
-                             help="List of all files if they do not "
-                             "have same file prefix. You must include '.h5' "
-                             "extension ")
-    parser.add_argument('--subfile-name',
-                        type=str,
-                        required=True,
-                        help="Name of subfile within h5 file containing "
-                        "volume data to be rendered. Do not include the "
-                        "'.vol' extension.")
-    group_vars = parser.add_mutually_exclusive_group(required=True)
-    group_vars.add_argument('--var',
-                            type=str,
-                            help="Name of variable to render. E.g. 'Psi' "
-                            "or 'Error(Psi)'")
-    group_vars.add_argument(
-        '--list-vars',
-        action='store_true',
-        help="Print to screen variables in h5 file and exit")
-    parser.add_argument(
-        '--time',
-        type=int,
-        required=False,
-        help="If specified, renders the integer observation step "
-        "instead of an animation")
-    parser.add_argument('-o',
-                        '--output',
-                        type=str,
-                        required=False,
-                        help="Set the name of the output file you want "
-                        "written. For animations this saves an mp4 file and "
-                        "for stills a pdf. Name of file should not include "
-                        "file extension.")
-    group_anim = parser.add_mutually_exclusive_group(required=False)
-    group_anim.add_argument(
-        '--fps',
-        type=float,
-        default=5,
-        help="Set the number of frames per second when writing "
-        "an animation to disk.")
-    group_anim.add_argument('--interval',
-                            type=float,
-                            help="Delay between frames in  milliseconds")
-    args = parser.parse_args()
-    # Print error message if '.h5' suffix is used in '--file-prefix' argument
-    assert args.file_prefix is None or not args.file_prefix.endswith('.h5'),\
-    "Retry without .h5 extension on 'file-prefix'"
-
-    return vars(args)
-
-
-def get_h5_files(files):
-    '''
-    Get a list of the h5 files containing the data
-    :param: list of h5 filenames or common file prefix
-    :return: list of h5 files containing volume data
-    '''
-
-    h5_files = []
-    if isinstance(files, str):
-        h5_file_names = glob.glob(files + "[0-9]*.h5")
-        assert len(h5_file_names) > 0,\
-            "Found no files with prefix {} in directory {}"\
-            .format(files, os.getcwd())
-        h5_files = [h5py.File(file_name, 'r') for file_name in h5_file_names]
-
-    else:
-        for file_name in files:
-            try:
-                h5_files.append(h5py.File(file_name, 'r'))
-            except IOError as err:
-                sys.exit("Could not find file '{}' in directory {}: {}".format(
-                    file_name, os.getcwd(), err))
-    return h5_files
-
-
-def print_var_names(files, subfile_name):
-    '''
-    Print all available variables to screen
-    :param files: list of h5 filenames or common file prefix
-    :param subfile_name: name of .vol subfile in h5 file(s)
-    :return: None
-    '''
-
-    h5files = get_h5_files(files)
-    volfile = h5files[0][subfile_name]
-    obs_id_0 = next(iter(volfile))
-    variables = list(volfile[obs_id_0].keys())
-    variables.remove("connectivity")
-    variables.remove("InertialCoordinates_x")
-    variables.remove("total_extents")
-    variables.remove("grid_names")
-    variables.remove("bases")
-    variables.remove("quadratures")
-    print("Variables in H5 file:\n{}".format(list(map(str, variables))))
-    for h5_file in h5files:
-        h5_file.close()
-
-
-def get_data(files, subfile_name, var_name):
+def get_data(h5files, subfile_name, var_name):
     '''
     Get the data to be plotted
     :param files: list of h5 filenames or common file prefix
@@ -151,7 +36,6 @@ def get_data(files, subfile_name, var_name):
     time = []
     coords = []
     data = []
-    h5files = get_h5_files(files)
     volfiles = [h5file[subfile_name] for h5file in h5files]
     # Get a list of times from the first vol file
     ids_times = [(obs_id, volfiles[0][obs_id].attrs['observation_value'])
@@ -269,28 +153,96 @@ def render_animation(var_name, output_prefix, interval, time, coords, data):
         plt.show()
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    args = parse_cmd_line()
-    if args['output'] is not None:
-        mpl.use("Agg")
-    if args['file_prefix'] is not None:
-        files = args['file_prefix']
-    else:
-        files = args['filename_list']
-    subfile_name = args['subfile_name']
-    subfile_name += '.vol'
-    if args['list_vars']:
-        print_var_names(files, subfile_name)
-        sys.exit(0)
-    time, coords, data = get_data(files, subfile_name, args['var'])
+@click.command()
+@click.argument("h5_files",
+                nargs=-1,
+                type=click.Path(exists=True,
+                                file_okay=True,
+                                dir_okay=False,
+                                readable=True))
+@click.option("--subfile-name",
+              "-d",
+              help=("Name of subfile within h5 file containing "
+                    "1D volume data to be rendered."))
+@click.option("--var",
+              "-y",
+              help=("Name of variable to render. E.g. 'Psi' "
+                    "or 'Error(Psi)'. Can be specified multiple times. "
+                    "If unspecified, print available variables and exit."))
+@click.option("--list-vars",
+              "-l",
+              is_flag=True,
+              help="Print available variables and exit.")
+@click.option("--step",
+              type=int,
+              help=("If specified, renders the integer observation step "
+                    "instead of an animation. Set to '-1' for the last step."))
+@click.option("-o",
+              "--output",
+              help=("Set the name of the output file you want "
+                    "written. For animations this saves an mp4 file and "
+                    "for stills a pdf. Name of file should not include "
+                    "file extension."))
+@click.option('--fps',
+              type=float,
+              default=5,
+              help=("Set the number of frames per second when writing "
+                    "an animation to disk."))
+@click.option('--interval',
+              type=float,
+              help="Delay between frames in milliseconds")
+def render_1d_command(h5_files, subfile_name, list_vars, **args):
+    """Render 1D data"""
+    # Script should be a noop if input files are empty
+    if not h5_files:
+        return
+
+    open_h5_files = [h5py.File(filename, "r") for filename in h5_files]
+
+    # Print available subfile names and exit
+    if not subfile_name:
+        import rich.columns
+        rich.print(
+            rich.columns.Columns(
+                available_subfiles(open_h5_files[0], extension=".vol")))
+        return
+
+    if not subfile_name.endswith(".vol"):
+        subfile_name += ".vol"
+
+    # Print available variables and exit
+    if list_vars or not args['var']:
+        volfile = open_h5_files[0][subfile_name]
+        obs_id_0 = next(iter(volfile))
+        variables = list(volfile[obs_id_0].keys())
+        variables.remove("connectivity")
+        variables.remove("InertialCoordinates_x")
+        variables.remove("total_extents")
+        variables.remove("grid_names")
+        variables.remove("bases")
+        variables.remove("quadratures")
+        if "domain" in variables:
+            variables.remove("domain")
+        if "functions_of_time" in variables:
+            variables.remove("functions_of_time")
+
+        import rich.columns
+        rich.print(rich.columns.Columns(variables))
+        return
+
+    time, coords, data = get_data(open_h5_files, subfile_name, args['var'])
     if args['interval'] is None:
         interval = 1000.0 / args['fps']
     else:
         interval = args['interval']
-    if args['time'] is None:
+    if args['step'] is None:
         render_animation(args['var'], args['output'], interval, time, coords,
                          data)
     else:
-        render_single_time(args['var'], args['time'], args['output'], time,
+        render_single_time(args['var'], args['step'], args['output'], time,
                            coords, data)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    render_1d_command(help_option_name=["-h", "--help"])
