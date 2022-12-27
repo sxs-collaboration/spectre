@@ -131,6 +131,17 @@ def read_config_file(ctx, param, config_file):
               'log_level',
               flag_value=logging.CRITICAL,
               help=("Disable all logging."))
+@click.option('--build-dir',
+              '-b',
+              type=click.Path(exists=True,
+                              file_okay=False,
+                              dir_okay=True,
+                              readable=True),
+              help=("Prepend a build directory to the PATH "
+                    "so subprocesses can find executables in it. "
+                    "Without this option, executables are found in the "
+                    "current PATH, and fall back to the build directory "
+                    "in which this Python script is installed."))
 @click.option('--profile',
               is_flag=True,
               help=("Enable profiling. "
@@ -170,7 +181,7 @@ def read_config_file(ctx, param, config_file):
                     "  stylesheet: path/to/stylesheet.mplstyle\n\n"
                     "The path of the config file can also be specified by "
                     "setting the 'SPECTRE_CONFIG_FILE' environment variable."))
-def cli(log_level, profile, output_profile):
+def cli(log_level, build_dir, profile, output_profile):
     if log_level is None:
         log_level = logging.INFO
     # Configure logging
@@ -184,6 +195,17 @@ def cli(log_level, profile, output_profile):
         show_locals=log_level <= logging.DEBUG,
         extra_lines=(3 if log_level <= logging.DEBUG else 0),
         suppress=[click])
+    # Add the build directory to the PATH so subprocesses can find executables.
+    # - We respect the user's PATH and only add a build directory if it was
+    #   explicitly specified on the command line.
+    if build_dir:
+        os.environ["PATH"] = (os.path.join(build_dir, "bin") + ":" +
+                              os.environ["PATH"])
+    # - We fall back to executables in this file's build directory as a last
+    #   resort.
+    default_bin_dir = os.path.dirname(
+        os.path.dirname(os.path.dirname(__file__)))
+    os.environ["PATH"] = os.environ["PATH"] + ":" + default_bin_dir
 
     # Configure profiling
     if profile:
