@@ -8,6 +8,7 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
+  Domain.cpp
   ElementId.cpp
   SegmentId.cpp
   PYTHON_FILES
@@ -18,6 +19,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  Domain.hpp
   ElementId.hpp
   SegmentId.hpp
   )
@@ -25,6 +27,9 @@ spectre_python_headers(
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
+  Domain
+  DomainCreators
   DomainStructure
   pybind11::module
   Utilities
