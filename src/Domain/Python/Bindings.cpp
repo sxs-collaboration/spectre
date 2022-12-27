@@ -6,6 +6,7 @@
 #include "Domain/Python/Domain.hpp"
 #include "Domain/Python/ElementId.hpp"
 #include "Domain/Python/FunctionsOfTime.hpp"
+#include "Domain/Python/InertialCoordinates.hpp"
 #include "Domain/Python/SegmentId.hpp"
 
 namespace py = pybind11;
@@ -17,6 +18,7 @@ PYBIND11_MODULE(_PyDomain, m) {  // NOLINT
   py_bindings::bind_domain(m);
   py_bindings::bind_element_id(m);
   py_bindings::bind_functions_of_time(m);
+  py_bindings::bind_inertial_coordinates(m);
   py_bindings::bind_segment_id(m);
 }
 

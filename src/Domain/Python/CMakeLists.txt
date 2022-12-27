@@ -11,6 +11,7 @@ spectre_python_add_module(
   Domain.cpp
   ElementId.cpp
   FunctionsOfTime.cpp
+  InertialCoordinates.cpp
   SegmentId.cpp
   PYTHON_FILES
   __init__.py
@@ -23,6 +24,7 @@ spectre_python_headers(
   Domain.hpp
   ElementId.hpp
   FunctionsOfTime.hpp
+  InertialCoordinates.hpp
   SegmentId.hpp
   )
 
