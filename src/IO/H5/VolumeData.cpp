@@ -596,17 +596,7 @@ auto VolumeData::get_data_by_element(
 
       element_volume_data.emplace_back(
           grid_names[grid_index], std::move(tensor_components),
-          extents[grid_index],
-          std::vector<Spectral::Basis>(
-              boost::make_transform_iterator(bases[grid_index].begin(),
-                                             Spectral::to_basis),
-              boost::make_transform_iterator(bases[grid_index].end(),
-                                             Spectral::to_basis)),
-          std::vector<Spectral::Quadrature>(
-              boost::make_transform_iterator(quadratures[grid_index].begin(),
-                                             Spectral::to_quadrature),
-              boost::make_transform_iterator(quadratures[grid_index].end(),
-                                             Spectral::to_quadrature)));
+          extents[grid_index], bases[grid_index], quadratures[grid_index]);
       offset += mesh_size;
     }  // for grid_index
 
@@ -624,7 +614,7 @@ size_t VolumeData::get_dimension() const {
   return h5::read_value_attribute<double>(volume_data_group_.id(), "dimension");
 }
 
-std::vector<std::vector<std::string>> VolumeData::get_bases(
+std::vector<std::vector<Spectral::Basis>> VolumeData::get_bases(
     const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
@@ -635,17 +625,20 @@ std::vector<std::vector<std::string>> VolumeData::get_bases(
 
   const std::vector<int> bases_coded =
       h5::read_data<1, std::vector<int>>(observation_group.id(), "bases");
-  auto all_bases = h5_detail::decode_with_dictionary_name(
+  const auto all_bases = h5_detail::decode_with_dictionary_name(
       "Basis dictionary", bases_coded, observation_group);
 
-  std::vector<std::vector<std::string>> element_bases;
+  std::vector<std::vector<Spectral::Basis>> element_bases;
   for (auto iter = all_bases.begin(); iter != all_bases.end();
        std::advance(iter, bases_per_element)) {
-    element_bases.emplace_back(iter, std::next(iter, bases_per_element));
+    element_bases.emplace_back(
+        boost::make_transform_iterator(iter, Spectral::to_basis),
+        boost::make_transform_iterator(std::next(iter, bases_per_element),
+                                       Spectral::to_basis));
   }
   return element_bases;
 }
-std::vector<std::vector<std::string>> VolumeData::get_quadratures(
+std::vector<std::vector<Spectral::Quadrature>> VolumeData::get_quadratures(
     const size_t observation_id) const {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
@@ -655,15 +648,16 @@ std::vector<std::vector<std::string>> VolumeData::get_quadratures(
   const auto quadratures_per_element = static_cast<long>(dim);
   const std::vector<int> quadratures_coded =
       h5::read_data<1, std::vector<int>>(observation_group.id(), "quadratures");
-  auto all_quadratures = h5_detail::decode_with_dictionary_name(
+  const auto all_quadratures = h5_detail::decode_with_dictionary_name(
       "Quadrature dictionary", quadratures_coded, observation_group);
-  std::vector<std::vector<std::string>> element_quadratures;
+  std::vector<std::vector<Spectral::Quadrature>> element_quadratures;
   for (auto iter = all_quadratures.begin(); iter != all_quadratures.end();
        std::advance(iter, quadratures_per_element)) {
-    element_quadratures.emplace_back(iter,
-                                     std::next(iter, quadratures_per_element));
+    element_quadratures.emplace_back(
+        boost::make_transform_iterator(iter, Spectral::to_quadrature),
+        boost::make_transform_iterator(std::next(iter, quadratures_per_element),
+                                       Spectral::to_quadrature));
   }
-
   return element_quadratures;
 }
 

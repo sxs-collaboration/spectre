@@ -15,28 +15,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-basis_dict = {
-    "Legendre": Spectral.Basis.Legendre,
-    "Chebyshev": Spectral.Basis.Chebyshev,
-    "FiniteDifference": Spectral.Basis.FiniteDifference
-}
-quadrature_dict = {
-    "Gauss": Spectral.Quadrature.Gauss,
-    "GaussLobatto": Spectral.Quadrature.GaussLobatto,
-    "CellCentered": Spectral.Quadrature.CellCentered,
-    "FaceCentered": Spectral.Quadrature.FaceCentered
-}
-
-
-def basis_from_string(names):
-    return (basis_dict[names] if isinstance(names, str) else
-            [basis_dict[name] for name in names])
-
-
-def quadrature_from_string(names):
-    return (quadrature_dict[names] if isinstance(names, str) else
-            [quadrature_dict[name] for name in names])
-
 
 # Function to forward arguments to the multiprocessing Pool. We can not use a
 # lambda because the function needs to be pickled. Note that `starmap` only
@@ -154,9 +132,7 @@ def interpolate_h5_file(source_file_path,
         # iterate over elements
         for grid_name, extent, basis, quadrature in zip(
                 grid_names, extents, bases, quadratures):
-            source_mesh = Spectral.Mesh[dim](
-                extent, basis_from_string(basis),
-                quadrature_from_string(quadrature))
+            source_mesh = Spectral.Mesh[dim](extent, basis, quadrature)
 
             interpolant = Interpolation.RegularGrid[dim](source_mesh,
                                                          target_mesh)
@@ -225,16 +201,18 @@ def interpolate_h5_file(source_file_path,
     required=True,
     help=("The extents of the target grid, as a comma-separated list without "
           "spaces. Can be different for each dimension e.g. '3,5,4'"))
-@click.option("--target-basis",
-              type=click.Choice(basis_dict.keys()),
-              callback=lambda ctx, param, value: basis_from_string(value),
-              required=True,
-              help=("The basis of the target grid."))
-@click.option("--target-quadrature",
-              type=click.Choice(quadrature_dict.keys()),
-              callback=lambda ctx, param, value: quadrature_from_string(value),
-              required=True,
-              help=("The quadrature of the target grid."))
+@click.option(
+    "--target-basis",
+    type=click.Choice(Spectral.Basis.__members__),
+    callback=lambda ctx, param, value: Spectral.Basis.__members__[value],
+    required=True,
+    help=("The basis of the target grid."))
+@click.option(
+    "--target-quadrature",
+    type=click.Choice(Spectral.Quadrature.__members__),
+    callback=lambda ctx, param, value: Spectral.Quadrature.__members__[value],
+    required=True,
+    help=("The quadrature of the target grid."))
 @click.option("--start-time",
               type=float,
               default=-np.inf,

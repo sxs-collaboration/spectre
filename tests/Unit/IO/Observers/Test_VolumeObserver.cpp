@@ -305,10 +305,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   // Read the extents that were written to file
   const std::vector<std::vector<size_t>> read_extents =
       volume_file.get_extents(temporal_id);
-  const std::vector<std::vector<std::string>> read_bases =
-      volume_file.get_bases(temporal_id);
-  const std::vector<std::vector<std::string>> read_quadratures =
-      volume_file.get_quadratures(temporal_id);
+  const auto read_bases = volume_file.get_bases(temporal_id);
+  const auto read_quadratures = volume_file.get_quadratures(temporal_id);
   // The data is stored contiguously, and each element has a subset of the
   // data.  We need to keep track of how many points have already been checked
   // so that we know where to look in the tensor component data for the current

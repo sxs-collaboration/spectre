@@ -16,6 +16,7 @@
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/TensorData.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 
 /// \cond
@@ -179,10 +180,11 @@ class VolumeData : public h5::Object {
   static char separator() { return ':'; }
 
   /// Return the basis being used for each element along each axis
-  std::vector<std::vector<std::string>> get_bases(size_t observation_id) const;
+  std::vector<std::vector<Spectral::Basis>> get_bases(
+      size_t observation_id) const;
 
   /// Return the quadrature being used for each element along each axis
-  std::vector<std::vector<std::string>> get_quadratures(
+  std::vector<std::vector<Spectral::Quadrature>> get_quadratures(
       size_t observation_id) const;
 
   /// Get the serialized domain in the subfile at this observation ID, or

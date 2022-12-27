@@ -143,13 +143,11 @@ class TestVolumeData(unittest.TestCase):
         self.assertEqual(extents, expected_extents)
         # Test bases
         bases = self.vol_file.get_bases(obs_id)
-        expected_bases = [["Legendre", "Legendre", "Legendre"],
-                          ["Legendre", "Legendre", "Legendre"]]
+        expected_bases = 2 * [3 * [Basis.Legendre]]
         self.assertEqual(bases, expected_bases)
         # Test quadratures
         quadratures = self.vol_file.get_quadratures(obs_id)
-        expected_quadratures = [["Gauss", "Gauss", "Gauss"],
-                                ["Gauss", "Gauss", "Gauss"]]
+        expected_quadratures = 2 * [3 * [Quadrature.Gauss]]
         self.assertEqual(quadratures, expected_quadratures)
         # Test dimension
         dim = self.vol_file.get_dimension()
