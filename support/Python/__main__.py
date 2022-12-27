@@ -33,6 +33,7 @@ class Cli(click.MultiCommand):
             "simplify-traces",
             "status",
             "transform-volume-data",
+            "validate",
         ]
 
     def get_command(self, ctx, name):
@@ -82,6 +83,10 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.TransformVolumeData import (
                 transform_volume_data_command)
             return transform_volume_data_command
+        elif name == "validate":
+            from spectre.tools.ValidateInputFile import (
+                validate_input_file_command)
+            return validate_input_file_command
 
         available_commands = " " + "\n ".join(self.list_commands(ctx))
         raise click.UsageError(

@@ -6,6 +6,7 @@ spectre_python_add_module(
   PYTHON_FILES
   CharmSimplifyTraces.py
   CleanOutput.py
+  ValidateInputFile.py
 )
 
 add_subdirectory(Status)
