@@ -6,6 +6,7 @@ set(LIBRARY "PyVisualization")
 spectre_python_add_module(
   Visualization
   PYTHON_FILES
+  __init__.py
   GenerateXdmf.py
   PlotDatFile.py
   ReadH5.py

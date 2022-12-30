@@ -23,7 +23,7 @@ set(SPECTRE_PYTHON_PREFIX "${SPECTRE_PYTHON_PREFIX_PARENT}/spectre")
 if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
   file(WRITE
     "${SPECTRE_PYTHON_PREFIX}/__init__.py"
-    "__all__ = []")
+    "__all__ = []\n")
 endif()
 
 # Create the root __main__.py entry point
@@ -162,7 +162,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
 
   # Add our python library, if it has sources
-  set(SPECTRE_PYTHON_MODULE_IMPORT "")
   if(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
     if("${ARG_LIBRARY_NAME}" STREQUAL "")
       message(FATAL_ERROR "Set a LIBRARY_NAME for Python module "
@@ -236,41 +235,19 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       PROPERTIES
       LINK_FLAGS "${PY_LIB_LINK_FLAGS}"
       )
-    set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     if(BUILD_TESTING)
       add_dependencies(test-executables ${ARG_LIBRARY_NAME})
     endif()
     add_dependencies(all-pybindings ${ARG_LIBRARY_NAME})
   endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
 
-  # Read the __init__.py file if it exists
+  # Create an empty __init__.py file if none exists
   set(INIT_FILE_LOCATION "${MODULE_LOCATION}/__init__.py")
-  set(INIT_FILE_CONTENTS "")
-  if(EXISTS ${INIT_FILE_LOCATION})
-    file(READ
-      ${INIT_FILE_LOCATION}
-      INIT_FILE_CONTENTS)
-  endif(EXISTS ${INIT_FILE_LOCATION})
+  if(NOT EXISTS ${INIT_FILE_LOCATION})
+    file(WRITE ${INIT_FILE_LOCATION} "")
+  endif()
 
-  # Update the "from ._LIB import *" in the __init__.py
-  if("${INIT_FILE_CONTENTS}" STREQUAL "")
-    set(INIT_FILE_OUTPUT "${SPECTRE_PYTHON_MODULE_IMPORT}\n__all__ = []\n")
-  else("${INIT_FILE_CONTENTS}" STREQUAL "")
-    string(FIND ${INIT_FILE_CONTENTS} "from" FOUND_FROM_STATEMENT)
-    if (${FOUND_FROM_STATEMENT} EQUAL -1)
-      set(INIT_FILE_OUTPUT
-        "${SPECTRE_PYTHON_MODULE_IMPORT}\n${INIT_FILE_CONTENTS}")
-    else()
-      string(REGEX REPLACE
-        "from[^\n]+"
-        "${SPECTRE_PYTHON_MODULE_IMPORT}"
-        INIT_FILE_OUTPUT
-        ${INIT_FILE_CONTENTS})
-    endif()
-  endif("${INIT_FILE_CONTENTS}" STREQUAL "")
-
-  # configure the source files into the build directory and make sure
-  # they are in the init file.
+  # configure the Python source files into the build directory
   foreach(PYTHON_FILE ${ARG_PYTHON_FILES})
     # Configure file
     get_filename_component(PYTHON_FILE_JUST_NAME
@@ -280,22 +257,10 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       "${MODULE_LOCATION}/${PYTHON_FILE_JUST_NAME}"
       )
 
-    # Update init file
-    get_filename_component(PYTHON_FILE_JUST_NAME_WE
-      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME_WE)
-    string(FIND
-      ${INIT_FILE_OUTPUT}
-      "\"${PYTHON_FILE_JUST_NAME_WE}\""
-      INIT_FILE_CONTAINS_ME)
-    if(${INIT_FILE_CONTAINS_ME} EQUAL -1)
-      string(REPLACE
-        "__all__ = ["
-        "__all__ = [\"${PYTHON_FILE_JUST_NAME_WE}\", "
-        INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
-    endif(${INIT_FILE_CONTAINS_ME} EQUAL -1)
-
     # Write an executable in `${CMAKE_BINARY_DIR}/bin` that runs the Python
     # script in the correct Python environment
+    get_filename_component(PYTHON_FILE_JUST_NAME_WE
+      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME_WE)
     if(${PYTHON_FILE} IN_LIST ARG_PYTHON_EXECUTABLES)
       set(PYTHON_SCRIPT_LOCATION
         "${PYTHON_MODULE_LOCATION}.${PYTHON_FILE_JUST_NAME_WE}")
@@ -308,71 +273,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
           GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
     endif()
   endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
-
-  string(REPLACE ", ]" "]" INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
-
-  # Remove python files that we are no longer using
-  string(REGEX MATCH "\\\[.*\\\]"
-    WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS ${INIT_FILE_OUTPUT})
-  string(REPLACE "[" "" WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS
-    "${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS}")
-  string(REPLACE "]" "" WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS
-    "${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS}")
-  string(REPLACE "\"" "" WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS
-    "${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS}")
-  string(REPLACE ", " ";" WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS
-    "${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS}")
-  foreach(CURRENT_PYTHON_MODULE in ${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS})
-    string(FIND "${ARG_PYTHON_FILES}" "${CURRENT_PYTHON_MODULE}.py"
-      PYTHON_MODULE_EXISTS)
-    if(${PYTHON_MODULE_EXISTS} EQUAL -1
-         AND NOT EXISTS "${MODULE_LOCATION}/${CURRENT_PYTHON_MODULE}")
-      string(REPLACE "\"${CURRENT_PYTHON_MODULE}\""
-        ""
-        INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
-      string(REPLACE ", ," "," INIT_FILE_OUTPUT ${INIT_FILE_OUTPUT})
-      file(REMOVE "${MODULE_LOCATION}/${CURRENT_PYTHON_MODULE}.py")
-    endif()
-  endforeach(CURRENT_PYTHON_MODULE in ${WRITTEN_PYTHON_ALL_WITHOUT_EXTENSIONS})
-  # Sometimes we get a "[," in the files, which can give problems.
-  string(REPLACE "[," "[" INIT_FILE_OUTPUT "${INIT_FILE_OUTPUT}")
-
-  # Write the __init__.py file for the module
-  if(NOT ${INIT_FILE_OUTPUT} STREQUAL "${INIT_FILE_CONTENTS}")
-    file(WRITE ${INIT_FILE_LOCATION} ${INIT_FILE_OUTPUT})
-  endif(NOT ${INIT_FILE_OUTPUT} STREQUAL "${INIT_FILE_CONTENTS}")
-
-  # Register with parent submodules:
-  # We walk up the tree until we get to ${SPECTRE_PYTHON_PREFIX}
-  # and make sure we have all the submodules registered.
-  set(CURRENT_MODULE ${MODULE_LOCATION})
-  while(NOT ${CURRENT_MODULE} STREQUAL ${SPECTRE_PYTHON_PREFIX})
-    get_filename_component(PARENT_MODULE "${CURRENT_MODULE}/.." ABSOLUTE)
-    string(REPLACE "${PARENT_MODULE}/" ""
-      CURRENT_MODULE_NAME ${CURRENT_MODULE})
-
-    set(PARENT_MODULE_CONTENTS "__all__ = []")
-    if(EXISTS "${PARENT_MODULE}/__init__.py")
-      file(READ
-        "${PARENT_MODULE}/__init__.py"
-        PARENT_MODULE_CONTENTS)
-    endif(EXISTS "${PARENT_MODULE}/__init__.py")
-
-    string(FIND "${PARENT_MODULE_CONTENTS}" "\"${CURRENT_MODULE_NAME}\""
-      PARENT_MODULE_CONTAINS_ME)
-
-    if(${PARENT_MODULE_CONTAINS_ME} EQUAL -1)
-      string(REPLACE "__all__ = [" "__all__ = [\"${CURRENT_MODULE_NAME}\", "
-        PARENT_MODULE_NEW_CONTENTS "${PARENT_MODULE_CONTENTS}")
-      string(REPLACE ", ]" "]"
-        PARENT_MODULE_NEW_CONTENTS "${PARENT_MODULE_NEW_CONTENTS}")
-      file(WRITE
-        "${PARENT_MODULE}/__init__.py"
-        ${PARENT_MODULE_NEW_CONTENTS})
-    endif(${PARENT_MODULE_CONTAINS_ME} EQUAL -1)
-
-    set(CURRENT_MODULE ${PARENT_MODULE})
-  endwhile(NOT ${CURRENT_MODULE} STREQUAL ${SPECTRE_PYTHON_PREFIX})
 endfunction()
 
 # Add headers if Python bindings are being built
