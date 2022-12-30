@@ -4,7 +4,7 @@
 import unittest
 from spectre import Spectral
 from spectre import DataStructures
-from spectre import Interpolation
+from spectre.Interpolation import RegularGrid
 from numpy.polynomial.legendre import Legendre
 import numpy as np
 
@@ -58,10 +58,6 @@ class TestRegularGrid(unittest.TestCase):
     def test_regular_grid(self):
         for dim in range(1, 4):
             Mesh = [Spectral.Mesh1D, Spectral.Mesh2D, Spectral.Mesh3D][dim - 1]
-            RegularGrid = [
-                Interpolation.RegularGrid1D, Interpolation.RegularGrid2D,
-                Interpolation.RegularGrid3D
-            ][dim - 1]
             for quadrature in [
                     Spectral.Quadrature.Gauss, Spectral.Quadrature.GaussLobatto
             ]:
@@ -70,7 +66,7 @@ class TestRegularGrid(unittest.TestCase):
                                        quadrature)
                     target_mesh = Mesh(num_points + 2, Spectral.Basis.Legendre,
                                        quadrature)
-                    interpolant = RegularGrid(source_mesh, target_mesh)
+                    interpolant = RegularGrid[dim](source_mesh, target_mesh)
 
                     source_coords = self.logical_coordinates(source_mesh)
                     target_coords = self.logical_coordinates(target_mesh)

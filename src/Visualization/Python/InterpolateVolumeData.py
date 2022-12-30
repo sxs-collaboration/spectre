@@ -43,13 +43,6 @@ def forward_args(args):
     interpolate_h5_file(**args)
 
 
-RegularGrid = {
-    1: Interpolation.RegularGrid1D,
-    2: Interpolation.RegularGrid2D,
-    3: Interpolation.RegularGrid3D
-}
-
-
 def interpolate_h5_file(source_file_path,
                         target_mesh,
                         target_file_path,
@@ -155,7 +148,8 @@ def interpolate_h5_file(source_file_path,
                 extent, basis_from_string(basis),
                 quadrature_from_string(quadrature))
 
-            interpolant = RegularGrid[dim](source_mesh, target_mesh)
+            interpolant = Interpolation.RegularGrid[dim](source_mesh,
+                                                         target_mesh)
 
             tensor_comps = []
             offset, length = spectre_h5.offset_and_length_for_grid(
