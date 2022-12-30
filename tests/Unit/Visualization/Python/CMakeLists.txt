@@ -40,7 +40,7 @@ spectre_add_python_bindings_test(
   "unit;visualization;python"
   None)
 
-spectre_add_python_test(
+spectre_add_python_bindings_test(
   "Unit.Visualization.Python.Render1D"
   Test_Render1D.py
   "unit;visualization;python"
