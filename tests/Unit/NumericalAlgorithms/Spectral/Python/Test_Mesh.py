@@ -1,7 +1,7 @@
 #Distributed under the MIT License.
 #See LICENSE.txt for details.
 
-from spectre.Spectral import Mesh1D, Mesh2D, Mesh3D
+from spectre.Spectral import Mesh
 from spectre.Spectral import Basis, Quadrature
 
 import numpy as np
@@ -19,7 +19,6 @@ class TestMesh(unittest.TestCase):
             Quadrature.FaceCentered
         ]
         self.extents = range(12)
-        self.Mesh = [Mesh1D, Mesh2D, Mesh3D]
 
     def check_extents(self, mesh, extents):
         self.assertEqual(mesh.extents(0), extents[0])
@@ -35,81 +34,68 @@ class TestMesh(unittest.TestCase):
         self.assertEqual(mesh.quadrature(), quadratures)
 
     def test_uniform(self):
-        for dim in range(3):
+        for dim in [1, 2, 3]:
             for extent in range(12):
                 for basis in self.bases:
                     for quadrature in self.quadratures:
-                        # the mesh constructor of dimension dim + 1
-                        Mesh = self.Mesh[dim]
-                        mesh = Mesh(extent, basis, quadrature)
-                        self.assertEqual(mesh.dim, dim + 1)
-                        self.check_extents(mesh,
-                                           [extent for _ in range(dim + 1)])
-                        self.check_basis(mesh, [basis for _ in range(dim + 1)])
-                        self.check_quadrature(
-                            mesh, [quadrature for _ in range(dim + 1)])
+                        mesh = Mesh[dim](extent, basis, quadrature)
+                        self.assertEqual(mesh.dim, dim)
+                        self.check_extents(mesh, [extent for _ in range(dim)])
+                        self.check_basis(mesh, [basis for _ in range(dim)])
+                        self.check_quadrature(mesh,
+                                              [quadrature for _ in range(dim)])
 
     def test_nonuniform_extents(self):
-        for dim in range(3):
+        for dim in [1, 2, 3]:
             for basis in self.bases:
                 for quadrature in self.quadratures:
                     for i in range(100):
-                        # the mesh constructor of dimension dim + 1
-                        Mesh = self.Mesh[dim]
                         extents = [
-                            random.choice(self.extents) for _ in range(dim + 1)
+                            random.choice(self.extents) for _ in range(dim)
                         ]
-                        mesh = Mesh(extents, basis, quadrature)
+                        mesh = Mesh[dim](extents, basis, quadrature)
                         self.check_extents(mesh, extents)
 
     def test_nonuniform_all_with_pickle(self):
-        for dim in range(3):
+        for dim in [1, 2, 3]:
             for i in range(100):
-                # the mesh constructor of dimension dim + 1
-                Mesh = self.Mesh[dim]
-                extents = [random.choice(self.extents) for _ in range(dim + 1)]
-                bases = [random.choice(self.bases) for _ in range(dim + 1)]
+                extents = [random.choice(self.extents) for _ in range(dim)]
+                bases = [random.choice(self.bases) for _ in range(dim)]
                 quadratures = [
-                    random.choice(self.quadratures) for _ in range(dim + 1)
+                    random.choice(self.quadratures) for _ in range(dim)
                 ]
 
-                mesh = Mesh(extents, bases, quadratures)
+                mesh = Mesh[dim](extents, bases, quadratures)
                 mesh = pickle.loads(pickle.dumps(mesh))
                 self.check_extents(mesh, extents)
                 self.check_basis(mesh, bases)
                 self.check_quadrature(mesh, quadratures)
 
     def test_equality(self):
-        for dim in range(3):
+        for dim in [1, 2, 3]:
             for basis in self.bases:
                 for quadrature in self.quadratures:
-                    # the mesh constructor of dimension dim + 1
-                    Mesh = self.Mesh[dim]
-                    extents = [
-                        random.choice(self.extents) for _ in range(dim + 1)
-                    ]
-                    mesh = Mesh(extents, basis, quadrature)
-                    self.assertTrue(mesh == Mesh(extents, basis, quadrature))
-                    self.assertFalse(mesh != Mesh(extents, basis, quadrature))
+                    extents = [random.choice(self.extents) for _ in range(dim)]
+                    mesh = Mesh[dim](extents, basis, quadrature)
                     self.assertTrue(
-                        mesh != Mesh([ex + 1
-                                      for ex in extents], basis, quadrature))
+                        mesh == Mesh[dim](extents, basis, quadrature))
                     self.assertFalse(
-                        mesh == Mesh([ex + 1
+                        mesh != Mesh[dim](extents, basis, quadrature))
+                    self.assertTrue(mesh != Mesh[dim]
+                                    ([ex + 1
                                       for ex in extents], basis, quadrature))
+                    self.assertFalse(mesh == Mesh[dim](
+                        [ex + 1 for ex in extents], basis, quadrature))
 
     def test_slices(self):
-        for dim in range(3):
+        for dim in [1, 2, 3]:
             for basis in self.bases:
                 for quadrature in self.quadratures:
-                    # the mesh constructor of dimension dim + 1
-                    Mesh = self.Mesh[dim]
-                    extents = [
-                        random.choice(self.extents) for _ in range(dim + 1)
-                    ]
-                    mesh = Mesh(extents, basis, quadrature)
+                    extents = [random.choice(self.extents) for _ in range(dim)]
+                    mesh = Mesh[dim](extents, basis, quadrature)
                     self.assertEqual(mesh.slices(), [
-                        Mesh1D(extent, basis, quadrature) for extent in extents
+                        Mesh[1](extent, basis, quadrature)
+                        for extent in extents
                     ])
 
 

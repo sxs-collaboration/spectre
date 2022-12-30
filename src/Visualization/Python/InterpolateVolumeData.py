@@ -43,8 +43,6 @@ def forward_args(args):
     interpolate_h5_file(**args)
 
 
-Mesh = {1: Spectral.Mesh1D, 2: Spectral.Mesh2D, 3: Spectral.Mesh3D}
-
 RegularGrid = {
     1: Interpolation.RegularGrid1D,
     2: Interpolation.RegularGrid2D,
@@ -153,8 +151,9 @@ def interpolate_h5_file(source_file_path,
         # iterate over elements
         for grid_name, extent, basis, quadrature in zip(
                 grid_names, extents, bases, quadratures):
-            source_mesh = Mesh[dim](extent, basis_from_string(basis),
-                                    quadrature_from_string(quadrature))
+            source_mesh = Spectral.Mesh[dim](
+                extent, basis_from_string(basis),
+                quadrature_from_string(quadrature))
 
             interpolant = RegularGrid[dim](source_mesh, target_mesh)
 
@@ -328,7 +327,8 @@ if __name__ == "__main__":
     source_vol = source_file.get_vol(parsed_args.source_subfile_name)
     dim = source_vol.get_dimension()
     source_file.close()
-    target_mesh = Mesh[dim](target_extents, target_basis, target_quadrature)
+    target_mesh = Spectral.Mesh[dim](target_extents, target_basis,
+                                     target_quadrature)
 
     interpolate_args = []
     logging.info("Source and target files/volumes are as follows:")
