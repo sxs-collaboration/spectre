@@ -17,6 +17,7 @@ spectre_python_add_module(
   DeleteSubfiles.py
   ExtractDatFromH5.py
   ExtractInputSourceYamlFromH5.py
+  IterElements.py
   MODULE_PATH "IO"
   )
 
