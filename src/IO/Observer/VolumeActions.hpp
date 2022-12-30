@@ -28,6 +28,7 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Serialize.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -364,12 +365,14 @@ struct ContributeVolumeDataToWriter {
         const auto serialized_domain = serialize(
             db::get<domain::Tags::Domain<Metavariables::volume_dim>>(box));
         const auto serialized_functions_of_time =
-            [&box]() -> std::optional<std::vector<char>> {
-          if constexpr (db::tag_is_retrievable_v<domain::Tags::FunctionsOfTime,
-                                                 db::DataBox<DbTagsList>>) {
-            return serialize(db::get<domain::Tags::FunctionsOfTime>(box));
+            [&cache]() -> std::optional<std::vector<char>> {
+          // Functions-of-time are in the _mutable_ global cache, so they aren't
+          // accessible through the DataBox by default
+          if constexpr (Parallel::is_in_global_cache<
+                            Metavariables, domain::Tags::FunctionsOfTime>) {
+            return serialize(get<domain::Tags::FunctionsOfTime>(cache));
           } else {
-            (void)box;
+            (void)cache;
             return std::nullopt;
           }
         }();
