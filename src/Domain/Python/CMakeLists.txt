@@ -10,6 +10,7 @@ spectre_python_add_module(
   Bindings.cpp
   Domain.cpp
   ElementId.cpp
+  FunctionsOfTime.cpp
   SegmentId.cpp
   PYTHON_FILES
   __init__.py
@@ -21,6 +22,7 @@ spectre_python_headers(
   HEADERS
   Domain.hpp
   ElementId.hpp
+  FunctionsOfTime.hpp
   SegmentId.hpp
   )
 
@@ -31,6 +33,7 @@ spectre_python_link_libraries(
   Domain
   DomainCreators
   DomainStructure
+  FunctionsOfTime
   pybind11::module
   Utilities
   )

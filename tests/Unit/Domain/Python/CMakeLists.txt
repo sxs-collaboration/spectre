@@ -14,6 +14,12 @@ spectre_add_python_bindings_test(
   PyDomain)
 
 spectre_add_python_bindings_test(
+  "Unit.Domain.Python.FunctionsOfTime"
+  Test_FunctionsOfTime.py
+  "Unit;Domain"
+  PyDomain)
+
+spectre_add_python_bindings_test(
   "Unit.Domain.Python.SegmentId"
   Test_SegmentId.py
   "Unit;Domain"
