@@ -8,8 +8,10 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
+  BlockLogicalCoordinates.cpp
   Domain.cpp
   ElementId.cpp
+  ElementLogicalCoordinates.cpp
   FunctionsOfTime.cpp
   InertialCoordinates.cpp
   SegmentId.cpp
@@ -21,8 +23,10 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BlockLogicalCoordinates.hpp
   Domain.hpp
   ElementId.hpp
+  ElementLogicalCoordinates.hpp
   FunctionsOfTime.hpp
   InertialCoordinates.hpp
   SegmentId.hpp
