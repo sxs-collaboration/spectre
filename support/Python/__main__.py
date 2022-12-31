@@ -26,6 +26,9 @@ class Cli(click.MultiCommand):
         if name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
             return clean_output_command
+        elif name == "delete-subfiles":
+            from spectre.IO.H5.DeleteSubfiles import delete_subfiles_command
+            return delete_subfiles_command
         elif name == "extract-dat":
             from spectre.IO.H5.ExtractDatFromH5 import extract_dat_command
             return extract_dat_command
