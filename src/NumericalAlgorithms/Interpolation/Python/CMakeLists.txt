@@ -10,6 +10,7 @@ spectre_python_add_module(
   BarycentricRational.cpp
   Bindings.cpp
   CubicSpline.cpp
+  IrregularInterpolant.cpp
   RegularGridInterpolant.cpp
   PYTHON_FILES
   __init__.py
@@ -21,6 +22,7 @@ spectre_python_headers(
   HEADERS
   BarycentricRational.hpp
   CubicSpline.hpp
+  IrregularInterpolant.hpp
   RegularGridInterpolant.hpp
   )
 
