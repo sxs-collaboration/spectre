@@ -134,19 +134,19 @@ void ComposeTable::parse_eos_parameters() {
       "tabulation scheme") {
     ERROR("Read unexpected comment line: '" << line_buffer << "'");
   }
-  parameters_file >> number_density_bounds_[0] >> temperature_bounds_[0] >>
+  parameters_file >> temperature_bounds_[0] >> number_density_bounds_[0] >>
       electron_fraction_bounds_[0];
   std::getline(parameters_file, line_buffer);  // Read rest of line (newline)
-  parameters_file >> number_density_bounds_[1] >> temperature_bounds_[1] >>
+  parameters_file >> temperature_bounds_[1] >> number_density_bounds_[1] >>
       electron_fraction_bounds_[1];
   std::getline(parameters_file, line_buffer);  // Read rest of line (newline)
-  parameters_file >> number_density_number_of_points_ >>
-      temperature_number_of_points_ >> electron_fraction_number_of_points_;
+  parameters_file >> temperature_number_of_points_ >>
+      number_density_number_of_points_ >> electron_fraction_number_of_points_;
   table_size_ = number_density_number_of_points_ *
                 temperature_number_of_points_ *
                 electron_fraction_number_of_points_;
   std::getline(parameters_file, line_buffer);  // Read rest of line (newline)
-  parameters_file >> number_density_log_spacing_ >> temperature_log_spacing_ >>
+  parameters_file >> temperature_log_spacing_ >> number_density_log_spacing_ >>
       electron_fraction_log_spacing_;
 }
 
