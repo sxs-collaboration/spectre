@@ -21,3 +21,5 @@ target_link_libraries(
   DataStructuresHelpers
   Punctures
   )
+
+add_subdirectory(BoundaryConditions)
