@@ -5,6 +5,7 @@ set(LIBRARY "Test_GrMhdAnalyticData")
 
 set(LIBRARY_SOURCES
   InitialMagneticFields/Test_Poloidal.cpp
+  InitialMagneticFields/Test_Toroidal.cpp
   Test_BlastWave.cpp
   Test_BondiHoyleAccretion.cpp
   Test_CcsnCollapse.cpp
