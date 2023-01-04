@@ -56,7 +56,8 @@ struct InitializeFixedSources {
       db::wrap_tags_in<::Tags::FixedSource, typename System::primal_fields>>;
 
  public:
-  using const_global_cache_tags = tmpl::list<elliptic::dg::Tags::Massive>;
+  using const_global_cache_tags =
+      tmpl::list<elliptic::dg::Tags::Massive, BackgroundTag>;
   using simple_tags = tmpl::list<fixed_sources_tag>;
   using compute_tags = tmpl::list<>;
 

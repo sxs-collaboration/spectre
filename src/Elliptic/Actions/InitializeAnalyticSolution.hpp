@@ -58,6 +58,7 @@ struct InitializeOptionalAnalyticSolution {
  public:
   using simple_tags = tmpl::list<analytic_fields_tag>;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<BackgroundTag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
