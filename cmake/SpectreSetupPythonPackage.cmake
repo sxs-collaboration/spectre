@@ -33,6 +33,10 @@ configure_or_symlink_py_file(
 )
 # Also link the main entry point to bin/
 set(PYTHON_SCRIPT_LOCATION "spectre")
+set(JEMALLOC_PRELOAD "")
+if(BUILD_PYTHON_BINDINGS AND "${JEMALLOC_LIB_TYPE}" STREQUAL SHARED)
+  set(JEMALLOC_PRELOAD "LD_PRELOAD=\${LD_PRELOAD}\${LD_PRELOAD:+:}${JEMALLOC_LIBRARIES}")
+endif()
 configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
   "${CMAKE_BINARY_DIR}/tmp/spectre")
