@@ -1,0 +1,102 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolvePunctures
+# Check: parse;execute
+# Timeout: 20
+# ExpectedOutput:
+#   PuncturesReductions.h5
+#   PuncturesVolume0.h5
+
+ResourceInfo:
+  AvoidGlobalProc0: false
+  Singletons: Auto
+
+Background:
+  MultiplePunctures:
+    Punctures:
+      - Position: [0., 0., 0.]
+        Mass: 1.
+        Momentum: [0., 0., 0.]
+        Spin: [0.1, 0.2, 0.3]
+
+InitialGuess: Flatness
+
+DomainCreator:
+  Sphere:
+    InnerRadius: 2.
+    OuterRadius: 10.
+    InnerCubeSphericity: 0.
+    InitialRefinement: 0
+    InitialGridPoints: [4, 4]
+    UseEquiangularMap: True
+    TimeDependence: None
+    BoundaryCondition: Flatness
+
+Discretization:
+  DiscontinuousGalerkin:
+    PenaltyParameter: 1.
+    Massive: True
+
+Observers:
+  VolumeFileName: "PuncturesVolume"
+  ReductionFileName: "PuncturesReductions"
+
+NonlinearSolver:
+  NewtonRaphson:
+    ConvergenceCriteria:
+      MaxIterations: 20
+      RelativeResidual: 0.
+      AbsoluteResidual: 1.e-10
+    SufficientDecrease: 1.e-4
+    MaxGlobalizationSteps: 40
+    DampingFactor: 1.
+    Verbosity: Quiet
+
+LinearSolver:
+  Gmres:
+    ConvergenceCriteria:
+      MaxIterations: 30
+      RelativeResidual: 1.e-4
+      AbsoluteResidual: 1.e-12
+    Verbosity: Quiet
+
+  Multigrid:
+    Iterations: 1
+    MaxLevels: Auto
+    PreSmoothing: True
+    PostSmoothingAtBottom: False
+    Verbosity: Silent
+    OutputVolumeData: False
+
+  SchwarzSmoother:
+    Iterations: 3
+    MaxOverlap: 2
+    Verbosity: Silent
+    SubdomainSolver:
+      Gmres:
+        ConvergenceCriteria:
+          MaxIterations: 3
+          RelativeResidual: 1.e-4
+          AbsoluteResidual: 1.e-12
+        Verbosity: Silent
+        Restart: None
+        Preconditioner:
+          MinusLaplacian:
+            Solver: ExplicitInverse
+            BoundaryConditions: Auto
+    SkipResets: True
+    ObservePerCoreReductions: False
+
+EventsAndTriggers:
+  - - HasConverged
+    - - ObserveFields:
+          SubfileName: VolumeData
+          VariablesToObserve:
+            - Field
+            - Alpha
+            - Beta
+          InterpolateToMesh: None
+          CoordinatesFloatingPointType: Double
+          FloatingPointTypes: [Double]
+          OverrideObservationValue: None
