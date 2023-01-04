@@ -281,12 +281,12 @@ class Binary : public elliptic::analytic_data::Background,
         "The coordinates on the x-axis where the two objects are placed";
     using type = std::array<double, 2>;
   };
-  struct ObjectA {
+  struct PrimaryRightObjectA {
     static constexpr Options::String help =
         "The object placed on the negative x-axis";
     using type = std::unique_ptr<IsolatedObjectBase>;
   };
-  struct ObjectB {
+  struct SecondaryLeftObjectB {
     static constexpr Options::String help =
         "The object placed on the positive x-axis";
     using type = std::unique_ptr<IsolatedObjectBase>;
@@ -309,8 +309,8 @@ class Binary : public elliptic::analytic_data::Background,
         "to disable the Gaussian falloff.";
     using type = Options::Auto<std::array<double, 2>, Options::AutoLabel::None>;
   };
-  using options = tmpl::list<XCoords, ObjectA, ObjectB, AngularVelocity,
-                             Expansion, FalloffWidths>;
+  using options = tmpl::list<XCoords, PrimaryRightObjectA, SecondaryLeftObjectB,
+                             AngularVelocity, Expansion, FalloffWidths>;
   static constexpr Options::String help =
       "Binary compact-object data in general relativity, constructed from "
       "superpositions of two isolated objects.";

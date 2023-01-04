@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -39,8 +40,8 @@ namespace ControlErrors {
  *
  * \f[ \delta\vec{q} = \frac{\vec{C}\times\vec{X}}{\vec{C}\cdot\vec{X}} \f]
  *
- * where \f$\vec{X} = \vec{x}_B - \vec{x}_A\f$ and \f$\vec{C} = \vec{c}_B -
- * \vec{c}_A\f$. Here, object B is located on the positive x-axis and object A
+ * where \f$\vec{X} = \vec{x}_A - \vec{x}_B\f$ and \f$\vec{C} = \vec{c}_A -
+ * \vec{c}_B\f$. Here, object A is located on the positive x-axis and object B
  * is located on the negative x-axis, \f$\vec{X}\f$ is the difference in
  * positions of the centers of the mapped objects, and
  * \f$\vec{C}\f$ is the difference of the centers of the excision spheres, all
@@ -54,6 +55,8 @@ namespace ControlErrors {
  *   control_system::Systems::Rotation Rotation \endlink control system
  */
 struct Rotation : tt::ConformsTo<protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 2;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for rotation control. This should not "
@@ -71,18 +74,31 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
     using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
 
-    const DataVector grid_position_of_A = array_to_datavector(
-        domain.excision_spheres().at("ObjectAExcisionSphere").center());
-    const DataVector grid_position_of_B = array_to_datavector(
-        domain.excision_spheres().at("ObjectBExcisionSphere").center());
+    ASSERT(domain.excision_spheres().count(
+               "PrimaryRightObjectAExcisionSphere") == 1,
+           "Excision sphere for ObjectA not in the domain but is needed to "
+           "compute Rotation control error.");
+    ASSERT(domain.excision_spheres().count(
+               "SecondaryLeftObjectBExcisionSphere") == 1,
+           "Excision sphere for ObjectB not in the domain but is needed to "
+           "compute Rotation control error.");
+
+    const DataVector grid_position_of_A =
+        array_to_datavector(domain.excision_spheres()
+                                .at("PrimaryRightObjectAExcisionSphere")
+                                .center());
+    const DataVector grid_position_of_B =
+        array_to_datavector(domain.excision_spheres()
+                                .at("SecondaryLeftObjectBExcisionSphere")
+                                .center());
     const DataVector& current_position_of_A = get<center_A>(measurements);
     const DataVector& current_position_of_B = get<center_B>(measurements);
 
-    // A is to the left of B in grid frame. To get positive differences,
-    // take B - A
-    const DataVector grid_diff = grid_position_of_B - grid_position_of_A;
+    // B is to the left of A in grid frame. To get positive differences,
+    // take A - B
+    const DataVector grid_diff = grid_position_of_A - grid_position_of_B;
     const DataVector current_diff =
-        current_position_of_B - current_position_of_A;
+        current_position_of_A - current_position_of_B;
 
     const double grid_dot_current = dot(grid_diff, current_diff);
     const DataVector grid_cross_current = cross(grid_diff, current_diff);

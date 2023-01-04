@@ -235,6 +235,7 @@ void test_suite(const gsl::not_null<Generator*> generator, const size_t l_max,
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 1\n"
       "    NumberOfComponents:\n"
       "      ShapeA: " +
       num_ah_coeffs_str +

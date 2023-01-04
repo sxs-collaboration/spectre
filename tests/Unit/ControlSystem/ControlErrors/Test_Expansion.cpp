@@ -37,6 +37,7 @@ void test_expansion_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Expansion: 1\n"
       "ControlSystems:\n"
@@ -92,10 +93,10 @@ void test_expansion_control_error() {
       control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
 
   // Create fake measurements. For expansion we only care about the x component
-  // because that's all that is used. B is on the positive x-axis, A is on the
+  // because that's all that is used. A is on the positive x-axis, B is on the
   // negative x-axis
-  const double pos_A_x = -5.0;
-  const double pos_B_x = 10.0;
+  const double pos_A_x = 10.0;
+  const double pos_B_x = -5.0;
   QueueTuple fake_measurement_tuple{DataVector{pos_A_x, 0.0, 0.0},
                                     DataVector{pos_B_x, 0.0, 0.0}};
 
@@ -111,7 +112,7 @@ void test_expansion_control_error() {
           *functions_of_time.at(expansion_name));
   // Since we haven't updated, the expansion factor should just be 1.0
   const double exp_factor = expansion_f_of_t.func(check_time)[0][0];
-  const double pos_diff = pos_B_x - pos_A_x;
+  const double pos_diff = pos_A_x - pos_B_x;
   const double grid_diff = initial_separation;
 
   const DataVector expected_control_error{exp_factor *

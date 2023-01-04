@@ -67,6 +67,7 @@ void test_translation_control_system() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Translation: 3\n"
       "ControlSystems:\n"
@@ -138,7 +139,7 @@ void test_translation_control_system() {
                                   &velocity](const double time) {
     const std::array<double, 3> init_pos{{0.5 * initial_separation, 0.0, 0.0}};
     return std::pair<std::array<double, 3>, std::array<double, 3>>{
-        -init_pos + velocity * time, init_pos + velocity * time};
+        init_pos + velocity * time, -init_pos + velocity * time};
   };
 
   const auto horizon_function = [&position_function, &runner,
@@ -160,9 +161,9 @@ void test_translation_control_system() {
 
   // Our expected positions are just the initial positions
   const std::array<double, 3> expected_grid_position_of_a{
-      {-0.5 * initial_separation, 0.0, 0.0}};
-  const std::array<double, 3> expected_grid_position_of_b{
       {0.5 * initial_separation, 0.0, 0.0}};
+  const std::array<double, 3> expected_grid_position_of_b{
+      {-0.5 * initial_separation, 0.0, 0.0}};
 
   const auto& translation_f_of_t =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>&>(

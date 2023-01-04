@@ -19,10 +19,10 @@
  * \f}
  * In terms of these functions, the positions of objects 1 and 2 are
  * \f{align}{
- *   x_1(t) &= \frac{r(t)}{2}\cos\left[\Omega(t) t\right] + v_x t, \\
- *   y_1(t) &= \frac{r(t)}{2}\sin\left[\Omega(t) t\right], + v_y t\\
- *   x_2(t) &= -\frac{r(t)}{2}\cos\left[\Omega(t) t\right], + v_x t\\
- *   y_2(t) &= -\frac{r(t)}{2}\sin\left[\Omega(t) t\right], + v_y t\\
+ *   x_1(t) &= -\frac{r(t)}{2}\cos\left[\Omega(t) t\right] + v_x t, \\
+ *   y_1(t) &= -\frac{r(t)}{2}\sin\left[\Omega(t) t\right], + v_y t\\
+ *   x_2(t) &= \frac{r(t)}{2}\cos\left[\Omega(t) t\right], + v_x t\\
+ *   y_2(t) &= \frac{r(t)}{2}\sin\left[\Omega(t) t\right], + v_y t\\
  *   z_1(t) &= z_2(t) = v_z t.
  * \f} These trajectories are useful for, e.g., testing a horizon-tracking
  * control system.

@@ -14,6 +14,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ProtocolHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -42,8 +43,8 @@ namespace ControlErrors {
  *   \delta a &= a\left( \frac{\vec{X}\cdot\vec{C}}{||\vec{C}||^2} - 1 \right)
  * \\ \delta a &= a\left( \frac{X_0}{C_0} - 1 \right) \f}
  *
- * where \f$\vec{X} = \vec{x}_B - \vec{x}_A\f$ and \f$\vec{C} = \vec{c}_B -
- * \vec{c}_A\f$. Here, object B is located on the positive x-axis and object A
+ * where \f$\vec{X} = \vec{x}_A - \vec{x}_B\f$ and \f$\vec{C} = \vec{c}_A -
+ * \vec{c}_B\f$. Here, object A is located on the positive x-axis and object B
  * is located on the negative x-axis, \f$\vec{X}\f$ is the difference in
  * positions of the centers of the mapped objects, and
  * \f$\vec{C}\f$ is the difference of the centers of the excision spheres, all
@@ -59,6 +60,8 @@ namespace ControlErrors {
  *   control_system::Systems::Expansion Expansion \endlink control system
  */
 struct Expansion : tt::ConformsTo<protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 2;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for expansion control. This should not "
@@ -80,19 +83,32 @@ struct Expansion : tt::ConformsTo<protocols::ControlError> {
     using center_A = control_system::QueueTags::Center<::ah::ObjectLabel::A>;
     using center_B = control_system::QueueTags::Center<::ah::ObjectLabel::B>;
 
+    ASSERT(domain.excision_spheres().count(
+               "PrimaryRightObjectAExcisionSphere") == 1,
+           "Excision sphere for ObjectA not in the domain but is needed to "
+           "compute Expansion control error.");
+    ASSERT(domain.excision_spheres().count(
+               "SecondaryLeftObjectBExcisionSphere") == 1,
+           "Excision sphere for ObjectB not in the domain but is needed to "
+           "compute Expansion control error.");
+
     const double grid_position_of_A =
-        domain.excision_spheres().at("ObjectAExcisionSphere").center()[0];
+        domain.excision_spheres()
+            .at("PrimaryRightObjectAExcisionSphere")
+            .center()[0];
     const double grid_position_of_B =
-        domain.excision_spheres().at("ObjectBExcisionSphere").center()[0];
+        domain.excision_spheres()
+            .at("SecondaryLeftObjectBExcisionSphere")
+            .center()[0];
     const double current_position_of_A = get<center_A>(measurements)[0];
     const double current_position_of_B = get<center_B>(measurements)[0];
 
     // A is to the left of B in grid frame. To get positive differences,
-    // take B - A
+    // take A - B
     const double expected_expansion_factor =
         current_expansion_factor *
-        (current_position_of_B - current_position_of_A) /
-        (grid_position_of_B - grid_position_of_A);
+        (current_position_of_A - current_position_of_B) /
+        (grid_position_of_A - grid_position_of_B);
 
     return {expected_expansion_factor - current_expansion_factor};
   }

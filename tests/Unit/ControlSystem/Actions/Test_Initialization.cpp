@@ -44,7 +44,7 @@ struct MockControlSystem
     return get_output(i);
   }
   using measurement = Measurement;
-  using control_error = control_system::TestHelpers::ControlError;
+  using control_error = control_system::TestHelpers::ControlError<0>;
   static constexpr size_t deriv_order = order;
   using simple_tags = tmpl::list<>;
 };
@@ -96,7 +96,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Initialization",
       std::vector<double>{damping_time}, 10.0, 0.1, 2.0, 0.1, 1.01, 0.99};
   Controller<order> controller{0.3};
   bool write_data = false;
-  const control_system::TestHelpers::ControlError control_error{};
+  const control_system::TestHelpers::ControlError<0> control_error{};
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>

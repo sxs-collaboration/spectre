@@ -60,6 +60,7 @@ void test_expansion_control_system() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Expansion: 1\n"
       "ControlSystems:\n"
@@ -134,7 +135,7 @@ void test_expansion_control_system() {
   const auto position_function = [&binary_trajectories](const double time) {
     const double separation = binary_trajectories.separation(time);
     return std::pair<std::array<double, 3>, std::array<double, 3>>{
-        {-0.5 * separation, 0.0, 0.0}, {0.5 * separation, 0.0, 0.0}};
+        {0.5 * separation, 0.0, 0.0}, {-0.5 * separation, 0.0, 0.0}};
   };
 
   const auto horizon_function = [&position_function, &runner,
@@ -156,9 +157,9 @@ void test_expansion_control_system() {
 
   // Our expected positions are just the initial positions
   const std::array<double, 3> expected_grid_position_of_a{
-      {-0.5 * initial_separation, 0.0, 0.0}};
-  const std::array<double, 3> expected_grid_position_of_b{
       {0.5 * initial_separation, 0.0, 0.0}};
+  const std::array<double, 3> expected_grid_position_of_b{
+      {-0.5 * initial_separation, 0.0, 0.0}};
 
   const auto& expansion_f_of_t =
       dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>&>(

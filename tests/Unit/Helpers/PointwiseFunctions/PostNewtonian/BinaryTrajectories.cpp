@@ -52,10 +52,10 @@ std::pair<std::array<double, 3>, std::array<double, 3>>
 BinaryTrajectories::position_impl(const double time,
                                   const double separation) const {
   const double orbital_freq = orbital_frequency(time);
-  double xB = 0.5 * separation * cos(orbital_freq * time);
-  double yB = 0.5 * separation * sin(orbital_freq * time);
-  double xA = -xB;
-  double yA = -yB;
+  double xA = 0.5 * separation * cos(orbital_freq * time);
+  double yA = 0.5 * separation * sin(orbital_freq * time);
+  double xB = -xA;
+  double yB = -yA;
   xB += velocity_[0] * time;
   xA += velocity_[0] * time;
   yB += velocity_[1] * time;

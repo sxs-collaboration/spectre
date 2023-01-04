@@ -43,6 +43,7 @@ void test_translation_control_error() {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Translation: 3\n"
       "ControlSystems:\n"
@@ -97,9 +98,9 @@ void test_translation_control_error() {
       control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
 
   // Create fake measurements.
-  const DataVector pos_A{{-3.0, -4.0, 5.0}};
-  const DataVector pos_B{{2.0, 3.0, 6.0}};
-  const DataVector grid_B{{initial_separation / 2.0, 0.0, 0.0}};
+  const DataVector pos_A{{2.0, 3.0, 6.0}};
+  const DataVector pos_B{{-3.0, -4.0, 5.0}};
+  const DataVector grid_A{{initial_separation / 2.0, 0.0, 0.0}};
   QueueTuple fake_measurement_tuple{pos_A, pos_B};
 
   using ControlError = translation_system::control_error;
@@ -113,19 +114,19 @@ void test_translation_control_error() {
   const DataVector rotation_control_error =
       DataVector{{0.0, -15.0, 105.0}} / 75.0;
   const double expansion_control_error =
-      (pos_B[0] - pos_A[0]) / initial_separation - 1.0;
+      (pos_A[0] - pos_B[0]) / initial_separation - 1.0;
 
   const DataVector rot_control_err_cross_grid =
-      cross(rotation_control_error, grid_B);
+      cross(rotation_control_error, grid_A);
 
   // The quaternion should be the unit quaternion (1,0,0,0) which means the
   // quaternion multiplication in the translation control error is the identity
   // so we avoid actually doing quaternion multiplication. Also the expansion
   // factor should be 1.0 so we don't have to multiply/divide by that where we
   // normally would have
-  const DataVector expected_control_error = pos_B - grid_B -
+  const DataVector expected_control_error = pos_A - grid_A -
                                             rot_control_err_cross_grid -
-                                            expansion_control_error * grid_B;
+                                            expansion_control_error * grid_A;
 
   Approx custom_approx = Approx::custom().epsilon(1.0e-14).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(control_error, expected_control_error,

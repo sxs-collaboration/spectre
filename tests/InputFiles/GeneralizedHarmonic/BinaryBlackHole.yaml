@@ -45,18 +45,18 @@ Evolution:
 
 DomainCreator:
   BinaryCompactObject:
-    ObjectA:
+    PrimaryRightObjectA:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: &XCoordA -7.683
+      XCoord: &XCoordA 7.683
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
       UseLogarithmicMap: true
-    ObjectB:
+    SecondaryLeftObjectB:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: &XCoordB 7.683
+      XCoord: &XCoordB -7.683
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
@@ -73,10 +73,10 @@ DomainCreator:
         ConstraintPreservingBjorhus:
           Type: ConstraintPreservingPhysical
     InitialRefinement:
-      ObjectAShell:   [3, 3, 4]
-      ObjectACube:    [2, 2, 1]
-      ObjectBShell:   [3, 3, 4]
-      ObjectBCube:    [2, 2, 1]
+      PrimaryRightObjectAShell:   [3, 3, 4]
+      PrimaryRightObjectACube:    [2, 2, 1]
+      SecondaryLeftObjectBShell:   [3, 3, 4]
+      SecondaryLeftObjectBCube:    [2, 2, 1]
       EnvelopingCube: [2, 2, 3]
       CubedShell:     [2, 2, 2]
       OuterShell:     [2, 2, 5]
