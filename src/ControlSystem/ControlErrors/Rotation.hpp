@@ -39,8 +39,8 @@ namespace ControlErrors {
  *
  * \f[ \delta\vec{q} = \frac{\vec{C}\times\vec{X}}{\vec{C}\cdot\vec{X}} \f]
  *
- * where \f$\vec{X} = \vec{x}_B - \vec{x}_A\f$ and \f$\vec{C} = \vec{c}_B -
- * \vec{c}_A\f$. Here, object B is located on the positive x-axis and object A
+ * where \f$\vec{X} = \vec{x}_A - \vec{x}_B\f$ and \f$\vec{C} = \vec{c}_A -
+ * \vec{c}_B\f$. Here, object A is located on the positive x-axis and object B
  * is located on the negative x-axis, \f$\vec{X}\f$ is the difference in
  * positions of the centers of the mapped objects, and
  * \f$\vec{C}\f$ is the difference of the centers of the excision spheres, all
@@ -78,11 +78,11 @@ struct Rotation : tt::ConformsTo<protocols::ControlError> {
     const DataVector& current_position_of_A = get<center_A>(measurements);
     const DataVector& current_position_of_B = get<center_B>(measurements);
 
-    // A is to the left of B in grid frame. To get positive differences,
-    // take B - A
-    const DataVector grid_diff = grid_position_of_B - grid_position_of_A;
+    // A is to the right of B in grid frame. To get positive differences,
+    // take A - B
+    const DataVector grid_diff = grid_position_of_A - grid_position_of_B;
     const DataVector current_diff =
-        current_position_of_B - current_position_of_A;
+        current_position_of_A - current_position_of_B;
 
     const double grid_dot_current = dot(grid_diff, current_diff);
     const DataVector grid_cross_current = cross(grid_diff, current_diff);

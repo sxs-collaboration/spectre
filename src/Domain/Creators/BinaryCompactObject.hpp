@@ -122,8 +122,8 @@ namespace creators {
  *
  * In the code and options below, `ObjectA` and `ObjectB` refer to the two
  * compact objects, and by extension, also refer to the layers that immediately
- * surround each compact object. Note that `ObjectA` is located to the left of
- * the origin (along the negative x-axis) and `ObjectB` is located to the right
+ * surround each compact object. Note that `ObjectA` is located to the right of
+ * the origin (along the positive x-axis) and `ObjectB` is located to the left
  * of the origin. `enveloping cube` refers to the outer surface of Layer 3.
  * `outer sphere` is the radius of the spherical outer boundary, which is
  * the outer boundary of Layer 5. The `enveloping cube` and `outer sphere`
@@ -298,14 +298,14 @@ class BinaryCompactObject : public DomainCreator<3> {
   struct ObjectA {
     using type = Object;
     static constexpr Options::String help = {
-        "Options for the object to the left of the origin (along the negative "
+        "Options for the object to the right of the origin (along the positive "
         "x-axis)."};
   };
 
   struct ObjectB {
     using type = Object;
     static constexpr Options::String help = {
-        "Options for the object to the right of the origin (along the positive "
+        "Options for the object to the left of the origin (along the negative "
         "x-axis)."};
   };
 
@@ -572,8 +572,8 @@ class BinaryCompactObject : public DomainCreator<3> {
       "boundary condition or 'false', the region will be excised. The user "
       "specifies Object{A,B}.XCoord, the x-coordinates of the locations of the "
       "centers of each compact object. In these coordinates, the location for "
-      "the axis of rotation is x=0. ObjectA is located on the left and ObjectB "
-      "is located on the right. Please make sure that your choices of "
+      "the axis of rotation is x=0. ObjectA is located on the right and ObjectB"
+      "is located on the left. Please make sure that your choices of "
       "x-coordinate locations are such that the resulting center of mass "
       "is located at zero.\n"
       "\n"

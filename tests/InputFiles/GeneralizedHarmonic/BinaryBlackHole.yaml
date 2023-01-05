@@ -48,7 +48,7 @@ DomainCreator:
     ObjectA:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: &XCoordA -7.683
+      XCoord: &XCoordA 7.683
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:
@@ -56,7 +56,7 @@ DomainCreator:
     ObjectB:
       InnerRadius: 0.7925
       OuterRadius: 6.683
-      XCoord: &XCoordB 7.683
+      XCoord: &XCoordB -7.683
       Interior:
         ExciseWithBoundaryCondition:
           DemandOutgoingCharSpeeds:

@@ -95,8 +95,8 @@ void test_rotation_control_error() {
       control_system::QueueTags::Center<::ah::ObjectLabel::B>>;
 
   // Create fake measurements.
-  const DataVector pos_A{{-3.0, -4.0, 5.0}};
-  const DataVector pos_B{{2.0, 3.0, 6.0}};
+  const DataVector pos_A{{2.0, 3.0, 6.0}};
+  const DataVector pos_B{{-3.0, -4.0, 5.0}};
   QueueTuple fake_measurement_tuple{pos_A, pos_B};
 
   using ControlError = rotation_system::control_error;

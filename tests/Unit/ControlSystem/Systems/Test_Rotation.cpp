@@ -152,9 +152,9 @@ void test_rotation_control_system(const bool newtonian) {
 
   // Our expected positions are just the initial positions
   const std::array<double, 3> expected_grid_position_of_a{
-      {-0.5 * initial_separation, 0.0, 0.0}};
-  const std::array<double, 3> expected_grid_position_of_b{
       {0.5 * initial_separation, 0.0, 0.0}};
+  const std::array<double, 3> expected_grid_position_of_b{
+      {-0.5 * initial_separation, 0.0, 0.0}};
 
   const auto& rotation_f_of_t = dynamic_cast<
       domain::FunctionsOfTime::QuaternionFunctionOfTime<DerivOrder>&>(

@@ -36,10 +36,10 @@ def position_helper(time, init_sep, newtonian, sign, no_expansion):
 def positions1(time, newtonian, no_expansion):
     newt = True if newtonian > 0.0 else False
     no_exp = True if no_expansion > 0.0 else False
-    return position_helper(time, initial_separation, newt, -1.0, no_exp)
+    return position_helper(time, initial_separation, newt, +1.0, no_exp)
 
 
 def positions2(time, newtonian, no_expansion):
     newt = True if newtonian > 0.0 else False
     no_exp = True if no_expansion > 0.0 else False
-    return position_helper(time, initial_separation, newt, +1.0, no_exp)
+    return position_helper(time, initial_separation, newt, -1.0, no_exp)
