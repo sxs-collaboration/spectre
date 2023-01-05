@@ -30,6 +30,7 @@ set(LIBRARY_SOURCES
   Subcell/Test_TciOptions.cpp
   Subcell/Test_TimeDerivative.cpp
   Test_Characteristics.cpp
+  Test_ComovingMagneticFieldMagnitude.cpp
   Test_ConservativeFromPrimitive.cpp
   Test_FixConservatives.cpp
   Test_Flattener.cpp
