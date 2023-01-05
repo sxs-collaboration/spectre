@@ -16,6 +16,8 @@ spectre_python_add_module(
   Rectangle.cpp
   Shell.cpp
   Sphere.cpp
+  PYTHON_FILES
+  __init__.py
   )
 
 spectre_python_headers(

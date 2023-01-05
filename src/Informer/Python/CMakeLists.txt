@@ -9,6 +9,8 @@ spectre_python_add_module(
   SOURCES
   Bindings.cpp
   InfoAtCompile.cpp
+  PYTHON_FILES
+  __init__.py
 )
 
 spectre_python_headers(

@@ -10,6 +10,8 @@ spectre_python_add_module(
   Bindings.cpp
   Mesh.cpp
   Spectral.cpp
+  PYTHON_FILES
+  __init__.py
 )
 
 spectre_python_headers(
