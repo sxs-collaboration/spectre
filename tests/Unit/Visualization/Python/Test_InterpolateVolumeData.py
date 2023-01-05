@@ -155,8 +155,10 @@ class TestInterpolateH5(unittest.TestCase):
             self.assertEqual(vol.list_tensor_components(obs),
                              self.tensor_names)
             self.assertEqual(vol.get_extents(obs), [[4, 4, 4], [4, 4, 4]])
-            self.assertEqual(vol.get_bases(obs), [["Legendre"] * 3] * 2)
-            self.assertEqual(vol.get_quadratures(obs), [["Gauss"] * 3] * 2)
+            self.assertEqual(vol.get_bases(obs),
+                             [[Spectral.Basis.Legendre] * 3] * 2)
+            self.assertEqual(vol.get_quadratures(obs),
+                             [[Spectral.Quadrature.Gauss] * 3] * 2)
 
         tensor1_obs_1 = np.asarray(
             vol.get_tensor_component(42, 'tensor1').data)

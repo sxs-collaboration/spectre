@@ -63,31 +63,8 @@ void check_volume_data(
     grid_positions[i] =
         static_cast<size_t>(std::distance(read_grid_names.begin(), position));
   }
-  auto read_bases = volume_file.get_bases(observation_id);
-  alg::sort(read_bases, std::less<>{});
-  auto read_quadratures = volume_file.get_quadratures(observation_id);
-  alg::sort(read_quadratures, std::less<>{});
-  // We need non-const bases and quadratures in order to sort them, and we
-  // need them in their string form,
-  const auto& stringify = [](const auto& bases_or_quadratures) {
-    std::vector<std::vector<std::string>> local_target_data{};
-    local_target_data.reserve(bases_or_quadratures.size() + 1);
-    for (const auto& element_data : bases_or_quadratures) {
-      std::vector<std::string> target_axis_data{};
-      target_axis_data.reserve(element_data.size() + 1);
-      for (const auto& axis_datum : element_data) {
-        target_axis_data.emplace_back(MakeString{} << axis_datum);
-      }
-      local_target_data.push_back(target_axis_data);
-    }
-    return local_target_data;
-  };
-  auto target_bases = stringify(bases);
-  alg::sort(target_bases, std::less<>{});
-  auto target_quadratures = stringify(quadratures);
-  alg::sort(target_quadratures, std::less<>{});
-  CHECK(target_bases == read_bases);
-  CHECK(target_quadratures == read_quadratures);
+  CHECK(volume_file.get_bases(observation_id) == bases);
+  CHECK(volume_file.get_quadratures(observation_id) == quadratures);
 
   {
     const auto read_components =

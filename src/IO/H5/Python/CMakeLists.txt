@@ -42,4 +42,5 @@ spectre_python_link_libraries(
 spectre_python_add_dependencies(
   ${LIBRARY}
   PyDataStructures
+  PySpectral
   )
