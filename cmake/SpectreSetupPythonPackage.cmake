@@ -139,20 +139,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     "${SPECTRE_PYTHON_PREFIX}/${ARG_MODULE_PATH}/${MODULE_NAME}")
   get_filename_component(MODULE_LOCATION ${MODULE_LOCATION} ABSOLUTE)
 
-  # Module location in Python syntax, e.g. "spectre.Visualization"
-  string(REPLACE "/" ";" PYTHON_MODULE_LOCATION_COMPONENTS "${ARG_MODULE_PATH}")
-  list(INSERT PYTHON_MODULE_LOCATION_COMPONENTS 0 "spectre")
-  list(APPEND PYTHON_MODULE_LOCATION_COMPONENTS "${MODULE_NAME}")
-  list(JOIN PYTHON_MODULE_LOCATION_COMPONENTS "." PYTHON_MODULE_LOCATION)
-
-  # Create list of all the python submodule names
-  set(PYTHON_SUBMODULES "")
-  foreach(PYTHON_FILE ${ARG_PYTHON_FILES})
-    # Get file name Without Extension (NAME_WE)
-    get_filename_component(PYTHON_FILE "${PYTHON_FILE}" NAME_WE)
-    list(APPEND PYTHON_SUBMODULES ${PYTHON_FILE})
-  endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
-
   # Add our python library, if it has sources
   if(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
     if("${ARG_LIBRARY_NAME}" STREQUAL "")
