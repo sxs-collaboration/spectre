@@ -42,6 +42,29 @@ void verify_solution(const TovStar& solution, const std::array<double, 3>& x) {
   const auto domain = brick.create_domain();
   verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-7, 1.234,
                         1.e-4);
+
+  // Check that analytically computed dp/dx^i actually equals numerical
+  // derivative of pressure
+  using DerivPressure = ::Tags::deriv<hydro::Tags::Pressure<double>,
+                                      tmpl::size_t<3>, Frame::Inertial>;
+  const auto dpdx_from_solution = get<DerivPressure>(solution.variables(
+      tnsr::I<double, 3>(x), 0.0, tmpl::list<DerivPressure>{}));
+
+  for (size_t d = 0; d < 3; ++d) {
+    using Pressure = hydro::Tags::Pressure<double>;
+
+    const auto dpdx_numerical =
+        numerical_derivative(
+            [&solution](const std::array<double, 3>& local_x) {
+              return std::array<double, 1>{get(get<Pressure>(solution.variables(
+                  tnsr::I<double, 3>(local_x), 0., tmpl::list<Pressure>{})))};
+            },
+            x, d, 1e-4)
+            .at(0);
+
+    CHECK(dpdx_numerical - dpdx_from_solution.get(d) ==
+          Approx::custom().epsilon(1.0e-10).scale(1.0));
+  }
 }
 
 void test_tov_star(const TovCoordinates coord_system) {

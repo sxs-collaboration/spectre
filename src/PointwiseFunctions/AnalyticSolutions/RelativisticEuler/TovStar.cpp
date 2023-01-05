@@ -461,6 +461,32 @@ void TovVariables<DataType, Region>::operator()(
 
 template <typename DataType, StarRegion Region>
 void TovVariables<DataType, Region>::operator()(
+    const gsl::not_null<tnsr::i<DataType, 3>*> deriv_pressure,
+    [[maybe_unused]] const gsl::not_null<Cache*> cache,
+    ::Tags::deriv<hydro::Tags::Pressure<DataType>, tmpl::size_t<3>,
+                  Frame::Inertial> /*meta*/) const {
+  // This function is not required for solving TOV equations themselves, but
+  // needed for computing magnetic fields in the MagnetizedTov initial data.
+
+  if constexpr (Region == StarRegion::Center or
+                Region == StarRegion::Exterior) {
+    get<0>(*deriv_pressure) = 0.0;
+    get<1>(*deriv_pressure) = 0.0;
+    get<2>(*deriv_pressure) = 0.0;
+  } else {
+    // cache evaluation only gets triggered when it's needed
+    const auto& dr_pressure =
+        get(cache->get_var(*this, Tags::DrPressure<DataType>{}));
+
+    // dp/dx^i = (dr/dx^i)(dp/dr) = (x^i/r)(dp/dr)
+    for (size_t d = 0; d < 3; ++d) {
+      (*deriv_pressure).get(d) = dr_pressure * coords.get(d) / radius;
+    }
+  }
+}
+
+template <typename DataType, StarRegion Region>
+void TovVariables<DataType, Region>::operator()(
     const gsl::not_null<Scalar<DataType>*> lorentz_factor,
     const gsl::not_null<Cache*> /*cache*/,
     hydro::Tags::LorentzFactor<DataType> /*meta*/) const {
