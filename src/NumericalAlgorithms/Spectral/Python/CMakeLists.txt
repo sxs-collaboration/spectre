@@ -8,6 +8,7 @@ spectre_python_add_module(
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
+  LogicalCoordinates.cpp
   Mesh.cpp
   Spectral.cpp
   PYTHON_FILES
@@ -18,6 +19,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  LogicalCoordinates.hpp
   Mesh.hpp
   Spectral.hpp
   )
