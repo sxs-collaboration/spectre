@@ -40,6 +40,8 @@ void test_cubic_spline(const F& function, const double lower_bound,
   // Construct the interpolant and give an example
   // [interpolate_example]
   intrp::CubicSpline interpolant{x_values, y_values};
+  CHECK(interpolant.x_values() == x_values);
+  CHECK(interpolant.y_values() == y_values);
   const double x_to_interpolate_to =
       lower_bound + (upper_bound - lower_bound) / 2.;
   CHECK(interpolant(x_to_interpolate_to) ==
@@ -149,4 +151,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.Interpolation.CubicSpline",
   test_with_natural_boundary(10, 1.e-1);
   test_with_natural_boundary(100, 1.e-5);
   test_with_natural_boundary(1000, 1.e-9);
+
+  {
+    INFO("Test default-construction");
+    const intrp::CubicSpline interpolant{};
+    test_serialization(interpolant);
+  }
 }

@@ -49,6 +49,10 @@ class BarycentricRational {
 
   double operator()(double x_to_interp_to) const;
 
+  const std::vector<double>& x_values() const { return x_values_; }
+
+  const std::vector<double>& y_values() const { return y_values_; }
+
   size_t order() const;
 
   // NOLINTNEXTLINE(google-runtime-references)

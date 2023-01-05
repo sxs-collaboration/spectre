@@ -7,7 +7,9 @@ spectre_python_add_module(
   Interpolation
   LIBRARY_NAME ${LIBRARY}
   SOURCES
+  BarycentricRational.cpp
   Bindings.cpp
+  CubicSpline.cpp
   RegularGridInterpolant.cpp
   PYTHON_FILES
   __init__.py
@@ -17,6 +19,8 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  BarycentricRational.hpp
+  CubicSpline.hpp
   RegularGridInterpolant.hpp
   )
 

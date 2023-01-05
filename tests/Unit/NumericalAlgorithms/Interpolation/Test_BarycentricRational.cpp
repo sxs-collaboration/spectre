@@ -26,6 +26,8 @@ void test_barycentric_rational(const F& function, const double lower_bound,
   }
 
   intrp::BarycentricRational interpolant{x_values, y_values, order};
+  CHECK(interpolant.x_values() == x_values);
+  CHECK(interpolant.y_values() == y_values);
 
   const auto deserialized_interpolant = serialize_and_deserialize(interpolant);
   Approx custom_approx = Approx::custom().epsilon(3.e-12).scale(1.0);
