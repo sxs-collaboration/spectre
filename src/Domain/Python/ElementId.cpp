@@ -38,7 +38,10 @@ void bind_element_id_impl(py::module& m) {  // NOLINT
       // NOLINTNEXTLINE(misc-redundant-expression)
       .def(py::self == py::self)
       // NOLINTNEXTLINE(misc-redundant-expression)
-      .def(py::self != py::self);
+      .def(py::self != py::self)
+      // NOLINTNEXTLINE(misc-redundant-expression)
+      .def(py::self < py::self)
+      .def(hash(py::self));
 }
 }  // namespace
 
