@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 import unittest
+from click.testing import CliRunner
 from spectre.Informer import unit_test_build_path
 import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import TensorComponent, ElementVolumeData
@@ -10,6 +11,8 @@ from spectre import Spectral
 from spectre.Visualization import InterpolateVolumeData
 import os
 import numpy as np
+import logging
+import shutil
 
 
 class TestInterpolateH5(unittest.TestCase):
@@ -19,9 +22,11 @@ class TestInterpolateH5(unittest.TestCase):
         with two tensor components each
         """
 
-        self.path = unit_test_build_path()
-        self.file_name = os.path.join(self.path, "interpolation_1.h5")
+        self.test_dir = os.path.join(unit_test_build_path(), "Visualization",
+                                     "InterpolateVolumeData")
+        os.makedirs(self.test_dir, exist_ok=True)
 
+        self.file_name = os.path.join(self.test_dir, "interpolation_1.h5")
         try:
             os.remove(self.file_name)
         except OSError:
@@ -29,8 +34,7 @@ class TestInterpolateH5(unittest.TestCase):
 
         file1 = spectre_h5.H5File(self.file_name, "a")
         self.volume_name = "/VolumeData"
-        file1.insert_vol(self.volume_name, 0)
-        file1.close()
+        vol_file = file1.insert_vol(self.volume_name, 0)
 
         # interpolated solution
         self.sol1 = np.array([
@@ -101,7 +105,6 @@ class TestInterpolateH5(unittest.TestCase):
         self.observation_ids = [42, 1000]
         self.observation_values = [1., 3.]
 
-        target_vol = file1.get_vol(self.volume_name)
         for j, observation in enumerate(tensors_file1):
             volume_data = []
             for k, element in enumerate(observation):
@@ -120,16 +123,12 @@ class TestInterpolateH5(unittest.TestCase):
                                       quadrature=3 *
                                       [Spectral.Quadrature.GaussLobatto]))
 
-            target_vol.write_volume_data(self.observation_ids[j],
-                                         self.observation_values[j],
-                                         volume_data)
+            vol_file.write_volume_data(self.observation_ids[j],
+                                       self.observation_values[j], volume_data)
+        file1.close()
 
     def tearDown(self):
-        os.remove(self.file_name)
-        try:
-            os.remove(os.path.join(self.path, "interpolated_1.h5"))
-        except OSError:
-            pass
+        shutil.rmtree(self.test_dir)
 
     def test_simple_interpolation(self):
 
@@ -187,6 +186,32 @@ class TestInterpolateH5(unittest.TestCase):
         self.assertTrue(
             np.allclose(tensor2_obs_2[64:], self.sol2 / 8., 1e-7, 1e-7))
 
+    def test_cli(self):
+        runner = CliRunner()
+        result = runner.invoke(
+            InterpolateVolumeData.interpolate_volume_data_command,
+            [
+                "--source-file-prefix",
+                os.path.join(self.test_dir, "interpolation_"),
+                "--source-subfile-name",
+                self.volume_name,
+                "--target-file-prefix",
+                os.path.join(self.test_dir, "interpolation_"),
+                "--target-subfile-name",
+                # No leading slash but with .vol extension, to check that this
+                # is normalized correctly
+                "VolumeDataInterpolated.vol",
+                "--target-extents",
+                "4,4,4",
+                "--target-basis",
+                "Legendre",
+                "--target-quadrature",
+                "Gauss",
+            ],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
 
 if __name__ == '__main__':
-    unittest.main()
+    logging.basicConfig(level=logging.DEBUG)
+    unittest.main(verbosity=2)

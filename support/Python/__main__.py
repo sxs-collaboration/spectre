@@ -18,6 +18,7 @@ class Cli(click.MultiCommand):
             "extract-dat",
             "extract-input",
             "generate-xdmf",
+            "interpolate-vol",
             "plot-dat",
             "render-1d",
             "simplify-traces",
@@ -38,6 +39,10 @@ class Cli(click.MultiCommand):
             from spectre.Visualization.GenerateXdmf import (
                 generate_xdmf_command)
             return generate_xdmf_command
+        elif name == "interpolate-vol":
+            from spectre.Visualization.InterpolateVolumeData import (
+                interpolate_volume_data_command)
+            return interpolate_volume_data_command
         elif name == "plot-dat":
             from spectre.Visualization.PlotDatFile import plot_dat_command
             return plot_dat_command
