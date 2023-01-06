@@ -30,23 +30,9 @@ template <typename System, bool LocalTimeStepping,
 void take_step(const gsl::not_null<db::DataBox<DbTags>*> box) {
   record_time_stepper_data<System, VariablesTag>(box);
   if constexpr (LocalTimeStepping) {
-    for (;;) {
+    do {
       update_u<System, VariablesTag>(box);
-      if (change_step_size<StepChoosersToUse>(box)) {
-        break;
-      }
-      using variables_tag =
-          tmpl::conditional_t<std::is_same_v<VariablesTag, NoSuchType>,
-                              typename System::variables_tag, VariablesTag>;
-      using rollback_tag = Tags::RollbackValue<variables_tag>;
-      db::mutate<variables_tag>(
-          box,
-          [](const gsl::not_null<typename variables_tag::type*> vars,
-             const typename rollback_tag::type& rollback_value) {
-            *vars = rollback_value;
-          },
-          db::get<rollback_tag>(*box));
-    }
+    } while (not change_step_size<StepChoosersToUse>(box));
   } else {
     update_u<System, VariablesTag>(box);
   }

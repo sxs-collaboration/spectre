@@ -177,13 +177,6 @@ template <typename TagList>
 using get_all_history_tags =
     tmpl::filter<TagList, tt::is_a<::Tags::HistoryEvolvedVariables, tmpl::_1>>;
 
-/// \ingroup TimeGroup
-/// \brief Tag containing a previous value for time step rollback.
-template <typename VariablesTag>
-struct RollbackValue : db::SimpleTag {
-  using type = typename VariablesTag::type;
-};
-
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Tag for the stepper error measure.

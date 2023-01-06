@@ -38,13 +38,6 @@ struct AlternativeVar : db::SimpleTag {
   using type = double;
 };
 
-// Replacement for Tags::RollbackValue when not doing rollback.
-// Included so the DataBox contains the same types of values either
-// way, which simplifies initialization.
-struct DummyRollback : db::SimpleTag {
-  using type = double;
-};
-
 struct System {
   using variables_tag = Var;
 };
@@ -64,9 +57,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using simple_tags = db::AddSimpleTags<
-      Tags::TimeStepId, variables_tag, dt_variables_tag, history_tag,
-      tmpl::conditional_t<Metavariables::use_rollback,
-                          Tags::RollbackValue<variables_tag>, DummyRollback>>;
+      Tags::TimeStepId, variables_tag, dt_variables_tag, history_tag>;
   using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -83,10 +74,7 @@ struct ComponentWithTemplateSpecifiedVariables {
   using array_index = int;
   using simple_tags = db::AddSimpleTags<
       Tags::TimeStepId, alternative_variables_tag, dt_alternative_variables_tag,
-      alternative_history_tag,
-      tmpl::conditional_t<Metavariables::use_rollback,
-                          Tags::RollbackValue<alternative_variables_tag>,
-                          DummyRollback>>;
+      alternative_history_tag>;
   using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
@@ -97,17 +85,15 @@ struct ComponentWithTemplateSpecifiedVariables {
           tmpl::list<Actions::RecordTimeStepperData<AlternativeVar>>>>;
 };
 
-template <bool UseRollback>
 struct Metavariables {
-  static constexpr bool use_rollback = UseRollback;
   using system = System;
   using component_list =
       tmpl::list<Component<Metavariables>,
                  ComponentWithTemplateSpecifiedVariables<Metavariables>>;
 };
 
-template <bool UseRollback, template <typename> typename LocalComponent,
-          typename VariablesTag, typename HistoryTag>
+template <template <typename> typename LocalComponent, typename VariablesTag,
+          typename HistoryTag>
 void run_test() {
   const Slab slab(1., 3.);
   const TimeStepId slab_start_id(true, 0, slab.start());
@@ -116,18 +102,15 @@ void run_test() {
   typename HistoryTag::type history{};
   history.insert(slab_start_id, -3., 3.);
 
-  using metavariables = Metavariables<UseRollback>;
-  using component = LocalComponent<metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
+  using component = LocalComponent<Metavariables>;
+  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   MockRuntimeSystem runner{{}};
 
   const double initial_value = 4.;
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0,
-      {slab_end_id, initial_value, 5., std::move(history),
-       typename Tags::RollbackValue<VariablesTag>::type{}});
+      &runner, 0, {slab_end_id, initial_value, 5., std::move(history)});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
-  runner.template next_action<component>(0);
+  runner.next_action<component>(0);
   auto& box = ActionTesting::get_databox<component>(runner, 0);
 
   const auto& new_history = db::get<HistoryTag>(box);
@@ -138,18 +121,12 @@ void run_test() {
   CHECK(new_history[1].time_step_id == slab_end_id);
   CHECK(new_history[1].value == std::optional{initial_value});
   CHECK(new_history[1].derivative == 5.);
-  if constexpr (UseRollback) {
-    CHECK(db::get<Tags::RollbackValue<VariablesTag>>(box) == initial_value);
-  }
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
                   "[Unit][Time][Actions]") {
-  run_test<false, Component, variables_tag, history_tag>();
-  run_test<false, ComponentWithTemplateSpecifiedVariables,
-           alternative_variables_tag, alternative_history_tag>();
-  run_test<true, Component, variables_tag, history_tag>();
-  run_test<true, ComponentWithTemplateSpecifiedVariables,
-           alternative_variables_tag, alternative_history_tag>();
+  run_test<Component, variables_tag, history_tag>();
+  run_test<ComponentWithTemplateSpecifiedVariables, alternative_variables_tag,
+           alternative_history_tag>();
 }

@@ -76,9 +76,7 @@ struct InitializeCharacteristicEvolutionTime {
       ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
       ::Tags::Next<::Tags::TimeStep>, ::Tags::Time,
       ::Tags::HistoryEvolvedVariables<EvolvedCoordinatesVariablesTag>,
-      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>,
-      ::Tags::RollbackValue<EvolvedCoordinatesVariablesTag>,
-      ::Tags::RollbackValue<evolved_swsh_variables_tag>>;
+      ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,

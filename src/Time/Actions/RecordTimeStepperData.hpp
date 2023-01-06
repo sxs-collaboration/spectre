@@ -26,8 +26,7 @@ class GlobalCache;
 /// \endcond
 
 /// Records the variables and their time derivatives in the time stepper
-/// history, and copies `variables_tag` to `Tags::RollbackValue<variables_tag>`
-/// if the latter is present in the passed `DataBox`.
+/// history.
 ///
 /// \note this is a free function version of `Actions::RecordTimeStepperData`.
 /// This free function alternative permits the inclusion of the time step
@@ -50,29 +49,13 @@ void record_time_stepper_data(const gsl::not_null<db::DataBox<DbTags>*> box) {
       },
       db::get<Tags::TimeStepId>(*box), db::get<variables_tag>(*box),
       db::get<dt_variables_tag>(*box));
-
-  // Not all executables perform rollbacks, so only save the data if
-  // something uses it.  (In which case it is that code's job to make
-  // sure it's in the DataBox.)
-  using rollback_tag = Tags::RollbackValue<variables_tag>;
-  if constexpr (db::tag_is_retrievable_v<rollback_tag, db::DataBox<DbTags>>) {
-    db::mutate<rollback_tag>(
-        box,
-        [](const gsl::not_null<typename rollback_tag::type*> rollback_value,
-           const typename variables_tag::type& vars) {
-          *rollback_value = vars;
-        },
-        db::get<variables_tag>(*box));
-  }
 }
 
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
 /// \brief Records the variables and their time derivatives in the
-/// time stepper history, and copies `variables_tag` to
-/// `Tags::RollbackValue<variables_tag>` if the latter is present in the
-/// `DataBox`.
+/// time stepper history.
 ///
 /// With `dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>`:
 ///
@@ -87,7 +70,6 @@ namespace Actions {
 ///
 /// DataBox changes:
 /// - Tags::HistoryEvolvedVariables<variables_tag>
-/// - Tags::RollbackValue<variables_tag> if present
 template <typename VariablesTag = NoSuchType>
 struct RecordTimeStepperData {
   template <typename DbTags, typename... InboxTags, typename Metavariables,

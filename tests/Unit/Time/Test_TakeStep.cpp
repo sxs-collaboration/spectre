@@ -157,8 +157,7 @@ void test_lts() {
           Parallel::Tags::MetavariablesImpl<Metavariables>, Tags::TimeStepId,
           Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
           Tags::Next<Tags::TimeStep>, EvolvedVariable,
-          Tags::RollbackValue<EvolvedVariable>, Tags::dt<EvolvedVariable>,
-          Tags::StepperError<EvolvedVariable>,
+          Tags::dt<EvolvedVariable>, Tags::StepperError<EvolvedVariable>,
           Tags::PreviousStepperError<EvolvedVariable>,
           Tags::HistoryEvolvedVariables<EvolvedVariable>,
           Tags::TimeStepper<LtsTimeStepper>, Tags::StepChoosers,
@@ -168,8 +167,8 @@ void test_lts() {
                              compute_largest_characteristic_speed>>(
       Metavariables{}, TimeStepId{true, 0_st, slab.start()},
       TimeStepId{true, 0_st, Time{slab, {1, 4}}}, time_step, time_step,
-      initial_values, initial_values, DataVector{5, 0.0}, DataVector{},
-      DataVector{}, std::move(history),
+      initial_values, DataVector{5, 0.0}, DataVector{}, DataVector{},
+      std::move(history),
       static_cast<std::unique_ptr<LtsTimeStepper>>(
           std::make_unique<TimeSteppers::AdamsBashforth>(5)),
       std::move(step_choosers),

@@ -94,7 +94,6 @@ struct component {
           evolution::dg::subcell::Tags::DataForRdmpTci,
           evolution::dg::Tags::NeighborMesh<Dim>,
           Tags::Variables<tmpl::list<Var1>>,
-          Tags::RollbackValue<Tags::Variables<tmpl::list<Var1>>>,
           Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
           SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>,
           evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>,
@@ -349,9 +348,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     time_stepper_history.discard_value(
         time_stepper_history.substeps()[1].time_step_id);
   }
-  Variables<evolved_vars_tags> vars{dg_mesh.number_of_grid_points()};
-  get(get<Var1>(vars)) =
-      (history_size + 1.0) * get<0>(logical_coordinates(dg_mesh));
+  const Variables<evolved_vars_tags> vars = time_stepper_history.latest_value();
 
   const bool did_rollback = false;
   Variables<evolved_vars_tags> initial_value_evolved_vars{
@@ -370,7 +367,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
-         neighbor_meshes, evolved_vars, vars, time_stepper_history,
+         neighbor_meshes, evolved_vars, time_stepper_history,
          initial_value_evolved_vars, neighbor_decisions, prim_vars,
          initial_value_prim_vars});
   } else {
@@ -380,7 +377,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
-         neighbor_meshes, evolved_vars, vars, time_stepper_history,
+         neighbor_meshes, evolved_vars, time_stepper_history,
          initial_value_evolved_vars, neighbor_decisions});
   }
 
