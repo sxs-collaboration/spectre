@@ -47,3 +47,5 @@ class TensorMeta:
 
 
 I = TensorMeta("I")
+ii = TensorMeta("ii")
+II = TensorMeta("II")

@@ -56,6 +56,7 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
           .def_property_readonly_static(
               "size",
               [](const py::object& /*t*/) { return TensorType::size(); })
+          .def(py::init())
           .def("__str__", [](const TensorType& t) { return get_output(t); })
           .def(
               "__iter__",
@@ -155,8 +156,10 @@ void bind_tensor(py::module& m) {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE(_, data) \
-  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>>(m, "I");
+#define INSTANTIATE(_, data)                                                \
+  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>>(m, "I");   \
+  bind_tensor_impl<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>>(m, "ii"); \
+  bind_tensor_impl<tnsr::II<DTYPE(data), DIM(data), FRAME(data)>>(m, "II");
 
   GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3),
                           (Frame::ElementLogical, Frame::Inertial))
