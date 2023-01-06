@@ -32,6 +32,7 @@
 #include "Framework/ActionTesting.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/Phase.hpp"
+#include "ParallelAlgorithms/Actions/InitializeItems.hpp"
 #include "Utilities/CloneUniquePtrs.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -144,7 +145,8 @@ struct Component {
 
       Parallel::PhaseActions<
           Parallel::Phase::Testing,
-          tmpl::list<evolution::dg::Initialization::Domain<dim>,
+          tmpl::list<Initialization::Actions::InitializeItems<
+                         evolution::dg::Initialization::Domain<dim>>,
                      Actions::IncrementTime, Actions::IncrementTime>>>;
 };
 

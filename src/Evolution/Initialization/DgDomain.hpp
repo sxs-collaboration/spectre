@@ -36,6 +36,7 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
+#include "Parallel/Tags/ArrayIndex.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -47,63 +48,55 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace evolution {
-namespace dg {
-namespace Initialization {
-/*!
- * \ingroup InitializationGroup
- * \brief Initialize items related to the basic structure of the element
- *
- * GlobalCache:
- * - Uses:
- *   - `domain::Tags::Domain<Dim, Frame::Inertial>`
- * DataBox:
- * - Uses:
- *   - `domain::Tags::InitialExtents<Dim>`
- *   - `domain::Tags::FunctionsOfTimeInitialize` if UseControlSystems = false,
- *      or `control_system::Tags::FunctionsOfTimeInitialize` if
- *      UseControlSystems = true
- * - Adds:
- *   - `domain::Tags::Mesh<Dim>`
- *   - `domain::Tags::Element<Dim>`
- *   - `domain::Tags::ElementMap<Dim, Frame::Inertial>`
- *   - `domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
- *      Frame::Inertial>`
- *   - `evolution::dg::Tags::NeighborMesh`
- *   - `domain::Tags::CoordinatesMeshVelocityAndJacobiansCompute<
- *      CoordinateMap<Dim, Frame::Grid, Frame::Inertial>>`
- *   - `domain::Tags::Coordinates<Dim, Frame::ElementLogical>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Grid>`
- *   - `domain::Tags::Coordinates<Dim, Frame::Inertial>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical, Frame::Grid>`
- *   - `domain::Tags::InverseJacobian<Dim, Frame::ElementLogical,
- *      Frame::Inertial>`
- *   - `domain::Tags::DetInvJacobian<Frame::ElementLogical, Frame::Inertial>`
- *   - `domain::Tags::MeshVelocity<Dim, Frame::Inertial>`
- *   - `domain::Tags::DivMeshVelocity`
- *   - `domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>`
- * - Removes: nothing
- * - Modifies: nothing
- */
+namespace evolution::dg::Initialization {
+
+/// \ingroup InitializationGroup
+/// \brief Initialize items related to the basic structure of the element
+///
+/// \details See the type aliases defined below for what items are added to the
+/// GlobalCache, MutableGlobalCache, and DataBox and how they are initialized
+
 template <size_t Dim, bool UseControlSystems = false>
 struct Domain {
-  using simple_tags_from_options =
-      tmpl::list<::domain::Tags::InitialExtents<Dim>,
-                 ::domain::Tags::InitialRefinementLevels<Dim>,
-                 evolution::dg::Tags::Quadrature>;
+  /// Tags for constant items added to the GlobalCache.  These items are
+  /// initialized from input file options.
   using const_global_cache_tags = tmpl::list<::domain::Tags::Domain<Dim>>;
 
+  /// Tags for mutable items added to the MutableGlobalCache.  These items are
+  /// initialized from input file options.
   using mutable_global_cache_tags = tmpl::list<tmpl::conditional_t<
       UseControlSystems, ::control_system::Tags::FunctionsOfTimeInitialize,
       ::domain::Tags::FunctionsOfTimeInitialize>>;
 
-  using simple_tags =
+  /// Tags for simple DataBox items that are initialized from input file options
+  using simple_tags_from_options =
+      tmpl::list<::domain::Tags::InitialExtents<Dim>,
+                 ::domain::Tags::InitialRefinementLevels<Dim>,
+                 evolution::dg::Tags::Quadrature>;
+
+  /// Tags for simple DataBox items that are default initialized.
+  using default_initialized_simple_tags =
+      tmpl::list<evolution::dg::Tags::NeighborMesh<Dim>>;
+
+  /// Tags for items fetched by the DataBox and passed to the apply function
+  using argument_tags =
+      tmpl::append<const_global_cache_tags, simple_tags_from_options,
+                   tmpl::list<::Parallel::Tags::ArrayIndex>>;
+
+  /// Tags for items in the DataBox that are mutated by the apply function
+  using return_tags =
       tmpl::list<::domain::Tags::Mesh<Dim>, ::domain::Tags::Element<Dim>,
                  ::domain::Tags::ElementMap<Dim, Frame::Grid>,
-                 ::domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
-                                                               Frame::Inertial>,
-                 evolution::dg::Tags::NeighborMesh<Dim>>;
+                 ::domain::CoordinateMaps::Tags::CoordinateMap<
+                     Dim, Frame::Grid, Frame::Inertial>>;
 
+  /// Tags for mutable DataBox items that are either default initialized or
+  /// initialized by the apply function
+  using simple_tags =
+      tmpl::append<default_initialized_simple_tags, return_tags>;
+
+  /// Tags for immutable DataBox items (compute items or reference items) added
+  /// to the DataBox.
   using compute_tags = tmpl::list<
       ::domain::Tags::LogicalCoordinates<Dim>,
       // Compute tags for Frame::Grid quantities
@@ -131,50 +124,38 @@ struct Domain {
       // Compute tags for other mesh quantities
       ::domain::Tags::MinimumGridSpacingCompute<Dim, Frame::Inertial>>;
 
-  template <typename DataBox, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent>
-  static Parallel::iterable_action_return_t apply(
-      DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::GlobalCache<Metavariables>& /*cache*/,
-      const ElementId<Dim>& array_index, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) {
-    const auto& initial_extents =
-        db::get<::domain::Tags::InitialExtents<Dim>>(box);
-    const auto& initial_refinement =
-        db::get<::domain::Tags::InitialRefinementLevels<Dim>>(box);
-    const auto& domain = db::get<::domain::Tags::Domain<Dim>>(box);
-
-    const ElementId<Dim> element_id{array_index};
+  /// Given the items fetched from a DataBox by the argument_tags, mutate
+  /// the items in the DataBox corresponding to return_tags
+  static void apply(
+      const gsl::not_null<Mesh<Dim>*> mesh,
+      const gsl::not_null<Element<Dim>*> element,
+      const gsl::not_null<ElementMap<Dim, Frame::Grid>*> element_map,
+      const gsl::not_null<std::unique_ptr<
+          ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>*>
+          grid_to_inertial_map,
+      const ::Domain<Dim>& domain,
+      const std::vector<std::array<size_t, Dim>>& initial_extents,
+      const std::vector<std::array<size_t, Dim>>& initial_refinement,
+      const Spectral::Quadrature& quadrature,
+      const ElementId<Dim>& element_id) {
     const auto& my_block = domain.blocks()[element_id.block_id()];
-    Mesh<Dim> mesh = ::domain::Initialization::create_initial_mesh(
-        initial_extents, element_id,
-        db::get<evolution::dg::Tags::Quadrature>(box));
-    Element<Dim> element = ::domain::Initialization::create_initial_element(
+    *mesh = ::domain::Initialization::create_initial_mesh(
+        initial_extents, element_id, quadrature);
+    *element = ::domain::Initialization::create_initial_element(
         element_id, my_block, initial_refinement);
-    ElementMap<Dim, Frame::Grid> element_map{
+    *element_map = ElementMap<Dim, Frame::Grid>{
         element_id, my_block.is_time_dependent()
                         ? my_block.moving_mesh_logical_to_grid_map().get_clone()
                         : my_block.stationary_map().get_to_grid_frame()};
 
-    std::unique_ptr<
-        ::domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>>
-        grid_to_inertial_map;
     if (my_block.is_time_dependent()) {
-      grid_to_inertial_map =
+      *grid_to_inertial_map =
           my_block.moving_mesh_grid_to_inertial_map().get_clone();
     } else {
-      grid_to_inertial_map =
+      *grid_to_inertial_map =
           ::domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
               ::domain::CoordinateMaps::Identity<Dim>{});
     }
-    ::Initialization::mutate_assign<simple_tags>(
-        make_not_null(&box), std::move(mesh), std::move(element),
-        std::move(element_map), std::move(grid_to_inertial_map),
-        typename evolution::dg::Tags::NeighborMesh<Dim>::type{});
-
-    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
-}  // namespace Initialization
-}  // namespace dg
-}  // namespace evolution
+}  // namespace evolution::dg::Initialization

@@ -401,8 +401,8 @@ struct GeneralizedHarmonicTemplateBase<
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, local_time_stepping>>,
-      evolution::dg::Initialization::Domain<volume_dim>,
+          Initialization::TimeStepping<derived_metavars, local_time_stepping>,
+          evolution::dg::Initialization::Domain<volume_dim>>,
       Initialization::Actions::NonconservativeSystem<system>,
       std::conditional_t<
           UseNumericalInitialData, tmpl::list<>,

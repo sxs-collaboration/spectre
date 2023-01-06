@@ -582,8 +582,8 @@ struct GhValenciaDivCleanTemplateBase<
 
   using initialization_actions = tmpl::list<
       Initialization::Actions::InitializeItems<
-          Initialization::TimeStepping<derived_metavars, local_time_stepping>>,
-      evolution::dg::Initialization::Domain<3>,
+          Initialization::TimeStepping<derived_metavars, local_time_stepping>,
+          evolution::dg::Initialization::Domain<3>>,
       Initialization::Actions::ConservativeSystem<system>,
       std::conditional_t<
           evolution::is_numeric_initial_data_v<initial_data>, tmpl::list<>,

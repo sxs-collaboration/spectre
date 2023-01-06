@@ -40,6 +40,7 @@
 #include "Parallel/Printf.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/PupStlCpp17.hpp"
+#include "Parallel/Tags/ArrayIndex.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "Parallel/TypeTraits.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
@@ -196,7 +197,7 @@ class DistributedObject<ParallelComponent,
   using inbox_type = tuples::tagged_tuple_from_typelist<inbox_tags_list>;
   using all_cache_tags = get_const_global_cache_tags<metavariables>;
   using databox_type = db::compute_databox_type<tmpl::flatten<tmpl::list<
-      Tags::MetavariablesImpl<metavariables>,
+      Tags::MetavariablesImpl<metavariables>, Tags::ArrayIndexImpl<array_index>,
       Tags::GlobalCacheProxy<metavariables>,
       typename parallel_component::simple_tags_from_options,
       Tags::GlobalCacheImplCompute<metavariables>,
@@ -515,9 +516,10 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       this->setMigratable(true);
     }
     global_cache_proxy_ = global_cache_proxy;
-    ::Initialization::mutate_assign<tmpl::list<
-        Tags::GlobalCacheProxy<metavariables>, InitializationTags...>>(
-        make_not_null(&box_), global_cache_proxy_,
+    ::Initialization::mutate_assign<
+        tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<metavariables>,
+                   InitializationTags...>>(
+        make_not_null(&box_), array_index_, global_cache_proxy_,
         std::move(get<InitializationTags>(initialization_items))...);
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
@@ -546,8 +548,8 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     global_cache_proxy_ = global_cache_proxy;
     phase_ = current_phase;
     ::Initialization::mutate_assign<
-        tmpl::list<Tags::GlobalCacheProxy<metavariables>>>(make_not_null(&box_),
-                                                           global_cache_proxy_);
+        tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<metavariables>>>(
+        make_not_null(&box_), array_index_, global_cache_proxy_);
     // The callback in invoked only on the last element to be created.
     // We create elements one at a time to ensure that they are all constructed
     // before receiving any messages from any actions executed by the callback

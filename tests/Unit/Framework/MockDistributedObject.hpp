@@ -30,6 +30,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Parallel/Tags/ArrayIndex.hpp"
 #include "Parallel/Tags/Metavariables.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
@@ -334,6 +335,7 @@ class MockDistributedObject {
           Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
       Parallel::Tags::MetavariablesImpl<metavariables>,
+      Parallel::Tags::ArrayIndexImpl<array_index>,
       Parallel::Tags::GlobalCacheImpl<metavariables>, simple_tags_from_options,
       db::wrap_tags_in<Parallel::Tags::FromGlobalCache, all_cache_tags>,
       Parallel::Algorithm_detail::action_list_simple_tags<Component>,
@@ -361,9 +363,10 @@ class MockDistributedObject {
         global_cache_(cache),
         inboxes_(inboxes) {
     ::Initialization::mutate_assign<
-        tmpl::push_front<simple_tags_from_options,
+        tmpl::push_front<simple_tags_from_options, Parallel::Tags::ArrayIndex,
                          Parallel::Tags::GlobalCacheImpl<metavariables>>>(
-        make_not_null(&box_), global_cache_, std::forward<Options>(opts)...);
+        make_not_null(&box_), array_index_, global_cache_,
+        std::forward<Options>(opts)...);
   }
 
   void set_phase(Parallel::Phase phase) {
