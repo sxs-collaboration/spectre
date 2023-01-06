@@ -114,13 +114,6 @@ add_custom_target(all-pybindings)
 # - PYTHON_FILES  List of the python files (relative to
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
-#
-# - PYTHON_EXECUTABLES  List of additional python files that should be exposed
-#                 as executables. Same format as PYTHON_FILES. The only
-#                 difference is that these scripts can be run directly from
-#                 `${CMAKE_BINARY_DIR}/bin`. Note that any Python script can be
-#                 executed from its location in the Python package, even if it's
-#                 not listed in PYTHON_EXECUTABLES.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   if(BUILD_PYTHON_BINDINGS AND
       "${JEMALLOC_LIB_TYPE}" STREQUAL STATIC
@@ -135,31 +128,16 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   endif()
 
   set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
-  set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES PYTHON_EXECUTABLES)
+  set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
   cmake_parse_arguments(
     ARG ""
     "${SINGLE_VALUE_ARGS}"
     "${MULTI_VALUE_ARGS}"
     ${ARGN})
-  list(APPEND ARG_PYTHON_FILES ${ARG_PYTHON_EXECUTABLES})
 
   set(MODULE_LOCATION
     "${SPECTRE_PYTHON_PREFIX}/${ARG_MODULE_PATH}/${MODULE_NAME}")
   get_filename_component(MODULE_LOCATION ${MODULE_LOCATION} ABSOLUTE)
-
-  # Module location in Python syntax, e.g. "spectre.Visualization"
-  string(REPLACE "/" ";" PYTHON_MODULE_LOCATION_COMPONENTS "${ARG_MODULE_PATH}")
-  list(INSERT PYTHON_MODULE_LOCATION_COMPONENTS 0 "spectre")
-  list(APPEND PYTHON_MODULE_LOCATION_COMPONENTS "${MODULE_NAME}")
-  list(JOIN PYTHON_MODULE_LOCATION_COMPONENTS "." PYTHON_MODULE_LOCATION)
-
-  # Create list of all the python submodule names
-  set(PYTHON_SUBMODULES "")
-  foreach(PYTHON_FILE ${ARG_PYTHON_FILES})
-    # Get file name Without Extension (NAME_WE)
-    get_filename_component(PYTHON_FILE "${PYTHON_FILE}" NAME_WE)
-    list(APPEND PYTHON_SUBMODULES ${PYTHON_FILE})
-  endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
 
   # Add our python library, if it has sources
   if(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
@@ -256,22 +234,6 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}"
       "${MODULE_LOCATION}/${PYTHON_FILE_JUST_NAME}"
       )
-
-    # Write an executable in `${CMAKE_BINARY_DIR}/bin` that runs the Python
-    # script in the correct Python environment
-    get_filename_component(PYTHON_FILE_JUST_NAME_WE
-      "${CMAKE_CURRENT_SOURCE_DIR}/${PYTHON_FILE}" NAME_WE)
-    if(${PYTHON_FILE} IN_LIST ARG_PYTHON_EXECUTABLES)
-      set(PYTHON_SCRIPT_LOCATION
-        "${PYTHON_MODULE_LOCATION}.${PYTHON_FILE_JUST_NAME_WE}")
-      configure_file(
-        "${CMAKE_SOURCE_DIR}/cmake/SpectrePythonExecutable.sh"
-        "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}")
-      file(COPY "${CMAKE_BINARY_DIR}/tmp/${PYTHON_FILE_JUST_NAME_WE}"
-        DESTINATION "${CMAKE_BINARY_DIR}/bin"
-        FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ
-          GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-    endif()
   endforeach(PYTHON_FILE ${ARG_PYTHON_FILES})
 endfunction()
 

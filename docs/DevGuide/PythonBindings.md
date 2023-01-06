@@ -27,11 +27,7 @@ the CMake function. If you specify `SOURCES`, you must also specify a
 bindings are being built prefixed with `Py`, e.g. `PyDataStructures`. If the
 Python module will only consist of Python files, then the `SOURCES` option
 should not be specified. Python files that should be part of the module can be
-passed with the keywords `PYTHON_FILES` or `PYTHON_EXECUTABLES`, where the
-latter exposes them in `bin/` in the SpECTRE build directory. For example, the
-arguments `PYTHON_FILES Hello.py PYTHON_EXECUTABLES HelloWorld.py` produce a
-Python module that contains both files, but `HelloWorld.py` can be run directly
-as `bin/HelloWorld` from the SpECTRE build directory. Finally, the `MODULE_PATH`
+passed with the keyword `PYTHON_FILES`. Finally, the `MODULE_PATH`
 named argument can be passed with a string that is the path to where the module
 should be. For example, `MODULE_PATH "submodule0/submodule1/"` would mean the
 module is accessed from python using
@@ -47,7 +43,6 @@ spectre_python_add_module(
   MODULE_PATH "DataStructures/"
   SOURCES Bindings.cpp MyCoolDataStructure.cpp
   PYTHON_FILES CoolPythonDataStructure.py
-  PYTHON_EXECUTABLES HelloWorld.py
   )
 \endcode
 
