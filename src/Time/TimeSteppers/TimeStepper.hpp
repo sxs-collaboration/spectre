@@ -72,7 +72,7 @@ class TimeStepper : public PUP::able {
 #undef TIME_STEPPER_DECLARE_VIRTUALS_IMPL
   /// \endcond
 
-  /// Add the change for the current substep to u.
+  /// Set \p u to the value at the end of the current substep.
   ///
   /// Derived classes must implement this as a function with signature
   ///
@@ -90,8 +90,8 @@ class TimeStepper : public PUP::able {
                             time_step);
   }
 
-  /// Add the change for the current substep to u; report the error measure when
-  /// available.
+  /// Set \p u to the value at the end of the current substep; report the error
+  /// measure when available.
   ///
   /// For a substep method, the error measure will only be available on full
   /// steps. For a multistep method, the error measure will only be available
