@@ -18,3 +18,9 @@ spectre_add_python_bindings_test(
   Test_RegularGridInterpolant.py
   "Unit;Interpolation;Python"
   PyInterpolation)
+
+spectre_add_python_bindings_test(
+  "Unit.Interpolation.Python.IrregularInterpolant"
+  Test_IrregularInterpolant.py
+  "Unit;Interpolation;Python"
+  PyInterpolation)

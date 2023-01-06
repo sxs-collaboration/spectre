@@ -5,6 +5,7 @@
 
 #include "NumericalAlgorithms/Interpolation/Python/BarycentricRational.hpp"
 #include "NumericalAlgorithms/Interpolation/Python/CubicSpline.hpp"
+#include "NumericalAlgorithms/Interpolation/Python/IrregularInterpolant.hpp"
 #include "NumericalAlgorithms/Interpolation/Python/RegularGridInterpolant.hpp"
 
 namespace py = pybind11;
@@ -14,5 +15,6 @@ PYBIND11_MODULE(_PyInterpolation, m) {  // NOLINT
   py::module_::import("spectre.Spectral");
   intrp::py_bindings::bind_barycentric_rational(m);
   intrp::py_bindings::bind_cubic_spline(m);
+  intrp::py_bindings::bind_irregular(m);
   intrp::py_bindings::bind_regular_grid(m);
 }

@@ -2,11 +2,11 @@
 # See LICENSE.txt for details.
 
 import unittest
-from spectre import Spectral
-from spectre import DataStructures
-from spectre.Interpolation import RegularGrid
-from numpy.polynomial.legendre import Legendre
 import numpy as np
+import numpy.testing as npt
+from spectre.DataStructures import DataVector
+from spectre.Interpolation import RegularGrid
+from spectre.Spectral import Mesh, Basis, Quadrature, logical_coordinates
 
 
 class TestRegularGrid(unittest.TestCase):
@@ -31,54 +31,28 @@ class TestRegularGrid(unittest.TestCase):
                 "Coordinates must have shape (dim, N) where dim is 1, 2, or 3."
             )
 
-    def generate_gauss_nodes(self, num_points):
-        return Legendre.basis(num_points).roots()
-
-    def generate_gauss_lobatto_nodes(self, num_points):
-        nodes = Legendre.basis(num_points - 1).deriv().roots()
-        return np.concatenate(([-1], nodes, [1]))
-
-    def logical_coordinates(self, mesh):
-        """
-        creates a uniform mesh of shape (dim, num_points) with the
-        requested quadrature
-        """
-
-        if mesh.quadrature()[0] == Spectral.Quadrature.Gauss:
-            nodes = self.generate_gauss_nodes(mesh.extents(0))
-        elif mesh.quadrature()[0] == Spectral.Quadrature.GaussLobatto:
-            nodes = self.generate_gauss_lobatto_nodes(mesh.extents(0))
-        else:
-            raise ValueError(
-                "Only Gauss or GaussLobatto are implemented quadratures")
-
-        grid_points = np.meshgrid(*(mesh.dim * (nodes, )))
-        return np.stack(grid_points, 0).reshape(mesh.dim, -1)
-
     def test_regular_grid(self):
         for dim in range(1, 4):
-            Mesh = [Spectral.Mesh1D, Spectral.Mesh2D, Spectral.Mesh3D][dim - 1]
-            for quadrature in [
-                    Spectral.Quadrature.Gauss, Spectral.Quadrature.GaussLobatto
-            ]:
+            for quadrature in [Quadrature.Gauss, Quadrature.GaussLobatto]:
                 for num_points in range(3, 10):
-                    source_mesh = Mesh(num_points, Spectral.Basis.Legendre,
-                                       quadrature)
-                    target_mesh = Mesh(num_points + 2, Spectral.Basis.Legendre,
-                                       quadrature)
+                    source_mesh = Mesh[dim](num_points, Basis.Legendre,
+                                            quadrature)
+                    target_mesh = Mesh[dim](num_points + 2, Basis.Legendre,
+                                            quadrature)
                     interpolant = RegularGrid[dim](source_mesh, target_mesh)
 
-                    source_coords = self.logical_coordinates(source_mesh)
-                    target_coords = self.logical_coordinates(target_mesh)
+                    source_coords = np.array(logical_coordinates(source_mesh))
+                    target_coords = np.array(logical_coordinates(target_mesh))
 
                     initial_data = self.polynomial(source_coords)
                     target_data = self.polynomial(target_coords)
 
                     interpolated_data = interpolant.interpolate(
-                        DataStructures.DataVector(initial_data))
-                    self.assertTrue(
-                        np.allclose(target_data, interpolated_data, 1e-14,
-                                    1e-14))
+                        DataVector(initial_data))
+                    npt.assert_allclose(target_data,
+                                        interpolated_data,
+                                        rtol=1e-14,
+                                        atol=1e-14)
 
 
 if __name__ == '__main__':
