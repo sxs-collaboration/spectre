@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(EagerMath)
 add_subdirectory(Expressions)
+add_subdirectory(Python)
 
 add_test_library(
   ${LIBRARY}

@@ -18,3 +18,4 @@ spectre_target_headers(
 
 add_subdirectory(EagerMath)
 add_subdirectory(Expressions)
+add_subdirectory(Python)
