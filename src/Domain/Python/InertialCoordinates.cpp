@@ -29,17 +29,13 @@ template <size_t Dim>
 void bind_inertial_coordinates_impl(py::module& m) {  // NOLINT
   m.def(
       "inertial_coordinates",
-      [](const std::array<DataVector, Dim>& element_logical_coords,
+      [](const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
+             element_logical_coords,
          const ElementId<Dim>& element_id, const Domain<Dim>& domain,
          const std::optional<double> time = std::nullopt,
          const std::optional<std::unordered_map<
              std::string, const domain::FunctionsOfTime::FunctionOfTime&>>&
-             functions_of_time = std::nullopt) -> std::array<DataVector, Dim> {
-        // Transform std::array to Tensor
-        const tnsr::I<DataVector, Dim, Frame::ElementLogical> logical_coords(
-            element_logical_coords);
-        tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords{};
-
+             functions_of_time = std::nullopt) {
         // Map logical to inertial coords
         const auto& block = domain.blocks()[element_id.block_id()];
         if (block.is_time_dependent()) {
@@ -58,7 +54,7 @@ void bind_inertial_coordinates_impl(py::module& m) {  // NOLINT
           // - Logical to grid
           const ElementMap<Dim, Frame::Grid> element_map{
               element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
-          const auto grid_coords = element_map(logical_coords);
+          const auto grid_coords = element_map(element_logical_coords);
           // - Grid to inertial
           // Transform functions-of-time map to unique_ptrs because pybind11
           // can't handle them easily as function arguments (it's hard to
@@ -70,14 +66,13 @@ void bind_inertial_coordinates_impl(py::module& m) {  // NOLINT
           for (const auto& [name, fot] : *functions_of_time) {
             functions_of_time_ptrs[name] = fot.get_clone();
           }
-          inertial_coords = block.moving_mesh_grid_to_inertial_map()(
+          return block.moving_mesh_grid_to_inertial_map()(
               grid_coords, *time, functions_of_time_ptrs);
         } else {
           const ElementMap<Dim, Frame::Inertial> element_map{
               element_id, block.stationary_map().get_clone()};
-          inertial_coords = element_map(logical_coords);
+          return element_map(element_logical_coords);
         }
-        return make_array<DataVector, Dim>(std::move(inertial_coords));
       },
       py::arg("element_logical_coords"), py::arg("element_id"),
       py::arg("domain"), py::arg("time"), py::arg("functions_of_time"));
