@@ -10,6 +10,7 @@ import os
 import spectre.IO.H5 as spectre_h5
 import unittest
 from spectre.DataStructures import DataVector
+from spectre.DataStructures.Tensor import tnsr, Frame
 from spectre.Informer import unit_test_src_path
 
 
@@ -26,7 +27,8 @@ class TestInertialCoordinates(unittest.TestCase):
         functions_of_time = deserialize_functions_of_time(serialized_fot)
 
         element_id = ElementId[3]("[B0,(L1I0,L0I0,L0I0)]")
-        element_logical_coords = 3 * [DataVector([-1., 1.])]
+        element_logical_coords = tnsr.I[DataVector, 3, Frame.ElementLogical](
+            3 * [DataVector([-1., 1.])])
         inertial_coords = np.asarray(
             inertial_coordinates(element_logical_coords,
                                  element_id=element_id,
