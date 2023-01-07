@@ -538,7 +538,7 @@ struct GhValenciaDivCleanTemplateBase<
                      Actions::UpdateU<>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
-          grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
+          grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,
