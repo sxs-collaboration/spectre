@@ -154,7 +154,7 @@ void test(const TestThis test_this) {
 
   const auto result =
       db::mutate_apply<NewtonianEuler::subcell::TciOnFdGrid<Dim>>(
-          make_not_null(&box), persson_exponent);
+          make_not_null(&box), persson_exponent, false);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
 
   if (test_this == TestThis::AllGood) {

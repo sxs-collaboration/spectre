@@ -26,7 +26,7 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const TciOptions& tci_options,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
-    const double persson_exponent) {
+    const double persson_exponent, const bool need_rdmp_data_only) {
   const size_t num_dg_pts = dg_mesh.number_of_grid_points();
   const size_t num_subcell_pts = subcell_mesh.number_of_grid_points();
   DataVector temp_buffer{num_subcell_pts + 5 * num_dg_pts};
@@ -53,6 +53,10 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
   rdmp_tci_data.min_variables_values =
       std::vector{min(get(subcell_tilde_d)), min(get(subcell_tilde_ye)),
                   min(get(subcell_tilde_tau)), min(get(subcell_mag_tilde_b))};
+
+  if (need_rdmp_data_only) {
+    return {false, rdmp_tci_data};
+  }
 
   Scalar<DataVector> dg_tilde_d{};
   assign_data(make_not_null(&dg_tilde_d), num_dg_pts);

@@ -220,7 +220,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
 
   const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnFdGrid>(
-          make_not_null(&box), persson_exponent);
+          make_not_null(&box), persson_exponent, false);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
 
   if (test_this == TestThis::AllGood) {

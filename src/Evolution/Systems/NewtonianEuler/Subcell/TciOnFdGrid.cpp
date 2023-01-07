@@ -32,7 +32,7 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid<Dim>::apply(
     const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
     const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
     const evolution::dg::subcell::SubcellOptions& subcell_options,
-    const double persson_exponent) {
+    const double persson_exponent, const bool need_rdmp_data_only) {
   const Scalar<DataVector>& subcell_mass_density =
       get<MassDensityCons>(subcell_vars);
   const tnsr::I<DataVector, Dim, Frame::Inertial>& subcell_momentum_density =
@@ -76,6 +76,10 @@ std::tuple<bool, evolution::dg::subcell::RdmpTciData> TciOnFdGrid<Dim>::apply(
        min(rdmp_tci_data.min_variables_values[1],
            min(get(dg_energy_density)))}};
 
+  if (need_rdmp_data_only) {
+    return {false, rdmp_tci_data};
+  }
+
   const bool cell_is_troubled =
       evolution::dg::subcell::rdmp_tci(
           rdmp_tci_data_for_check.max_variables_values,
@@ -115,7 +119,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
       const Mesh<DIM(data)>& dg_mesh, const Mesh<DIM(data)>& subcell_mesh,    \
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,          \
       const evolution::dg::subcell::SubcellOptions& subcell_options,          \
-      double persson_exponent);
+      double persson_exponent, bool need_rdmp_data_only);
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 #undef INSTANTIATION
 #undef THERMO_DIM

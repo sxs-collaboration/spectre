@@ -78,7 +78,7 @@ void test(const TestThis& test_this) {
   const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
       ScalarAdvection::subcell::TciOnFdGrid<Dim>::apply(
           u, dg_mesh, subcell_mesh, past_rdmp_tci_data, subcell_options,
-          tci_options, persson_exponent);
+          tci_options, persson_exponent, false);
 
   if (test_this == TestThis::AllGood or test_this == TestThis::BelowCutoff) {
     CHECK_FALSE(std::get<0>(result));

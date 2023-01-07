@@ -109,6 +109,8 @@ struct Metavariables {
   static bool tci_fails;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool tci_invoked;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static bool tci_rdmp_data_only;
 
   struct TciOnSubcellGrid {
     using return_tags = tmpl::list<>;
@@ -121,9 +123,10 @@ struct Metavariables {
         const Variables<tmpl::list<Var1>>& subcell_vars,
         const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
         const evolution::dg::subcell::SubcellOptions& subcell_options,
-        const double persson_exponent) {
+        const double persson_exponent, const bool need_rdmp_data_only) {
       CHECK(approx(persson_exponent) == 5.0);  // Should be subcell_opts + 1
       tci_invoked = true;
+      tci_rdmp_data_only = need_rdmp_data_only;
 
       evolution::dg::subcell::RdmpTciData rdmp_data{};
       rdmp_data.max_variables_values =
@@ -154,6 +157,9 @@ bool Metavariables<Dim>::tci_fails = false;
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim>::tci_invoked = false;
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+bool Metavariables<Dim>::tci_rdmp_data_only = false;
 
 std::unique_ptr<TimeStepper> make_time_stepper(
     const bool multistep_time_stepper) {
@@ -191,6 +197,7 @@ void test_impl(
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
   metavars::tci_invoked = false;
+  metavars::tci_rdmp_data_only = true;
 
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -285,25 +292,28 @@ void test_impl(
 
   // true if the TCI wasn't invoked at all because we are always using subcell,
   // doing self-start, took a substep, or already did rollback from DG to FD.
-  const bool avoid_tci = always_use_subcell or self_starting or
-                         time_step_id.substep() != 0 or did_rollback;
+  const bool avoid_tci = always_use_subcell;
+  const bool avoid_switch_to_dg =
+      avoid_tci or self_starting or time_step_id.substep() != 0 or did_rollback;
 
   CHECK_FALSE(ActionTesting::get_databox_tag<
               comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
+
+  CHECK(metavars::tci_rdmp_data_only == avoid_switch_to_dg);
 
   if (avoid_tci) {
     CHECK_FALSE(metavars::tci_invoked);
   }
 
   // Check ActiveGrid
-  if (avoid_tci or rdmp_fails or tci_fails or
+  if (avoid_switch_to_dg or rdmp_fails or tci_fails or
       (use_halo and neighbor_is_troubled)) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
   }
 
-  if (not avoid_tci) {
+  if (not avoid_switch_to_dg) {
     Variables<tmpl::list<Var1>> reconstructed_dg_vars{
         dg_mesh.number_of_grid_points()};
     evolution::dg::subcell::fd::reconstruct(
@@ -337,7 +347,7 @@ void test_impl(
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
       CHECK(*expected_it == *box_it);
     }
-    if (avoid_tci) {
+    if (avoid_switch_to_dg) {
       CHECK(tci_grid_history_from_box.front() ==
             evolution::dg::subcell::ActiveGrid::Dg);
     } else if (multistep_time_stepper) {
@@ -353,11 +363,9 @@ void test_impl(
       CHECK(tci_grid_history_from_box.size() == time_stepper->order());
     }
   }
-  CHECK(
-      ActionTesting::get_databox_tag<comp,
-                                     evolution::dg::subcell::Tags::TciDecision>(
-          runner, 0) ==
-      (metavars::tci_invoked ? (rdmp_fails ? -10 : (tci_fails ? -5 : 0)) : -1));
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) ==
+        (avoid_switch_to_dg ? -1 : (rdmp_fails ? -10 : (tci_fails ? -5 : 0))));
 }
 
 template <size_t Dim>
