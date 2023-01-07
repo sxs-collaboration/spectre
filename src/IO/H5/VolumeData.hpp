@@ -113,6 +113,14 @@ class VolumeData : public h5::Object {
       const std::optional<std::vector<char>>& serialized_functions_of_time =
           std::nullopt);
 
+  void write_tensor_component(const size_t observation_id,
+                              const std::string& component_name,
+                              const DataVector& contiguous_tensor_data);
+
+  void write_tensor_component(const size_t observation_id,
+                              const std::string& component_name,
+                              const std::vector<float>& contiguous_tensor_data);
+
   /// List all the integral observation ids in the subfile
   ///
   /// The list of observation IDs is sorted by their observation value, as

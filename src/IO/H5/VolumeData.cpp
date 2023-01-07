@@ -363,6 +363,26 @@ void VolumeData::write_volume_data(
   }
 }
 
+void VolumeData::write_tensor_component(
+    const size_t observation_id, const std::string& component_name,
+    const DataVector& contiguous_tensor_data) {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadWrite);
+  h5::write_data(observation_group.id(), contiguous_tensor_data,
+                 component_name);
+}
+
+void VolumeData::write_tensor_component(
+    const size_t observation_id, const std::string& component_name,
+    const std::vector<float>& contiguous_tensor_data) {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadWrite);
+  h5::write_data(observation_group.id(), contiguous_tensor_data,
+                 {contiguous_tensor_data.size()}, component_name);
+}
+
 std::vector<size_t> VolumeData::list_observation_ids() const {
   const auto names = get_group_names(volume_data_group_.id(), "");
   const auto helper = [](const std::string& s) {
