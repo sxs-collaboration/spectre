@@ -87,7 +87,11 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
               [](const TensorType& t, const size_t storage_index) {
                 return t.component_suffix(storage_index);
               },
-              py::arg("storage_index"));
+              py::arg("storage_index"))
+          // NOLINTNEXTLINE(misc-redundant-expression)
+          .def(py::self == py::self)
+          // NOLINTNEXTLINE(misc-redundant-expression)
+          .def(py::self != py::self);
 
   if constexpr (std::is_same_v<typename TensorType::type, DataVector>) {
     tensor.def(py::init<size_t>(), py::arg("num_points"))

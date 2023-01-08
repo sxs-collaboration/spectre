@@ -2,6 +2,12 @@
 # See LICENSE.txt for details.
 
 spectre_add_python_bindings_test(
+  "Unit.Domain.Python.BlockAndElementLogicalCoordinates"
+  Test_BlockAndElementLogicalCoordinates.py
+  "Unit;Domain"
+  PyDomain)
+
+spectre_add_python_bindings_test(
   "Unit.Domain.Python.Domain"
   Test_Domain.py
   "Unit;Domain"
