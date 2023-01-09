@@ -2,7 +2,8 @@
 # See LICENSE.txt for details.
 
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import tnsr, Frame, Scalar
+from spectre.DataStructures.Tensor import (tnsr, Frame, Scalar, Jacobian,
+                                           InverseJacobian)
 import unittest
 import numpy as np
 import numpy.testing as npt
@@ -48,6 +49,14 @@ class TestTensor(unittest.TestCase):
     def test_scalar(self):
         scalar = Scalar[DataVector](num_points=4, fill=1.)
         npt.assert_equal(np.array(scalar), np.ones((1, 4)))
+
+    def test_jacobian(self):
+        jac = Jacobian[DataVector, 3](num_points=4, fill=1.)
+        inv_jac = InverseJacobian[DataVector, 3](num_points=4, fill=1.)
+        npt.assert_equal(np.array(jac), np.ones((9, 4)))
+        npt.assert_equal(np.array(inv_jac), np.ones((9, 4)))
+        self.assertEqual(jac.rank, 2)
+        self.assertEqual(inv_jac.rank, 2)
 
 
 if __name__ == '__main__':
