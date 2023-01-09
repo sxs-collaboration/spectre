@@ -13,6 +13,9 @@ Use this module like this:
 
 from spectre.DataStructures.Tensor import TensorMeta
 
+i = TensorMeta("i")
 I = TensorMeta("I")
+ij = TensorMeta("ij")
 ii = TensorMeta("ii")
 II = TensorMeta("II")
+ijj = TensorMeta("ijj")

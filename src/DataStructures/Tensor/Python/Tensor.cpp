@@ -166,13 +166,19 @@ void bind_tensor(py::module& m) {
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_TNSR(_, data)                                 \
-  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>,  \
-                   TensorKind::Tnsr>(m, "I");                     \
-  bind_tensor_impl<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>, \
-                   TensorKind::Tnsr>(m, "ii");                    \
-  bind_tensor_impl<tnsr::II<DTYPE(data), DIM(data), FRAME(data)>, \
-                   TensorKind::Tnsr>(m, "II");
+#define INSTANTIATE_TNSR(_, data)                                  \
+  bind_tensor_impl<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>,   \
+                   TensorKind::Tnsr>(m, "i");                      \
+  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>,   \
+                   TensorKind::Tnsr>(m, "I");                      \
+  bind_tensor_impl<tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>,  \
+                   TensorKind::Tnsr>(m, "ij");                     \
+  bind_tensor_impl<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>,  \
+                   TensorKind::Tnsr>(m, "ii");                     \
+  bind_tensor_impl<tnsr::II<DTYPE(data), DIM(data), FRAME(data)>,  \
+                   TensorKind::Tnsr>(m, "II");                     \
+  bind_tensor_impl<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>, \
+                   TensorKind::Tnsr>(m, "ijj");
 #define INSTANTIATE_JAC(_, data)                                            \
   bind_tensor_impl<                                                         \
       Jacobian<DTYPE(data), DIM(data), Frame::ElementLogical, FRAME(data)>, \
