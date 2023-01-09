@@ -14,6 +14,7 @@ SPECTRE_VERSION = "@SPECTRE_VERSION@"
 class Cli(click.MultiCommand):
     def list_commands(self, ctx):
         return [
+            "apply-pointwise",
             "clean-output",
             "extract-dat",
             "extract-input",
@@ -26,7 +27,11 @@ class Cli(click.MultiCommand):
         ]
 
     def get_command(self, ctx, name):
-        if name == "clean-output":
+        if name == "apply-pointwise":
+            from spectre.Visualization.ApplyPointwise import (
+                apply_pointwise_command)
+            return apply_pointwise_command
+        elif name == "clean-output":
             from spectre.tools.CleanOutput import clean_output_command
             return clean_output_command
         elif name == "delete-subfiles":
