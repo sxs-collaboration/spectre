@@ -1,0 +1,12 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+module BoundaryMessage {
+  include "cstddef";
+
+  namespace evolution{ namespace dg {
+    template <size_t Dim>
+    message BoundaryMessage;
+  }
+  }
+}

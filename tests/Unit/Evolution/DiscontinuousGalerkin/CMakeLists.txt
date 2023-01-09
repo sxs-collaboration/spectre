@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Actions/Test_NormalCovectorAndMagnitude.cpp
   Initialization/Test_Mortars.cpp
   Initialization/Test_QuadratureTag.cpp
+  Messages/Test_BoundaryMessage.cpp
   Tags/Test_NeighborMesh.cpp
   Test_BoundaryCorrectionsHelper.cpp
   Test_InboxTags.cpp
