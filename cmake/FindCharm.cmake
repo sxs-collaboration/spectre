@@ -412,6 +412,7 @@ find_package_handle_standard_args(
 mark_as_advanced(
   CHARM_COMPILER
   CHARM_INCLUDE_DIR
+  CHARM_USE_MPI
   CHARM_VERSION_MAJOR
   CHARM_VERSION_MINOR
   CHARM_VERSION_PATCH

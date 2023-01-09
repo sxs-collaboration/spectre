@@ -593,6 +593,11 @@ inherit publicly off the inserters to gain the required insertion capabilities:
 
 \snippet Test_AlgorithmCore.cpp int receive tag insert
 
+Any inbox tag that uses Charm++ messages must also specify a `message_type` type
+alias which is the object that will be sent. An example is:
+
+\snippet Test_AlgorithmMessages.cpp charm message inbox tag
+
 The `inbox_tags` type alias for the action is:
 
 \snippet Test_AlgorithmParallel.cpp int_receive_tag_list

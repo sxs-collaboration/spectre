@@ -138,6 +138,35 @@ struct RegistrationHelper {
 
 /*!
  * \ingroup CharmExtensionsGroup
+ * \brief Class used for automatic registration of Charm++ messages.
+ *
+ * Entry methods that use Charm++ messages are responsible for registering those
+ * messages by calling the static `register_with_charm()` function of this
+ * struct. Because an entry method can be templated on the message type, we
+ * don't want to accidentally register the same message-type twice. This struct
+ * will take care of that, rather than having the logic in the entry method
+ * registration logic.
+ */
+template <typename MessageType>
+struct RegisterCharmMessage {
+  static void register_with_charm() {
+    static bool done_registration = false;
+    if (done_registration) {
+      return;  // LCOV_EXCL_LINE
+    }
+    done_registration = true;
+
+    // NOTE: Assumes custom pack/unpack but default allocate.
+    static std::string name = MessageType::name();
+    MessageType::base::__register(
+        name.c_str(), sizeof(MessageType),
+        reinterpret_cast<CkPackFnPtr>(MessageType::pack),
+        reinterpret_cast<CkUnpackFnPtr>(MessageType::unpack));
+  }
+};
+
+/*!
+ * \ingroup CharmExtensionsGroup
  * \brief Derived class for registering parallel components.
  *
  * Calls the appropriate Charm++ function to register a parallel component.
@@ -432,7 +461,7 @@ using get_value_type_t = typename get_value_type<T>::type;
  * arguments for groups and nodegroups, so we have to handle the (node)group
  * cases separately from the singleton and array cases.
  */
-template <typename ParallelComponent, typename ReceiveTag>
+template <typename ParallelComponent, typename ReceiveTag, bool UsingMessages>
 struct RegisterReceiveData : RegistrationHelper {
   using chare_type = typename ParallelComponent::chare_type;
   using charm_type = charm_types_with_parameters<
@@ -455,12 +484,19 @@ struct RegisterReceiveData : RegistrationHelper {
       return;  // LCOV_EXCL_LINE
     }
     done_registration = true;
-    ckindex::template idx_receive_data<ReceiveTag>(
-        static_cast<void (algorithm::*)(
-            const typename ReceiveTag::temporal_id&,
-            const detail::get_value_type_t<
-                typename ReceiveTag::type::mapped_type>&,
-            bool)>(nullptr));
+    if constexpr (UsingMessages) {
+      using message_type = typename ReceiveTag::message_type;
+      ckindex::template idx_receive_data<ReceiveTag>(
+          static_cast<void (algorithm::*)(message_type*)>(nullptr));
+      RegisterCharmMessage<message_type>::register_with_charm();
+    } else {
+      ckindex::template idx_receive_data<ReceiveTag>(
+          static_cast<void (algorithm::*)(
+              const typename ReceiveTag::temporal_id&,
+              const detail::get_value_type_t<
+                  typename ReceiveTag::type::mapped_type>&,
+              bool)>(nullptr));
+    }
   }
 
   std::string name() const override {
@@ -761,11 +797,11 @@ bool Parallel::charmxx::RegisterThreadedAction<ParallelComponent,
         RegisterThreadedAction<ParallelComponent, Action>>();
 
 // clang-tidy: redundant declaration
-template <typename ParallelComponent, typename ReceiveTag>
-bool Parallel::charmxx::RegisterReceiveData<ParallelComponent,
-                                            ReceiveTag>::registrar =  // NOLINT
+template <typename ParallelComponent, typename ReceiveTag, bool UsingMessages>
+bool Parallel::charmxx::RegisterReceiveData<
+    ParallelComponent, ReceiveTag, UsingMessages>::registrar =  // NOLINT
     Parallel::charmxx::register_func_with_charm<
-        RegisterReceiveData<ParallelComponent, ReceiveTag>>();
+        RegisterReceiveData<ParallelComponent, ReceiveTag, UsingMessages>>();
 
 // clang-tidy: redundant declaration
 template <typename ParallelComponent, typename Action, typename ReductionType>

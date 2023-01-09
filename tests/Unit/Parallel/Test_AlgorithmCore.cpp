@@ -8,21 +8,31 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <pup.h>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Evolution/DiscontinuousGalerkin/Messages/BoundaryMessage.hpp"
+#include "Helpers/Parallel/RoundRobinArrayElements.hpp"
+#include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
+#include "Parallel/Algorithms/AlgorithmArray.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "Parallel/InboxInserters.hpp"
+#include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Local.hpp"
@@ -30,7 +40,10 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Phase.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Time/Slab.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -77,6 +90,9 @@ struct hash<TestAlgorithmArrayInstance> {
 };
 }  // namespace std
 
+template <size_t Dim>
+using BoundaryMessage = evolution::dg::BoundaryMessage<Dim>;
+
 namespace {
 struct ElementIndex {};
 
@@ -95,9 +111,21 @@ struct Int1 : db::SimpleTag {
   using type = int;
 };
 
-struct TemporalId : db::SimpleTag {
-  static std::string name() { return "TemporalId"; }
+struct TemporalId0 : db::SimpleTag {
+  static std::string name() { return "TemporalId0"; }
   using type = TestAlgorithmArrayInstance;
+};
+
+struct TemporalId1 : db::SimpleTag {
+  using type = ::TimeStepId;
+};
+
+struct Vector0 : db::SimpleTag {
+  using type = DataVector;
+};
+
+struct Vector1 : db::SimpleTag {
+  using type = DataVector;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -305,7 +333,7 @@ struct test_args {
 };
 
 struct initialize {
-  using simple_tags = tmpl::list<CountActionsCalled, TemporalId>;
+  using simple_tags = tmpl::list<CountActionsCalled, TemporalId0>;
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
@@ -395,6 +423,28 @@ struct IntReceiveTag
 };
 // [int receive tag insert]
 
+struct BoundaryMessageReceiveTag {
+  using temporal_id = ::TimeStepId;
+  using type =
+      std::unordered_map<temporal_id,
+                         std::map<std::pair<Direction<3>, ElementId<3>>,
+                                  std::unique_ptr<BoundaryMessage<3>>>>;
+  using message_type = BoundaryMessage<3>;
+
+  template <typename Inbox>
+  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+                                BoundaryMessage<3>* boundary_message) {
+    auto& time_step_id = boundary_message->current_time_step_id;
+    auto& current_inbox = (*inbox)[time_step_id];
+
+    auto key = std::make_pair(boundary_message->neighbor_direction,
+                              boundary_message->element_id);
+
+    current_inbox.insert_or_assign(
+        key, std::unique_ptr<BoundaryMessage<3>>(boundary_message));
+  }
+};
+
 struct add_int0_to_box {
   using simple_tags = tmpl::list<Int0>;
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -406,6 +456,44 @@ struct add_int0_to_box {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     Initialization::mutate_assign<tmpl::list<Int0>>(make_not_null(&box), 0);
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+  }
+};
+
+struct add_vectors_to_box_and_send {
+  using simple_tags = tmpl::list<TemporalId1, Vector0, Vector1>;
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::GlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    TimeStepId time_step_id{true, 0, Slab{0.0, 1.1}.start()};
+
+    db::mutate<TemporalId1, Vector0, Vector1>(
+        make_not_null(&box),
+        [&time_step_id](const gsl::not_null<TimeStepId*> time_step_id_ptr,
+                        const gsl::not_null<DataVector*> vector_0_ptr,
+                        const gsl::not_null<DataVector*> vector_1_ptr) {
+          *time_step_id_ptr = time_step_id;
+          *vector_0_ptr = DataVector{-4.6, 9.8, 3.6, -1.7};
+          *vector_1_ptr = DataVector{};
+        });
+
+    BoundaryMessage<3>* boundary_message = new BoundaryMessage<3>(
+        0, 4, true, true, Parallel::my_node<size_t>(cache),
+        Parallel::my_proc<size_t>(cache), -2, time_step_id, time_step_id, {},
+        {}, {}, {}, nullptr, const_cast<double*>(db::get<Vector0>(box).data()));
+
+    // Send to myself because everybody is on the same node and it's easier to
+    // check that pointers are the same between my own Vector0 and Vector1 than
+    // a different element. The pointer still goes through charm either way.
+    Parallel::receive_data<receive_data_test::BoundaryMessageReceiveTag>(
+        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
+        boundary_message);
+
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -425,7 +513,7 @@ struct set_int0_from_receive {
     db::mutate<Int1>(make_not_null(&box),
                      [](const gsl::not_null<int*> int1) { ++*int1; });
     // [retry_example]
-    if (inbox.count(db::get<TemporalId>(box)) == 0) {
+    if (inbox.count(db::get<TemporalId0>(box)) == 0) {
       return {Parallel::AlgorithmExecution::Retry, std::nullopt};
     }
     // [retry_example]
@@ -436,16 +524,57 @@ struct set_int0_from_receive {
           ++*count_actions_called;
         });
     static int a = 0;
-    auto int0 = *inbox[db::get<TemporalId>(box)].begin();
-    inbox.erase(db::get<TemporalId>(box));
+    auto int0 = *inbox[db::get<TemporalId0>(box)].begin();
+    inbox.erase(db::get<TemporalId0>(box));
     db::mutate<Int0>(
         make_not_null(&box),
-        [&int0](const gsl::not_null<int*> int0_box) {
-          *int0_box = int0;
-        });
+        [&int0](const gsl::not_null<int*> int0_box) { *int0_box = int0; });
     return {++a >= 5 ? Parallel::AlgorithmExecution::Pause
                      : Parallel::AlgorithmExecution::Continue,
             std::nullopt};
+  }
+};
+
+struct set_vector1_from_receive {
+  using inbox_tags = tmpl::list<BoundaryMessageReceiveTag>;
+
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static Parallel::iterable_action_return_t apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    auto& inbox = tuples::get<BoundaryMessageReceiveTag>(inboxes);
+
+    if (inbox.count(db::get<TemporalId1>(box)) == 0) {
+      return {Parallel::AlgorithmExecution::Retry, std::nullopt};
+    }
+
+    db::mutate<CountActionsCalled>(
+        make_not_null(&box),
+        [](const gsl::not_null<int*> count_actions_called) {
+          ++*count_actions_called;
+        });
+
+    auto& message_map = inbox[db::get<TemporalId1>(box)];
+    // We only sent one message so there should only be one in the inbox
+    SPECTRE_PARALLEL_REQUIRE(message_map.size() == 1);
+
+    auto& boundary_message = message_map.begin()->second;
+
+    // Set the data reference
+    db::mutate<Vector1>(
+        make_not_null(&box),
+        [&boundary_message](const gsl::not_null<DataVector*> vector1_box) {
+          vector1_box->set_data_ref(boundary_message->dg_flux_data,
+                                    boundary_message->dg_flux_data_size);
+        });
+
+    // Only the boundary message gets destroyed, not the data it points to
+    inbox.erase(db::get<TemporalId1>(box));
+    return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
 
@@ -458,7 +587,7 @@ struct update_instance {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    db::mutate<TemporalId>(
+    db::mutate<TemporalId0>(
         make_not_null(&box),
         [](const gsl::not_null<TestAlgorithmArrayInstance*> temporal_id) {
           ++*temporal_id;
@@ -468,7 +597,8 @@ struct update_instance {
 };
 
 struct initialize {
-  using simple_tags = tmpl::list<CountActionsCalled, Int1, TemporalId>;
+  using simple_tags =
+      tmpl::list<CountActionsCalled, Int1, TemporalId0, TemporalId1>;
   template <
       typename DbTagsList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
@@ -480,8 +610,8 @@ struct initialize {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    Initialization::mutate_assign<simple_tags>(make_not_null(&box), 0, 0,
-                                               TestAlgorithmArrayInstance{0});
+    Initialization::mutate_assign<simple_tags>(
+        make_not_null(&box), 0, 0, TestAlgorithmArrayInstance{0}, {});
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 
@@ -508,19 +638,25 @@ struct finalize {
   static void apply(db::DataBox<DbTags>& box,
                     const Parallel::GlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/) {
-    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
+    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId0>(box) ==
                              TestAlgorithmArrayInstance{4});
-    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
+    SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 14);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 10);
+
+    // Check that the data itself is equal
+    SPECTRE_PARALLEL_REQUIRE(db::get<Vector0>(box) == db::get<Vector1>(box));
+    // Now check that the pointers are equal, because they should be
+    SPECTRE_PARALLEL_REQUIRE(db::get<Vector0>(box).data() ==
+                             db::get<Vector1>(box).data());
   }
 };
 }  // namespace receive_data_test
 
 template <class Metavariables>
 struct ReceiveComponent {
-  using chare_type = Parallel::Algorithms::Singleton;
+  using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
-  using array_index = ElementIndex;  // Just to test nothing breaks
+  using array_index = ElementId<3>;  // Just to test nothing breaks
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<Parallel::Phase::Initialization,
                              tmpl::list<receive_data_test::initialize>>,
@@ -530,9 +666,26 @@ struct ReceiveComponent {
                      receive_data_test::set_int0_from_receive,
                      add_remove_test::increment_int0,
                      add_remove_test::remove_int0,
-                     receive_data_test::update_instance>>>;
+                     receive_data_test::update_instance>>,
+      Parallel::PhaseActions<
+          Parallel::Phase::AdjustDomain,
+          tmpl::list<receive_data_test::add_vectors_to_box_and_send,
+                     receive_data_test::set_vector1_from_receive,
+                     Parallel::Actions::TerminatePhase>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
+  static void allocate_array(
+      Parallel::CProxy_GlobalCache<metavariables>& global_cache,
+      const tuples::tagged_tuple_from_typelist<simple_tags_from_options>&
+          initialization_items,
+      const std::unordered_set<size_t>& procs_to_ignore = {}) {
+    TestHelpers::Parallel::assign_array_elements_round_robin_style(
+        Parallel::get_parallel_component<ReceiveComponent>(
+            *Parallel::local_branch(global_cache)),
+        1, 1, initialization_items, global_cache, procs_to_ignore,
+        ElementId<3>{0});
+  }
 
   static void execute_next_phase(
       const Parallel::Phase next_phase,
@@ -614,7 +767,7 @@ struct finalize {
     static_assert(
         std::is_same_v<ParallelComponent, AnyOrderComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
-    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
+    SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId0>(box) ==
                              TestAlgorithmArrayInstance{0});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 31);
     SPECTRE_PARALLEL_REQUIRE(db::get<Int0>(box) == 25);
@@ -671,10 +824,15 @@ struct TestMetavariables {
       "or command line arguments are required";
   // [help_string_example]
 
-  static constexpr std::array<Parallel::Phase, 10> default_phase_order{
+  // These phases are just here to separate out execution of the test. The names
+  // of the phases don't correspond to what actually happens in the test except
+  // for Initialization and Exit. The rest are simply used as individual
+  // sections to test a particular feature.
+  static constexpr std::array<Parallel::Phase, 11> default_phase_order{
       {Parallel::Phase::Initialization, Parallel::Phase::Register,
        Parallel::Phase::Testing, Parallel::Phase::Solve,
        Parallel::Phase::Evolve, Parallel::Phase::ImportInitialData,
+       Parallel::Phase::AdjustDomain,
        Parallel::Phase::InitializeInitialDataDependentQuantities,
        Parallel::Phase::Execute, Parallel::Phase::Cleanup,
        Parallel::Phase::Exit}};

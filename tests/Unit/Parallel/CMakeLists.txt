@@ -9,7 +9,9 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Actions
   Boost::program_options
   Charmxx::main
+  DomainStructure
   ErrorHandling
+  Evolution
   H5
   Informer
   Observer
@@ -17,7 +19,9 @@ set(ALGORITHM_TEST_LINK_LIBRARIES
   Parallel
   ParallelHelpers
   PhaseControl
+  Spectral
   SystemUtilities
+  Time
   Utilities
   )
 
@@ -61,6 +65,28 @@ function(add_algorithm_test_with_restart_from_checkpoint TEST_NAME)
   set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
 endfunction()
 
+function(add_algorithm_message_test TEST_NAME)
+  add_standalone_test_executable("Test_${TEST_NAME}")
+  target_link_libraries(
+    "Test_${TEST_NAME}"
+    PRIVATE
+    "${ALGORITHM_TEST_LINK_LIBRARIES}")
+  if (CHARM_USE_MPI)
+    set(CHARM_ARGS "+n2 +p2")
+  else()
+    set(CHARM_ARGS "")
+  endif()
+  add_test(
+    NAME "Unit.Parallel.${TEST_NAME}"
+    COMMAND
+    ${SHELL_EXECUTABLE}
+    -c
+    "${CMAKE_BINARY_DIR}/bin/charmrun ${CMAKE_BINARY_DIR}/bin/Test_${TEST_NAME} \
+        ${CHARM_ARGS} 2>&1"
+    )
+  set_standalone_test_properties("Unit.Parallel.${TEST_NAME}")
+endfunction()
+
 function(add_algorithm_test BASE_NAME)
   add_standalone_test("Unit.Parallel.${BASE_NAME}" ${ARGN})
   target_link_libraries(
@@ -83,6 +109,7 @@ add_dependencies(
   module_Test_GlobalCache
   )
 
+add_algorithm_message_test("AlgorithmMessages")
 add_algorithm_test("AlgorithmCore")
 add_algorithm_test("AlgorithmLocalSyncAction")
 add_algorithm_test(
