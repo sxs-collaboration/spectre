@@ -504,7 +504,10 @@ SPECTRE_TEST_CASE(
             RelativisticEuler::Solutions::TovCoordinates::Schwarzschild,
             2,
             0.04,
-            2500.0};
+            2500.0,
+            1,
+            0.03,
+            2000.0};
     const auto serialized_and_deserialized_condition =
         serialize_and_deserialize(
             *dynamic_cast<grmhd::GhValenciaDivClean::BoundaryConditions::

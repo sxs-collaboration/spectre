@@ -13,6 +13,8 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Poloidal.hpp"
+#include "PointwiseFunctions/AnalyticData/GrMhd/InitialMagneticFields/Toroidal.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/Factory.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -28,15 +30,27 @@ MagnetizedTovStar::MagnetizedTovStar(
     std::unique_ptr<MagnetizedTovStar::equation_of_state_type>
         equation_of_state,
     const RelativisticEuler::Solutions::TovCoordinates coordinate_system,
-    const size_t pressure_exponent, const double cutoff_pressure_fraction,
-    const double vector_potential_amplitude)
+    const size_t poloidal_pressure_exponent,
+    const double poloidal_cutoff_pressure,
+    const double poloidal_vector_potential_amplitude,
+    const size_t toroidal_pressure_exponent,
+    const double toroidal_cutoff_pressure,
+    const double toroidal_vector_potential_amplitude)
     : tov_star(central_rest_mass_density, std::move(equation_of_state),
                coordinate_system),
-      pressure_exponent_(pressure_exponent),
-      cutoff_pressure_(cutoff_pressure_fraction *
-                       get(this->equation_of_state().pressure_from_density(
-                           Scalar<double>{central_rest_mass_density}))),
-      vector_potential_amplitude_(vector_potential_amplitude) {}
+      poloidal_pressure_exponent_(poloidal_pressure_exponent),
+      poloidal_cutoff_pressure_(
+          poloidal_cutoff_pressure *
+          get(this->equation_of_state().pressure_from_density(
+              Scalar<double>{central_rest_mass_density}))),
+      poloidal_vector_potential_amplitude_(poloidal_vector_potential_amplitude),
+      toroidal_pressure_exponent_(toroidal_pressure_exponent),
+      toroidal_cutoff_pressure_(
+          toroidal_cutoff_pressure *
+          get(this->equation_of_state().pressure_from_density(
+              Scalar<double>{central_rest_mass_density}))),
+      toroidal_vector_potential_amplitude_(
+          toroidal_vector_potential_amplitude) {}
 
 std::unique_ptr<evolution::initial_data::InitialData>
 MagnetizedTovStar::get_clone() const {
@@ -47,9 +61,12 @@ MagnetizedTovStar::MagnetizedTovStar(CkMigrateMessage* msg) : tov_star(msg) {}
 
 void MagnetizedTovStar::pup(PUP::er& p) {
   tov_star::pup(p);
-  p | pressure_exponent_;
-  p | cutoff_pressure_;
-  p | vector_potential_amplitude_;
+  p | poloidal_pressure_exponent_;
+  p | poloidal_cutoff_pressure_;
+  p | poloidal_vector_potential_amplitude_;
+  p | toroidal_pressure_exponent_;
+  p | toroidal_cutoff_pressure_;
+  p | toroidal_vector_potential_amplitude_;
 }
 
 namespace magnetized_tov_detail {
@@ -58,56 +75,30 @@ void MagnetizedTovVariables<DataType, Region>::operator()(
     const gsl::not_null<tnsr::I<DataType, 3>*> magnetic_field,
     const gsl::not_null<Cache*> cache,
     hydro::Tags::MagneticField<DataType, 3> /*meta*/) const {
-  const size_t num_pts = get_size(get<0>(coords));
-  const auto& pressure_profile =
-      get(cache->get_var(*this, hydro::Tags::Pressure<DataType>{}));
-  const auto& dr_pressure_profile = get(cache->get_var(
-      *this,
-      RelativisticEuler::Solutions::tov_detail::Tags::DrPressure<DataType>{}));
+  const auto& pressure =
+      cache->get_var(*this, hydro::Tags::Pressure<DataType>{});
+  const auto& deriv_pressure =
+      cache->get_var(*this, ::Tags::deriv<hydro::Tags::Pressure<DataType>,
+                                          tmpl::size_t<3>, Frame::Inertial>{});
   const auto& sqrt_det_spatial_metric =
-      get(cache->get_var(*this, gr::Tags::SqrtDetSpatialMetric<DataType>{}));
-  for (size_t i = 0; i < num_pts; ++i) {
-    const double pressure = get_element(pressure_profile, i);
-    if (LIKELY(get_element(radius, i) > 1.0e-16)) {
-      if (pressure < cutoff_pressure) {
-        get_element(get<0>(*magnetic_field), i) = 0.0;
-        get_element(get<1>(*magnetic_field), i) = 0.0;
-        get_element(get<2>(*magnetic_field), i) = 0.0;
-        continue;
-      }
+      cache->get_var(*this, gr::Tags::SqrtDetSpatialMetric<DataType>{});
 
-      const double x = get_element(get<0>(coords), i);
-      const double y = get_element(get<1>(coords), i);
-      const double z = get_element(get<2>(coords), i);
-      const double radius_i = get_element(radius, i);
-      const double dr_pressure = get_element(dr_pressure_profile, i);
-      const double pressure_term =
-          pow(pressure - cutoff_pressure, pressure_exponent);
-      const double deriv_pressure_term =
-          pressure_exponent *
-          pow(pressure - cutoff_pressure,
-              static_cast<int>(pressure_exponent) - 1) *
-          dr_pressure;
+  const auto poloidal_field = get<hydro::Tags::MagneticField<DataType, 3>>(
+      InitialMagneticFields::Poloidal(poloidal_pressure_exponent,
+                                      poloidal_cutoff_pressure,
+                                      poloidal_vector_potential_amplitude)
+          .variables(coords, pressure, sqrt_det_spatial_metric,
+                     deriv_pressure));
 
-      get_element(get<0>(*magnetic_field), i) =
-          -x * z / radius_i * deriv_pressure_term;
+  const auto toroidal_field = get<hydro::Tags::MagneticField<DataType, 3>>(
+      InitialMagneticFields::Toroidal(toroidal_pressure_exponent,
+                                      toroidal_cutoff_pressure,
+                                      toroidal_vector_potential_amplitude)
+          .variables(coords, pressure, sqrt_det_spatial_metric,
+                     deriv_pressure));
 
-      get_element(get<1>(*magnetic_field), i) =
-          -y * z / radius_i * deriv_pressure_term;
-
-      get_element(get<2>(*magnetic_field), i) =
-          2.0 * pressure_term +
-          (square(x) + square(y)) / radius_i * deriv_pressure_term;
-    } else {
-      get_element(get<0>(*magnetic_field), i) = 0.0;
-      get_element(get<1>(*magnetic_field), i) = 0.0;
-      get_element(get<2>(*magnetic_field), i) =
-          2.0 * pow(pressure - cutoff_pressure, pressure_exponent);
-    }
-  }
   for (size_t i = 0; i < 3; ++i) {
-    magnetic_field->get(i) *=
-        vector_potential_amplitude / sqrt_det_spatial_metric;
+    (*magnetic_field).get(i) = poloidal_field.get(i) + toroidal_field.get(i);
   }
 }
 }  // namespace magnetized_tov_detail
@@ -117,9 +108,14 @@ PUP::able::PUP_ID MagnetizedTovStar::my_PUP_ID = 0;
 bool operator==(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {
   return static_cast<const typename MagnetizedTovStar::tov_star&>(lhs) ==
              static_cast<const typename MagnetizedTovStar::tov_star&>(rhs) and
-         lhs.pressure_exponent_ == rhs.pressure_exponent_ and
-         lhs.cutoff_pressure_ == rhs.cutoff_pressure_ and
-         lhs.vector_potential_amplitude_ == rhs.vector_potential_amplitude_;
+         lhs.poloidal_pressure_exponent_ == rhs.poloidal_pressure_exponent_ and
+         lhs.poloidal_cutoff_pressure_ == rhs.poloidal_cutoff_pressure_ and
+         lhs.poloidal_vector_potential_amplitude_ ==
+             rhs.poloidal_vector_potential_amplitude_ and
+         lhs.toroidal_pressure_exponent_ == rhs.toroidal_pressure_exponent_ and
+         lhs.toroidal_cutoff_pressure_ == rhs.toroidal_cutoff_pressure_ and
+         lhs.toroidal_vector_potential_amplitude_ ==
+             rhs.toroidal_vector_potential_amplitude_;
 }
 
 bool operator!=(const MagnetizedTovStar& lhs, const MagnetizedTovStar& rhs) {

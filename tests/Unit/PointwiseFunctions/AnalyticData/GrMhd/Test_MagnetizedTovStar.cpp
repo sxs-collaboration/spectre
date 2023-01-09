@@ -44,44 +44,69 @@ void test_equality() {
       TovCoordinates::Schwarzschild,
       2,
       0.04,
-      2500.0};
+      2500.0,
+      1,
+      0.03,
+      2000.0};
   const auto mag_tov = serialize_and_deserialize(mag_tov_original);
   CHECK(
       mag_tov ==
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0, 1, 0.03, 2000.0));
+  // different central density
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           2.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0, 1, 0.03, 2000.0));
+  // different coordinate
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Isotropic, 2, 0.04, 2500.0));
+          TovCoordinates::Isotropic, 2, 0.04, 2500.0, 1, 0.03, 2000.0));
+  // vary poloidal field arguments
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 3, 0.04, 2500.0));
+          TovCoordinates::Schwarzschild, 3, 0.04, 2500.0, 1, 0.03, 2000.0));
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.05, 2500.0));
+          TovCoordinates::Schwarzschild, 2, 0.05, 2500.0, 1, 0.03, 2000.0));
   CHECK(
       mag_tov !=
       MagnetizedTovStar(
           1.28e-3,
           std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
-          TovCoordinates::Schwarzschild, 2, 0.04, 3500.0));
+          TovCoordinates::Schwarzschild, 2, 0.04, 3500.0, 1, 0.03, 2000.0));
+  // vary toroidal field arguments
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0, 2, 0.03, 2000.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0, 1, 0.05, 2000.0));
+  CHECK(
+      mag_tov !=
+      MagnetizedTovStar(
+          1.28e-3,
+          std::make_unique<EquationsOfState::PolytropicFluid<true>>(100.0, 2.0),
+          TovCoordinates::Schwarzschild, 2, 0.04, 2500.0, 1, 0.03, 3000.0));
 }
 
 void test_magnetized_tov_star(const TovCoordinates coord_system) {
@@ -102,9 +127,14 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
           "  Coordinates: " +
           get_output(coord_system) +
           "\n"
-          "  PressureExponent: 2\n"
-          "  VectorPotentialAmplitude: 2500\n"
-          "  CutoffPressureFraction: 0.04\n")
+          "  PoloidalField:\n"
+          "    PressureExponent: 2\n"
+          "    VectorPotentialAmplitude: 2500\n"
+          "    CutoffPressureFraction: 0.04\n"
+          "  ToroidalField:\n"
+          "    PressureExponent: 1\n"
+          "    VectorPotentialAmplitude: 1000\n"
+          "    CutoffPressureFraction: 0.02\n")
           ->get_clone();
   const auto deserialized_option_solution =
       serialize_and_deserialize(option_solution);
@@ -175,7 +205,7 @@ void test_magnetized_tov_star(const TovCoordinates coord_system) {
     b_field_l2norm = sqrt(b_field_l2norm);
     CHECK(b_field_l2norm != approx(0.));
     const auto div_tilde_b = divergence(tilde_b, mesh, inv_jac);
-    CHECK(max(abs(get(div_tilde_b))) < 1.0e-6 * b_field_l2norm);
+    CHECK(max(abs(get(div_tilde_b))) < 1.0e-7 * b_field_l2norm);
   };
 
   // check a small region around the origin
