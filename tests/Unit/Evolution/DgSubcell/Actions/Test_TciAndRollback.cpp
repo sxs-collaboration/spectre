@@ -93,7 +93,8 @@ struct component {
           Tags::Variables<tmpl::list<Var1>>,
           Tags::RollbackValue<Tags::Variables<tmpl::list<Var1>>>,
           Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
-          SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>>,
+          SelfStart::Tags::InitialValue<Tags::Variables<tmpl::list<Var1>>>,
+          evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>,
       tmpl::conditional_t<
           Metavariables::has_prims,
           tmpl::list<Tags::Variables<tmpl::list<PrimVar1>>,
@@ -171,12 +172,14 @@ struct Metavariables {
 
       CHECK(approx(persson_exponent) == 4.0);
       tci_invoked = true;
-      const bool rdmp_result = evolution::dg::subcell::rdmp_tci(
-          rdmp_data.max_variables_values, rdmp_data.min_variables_values,
-          past_rdmp_data.max_variables_values,
-          past_rdmp_data.min_variables_values, subcell_options.rdmp_delta0(),
-          subcell_options.rdmp_epsilon());
-      return {tci_fails or rdmp_result, std::move(rdmp_data)};
+      const bool rdmp_result =
+          static_cast<bool>(evolution::dg::subcell::rdmp_tci(
+              rdmp_data.max_variables_values, rdmp_data.min_variables_values,
+              past_rdmp_data.max_variables_values,
+              past_rdmp_data.min_variables_values,
+              subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon()));
+      const int decision = rdmp_result ? 10 : (tci_fails ? 5 : 0);
+      return {decision, std::move(rdmp_data)};
     }
   };
 };
@@ -206,13 +209,16 @@ Element<Dim> create_element(const bool with_neighbors) {
 template <size_t Dim, bool HasPrims>
 void test_impl(const bool rdmp_fails, const bool tci_fails,
                const bool always_use_subcell, const bool self_starting,
-               const bool with_neighbors) {
+               const bool with_neighbors, const bool use_halo,
+               const bool neighbor_is_troubled) {
   CAPTURE(Dim);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
   CAPTURE(always_use_subcell);
   CAPTURE(self_starting);
   CAPTURE(with_neighbors);
+  CAPTURE(use_halo);
+  CAPTURE(neighbor_is_troubled);
 
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
@@ -223,7 +229,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
       1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim}}};
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, use_halo}}};
 
   const TimeStepId time_step_id{true, self_starting ? -1 : 1,
                                 Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -264,7 +270,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     }
   }
 
-  const int tci_decision{static_cast<int>(tci_fails)};
+  const int tci_decision{-1};
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
@@ -309,13 +315,20 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   Variables<prim_vars_tags> initial_value_prim_vars{
       dg_mesh.number_of_grid_points(), 1.0e10};
 
+  typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+      neighbor_decisions{};
+  neighbor_decisions.insert(
+      std::pair{std::pair{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+                neighbor_is_troubled ? 10 : 0});
+
   if constexpr (HasPrims) {
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
          neighbor_meshes, evolved_vars, vars, time_stepper_history,
-         initial_value_evolved_vars, prim_vars, initial_value_prim_vars});
+         initial_value_evolved_vars, neighbor_decisions, prim_vars,
+         initial_value_prim_vars});
   } else {
     (void)prim_vars;
     (void)initial_value_prim_vars;
@@ -324,7 +337,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
          did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
          neighbor_meshes, evolved_vars, vars, time_stepper_history,
-         initial_value_evolved_vars});
+         initial_value_evolved_vars, neighbor_decisions});
   }
 
   // Invoke the TciAndRollback action on the runner
@@ -351,7 +364,8 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           runner, 0));
 
   const bool expected_rollback =
-      with_neighbors and (always_use_subcell or rdmp_fails or tci_fails);
+      with_neighbors and (always_use_subcell or rdmp_fails or tci_fails or
+                          (use_halo and neighbor_is_troubled));
 
   if (expected_rollback) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
@@ -468,6 +482,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
             runner, 0);
     CHECK(neighbor_data_for_reconstruction.empty());
   }
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) ==
+        (metavars::tci_invoked ? (rdmp_fails ? 10 : (tci_fails ? 5 : 0)) : -1));
 }
 
 template <size_t Dim>
@@ -477,10 +494,16 @@ void test() {
       for (const bool always_use_subcell : {false, true}) {
         for (const bool self_starting : {false, true}) {
           for (const bool have_neighbors : {false, true}) {
-            test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
-                                 self_starting, have_neighbors);
-            test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
-                                  self_starting, have_neighbors);
+            for (const bool use_halo : {false, true}) {
+              for (const bool neighbor_is_troubled : {false, true}) {
+                test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
+                                     self_starting, have_neighbors, use_halo,
+                                     neighbor_is_troubled);
+                test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
+                                      self_starting, have_neighbors, use_halo,
+                                      neighbor_is_troubled);
+              }
+            }
           }
         }
       }

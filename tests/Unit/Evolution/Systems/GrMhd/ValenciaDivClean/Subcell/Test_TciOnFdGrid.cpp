@@ -63,7 +63,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       persson_exponent,
       persson_exponent,
       false,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      false};
 
   auto box = db::create<db::AddSimpleTags<
       grmhd::ValenciaDivClean::Tags::TildeD,

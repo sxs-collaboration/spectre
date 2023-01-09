@@ -272,7 +272,7 @@ double test(const size_t num_dg_pts) {
       std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   std::vector<std::pair<Direction<3>, ElementId<3>>>

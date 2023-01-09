@@ -105,6 +105,7 @@ SpatialDiscretization:
         PerssonExponent: 4.0
       AlwaysUseSubcells: true
       SubcellToDgReconstructionMethod: DimByDim
+      UseHalo: false
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20

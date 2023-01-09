@@ -102,11 +102,28 @@ class SubcellOptions {
         "solution."};
     using type = fd::ReconstructionMethod;
   };
+  /// \brief Use a width-one halo of FD elements around any troubled element.
+  ///
+  /// This provides a buffer of FD subcells so that as a discontinuity moves
+  /// from one element to another we do not get any Gibbs phenomenon. In the
+  /// case where we evolve the spacetime metric (e.g. GH+GRMHD) a halo region
+  /// provides a buffer in case the stellar surface is near an element
+  /// boundary. Since the GH variables are interpolated using high-order
+  /// unlimited reconstruction, they can run into issues with Gibbs phenomenon.
+  struct UseHalo {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Use a width-one halo of FD elements around any troubled element."
+        "\n"
+        "This provides a buffer of FD subcells so that as a discontinuity "
+        "moves from one element to another we do not get any Gibbs "
+        "phenomenon."};
+  };
 
   using options =
       tmpl::list<InitialDataRdmpDelta0, InitialDataRdmpEpsilon, RdmpDelta0,
                  RdmpEpsilon, InitialDataPerssonExponent, PerssonExponent,
-                 AlwaysUseSubcells, SubcellToDgReconstructionMethod>;
+                 AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
@@ -116,7 +133,7 @@ class SubcellOptions {
                  double initial_data_rdmp_epsilon, double rdmp_delta0,
                  double rdmp_epsilon, double initial_data_persson_exponent,
                  double persson_exponent, bool always_use_subcells,
-                 fd::ReconstructionMethod recons_method);
+                 fd::ReconstructionMethod recons_method, bool use_halo);
 
   void pup(PUP::er& p);
 
@@ -142,6 +159,8 @@ class SubcellOptions {
     return reconstruction_method_;
   }
 
+  bool use_halo() const { return use_halo_; }
+
  private:
   double initial_data_rdmp_delta0_ =
       std::numeric_limits<double>::signaling_NaN();
@@ -155,6 +174,7 @@ class SubcellOptions {
   bool always_use_subcells_ = false;
   fd::ReconstructionMethod reconstruction_method_ =
       fd::ReconstructionMethod::AllDimsAtOnce;
+  bool use_halo_{false};
 };
 
 bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);

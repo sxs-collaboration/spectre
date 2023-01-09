@@ -43,6 +43,7 @@ SpatialDiscretization:
         PerssonExponent: 4.0
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
+      UseHalo: false
     TciOptions:
       UCutoff: 1.0e-10
   SubcellSolver:

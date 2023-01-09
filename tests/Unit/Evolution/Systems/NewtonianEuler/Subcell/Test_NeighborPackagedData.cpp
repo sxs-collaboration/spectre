@@ -255,7 +255,7 @@ double test(const size_t num_dg_pts) {
       normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
 
   db::mutate_apply<NewtonianEuler::ConservativeFromPrimitive<Dim>>(
       make_not_null(&box));

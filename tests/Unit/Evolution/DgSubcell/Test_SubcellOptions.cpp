@@ -25,45 +25,52 @@ void test_impl(const std::vector<double>& expected_values,
   CHECK(SubcellOptions(expected_values[0], expected_values[1],
                        expected_values[2], expected_values[3],
                        expected_values[4], expected_values[5], false,
-                       recons_method) !=
+                       recons_method, false) !=
         SubcellOptions(values[0], values[1], values[2], values[3], values[4],
-                       values[5], false, recons_method));
-  CHECK_FALSE(SubcellOptions(expected_values[0], expected_values[1],
-                             expected_values[2], expected_values[3],
-                             expected_values[4], expected_values[5], false,
-                             recons_method) ==
-              SubcellOptions(values[0], values[1], values[2], values[3],
-                             values[4], values[5], false, recons_method));
+                       values[5], false, recons_method, false));
+  CHECK_FALSE(
+      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
+                     expected_values[3], expected_values[4], expected_values[5],
+                     false, recons_method, false) ==
+      SubcellOptions(values[0], values[1], values[2], values[3], values[4],
+                     values[5], false, recons_method, false));
 
   CHECK(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method) !=
+                     false, recons_method, false) !=
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     true, recons_method));
+                     true, recons_method, false));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method) ==
+                     false, recons_method, false) ==
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     true, recons_method));
+                     true, recons_method, false));
 
   CHECK(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method) !=
+                     false, recons_method, false) !=
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, fd::ReconstructionMethod::DimByDim));
+                     false, fd::ReconstructionMethod::DimByDim, false));
   CHECK_FALSE(
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, recons_method) ==
+                     false, recons_method, false) ==
       SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
                      expected_values[3], expected_values[4], expected_values[5],
-                     false, fd::ReconstructionMethod::DimByDim));
+                     false, fd::ReconstructionMethod::DimByDim, false));
+  CHECK_FALSE(
+      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
+                     expected_values[3], expected_values[4], expected_values[5],
+                     false, recons_method, false) ==
+      SubcellOptions(expected_values[0], expected_values[1], expected_values[2],
+                     expected_values[3], expected_values[4], expected_values[5],
+                     false, recons_method, true));
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
@@ -77,7 +84,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
   const SubcellOptions options(expected_values[0], expected_values[1],
                                expected_values[2], expected_values[3],
                                expected_values[4], expected_values[5], true,
-                               fd::ReconstructionMethod::DimByDim);
+                               fd::ReconstructionMethod::DimByDim, true);
   const SubcellOptions deserialized_options =
       serialize_and_deserialize(options);
   CHECK(options == deserialized_options);
@@ -91,7 +98,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.SubcellOptions",
                        "RdmpEpsilon: 2.0e-4\n"
                        "PerssonExponent: 4.0\n"
                        "AlwaysUseSubcells: true\n"
-                       "SubcellToDgReconstructionMethod: DimByDim\n"));
+                       "SubcellToDgReconstructionMethod: DimByDim\n"
+                       "UseHalo: true\n"));
 }
 }  // namespace
 }  // namespace evolution::dg::subcell

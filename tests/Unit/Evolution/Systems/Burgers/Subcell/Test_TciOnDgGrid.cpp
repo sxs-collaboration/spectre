@@ -57,7 +57,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.TciOnDgGrid",
         persson_exponent,
         persson_exponent,
         false,
-        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+        evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+        false};
 
     const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
         Burgers::subcell::TciOnDgGrid::apply(u, dg_mesh, subcell_mesh,

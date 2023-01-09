@@ -318,15 +318,14 @@ double test(const size_t num_dg_pts) {
           std::make_unique<GeneralizedHarmonic::ConstraintDamping::
                                GaussianPlusConstant<3, Frame::Grid>>(
               0.01, 0.09 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0})),
-      gamma1->get_clone(),
-      gamma2->get_clone(),
+      gamma1->get_clone(), gamma2->get_clone(),
       std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>(
           std::make_unique<GeneralizedHarmonic::gauges::AnalyticChristoffel>(
               soln.get_clone())),
       grmhd::GhValenciaDivClean::fd::FilterOptions{0.001},
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
 
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));

@@ -189,7 +189,17 @@ struct TciAndSwitchToDg {
         db::mutate_apply<TciMutator>(make_not_null(&box),
                                      subcell_options.persson_exponent() + 1.0);
     const int tci_decision = std::get<0>(tci_result);
-    const bool cell_is_troubled = tci_decision != 0;
+    const bool cell_is_troubled =
+        tci_decision != 0 or (subcell_options.use_halo() and [&box]() -> bool {
+          for (const auto& [_, neighbor_decision] :
+               db::get<evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+                   box)) {
+            if (neighbor_decision != 0) {
+              return true;
+            }
+          }
+          return false;
+        }());
 
     db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciDecision>(
         make_not_null(&box), [&tci_decision, &tci_result](

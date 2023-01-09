@@ -174,8 +174,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       typename System<Dim>::variables_tag,
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       fd::Tags::Reconstructor<Dim>,
-      evolution::Tags::BoundaryCorrection<System<Dim>>,
-      ::Tags::Time,
+      evolution::Tags::BoundaryCorrection<System<Dim>>, ::Tags::Time,
       domain::Tags::FunctionsOfTimeInitialize,
       domain::Tags::ElementMap<Dim, Frame::Grid>,
       domain::CoordinateMaps::Tags::CoordinateMap<Dim, Frame::Grid,
@@ -204,7 +203,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
 
   // Compute face-centered velocity field and add it to the box. This action
   // needs to be called in prior since NeighborPackagedData::apply() internally
