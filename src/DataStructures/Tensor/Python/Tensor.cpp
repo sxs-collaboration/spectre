@@ -165,20 +165,11 @@ void bind_tensor(py::module& m) {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define TENSOR(data) BOOST_PP_TUPLE_ELEM(3, data)
 
-#define INSTANTIATE_TNSR(_, data)                                  \
-  bind_tensor_impl<tnsr::i<DTYPE(data), DIM(data), FRAME(data)>,   \
-                   TensorKind::Tnsr>(m, "i");                      \
-  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>,   \
-                   TensorKind::Tnsr>(m, "I");                      \
-  bind_tensor_impl<tnsr::ij<DTYPE(data), DIM(data), FRAME(data)>,  \
-                   TensorKind::Tnsr>(m, "ij");                     \
-  bind_tensor_impl<tnsr::ii<DTYPE(data), DIM(data), FRAME(data)>,  \
-                   TensorKind::Tnsr>(m, "ii");                     \
-  bind_tensor_impl<tnsr::II<DTYPE(data), DIM(data), FRAME(data)>,  \
-                   TensorKind::Tnsr>(m, "II");                     \
-  bind_tensor_impl<tnsr::ijj<DTYPE(data), DIM(data), FRAME(data)>, \
-                   TensorKind::Tnsr>(m, "ijj");
+#define INSTANTIATE_TNSR(_, data)                                             \
+  bind_tensor_impl<tnsr::TENSOR(data) < DTYPE(data), DIM(data), FRAME(data)>, \
+      TensorKind::Tnsr > (m, BOOST_PP_STRINGIZE(TENSOR(data)));
 #define INSTANTIATE_JAC(_, data)                                            \
   bind_tensor_impl<                                                         \
       Jacobian<DTYPE(data), DIM(data), Frame::ElementLogical, FRAME(data)>, \
@@ -188,7 +179,8 @@ void bind_tensor(py::module& m) {
                    TensorKind::Jacobian>(m, "Jacobian");
 
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector), (1, 2, 3),
-                          (Frame::ElementLogical, Frame::Inertial))
+                          (Frame::ElementLogical, Frame::Inertial),
+                          (i, I, ij, ii, II, ijj))
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector), (1, 2, 3),
                           (Frame::Inertial))
 
@@ -197,6 +189,7 @@ void bind_tensor(py::module& m) {
 #undef DTYPE
 #undef DIM
 #undef FRAME
+#undef TENSOR
 }
 
 }  // namespace py_bindings
