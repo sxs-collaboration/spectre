@@ -9,6 +9,7 @@ spectre_python_add_module(
   MODULE_PATH "NumericalAlgorithms"
   SOURCES
   Bindings.cpp
+  DefiniteIntegral.cpp
   PartialDerivatives.cpp
   PYTHON_FILES
   __init__.py
@@ -18,6 +19,7 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
+  DefiniteIntegral.hpp
   PartialDerivatives.hpp
   )
 
@@ -30,4 +32,11 @@ spectre_python_link_libraries(
   PythonBindings
   Spectral
   Utilities
+  )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDataStructures
+  PySpectral
+  PyTensor
   )
