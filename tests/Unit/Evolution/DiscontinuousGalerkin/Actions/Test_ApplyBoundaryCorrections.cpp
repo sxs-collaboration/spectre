@@ -971,18 +971,15 @@ void test_impl(const Spectral::Quadrature quadrature,
   CHECK(neighbor_meshes.size() == total_neighbors);
 }
 
-template <size_t Dim, bool UseLocalTimeStepping>
+template <size_t Dim, bool UseLocalTimeStepping,
+          TestHelpers::SystemType SystemType>
 void test() {
   for (const auto dg_formulation :
        {::dg::Formulation::StrongInertial, ::dg::Formulation::WeakInertial}) {
     for (const auto quadrature :
          {Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss}) {
-      test_impl<Dim, TestHelpers::SystemType::Conservative,
-                UseLocalTimeStepping>(quadrature, dg_formulation);
-      test_impl<Dim, TestHelpers::SystemType::Nonconservative,
-                UseLocalTimeStepping>(quadrature, dg_formulation);
-      test_impl<Dim, TestHelpers::SystemType::Mixed, UseLocalTimeStepping>(
-          quadrature, dg_formulation);
+      test_impl<Dim, SystemType, UseLocalTimeStepping>(quadrature,
+                                                       dg_formulation);
     }
   }
 }
@@ -990,11 +987,19 @@ void test() {
 SPECTRE_TEST_CASE("Unit.Evolution.DG.ApplyBoundaryCorrections",
                   "[Unit][Evolution][Actions]") {
   PUPable_reg(TimeSteppers::AdamsBashforth);
-  test<1, false>();
-  test<1, true>();
-  test<2, false>();
-  test<2, true>();
-  test<3, false>();
-  test<3, true>();
+  tmpl::for_each<tmpl::integral_list<size_t, 1, 2, 3>>([](auto dim_v) {
+    tmpl::for_each<tmpl::integral_list<bool, false, true>>(
+        [&dim_v](auto lts_v) {
+          tmpl::for_each<tmpl::integral_list<
+              TestHelpers::SystemType, TestHelpers::SystemType::Conservative,
+              TestHelpers::SystemType::Nonconservative,
+              TestHelpers::SystemType::Mixed>>([&dim_v, &lts_v](auto system_v) {
+            (void)dim_v, (void)lts_v;
+            test<tmpl::type_from<decltype(dim_v)>::value,
+                 tmpl::type_from<decltype(lts_v)>::value,
+                 tmpl::type_from<decltype(system_v)>::value>();
+          });
+        });
+  });
 }
 }  // namespace
