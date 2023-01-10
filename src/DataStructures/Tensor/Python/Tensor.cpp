@@ -66,6 +66,17 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
           .def_property_readonly_static(
               "size",
               [](const py::object& /*t*/) { return TensorType::size(); })
+          .def_property_readonly_static(
+              "dim",
+              [](const py::object& /*t*/) {
+                if constexpr (TensorType::rank() == 0) {
+                  return py::none{};
+                } else {
+                  // We currently bind only Tensors where all indices have the
+                  // same dimension, so just get the first one
+                  return TensorType::index_dim(0);
+                }
+              })
           .def(py::init())
           .def("__str__", [](const TensorType& t) { return get_output(t); })
           .def(

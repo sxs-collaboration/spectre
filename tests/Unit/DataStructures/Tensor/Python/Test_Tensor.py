@@ -14,6 +14,7 @@ class TestTensor(unittest.TestCase):
         coords = tnsr.I[DataVector, 3, Frame.Inertial](num_points=4, fill=0.)
         self.assertEqual(coords.rank, 1)
         self.assertEqual(coords.size, 3)
+        self.assertEqual(coords.dim, 3)
         self.assertEqual(len(coords), 3)
         npt.assert_equal(coords[0], np.zeros(4))
         npt.assert_equal(coords[1], np.zeros(4))
@@ -60,6 +61,9 @@ class TestTensor(unittest.TestCase):
 
     def test_scalar(self):
         scalar = Scalar[DataVector](num_points=4, fill=1.)
+        self.assertEqual(scalar.size, 1)
+        self.assertEqual(scalar.rank, 0)
+        self.assertEqual(scalar.dim, None)
         npt.assert_equal(np.array(scalar), np.ones((1, 4)))
 
     def test_jacobian(self):
