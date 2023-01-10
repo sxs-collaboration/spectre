@@ -31,4 +31,5 @@ spectre_target_sources(
   PRIVATE
   ObserverMesh.cpp
   Mesh.cpp
+  TciStatus.cpp
   )
