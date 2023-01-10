@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_Mesh.cpp
   Test_NeighborRdmpAndVolumeData.cpp
   Test_NeighborReconstructedFaceSolution.cpp
+  Test_NeighborTciDecision.cpp
   Test_PerssonTci.cpp
   Test_PrepareNeighborData.cpp
   Test_Projection.cpp

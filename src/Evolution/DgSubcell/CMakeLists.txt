@@ -20,6 +20,7 @@ spectre_target_headers(
   Mesh.hpp
   NeighborRdmpAndVolumeData.hpp
   NeighborReconstructedFaceSolution.hpp
+  NeighborTciDecision.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
   Projection.hpp
