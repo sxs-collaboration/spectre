@@ -97,7 +97,8 @@ struct Initialize {
       tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
                  ::Tags::RollbackValue<typename System::variables_tag>,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
-                 Tags::TciDecision, Tags::DataForRdmpTci,
+                 Tags::TciDecision, Tags::NeighborTciDecisions<Dim>,
+                 Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                  fd::Tags::DetInverseJacobianLogicalToGrid>;
   using compute_tags =
@@ -122,6 +123,7 @@ struct Initialize {
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
+    const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
 
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
@@ -134,6 +136,18 @@ struct Initialize {
     bool cell_is_troubled = subcell_options.always_use_subcells() and
                             (cell_is_not_on_external_boundary or
                              subcell_enabled_at_external_boundary);
+
+    db::mutate<Tags::NeighborTciDecisions<Dim>>(
+        make_not_null(&box), [&element](const auto neighbor_decisions_ptr) {
+          neighbor_decisions_ptr->clear();
+          for (const auto& [direction, neighbors_in_direction] :
+               element.neighbors()) {
+            for (const auto& neighbor : neighbors_in_direction.ids()) {
+              neighbor_decisions_ptr->insert(
+                  std::pair{std::pair{direction, neighbor}, 0});
+            }
+          }
+        });
 
     db::mutate_apply<
         tmpl::list<Tags::ActiveGrid, Tags::DidRollback,

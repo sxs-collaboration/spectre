@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 
 #include "DataStructures/DataBox/Tag.hpp"

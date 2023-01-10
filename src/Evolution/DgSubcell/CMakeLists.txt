@@ -60,6 +60,7 @@ target_link_libraries(
   Spectral
 
   INTERFACE
+  Boost::boost
   Events
   FunctionsOfTime
   Parallel
