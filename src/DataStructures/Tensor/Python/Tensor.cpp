@@ -34,21 +34,31 @@ std::string dtype_to_name() {
   }
 }
 
-template <typename TensorType>
+// Used to generate Python class names for Tensor types
+enum class TensorKind { Scalar, Tnsr, Jacobian };
+
+template <typename TensorType, TensorKind Kind>
 std::string class_name(const std::string& name) {
-  if constexpr (TensorType::rank() == 0) {
+  if constexpr (Kind == TensorKind::Scalar) {
     return name + dtype_to_name<typename TensorType::type>();
-  } else {
+  } else if constexpr (Kind == TensorKind::Tnsr) {
     return "Tensor" + name + dtype_to_name<typename TensorType::type>() +
            std::to_string(TensorType::index_dim(0)) +
+           get_output(get<0>(TensorType::index_frames()));
+  } else if constexpr (Kind == TensorKind::Jacobian) {
+    // Jacobians have different frames, so handle them separately to other
+    // Tensor instantiations where all indices are in the same frame
+    return name + dtype_to_name<typename TensorType::type>() +
+           std::to_string(TensorType::index_dim(0)) +
+           get_output(get<1>(TensorType::index_frames())) + "To" +
            get_output(get<0>(TensorType::index_frames()));
   }
 }
 
-template <typename TensorType>
+template <typename TensorType, TensorKind Kind>
 void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
   auto tensor =
-      py::class_<TensorType>(m, class_name<TensorType>(name).c_str(),
+      py::class_<TensorType>(m, class_name<TensorType, Kind>(name).c_str(),
                              py::buffer_protocol())
           .def_property_readonly_static(
               "rank",
@@ -56,6 +66,7 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
           .def_property_readonly_static(
               "size",
               [](const py::object& /*t*/) { return TensorType::size(); })
+          .def(py::init())
           .def("__str__", [](const TensorType& t) { return get_output(t); })
           .def(
               "__iter__",
@@ -148,23 +159,37 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
 }  // namespace
 
 void bind_tensor(py::module& m) {
-  bind_tensor_impl<Scalar<DataVector>>(m, "Scalar");
-  bind_tensor_impl<Scalar<double>>(m, "Scalar");
+  bind_tensor_impl<Scalar<DataVector>, TensorKind::Scalar>(m, "Scalar");
+  bind_tensor_impl<Scalar<double>, TensorKind::Scalar>(m, "Scalar");
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define TENSOR(data) BOOST_PP_TUPLE_ELEM(3, data)
 
-#define INSTANTIATE(_, data) \
-  bind_tensor_impl<tnsr::I<DTYPE(data), DIM(data), FRAME(data)>>(m, "I");
+#define INSTANTIATE_TNSR(_, data)                                             \
+  bind_tensor_impl<tnsr::TENSOR(data) < DTYPE(data), DIM(data), FRAME(data)>, \
+      TensorKind::Tnsr > (m, BOOST_PP_STRINGIZE(TENSOR(data)));
+#define INSTANTIATE_JAC(_, data)                                            \
+  bind_tensor_impl<                                                         \
+      Jacobian<DTYPE(data), DIM(data), Frame::ElementLogical, FRAME(data)>, \
+      TensorKind::Jacobian>(m, "Jacobian");                                 \
+  bind_tensor_impl<InverseJacobian<DTYPE(data), DIM(data),                  \
+                                   Frame::ElementLogical, FRAME(data)>,     \
+                   TensorKind::Jacobian>(m, "Jacobian");
 
-  GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (1, 2, 3),
-                          (Frame::ElementLogical, Frame::Inertial))
+  GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector), (1, 2, 3),
+                          (Frame::ElementLogical, Frame::Inertial),
+                          (i, I, ij, ii, II, ijj))
+  GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector), (1, 2, 3),
+                          (Frame::Inertial))
 
-#undef INSTANTIATE
+#undef INSTANTIATE_TNSR
+#undef INSTANTIATE_JAC
 #undef DTYPE
 #undef DIM
 #undef FRAME
+#undef TENSOR
 }
 
 }  // namespace py_bindings

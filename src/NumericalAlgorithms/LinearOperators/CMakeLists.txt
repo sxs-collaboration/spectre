@@ -50,3 +50,5 @@ target_link_libraries(
   Domain
   DomainStructure
   )
+
+add_subdirectory(Python)
