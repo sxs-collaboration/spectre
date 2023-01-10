@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/Variables.hpp"
+#include "ParallelAlgorithms/Interpolation/Actions/InterpolatorReceiveVolumeData.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -86,7 +87,19 @@ struct CleanUpInterpolator {
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
         [&holders, &this_temporal_id_is_done, &temporal_id](auto tag) {
           using Tag = typename decltype(tag)::type;
-          if constexpr (std::is_same_v<
+          // Here we decide whether this interpolation target is "done" (i.e. it
+          // does not need to interpolate) at this temporal_id. If it is "done",
+          // then we don't need to store the volume data. Usually "done" means
+          // that it has already done its interpolation at this temporal_id. But
+          // note that if an interpolation target is not using the Interpolator
+          // at all, it is considered "done", because we don't need any volume
+          // data for it and should not store it. Similarly, interpolation
+          // targets whose temporal_id has a different type than TemporalId are
+          // considered "done" because they too do not use the Interpolator and
+          // don't need volume data to be saved.
+          if constexpr (detail::using_interpolator_component_v<Metavariables,
+                                                               Tag> and
+                        std::is_same_v<
                             typename InterpolationTargetTag::temporal_id,
                             typename Tag::temporal_id>) {
             const auto& finished_temporal_ids =

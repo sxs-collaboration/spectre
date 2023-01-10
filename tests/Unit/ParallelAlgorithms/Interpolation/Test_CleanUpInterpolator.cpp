@@ -35,8 +35,7 @@
 class DataVector;
 template <size_t VolumeDim>
 class ElementId;
-namespace intrp {
-}  // namespace intrp
+namespace intrp {}  // namespace intrp
 
 namespace {
 
@@ -56,6 +55,16 @@ struct mock_interpolator {
       Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
 };
 
+template <typename Metavariables>
+struct mock_element_array {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using simple_tags = tmpl::list<>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Parallel::Phase::Testing, tmpl::list<>>>;
+};
+
 struct MockMetavariables {
   struct InterpolationTagA {
     using temporal_id = ::Tags::Time;
@@ -72,12 +81,23 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
+  struct InterpolationTagD {
+    using temporal_id = ::Tags::Time;
+    using vars_to_interpolate_to_target =
+        tmpl::list<gr::Tags::Lapse<DataVector>>;
+    // Doesn't have to be a real component, this type alias just needs to exist
+    // and not be the interpolator
+    template <typename Metavariables>
+    using interpolating_component = mock_element_array<Metavariables>;
+  };
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags =
-      tmpl::list<InterpolationTagA, InterpolationTagB, InterpolationTagC>;
+      tmpl::list<InterpolationTagA, InterpolationTagB, InterpolationTagC,
+                 InterpolationTagD>;
 
-  using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
+  using component_list = tmpl::list<mock_interpolator<MockMetavariables>,
+                                    mock_element_array<MockMetavariables>>;
 };
 
 template <typename interp_component, typename InterpolationTargetTag,
@@ -113,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
       double,
       std::unordered_map<ElementId<3>, intrp::Tags::VolumeVarsInfo<
                                            metavars, ::Tags::Time>::Info>>
-      volume_vars_info_a{{temporal_id.substep_time().value(), {}}};
+      volume_vars_info_ad{{temporal_id.substep_time().value(), {}}};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<interp_component>(
@@ -122,7 +142,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>::type{
            std::move(volume_vars_info_bc)},
        typename intrp::Tags::VolumeVarsInfo<metavars, ::Tags::Time>::type{
-           std::move(volume_vars_info_a)},
+           std::move(volume_vars_info_ad)},
        typename intrp::Tags::InterpolatedVarsHolders<metavars>::type{}});
   ActionTesting::set_phase(make_not_null(&runner), Parallel::Phase::Testing);
 
@@ -156,6 +176,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
               interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
               runner, 0))
           .temporal_ids_when_data_has_been_interpolated.empty());
+  CHECK(
+      get<intrp::Vars::HolderTag<metavars::InterpolationTagD, metavars>>(
+          ActionTesting::get_databox_tag<
+              interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
+              runner, 0))
+          .temporal_ids_when_data_has_been_interpolated.empty());
 
   // Call the action on InterpolationTagA
   runner.simple_action<
@@ -174,7 +200,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
           .size() == 1);
 
-  // temporal_ids_when_data_has_been_interpolated should be empty for B and C,
+  // temporal_ids_when_data_has_been_interpolated should be empty for B, C, and
+  // D (because D isn't using the interpolator),
   // but should have a single entry for A with the correct value.
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagA, metavars>>(
@@ -197,6 +224,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
               interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
               runner, 0))
           .temporal_ids_when_data_has_been_interpolated.empty());
+  CHECK(
+      get<intrp::Vars::HolderTag<metavars::InterpolationTagD, metavars>>(
+          ActionTesting::get_databox_tag<
+              interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
+              runner, 0))
+          .temporal_ids_when_data_has_been_interpolated.empty());
 
   // Call the action on InterpolationTagC
   runner.simple_action<
@@ -215,7 +248,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           intrp::Tags::VolumeVarsInfo<metavars, ::Tags::TimeStepId>>(runner, 0)
           .size() == 1);
 
-  // temporal_ids_when_data_has_been_interpolated should be empty for B,
+  // temporal_ids_when_data_has_been_interpolated should be empty for B and D,
   // but should contain the correct temporal_id for A and C.
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagA, metavars>>(
@@ -240,6 +273,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
               interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
               runner, 0))
           .temporal_ids_when_data_has_been_interpolated.empty());
+  CHECK(
+      get<intrp::Vars::HolderTag<metavars::InterpolationTagD, metavars>>(
+          ActionTesting::get_databox_tag<
+              interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
+              runner, 0))
+          .temporal_ids_when_data_has_been_interpolated.empty());
 
   // Call the action on InterpolationTagB. This will clean up everything
   // since all the tags have now cleaned up.
@@ -260,7 +299,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           .empty());
 
   // temporal_ids_when_data_has_been_interpolated should contain the correct
-  // values for each tag.  One entry per tag.
+  // values for each tag.  One entry per tag except for target D.
   CHECK(
       get<intrp::Vars::HolderTag<metavars::InterpolationTagA, metavars>>(
           ActionTesting::get_databox_tag<
@@ -284,6 +323,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
               interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
               runner, 0))
           .temporal_ids_when_data_has_been_interpolated.size() == 1);
+  CHECK(
+      get<intrp::Vars::HolderTag<metavars::InterpolationTagD, metavars>>(
+          ActionTesting::get_databox_tag<
+              interp_component, intrp::Tags::InterpolatedVarsHolders<metavars>>(
+              runner, 0))
+          .temporal_ids_when_data_has_been_interpolated.empty());
   CHECK(temporal_ids_when_data_has_been_interpolated_contains<
         interp_component, metavars::InterpolationTagC>(runner, temporal_id));
 
