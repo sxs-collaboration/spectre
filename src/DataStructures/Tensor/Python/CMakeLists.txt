@@ -31,3 +31,8 @@ spectre_python_link_libraries(
   PythonBindings
   Utilities
   )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDataStructures
+  )
