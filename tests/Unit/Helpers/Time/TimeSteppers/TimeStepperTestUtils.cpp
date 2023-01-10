@@ -604,4 +604,77 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) {
     }
   }
 }
+
+void check_strong_stability_preservation(const TimeStepper& stepper,
+                                         const double step_size) {
+  // Check that each substep is a convex combination of partial Euler steps.
+  ASSERT(stepper.number_of_past_steps() == 0,
+         "Unimplemented for multistep methods");
+
+  const auto impl = [&step_size](const size_t order,
+                                 const uint64_t number_of_substeps_to_test,
+                                 const auto update_u, const auto next_time_id) {
+    const Slab slab(0.0, step_size);
+    const auto time_step = slab.duration();
+
+    for (uint64_t substep_being_varied = 0;
+         substep_being_varied < number_of_substeps_to_test;
+         ++substep_being_varied) {
+      CAPTURE(substep_being_varied);
+      TimeStepId time_step_id(true, 0, slab.start());
+      TimeSteppers::History<double> value_history(order);
+      TimeSteppers::History<double> derivative_history(order);
+      for (uint64_t substep_being_tested = 0;
+           substep_being_tested < number_of_substeps_to_test;
+           ++substep_being_tested) {
+        CAPTURE(substep_being_tested);
+        if (substep_being_tested == substep_being_varied) {
+          value_history.insert(time_step_id, 1.0, 0.0);
+          derivative_history.insert(time_step_id, 0.0, 1.0);
+        } else {
+          value_history.insert(time_step_id, 0.0, 0.0);
+          derivative_history.insert(time_step_id, 0.0, 0.0);
+        }
+        double u = std::numeric_limits<double>::signaling_NaN();
+        update_u(make_not_null(&u), make_not_null(&value_history), time_step);
+        const double value_dependence = u;
+        update_u(make_not_null(&u), make_not_null(&derivative_history),
+                 time_step);
+        const double derivative_dependence = u;
+        CHECK(value_dependence >= 0.0);
+        CHECK(derivative_dependence >= 0.0);
+        CHECK(step_size * derivative_dependence <= approx(value_dependence));
+        time_step_id = next_time_id(time_step_id, time_step);
+      }
+    }
+  };
+
+  {
+    INFO("Without error estimate");
+    impl(
+        stepper.order(), stepper.number_of_substeps(),
+        [&](const gsl::not_null<double*> u,
+            const gsl::not_null<TimeSteppers::History<double>*> history,
+            const TimeDelta& time_step) {
+          stepper.update_u(u, history, time_step);
+        },
+        [&](const TimeStepId& time_step_id, const TimeDelta& time_step) {
+          return stepper.next_time_id(time_step_id, time_step);
+        });
+  }
+  {
+    INFO("With error estimate");
+    impl(
+        stepper.order(), stepper.number_of_substeps_for_error(),
+        [&](const gsl::not_null<double*> u,
+            const gsl::not_null<TimeSteppers::History<double>*> history,
+            const TimeDelta& time_step) {
+          double error;
+          stepper.update_u(u, make_not_null(&error), history, time_step);
+        },
+        [&](const TimeStepId& time_step_id, const TimeDelta& time_step) {
+          return stepper.next_time_id_for_error(time_step_id, time_step);
+        });
+  }
+}
 }  // namespace TimeStepperTestUtils

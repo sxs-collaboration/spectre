@@ -96,6 +96,9 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
   // test operator !=
   TimeSteppers::AdamsBashforth ab2(2);
   CHECK(ab4 != ab2);
+
+  TimeStepperTestUtils::check_strong_stability_preservation(
+      TimeSteppers::AdamsBashforth(1), 1.0);
 }
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Variable",
