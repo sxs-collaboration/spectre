@@ -55,6 +55,22 @@ std::string class_name(const std::string& name) {
   }
 }
 
+template <typename TensorType,
+          typename Is = std::make_integer_sequence<size_t, TensorType::rank()>>
+struct GetImpl;
+
+template <typename TensorType, size_t... Is>
+struct GetImpl<TensorType, std::integer_sequence<size_t, Is...>> {
+  template <size_t I>
+  struct make_size_t {
+    using type = size_t;
+  };
+  static constexpr typename TensorType::const_reference get(
+      const TensorType& tensor, typename make_size_t<Is>::type... args) {
+    return tensor.get(args...);
+  }
+};
+
 template <typename TensorType, TensorKind Kind>
 void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
   auto tensor =
@@ -110,6 +126,7 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
                 return t.component_suffix(storage_index);
               },
               py::arg("storage_index"))
+          .def("get", &GetImpl<TensorType>::get)
           // NOLINTNEXTLINE(misc-redundant-expression)
           .def(py::self == py::self)
           // NOLINTNEXTLINE(misc-redundant-expression)

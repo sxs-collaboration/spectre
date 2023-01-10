@@ -24,6 +24,7 @@ class TestTensor(unittest.TestCase):
         coords[2] = DataVector(4, 3.)
         for d, xyz in enumerate(coords):
             npt.assert_equal(xyz, np.ones(4) * (d + 1))
+            npt.assert_equal(xyz, coords.get(d))
             self.assertEqual(coords.multiplicity(d), 1)
             self.assertEqual(coords.component_suffix(d), ["_x", "_y", "_z"][d])
 
@@ -65,6 +66,7 @@ class TestTensor(unittest.TestCase):
         self.assertEqual(scalar.rank, 0)
         self.assertEqual(scalar.dim, None)
         npt.assert_equal(np.array(scalar), np.ones((1, 4)))
+        npt.assert_equal(scalar[0], scalar.get())
 
     def test_jacobian(self):
         jac = Jacobian[DataVector, 3](num_points=4, fill=1.)
