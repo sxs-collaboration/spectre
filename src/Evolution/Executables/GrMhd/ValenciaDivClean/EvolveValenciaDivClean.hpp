@@ -238,15 +238,16 @@ struct EvolutionMetavars {
   using error_compute = Tags::ErrorsCompute<analytic_variables_tags>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_variables_tags>;
   using observe_fields = tmpl::push_back<
-      tmpl::append<typename system::variables_tag::tags_list,
-                   typename system::primitive_variables_tag::tags_list,
-                   tmpl::list<grmhd::ValenciaDivClean::Tags::
-                                  ComovingMagneticFieldMagnitudeCompute>,
-                   error_tags,
-                   tmpl::conditional_t<
-                       use_dg_subcell,
-                       tmpl::list<evolution::dg::subcell::Tags::TciStatus>,
-                       tmpl::list<>>>,
+      tmpl::append<
+          typename system::variables_tag::tags_list,
+          typename system::primitive_variables_tag::tags_list,
+          tmpl::list<grmhd::ValenciaDivClean::Tags::
+                         ComovingMagneticFieldMagnitudeCompute>,
+          error_tags,
+          tmpl::conditional_t<use_dg_subcell,
+                              tmpl::list<evolution::dg::subcell::Tags::
+                                             TciStatusCompute<volume_dim>>,
+                              tmpl::list<>>>,
       tmpl::conditional_t<
           use_dg_subcell,
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<volume_dim,

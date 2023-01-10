@@ -77,7 +77,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `subcell::Tags::DidRollback`
  *   - `subcell::Tags::TciGridHistory`
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
- *   - `subcell::Tags::TciStatus`
+ *   - `subcell::Tags::TciDecision`
  *   - `subcell::Tags::DataForRdmpTci`
  *   - `subcell::fd::Tags::InverseJacobianLogicalToGrid<Dim>`
  *   - `subcell::fd::Tags::DetInverseJacobianLogicalToGrid`
@@ -97,7 +97,7 @@ struct Initialize {
       tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
                  ::Tags::RollbackValue<typename System::variables_tag>,
                  Tags::TciGridHistory, Tags::NeighborDataForReconstruction<Dim>,
-                 Tags::TciStatus, Tags::DataForRdmpTci,
+                 Tags::TciDecision, Tags::DataForRdmpTci,
                  fd::Tags::InverseJacobianLogicalToGrid<Dim>,
                  fd::Tags::DetInverseJacobianLogicalToGrid>;
   using compute_tags =
@@ -137,7 +137,7 @@ struct Initialize {
 
     db::mutate_apply<
         tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
-                   typename System::variables_tag, subcell::Tags::TciStatus,
+                   typename System::variables_tag, subcell::Tags::TciDecision,
                    subcell::Tags::DataForRdmpTci>,
         typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
@@ -145,7 +145,7 @@ struct Initialize {
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto active_vars_ptr,
-            const gsl::not_null<Scalar<DataVector>*> tci_status_ptr,
+            const gsl::not_null<int*> tci_decision_ptr,
             const auto rdmp_data_ptr, const auto&... args_for_tci) {
           // We don't consider setting the initial grid to subcell as rolling
           // back. Since no time step is undone, we just continue on the
@@ -154,9 +154,7 @@ struct Initialize {
 
           *active_grid_ptr = ActiveGrid::Dg;
 
-          destructive_resize_components(tci_status_ptr,
-                                        dg_mesh.number_of_grid_points());
-          get(*tci_status_ptr) = static_cast<int>(false);
+          *tci_decision_ptr = 0;
 
           // Now check if the DG solution is admissible. We call the TCI even if
           // the cell is at the boundary since the TCI must also set the past
@@ -166,8 +164,8 @@ struct Initialize {
               subcell_options.initial_data_rdmp_epsilon(),
               subcell_options.initial_data_persson_exponent(), args_for_tci...);
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
-          const int tci_status = std::get<0>(tci_result);
-          const bool tci_flagged = static_cast<bool>(tci_status);
+          *tci_decision_ptr = std::get<0>(tci_result);
+          const bool tci_flagged = *tci_decision_ptr != 0;
 
           if ((cell_is_not_on_external_boundary or
                subcell_enabled_at_external_boundary) and
@@ -177,9 +175,6 @@ struct Initialize {
             *active_grid_ptr = ActiveGrid::Subcell;
             *active_vars_ptr =
                 fd::project(*active_vars_ptr, dg_mesh, subcell_mesh.extents());
-            destructive_resize_components(tci_status_ptr,
-                                          subcell_mesh.number_of_grid_points());
-            get(*tci_status_ptr) = tci_status;
           }
         },
         make_not_null(&box));
