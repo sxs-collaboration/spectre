@@ -130,19 +130,29 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
                }
                const auto num_points = static_cast<size_t>(info.shape[1]);
                auto data = static_cast<double*>(info.ptr);
+               const std::array<size_t, 2> strides{
+                   {static_cast<size_t>(info.strides[0] / info.itemsize),
+                    static_cast<size_t>(info.strides[1] / info.itemsize)}};
                if (copy) {
                  TensorType result{num_points};
                  for (size_t i = 0; i < size; ++i) {
-                   // NOLINTNEXTLINE
-                   std::copy_n(data + i * num_points, num_points,
-                               result[i].data());
+                   for (size_t j = 0; j < num_points; ++j) {
+                     // NOLINTNEXTLINE
+                     result[i][j] = data[i * strides[0] + j * strides[1]];
+                   }
                  }
                  return result;
                } else {
+                 if (strides[1] != 1) {
+                   throw std::runtime_error(
+                       "Non-owning DataVectors only work with a stride of 1, "
+                       "but stride is " +
+                       std::to_string(strides[1]) + ".");
+                 }
                  TensorType result{};
                  for (size_t i = 0; i < size; ++i) {
                    // NOLINTNEXTLINE
-                   result[i].set_data_ref(data + i * num_points, num_points);
+                   result[i].set_data_ref(data + i * strides[0], num_points);
                  }
                  return result;
                }

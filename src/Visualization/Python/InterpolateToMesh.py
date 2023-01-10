@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 # lambda because the function needs to be pickled. Note that `starmap` only
 # works with an iterable, not with a dict.
 def forward_kwargs(kwargs):
-    interpolate_h5_file(**kwargs)
+    interpolate_to_mesh(**kwargs)
 
 
-def interpolate_h5_file(source_file_path,
+def interpolate_to_mesh(source_file_path,
                         target_mesh,
                         target_file_path,
                         source_volume_data,
@@ -166,7 +166,7 @@ def interpolate_h5_file(source_file_path,
         target_file.close()
 
 
-@click.command(help=interpolate_h5_file.__doc__)
+@click.command(help=interpolate_to_mesh.__doc__)
 @click.option(
     "--source-file-prefix",
     required=True,
@@ -232,11 +232,11 @@ def interpolate_h5_file(source_file_path,
     default=None,
     help=("The maximum number of processes to be started. "
           "A process is spawned for each source file up to this number."))
-def interpolate_volume_data_command(source_file_prefix, source_subfile_name,
-                                    target_file_prefix, target_subfile_name,
-                                    target_extents, target_basis,
-                                    target_quadrature, tensor_component,
-                                    start_time, stop_time, stride, num_jobs):
+def interpolate_to_mesh_command(source_file_prefix, source_subfile_name,
+                                target_file_prefix, target_subfile_name,
+                                target_extents, target_basis,
+                                target_quadrature, tensor_component,
+                                start_time, stop_time, stride, num_jobs):
     _rich_traceback_guard = True  # Hide traceback until here
 
     source_files = glob.glob(source_file_prefix + "[0-9]*.h5")

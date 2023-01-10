@@ -39,6 +39,18 @@ class TestTensor(unittest.TestCase):
                 npt.assert_equal(a, b, f"Mismatch at index {i}")
             npt.assert_equal(np.array(coords), data)
 
+    def test_buffer_strides(self):
+        # The transpose should set up data with non-unit strides
+        original_data = np.random.rand(4, 3)
+        data = original_data.T
+        coords = tnsr.I[DataVector, 3, Frame.Inertial](data)
+        for i, (a, b) in enumerate(zip(coords, data)):
+            npt.assert_equal(a, b, f"Mismatch at index {i}")
+        npt.assert_equal(np.array(coords), data)
+        # Non-owning DataVectors don't work with strides != 1
+        with self.assertRaisesRegex(RuntimeError, "Non-owning"):
+            coords = tnsr.I[DataVector, 3, Frame.Inertial](data, copy=False)
+
     def test_tensor_double(self):
         coords = tnsr.I[float, 3, Frame.Inertial](fill=0.)
         coords[0] = 1.
