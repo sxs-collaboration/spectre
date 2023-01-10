@@ -56,6 +56,8 @@ void test(const bool moving_mesh) {
   TestHelpers::db::test_simple_tag<
       subcell::Tags::NeighborDataForReconstruction<Dim>>(
       "NeighborDataForReconstruction");
+  TestHelpers::db::test_simple_tag<subcell::Tags::NeighborTciDecisions<Dim>>(
+      "NeighborTciDecisions");
   TestHelpers::db::test_simple_tag<subcell::Tags::DataForRdmpTci>(
       "DataForRdmpTci");
   TestHelpers::db::test_simple_tag<
