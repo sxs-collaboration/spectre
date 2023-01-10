@@ -36,7 +36,7 @@ spectre_add_python_test(
   None)
 
 spectre_add_python_bindings_test(
-  "Unit.Visualization.Python.InterpolateVolumeData"
-  Test_InterpolateVolumeData.py
+  "Unit.Visualization.Python.InterpolateToMesh"
+  Test_InterpolateToMesh.py
   "unit;visualization;python"
   None)

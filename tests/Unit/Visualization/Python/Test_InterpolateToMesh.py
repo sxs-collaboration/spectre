@@ -1,6 +1,9 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+from spectre.Visualization.InterpolateToMesh import (
+    interpolate_to_mesh, interpolate_to_mesh_command)
+
 import unittest
 from click.testing import CliRunner
 from spectre.Informer import unit_test_build_path
@@ -8,14 +11,13 @@ import spectre.IO.H5 as spectre_h5
 from spectre.IO.H5 import TensorComponent, ElementVolumeData
 from spectre.DataStructures import DataVector
 from spectre import Spectral
-from spectre.Visualization import InterpolateVolumeData
 import os
 import numpy as np
 import logging
 import shutil
 
 
-class TestInterpolateH5(unittest.TestCase):
+class TestInterpolateToMesh(unittest.TestCase):
     def setUp(self):
         """
         Creates two files with 2 observations each with two elements each
@@ -23,7 +25,7 @@ class TestInterpolateH5(unittest.TestCase):
         """
 
         self.test_dir = os.path.join(unit_test_build_path(), "Visualization",
-                                     "InterpolateVolumeData")
+                                     "InterpolateToMesh")
         os.makedirs(self.test_dir, exist_ok=True)
 
         self.file_name = os.path.join(self.test_dir, "interpolation_1.h5")
@@ -136,10 +138,8 @@ class TestInterpolateH5(unittest.TestCase):
                                [Spectral.Quadrature.Gauss] * 3)
 
         target_volume_name = "/VolumeDataInterpolated"
-        InterpolateVolumeData.interpolate_h5_file(self.file_name, mesh,
-                                                  self.file_name,
-                                                  self.volume_name,
-                                                  target_volume_name)
+        interpolate_to_mesh(self.file_name, mesh, self.file_name,
+                            self.volume_name, target_volume_name)
 
         file = spectre_h5.H5File(self.file_name, "r")
 
@@ -191,7 +191,7 @@ class TestInterpolateH5(unittest.TestCase):
     def test_cli(self):
         runner = CliRunner()
         result = runner.invoke(
-            InterpolateVolumeData.interpolate_volume_data_command,
+            interpolate_to_mesh_command,
             [
                 "--source-file-prefix",
                 os.path.join(self.test_dir, "interpolation_"),
