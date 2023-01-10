@@ -73,7 +73,7 @@ void neighbor_reconstructed_face_solution(
             std::tuple<Mesh<Metavariables::volume_dim>,
                        Mesh<Metavariables::volume_dim - 1>,
                        std::optional<std::vector<double>>,
-                       std::optional<std::vector<double>>, ::TimeStepId>,
+                       std::optional<std::vector<double>>, ::TimeStepId, int>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
                                   ElementId<Metavariables::volume_dim>>>>>*>
         received_temporal_id_and_data) {

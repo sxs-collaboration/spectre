@@ -29,7 +29,7 @@ void test_no_ghost_cells() {
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
   using Type =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId>;
+                 std::optional<std::vector<double>>, ::TimeStepId, int>;
   using Inbox = typename bc_tag::type;
 
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
@@ -52,6 +52,7 @@ void test_no_ghost_cells() {
   get<3>(send_data_a) = std::vector<double>(mesh_a.number_of_grid_points() *
                                             number_of_components);
   get<4>(send_data_a) = time_step_id_a;
+  get<5>(send_data_a) = 5;
   fill_with_random_values(make_not_null(&*get<3>(send_data_a)),
                           make_not_null(&gen), make_not_null(&dist));
 
@@ -73,6 +74,7 @@ void test_no_ghost_cells() {
   // Set the future time step to make sure the implementation doesn't mix the
   // receive time ID and the validity range time ID
   get<4>(send_data_b) = time_step_id_c;
+  get<5>(send_data_a) = 5;
   fill_with_random_values(make_not_null(&*get<3>(send_data_b)),
                           make_not_null(&gen), make_not_null(&dist));
 
@@ -96,7 +98,7 @@ void test_with_ghost_cells() {
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
   using Type =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId>;
+                 std::optional<std::vector<double>>, ::TimeStepId, int>;
   using Inbox = typename bc_tag::type;
 
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
@@ -120,6 +122,7 @@ void test_with_ghost_cells() {
   get<2>(send_data_a) = std::vector<double>(mesh_a.number_of_grid_points() *
                                             number_of_components);
   get<4>(send_data_a) = time_step_id_a;
+  get<5>(send_data_a) = 5;
   fill_with_random_values(make_not_null(&*get<2>(send_data_a)),
                           make_not_null(&gen), make_not_null(&dist));
 
@@ -138,6 +141,7 @@ void test_with_ghost_cells() {
   get<2>(send_data_b) = std::vector<double>(
       get<1>(send_data_b).number_of_grid_points() * number_of_components);
   get<4>(send_data_b) = time_step_id_b;
+  get<5>(send_data_b) = 6;
   fill_with_random_values(make_not_null(&*get<2>(send_data_b)),
                           make_not_null(&gen), make_not_null(&dist));
 
@@ -165,6 +169,7 @@ void test_with_ghost_cells() {
   // Verify that when we update the fluxes the validity of the fluxes is also
   // updated correctly
   get<4>(send_flux_data_a) = time_step_id_c;
+  get<5>(send_flux_data_a) = 6;
   fill_with_random_values(make_not_null(&*get<3>(send_flux_data_a)),
                           make_not_null(&gen), make_not_null(&dist));
   bc_tag::insert_into_inbox(make_not_null(&inbox), time_step_id_a,
@@ -173,8 +178,9 @@ void test_with_ghost_cells() {
   Type send_all_data_a = send_data_a;
   get<3>(send_all_data_a) = get<3>(send_flux_data_a);
   get<4>(send_all_data_a) = get<4>(send_flux_data_a);
+  get<5>(send_all_data_a) = get<5>(send_flux_data_a);
 
-  CHECK((inbox.at(time_step_id_a).at(nhbr_key) == send_all_data_a));
+  CHECK(inbox.at(time_step_id_a).at(nhbr_key) == send_all_data_a);
 
   // Check sending both ghost and flux data at once
   Type send_all_data_b = send_data_b;
@@ -182,6 +188,7 @@ void test_with_ghost_cells() {
       std::vector<double>(2 * get<1>(send_all_data_b).number_of_grid_points() *
                           number_of_components);
   get<4>(send_all_data_b) = time_step_id_c;
+  get<5>(send_data_a) = 6;
   fill_with_random_values(make_not_null(&*get<3>(send_all_data_b)),
                           make_not_null(&gen), make_not_null(&dist));
   bc_tag::insert_into_inbox(make_not_null(&inbox), time_step_id_b,

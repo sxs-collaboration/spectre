@@ -20,6 +20,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Actions/ApplyBoundaryCorrections.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/Mortars.hpp"
 #include "Evolution/DiscontinuousGalerkin/Initialization/QuadratureTag.hpp"
@@ -627,6 +628,9 @@ void test_impl(const Spectral::Quadrature quadrature,
   using mortar_tags_list = typename BoundaryTerms<Dim>::dg_package_field_tags;
   constexpr size_t number_of_dg_package_tags_components =
       Variables<mortar_tags_list>::number_of_independent_components;
+  typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+      neighbor_decision{};
+  int decision = 1;
   for (const auto& direction_and_neighbor_id : order_to_send_neighbor_data_in) {
     const auto& direction = direction_and_neighbor_id.first;
     const auto& neighbor_id = direction_and_neighbor_id.second;
@@ -635,11 +639,12 @@ void test_impl(const Spectral::Quadrature quadrature,
 
     size_t count = 0;
     const Mesh<Dim - 1> face_mesh = mesh.slice_away(direction.dimension());
-    const auto insert_neighbor_data = [&all_mortar_data, &count, &direction,
-                                       &face_mesh, &local_next_time_step_id,
-                                       &mesh, &mortar_data_history,
-                                       &mortar_meshes, &neighbor_id, &runner,
-                                       &self_id](
+    const auto insert_neighbor_data = [&all_mortar_data, &count, &decision,
+                                       &direction, &face_mesh,
+                                       &local_next_time_step_id, &mesh,
+                                       &mortar_data_history, &mortar_meshes,
+                                       &neighbor_decision, &neighbor_id,
+                                       &runner, &self_id](
                                           const TimeStepId&
                                               neighbor_time_step_id,
                                           const TimeStepId&
@@ -655,8 +660,12 @@ void test_impl(const Spectral::Quadrature quadrature,
                     10 * static_cast<unsigned long>(direction.side()) +
                     100 * count);
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId>
-          data{mesh, face_mesh, {}, {flux_data}, {neighbor_next_time_step_id}};
+                 std::optional<std::vector<double>>, ::TimeStepId, int>
+          data{
+              mesh,    face_mesh, {}, {flux_data}, {neighbor_next_time_step_id},
+              decision};
+      neighbor_decision.insert(std::pair{mortar_id, decision});
+      ++decision;
 
       runner.template mock_distributed_objects<comp>()
           .at(self_id)

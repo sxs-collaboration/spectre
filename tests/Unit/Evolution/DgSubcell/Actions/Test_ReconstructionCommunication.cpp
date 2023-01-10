@@ -36,6 +36,7 @@
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
 #include "Evolution/DgSubcell/Tags/SubcellOptions.hpp"
 #include "Evolution/DgSubcell/Tags/TciGridHistory.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/Tags/NeighborMesh.hpp"
 #include "Framework/ActionTesting.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
@@ -75,6 +76,8 @@ struct component {
       evolution::dg::subcell::Tags::ActiveGrid, domain::Tags::Element<Dim>,
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci,
+      evolution::dg::subcell::Tags::TciDecision,
+      evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
       Tags::Variables<tmpl::list<Var1>>, evolution::dg::Tags::MortarData<Dim>,
       evolution::dg::Tags::MortarNextTemporalId<Dim>,
       evolution::dg::Tags::NeighborMesh<Dim>>;
@@ -232,18 +235,13 @@ void test() {
     mortar_next_id[south_neighbor_id] = {};
   }
 
-  ActionTesting::emplace_array_component_and_initialize<comp>(
-      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
-      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
-       element, neighbor_data,
-       // Explicitly set RDMP data since this would be set previously by the TCI
-       evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
-                                           {min(get(get<Var1>(evolved_vars)))}},
-       evolved_vars, mortar_data, mortar_next_id,
-       typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
+  size_t neighbor_tci_decision = 0;
+  typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+      neighbor_decision{};
   for (const auto& [direction, neighbor_ids] : neighbors) {
     (void)direction;
     for (const auto& neighbor_id : neighbor_ids) {
+      neighbor_decision.insert(std::pair{std::pair{direction, neighbor_id}, 0});
       // Initialize neighbors with garbage data. We won't ever run any actions
       // on them, we just need to insert them to make sure things are sent to
       // the right places. We'll check their inboxes directly.
@@ -252,11 +250,25 @@ void test() {
           neighbor_id,
           {time_step_id, next_time_step_id, Mesh<Dim>{}, Mesh<Dim>{},
            active_grid, Element<Dim>{}, NeighborDataMap{},
-           evolution::dg::subcell::RdmpTciData{},
+           evolution::dg::subcell::RdmpTciData{}, neighbor_tci_decision,
+           typename evolution::dg::subcell::Tags::NeighborTciDecisions<
+               Dim>::type{},
            Variables<evolved_vars_tags>{}, MortarData{}, MortarNextId{},
            typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
+      ++neighbor_tci_decision;
     }
   }
+  const int self_tci_decision = 100;
+  ActionTesting::emplace_array_component_and_initialize<comp>(
+      &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, self_id,
+      {time_step_id, next_time_step_id, dg_mesh, subcell_mesh, active_grid,
+       element, neighbor_data,
+       // Explicitly set RDMP data since this would be set previously by the TCI
+       evolution::dg::subcell::RdmpTciData{{max(get(get<Var1>(evolved_vars)))},
+                                           {min(get(get<Var1>(evolved_vars)))}},
+       self_tci_decision, neighbor_decision, evolved_vars, mortar_data,
+       mortar_next_id,
+       typename evolution::dg::Tags::NeighborMesh<Dim>::type{}});
 
   using neighbor_data_tag =
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>;
@@ -313,6 +325,9 @@ void test() {
         expected_east_data,
         *std::get<2>(east_data.at(time_step_id)
                          .at(std::pair{Direction<Dim>::lower_xi(), self_id})));
+    CHECK(std::get<5>(east_data.at(time_step_id)
+                          .at(std::pair{Direction<Dim>::lower_xi(),
+                                        self_id})) == self_tci_decision);
   }
   if constexpr (Dim > 1) {
     const auto direction = Direction<Dim>::lower_eta();
@@ -342,6 +357,9 @@ void test() {
           *std::get<2>(
               south_data.at(time_step_id)
                   .at(std::pair{orientation(direction.opposite()), self_id})));
+    CHECK(std::get<5>(south_data.at(time_step_id)
+                          .at(std::pair{orientation(direction.opposite()),
+                                        self_id})) == self_tci_decision);
   }
 
   // Set the inbox data on self_id and then check that it gets processed
@@ -373,7 +391,7 @@ void test() {
                 std::tuple{// subcell_mesh because we are sending the projected
                            // data right now.
                            subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
-                           boundary_data, next_time_step_id}});
+                           boundary_data, next_time_step_id, -10}});
   }
   [[maybe_unused]] std::vector<double> south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
@@ -394,7 +412,7 @@ void test() {
                 std::tuple{// subcell_mesh because we are sending the projected
                            // data right now.
                            subcell_mesh, face_mesh, south_ghost_cells_and_rdmp,
-                           std::nullopt, next_time_step_id}});
+                           std::nullopt, next_time_step_id, -15}});
   }
 
   // Run the ReceiveDataForReconstruction action on self_id
@@ -420,6 +438,11 @@ void test() {
   east_ghost_cells_and_rdmp.pop_back();
   CHECK(neighbor_data_from_box.find(east_neighbor_id)->second ==
         east_ghost_cells_and_rdmp);
+  CHECK(
+      get_databox_tag<comp,
+                      evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+          runner, self_id)
+          .at(east_neighbor_id) == -10);
   if constexpr (Dim > 1) {
     const std::pair south_neighbor_id{Direction<Dim>::lower_eta(), south_id};
     REQUIRE(neighbor_data_from_box.find(south_neighbor_id) !=
@@ -428,6 +451,10 @@ void test() {
     south_ghost_cells_and_rdmp.pop_back();
     CHECK(neighbor_data_from_box.find(south_neighbor_id)->second ==
           south_ghost_cells_and_rdmp);
+    CHECK(get_databox_tag<
+              comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+              runner, self_id)
+              .at(south_neighbor_id) == -15);
   }
 
   // Check that we got a neighbor mesh from all neighbors.
