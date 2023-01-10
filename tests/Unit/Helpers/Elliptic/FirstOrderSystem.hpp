@@ -18,9 +18,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Elliptic/Systems/GetSourcesComputer.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Framework/TestingFramework.hpp"
 #include "Helpers/DataStructures/MakeWithRandomValues.hpp"
+#include "ParallelAlgorithms/NonlinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -183,12 +185,26 @@ void test_first_order_sources_computer_impl(
  * - It can be applied to a DataBox, i.e. its argument tags are consistent with
  *   its apply function.
  */
-template <typename System>
+template <typename System, bool Linearized = false>
 void test_first_order_sources_computer(const DataVector& used_for_size) {
-  using sources_computer = typename System::sources_computer;
+  using sources_computer = ::elliptic::get_sources_computer<System, Linearized>;
+  using primal_fields =
+      tmpl::conditional_t<Linearized,
+                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
+                                           typename System::primal_fields>,
+                          typename System::primal_fields>;
+  using auxiliary_fields =
+      tmpl::conditional_t<Linearized,
+                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
+                                           typename System::auxiliary_fields>,
+                          typename System::auxiliary_fields>;
+  using primal_fluxes =
+      tmpl::conditional_t<Linearized,
+                          db::wrap_tags_in<NonlinearSolver::Tags::Correction,
+                                           typename System::primal_fluxes>,
+                          typename System::primal_fluxes>;
   detail::test_first_order_sources_computer_impl<sources_computer>(
-      used_for_size, typename System::primal_fields{},
-      typename System::auxiliary_fields{}, typename System::primal_fluxes{},
+      used_for_size, primal_fields{}, auxiliary_fields{}, primal_fluxes{},
       typename sources_computer::argument_tags{});
 }
 
