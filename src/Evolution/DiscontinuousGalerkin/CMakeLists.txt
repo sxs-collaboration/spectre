@@ -27,4 +27,5 @@ spectre_target_sources(
 add_subdirectory(Actions)
 add_subdirectory(Initialization)
 add_subdirectory(Limiters)
+add_subdirectory(Messages)
 add_subdirectory(Tags)
