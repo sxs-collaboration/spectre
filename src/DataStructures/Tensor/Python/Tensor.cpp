@@ -55,6 +55,22 @@ std::string class_name(const std::string& name) {
   }
 }
 
+template <typename TensorType,
+          typename Is = std::make_integer_sequence<size_t, TensorType::rank()>>
+struct GetImpl;
+
+template <typename TensorType, size_t... Is>
+struct GetImpl<TensorType, std::integer_sequence<size_t, Is...>> {
+  template <size_t I>
+  struct make_size_t {
+    using type = size_t;
+  };
+  static constexpr typename TensorType::const_reference get(
+      const TensorType& tensor, typename make_size_t<Is>::type... args) {
+    return tensor.get(args...);
+  }
+};
+
 template <typename TensorType, TensorKind Kind>
 void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
   auto tensor =
@@ -66,6 +82,17 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
           .def_property_readonly_static(
               "size",
               [](const py::object& /*t*/) { return TensorType::size(); })
+          .def_property_readonly_static(
+              "dim",
+              [](const py::object& /*t*/) {
+                if constexpr (TensorType::rank() == 0) {
+                  return py::none{};
+                } else {
+                  // We currently bind only Tensors where all indices have the
+                  // same dimension, so just get the first one
+                  return TensorType::index_dim(0);
+                }
+              })
           .def(py::init())
           .def("__str__", [](const TensorType& t) { return get_output(t); })
           .def(
@@ -99,6 +126,7 @@ void bind_tensor_impl(py::module& m, const std::string& name) {  // NOLINT
                 return t.component_suffix(storage_index);
               },
               py::arg("storage_index"))
+          .def("get", &GetImpl<TensorType>::get)
           // NOLINTNEXTLINE(misc-redundant-expression)
           .def(py::self == py::self)
           // NOLINTNEXTLINE(misc-redundant-expression)

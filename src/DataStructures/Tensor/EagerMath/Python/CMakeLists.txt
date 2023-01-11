@@ -1,26 +1,26 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PyTensor")
+set(LIBRARY "PyTensorEagerMath")
 
 spectre_python_add_module(
-  Tensor
-  MODULE_PATH "DataStructures"
+  EagerMath
+  MODULE_PATH "DataStructures/Tensor"
   LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
-  Tensor.cpp
+  Determinant.cpp
+  Magnitude.cpp
   PYTHON_FILES
   __init__.py
-  Frame.py
-  tnsr.py
   )
 
 spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  Tensor.hpp
+  Determinant.hpp
+  Magnitude.hpp
   )
 
 spectre_python_link_libraries(
@@ -35,4 +35,5 @@ spectre_python_link_libraries(
 spectre_python_add_dependencies(
   ${LIBRARY}
   PyDataStructures
+  PyTensor
   )

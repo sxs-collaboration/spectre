@@ -29,3 +29,5 @@ target_link_libraries(
   GeneralRelativity
   GeneralRelativityHelpers
   )
+
+add_subdirectory(Python)
