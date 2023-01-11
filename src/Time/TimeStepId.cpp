@@ -34,8 +34,28 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
   canonicalize();
 }
 
+TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
+                       const Time& step_time, const uint64_t substep,
+                       const TimeDelta& step_size,
+                       const Time::rational_t& step_fraction)
+    : TimeStepId(time_runs_forward, slab_number, step_time, substep,
+                 step_time + step_fraction * step_size) {
+  ASSERT(step_fraction >= 0 and step_fraction <= 1,
+         "Substep must be within the step.");
+}
+
 bool TimeStepId::is_at_slab_boundary() const {
   return substep_ == 0 and substep_time_.is_at_slab_boundary();
+}
+
+TimeStepId TimeStepId::next_step(const TimeDelta& step_size) const {
+  return TimeStepId(time_runs_forward_, slab_number_, step_time_ + step_size);
+}
+
+TimeStepId TimeStepId::next_substep(
+    const TimeDelta& step_size, const Time::rational_t& step_fraction) const {
+  return TimeStepId(time_runs_forward_, slab_number_, step_time_,
+                    substep_ + 1, step_size, step_fraction);
 }
 
 void TimeStepId::canonicalize() {

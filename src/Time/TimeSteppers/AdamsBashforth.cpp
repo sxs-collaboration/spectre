@@ -210,8 +210,7 @@ double AdamsBashforth::stable_step() const {
 TimeStepId AdamsBashforth::next_time_id(const TimeStepId& current_id,
                                         const TimeDelta& time_step) const {
   ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
-  return {current_id.time_runs_forward(), current_id.slab_number(),
-          current_id.step_time() + time_step};
+  return current_id.next_step(time_step);
 }
 
 void AdamsBashforth::pup(PUP::er& p) {

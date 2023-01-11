@@ -32,6 +32,11 @@ class TimeStepId {
   /// starting at time `step_time`.
   TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
              uint64_t substep, const Time& substep_time);
+  /// Create a TimeStepId at a substep, given the relative location of
+  /// the substep within the step.
+  TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
+             uint64_t substep, const TimeDelta& step_size,
+             const Time::rational_t& step_fraction);
 
   bool time_runs_forward() const { return time_runs_forward_; }
   int64_t slab_number() const { return slab_number_; }
@@ -42,6 +47,14 @@ class TimeStepId {
   const Time& substep_time() const { return substep_time_; }
 
   bool is_at_slab_boundary() const;
+
+  /// Returns a new TimeStepId representing the start of the next step.
+  TimeStepId next_step(const TimeDelta& step_size) const;
+
+  /// Returns a new TimeStepId representing the next substep, given
+  /// the position of the substep within the step.
+  TimeStepId next_substep(const TimeDelta& step_size,
+                          const Time::rational_t& step_fraction) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
