@@ -31,6 +31,11 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
       substep_time_(substep_time) {
   ASSERT(substep_ != 0 or step_time_ == substep_time_,
          "Initial substep must align with the step.");
+  if (time_runs_forward_) {
+    ASSERT(substep_time_ >= step_time_, "Substep must be within the step.");
+  } else {
+    ASSERT(substep_time_ <= step_time_, "Substep must be within the step.");
+  }
   canonicalize();
 }
 
