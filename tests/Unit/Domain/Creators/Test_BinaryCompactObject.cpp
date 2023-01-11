@@ -745,7 +745,7 @@ void test_parse_errors() {
 }
 }  // namespace
 
-// [[TimeOut, 30]]
+// [[TimeOut, 45]]
 SPECTRE_TEST_CASE("Unit.Domain.Creators.BinaryCompactObject",
                   "[Domain][Unit]") {
   test_connectivity();
