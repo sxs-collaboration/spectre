@@ -10,6 +10,33 @@
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
+
+TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
+                       const Time& time)
+    : time_runs_forward_(time_runs_forward),
+      slab_number_(slab_number),
+      step_time_(time),
+      substep_time_(time) {
+  canonicalize();
+}
+
+TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
+                       const Time& step_time, const uint64_t substep,
+                       const Time& substep_time)
+    : time_runs_forward_(time_runs_forward),
+      slab_number_(slab_number),
+      step_time_(step_time),
+      substep_(substep),
+      substep_time_(substep_time) {
+  ASSERT(substep_ != 0 or step_time_ == substep_time_,
+         "Initial substep must align with the step.");
+  canonicalize();
+}
+
+bool TimeStepId::is_at_slab_boundary() const {
+  return substep_ == 0 and substep_time_.is_at_slab_boundary();
+}
 
 void TimeStepId::canonicalize() {
   if (time_runs_forward_ ? step_time_.is_at_slab_end()
