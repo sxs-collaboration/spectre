@@ -88,7 +88,7 @@ void output_impl(const size_t observation_l_max, const size_t l_max,
           Spectral::Swsh::swsh_transform(l_max, 1, get(tag_data)), l_max)
           .data();
 
-  data_to_write[0] = time_id.substep_time().value();
+  data_to_write[0] = time_id.substep_time();
   for (size_t i = 0; i < square(observation_l_max + 1); ++i) {
     data_to_write[2 * i + 1] = real(goldberg_modes[i]);
     data_to_write[2 * i + 2] = imag(goldberg_modes[i]);
@@ -150,7 +150,7 @@ struct InsertInterpolationScriData {
             db::get<::Tags::TimeStepId>(box), db::get<Tags::News>(box), cache);
         db::get<Tags::AnalyticBoundaryDataManager>(box)
             .template write_news<ParallelComponent>(
-                cache, db::get<::Tags::TimeStepId>(box).substep_time().value());
+                cache, db::get<::Tags::TimeStepId>(box).substep_time());
       }
     }
     if (db::get<::Tags::TimeStepId>(box).substep() == 0) {

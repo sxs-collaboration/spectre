@@ -17,50 +17,52 @@ TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
     : time_runs_forward_(time_runs_forward),
       slab_number_(slab_number),
       step_time_(time),
-      substep_time_(time) {
+      substep_time_(time.value()) {
   canonicalize();
 }
 
 TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
                        const Time& step_time, const uint64_t substep,
-                       const Time& substep_time)
+                       const double substep_time)
     : time_runs_forward_(time_runs_forward),
       slab_number_(slab_number),
       step_time_(step_time),
       substep_(substep),
       substep_time_(substep_time) {
-  ASSERT(substep_ != 0 or step_time_ == substep_time_,
+  ASSERT(substep_ != 0 or step_time_.value() == substep_time_,
          "Initial substep must align with the step.");
   if (time_runs_forward_) {
-    ASSERT(substep_time_ >= step_time_, "Substep must be within the step.");
+    ASSERT(substep_time_ >= step_time_.value(),
+           "Substep must be within the step.");
   } else {
-    ASSERT(substep_time_ <= step_time_, "Substep must be within the step.");
+    ASSERT(substep_time_ <= step_time_.value(),
+           "Substep must be within the step.");
   }
   canonicalize();
 }
 
 TimeStepId::TimeStepId(const bool time_runs_forward, const int64_t slab_number,
                        const Time& step_time, const uint64_t substep,
-                       const TimeDelta& step_size,
-                       const Time::rational_t& step_fraction)
+                       const TimeDelta& step_size, const double step_fraction)
     : TimeStepId(time_runs_forward, slab_number, step_time, substep,
-                 step_time + step_fraction * step_size) {
-  ASSERT(step_fraction >= 0 and step_fraction <= 1,
+                 (1.0 - step_fraction) * step_time.value() +
+                     step_fraction * (step_time + step_size).value()) {
+  ASSERT(step_fraction >= 0.0 and step_fraction <= 1.0,
          "Substep must be within the step.");
 }
 
 bool TimeStepId::is_at_slab_boundary() const {
-  return substep_ == 0 and substep_time_.is_at_slab_boundary();
+  return substep_ == 0 and step_time_.is_at_slab_boundary();
 }
 
 TimeStepId TimeStepId::next_step(const TimeDelta& step_size) const {
   return TimeStepId(time_runs_forward_, slab_number_, step_time_ + step_size);
 }
 
-TimeStepId TimeStepId::next_substep(
-    const TimeDelta& step_size, const Time::rational_t& step_fraction) const {
-  return TimeStepId(time_runs_forward_, slab_number_, step_time_,
-                    substep_ + 1, step_size, step_fraction);
+TimeStepId TimeStepId::next_substep(const TimeDelta& step_size,
+                                    const double step_fraction) const {
+  return TimeStepId(time_runs_forward_, slab_number_, step_time_, substep_ + 1,
+                    step_size, step_fraction);
 }
 
 void TimeStepId::canonicalize() {
@@ -68,11 +70,12 @@ void TimeStepId::canonicalize() {
                          : step_time_.is_at_slab_start()) {
     ASSERT(substep_ == 0,
            "Time needs to be advanced, but step already started");
-    const Slab new_slab = time_runs_forward_ ? substep_time_.slab().advance()
-                                             : substep_time_.slab().retreat();
+    const Slab new_slab = time_runs_forward_ ? step_time_.slab().advance()
+                                             : step_time_.slab().retreat();
     ++slab_number_;
-    substep_time_ = substep_time_.with_slab(new_slab);
-    step_time_ = substep_time_;
+    step_time_ = step_time_.with_slab(new_slab);
+    ASSERT(substep_time_ == step_time_.value(),
+           "Time changed during canonicalization");
   }
 }
 

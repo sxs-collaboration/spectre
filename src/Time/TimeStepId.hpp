@@ -31,12 +31,12 @@ class TimeStepId {
   /// Create a TimeStepId at a substep at time `substep_time` in a step
   /// starting at time `step_time`.
   TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
-             uint64_t substep, const Time& substep_time);
+             uint64_t substep, double substep_time);
   /// Create a TimeStepId at a substep, given the relative location of
   /// the substep within the step.
   TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
              uint64_t substep, const TimeDelta& step_size,
-             const Time::rational_t& step_fraction);
+             double step_fraction);
 
   bool time_runs_forward() const { return time_runs_forward_; }
   int64_t slab_number() const { return slab_number_; }
@@ -44,7 +44,7 @@ class TimeStepId {
   const Time& step_time() const { return step_time_; }
   uint64_t substep() const { return substep_; }
   /// Time of the current substep
-  const Time& substep_time() const { return substep_time_; }
+  double substep_time() const { return substep_time_; }
 
   bool is_at_slab_boundary() const;
 
@@ -54,7 +54,7 @@ class TimeStepId {
   /// Returns a new TimeStepId representing the next substep, given
   /// the position of the substep within the step.
   TimeStepId next_substep(const TimeDelta& step_size,
-                          const Time::rational_t& step_fraction) const;
+                          double step_fraction) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
@@ -66,7 +66,7 @@ class TimeStepId {
   int64_t slab_number_{0};
   Time step_time_{};
   uint64_t substep_{0};
-  Time substep_time_{};
+  double substep_time_{};
 };
 
 bool operator==(const TimeStepId& a, const TimeStepId& b);

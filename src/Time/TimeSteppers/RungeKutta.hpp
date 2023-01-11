@@ -10,7 +10,6 @@
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Rational.hpp"
 
 /// \cond
 class TimeDelta;
@@ -41,7 +40,7 @@ class RungeKutta : public TimeStepper {
      * The times of the substeps, excluding the initial time step.
      * Often called \f$c\f$ in the literature.
      */
-    std::vector<Rational> substep_times;
+    std::vector<double> substep_times;
     /*!
      * The coefficient matrix of the substeps.  Do not include the
      * initial empty row or the coefficients for the full step.  Often

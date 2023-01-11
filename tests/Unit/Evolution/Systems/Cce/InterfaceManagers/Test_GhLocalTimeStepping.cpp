@@ -87,9 +87,9 @@ void test_gh_local_time_stepping_interface_manager(
         const auto current_time_step_id = source_time_steps[index];
         std::optional<double> previous_time;
         if (index != 0) {
-          previous_time = source_time_steps[index - 1].substep_time().value();
+          previous_time = source_time_steps[index - 1].substep_time();
         }
-        const double current_time = current_time_step_id.substep_time().value();
+        const double current_time = current_time_step_id.substep_time();
 
         tnsr::aa<DataVector, 3> current_spacetime_metric{5_st};
         tnsr::iaa<DataVector, 3> current_phi{5_st};
@@ -117,7 +117,7 @@ void test_gh_local_time_stepping_interface_manager(
           }
         }
         local_interface_manager->insert_gh_data(
-            LinkedMessageId<double>{current_time_step_id.substep_time().value(),
+            LinkedMessageId<double>{current_time_step_id.substep_time(),
                                     previous_time},
             current_spacetime_metric, current_phi, current_pi);
       };
@@ -138,7 +138,7 @@ void test_gh_local_time_stepping_interface_manager(
                                        local_interface_manager,
                                    const size_t index,
                                    Approx local_approx = approx) {
-    const double current_time = target_time_steps[index].substep_time().value();
+    const double current_time = target_time_steps[index].substep_time();
     tnsr::aa<DataVector, 3> expected_spacetime_metric{5_st};
     tnsr::iaa<DataVector, 3> expected_phi{5_st};
     tnsr::aa<DataVector, 3> expected_pi{5_st};

@@ -341,8 +341,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       Variables<dt_evolved_vars_tags> dt_vars{dg_mesh.number_of_grid_points()};
       get(get<Tags::dt<Var1>>(dt_vars)) =
           (i + 40.0) * get<0>(logical_coordinates(dg_mesh));
-      time_stepper_history.insert({false, 1, step_time, i + 1, step_time},
-                                  -i * evolved_vars, dt_vars);
+      time_stepper_history.insert(
+          {false, 1, step_time, i + 1, step_time.value()}, -i * evolved_vars,
+          dt_vars);
     }
     time_stepper_history.discard_value(time_stepper_history[2].time_step_id);
     time_stepper_history.discard_value(

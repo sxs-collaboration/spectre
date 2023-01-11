@@ -19,7 +19,7 @@ double Heun2::stable_step() const { return 1.0; }
 const RungeKutta::ButcherTableau& Heun2::butcher_tableau() const {
   static const ButcherTableau tableau{
       // Substep times
-      {{1}},
+      {1.0},
       // Substep coefficients
       {{1.0}},
       // Result coefficients

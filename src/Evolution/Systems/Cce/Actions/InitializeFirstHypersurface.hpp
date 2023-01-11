@@ -65,7 +65,7 @@ struct InitializeFirstHypersurface {
     // so we just exit. However, we do want to re-run the action each time
     // the self start 'reset's from the beginning
     if (db::get<::Tags::TimeStepId>(box).slab_number() > 0 or
-        db::get<::Tags::TimeStepId>(box).substep_time().fraction() != 0) {
+        not db::get<::Tags::TimeStepId>(box).is_at_slab_boundary()) {
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
     // some initialization schemes need the hdf5_lock so that they can read
@@ -91,8 +91,7 @@ struct InitializeFirstHypersurface {
           make_not_null(hdf5_lock));
     }
     db::mutate_apply<InitializeScriPlusValue<Tags::InertialRetardedTime>>(
-        make_not_null(&box),
-        db::get<::Tags::TimeStepId>(box).substep_time().value());
+        make_not_null(&box), db::get<::Tags::TimeStepId>(box).substep_time());
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };

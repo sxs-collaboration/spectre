@@ -43,7 +43,7 @@ struct ExitIfEndTimeReached {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    return {db::get<::Tags::TimeStepId>(box).substep_time().value() >=
+    return {db::get<::Tags::TimeStepId>(box).substep_time() >=
                     db::get<Tags::EndTime>(box)
                 ? Parallel::AlgorithmExecution::Pause
                 : Parallel::AlgorithmExecution::Continue,

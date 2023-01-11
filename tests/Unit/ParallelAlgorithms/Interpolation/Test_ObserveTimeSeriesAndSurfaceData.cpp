@@ -467,7 +467,7 @@ SPECTRE_TEST_CASE(
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
       make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time().value()});
+      std::vector<double>{temporal_id.substep_time()});
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
@@ -480,7 +480,7 @@ SPECTRE_TEST_CASE(
       target_d_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceD>>(
       make_not_null(&runner), 0,
-      std::vector<double>{temporal_id.substep_time().value()});
+      std::vector<double>{temporal_id.substep_time()});
 
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 1));
@@ -525,7 +525,7 @@ SPECTRE_TEST_CASE(
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::SurfaceA::temporal_id>>(
         make_not_null(&runner), mock_core_for_each_element.at(element_id),
-        temporal_id.substep_time().value(), element_id, mesh, output_vars);
+        temporal_id.substep_time(), element_id, mesh, output_vars);
     ActionTesting::simple_action<interp_component,
                                  intrp::Actions::InterpolatorReceiveVolumeData<
                                      typename metavars::SurfaceB::temporal_id>>(

@@ -210,7 +210,7 @@ make_volume_data_and_mesh(const DomainCreator& domain_creator, Runner& runner,
               element_id, block.moving_mesh_logical_to_grid_map().get_clone()};
           return block.moving_mesh_grid_to_inertial_map()(
               map_logical_to_grid(logical_coordinates(mesh)),
-              temporal_id.substep_time().value(), functions_of_time);
+              temporal_id.substep_time(), functions_of_time);
         } else {
           (void)runner;
           (void)temporal_id;
@@ -316,7 +316,7 @@ void test_interpolate_on_element(
                     double>) {
     initialize_elements_and_queue_simple_actions(
         domain_creator, domain, element_ids, interp_point_info, runner,
-        temporal_id.substep_time().value());
+        temporal_id.substep_time());
   } else if constexpr (std::is_same_v<typename metavars::InterpolationTargetA::
                                           temporal_id::type,
                                       TimeStepId>) {

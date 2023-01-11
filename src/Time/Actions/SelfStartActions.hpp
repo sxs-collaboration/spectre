@@ -316,7 +316,7 @@ struct CheckForOrderIncrease {
       const Parallel::GlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {  // NOLINT const
-    const auto& time = db::get<::Tags::TimeStepId>(box).substep_time();
+    const auto& time = db::get<::Tags::TimeStepId>(box).step_time();
     const auto& time_step = db::get<::Tags::TimeStep>(box);
     using history_tags = ::Tags::get_all_history_tags<DbTags>;
     const size_t history_integration_order =

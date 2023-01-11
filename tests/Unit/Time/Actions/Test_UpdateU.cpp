@@ -130,9 +130,9 @@ void test_integration() {
         [&rhs, &substep, &substep_times](
             const gsl::not_null<typename history_tag::type*> history,
             const double vars) {
-          const Time& time = gsl::at(substep_times, substep);
+          const double time = gsl::at(substep_times, substep).value();
           history->insert(TimeStepId(true, 0, substep_times[0], substep, time),
-                          vars, rhs(time.value(), vars));
+                          vars, rhs(time, vars));
         },
         db::get<variables_tag>(before_box));
 
@@ -145,10 +145,10 @@ void test_integration() {
             const gsl::not_null<typename alternative_history_tag::type*>
                 alternative_history,
             const double alternative_vars) {
-          const Time& time = gsl::at(substep_times, substep);
+          const double time = gsl::at(substep_times, substep).value();
           alternative_history->insert(
               TimeStepId(true, 0, substep_times[0], substep, time),
-              alternative_vars, rhs(time.value(), alternative_vars));
+              alternative_vars, rhs(time, alternative_vars));
         },
         db::get<alternative_variables_tag>(alternative_before_box));
 
@@ -192,8 +192,9 @@ void test_stepper_error() {
             const gsl::not_null<typename history_tag::type*> history,
             const double vars) {
           const Time time = step_start + gsl::at(substep_offsets, substep);
-          history->insert(TimeStepId(true, 0, step_start, substep, time), vars,
-                          vars);
+          history->insert(
+              TimeStepId(true, 0, step_start, substep, time.value()), vars,
+              vars);
         },
         db::get<variables_tag>(box));
 

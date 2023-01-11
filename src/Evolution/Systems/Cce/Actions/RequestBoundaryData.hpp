@@ -97,7 +97,7 @@ struct RequestNextBoundaryData {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     // only request the data if the next step is not after the end time.
-    if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time().value() <
+    if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).substep_time() <
         db::get<Tags::EndTime>(box)) {
       Parallel::simple_action<Actions::BoundaryComputeAndSendToEvolution<
           WorldtubeBoundaryComponent, EvolutionComponent>>(
