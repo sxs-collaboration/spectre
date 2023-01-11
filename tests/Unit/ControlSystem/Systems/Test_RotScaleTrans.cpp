@@ -107,6 +107,7 @@ void test_rotscaletrans_control_system(const double rotation_eps = 5.0e-5) {
       "  InitialTime: 0.0\n"
       "DomainCreator:\n"
       "  FakeCreator:\n"
+      "    NumberOfExcisions: 2\n"
       "    NumberOfComponents:\n"
       "      Translation: 3\n"
       "      Rotation: 3\n"

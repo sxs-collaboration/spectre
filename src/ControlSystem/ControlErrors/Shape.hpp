@@ -88,6 +88,8 @@ std::string size_name() {
  */
 template <::ah::ObjectLabel Horizon>
 struct Shape : tt::ConformsTo<protocols::ControlError> {
+  static constexpr size_t expected_number_of_excisions = 1;
+
   using options = tmpl::list<>;
   static constexpr Options::String help{
       "Computes the control error for shape control. This should not take any "
@@ -119,6 +121,13 @@ struct Shape : tt::ConformsTo<protocols::ControlError> {
                << ah_coefs.size() << ").");
 
     const auto& excision_spheres = domain.excision_spheres();
+
+    ASSERT(domain.excision_spheres().count(
+               detail::excision_sphere_name<Horizon>()) == 1,
+           "Excision sphere " << detail::excision_sphere_name<Horizon>()
+                              << " not in the domain but is needed to "
+                                 "compute Shape control error.");
+
     // See above docs for why we have the sqrt(pi/2)
     const double radius_excision_sphere_grid_frame =
         sqrt(0.5 * M_PI) *
