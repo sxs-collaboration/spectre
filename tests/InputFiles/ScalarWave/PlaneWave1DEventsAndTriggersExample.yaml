@@ -26,7 +26,7 @@ Evolution:
   InitialTimeStep: 0.001
   InitialSlabSize: 0.01
   TimeStepper:
-    AdamsBashforthN:
+    AdamsBashforth:
       Order: 3
   StepController: BinaryFraction
   StepChoosers:

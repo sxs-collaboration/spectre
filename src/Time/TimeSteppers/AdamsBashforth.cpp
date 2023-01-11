@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 
 #include <algorithm>
 #include <boost/container/static_vector.hpp>
@@ -71,7 +71,7 @@ struct ApproximateTime {
 // A vector holding one entry per order of integration.
 template <typename T>
 using OrderVector =
-    boost::container::static_vector<T, AdamsBashforthN::maximum_order>;
+    boost::container::static_vector<T, AdamsBashforth::maximum_order>;
 
 OrderVector<double> constant_coefficients(const size_t order) {
   switch (order) {
@@ -176,20 +176,20 @@ OrderVector<double> get_coefficients(const Iterator& times_begin,
 }
 }  // namespace
 
-AdamsBashforthN::AdamsBashforthN(const size_t order) : order_(order) {
+AdamsBashforth::AdamsBashforth(const size_t order) : order_(order) {
   if (order_ < 1 or order_ > maximum_order) {
     ERROR("The order for Adams-Bashforth Nth order must be 1 <= order <= "
           << maximum_order);
   }
 }
 
-size_t AdamsBashforthN::order() const { return order_; }
+size_t AdamsBashforth::order() const { return order_; }
 
-size_t AdamsBashforthN::error_estimate_order() const { return order_ - 1; }
+size_t AdamsBashforth::error_estimate_order() const { return order_ - 1; }
 
-size_t AdamsBashforthN::number_of_past_steps() const { return order_ - 1; }
+size_t AdamsBashforth::number_of_past_steps() const { return order_ - 1; }
 
-double AdamsBashforthN::stable_step() const {
+double AdamsBashforth::stable_step() const {
   if (order_ == 1) {
     return 1.;
   }
@@ -207,20 +207,20 @@ double AdamsBashforthN::stable_step() const {
   return 1. / invstep;
 }
 
-TimeStepId AdamsBashforthN::next_time_id(const TimeStepId& current_id,
-                                         const TimeDelta& time_step) const {
+TimeStepId AdamsBashforth::next_time_id(const TimeStepId& current_id,
+                                        const TimeDelta& time_step) const {
   ASSERT(current_id.substep() == 0, "Adams-Bashforth should not have substeps");
   return {current_id.time_runs_forward(), current_id.slab_number(),
           current_id.step_time() + time_step};
 }
 
-void AdamsBashforthN::pup(PUP::er& p) {
+void AdamsBashforth::pup(PUP::er& p) {
   LtsTimeStepper::pup(p);
   p | order_;
 }
 
 template <typename T>
-void AdamsBashforthN::update_u_impl(
+void AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<UntypedHistory<T>*> history,
     const TimeDelta& time_step) const {
   ASSERT(history->size() >= history->integration_order(),
@@ -235,7 +235,7 @@ void AdamsBashforthN::update_u_impl(
 }
 
 template <typename T>
-bool AdamsBashforthN::update_u_impl(
+bool AdamsBashforth::update_u_impl(
     const gsl::not_null<T*> u, const gsl::not_null<T*> u_error,
     const gsl::not_null<UntypedHistory<T>*> history,
     const TimeDelta& time_step) const {
@@ -258,19 +258,19 @@ bool AdamsBashforthN::update_u_impl(
 }
 
 template <typename T>
-bool AdamsBashforthN::dense_update_u_impl(const gsl::not_null<T*> u,
-                                          const UntypedHistory<T>& history,
-                                          const double time) const {
+bool AdamsBashforth::dense_update_u_impl(const gsl::not_null<T*> u,
+                                         const UntypedHistory<T>& history,
+                                         const double time) const {
   const ApproximateTimeDelta time_step{time - history.back().value()};
   update_u_common(u, history, time_step, history.integration_order());
   return true;
 }
 
 template <typename T, typename Delta>
-void AdamsBashforthN::update_u_common(const gsl::not_null<T*> u,
-                                      const UntypedHistory<T>& history,
-                                      const Delta& time_step,
-                                      const size_t order) const {
+void AdamsBashforth::update_u_common(const gsl::not_null<T*> u,
+                                     const UntypedHistory<T>& history,
+                                     const Delta& time_step,
+                                     const size_t order) const {
   ASSERT(
       history.size() > 0,
       "Cannot meaningfully update the evolved variables with an empty history");
@@ -292,7 +292,7 @@ void AdamsBashforthN::update_u_common(const gsl::not_null<T*> u,
 }
 
 template <typename T>
-bool AdamsBashforthN::can_change_step_size_impl(
+bool AdamsBashforth::can_change_step_size_impl(
     const TimeStepId& time_id, const UntypedHistory<T>& history) const {
   // We need to forbid local time-stepping before initialization is
   // complete.  The self-start procedure itself should never consider
@@ -307,7 +307,7 @@ bool AdamsBashforthN::can_change_step_size_impl(
 }
 
 template <typename T>
-void AdamsBashforthN::add_boundary_delta_impl(
+void AdamsBashforth::add_boundary_delta_impl(
     const gsl::not_null<T*> result,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const TimeSteppers::BoundaryHistoryCleaner& cleaner,
@@ -347,7 +347,7 @@ void AdamsBashforthN::add_boundary_delta_impl(
 }
 
 template <typename T>
-void AdamsBashforthN::boundary_dense_output_impl(
+void AdamsBashforth::boundary_dense_output_impl(
     const gsl::not_null<T*> result,
     const TimeSteppers::BoundaryHistoryEvaluator<T>& coupling,
     const double time) const {
@@ -355,9 +355,9 @@ void AdamsBashforthN::boundary_dense_output_impl(
 }
 
 template <typename T, typename TimeType>
-void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
-                                    const BoundaryHistoryEvaluator<T>& coupling,
-                                    const TimeType& end_time) const {
+void AdamsBashforth::boundary_impl(const gsl::not_null<T*> result,
+                                   const BoundaryHistoryEvaluator<T>& coupling,
+                                   const TimeType& end_time) const {
   // Might be different from order_ during self-start.
   const auto current_order = coupling.integration_order();
 
@@ -592,17 +592,16 @@ void AdamsBashforthN::boundary_impl(const gsl::not_null<T*> result,
   }  // for local_evaluation_step
 }
 
-bool operator==(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
+bool operator==(const AdamsBashforth& lhs, const AdamsBashforth& rhs) {
   return lhs.order_ == rhs.order_;
 }
 
-bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs) {
+bool operator!=(const AdamsBashforth& lhs, const AdamsBashforth& rhs) {
   return not(lhs == rhs);
 }
 
-TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforthN)
-LTS_TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforthN)
+TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforth)
+LTS_TIME_STEPPER_DEFINE_OVERLOADS(AdamsBashforth)
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::AdamsBashforthN::my_PUP_ID =  // NOLINT
-    0;
+PUP::able::PUP_ID TimeSteppers::AdamsBashforth::my_PUP_ID = 0;  // NOLINT

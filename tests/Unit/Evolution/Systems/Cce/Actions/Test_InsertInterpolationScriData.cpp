@@ -35,7 +35,7 @@
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -284,7 +284,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, target_step_size,
       static_cast<std::unique_ptr<LtsTimeStepper>>(
-          std::make_unique<::TimeSteppers::AdamsBashforthN>(3)),
+          std::make_unique<::TimeSteppers::AdamsBashforth>(3)),
       make_vector<std::unique_ptr<StepChooser<StepChooserUse::LtsStep>>>(),
       static_cast<std::unique_ptr<StepController>>(
           std::make_unique<StepControllers::BinaryFraction>()),

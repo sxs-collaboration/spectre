@@ -13,7 +13,7 @@
 namespace TimeSteppers {
 /*!
  * \ingroup TimeSteppersGroup
- * \brief A second order continuous-extension RK method that provides 2nd-order
+ * \brief A third order continuous-extension RK method that provides 3rd-order
  * dense output.
  *
  * \f{eqnarray}{
@@ -30,23 +30,24 @@ namespace TimeSteppers {
  * k^{(i)}. \f}
  *
  * Here the coefficients \f$a_{ij}\f$, \f$b_i\f$, and \f$c_i\f$ are given
- * in \cite Gassner20114232. Note that \f$c_1 = 0\f$, \f$s\f$ is the number
- * of stages, and \f$\theta\f$ is the fraction of the step.
+ * in \cite Owren1992 and \cite Gassner20114232. Note that \f$c_1 = 0\f$,
+ * \f$s\f$ is the number of stages, and \f$\theta\f$ is the fraction of the
+ * step. This is an FSAL stepper.
  *
- * The CFL factor/stable step size is 1.0.
+ * The CFL factor/stable step size is 1.2563726633091645.
  */
-class Cerk2 : public RungeKutta {
+class Rk3Owren : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
-      "A 2nd order accurate continuous extension Runge-Kutta method.."};
+      "A 3rd-order continuous extension Runge-Kutta method."};
 
-  Cerk2() = default;
-  Cerk2(const Cerk2&) = default;
-  Cerk2& operator=(const Cerk2&) = default;
-  Cerk2(Cerk2&&) = default;
-  Cerk2& operator=(Cerk2&&) = default;
-  ~Cerk2() override = default;
+  Rk3Owren() = default;
+  Rk3Owren(const Rk3Owren&) = default;
+  Rk3Owren& operator=(const Rk3Owren&) = default;
+  Rk3Owren(Rk3Owren&&) = default;
+  Rk3Owren& operator=(Rk3Owren&&) = default;
+  ~Rk3Owren() override = default;
 
   size_t order() const override;
 
@@ -54,19 +55,21 @@ class Cerk2 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(Cerk2);  // NOLINT
+  WRAPPED_PUPable_decl_template(Rk3Owren);  // NOLINT
 
-  explicit Cerk2(CkMigrateMessage* /*unused*/) {}
+  explicit Rk3Owren(CkMigrateMessage* /*unused*/) {}
 
  private:
   const ButcherTableau& butcher_tableau() const override;
 };
 
-inline bool constexpr operator==(const Cerk2& /*lhs*/, const Cerk2& /*rhs*/) {
+inline bool constexpr operator==(const Rk3Owren& /*lhs*/,
+                                 const Rk3Owren& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const Cerk2& /*lhs*/, const Cerk2& /*rhs*/) {
+inline bool constexpr operator!=(const Rk3Owren& /*lhs*/,
+                                 const Rk3Owren& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers

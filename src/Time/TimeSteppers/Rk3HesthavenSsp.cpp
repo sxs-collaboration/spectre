@@ -1,22 +1,22 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 
 #include <cmath>
 
 namespace TimeSteppers {
 
-size_t RungeKutta3::order() const { return 3; }
+size_t Rk3HesthavenSsp::order() const { return 3; }
 
-size_t RungeKutta3::error_estimate_order() const { return 2; }
+size_t Rk3HesthavenSsp::error_estimate_order() const { return 2; }
 
-double RungeKutta3::stable_step() const {
+double Rk3HesthavenSsp::stable_step() const {
   // This is the condition for  y' = -k y  to go to zero.
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
 }
 
-const RungeKutta::ButcherTableau& RungeKutta3::butcher_tableau() const {
+const RungeKutta::ButcherTableau& Rk3HesthavenSsp::butcher_tableau() const {
   // See Hesthaven (5.32)
   static const ButcherTableau tableau{
       // Substep times
@@ -37,4 +37,4 @@ const RungeKutta::ButcherTableau& RungeKutta3::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::RungeKutta3::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID TimeSteppers::Rk3HesthavenSsp::my_PUP_ID = 0;  // NOLINT

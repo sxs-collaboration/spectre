@@ -20,7 +20,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
@@ -29,10 +29,10 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     CAPTURE(order);
-    const TimeSteppers::AdamsBashforthN stepper(order);
+    const TimeSteppers::AdamsBashforth stepper(order);
     TimeStepperTestUtils::check_multistep_properties(stepper);
     for (size_t start_points = 0; start_points < order; ++start_points) {
       CAPTURE(start_points);
@@ -67,7 +67,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   const TimeStepId end(true, 0, slab.end());
   const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
                              const TimeStepId& now) {
-    const TimeSteppers::AdamsBashforthN stepper(2);
+    const TimeSteppers::AdamsBashforth stepper(2);
     TimeSteppers::History<double> history(2);
     history.insert(first, 0.);
     history.insert(second, 0.);
@@ -80,26 +80,25 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   CHECK_FALSE(can_change(end, start, mid));
   CHECK_FALSE(can_change(end, mid, start));
 
-  TestHelpers::test_factory_creation<TimeStepper,
-                                     TimeSteppers::AdamsBashforthN>(
-      "AdamsBashforthN:\n"
+  TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::AdamsBashforth>(
+      "AdamsBashforth:\n"
       "  Order: 3");
   TestHelpers::test_factory_creation<LtsTimeStepper,
-                                     TimeSteppers::AdamsBashforthN>(
-      "AdamsBashforthN:\n"
+                                     TimeSteppers::AdamsBashforth>(
+      "AdamsBashforth:\n"
       "  Order: 3");
 
-  TimeSteppers::AdamsBashforthN ab4(4);
+  TimeSteppers::AdamsBashforth ab4(4);
   test_serialization(ab4);
-  test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforthN>(4_st);
-  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforthN>(
+  test_serialization_via_base<TimeStepper, TimeSteppers::AdamsBashforth>(4_st);
+  test_serialization_via_base<LtsTimeStepper, TimeSteppers::AdamsBashforth>(
       4_st);
   // test operator !=
-  TimeSteppers::AdamsBashforthN ab2(2);
+  TimeSteppers::AdamsBashforth ab2(2);
   CHECK(ab4 != ab2);
 }
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Variable",
                   "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
@@ -107,13 +106,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Variable",
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_variable_test(
-          TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
+          TimeSteppers::AdamsBashforth(order), start_points + 1, start_points,
           epsilon);
     }
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Backwards",
                   "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
@@ -121,10 +120,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
       TimeStepperTestUtils::integrate_test(
-          TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
+          TimeSteppers::AdamsBashforth(order), start_points + 1, start_points,
           -1., epsilon);
       TimeStepperTestUtils::integrate_test_explicit_time_dependence(
-          TimeSteppers::AdamsBashforthN(order), start_points + 1, start_points,
+          TimeSteppers::AdamsBashforth(order), start_points + 1, start_points,
           -1., epsilon);
     }
   }
@@ -135,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
   const TimeStepId end(false, 0, slab.end());
   const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
                              const TimeStepId& now) {
-    const TimeSteppers::AdamsBashforthN stepper(2);
+    const TimeSteppers::AdamsBashforth stepper(2);
     TimeSteppers::History<double> history(2);
     history.insert(first, 0.);
     history.insert(second, 0.);
@@ -149,11 +148,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
   CHECK(can_change(end, mid, start));
 }
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Stability",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Stability",
                   "[Unit][Time]") {
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
-    TimeStepperTestUtils::stability_test(TimeSteppers::AdamsBashforthN(order));
+    TimeStepperTestUtils::stability_test(TimeSteppers::AdamsBashforth(order));
   }
 }
 
@@ -225,7 +224,7 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) {
   const Slab slab = dt[0].slab();
   Time t = forward_in_time ? slab.start() : slab.end();
 
-  TimeSteppers::AdamsBashforthN ab4(4);
+  TimeSteppers::AdamsBashforth ab4(4);
 
   TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
   {
@@ -285,7 +284,7 @@ void check_lts_vts() {
 
   Time t = slab.start();
 
-  TimeSteppers::AdamsBashforthN ab4(4);
+  TimeSteppers::AdamsBashforth ab4(4);
 
   TimeSteppers::BoundaryHistory<NCd, NCd, NCd> history{4};
   {
@@ -342,12 +341,12 @@ void check_lts_vts() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary",
                   "[Unit][Time]") {
   // No local stepping
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
-    const TimeSteppers::AdamsBashforthN stepper(order);
+    const TimeSteppers::AdamsBashforth stepper(order);
     for (size_t start_points = 0; start_points < order; ++start_points) {
       INFO(start_points);
       const double epsilon = std::max(std::pow(1e-3, start_points + 1), 1e-14);
@@ -383,13 +382,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary",
   for (size_t order = 1; order < 9; ++order) {
     INFO(order);
     TimeStepperTestUtils::check_boundary_dense_output(
-        TimeSteppers::AdamsBashforthN(order));
+        TimeSteppers::AdamsBashforth(order));
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Reversal",
                   "[Unit][Time]") {
-  const TimeSteppers::AdamsBashforthN ab3(3);
+  const TimeSteppers::AdamsBashforth ab3(3);
 
   const auto f = [](const double t) {
     return 1. + t * (2. + t * (3. + t * 4.));
@@ -409,9 +408,9 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
   CHECK(y == approx(f(2. / 3.)));
 }
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth.Boundary.Reversal",
                   "[Unit][Time]") {
-  const TimeSteppers::AdamsBashforthN ab3(3);
+  const TimeSteppers::AdamsBashforth ab3(3);
 
   const auto f = [](const double t) {
     return 1. + t * (2. + t * (3. + t * 4.));

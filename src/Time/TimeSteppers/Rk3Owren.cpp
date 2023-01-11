@@ -1,22 +1,22 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/TimeSteppers/Cerk3.hpp"
+#include "Time/TimeSteppers/Rk3Owren.hpp"
 
 namespace TimeSteppers {
 
-size_t Cerk3::order() const { return 3; }
+size_t Rk3Owren::order() const { return 3; }
 
-size_t Cerk3::error_estimate_order() const { return 2; }
+size_t Rk3Owren::error_estimate_order() const { return 2; }
 
 // The stability polynomial is
 //
 //   p(z) = \sum_{n=0}^{stages-1} alpha_n z^n / n!,
 //
 // alpha_n=1.0 for n=1...(order-1).
-double Cerk3::stable_step() const { return 1.2563726633091645; }
+double Rk3Owren::stable_step() const { return 1.2563726633091645; }
 
-const RungeKutta::ButcherTableau& Cerk3::butcher_tableau() const {
+const RungeKutta::ButcherTableau& Rk3Owren::butcher_tableau() const {
   static const ButcherTableau tableau{
       // Substep times
       {{12, 23}, {4, 5}},
@@ -36,4 +36,4 @@ const RungeKutta::ButcherTableau& Cerk3::butcher_tableau() const {
 }
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::Cerk3::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID TimeSteppers::Rk3Owren::my_PUP_ID = 0;  // NOLINT

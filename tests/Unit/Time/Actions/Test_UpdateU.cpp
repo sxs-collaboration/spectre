@@ -23,7 +23,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -105,7 +105,7 @@ void test_integration() {
   };
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
   ActionTesting::emplace_component_and_initialize<
       component_with_default_variables>(
       &runner, 0, {time_step, false, 1., history_tag::type{3}});
@@ -173,7 +173,7 @@ void test_stepper_error() {
   const TimeDelta time_step = slab.duration() / 2;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::Rk3HesthavenSsp>()}};
   ActionTesting::emplace_component_and_initialize<component_with_stepper_error>(
       &runner, 0,
       {time_step, true, 1., history_tag::type{3}, 1234.5, 1234.5, false});
@@ -223,7 +223,7 @@ void test_stepper_error() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::RungeKutta3>();
+  Parallel::register_classes_with_charm<TimeSteppers::Rk3HesthavenSsp>();
 
   test_integration();
   test_stepper_error();

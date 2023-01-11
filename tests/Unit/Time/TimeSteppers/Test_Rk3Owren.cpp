@@ -6,11 +6,11 @@
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
-#include "Time/TimeSteppers/Cerk3.hpp"
+#include "Time/TimeSteppers/Rk3Owren.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 
-SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Cerk3", "[Unit][Time]") {
-  const TimeSteppers::Cerk3 stepper{};
+SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3Owren", "[Unit][Time]") {
+  const TimeSteppers::Rk3Owren stepper{};
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, 1.0, 1.0e-9);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, -1.0, 1.0e-9);
@@ -25,9 +25,10 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Cerk3", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 3_st);
 
-  TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Cerk3>("Cerk3");
+  TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::Rk3Owren>(
+      "Rk3Owren");
   test_serialization(stepper);
-  test_serialization_via_base<TimeStepper, TimeSteppers::Cerk3>();
+  test_serialization_via_base<TimeStepper, TimeSteppers::Rk3Owren>();
   // test operator !=
   CHECK_FALSE(stepper != stepper);
 }

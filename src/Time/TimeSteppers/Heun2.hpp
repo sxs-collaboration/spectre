@@ -13,7 +13,7 @@
 namespace TimeSteppers {
 /*!
  * \ingroup TimeSteppersGroup
- * \brief A third order continuous-extension RK method that provides 3rd-order
+ * \brief A second order continuous-extension RK method that provides 2nd-order
  * dense output.
  *
  * \f{eqnarray}{
@@ -30,24 +30,23 @@ namespace TimeSteppers {
  * k^{(i)}. \f}
  *
  * Here the coefficients \f$a_{ij}\f$, \f$b_i\f$, and \f$c_i\f$ are given
- * in \cite Owren1992 and \cite Gassner20114232. Note that \f$c_1 = 0\f$,
- * \f$s\f$ is the number of stages, and \f$\theta\f$ is the fraction of the
- * step. This is an FSAL stepper.
+ * in \cite Gassner20114232. Note that \f$c_1 = 0\f$, \f$s\f$ is the number
+ * of stages, and \f$\theta\f$ is the fraction of the step.
  *
- * The CFL factor/stable step size is 1.2563726633091645.
+ * The CFL factor/stable step size is 1.0.
  */
-class Cerk3 : public RungeKutta {
+class Heun2 : public RungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
-      "A 3rd-order continuous extension Runge-Kutta method."};
+      "Heun's method, a 2nd order Runge-Kutta method."};
 
-  Cerk3() = default;
-  Cerk3(const Cerk3&) = default;
-  Cerk3& operator=(const Cerk3&) = default;
-  Cerk3(Cerk3&&) = default;
-  Cerk3& operator=(Cerk3&&) = default;
-  ~Cerk3() override = default;
+  Heun2() = default;
+  Heun2(const Heun2&) = default;
+  Heun2& operator=(const Heun2&) = default;
+  Heun2(Heun2&&) = default;
+  Heun2& operator=(Heun2&&) = default;
+  ~Heun2() override = default;
 
   size_t order() const override;
 
@@ -55,19 +54,19 @@ class Cerk3 : public RungeKutta {
 
   double stable_step() const override;
 
-  WRAPPED_PUPable_decl_template(Cerk3);  // NOLINT
+  WRAPPED_PUPable_decl_template(Heun2);  // NOLINT
 
-  explicit Cerk3(CkMigrateMessage* /*unused*/) {}
+  explicit Heun2(CkMigrateMessage* /*unused*/) {}
 
  private:
   const ButcherTableau& butcher_tableau() const override;
 };
 
-inline bool constexpr operator==(const Cerk3& /*lhs*/, const Cerk3& /*rhs*/) {
+inline bool constexpr operator==(const Heun2& /*lhs*/, const Heun2& /*rhs*/) {
   return true;
 }
 
-inline bool constexpr operator!=(const Cerk3& /*lhs*/, const Cerk3& /*rhs*/) {
+inline bool constexpr operator!=(const Heun2& /*lhs*/, const Heun2& /*rhs*/) {
   return false;
 }
 }  // namespace TimeSteppers

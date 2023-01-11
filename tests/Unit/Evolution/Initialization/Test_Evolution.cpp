@@ -14,7 +14,7 @@
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -32,7 +32,7 @@ void test_gts() {
   const double initial_dt = 0.5;
   const double initial_slab_size = initial_dt;
   std::unique_ptr<TimeStepper> time_stepper =
-      std::make_unique<TimeSteppers::AdamsBashforthN>(5);
+      std::make_unique<TimeSteppers::AdamsBashforth>(5);
 
   const Slab initial_slab =
       Slab::with_duration_from_start(initial_time, initial_slab_size);
@@ -65,7 +65,7 @@ void test_lts() {
   const double initial_dt = 0.5;
   const double initial_slab_size = 4.5;
   std::unique_ptr<LtsTimeStepper> lts_time_stepper =
-      std::make_unique<TimeSteppers::AdamsBashforthN>(5);
+      std::make_unique<TimeSteppers::AdamsBashforth>(5);
   std::unique_ptr<StepController> step_controller =
       std::make_unique<StepControllers::BinaryFraction>();
 

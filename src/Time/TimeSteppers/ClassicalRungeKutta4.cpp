@@ -1,15 +1,15 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Time/TimeSteppers/RungeKutta4.hpp"
+#include "Time/TimeSteppers/ClassicalRungeKutta4.hpp"
 
 #include <utility>
 
 namespace TimeSteppers {
 
-size_t RungeKutta4::order() const { return 4; }
+size_t ClassicalRungeKutta4::order() const { return 4; }
 
-size_t RungeKutta4::error_estimate_order() const { return 3; }
+size_t ClassicalRungeKutta4::error_estimate_order() const { return 3; }
 
 // The growth function for RK4 is (e.g. page 60 of
 // http://www.staff.science.uu.nl/~frank011/Classes/numwisk/ch10.pdf
@@ -21,9 +21,10 @@ size_t RungeKutta4::error_estimate_order() const { return 3; }
 // RK1 (i.e. forward Euler) would be 1, RK4 has a stable step
 // determined by inserting mu->-2 dt into the above equation. Finding the
 // solutions with a numerical root find yields a stable step of about 1.39265.
-double RungeKutta4::stable_step() const { return 1.3926467817026411; }
+double ClassicalRungeKutta4::stable_step() const { return 1.3926467817026411; }
 
-const RungeKutta::ButcherTableau& RungeKutta4::butcher_tableau() const {
+const RungeKutta::ButcherTableau& ClassicalRungeKutta4::butcher_tableau()
+    const {
   // See (17.1.3) of Numerical Recipes 3rd Edition
   static const ButcherTableau tableau{
       // Substep times
@@ -47,7 +48,7 @@ const RungeKutta::ButcherTableau& RungeKutta4::butcher_tableau() const {
   return tableau;
 }
 
-const RungeKutta::ButcherTableau& RungeKutta4::error_tableau() const {
+const RungeKutta::ButcherTableau& ClassicalRungeKutta4::error_tableau() const {
   // The embedded Zonneveld 4(3) scheme adds an extra substep at 3/4
   // that is used only by the third-order error estimation scheme
   static const ButcherTableau tableau = [this]() {
@@ -70,4 +71,4 @@ const RungeKutta::ButcherTableau& RungeKutta4::error_tableau() const {
 }
 }  // namespace TimeSteppers
 
-PUP::able::PUP_ID TimeSteppers::RungeKutta4::my_PUP_ID = 0;  // NOLINT
+PUP::able::PUP_ID TimeSteppers::ClassicalRungeKutta4::my_PUP_ID = 0;  // NOLINT

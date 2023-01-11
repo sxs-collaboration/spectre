@@ -24,7 +24,7 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/AdamsBashforth.hpp"
 #include "Time/TimeSteppers/LtsTimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
@@ -169,29 +169,29 @@ void check(const bool time_runs_forward,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeStepSize", "[Unit][Time][Actions]") {
-  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforthN>();
+  Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
   Parallel::register_classes_with_charm<StepControllers::BinaryFraction>();
   Parallel::register_factory_classes_with_charm<Metavariables<>>();
   const Slab slab(-5., -2.);
   const double slab_length = slab.duration().value();
   for (auto reject_step : {true, false}) {
-    check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
           slab.start() + slab.duration() / 4, slab_length / 5.,
           slab.duration() / 8, reject_step);
-    check(true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+    check(true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
           slab.start() + slab.duration() / 4, slab_length, slab.duration() / 4,
           reject_step);
-    check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1),
           slab.end() - slab.duration() / 4, slab_length / 5.,
           -slab.duration() / 8, reject_step);
-    check(false, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+    check(false, std::make_unique<TimeSteppers::AdamsBashforth>(1),
           slab.end() - slab.duration() / 4, slab_length, -slab.duration() / 4,
           reject_step);
   }
   CHECK_THROWS_WITH(
       ([&slab, &slab_length]() {
         check<tmpl::list<StepChoosers::Constant<StepChooserUse::LtsStep>>>(
-            true, std::make_unique<TimeSteppers::AdamsBashforthN>(1),
+            true, std::make_unique<TimeSteppers::AdamsBashforth>(1),
             slab.start() + slab.duration() / 4, slab_length / 5.,
             slab.duration() / 8, true);
       })(),

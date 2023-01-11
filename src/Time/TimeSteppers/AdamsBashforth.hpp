@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class AdamsBashforthN
-
 #pragma once
 
 #include <vector>
@@ -189,7 +186,7 @@ namespace TimeSteppers {
  * is the \f$j\f$th coefficient for an Adams-Bashforth step over the
  * union times from step \f$n\f$ to step \f$n+1\f$.
  */
-class AdamsBashforthN : public LtsTimeStepper {
+class AdamsBashforth : public LtsTimeStepper {
  public:
   static constexpr const size_t maximum_order = 8;
 
@@ -203,13 +200,13 @@ class AdamsBashforthN : public LtsTimeStepper {
   static constexpr Options::String help = {
       "An Adams-Bashforth Nth order time-stepper."};
 
-  AdamsBashforthN() = default;
-  explicit AdamsBashforthN(size_t order);
-  AdamsBashforthN(const AdamsBashforthN&) = default;
-  AdamsBashforthN& operator=(const AdamsBashforthN&) = default;
-  AdamsBashforthN(AdamsBashforthN&&) = default;
-  AdamsBashforthN& operator=(AdamsBashforthN&&) = default;
-  ~AdamsBashforthN() override = default;
+  AdamsBashforth() = default;
+  explicit AdamsBashforth(size_t order);
+  AdamsBashforth(const AdamsBashforth&) = default;
+  AdamsBashforth& operator=(const AdamsBashforth&) = default;
+  AdamsBashforth(AdamsBashforth&&) = default;
+  AdamsBashforth& operator=(AdamsBashforth&&) = default;
+  ~AdamsBashforth() override = default;
 
   size_t order() const override;
 
@@ -222,16 +219,15 @@ class AdamsBashforthN : public LtsTimeStepper {
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const override;
 
-  WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
+  WRAPPED_PUPable_decl_template(AdamsBashforth);  // NOLINT
 
-  explicit AdamsBashforthN(CkMigrateMessage* /*unused*/) {}
+  explicit AdamsBashforth(CkMigrateMessage* /*unused*/) {}
 
   // clang-tidy: do not pass by non-const reference
   void pup(PUP::er& p) override;  // NOLINT
 
  private:
-  friend bool operator==(const AdamsBashforthN& lhs,
-                         const AdamsBashforthN& rhs);
+  friend bool operator==(const AdamsBashforth& lhs, const AdamsBashforth& rhs);
 
   // Some of the private methods take a parameter of type "Delta" or
   // "TimeType".  Delta is expected to be a TimeDelta or an
@@ -285,5 +281,5 @@ class AdamsBashforthN : public LtsTimeStepper {
   size_t order_ = 3;
 };
 
-bool operator!=(const AdamsBashforthN& lhs, const AdamsBashforthN& rhs);
+bool operator!=(const AdamsBashforth& lhs, const AdamsBashforth& rhs);
 }  // namespace TimeSteppers

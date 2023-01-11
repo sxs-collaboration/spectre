@@ -32,7 +32,7 @@
 #include "NumericalAlgorithms/Interpolation/CubicSpanInterpolator.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Time/Tags.hpp"
-#include "Time/TimeSteppers/RungeKutta3.hpp"
+#include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Literals.hpp"
@@ -161,7 +161,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::test_option_tag_factory_creation<
       Cce::OptionTags::CceEvolutionPrefix<
           ::OptionTags::TimeStepper<TimeStepper>>,
-      TimeSteppers::RungeKutta3>("RungeKutta3:");
+      TimeSteppers::Rk3HesthavenSsp>("Rk3HesthavenSsp:");
 
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
