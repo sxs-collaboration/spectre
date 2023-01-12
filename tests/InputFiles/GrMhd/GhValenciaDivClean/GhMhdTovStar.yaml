@@ -119,6 +119,13 @@ SpatialDiscretization:
     FilterOptions:
       SpacetimeDissipation: 0.1
 
+Filtering:
+  ExpFilter0:
+    Alpha: 36
+    HalfPower: 64
+    DisableForDebugging: false
+
+
 EventsAndTriggers:
   - - Slabs:
         EvenlySpaced:

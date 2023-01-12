@@ -107,6 +107,8 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Formulation.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/Algorithms/AlgorithmSingleton.hpp"
@@ -526,6 +528,10 @@ struct GhValenciaDivCleanTemplateBase<
       evolution::dg::subcell::Actions::SelectNumericalMethod,
 
       Actions::Label<evolution::dg::subcell::Actions::Labels::BeginDg>,
+      dg::Actions::Filter<::Filters::Exponential<0>,
+                          tmpl::list<gr::Tags::SpacetimeMetric<3>,
+                                     GeneralizedHarmonic::Tags::Pi<3>,
+                                     GeneralizedHarmonic::Tags::Phi<3>>>,
       evolution::dg::Actions::ComputeTimeDerivative<
           volume_dim, system, AllStepChoosers, local_time_stepping>,
       evolution::dg::Actions::ApplyBoundaryCorrectionsToTimeDerivative<
