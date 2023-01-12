@@ -24,7 +24,7 @@ namespace fd::reconstruction {
 namespace {
 
 template <size_t Dim, size_t NonlinearWeightExponent,
-          typename FallbackReconstructor>
+          typename FallbackReconstructor, bool UseExteriorCell>
 void test_function_pointers(const FallbackReconstructorType fallback_recons) {
   const auto function_ptrs = fd::reconstruction::wcns5z_function_pointers<Dim>(
       NonlinearWeightExponent, fallback_recons);
@@ -40,14 +40,14 @@ void test_function_pointers(const FallbackReconstructorType fallback_recons) {
                 Side::Lower,
                 ::fd::reconstruction::detail::Wcns5zReconstructor<
                     NonlinearWeightExponent, FallbackReconstructor>,
-                Dim>));
+                UseExteriorCell, Dim>));
   CHECK(get<2>(function_ptrs) ==
         static_cast<function_type>(
             &reconstruct_neighbor<
                 Side::Upper,
                 ::fd::reconstruction::detail::Wcns5zReconstructor<
                     NonlinearWeightExponent, FallbackReconstructor>,
-                Dim>));
+                UseExteriorCell, Dim>));
 }
 
 template <size_t Dim, class FallbackReconstructor>
@@ -96,6 +96,33 @@ void test(const FallbackReconstructorType fallback_recons) {
               max_number_of_extrema);
         }
       };
+  const auto recons_neighbor_data_interior_cell =
+      [](const gsl::not_null<DataVector*> face_data,
+         const DataVector& volume_data, const DataVector& neighbor_data,
+         const Index<Dim>& volume_extents, const Index<Dim>& ghost_data_extents,
+         const Direction<Dim>& direction_to_reconstruct) {
+        const size_t max_number_of_extrema = 1;
+        const double epsilon = 2.0e-16;
+
+        if (direction_to_reconstruct.side() == Side::Upper) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Upper,
+              fd::reconstruction::detail::Wcns5zReconstructor<
+                  2, FallbackReconstructor>,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct, epsilon,
+                     max_number_of_extrema);
+        }
+        if (direction_to_reconstruct.side() == Side::Lower) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Lower,
+              fd::reconstruction::detail::Wcns5zReconstructor<
+                  2, FallbackReconstructor>,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct, epsilon,
+                     max_number_of_extrema);
+        }
+      };
 
   // if there are more than one extrema in any of finite difference stencils,
   // reconstruction would be switched to FallbackReconstructor which may be only
@@ -107,6 +134,8 @@ void test(const FallbackReconstructorType fallback_recons) {
   // Wcns5z if not switched to MC.
   TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
       Dim>(2, 5, 5, recons, recons_neighbor_data);
+  TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
+      Dim>(2, 5, 5, recons, recons_neighbor_data_interior_cell);
 
   if (fallback_recons == FallbackReconstructorType::Minmod) {
     TestHelpers::fd::reconstruction::test_with_python(
@@ -122,7 +151,7 @@ void test(const FallbackReconstructorType fallback_recons) {
         recons_neighbor_data);
   }
 
-  test_function_pointers<Dim, 2, FallbackReconstructor>(fallback_recons);
+  test_function_pointers<Dim, 2, FallbackReconstructor, true>(fallback_recons);
 
   // check for failing case (nonlinear weight exponent = 3)
   CHECK_THROWS_WITH(

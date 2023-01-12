@@ -52,8 +52,30 @@ void test() {
               ghost_data_extents, direction_to_reconstruct);
         }
       };
+  const auto recons_neighbor_data_interior_cell =
+      [](const gsl::not_null<DataVector*> face_data,
+         const DataVector& volume_data, const DataVector& neighbor_data,
+         const Index<Dim>& volume_extents, const Index<Dim>& ghost_data_extents,
+         const Direction<Dim>& direction_to_reconstruct) {
+        if (direction_to_reconstruct.side() == Side::Upper) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Upper,
+              fd::reconstruction::detail::MonotonisedCentralReconstructor,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct);
+        }
+        if (direction_to_reconstruct.side() == Side::Lower) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Lower,
+              fd::reconstruction::detail::MonotonisedCentralReconstructor,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct);
+        }
+      };
   TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
       Dim>(1, 4, 3, recons, recons_neighbor_data);
+  TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
+      Dim>(1, 4, 3, recons, recons_neighbor_data_interior_cell);
   TestHelpers::fd::reconstruction::test_with_python(
       Index<Dim>{4}, 3, "MonotonisedCentral", "test_monotonised_central",
       recons, recons_neighbor_data);

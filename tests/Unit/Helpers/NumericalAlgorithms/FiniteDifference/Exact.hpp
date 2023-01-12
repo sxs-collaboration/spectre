@@ -198,6 +198,9 @@ void test_reconstruction_is_exact_if_in_basis(
                                 ghost_data_extents, upper_direction);
     for (SliceIterator si(extents_with_faces, dim, extents_with_faces[dim] - 1);
          si; ++si) {
+      INFO("Upper side");
+      CAPTURE(si.slice_offset());
+      CAPTURE(si.volume_offset());
       CHECK(approx(upper_face_var1[si.slice_offset()]) ==
             expected_var1[si.volume_offset()]);
       CHECK(approx(upper_face_var2[si.slice_offset()]) ==
@@ -221,6 +224,9 @@ void test_reconstruction_is_exact_if_in_basis(
                                 lower_neighbor_var2, mesh.extents(),
                                 ghost_data_extents, lower_direction);
     for (SliceIterator si(extents_with_faces, dim, 0); si; ++si) {
+      INFO("Lower side");
+      CAPTURE(si.slice_offset());
+      CAPTURE(si.volume_offset());
       CHECK(approx(lower_face_var1[si.slice_offset()]) ==
             expected_var1[si.volume_offset()]);
       CHECK(approx(lower_face_var2[si.slice_offset()]) ==

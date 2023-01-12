@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/FiniteDifference/AoWeno.hpp"
 
 namespace {
-template <size_t NonlinearWeightExponent, size_t Dim>
+template <size_t NonlinearWeightExponent, size_t Dim, bool UseExteriorCell>
 void test_function_pointers() {
   const auto function_ptrs =
       fd::reconstruction::aoweno_53_function_pointers<Dim>(
@@ -32,14 +32,14 @@ void test_function_pointers() {
                 Side::Lower,
                 ::fd::reconstruction::detail::AoWeno53Reconstructor<
                     NonlinearWeightExponent>,
-                Dim>));
+                UseExteriorCell, Dim>));
   CHECK(get<2>(function_ptrs) ==
         static_cast<function_type>(
             &fd::reconstruction::reconstruct_neighbor<
                 Side::Upper,
                 ::fd::reconstruction::detail::AoWeno53Reconstructor<
                     NonlinearWeightExponent>,
-                Dim>));
+                UseExteriorCell, Dim>));
 }
 
 template <size_t Dim>
@@ -135,16 +135,42 @@ void test() {
               epsilon);
         }
       };
+  const auto recons_neighbor_data_5th_order_only_interior_cell =
+      [](const gsl::not_null<DataVector*> face_data,
+         const DataVector& volume_data, const DataVector& neighbor_data,
+         const Index<Dim>& volume_extents, const Index<Dim>& ghost_data_extents,
+         const Direction<Dim>& direction_to_reconstruct) {
+        const double gamma_hi = 1.0;
+        const double gamma_lo = 0.999;
+        const double epsilon = 1.0e-12;
+        if (direction_to_reconstruct.side() == Side::Upper) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Upper, fd::reconstruction::detail::AoWeno53Reconstructor<8>,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct, gamma_hi,
+                     gamma_lo, epsilon);
+        }
+        if (direction_to_reconstruct.side() == Side::Lower) {
+          fd::reconstruction::reconstruct_neighbor<
+              Side::Lower, fd::reconstruction::detail::AoWeno53Reconstructor<8>,
+              false>(face_data, volume_data, neighbor_data, volume_extents,
+                     ghost_data_extents, direction_to_reconstruct, gamma_hi,
+                     gamma_lo, epsilon);
+        }
+      };
 
   TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
       Dim>(4, 8, 5, recons_5th_order_only, recons_neighbor_data_5th_order_only);
+  TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
+      Dim>(4, 8, 5, recons_5th_order_only,
+           recons_neighbor_data_5th_order_only_interior_cell);
 
-  test_function_pointers<2, Dim>();
-  test_function_pointers<4, Dim>();
-  test_function_pointers<6, Dim>();
-  test_function_pointers<8, Dim>();
-  test_function_pointers<10, Dim>();
-  test_function_pointers<12, Dim>();
+  test_function_pointers<2, Dim, true>();
+  test_function_pointers<4, Dim, true>();
+  test_function_pointers<6, Dim, true>();
+  test_function_pointers<8, Dim, true>();
+  test_function_pointers<10, Dim, true>();
+  test_function_pointers<12, Dim, true>();
 }
 }  // namespace
 

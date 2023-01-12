@@ -40,6 +40,7 @@ auto generate_upper_volume_index_for_u_to_reconstruct_impl(
 }
 
 template <Side UpperLower, size_t DimToReplace, size_t Dim,
+          size_t GhostOffset = 0,
           size_t... VolumeIndices, size_t... GhostIndices>
 auto u_to_reconstruct_impl(const DataVector& volume_data,
                            const DataVector& neighbor_data,
@@ -51,7 +52,7 @@ auto u_to_reconstruct_impl(const DataVector& volume_data,
   if constexpr (UpperLower == Side::Lower) {
     return std::array{
         neighbor_data[collapsed_index(
-            generate_index_for_u_to_reconstruct_impl<GhostIndices,
+            generate_index_for_u_to_reconstruct_impl<GhostIndices + GhostOffset,
                                                      DimToReplace>(
                 indices, std::make_index_sequence<Dim>{}),
             ghost_data_extents)]...,
@@ -344,7 +345,8 @@ void reconstruct(
 }
 }  // namespace detail
 
-template <Side LowerOrUpperSide, typename Reconstructor, size_t Dim,
+template <Side LowerOrUpperSide, typename Reconstructor, bool UseExteriorCell,
+          size_t NumberOfGhostPoints, size_t Dim,
           typename... ArgsForReconstructor>
 void reconstruct_neighbor(
     const gsl::not_null<DataVector*> face_data, const DataVector& volume_data,
@@ -365,7 +367,20 @@ void reconstruct_neighbor(
                     Reconstructor::stencil_width() == 9,
                 "currently only support stencil widths of 3, 5, 7, and 9.");
 
-  constexpr size_t index_of_pointwise = LowerOrUpperSide == Side::Upper ? 0 : 1;
+  constexpr size_t index_of_pointwise =
+      (UseExteriorCell ? (LowerOrUpperSide == Side::Upper ? 0 : 1)
+                       : (LowerOrUpperSide == Side::Upper ? 1 : 0));
+  constexpr size_t volume_index_offset = (UseExteriorCell ? 0 : 1);
+  constexpr size_t ghost_index_offset = (UseExteriorCell ? 1 : 0);
+  // ghost_zone_offset is the offset at the lower boundary that arises from
+  // using the interior cell value rather than the exterior cell
+  // value. E.g. for MC with 2 ghost zones this is 1, but for WCNS5Z with 2
+  // ghost zones (e.g. MC in the interior) this is 0.
+  constexpr size_t ghost_zone_offset =
+      (UseExteriorCell
+           ? 0
+           : (NumberOfGhostPoints - Reconstructor::stencil_width() / 2));
+
   constexpr size_t offset_into_u_to_reconstruct =
       (Reconstructor::stencil_width() - 1) / 2;
   std::array<double, Reconstructor::stencil_width()> u_to_reconstruct{};
@@ -373,40 +388,23 @@ void reconstruct_neighbor(
     (void)ghost_data_extents;
     (void)direction_to_reconstruct;
 
-    constexpr bool upper_side = LowerOrUpperSide == Side::Upper;
-    const size_t volume_index = upper_side ? volume_extents[0] - 1 : 0;
-    if constexpr (Reconstructor::stencil_width() == 3) {
+    if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
       u_to_reconstruct =
-          std::array{upper_side ? volume_data[volume_index] : neighbor_data[0],
-                     upper_side ? neighbor_data[0] : neighbor_data[1],
-                     upper_side ? neighbor_data[1] : volume_data[volume_index]};
-    } else if constexpr (Reconstructor::stencil_width() == 5) {
-      u_to_reconstruct = std::array{
-          upper_side ? volume_data[volume_index - 1] : neighbor_data[0],
-          upper_side ? volume_data[volume_index] : neighbor_data[1],
-          upper_side ? neighbor_data[0] : neighbor_data[2],
-          upper_side ? neighbor_data[1] : volume_data[volume_index],
-          upper_side ? neighbor_data[2] : volume_data[volume_index + 1]};
-    } else if constexpr (Reconstructor::stencil_width() == 7) {
-      u_to_reconstruct = std::array{
-          upper_side ? volume_data[volume_index - 2] : neighbor_data[0],
-          upper_side ? volume_data[volume_index - 1] : neighbor_data[1],
-          upper_side ? volume_data[volume_index] : neighbor_data[2],
-          upper_side ? neighbor_data[0] : neighbor_data[3],
-          upper_side ? neighbor_data[1] : volume_data[volume_index],
-          upper_side ? neighbor_data[2] : volume_data[volume_index + 1],
-          upper_side ? neighbor_data[3] : volume_data[volume_index + 2]};
-    } else if constexpr (Reconstructor::stencil_width() == 9) {
-      u_to_reconstruct = std::array{
-          upper_side ? volume_data[volume_index - 3] : neighbor_data[0],
-          upper_side ? volume_data[volume_index - 2] : neighbor_data[1],
-          upper_side ? volume_data[volume_index - 1] : neighbor_data[2],
-          upper_side ? volume_data[volume_index] : neighbor_data[3],
-          upper_side ? neighbor_data[0] : neighbor_data[4],
-          upper_side ? neighbor_data[1] : volume_data[volume_index],
-          upper_side ? neighbor_data[2] : volume_data[volume_index + 1],
-          upper_side ? neighbor_data[3] : volume_data[volume_index + 2],
-          upper_side ? neighbor_data[4] : volume_data[volume_index + 3]};
+          detail::u_to_reconstruct_impl<Side::Lower, 0, Dim, ghost_zone_offset>(
+              volume_data, neighbor_data, {std::numeric_limits<size_t>::max()},
+              volume_extents, ghost_data_extents,
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
+    } else if (direction_to_reconstruct == Direction<Dim>::upper_xi()) {
+      u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Upper, 0, Dim>(
+          volume_data, neighbor_data, {std::numeric_limits<size_t>::max()},
+          volume_extents, ghost_data_extents,
+          std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                   volume_index_offset>{},
+          std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                   ghost_index_offset>{});
     }
     (*face_data)[0] = Reconstructor::pointwise(
         u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -415,11 +413,14 @@ void reconstruct_neighbor(
     (void)ghost_data_extents;
     if (direction_to_reconstruct == Direction<Dim>::lower_xi()) {
       for (size_t j = 0; j < volume_extents[1]; ++j) {
-        u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 0, Dim>(
+        u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 0, Dim,
+                                                         ghost_zone_offset>(
             volume_data, neighbor_data, {std::numeric_limits<size_t>::max(), j},
             volume_extents, ghost_data_extents,
-            std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
-            std::make_index_sequence<Reconstructor::stencil_width() / 2 + 1>{});
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                     volume_index_offset>{},
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                     ghost_index_offset>{});
         (*face_data)[j] = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...)[index_of_pointwise];
@@ -429,19 +430,24 @@ void reconstruct_neighbor(
         u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Upper, 0, Dim>(
             volume_data, neighbor_data, {std::numeric_limits<size_t>::max(), j},
             volume_extents, ghost_data_extents,
-            std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
-            std::make_index_sequence<Reconstructor::stencil_width() / 2 + 1>{});
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                           volume_index_offset>{},
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                           ghost_index_offset>{});
         (*face_data)[j] = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...)[index_of_pointwise];
       }
     } else if (direction_to_reconstruct == Direction<Dim>::lower_eta()) {
       for (size_t i = 0; i < volume_extents[0]; ++i) {
-        u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 1, Dim>(
+        u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 1, Dim,
+                                                         ghost_zone_offset>(
             volume_data, neighbor_data, {i, std::numeric_limits<size_t>::max()},
             volume_extents, ghost_data_extents,
-            std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
-            std::make_index_sequence<Reconstructor::stencil_width() / 2 + 1>{});
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                     volume_index_offset>{},
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                     ghost_index_offset>{});
         (*face_data)[i] = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...)[index_of_pointwise];
@@ -451,8 +457,10 @@ void reconstruct_neighbor(
         u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Upper, 1, Dim>(
             volume_data, neighbor_data, {i, std::numeric_limits<size_t>::max()},
             volume_extents, ghost_data_extents,
-            std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
-            std::make_index_sequence<Reconstructor::stencil_width() / 2 + 1>{});
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                           volume_index_offset>{},
+            std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                           ghost_index_offset>{});
         (*face_data)[i] = Reconstructor::pointwise(
             u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
             args_for_reconstructor...)[index_of_pointwise];
@@ -463,13 +471,15 @@ void reconstruct_neighbor(
       const Index<Dim - 1> face_extents = volume_extents.slice_away(0);
       for (size_t k = 0; k < volume_extents[2]; ++k) {
         for (size_t j = 0; j < volume_extents[1]; ++j) {
-          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 0, Dim>(
+          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 0, Dim,
+                                                           ghost_zone_offset>(
               volume_data, neighbor_data,
               {std::numeric_limits<size_t>::max(), j, k}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -484,9 +494,10 @@ void reconstruct_neighbor(
               volume_data, neighbor_data,
               {std::numeric_limits<size_t>::max(), j, k}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(j, k), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -497,13 +508,15 @@ void reconstruct_neighbor(
       const Index<Dim - 1> face_extents = volume_extents.slice_away(1);
       for (size_t k = 0; k < volume_extents[2]; ++k) {
         for (size_t i = 0; i < volume_extents[0]; ++i) {
-          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 1, Dim>(
+          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 1, Dim,
+                                                           ghost_zone_offset>(
               volume_data, neighbor_data,
               {i, std::numeric_limits<size_t>::max(), k}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -518,9 +531,10 @@ void reconstruct_neighbor(
               volume_data, neighbor_data,
               {i, std::numeric_limits<size_t>::max(), k}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(i, k), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -531,13 +545,15 @@ void reconstruct_neighbor(
       const Index<Dim - 1> face_extents = volume_extents.slice_away(2);
       for (size_t j = 0; j < volume_extents[1]; ++j) {
         for (size_t i = 0; i < volume_extents[0]; ++i) {
-          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 2, Dim>(
+          u_to_reconstruct = detail::u_to_reconstruct_impl<Side::Lower, 2, Dim,
+                                                           ghost_zone_offset>(
               volume_data, neighbor_data,
               {i, j, std::numeric_limits<size_t>::max()}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,
@@ -552,9 +568,10 @@ void reconstruct_neighbor(
               volume_data, neighbor_data,
               {i, j, std::numeric_limits<size_t>::max()}, volume_extents,
               ghost_data_extents,
-              std::make_index_sequence<Reconstructor::stencil_width() / 2>{},
               std::make_index_sequence<Reconstructor::stencil_width() / 2 +
-                                       1>{});
+                                       volume_index_offset>{},
+              std::make_index_sequence<Reconstructor::stencil_width() / 2 +
+                                       ghost_index_offset>{});
           (*face_data)[collapsed_index(Index<Dim - 1>(i, j), face_extents)] =
               Reconstructor::pointwise(
                   u_to_reconstruct.data() + offset_into_u_to_reconstruct, 1,

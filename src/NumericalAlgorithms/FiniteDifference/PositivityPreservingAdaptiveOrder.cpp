@@ -49,14 +49,14 @@ pointer_return_type<Dim> function_pointer() {
                   PositivityPreservingAdaptiveOrderReconstructor<
                       LowOrderReconstructor, PositivityPreserving, Use9thOrder,
                       Use7thOrder>,
-              Dim>,
+              true, Dim>,
           &::fd::reconstruction::reconstruct_neighbor<
               Side::Upper,
               ::fd::reconstruction::detail::
                   PositivityPreservingAdaptiveOrderReconstructor<
                       LowOrderReconstructor, PositivityPreserving, Use9thOrder,
                       Use7thOrder>,
-              Dim>};
+              true, Dim>};
 }
 
 template <bool PositivityPreserving, bool Use9thOrder, bool Use7thOrder,
@@ -165,13 +165,15 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false), (true, false),
 #undef INSTANTIATION
 
 #define SIDE(data) BOOST_PP_TUPLE_ELEM(5, data)
+#define EXTERIOR_CELL(data) BOOST_PP_TUPLE_ELEM(6, data)
 
 #define INSTANTIATION(r, data)                                                 \
   template void reconstruct_neighbor<                                          \
       SIDE(data),                                                              \
       detail::PositivityPreservingAdaptiveOrderReconstructor<                  \
           FALLBACK_RECONSTRUCTOR(data), POSITIVITY_PRESERVING(data),           \
-          USE_9TH_ORDER(data), USE_7TH_ORDER(data)>>(                          \
+          USE_9TH_ORDER(data), USE_7TH_ORDER(data)>,                           \
+      EXTERIOR_CELL(data)>(                                                    \
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
@@ -183,7 +185,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (true, false), (true, false),
                         (true, false),
                         (detail::MinmodReconstructor,
                          detail::MonotonisedCentralReconstructor),
-                        (Side::Upper, Side::Lower))
+                        (Side::Upper, Side::Lower), (true, false))
 
 #undef INSTANTIATION
 #undef SIDE
