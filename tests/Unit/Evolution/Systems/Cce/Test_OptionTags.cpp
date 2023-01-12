@@ -48,6 +48,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       "ScriOutputDensity");
   TestHelpers::db::test_simple_tag<Cce::Tags::H5WorldtubeBoundaryDataManager>(
       "H5WorldtubeBoundaryDataManager");
+  TestHelpers::db::test_simple_tag<Cce::Tags::FilePrefix>("FilePrefix");
   TestHelpers::db::test_simple_tag<Cce::Tags::LMax>("LMax");
   TestHelpers::db::test_simple_tag<Cce::Tags::NumberOfRadialPoints>(
       "NumberOfRadialPoints");
@@ -82,6 +83,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
       Cce::Tags::CceEvolutionPrefix<::Tags::TimeStepper<TimeStepper>>>(
       "TimeStepper");
 
+  CHECK(
+      TestHelpers::test_option_tag<Cce::OptionTags::BondiSachsOutputFilePrefix>(
+          "Shrek") == "Shrek");
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::FilterLMax>("7") == 7_st);
   CHECK(TestHelpers::test_option_tag<Cce::OptionTags::RadialFilterAlpha>(
@@ -176,6 +180,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             false, true, std::nullopt)
             ->get_l_max() == 8);
 
+  CHECK(Cce::Tags::FilePrefix::create_from_options("Shrek 2") == "Shrek 2");
   CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
   CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
 

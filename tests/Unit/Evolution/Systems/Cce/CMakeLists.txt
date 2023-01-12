@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_AnalyticBoundaryDataManager.cpp
   Test_BoundaryData.cpp
   Test_BoundaryDataTags.cpp
+  Test_DumpBondiSachsOnWorldtube.cpp
   Test_Equations.cpp
   Test_GaugeTransformBoundaryData.cpp
   Test_InitializeCce.cpp
