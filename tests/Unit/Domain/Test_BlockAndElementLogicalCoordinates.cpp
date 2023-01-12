@@ -247,6 +247,47 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
                           block_coords[s]);
   }
 
+  // Map to distorted coords
+  // For this test, we test distorted coords only if the first block has
+  // a distorted frame.  For this test, either all blocks have a distorted
+  // frame or none of them do.
+  if(domain.blocks().begin()->has_distorted_frame()) {
+    const auto distorted_coords = [&n_pts, &domain, &block_ids, &block_coords,
+                                   &time, &functions_of_time]() {
+      tnsr::I<DataVector, Dim, Frame::Distorted> coords(n_pts);
+      for (size_t s = 0; s < n_pts; ++s) {
+        tnsr::I<double, Dim, Frame::Distorted> coord_one_point{};
+        if (domain.blocks()[block_ids[s]].is_time_dependent()) {
+          coord_one_point =
+              domain.blocks()[block_ids[s]].moving_mesh_grid_to_distorted_map()(
+                  domain.blocks()[block_ids[s]]
+                      .moving_mesh_logical_to_grid_map()(block_coords[s]),
+                  time, functions_of_time);
+        } else {
+          // time-independent maps have identical distorted and inertial frames.
+          const tnsr::I<double, Dim, Frame::Inertial> coord_one_point_inertial =
+              domain.blocks()[block_ids[s]].stationary_map()(block_coords[s]);
+          for (size_t d = 0; d < Dim; ++d) {
+            coord_one_point.get(d) = coord_one_point_inertial.get(d);
+          }
+        }
+        for (size_t d = 0; d < Dim; ++d) {
+          coords.get(d)[s] = coord_one_point.get(d);
+        }
+      }
+      return coords;
+    }();
+
+    block_logical_result = block_logical_coordinates(domain, distorted_coords,
+                                                     time, functions_of_time);
+    test_serialization(block_logical_result);
+    for (size_t s = 0; s < n_pts; ++s) {
+      CHECK(block_logical_result[s].value().id.get_index() == block_ids[s]);
+      CHECK_ITERABLE_APPROX(block_logical_result[s].value().data,
+                            block_coords[s]);
+    }
+  }
+
   // Map to grid coords
   const auto grid_coords = [&n_pts, &domain, &block_ids, &block_coords]() {
     tnsr::I<DataVector, Dim, Frame::Grid> coords(n_pts);
@@ -307,6 +348,23 @@ void fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(
                                                              functions_of_time);
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts, 0.1,
                                                              functions_of_time);
+}
+
+void fuzzy_test_block_and_element_logical_coordinates_distorted_brick(
+    const size_t n_pts) {
+  const auto uniform_translation =
+      domain::creators::time_dependence::UniformTranslation<3>(
+          0.0, {{0.1, 0.2, 0.3}}, {{-0.2, -0.1, -0.2}});
+  const auto brick = domain::creators::Brick(
+      {{-0.1, -0.2, -0.3}}, {{0.1, 0.2, 0.3}}, {{0, 0, 0}}, {{3, 3, 3}},
+      {{false, false, false}}, uniform_translation.get_clone());
+  const auto domain = brick.create_domain();
+  const auto functions_of_time = uniform_translation.functions_of_time();
+  // Test at two different times.
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(
+      domain, n_pts, 0.0, functions_of_time);
+  fuzzy_test_block_and_element_logical_coordinates_unrefined(
+      domain, n_pts, 0.1, functions_of_time);
 }
 
 void fuzzy_test_block_and_element_logical_coordinates3(const size_t n_pts) {
@@ -717,6 +775,7 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates1(0);
   fuzzy_test_block_and_element_logical_coordinates_shell(20);
   fuzzy_test_block_and_element_logical_coordinates_time_dependent_brick(20);
+  fuzzy_test_block_and_element_logical_coordinates_distorted_brick(20);
   test_block_logical_coordinates1fail();
   test_element_ids_are_uniquely_determined();
   test_block_logical_coordinates_with_roundoff_error();

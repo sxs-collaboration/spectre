@@ -42,6 +42,14 @@ class Domain;
 /// error_. Therefore, be advised to use the logical coordinates returned by
 /// this function, which are guaranteed to be in [-1, 1] and can be safely
 /// passed along to `element_logical_coordinates`.
+///
+/// \warning `block_logical_coordinates` with x in
+/// `::Frame::Distorted` ignores all `Block`s that lack a distorted
+/// frame, and it will return std::nullopt for points that lie outside
+/// all distorted-frame-endowed `Block`s. This is what is expected for
+/// typical use cases.  This means that `block_logical_coordinates`
+/// does not assume that grid and distorted frames are equal in
+/// `Block`s that lack a distorted frame.
 template <size_t Dim, typename Frame>
 auto block_logical_coordinates(
     const Domain<Dim>& domain, const tnsr::I<DataVector, Dim, Frame>& x,
