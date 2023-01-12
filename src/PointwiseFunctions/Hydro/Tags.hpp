@@ -45,6 +45,12 @@ struct ComovingMagneticFieldSquared : db::SimpleTag {
   using type = Scalar<DataType>;
 };
 
+/// The magnitude of the comoving magnetic field, \f$\sqrt{b^\mu b_\mu}\f$
+template <typename DataType>
+struct ComovingMagneticFieldMagnitude : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
 /// The divergence-cleaning field \f$\Phi\f$.
 template <typename DataType>
 struct DivergenceCleaningField : db::SimpleTag {

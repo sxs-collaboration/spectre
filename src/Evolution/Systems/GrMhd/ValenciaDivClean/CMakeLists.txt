@@ -9,6 +9,7 @@ spectre_target_sources(
   ${LIBRARY}
   PRIVATE
   Characteristics.cpp
+  ComovingMagneticFieldMagnitude.cpp
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
   Flattener.cpp
@@ -28,6 +29,7 @@ spectre_target_headers(
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
   Characteristics.hpp
+  ComovingMagneticFieldMagnitude.hpp
   ConservativeFromPrimitive.hpp
   FixConservatives.hpp
   Flattener.hpp

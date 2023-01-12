@@ -54,6 +54,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryConditions/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/BoundaryCorrections/RegisterDerived.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/ComovingMagneticFieldMagnitude.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Factory.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/RegisterDerivedWithCharm.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FiniteDifference/Tag.hpp"
@@ -239,6 +240,8 @@ struct EvolutionMetavars {
   using observe_fields = tmpl::push_back<
       tmpl::append<typename system::variables_tag::tags_list,
                    typename system::primitive_variables_tag::tags_list,
+                   tmpl::list<grmhd::ValenciaDivClean::Tags::
+                                  ComovingMagneticFieldMagnitudeCompute>,
                    error_tags,
                    tmpl::conditional_t<
                        use_dg_subcell,

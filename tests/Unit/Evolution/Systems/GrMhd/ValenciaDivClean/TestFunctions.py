@@ -114,3 +114,14 @@ def tilde_phi(rest_mass_density, electron_fraction, specific_internal_energy,
 
 
 # End functions for testing ConservativeFromPrimitive.cpp
+
+
+# Functions for testing ComovingMagneticFieldMagnitude.cpp
+def comoving_b_magnitude(magnetic_field, spatial_velocity, lorentz_factor,
+                         spatial_metric):
+    return np.sqrt(
+        b_squared(magnetic_field, spatial_metric) / lorentz_factor**2 +
+        b_dot_v(magnetic_field, spatial_velocity, spatial_metric)**2)
+
+
+# End functions for testing ComovingMagneticFieldMagnitude.cpp
