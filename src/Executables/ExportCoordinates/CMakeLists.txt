@@ -3,6 +3,7 @@
 
 set(LIBS_TO_LINK
   CoordinateMaps
+  DgSubcell
   DomainCreators
   EventsAndTriggers
   Evolution

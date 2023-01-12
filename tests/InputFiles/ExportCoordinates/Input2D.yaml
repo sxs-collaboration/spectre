@@ -23,6 +23,7 @@ DomainCreator:
         Velocity: [0.5, 0.0]
 
 SpatialDiscretization:
+  ActiveGrid: Dg
   DiscontinuousGalerkin:
     Quadrature: GaussLobatto
 
