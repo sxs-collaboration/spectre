@@ -301,9 +301,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnDgGrid",
   test(TestThis::TildeB2TooBig, -3);
   test(TestThis::PrimRecoveryFailed, -4);
   test(TestThis::PerssonTildeD, -5);
-  test(TestThis::PerssonPressure, -5);
-  test(TestThis::PerssonTildeB, -6);
-  test(TestThis::RdmpTildeD, -7);
-  test(TestThis::RdmpTildeTau, -8);
-  test(TestThis::RdmpMagnitudeTildeB, -9);
+  test(TestThis::PerssonPressure, -7);
+  test(TestThis::PerssonTildeB, -8);
+  test(TestThis::RdmpTildeD, -9);
+  test(TestThis::RdmpTildeTau, -10);
+  test(TestThis::RdmpMagnitudeTildeB, -11);
 }

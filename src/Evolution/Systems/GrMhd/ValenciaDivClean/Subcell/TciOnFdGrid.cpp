@@ -101,13 +101,19 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
       subcell_mesh.extents(),
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim);
 
-  if (not(in_atmosphere) and (evolution::dg::subcell::persson_tci(
-                                  dg_tilde_d, dg_mesh, persson_exponent) or
-                              evolution::dg::subcell::persson_tci(
-                                  dg_tilde_ye, dg_mesh, persson_exponent) or
-                              evolution::dg::subcell::persson_tci(
-                                  dg_pressure, dg_mesh, persson_exponent))) {
-    return {+3, rdmp_tci_data};
+  if (not in_atmosphere) {
+    if (evolution::dg::subcell::persson_tci(dg_tilde_d, dg_mesh,
+                                            persson_exponent)) {
+      return {+3, rdmp_tci_data};
+    }
+    if (evolution::dg::subcell::persson_tci(dg_tilde_ye, dg_mesh,
+                                            persson_exponent)) {
+      return {+4, rdmp_tci_data};
+    }
+    if (evolution::dg::subcell::persson_tci(dg_pressure, dg_mesh,
+                                            persson_exponent)) {
+      return {+5, rdmp_tci_data};
+    }
   }
 
   Scalar<DataVector> dg_mag_tilde_b{};
@@ -139,14 +145,14 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
           past_rdmp_tci_data.max_variables_values,
           past_rdmp_tci_data.min_variables_values,
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon())) {
-    return {+3 + rdmp_tci_status, rdmp_tci_data};
+    return {+5 + rdmp_tci_status, rdmp_tci_data};
   }
 
   if (tci_options.magnetic_field_cutoff.has_value() and
       (max(get(dg_mag_tilde_b)) > tci_options.magnetic_field_cutoff.value() and
        evolution::dg::subcell::persson_tci(dg_mag_tilde_b, dg_mesh,
                                            persson_exponent))) {
-    return {+8, rdmp_tci_data};
+    return {+10, rdmp_tci_data};
   }
 
   return {false, rdmp_tci_data};

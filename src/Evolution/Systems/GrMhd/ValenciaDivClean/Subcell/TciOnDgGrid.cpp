@@ -209,20 +209,24 @@ TciOnDgGrid<RecoveryScheme>::apply(
   }
 
   // Check that tilde_d, tilde_ye, and pressure satisfy the Persson TCI
-  if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent) or
-      evolution::dg::subcell::persson_tci(tilde_ye, dg_mesh,
-                                          persson_exponent) or
-      evolution::dg::subcell::persson_tci(
+  if (evolution::dg::subcell::persson_tci(tilde_d, dg_mesh, persson_exponent)) {
+    return {-5, std::move(rdmp_tci_data)};
+  }
+  if (evolution::dg::subcell::persson_tci(tilde_ye, dg_mesh,
+                                          persson_exponent)) {
+    return {-6, std::move(rdmp_tci_data)};
+  }
+  if (evolution::dg::subcell::persson_tci(
           get<hydro::Tags::Pressure<DataVector>>(*dg_prim_vars), dg_mesh,
           persson_exponent)) {
-    return {-5, std::move(rdmp_tci_data)};
+    return {-7, std::move(rdmp_tci_data)};
   }
   // Check Cartesian magnitude of magnetic field satisfies the Persson TCI
   if (tci_options.magnetic_field_cutoff.has_value() and
       max_mag_tilde_b > tci_options.magnetic_field_cutoff.value() and
       evolution::dg::subcell::persson_tci(mag_tilde_b, dg_mesh,
                                           persson_exponent)) {
-    return {-6, std::move(rdmp_tci_data)};
+    return {-8, std::move(rdmp_tci_data)};
   }
 
   if (const int rdmp_tci_status = evolution::dg::subcell::rdmp_tci(
@@ -231,11 +235,11 @@ TciOnDgGrid<RecoveryScheme>::apply(
           past_rdmp_tci_data.max_variables_values,
           past_rdmp_tci_data.min_variables_values,
           subcell_options.rdmp_delta0(), subcell_options.rdmp_epsilon())) {
-    return {-(6 + rdmp_tci_status), std::move(rdmp_tci_data)};
+    return {-(8 + rdmp_tci_status), std::move(rdmp_tci_data)};
   }
 
   *dg_prim_vars = std::move(temp_prims);
-  return {false, std::move(rdmp_tci_data)};
+  return {0, std::move(rdmp_tci_data)};
 }
 
 #define RECOVERY(data) BOOST_PP_TUPLE_ELEM(0, data)
