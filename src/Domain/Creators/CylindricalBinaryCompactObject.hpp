@@ -34,10 +34,9 @@ template <size_t VolumeDim>
 class Wedge;
 template <size_t VolumeDim>
 class DiscreteRotation;
-class CylindricalEndcap;
-class CylindricalFlatEndcap;
-class CylindricalFlatSide;
-class CylindricalSide;
+class UniformCylindricalEndcap;
+class UniformCylindricalFlatEndcap;
+class UniformCylindricalSide;
 }  // namespace CoordinateMaps
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -79,12 +78,16 @@ namespace domain::creators {
  * spherical shells inside the "EA" and "EB" blocks, and the caption
  * of Figure 20 indicates that there are additional spherical shells
  * outside the "CA" and "CB" blocks; `CylindricalBinaryCompactObject`
- * does not have any of these spherical shells: the "EA" and "EB"
- * blocks extend to the excision boundary and the "CA" and "CB" blocks
+ * has these extra shells inside "EA" only if the option `IncludeInnerSphereA`
+ * is true, it has the extra shells inside "EB" only if the option
+ * `IncludeInnerSphereB` is true, and it has the extra shells outside
+ * "CA" and "CB" only if `IncludeOuterSphere` is true.
+ * If the shells are absent, then the "EA" and "EB"
+ * blocks extend to the excision boundaries and the "CA" and "CB" blocks
  * extend to the outer boundary.
  *
  * The Blocks are named as follows:
- * - Each of CAFilledCylinder EAFilledCylinder, EBFilledCylinder,
+ * - Each of CAFilledCylinder, EAFilledCylinder, EBFilledCylinder,
  *   MAFilledCylinder, MBFilledCylinder, and CBFilledCylinder consists
  *   of 5 blocks, named 'Center', 'East', 'North', 'West', and
  *   'South', so an example of a valid block name is
@@ -93,11 +96,26 @@ namespace domain::creators {
  *   consists of 4 blocks, named 'East', 'North', 'West', and 'South',
  *   so an example of a valid block name is 'CACylinderEast'.
  * - The Block group called "Outer" consists of all the CA and CB blocks. They
- *   all border the outer boundary.
+ *   all border the outer boundary if `IncludeOuterSphere` is false.
+ * - If `IncludeOuterSphere` is true, then there are more blocks named
+ *   OuterSphereCAFilledCylinder, OuterSphereCBFilledCylinder,
+ *   OuterSphereCACylinder, and OuterSphereCBCylinder.
+ *   These are in a Block group called "OuterSphere",
+ *   and all of these border the outer boundary.
  * - The Block group called "InnerA" consists of all the EA, and MA
- *   blocks. They all border the inner boundary "A".
+ *   blocks. They all border the inner boundary "A" if
+ *   `IncludeInnerSphereA` is false.
+ * - If `IncludeInnerSphereA` is true, then there are new blocks
+ *   InnerSphereEAFilledCylinder, InnerSphereMAFilledCylinder, and
+ *   InnerSphereEACylinder. These are in a Block group called "InnerSphereA",
+ *   and all of these border the inner excision boundary "A".
  * - The Block group called "InnerB" consists of all the EB, and MB
- *   blocks. They all border the inner boundary "B".
+ *   blocks. They all border the inner boundary "B" if
+ *   `IncludeInnerSphereB` is false.
+ * - If `IncludeInnerSphereB` is true, then there are new blocks
+ *   InnerSphereEBFilledCylinder, InnerSphereMBFilledCylinder, and
+ *   InnerSphereEBCylinder. These are in a Block group called "InnerSphereB",
+ *   and all of these border the inner excision boundary "B".
  *
  * If \f$c_A\f$ and \f$c_B\f$ are the input parameters center_A and
  * center_B, \f$r_A\f$ and \f$r_B\f$ are the input parameters radius_A and
@@ -123,38 +141,32 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
                      CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
                                                     CoordinateMaps::Interval,
                                                     CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalEndcap,
+                     CoordinateMaps::UniformCylindricalEndcap,
                      CoordinateMaps::DiscreteRotation<3>>,
                  domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                                     CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalEndcap,
+                     CoordinateMaps::UniformCylindricalEndcap,
                      CoordinateMaps::DiscreteRotation<3>>,
                  domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::ProductOf3Maps<CoordinateMaps::Interval,
                                                     CoordinateMaps::Interval,
                                                     CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalFlatEndcap,
+                     CoordinateMaps::UniformCylindricalFlatEndcap,
                      CoordinateMaps::DiscreteRotation<3>>,
                  domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                                     CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalFlatEndcap,
+                     CoordinateMaps::UniformCylindricalFlatEndcap,
                      CoordinateMaps::DiscreteRotation<3>>,
                  domain::CoordinateMap<
                      Frame::BlockLogical, Frame::Inertial,
                      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
                                                     CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalFlatSide,
-                     CoordinateMaps::DiscreteRotation<3>>,
-                 domain::CoordinateMap<
-                     Frame::BlockLogical, Frame::Inertial,
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Wedge<2>,
-                                                    CoordinateMaps::Interval>,
-                     CoordinateMaps::CylindricalSide,
+                     CoordinateMaps::UniformCylindricalSide,
                      CoordinateMaps::DiscreteRotation<3>>>;
 
   struct CenterA {
@@ -176,6 +188,21 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
     using type = double;
     static constexpr Options::String help = {
         "Grid-coordinate radius of grid boundary around Object B."};
+  };
+  struct IncludeInnerSphereA {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Add an extra spherical layer of Blocks around Object A."};
+  };
+  struct IncludeInnerSphereB {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Add an extra spherical layer of Blocks around Object B."};
+  };
+  struct IncludeOuterSphere {
+    using type = bool;
+    static constexpr Options::String help = {
+        "Add an extra spherical layer of Blocks inside the outer boundary."};
   };
   struct OuterRadius {
     using type = double;
@@ -237,7 +264,8 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   };
 
   using basic_options =
-      tmpl::list<CenterA, CenterB, RadiusA, RadiusB, OuterRadius,
+      tmpl::list<CenterA, CenterB, RadiusA, RadiusB, IncludeInnerSphereA,
+                 IncludeInnerSphereB, IncludeOuterSphere, OuterRadius,
                  InitialRefinement, InitialGridPoints, TimeDependence>;
 
   template <typename Metavariables>
@@ -263,6 +291,9 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   CylindricalBinaryCompactObject(
       typename CenterA::type center_A, typename CenterB::type center_B,
       typename RadiusA::type radius_A, typename RadiusB::type radius_B,
+      typename IncludeInnerSphereA::type include_inner_sphere_A,
+      typename IncludeInnerSphereB::type include_inner_sphere_B,
+      typename IncludeOuterSphere::type include_outer_sphere,
       typename OuterRadius::type outer_radius,
       const typename InitialRefinement::type& initial_refinement,
       const typename InitialGridPoints::type& initial_grid_points,
@@ -317,6 +348,9 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   typename CenterB::type center_B_{};
   typename RadiusA::type radius_A_{};
   typename RadiusB::type radius_B_{};
+  typename IncludeInnerSphereA::type include_inner_sphere_A_{};
+  typename IncludeInnerSphereB::type include_inner_sphere_B_{};
+  typename IncludeOuterSphere::type include_outer_sphere_{};
   typename OuterRadius::type outer_radius_{};
   typename std::vector<std::array<size_t, 3>> initial_refinement_{};
   typename std::vector<std::array<size_t, 3>> initial_grid_points_{};
@@ -329,9 +363,6 @@ class CylindricalBinaryCompactObject : public DomainCreator<3> {
   // z_cutting_plane_ is x_C in Eq. (A.9) of
   // https://arxiv.org/abs/1206.3015 (but rotated to the z-axis).
   double z_cutting_plane_{};
-  // number_of_blocks_ could be eliminated or just set to its
-  // constant value of 46. But this value will change with the
-  // next PR that adds support for domains with unequal-sized objects.
   size_t number_of_blocks_{};
   std::unique_ptr<domain::creators::time_dependence::TimeDependence<3>>
       time_dependence_;
