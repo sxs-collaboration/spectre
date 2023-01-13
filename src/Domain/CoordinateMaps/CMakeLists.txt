@@ -97,4 +97,5 @@ target_link_libraries(
   SphericalHarmonics
   )
 
+add_subdirectory(Python)
 add_subdirectory(TimeDependent)

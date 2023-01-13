@@ -4,7 +4,11 @@
 import numpy as np
 import spectre.IO.H5 as spectre_h5
 from dataclasses import dataclass
-from spectre.Domain import ElementId
+from spectre.Domain import ElementId, ElementMap, deserialize_domain
+from spectre.Domain.CoordinateMaps import (
+    CoordinateMapElementLogicalToInertial1D,
+    CoordinateMapElementLogicalToInertial2D,
+    CoordinateMapElementLogicalToInertial3D)
 from spectre.Spectral import Mesh
 from typing import Union, Iterable, Optional
 
@@ -13,7 +17,9 @@ from typing import Union, Iterable, Optional
 class Element:
     id: Union[ElementId[1], ElementId[2], ElementId[3]]
     mesh: Union[Mesh[1], Mesh[2], Mesh[3]]
-    inertial_coords: np.ndarray
+    map: Union[CoordinateMapElementLogicalToInertial1D,
+               CoordinateMapElementLogicalToInertial2D,
+               CoordinateMapElementLogicalToInertial3D]
 
 
 def iter_elements(volfiles: Union[spectre_h5.H5Vol,
@@ -38,6 +44,7 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
         volfiles = [volfiles]
     for volfile in volfiles:
         dim = volfile.get_dimension()
+        domain = deserialize_domain[dim](volfile.get_domain(obs_id))
         all_grid_names = volfile.get_grid_names(obs_id)
         all_element_ids = list(map(ElementId[dim], all_grid_names))
         all_extents = volfile.get_extents(obs_id)
@@ -47,12 +54,6 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
             Mesh[dim](*mesh_args)
             for mesh_args in zip(all_extents, all_bases, all_quadratures)
         ]
-        # Get coordinates
-        inertial_coords = np.array([
-            volfile.get_tensor_component(obs_id,
-                                         "InertialCoordinates" + xyz).data
-            for xyz in ["_x", "_y", "_z"][:dim]
-        ])
         # Pre-load the tensor data because it's stored contiguously for all
         # grids in the file
         if tensor_components:
@@ -65,10 +66,8 @@ def iter_elements(volfiles: Union[spectre_h5.H5Vol,
                                                all_meshes):
             offset, length = spectre_h5.offset_and_length_for_grid(
                 grid_name, all_grid_names, all_extents)
-            element = Element(
-                element_id,
-                mesh,
-                inertial_coords=inertial_coords[:, offset:offset + length])
+            element_map = ElementMap(element_id, domain)
+            element = Element(element_id, mesh=mesh, map=element_map)
             if tensor_components:
                 yield element, tensor_data[:, offset:offset + length]
             else:

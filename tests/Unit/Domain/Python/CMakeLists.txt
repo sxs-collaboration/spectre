@@ -20,14 +20,14 @@ spectre_add_python_bindings_test(
   PyDomain)
 
 spectre_add_python_bindings_test(
-  "Unit.Domain.Python.FunctionsOfTime"
-  Test_FunctionsOfTime.py
+  "Unit.Domain.Python.ElementMap"
+  Test_ElementMap.py
   "Unit;Domain"
   PyDomain)
 
 spectre_add_python_bindings_test(
-  "Unit.Domain.Python.InertialCoordinates"
-  Test_InertialCoordinates.py
+  "Unit.Domain.Python.FunctionsOfTime"
+  Test_FunctionsOfTime.py
   "Unit;Domain"
   PyDomain)
 

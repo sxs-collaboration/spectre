@@ -1,20 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PyDomain")
+set(LIBRARY "PyCoordinateMaps")
 
 spectre_python_add_module(
-  Domain
+  CoordinateMaps
   LIBRARY_NAME ${LIBRARY}
+  MODULE_PATH "Domain"
   SOURCES
   Bindings.cpp
-  BlockLogicalCoordinates.cpp
-  Domain.cpp
-  ElementId.cpp
-  ElementLogicalCoordinates.cpp
-  ElementMap.cpp
-  FunctionsOfTime.cpp
-  SegmentId.cpp
+  CoordinateMap.cpp
   PYTHON_FILES
   __init__.py
   )
@@ -23,31 +18,19 @@ spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  BlockLogicalCoordinates.hpp
-  Domain.hpp
-  ElementId.hpp
-  ElementLogicalCoordinates.hpp
-  ElementMap.hpp
-  FunctionsOfTime.hpp
-  SegmentId.hpp
+  CoordinateMap.hpp
   )
 
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
-  CoordinateMaps
   DataStructures
-  Domain
-  DomainCreators
-  DomainStructure
-  FunctionsOfTime
+  CoordinateMaps
   pybind11::module
-  Utilities
   )
 
 spectre_python_add_dependencies(
   ${LIBRARY}
-  PyCoordinateMaps
   PyDataStructures
   PyTensor
   )
