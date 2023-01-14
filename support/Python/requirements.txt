@@ -23,5 +23,5 @@ numpy < 1.22.0
 matplotlib
 pyyaml
 # Rich: to format CLI output and tracebacks
-rich
+rich >= 10.11.0
 scipy
