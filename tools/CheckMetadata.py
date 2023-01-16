@@ -178,6 +178,7 @@ class TestMetadata(unittest.TestCase):
                     affiliation, self.metadata['Affiliations'],
                     "Please use an existing affiliation or add a new one to "
                     "the main 'Affiliations' list in this file.")
+            self.assertIn('GitHub', author)
 
         # Check for unused affiliations
         all_authors_affiliations = set(
