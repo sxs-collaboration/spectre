@@ -9,6 +9,7 @@ spectre_python_add_module(
   __init__.py
   ApplyPointwise.py
   GenerateXdmf.py
+  ComputePowerMonitors.py
   InterpolateToCoords.py
   InterpolateToMesh.py
   PlotDatFile.py

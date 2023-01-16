@@ -4,6 +4,8 @@
 spectre_add_python_bindings_test(
   "Unit.Visualization.Python.ApplyPointwise"
   Test_ApplyPointwise.py
+  "Unit.Visualization.Python.ComputePowerMonitors"
+  Test_ComputePowerMonitors.py
   "unit;visualization;python"
   None)
 
