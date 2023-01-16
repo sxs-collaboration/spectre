@@ -117,6 +117,8 @@ void test() {
       {-78.9, -7.6, -1.9, 8.1, 6.3, 8.7, 9.8, 0.2},
       {-7.9, 7.6, 1.9, -8.1, -6.3, 2.7, 6.8, -0.2},
       {17.9, 27.6, 21.9, -28.1, -26.3, 32.7, 26.8, -30.2}};
+  DataType extra_tensor_component(16);
+  std::iota(extra_tensor_component.begin(), extra_tensor_component.end(), 1.);
   const std::vector<size_t> observation_ids{8435087234, size_t(-1)};
   const std::vector<double> observation_values{8.0, -2.3};
   const std::vector<std::string> grid_names{"[[2,3,4]]", "[[5,6,7]]"};
@@ -142,7 +144,7 @@ void test() {
         my_file.insert<h5::VolumeData>("/element_data", version_number);
     const auto write_to_file = [&volume_file, &tensor_components_and_coords,
                                 &grid_names, &bases, &quadratures,
-                                &domain_creator](
+                                &domain_creator, &extra_tensor_component](
                                    const size_t observation_id,
                                    const double observation_value) {
       std::string first_grid = grid_names.front();
@@ -209,6 +211,9 @@ void test() {
                quadratures.back()}},
           serialize(domain_creator.create_domain()),
           serialize(domain_creator.functions_of_time()));
+      // Write another tensor component separately
+      volume_file.write_tensor_component(observation_id, "U",
+                                         extra_tensor_component);
     };
     for (size_t i = 0; i < observation_ids.size(); ++i) {
       write_to_file(observation_ids[i], observation_values[i]);
@@ -246,6 +251,9 @@ void test() {
           serialize(domain_creator.create_domain()));
     CHECK(volume_file.get_functions_of_time(observation_ids[i]) ==
           serialize(domain_creator.functions_of_time()));
+    CHECK(get<DataType>(
+              volume_file.get_tensor_component(observation_ids[i], "U").data) ==
+          extra_tensor_component);
   }
 
   {
