@@ -679,7 +679,7 @@ ${{ env.CACHE_KEY_SUFFIX }}"
   # Build all test executables and run unit tests on macOS
   unit_tests_macos:
     name: Unit tests on macOS
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       # We install some low-level dependencies with Homebrew. They get picked up
       # by `spack external find`.

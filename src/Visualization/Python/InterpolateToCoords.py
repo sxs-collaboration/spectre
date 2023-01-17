@@ -237,12 +237,26 @@ def interpolate_to_coords_command(h5_files, subfile_name, list_vars, vars,
 
     # Interpolate!
     import rich.progress
-    progress = rich.progress.Progress(
-        rich.progress.TextColumn("[progress.description]{task.description}"),
-        rich.progress.BarColumn(),
-        rich.progress.MofNCompleteColumn(),
-        rich.progress.TimeRemainingColumn(),
-        disable=(len(volfiles) == 1))
+    try:
+        progress_cols = (
+            rich.progress.TextColumn(
+                "[progress.description]{task.description}"),
+            rich.progress.BarColumn(),
+            # Added in rich v12.0
+            rich.progress.MofNCompleteColumn(),
+            rich.progress.TimeRemainingColumn(),
+        )
+    except AttributeError:
+        progress_cols = (
+            rich.progress.TextColumn(
+                "[progress.description]{task.description}"),
+            rich.progress.BarColumn(),
+            rich.progress.TextColumn(
+                "[progress.percentage]{task.percentage:>3.0f}%"),
+            rich.progress.TimeRemainingColumn(),
+        )
+    progress = rich.progress.Progress(*progress_cols,
+                                      disable=(len(volfiles) == 1))
     task_id = progress.add_task("Interpolating files")
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:
