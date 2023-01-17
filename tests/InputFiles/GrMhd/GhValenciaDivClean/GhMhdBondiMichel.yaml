@@ -219,3 +219,5 @@ Interpolator:
   DumpVolumeDataOnFailure: false
 
 EventsAndDenseTriggers:
+
+EventsRunAtCleanup:

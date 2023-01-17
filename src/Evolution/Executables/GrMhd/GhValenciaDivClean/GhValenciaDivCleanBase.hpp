@@ -127,6 +127,7 @@
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
 #include "ParallelAlgorithms/Events/Factory.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsOnFailure.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -665,7 +666,11 @@ struct GhValenciaDivCleanTemplateBase<
                          Actions::UpdateConservatives,
                          Actions::RunEventsAndTriggers, Actions::ChangeSlabSize,
                          step_actions, Actions::AdvanceTime,
-                         PhaseControl::Actions::ExecutePhaseChange>>>>>;
+                         PhaseControl::Actions::ExecutePhaseChange>>,
+          Parallel::PhaseActions<
+              Parallel::Phase::PostFailureCleanup,
+              tmpl::list<Actions::RunEventsOnFailure,
+                         Parallel::Actions::TerminatePhase>>>>>;
 
   template <typename ParallelComponent>
   struct registration_list {
