@@ -29,14 +29,10 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   CAPTURE(subcell_size);
   CAPTURE(dg_size);
 
-  const size_t total_size_without_data =
-      BoundaryMessage<Dim>::total_bytes_without_data();
-  // Mesh<0> == 8, Mesh<1> == 16, Mesh<2> == 32, Mesh<3> == 48
-  CHECK(total_size_without_data == (Dim == 1 ? 256 : (Dim == 2 ? 280 : 312)));
   const size_t total_size_with_data =
       BoundaryMessage<Dim>::total_bytes_with_data(subcell_size, dg_size);
-  CHECK(total_size_with_data ==
-        total_size_without_data + (subcell_size + dg_size) * sizeof(double));
+  CHECK(total_size_with_data == sizeof(BoundaryMessage<Dim>) +
+                                    (subcell_size + dg_size) * sizeof(double));
 
   const bool sent_across_nodes = true;
   const size_t sender_node = 2;
@@ -137,27 +133,10 @@ void test_output() {
   CHECK(message_str == ss.str());
 }
 
-void test_offset() {
-  CHECK(detail::offset<size_t>() == 8);
-  CHECK(detail::offset<bool>() == 8);
-  CHECK(detail::offset<TimeStepId>() == 88);
-  CHECK(detail::offset<Mesh<0>>() == 8);
-  CHECK(detail::offset<Mesh<1>>() == 16);
-  CHECK(detail::offset<Mesh<2>>() == 32);
-  CHECK(detail::offset<Mesh<3>>() == 48);
-  CHECK(detail::offset<double*>() == 8);
-
-  CHECK_THROWS_WITH(
-      detail::offset<int>(),
-      Catch::Contains(
-          "Cannot calculate offset for 'int' in a BoundaryMessage"));
-}
-
 SPECTRE_TEST_CASE("Unit.Evolution.DG.BoundaryMessage", "[Unit][Evolution]") {
   MAKE_GENERATOR(generator);
 
   test_output();
-  test_offset();
 
   std::uniform_int_distribution<size_t> size_dist{1, 10};
   tmpl::for_each<tmpl::integral_list<size_t, 1, 2, 3>>(
