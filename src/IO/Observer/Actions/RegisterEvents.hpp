@@ -156,6 +156,13 @@ struct RegisterEventsWithObservers {
       triggers_and_events.for_each_event(collect_observations);
     }
 
+    if constexpr (db::tag_is_retrievable_v<::Tags::EventsRunAtCleanup,
+                                           db::DataBox<DbTagList>>) {
+      for (const auto& event : db::get<::Tags::EventsRunAtCleanup>(box)) {
+        collect_observations(*event);
+      }
+    }
+
     for (const auto& [type_of_observation, observation_key] :
          type_of_observation_and_observation_key_pairs) {
       Parallel::simple_action<RegisterOrDeregisterAction>(

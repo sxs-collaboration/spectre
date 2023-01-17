@@ -6,10 +6,14 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionTagsGroup
@@ -43,6 +47,16 @@ struct EventsAndTriggers {
   // pretty_type::short_name().
   static std::string name() { return "EventsAndTriggers"; }
 };
+
+/// \brief A list of events to run at cleanpppp.
+///
+/// See `Actions::RunEventsOnFailure` for details and caveats.
+struct EventsRunAtCleanup {
+  using type = std::vector<std::unique_ptr<::Event>>;
+  static constexpr Options::String help =
+      "Events to run during the cleanup phase. This is generally intended for "
+      "dumping volume data to diagnose failure reasons.";
+};
 }  // namespace OptionTags
 
 namespace Tags {
@@ -55,6 +69,20 @@ struct EventsAndTriggers : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& events_and_triggers) {
     return deserialize<type>(serialize<type>(events_and_triggers).data());
+  }
+};
+
+/// \brief Events to be run on elements during the
+/// `Parallel::Phase::PostFailureCleanup` phase.
+///
+/// Useful for troubleshooting runs that are failing.
+struct EventsRunAtCleanup : db::SimpleTag {
+  using type = std::vector<std::unique_ptr<::Event>>;
+  using option_tags = tmpl::list<OptionTags::EventsRunAtCleanup>;
+
+  static constexpr bool pass_metavariables = false;
+  static type create_from_options(const type& events_run_at_cleanup) {
+    return deserialize<type>(serialize<type>(events_run_at_cleanup).data());
   }
 };
 }  // namespace Tags
