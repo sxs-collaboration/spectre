@@ -284,7 +284,7 @@ void test(const bool always_use_subcell, const bool interior_element) {
         comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
-        comp, evolution::dg::subcell::Tags::TciStatus>(runner, 0));
+        comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0));
   const auto& subcell_inertial_coords = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
       runner, 0);

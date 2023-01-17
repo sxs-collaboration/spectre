@@ -344,24 +344,24 @@ struct GhValenciaDivCleanTemplateBase<
   using error_compute = Tags::ErrorsCompute<analytic_solution_fields>;
   using error_tags = db::wrap_tags_in<Tags::Error, analytic_solution_fields>;
   using observe_fields = tmpl::push_back<
-      tmpl::append<typename system::variables_tag::tags_list,
-                   typename system::primitive_variables_tag::tags_list,
-                   error_tags,
-                   tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
-                                  volume_dim, domain_frame, DataVector>,
-                              gr::Tags::SpacetimeNormalVectorCompute<
-                                  volume_dim, domain_frame, DataVector>,
-                              gr::Tags::InverseSpacetimeMetricCompute<
-                                  volume_dim, domain_frame, DataVector>,
-                              GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-                                  volume_dim, domain_frame>,
-                              ::Tags::PointwiseL2NormCompute<
-                                  GeneralizedHarmonic::Tags::GaugeConstraint<
-                                      volume_dim, domain_frame>>>,
-                   tmpl::conditional_t<
-                       use_dg_subcell,
-                       tmpl::list<evolution::dg::subcell::Tags::TciStatus>,
-                       tmpl::list<>>>,
+      tmpl::append<
+          typename system::variables_tag::tags_list,
+          typename system::primitive_variables_tag::tags_list, error_tags,
+          tmpl::list<gr::Tags::SpacetimeNormalOneFormCompute<
+                         volume_dim, domain_frame, DataVector>,
+                     gr::Tags::SpacetimeNormalVectorCompute<
+                         volume_dim, domain_frame, DataVector>,
+                     gr::Tags::InverseSpacetimeMetricCompute<
+                         volume_dim, domain_frame, DataVector>,
+                     GeneralizedHarmonic::Tags::GaugeConstraintCompute<
+                         volume_dim, domain_frame>,
+                     ::Tags::PointwiseL2NormCompute<
+                         GeneralizedHarmonic::Tags::GaugeConstraint<
+                             volume_dim, domain_frame>>>,
+          tmpl::conditional_t<use_dg_subcell,
+                              tmpl::list<evolution::dg::subcell::Tags::
+                                             TciStatusCompute<volume_dim>>,
+                              tmpl::list<>>>,
       tmpl::conditional_t<
           use_dg_subcell,
           evolution::dg::subcell::Tags::ObserverCoordinatesCompute<
@@ -538,7 +538,7 @@ struct GhValenciaDivCleanTemplateBase<
                      Actions::UpdateU<>>>,
       // Note: The primitive variables are computed as part of the TCI.
       evolution::dg::subcell::Actions::TciAndRollback<
-          grmhd::ValenciaDivClean::subcell::TciOnDgGrid<
+          grmhd::GhValenciaDivClean::subcell::TciOnDgGrid<
               tmpl::front<ordered_list_of_primitive_recovery_schemes>>>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim>>,

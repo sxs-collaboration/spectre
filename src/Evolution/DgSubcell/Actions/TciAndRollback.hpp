@@ -127,21 +127,26 @@ struct TciAndRollback {
     std::tuple<int, RdmpTciData> tci_result = db::mutate_apply<TciMutator>(
         make_not_null(&box), subcell_options.persson_exponent());
 
-    const int tci_status = std::get<0>(tci_result);
-    cell_is_troubled |= static_cast<bool>(tci_status);
+    const int tci_decision = std::get<0>(tci_result);
+    db::mutate<Tags::TciDecision>(
+        make_not_null(&box),
+        [&tci_decision](const gsl::not_null<int*> tci_decision_ptr) {
+          *tci_decision_ptr = tci_decision;
+        });
+
+    cell_is_troubled |= (tci_decision != 0);
 
     if ((cell_is_not_on_external_boundary or
          subcell_enabled_at_external_boundary) and
         cell_is_troubled) {
       db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
-                 Tags::ActiveGrid, Tags::DidRollback, Tags::TciStatus,
+                 Tags::ActiveGrid, Tags::DidRollback,
                  subcell::Tags::NeighborDataForReconstruction<Dim>>(
           make_not_null(&box),
-          [&dg_mesh, &element, &subcell_mesh, &tci_status](
+          [&dg_mesh, &element, &subcell_mesh](
               const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
               const gsl::not_null<bool*> did_rollback_ptr,
-              const gsl::not_null<Scalar<DataVector>*> tci_status_ptr,
               const gsl::not_null<FixedHashMap<
                   maximum_number_of_neighbors(Dim),
                   std::pair<Direction<Dim>, ElementId<Dim>>,
@@ -199,11 +204,6 @@ struct TciAndRollback {
             // that needs to be done at the lifting stage of the subcell
             // method, since we need to lift G+D instead of the ingredients
             // that go into G+D, which is what we would be projecting here.
-
-            // resize TciStatus datavector and assign the tci_status value
-            destructive_resize_components(tci_status_ptr,
-                                          subcell_mesh.number_of_grid_points());
-            get(*tci_status_ptr) = static_cast<double>(tci_status);
           },
           db::get<::Tags::RollbackValue<variables_tag>>(box),
           db::get<evolution::dg::Tags::NeighborMesh<Dim>>(box),

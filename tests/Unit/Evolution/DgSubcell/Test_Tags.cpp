@@ -114,6 +114,8 @@ void test(const bool moving_mesh) {
       subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
                                                        Frame::Inertial>>(
       "Variables(DetInvJacobian(Grid,Inertial),Jacobian(Grid,Inertial))");
+  TestHelpers::db::test_compute_tag<subcell::Tags::TciStatusCompute<Dim>>(
+      "TciStatus");
 
   std::unordered_map<std::string,
                      std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
@@ -130,6 +132,7 @@ void test(const bool moving_mesh) {
           : domain::make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
                 domain::CoordinateMaps::Identity<Dim>{});
 
+  const int tci_decision = 22;  // some non-zero value
   const double time = 1.3;
   const Mesh<Dim> dg_mesh(4, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto);
@@ -138,7 +141,8 @@ void test(const bool moving_mesh) {
                         domain::CoordinateMaps::Tags::CoordinateMap<
                             Dim, Frame::Grid, Frame::Inertial>,
                         domain::Tags::FunctionsOfTimeInitialize, ::Tags::Time,
-                        ::domain::Tags::Mesh<Dim>, subcell::Tags::ActiveGrid>,
+                        ::domain::Tags::Mesh<Dim>, subcell::Tags::ActiveGrid,
+                        subcell::Tags::TciDecision>,
       db::AddComputeTags<
           domain::Tags::LogicalCoordinates<Dim>,
           domain::Tags::MappedCoordinates<
@@ -177,14 +181,17 @@ void test(const bool moving_mesh) {
           subcell::Tags::ObserverJacobianAndDetInvJacobian<
               Dim, Frame::ElementLogical, Frame::Inertial>,
           subcell::Tags::ObserverJacobianAndDetInvJacobian<Dim, Frame::Grid,
-                                                           Frame::Inertial>>>(
+                                                           Frame::Inertial>,
+          subcell::Tags::TciStatusCompute<Dim>>>(
       ElementMap<Dim, Frame::Grid>{
           ElementId<Dim>{0},
           domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
               domain::CoordinateMaps::Identity<Dim>{})},
       grid_to_inertial_map->get_clone(), clone_unique_ptrs(functions_of_time),
-      time, dg_mesh, subcell::ActiveGrid::Dg);
-  const auto check_box = [&active_coords_box](const Mesh<Dim>& expected_mesh) {
+      time, dg_mesh, subcell::ActiveGrid::Dg, tci_decision);
+  const auto check_box = [&active_coords_box,
+                          &tci_decision](const Mesh<Dim>& expected_mesh) {
+    (void)tci_decision;  // Incorrect compiler warning.
     CHECK(db::get<::Events::Tags::ObserverMesh<Dim>>(active_coords_box) ==
           expected_mesh);
     const auto expected_logical_coords = logical_coordinates(expected_mesh);
@@ -272,6 +279,9 @@ void test(const bool moving_mesh) {
     CHECK(db::get<::Events::Tags::ObserverDetInvJacobian<Frame::ElementLogical,
                                                          Frame::Inertial>>(
               active_coords_box) == expected_det_inv_jac_logical_to_inertial);
+    CHECK(db::get<subcell::Tags::TciStatus>(active_coords_box) ==
+          Scalar<DataVector>(expected_mesh.number_of_grid_points(),
+                             static_cast<double>(tci_decision)));
   };
 
   check_box(db::get<domain::Tags::Mesh<Dim>>(active_coords_box));
@@ -307,6 +317,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<subcell::Tags::TciGridHistory>(
       "TciGridHistory");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciStatus>("TciStatus");
+  TestHelpers::db::test_simple_tag<subcell::Tags::TciDecision>("TciDecision");
 
   for (const bool moving_mesh : {false, true}) {
     test<1>(moving_mesh);

@@ -87,7 +87,7 @@ struct component {
           evolution::dg::subcell::Tags::ActiveGrid,
           evolution::dg::subcell::Tags::DidRollback,
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
-          evolution::dg::subcell::Tags::TciStatus,
+          evolution::dg::subcell::Tags::TciDecision,
           evolution::dg::subcell::Tags::DataForRdmpTci,
           evolution::dg::Tags::NeighborMesh<Dim>,
           Tags::Variables<tmpl::list<Var1>>,
@@ -264,8 +264,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     }
   }
 
-  Scalar<DataVector> tci_status{dg_mesh.number_of_grid_points(),
-                                static_cast<double>(tci_fails)};
+  const int tci_decision{static_cast<int>(tci_fails)};
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
@@ -314,7 +313,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, tci_status, rdmp_tci_data,
+         did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
          neighbor_meshes, evolved_vars, vars, time_stepper_history,
          initial_value_evolved_vars, prim_vars, initial_value_prim_vars});
   } else {
@@ -323,7 +322,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
     ActionTesting::emplace_array_component_and_initialize<comp>(
         &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
         {time_step_id, dg_mesh, subcell_mesh, element, active_grid,
-         did_rollback, neighbor_data, tci_status, rdmp_tci_data,
+         did_rollback, neighbor_data, tci_decision, rdmp_tci_data,
          neighbor_meshes, evolved_vars, vars, time_stepper_history,
          initial_value_evolved_vars});
   }

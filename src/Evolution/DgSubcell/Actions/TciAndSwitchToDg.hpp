@@ -126,7 +126,7 @@ namespace evolution::dg::subcell::Actions {
  *   - `Tags::HistoryEvolvedVariables` if the cell is not troubled
  *   - `subcell::Tags::ActiveGrid` if the cell is not troubled
  *   - `subcell::Tags::DidRollback` sets to `false`
- *   - `subcell::Tags::TciStatus` is set to an integer value according to the
+ *   - `subcell::Tags::TciDecision` is set to an integer value according to the
  *     return of TciMutator.
  *   - `subcell::Tags::NeighborDataForReconstruction<Dim>`
  *     if the cell is not troubled
@@ -188,21 +188,15 @@ struct TciAndSwitchToDg {
     std::tuple<int, evolution::dg::subcell::RdmpTciData> tci_result =
         db::mutate_apply<TciMutator>(make_not_null(&box),
                                      subcell_options.persson_exponent() + 1.0);
-    const int tci_status = std::get<0>(tci_result);
-    const bool cell_is_troubled = static_cast<bool>(tci_status);
+    const int tci_decision = std::get<0>(tci_result);
+    const bool cell_is_troubled = tci_decision != 0;
 
-    if (cell_is_troubled) {
-      db::mutate<Tags::TciStatus>(
-          make_not_null(&box),
-          [&tci_status](
-              const gsl::not_null<Scalar<DataVector>*> tci_status_ptr) {
-            get(*tci_status_ptr) = static_cast<double>(tci_status);
-          });
-    }
-
-    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
-        make_not_null(&box), [&tci_result](const auto rdmp_data_ptr) {
+    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciDecision>(
+        make_not_null(&box), [&tci_decision, &tci_result](
+                                 const auto rdmp_data_ptr,
+                                 const gsl::not_null<int*> tci_decision_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+          *tci_decision_ptr = tci_decision;
         });
 
     // If the cell is not troubled, then we _might_ be able to switch back to
@@ -224,22 +218,21 @@ struct TciAndSwitchToDg {
         not cell_is_troubled and
         (is_substep_method or
          (tci_history.size() == time_stepper.order() and
-          alg::all_of(tci_history, [](const ActiveGrid tci_decision) {
-            return tci_decision == ActiveGrid::Dg;
+          alg::all_of(tci_history, [](const ActiveGrid tci_grid_decision) {
+            return tci_grid_decision == ActiveGrid::Dg;
           })))) {
       db::mutate<variables_tag, ::Tags::HistoryEvolvedVariables<variables_tag>,
                  Tags::ActiveGrid,
                  subcell::Tags::NeighborDataForReconstruction<Dim>,
-                 evolution::dg::subcell::Tags::TciGridHistory, Tags::TciStatus>(
+                 evolution::dg::subcell::Tags::TciGridHistory>(
           make_not_null(&box),
-          [&dg_mesh, &subcell_mesh, &subcell_options, &tci_status](
+          [&dg_mesh, &subcell_mesh, &subcell_options](
               const auto active_vars_ptr, const auto active_history_ptr,
               const gsl::not_null<ActiveGrid*> active_grid_ptr,
               const auto subcell_neighbor_data_ptr,
               const gsl::not_null<
                   std::deque<evolution::dg::subcell::ActiveGrid>*>
-                  tci_grid_history_ptr,
-              const gsl::not_null<Scalar<DataVector>*> tci_status_ptr) {
+                  tci_grid_history_ptr) {
             // Note: strictly speaking, to be conservative this should
             // reconstruct uJ instead of u.
             *active_vars_ptr = fd::reconstruct(
@@ -269,11 +262,6 @@ struct TciAndSwitchToDg {
             // Clear the TCI grid history since we don't need to use it when on
             // the DG grid.
             tci_grid_history_ptr->clear();
-
-            // resize TciStatus datavector and assign the tci_status value
-            destructive_resize_components(tci_status_ptr,
-                                          dg_mesh.number_of_grid_points());
-            get(*tci_status_ptr) = static_cast<double>(tci_status);
           });
       return {Parallel::AlgorithmExecution::Continue, std::nullopt};
     }
