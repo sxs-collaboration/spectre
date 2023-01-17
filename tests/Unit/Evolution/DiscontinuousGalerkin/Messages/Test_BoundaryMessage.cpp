@@ -78,10 +78,10 @@ void test_boundary_message(const gsl::not_null<Generator*> generator,
   CHECK(subcell_data.size() == subcell_size);
   CHECK(dg_data.size() == dg_size);
 
-  void* packed_message = boundary_message->pack(boundary_message);
+  void* packed_message = BoundaryMessage<Dim>::pack(boundary_message);
 
   BoundaryMessage<Dim>* unpacked_message =
-      boundary_message->unpack(packed_message);
+      BoundaryMessage<Dim>::unpack(packed_message);
 
   CHECK(*copied_boundary_message == *unpacked_message);
   CHECK_FALSE(*copied_boundary_message != *unpacked_message);
