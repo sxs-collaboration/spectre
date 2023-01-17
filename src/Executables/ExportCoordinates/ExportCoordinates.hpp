@@ -19,6 +19,8 @@
 #include "Domain/Protocols/Metavariables.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Tags.hpp"
+#include "Evolution/DgSubcell/Mesh.hpp"
+#include "Evolution/DgSubcell/Tags/ActiveGrid.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Initialization/DgDomain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -31,6 +33,7 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/SpatialDiscretization/OptionTags.hpp"
 #include "Options/Options.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
 #include "Parallel/AlgorithmExecution.hpp"
@@ -195,6 +198,29 @@ struct FindGlobalMinimumGridSpacing {
 };
 }  // namespace Actions
 
+namespace Initialization {
+template <size_t Dim>
+struct SetMeshType {
+  using const_global_cache_tags =
+      tmpl::list<evolution::dg::subcell::Tags::ActiveGrid>;
+  using mutable_global_cache_tags = tmpl::list<>;
+  using argument_tags = tmpl::list<evolution::dg::subcell::Tags::ActiveGrid>;
+  using simple_tags_from_options = tmpl::list<>;
+  using default_initialized_simple_tags = tmpl::list<>;
+  using return_tags = tmpl::list<domain::Tags::Mesh<Dim>>;
+  using simple_tags = return_tags;
+  using compute_tags = tmpl::list<>;
+
+  static void apply(const gsl::not_null<::Mesh<Dim>*> mesh,
+                    const evolution::dg::subcell::ActiveGrid active_grid) {
+    // Originally the mesh is DG so switch it to FD if we aren't using a DG grid
+    if (active_grid == evolution::dg::subcell::ActiveGrid::Subcell) {
+      *mesh = evolution::dg::subcell::fd::mesh(*mesh);
+    }
+  }
+};
+}  // namespace Initialization
+
 template <size_t Dim, bool EnableTimeDependentMaps>
 struct Metavariables {
   static constexpr size_t volume_dim = Dim;
@@ -236,7 +262,8 @@ struct Metavariables {
                   tmpl::list<Initialization::Actions::InitializeItems<
                                  Initialization::TimeStepping<
                                      Metavariables, local_time_stepping>,
-                                 evolution::dg::Initialization::Domain<Dim>>,
+                                 evolution::dg::Initialization::Domain<Dim>,
+                                 Initialization::SetMeshType<Dim>>,
                              Initialization::Actions::AddComputeTags<
                                  ::domain::Tags::MinimumGridSpacingCompute<
                                      Dim, Frame::Inertial>>,
@@ -269,7 +296,8 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &setup_memory_allocation_failure_reporting,
+    &setup_error_handling,
+    &setup_memory_allocation_failure_reporting,
     &disable_openblas_multithreading,
     &domain::creators::register_derived_with_charm,
     &domain::creators::time_dependence::register_derived_with_charm,
