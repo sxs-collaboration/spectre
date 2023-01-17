@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <deque>
 #include <map>
+#include <ostream>
 #include <pup.h>
 #include <pup_stl.h>  // IWYU pragma: keep
 #include <type_traits>
@@ -274,6 +275,8 @@ class BoundaryHistory {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
+  std::ostream& print(std::ostream& os) const;
+
  private:
   template <size_t Side>
   void mark_unneeded(const iterator& first_needed);
@@ -407,5 +410,36 @@ BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::
                       remote - history_->remote_data_.first.begin())]);
   }
   return make_math_wrapper(inserted_value);
+}
+
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+std::ostream& BoundaryHistory<LocalVars, RemoteVars, CouplingResult>::print(
+    std::ostream& os) const {
+  using ::operator<<;
+  os << "Integration order: " << integration_order_ << "\n";
+  os << "Local Data:\n";
+  auto local_value_it = local_data_.second.begin();
+  for (auto local_time_it = local_data_.first.begin();
+       local_time_it != local_data_.first.end();
+       ++local_time_it, ++local_value_it) {
+    os << "Time: " << *local_time_it << "\n";
+    os << "Data: " << *local_value_it << "\n";
+  }
+  os << "Remote Data:\n";
+  auto remote_value_it = remote_data_.second.begin();
+  for (auto remote_time_it = remote_data_.first.begin();
+       remote_time_it != remote_data_.first.end();
+       ++remote_time_it, ++remote_value_it) {
+    os << "Time: " << *remote_time_it << "\n";
+    os << "Data: " << *remote_value_it << "\n";
+  }
+  return os;
+}
+
+template <typename LocalVars, typename RemoteVars, typename CouplingResult>
+std::ostream& operator<<(
+    std::ostream& os,
+    const BoundaryHistory<LocalVars, RemoteVars, CouplingResult>& history) {
+  return history.print(os);
 }
 }  // namespace TimeSteppers

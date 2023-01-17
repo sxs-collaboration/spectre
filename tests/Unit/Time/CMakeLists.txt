@@ -38,6 +38,7 @@ target_link_libraries(
   DomainStructure
   Time
   TimeStepperHelpers
+  Utilities
   )
 
 add_dependencies(
