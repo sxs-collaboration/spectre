@@ -247,6 +247,14 @@ bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
   return not(lhs == rhs);
 }
 
+template <size_t Dim>
+std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data) {
+  os << "TimeStepId: " << mortar_data.time_step_id() << "\n";
+  os << "LocalMortarData: " << mortar_data.local_mortar_data() << "\n";
+  os << "NeighborMortarData: " << mortar_data.neighbor_mortar_data() << "\n";
+  return os;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                \
@@ -254,7 +262,9 @@ bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs) {
   template bool operator==(const MortarData<DIM(data)>& lhs,  \
                            const MortarData<DIM(data)>& rhs); \
   template bool operator!=(const MortarData<DIM(data)>& lhs,  \
-                           const MortarData<DIM(data)>& rhs);
+                           const MortarData<DIM(data)>& rhs); \
+  template std::ostream& operator<<(std::ostream& os,         \
+                                    const MortarData<DIM(data)>& mortar_data);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 

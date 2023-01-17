@@ -4,8 +4,8 @@
 #pragma once
 
 #include <cstddef>
+#include <iosfwd>
 #include <optional>
-#include <ostream>
 #include <pup.h>
 #include <utility>
 #include <vector>
@@ -14,7 +14,6 @@
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Time/TimeStepId.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
@@ -181,4 +180,7 @@ class MortarData {
 
 template <size_t Dim>
 bool operator!=(const MortarData<Dim>& lhs, const MortarData<Dim>& rhs);
+
+template <size_t Dim>
+std::ostream& operator<<(std::ostream& os, const MortarData<Dim>& mortar_data);
 }  // namespace evolution::dg

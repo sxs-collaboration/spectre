@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
@@ -17,7 +18,9 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace evolution::dg {
@@ -60,6 +63,14 @@ void test_global_time_stepping_usage() {
                                           neighbor_data);
   CHECK(mortar_data.local_mortar_data().has_value());
   CHECK(mortar_data.neighbor_mortar_data().has_value());
+
+  std::string expected_output = MakeString{}
+                                << "TimeStepId: " << time_step_id << "\n"
+                                << "LocalMortarData: (" << local_mesh << ", "
+                                << local_data << ")\n"
+                                << "NeighborMortarData: (" << neighbor_mesh
+                                << ", " << neighbor_data << ")\n";
+  CHECK(get_output(mortar_data) == expected_output);
 
   const auto deserialized_mortar_data = serialize_and_deserialize(mortar_data);
 
@@ -150,6 +161,13 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
   };
 
   check_geometric_quantities(mortar_data);
+
+  std::string expected_output = MakeString{}
+                                << "TimeStepId: " << time_step_id << "\n"
+                                << "LocalMortarData: (" << local_mesh << ", "
+                                << local_data << ")\n"
+                                << "NeighborMortarData: --\n";
+  CHECK(get_output(mortar_data) == expected_output);
 
   const auto deserialized_mortar_data = serialize_and_deserialize(mortar_data);
 
