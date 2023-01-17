@@ -23,6 +23,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Actions/TerminatePhase.hpp"
+#include "ParallelAlgorithms/Amr/Actions/Component.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
 #include "Utilities/MemoryHelpers.hpp"
@@ -83,21 +84,6 @@ struct Value : db::SimpleTag {
   using type = double;
 };
 
-template <class Metavariables>
-struct TestSingleton {
-  using chare_type = Parallel::Algorithms::Singleton;
-  using array_index = int;
-  using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
-  using simple_tags_from_options = Parallel::get_simple_tags_from_options<
-      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-
-  static void execute_next_phase(
-      const Parallel::Phase /*next_phase*/,
-      const Parallel::CProxy_GlobalCache<Metavariables>& /*global_cache*/) {}
-};
-
 struct InitializeValue {
   using simple_tags = tmpl::list<Value>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -124,7 +110,7 @@ struct ArrayReduce {
     const auto& my_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index];
     const auto& singleton_proxy =
-        Parallel::get_parallel_component<TestSingleton<Metavariables>>(cache);
+        Parallel::get_parallel_component<amr::Component<Metavariables>>(cache);
     Parallel::ReductionData<Parallel::ReductionDatum<double, funcl::Plus<>>>
         reduction_data{db::get<Value>(box)};
     Parallel::contribute_to_reduction<CheckReduction>(reduction_data, my_proxy,
@@ -188,28 +174,61 @@ struct CollectDataFromChildren {
   }
 };
 
+struct CreateChild {
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex, typename ElementProxy,
+            typename ElementIndex>
+  static void apply(db::DataBox<DbTagList>& /*box*/,
+                    Parallel::GlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    ElementProxy element_proxy, ElementIndex parent_id,
+                    ElementIndex child_id,
+                    std::vector<ElementIndex> children_ids) {
+    auto my_proxy = Parallel::get_parallel_component<ParallelComponent>(cache);
+    ASSERT(
+        alg::count(children_ids, child_id) == 1,
+        "Child " << child_id << " does not exist uniquely in " << children_ids);
+    const auto child_it = alg::find(children_ids, child_id);
+    if (*child_it == children_ids.back()) {
+      auto parent_proxy = element_proxy(parent_id);
+      element_proxy(child_id).insert(
+          cache.thisProxy, Parallel::Phase::AdjustDomain,
+          std::make_unique<Parallel::SimpleActionCallback<
+              SendDataToChildren, decltype(parent_proxy),
+              std::vector<ElementIndex>>>(parent_proxy,
+                                          std::move(children_ids)));
+    } else {
+      const auto next_child_it = std::next(child_it);
+      auto next_child = *next_child_it;
+      element_proxy(child_id).insert(
+          cache.thisProxy, Parallel::Phase::AdjustDomain,
+          std::make_unique<Parallel::SimpleActionCallback<
+              CreateChild, decltype(my_proxy), ElementProxy, ElementIndex,
+              ElementIndex, std::vector<ElementIndex>>>(
+              my_proxy, std::move(element_proxy), std::move(parent_id),
+              std::move(next_child), std::move(children_ids)));
+    }
+  }
+};
+
 struct ChangeArray {
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex>
   static void apply(const db::DataBox<DbTags>& /*box*/,
-                    const Parallel::GlobalCache<Metavariables>& cache,
+                    Parallel::GlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index) {
     auto& array_proxy =
         Parallel::get_parallel_component<ParallelComponent>(cache);
     auto my_proxy = array_proxy[array_index];
-    auto create_children = [&cache, &array_index, &array_proxy,
-                            &my_proxy](const size_t number_of_new_elements) {
+    auto create_children = [&cache, &array_index,
+                            &array_proxy](const size_t number_of_new_elements) {
       std::vector<int> new_ids(number_of_new_elements);
       std::iota(new_ids.begin(), new_ids.end(), 100 * array_index);
-      std::deque<int> other_ids_to_create(new_ids.begin(), new_ids.end());
-      other_ids_to_create.pop_front();
-      array_proxy(new_ids.front())
-          .insert(
-              cache.thisProxy, Parallel::Phase::Execute,
-              std::make_unique<Parallel::SimpleActionCallback<
-                  SendDataToChildren, decltype(my_proxy), std::vector<int>>>(
-                  my_proxy, std::move(new_ids)),
-              other_ids_to_create);
+      auto& singleton_proxy =
+          Parallel::get_parallel_component<amr::Component<Metavariables>>(
+              cache);
+      Parallel::simple_action<CreateChild>(
+          singleton_proxy, array_proxy, array_index, new_ids.front(), new_ids);
     };
 
     auto create_parent = [&cache, &array_proxy,
@@ -222,8 +241,7 @@ struct ChangeArray {
           std::make_unique<Parallel::SimpleActionCallback<
               CollectDataFromChildren, decltype(my_proxy), int, std::deque<int>,
               double>>(my_proxy, std::move(parent_id), std::move(ids_to_join),
-                       0.0),
-          std::deque<int>{});
+                       0.0));
     };
 
     std::vector<size_t> ids_to_split{2, 4, 8, 16, 32, 64};
@@ -308,7 +326,7 @@ struct TestArray {
 };
 
 struct TestMetavariables {
-  using component_list = tmpl::list<TestSingleton<TestMetavariables>,
+  using component_list = tmpl::list<amr::Component<TestMetavariables>,
                                     TestArray<TestMetavariables>>;
 
   static constexpr Options::String help =
@@ -326,6 +344,11 @@ struct TestMetavariables {
 void register_callback() {
   Parallel::register_classes_with_charm(
       tmpl::list<
+          Parallel::SimpleActionCallback<
+              CreateChild,
+              CProxy_AlgorithmSingleton<amr::Component<TestMetavariables>, int>,
+              CProxy_AlgorithmArray<TestArray<TestMetavariables>, int>, int,
+              int, std::vector<int>>,
           Parallel::SimpleActionCallback<
               SendDataToChildren,
               CProxyElement_AlgorithmArray<TestArray<TestMetavariables>, int>,

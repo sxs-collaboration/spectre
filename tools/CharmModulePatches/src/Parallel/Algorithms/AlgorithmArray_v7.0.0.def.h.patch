@@ -3,12 +3,12 @@ index 541313a5d..7afe8f1b5 100644
 --- a/src/Parallel/Algorithms/AlgorithmArray.def.h
 +++ b/src/Parallel/Algorithms/AlgorithmArray.def.h
 @@ -518,16 +518,17 @@ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::start
- /* DEFS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_7, const ReceiveData_t &impl_noname_8, bool enable_if_disabled);
+ /* DEFS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_6, const ReceiveData_t &impl_noname_7, bool enable_if_disabled);
   */
  template <class ParallelComponent, class SpectreArrayIndex> 
 -template <class ReceiveTag, class ReceiveData_t, typename Fwd1, typename Fwd2>
 +template <typename ReceiveTag, typename Fwd2, typename Fwd1>
- void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::receive_data(Fwd1 &&impl_noname_7, Fwd2 &&impl_noname_8, bool enable_if_disabled, const CkEntryOptions *impl_e_opts) 
+ void CProxyElement_AlgorithmArray <ParallelComponent, SpectreArrayIndex> ::receive_data(Fwd1 &&impl_noname_6, Fwd2 &&impl_noname_7, bool enable_if_disabled, const CkEntryOptions *impl_e_opts) 
  {
 +  using ReceiveData_t = Fwd2;
    ckCheck();

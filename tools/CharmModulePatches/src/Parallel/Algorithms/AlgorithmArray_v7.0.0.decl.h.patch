@@ -4,10 +4,10 @@ index 7bc3d5c52..f10f24c9a 100644
 +++ b/src/Parallel/Algorithms/AlgorithmArray.decl.h
 @@ -498,7 +498,7 @@ template <class ParallelComponent, class SpectreArrayIndex>  class CProxyElement
  
- /* DECLS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_7, const ReceiveData_t &impl_noname_8, bool enable_if_disabled);
+ /* DECLS: void receive_data(const typename ReceiveTag::temporal_id &impl_noname_6, const ReceiveData_t &impl_noname_7, bool enable_if_disabled);
   */
 -    template <class ReceiveTag, class ReceiveData_t, typename Fwd1 = typename ReceiveTag::temporal_id, typename Fwd2 = ReceiveData_t>
 +    template <typename ReceiveTag, typename Fwd2, typename Fwd1 = typename ReceiveTag::temporal_id>
-     void receive_data(Fwd1 &&impl_noname_7, Fwd2 &&impl_noname_8, bool enable_if_disabled = false, const CkEntryOptions *impl_e_opts=NULL) ;
+     void receive_data(Fwd1 &&impl_noname_6, Fwd2 &&impl_noname_7, bool enable_if_disabled = false, const CkEntryOptions *impl_e_opts=NULL) ;
  
  /* DECLS: void set_terminate(const bool &impl_noname_9);
