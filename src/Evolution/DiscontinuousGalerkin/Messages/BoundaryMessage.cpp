@@ -33,27 +33,9 @@ BoundaryMessage<Dim>::BoundaryMessage(
       dg_flux_data(dg_flux_data_in) {}
 
 template <size_t Dim>
-size_t BoundaryMessage<Dim>::total_bytes_without_data() {
-  // subcell_ghost_data_size, dg_flux_data_size, sender_node, sender_core
-  size_t totalsize = 4 * detail::offset<size_t>();
-  // sent_across_nodes
-  totalsize += detail::offset<bool>();
-  // current_time_step_id, next_time_step_id
-  totalsize += 2 * detail::offset<TimeStepId>();
-  // volume_or_ghost_mesh
-  totalsize += detail::offset<Mesh<Dim>>();
-  // interface_mesh
-  totalsize += detail::offset<Mesh<Dim - 1>>();
-  // subcell_ghost_data, dg_flux_data
-  totalsize += 2 * detail::offset<double*>();
-
-  return totalsize;
-}
-
-template <size_t Dim>
 size_t BoundaryMessage<Dim>::total_bytes_with_data(const size_t subcell_size,
                                                    const size_t dg_size) {
-  size_t totalsize = total_bytes_without_data();
+  size_t totalsize = sizeof(BoundaryMessage<Dim>);
   totalsize += (subcell_size + dg_size) * sizeof(double);
   return totalsize;
 }
@@ -72,7 +54,7 @@ void* BoundaryMessage<Dim>::pack(BoundaryMessage<Dim>* in_msg) {
   // We cast to char* here to avoid a GCC compiler error
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   memcpy(reinterpret_cast<char*>(out_msg), &in_msg->subcell_ghost_data_size,
-         BoundaryMessage<Dim>::total_bytes_without_data());
+         sizeof(BoundaryMessage<Dim>));
 
   if (subcell_size != 0) {
     // double* + 1 == char* + 8 because double* is 8 bytes
