@@ -110,10 +110,10 @@ if(CMAKE_SUPPORTS_LINK_OPTIONS)
   # Creates a target named TARGET_NAME that, if the linker flag FLAG_TO_CHECK
   # is supported, defines ${FLAG_TO_CHECK} as an INTERFACE_LINK_OPTION
   function(create_cxx_link_flag_target FLAG_TO_CHECK TARGET_NAME)
-    include(CheckCxxLinkerFlag)
+    include(CheckLinkerFlag)
     unset(CXX_LINKER_FLAG_WORKS CACHE)
     set(CMAKE_REQUIRED_QUIET 1)
-    check_cxx_linker_flag(${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
+    check_linker_flag(CXX ${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
     unset(CMAKE_REQUIRED_QUIET)
 
     add_library(${TARGET_NAME} INTERFACE)
@@ -127,10 +127,10 @@ endif(CMAKE_SUPPORTS_LINK_OPTIONS)
 
 # Checks if a flag is supported by the linker and adds it if it is
 function(check_and_add_cxx_link_flag FLAG_TO_CHECK)
-  include(CheckCxxLinkerFlag)
+  include(CheckLinkerFlag)
   unset(CXX_LINKER_FLAG_WORKS CACHE)
   set(CMAKE_REQUIRED_QUIET 1)
-  check_cxx_linker_flag(${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
+  check_linker_flag(CXX ${FLAG_TO_CHECK} CXX_LINKER_FLAG_WORKS)
   unset(CMAKE_REQUIRED_QUIET)
   if(CXX_LINKER_FLAG_WORKS)
     set(CMAKE_CXX_LINK_FLAGS

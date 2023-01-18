@@ -384,7 +384,7 @@ jobs:
           - compiler: clang-13
             use_pch: ON
             build_type: Debug
-            CMAKE_EXECUTABLE: /opt/local/cmake/3.12.4/bin/cmake
+            CMAKE_EXECUTABLE: /opt/local/cmake/3.18.2/bin/cmake
 
     container:
       image: sxscollaboration/spectre:ci
