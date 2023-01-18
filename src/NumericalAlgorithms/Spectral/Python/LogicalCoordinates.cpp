@@ -3,17 +3,14 @@
 
 #include "NumericalAlgorithms/Spectral/Python/LogicalCoordinates.hpp"
 
-#include <array>
 #include <cstddef>
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Spectral/LogicalCoordinates.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
-#include "Utilities/MakeArray.hpp"
 
 namespace py = pybind11;
 
@@ -21,9 +18,9 @@ namespace Spectral::py_bindings {
 namespace {
 template <size_t Dim>
 void bind_logical_coordinates_impl(py::module& m) {  // NOLINT
-  m.def("logical_coordinates", [](const Mesh<Dim>& mesh) {
-    return make_array<DataVector, Dim>(logical_coordinates(mesh));
-  });
+  m.def("logical_coordinates",
+        py::overload_cast<const Mesh<Dim>&>(&logical_coordinates<Dim>),
+        py::arg("mesh"));
 }
 }  // namespace
 

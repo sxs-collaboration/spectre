@@ -27,6 +27,13 @@ spectre_python_headers(
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
+  DataStructures
   Spectral
   pybind11::module
 )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyDataStructures
+  PyTensor
+  )
