@@ -69,10 +69,7 @@ class ClassicalRungeKutta4 : public RungeKutta {
 
   explicit ClassicalRungeKutta4(CkMigrateMessage* /*unused*/) {}
 
- private:
   const ButcherTableau& butcher_tableau() const override;
-
-  const ButcherTableau& error_tableau() const override;
 };
 
 inline bool constexpr operator==(const ClassicalRungeKutta4& /*lhs*/,

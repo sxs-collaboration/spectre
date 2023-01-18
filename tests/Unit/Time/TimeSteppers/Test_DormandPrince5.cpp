@@ -5,6 +5,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/DormandPrince5.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -12,6 +13,13 @@
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   const TimeSteppers::DormandPrince5 stepper{};
+
+  CHECK(stepper.order() == 5);
+  CHECK(stepper.error_estimate_order() == 4);
+  CHECK(stepper.number_of_substeps() == 6);
+  CHECK(stepper.number_of_substeps_for_error() == 7);
+  TestHelpers::RungeKutta::check_tableau(stepper);
+
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 5, 0, 1.0, 1.0e-9);
   TimeStepperTestUtils::integrate_test(stepper, 5, 0, -1.0, 1.0e-9);
@@ -25,9 +33,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.DormandPrince5", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 5_st);
-
-  CHECK(stepper.order() == 5_st);
-  CHECK(stepper.error_estimate_order() == 4_st);
 
   TestHelpers::test_factory_creation<TimeStepper, TimeSteppers::DormandPrince5>(
       "DormandPrince5");

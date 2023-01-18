@@ -42,7 +42,6 @@ class Rk3HesthavenSsp : public RungeKutta {
 
   explicit Rk3HesthavenSsp(CkMigrateMessage* /*unused*/) {}
 
- private:
   const ButcherTableau& butcher_tableau() const override;
 };
 

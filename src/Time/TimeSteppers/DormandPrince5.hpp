@@ -63,7 +63,6 @@ class DormandPrince5 : public RungeKutta {
 
   explicit DormandPrince5(CkMigrateMessage* /*unused*/) {}
 
- private:
   const ButcherTableau& butcher_tableau() const override;
 };
 

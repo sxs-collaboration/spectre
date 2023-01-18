@@ -30,9 +30,7 @@ namespace TimeSteppers {
  * classes need only implement `order`, `error_estimate_order`, and
  * `stable_step`, and should not include the `TIME_STEPPER_*` macros.
  * All other methods are implemented in terms of a Butcher tableau
- * returned by the `butcher_tableau` function and, optionally, another
- * from the `error_tableau` if the scheme's error estimation requires
- * additional substeps.
+ * returned by the `butcher_tableau` function.
  */
 class RungeKutta : public TimeStepper {
  public:
@@ -51,17 +49,15 @@ class RungeKutta : public TimeStepper {
     /*!
      * The coefficients for the final result.  Often called \f$b\f$ in
      * the literature.
+     *
+     * If the number of coefficients is smaller than the number of
+     * substeps defined in `substep_coefficients`, the extra substeps
+     * will only be performed when an error estimate is requested.
      */
     std::vector<double> result_coefficients;
     /*!
      * The coefficients for an error estimate.  Often called
      * \f$b^*\f$ or \f$\hat{b}\f$ in the literature.
-     *
-     * Some RK methods need extra steps to compute error measures (in
-     * addition to or in place of using an FSAL optimization).  For
-     * such steppers, this vector can be left empty for the main
-     * Butcher tableau and a separate tableau for error estimation can
-     * be returned from the `error_tableau` function.
      */
     std::vector<double> error_coefficients;
     /*!
@@ -93,11 +89,9 @@ class RungeKutta : public TimeStepper {
   TimeStepId next_time_id_for_error(const TimeStepId& current_id,
                                     const TimeDelta& time_step) const override;
 
- protected:
   virtual const ButcherTableau& butcher_tableau() const = 0;
 
-  virtual const ButcherTableau& error_tableau() const;
-
+ private:
   template <typename T>
   void update_u_impl(gsl::not_null<T*> u,
                      gsl::not_null<UntypedHistory<T>*> history,

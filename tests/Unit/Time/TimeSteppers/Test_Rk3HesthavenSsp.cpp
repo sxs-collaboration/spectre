@@ -5,6 +5,7 @@
 
 #include "Framework/TestCreation.hpp"
 #include "Framework/TestHelpers.hpp"
+#include "Helpers/Time/TimeSteppers/RungeKutta.hpp"
 #include "Helpers/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 #include "Time/TimeSteppers/Rk3HesthavenSsp.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -12,6 +13,13 @@
 
 SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3HesthavenSsp", "[Unit][Time]") {
   const TimeSteppers::Rk3HesthavenSsp stepper{};
+
+  CHECK(stepper.order() == 3);
+  CHECK(stepper.error_estimate_order() == 2);
+  CHECK(stepper.number_of_substeps() == 3);
+  CHECK(stepper.number_of_substeps_for_error() == 3);
+  TestHelpers::RungeKutta::check_tableau(stepper);
+
   TimeStepperTestUtils::check_substep_properties(stepper);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, 1., 1e-9);
   TimeStepperTestUtils::integrate_test(stepper, 3, 0, -1., 1e-9);
@@ -25,9 +33,6 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.Rk3HesthavenSsp", "[Unit][Time]") {
   TimeStepperTestUtils::stability_test(stepper);
   TimeStepperTestUtils::check_convergence_order(stepper);
   TimeStepperTestUtils::check_dense_output(stepper, 3_st);
-
-  CHECK(stepper.order() == 3_st);
-  CHECK(stepper.error_estimate_order() == 2_st);
 
   TestHelpers::test_factory_creation<TimeStepper,
                                      TimeSteppers::Rk3HesthavenSsp>(
