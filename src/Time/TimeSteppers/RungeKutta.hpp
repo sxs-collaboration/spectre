@@ -33,7 +33,7 @@ namespace TimeSteppers {
  * All other methods are implemented in terms of a Butcher tableau
  * returned by the `butcher_tableau` function.
  */
-class RungeKutta : public TimeStepper {
+class RungeKutta : public virtual TimeStepper {
  public:
   struct ButcherTableau {
     /*!

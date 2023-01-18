@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "Options/String.hpp"
-#include "Time/TimeSteppers/RungeKutta.hpp"
+#include "Time/TimeSteppers/ImexRungeKutta.hpp"
 #include "Utilities/Serialization/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -33,9 +33,12 @@ namespace TimeSteppers {
  * in \cite Gassner20114232. Note that \f$c_1 = 0\f$, \f$s\f$ is the number
  * of stages, and \f$\theta\f$ is the fraction of the step.
  *
+ * When used as an IMEX method, the implicit portion uses the
+ * trapezoid rule, which is stiffly accurate and A-stable.
+ *
  * The CFL factor/stable step size is 1.0.
  */
-class Heun2 : public RungeKutta {
+class Heun2 : public ImexRungeKutta {
  public:
   using options = tmpl::list<>;
   static constexpr Options::String help = {
@@ -54,11 +57,17 @@ class Heun2 : public RungeKutta {
 
   double stable_step() const override;
 
+  size_t imex_order() const override;
+
+  size_t implicit_stage_order() const override;
+
   WRAPPED_PUPable_decl_template(Heun2);  // NOLINT
 
   explicit Heun2(CkMigrateMessage* /*unused*/) {}
 
   const ButcherTableau& butcher_tableau() const override;
+
+  const ImplicitButcherTableau& implicit_butcher_tableau() const override;
 };
 
 inline bool constexpr operator==(const Heun2& /*lhs*/, const Heun2& /*rhs*/) {
