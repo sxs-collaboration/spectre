@@ -40,6 +40,7 @@
 #include "Evolution/DgSubcell/Tags/DataForRdmpTci.hpp"
 #include "Evolution/DgSubcell/Tags/Mesh.hpp"
 #include "Evolution/DgSubcell/Tags/NeighborData.hpp"
+#include "Evolution/DgSubcell/Tags/TciStatus.hpp"
 #include "Evolution/DiscontinuousGalerkin/InboxTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarData.hpp"
 #include "Evolution/DiscontinuousGalerkin/MortarTags.hpp"
@@ -156,6 +157,8 @@ struct SendDataForReconstruction {
       }
     }();
 
+    const int tci_decision =
+        db::get<evolution::dg::subcell::Tags::TciDecision>(box);
     // Compute and send actual variables
     for (const auto& [direction, neighbors_in_direction] :
          element.neighbors()) {
@@ -189,10 +192,13 @@ struct SendDataForReconstruction {
                                     rdmp_tci_data.min_variables_values.cend());
 
         std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                   std::optional<std::vector<double>>, ::TimeStepId>
-            data{subcell_mesh, dg_mesh.slice_away(direction.dimension()),
-                 std::move(subcell_data_to_send), std::nullopt,
-                 next_time_step_id};
+                   std::optional<std::vector<double>>, ::TimeStepId, int>
+            data{subcell_mesh,
+                 dg_mesh.slice_away(direction.dimension()),
+                 std::move(subcell_data_to_send),
+                 std::nullopt,
+                 next_time_step_id,
+                 tci_decision};
 
         Parallel::receive_data<
             evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -262,12 +268,12 @@ struct ReceiveDataForReconstruction {
     using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
-             FixedHashMap<
-                 maximum_number_of_neighbors(Dim), Key,
-                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                            std::optional<std::vector<double>>,
-                            std::optional<std::vector<double>>, ::TimeStepId>,
-                 boost::hash<Key>>>& inbox =
+             FixedHashMap<maximum_number_of_neighbors(Dim), Key,
+                          std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                                     std::optional<std::vector<double>>,
+                                     std::optional<std::vector<double>>,
+                                     ::TimeStepId, int>,
+                          boost::hash<Key>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
@@ -282,7 +288,7 @@ struct ReceiveDataForReconstruction {
     FixedHashMap<
         maximum_number_of_neighbors(Dim), Key,
         std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                   std::optional<std::vector<double>>, ::TimeStepId>,
+                   std::optional<std::vector<double>>, ::TimeStepId, int>,
         boost::hash<Key>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
@@ -292,7 +298,8 @@ struct ReceiveDataForReconstruction {
     db::mutate<Tags::NeighborDataForReconstruction<Dim>, Tags::DataForRdmpTci,
                evolution::dg::Tags::MortarData<Dim>,
                evolution::dg::Tags::MortarNextTemporalId<Dim>,
-               evolution::dg::Tags::NeighborMesh<Dim>>(
+               evolution::dg::Tags::NeighborMesh<Dim>,
+               evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
         make_not_null(&box),
         [&current_time_step_id, &element,
          ghost_zone_size = Metavariables::SubcellOptions::ghost_zone_size(box),
@@ -313,7 +320,8 @@ struct ReceiveDataForReconstruction {
                 maximum_number_of_neighbors(Dim),
                 std::pair<Direction<Dim>, ElementId<Dim>>, Mesh<Dim>,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
-                neighbor_mesh) {
+                neighbor_mesh,
+            const auto neighbor_tci_decisions) {
           // Remove neighbor meshes for neighbors that don't exist anymore
           domain::remove_nonexistent_neighbors(neighbor_mesh, element);
 
@@ -374,6 +382,12 @@ struct ReceiveDataForReconstruction {
                   number_of_rdmp_vars, directional_element_id,
                   neighbor_mesh->at(directional_element_id), element,
                   subcell_mesh, ghost_zone_size);
+              ASSERT(neighbor_tci_decisions->contains(directional_element_id),
+                     "The NeighorTciDecisions should contain the neighbor ("
+                         << directional_element_id.first << ", "
+                         << directional_element_id.second << ") but doesn't");
+              neighbor_tci_decisions->at(directional_element_id) =
+                  std::get<5>(received_data[directional_element_id]);
             }
           }
         });

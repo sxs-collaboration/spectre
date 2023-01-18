@@ -285,6 +285,22 @@ void test(const bool always_use_subcell, const bool interior_element) {
       runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<
         comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<
+        comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(runner,
+                                                                       0));
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+            runner, 0)
+            .size() ==
+        (interior_element ? Direction<Dim>::all_directions().size() : 0));
+  for (const auto& [direction, neighbors_in_direction] : element.neighbors()) {
+    for (const auto& neighbor : neighbors_in_direction.ids()) {
+      CHECK(ActionTesting::get_databox_tag<
+                comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+                runner, 0)
+                .contains(std::pair{direction, neighbor}));
+    }
+  }
   const auto& subcell_inertial_coords = ActionTesting::get_databox_tag<
       comp, evolution::dg::subcell::Tags::Coordinates<Dim, Frame::Inertial>>(
       runner, 0);

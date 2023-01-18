@@ -96,7 +96,7 @@ template <size_t Dim>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type =
       std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId>;
+                 std::optional<std::vector<double>>, ::TimeStepId, int>;
 
  public:
   using temporal_id = TimeStepId;
@@ -112,13 +112,15 @@ struct BoundaryCorrectionAndGhostCellsInbox {
                                 ReceiveDataType&& data) {
     auto& current_inbox = (*inbox)[time_step_id];
     auto& [volume_mesh_of_ghost_cell_data, face_mesh, ghost_cell_data,
-           boundary_data, boundary_data_validity_range] = data.second;
+           boundary_data, boundary_data_validity_range, boundary_tci_status] =
+        data.second;
     (void)ghost_cell_data;
 
     if (auto it = current_inbox.find(data.first); it != current_inbox.end()) {
       auto& [current_volume_mesh_of_ghost_cell_data, current_face_mesh,
              current_ghost_cell_data, current_boundary_data,
-             current_boundary_data_validity_range] = it->second;
+             current_boundary_data_validity_range, current_tci_status] =
+          it->second;
       (void)current_volume_mesh_of_ghost_cell_data;  // Need to use when
                                                      // optimizing subcell
       // We have already received some data at this time. Receiving data twice
@@ -126,6 +128,11 @@ struct BoundaryCorrectionAndGhostCellsInbox {
       // previously received ghost cells. We sanity check that the data we
       // already have is the ghost cells and that we have not yet received flux
       // data.
+      //
+      // This is used if a 2-send implementation is used (which we don't right
+      // now!). We generally find that the number of communications is more
+      // important than the size of each communication, and so a single
+      // communication per time/sub step is preferred.
       ASSERT(current_ghost_cell_data.has_value(),
              "Have not yet received ghost cells at time step "
                  << time_step_id
@@ -156,6 +163,7 @@ struct BoundaryCorrectionAndGhostCellsInbox {
       // implicitly decay to copies
       current_boundary_data = std::move(boundary_data);
       current_boundary_data_validity_range = boundary_data_validity_range;
+      current_tci_status = boundary_tci_status;
     } else {
       // We have not received ghost cells or fluxes at this time.
       if (not current_inbox.insert(std::forward<ReceiveDataType>(data))

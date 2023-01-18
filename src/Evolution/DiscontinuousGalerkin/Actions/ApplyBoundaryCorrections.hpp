@@ -68,9 +68,22 @@ void neighbor_reconstructed_face_solution(
             std::tuple<Mesh<Metavariables::volume_dim>,
                        Mesh<Metavariables::volume_dim - 1>,
                        std::optional<std::vector<double>>,
-                       std::optional<std::vector<double>>, ::TimeStepId>,
+                       std::optional<std::vector<double>>, ::TimeStepId, int>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
                                   ElementId<Metavariables::volume_dim>>>>>*>
+        received_temporal_id_and_data);
+template <size_t Dim, typename DbTagsList>
+void neighbor_tci_decision(
+    gsl::not_null<db::DataBox<DbTagsList>*> box,
+    const std::pair<
+        const TimeStepId,
+        FixedHashMap<
+            maximum_number_of_neighbors(Dim),
+            std::pair<Direction<Dim>, ElementId<Dim>>,
+            std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
+                       std::optional<std::vector<double>>,
+                       std::optional<std::vector<double>>, ::TimeStepId, int>,
+            boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>&
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
 /// \endcond
@@ -86,13 +99,13 @@ bool receive_boundary_data_global_time_stepping(
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
-  std::map<
-      TimeStepId,
-      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
-                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                              std::optional<std::vector<double>>,
-                              std::optional<std::vector<double>>, ::TimeStepId>,
-                   boost::hash<Key>>>& inbox =
+  std::map<TimeStepId,
+           FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                                   std::optional<std::vector<double>>,
+                                   std::optional<std::vector<double>>,
+                                   ::TimeStepId, int>,
+                        boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
@@ -116,6 +129,8 @@ bool receive_boundary_data_global_time_stepping(
   if constexpr (using_subcell_v<Metavariables>) {
     evolution::dg::subcell::neighbor_reconstructed_face_solution<Metavariables>(
         box, make_not_null(&*received_temporal_id_and_data));
+    evolution::dg::subcell::neighbor_tci_decision<volume_dim>(
+        box, *received_temporal_id_and_data);
   }
 
   db::mutate<evolution::dg::Tags::MortarData<volume_dim>,
@@ -188,13 +203,13 @@ bool receive_boundary_data_local_time_stepping(
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
-  std::map<
-      TimeStepId,
-      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
-                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                              std::optional<std::vector<double>>,
-                              std::optional<std::vector<double>>, ::TimeStepId>,
-                   boost::hash<Key>>>& inbox =
+  std::map<TimeStepId,
+           FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                                   std::optional<std::vector<double>>,
+                                   std::optional<std::vector<double>>,
+                                   ::TimeStepId, int>,
+                        boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
 

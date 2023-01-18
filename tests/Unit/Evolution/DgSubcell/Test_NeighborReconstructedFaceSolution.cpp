@@ -45,7 +45,7 @@ using NeighborReconstructionMap =
 template <size_t Dim>
 using MortarData =
     std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-               std::optional<std::vector<double>>, ::TimeStepId>;
+               std::optional<std::vector<double>>, ::TimeStepId, int>;
 
 template <size_t Dim>
 using MortarDataMap =
@@ -122,42 +122,32 @@ void test() {
     if (d % 2 == 0) {
       mortar_data_from_neighbors.second[std::pair{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
-          MortarData<Dim>{dg_volume_mesh,
-                          dg_face_mesh,
-                          dg_recons_and_rdmp_data,
-                          dg_flux_data,
-                          {}};
+          MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
+                          dg_flux_data,   {},           1};
       mortar_data_from_neighbors.second[std::pair{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}}] =
-          MortarData<Dim>{fd_volume_mesh,
-                          fd_face_mesh,
-                          fd_recons_and_rdmp_data,
-                          std::nullopt,
-                          {}};
+          MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
+                          std::nullopt,   {},           2};
     } else {
       mortar_data_from_neighbors.second[std::pair{
           Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d}}] =
-          MortarData<Dim>{dg_volume_mesh,
-                          dg_face_mesh,
-                          dg_recons_and_rdmp_data,
-                          dg_flux_data,
-                          {}};
+          MortarData<Dim>{dg_volume_mesh, dg_face_mesh, dg_recons_and_rdmp_data,
+                          dg_flux_data,   {},           3};
       mortar_data_from_neighbors.second[std::pair{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}}] =
-          MortarData<Dim>{fd_volume_mesh,
-                          fd_face_mesh,
-                          fd_recons_and_rdmp_data,
-                          std::nullopt,
-                          {}};
+          MortarData<Dim>{fd_volume_mesh, fd_face_mesh, fd_recons_and_rdmp_data,
+                          std::nullopt,   {},           4};
     }
   }
   evolution::dg::subcell::neighbor_reconstructed_face_solution<metavars>(
       make_not_null(&box), make_not_null(&mortar_data_from_neighbors));
   for (size_t d = 0; d < Dim; ++d) {
-    std::pair id{Direction<Dim>{d, Side::Lower}, ElementId<Dim>{2 * d + 1}};
-    if (d % 2 != 0) {
-      id = std::pair{Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d + 1}};
-    }
+    CAPTURE(d);
+    const bool d_is_odd = (d % 2 != 0);
+    const std::pair id{Direction<Dim>{d, d_is_odd ? Side::Upper : Side::Lower},
+                       ElementId<Dim>{2 * d + 1}};
+    CAPTURE(id);
+    REQUIRE(mortar_data_from_neighbors.second.contains(id));
     REQUIRE(std::get<2>(mortar_data_from_neighbors.second.at(id)).has_value());
     REQUIRE(std::get<3>(mortar_data_from_neighbors.second.at(id)).has_value());
     CHECK(*std::get<3>(mortar_data_from_neighbors.second.at(id)) ==
@@ -166,6 +156,11 @@ void test() {
               std::prev(
                   std::get<2>(mortar_data_from_neighbors.second.at(id))->end(),
                   4)});
+    if (d_is_odd) {
+      CHECK(std::get<5>(mortar_data_from_neighbors.second.at(id)) == 4);
+    } else {
+      CHECK(std::get<5>(mortar_data_from_neighbors.second.at(id)) == 2);
+    }
   }
 }
 }  // namespace

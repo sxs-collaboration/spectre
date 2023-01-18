@@ -62,6 +62,8 @@ template <typename Metavariables, typename DbTagsList, size_t Dim>
 auto prepare_neighbor_data(gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
                            gsl::not_null<db::DataBox<DbTagsList>*> box)
     -> DirectionMap<Metavariables::volume_dim, std::vector<double>>;
+template <typename DbTagsList>
+int get_tci_decision(const db::DataBox<DbTagsList>& box);
 }  // namespace evolution::dg::subcell
 namespace tuples {
 template <typename...>
@@ -534,6 +536,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
 
   std::optional<DirectionMap<Dim, std::vector<double>>>
       all_neighbor_data_for_reconstruction = std::nullopt;
+  int tci_decision = 0;
   // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
   // projection.
   Mesh<Dim> ghost_data_mesh = db::get<domain::Tags::Mesh<Dim>>(*box);
@@ -541,6 +544,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     all_neighbor_data_for_reconstruction =
         evolution::dg::subcell::prepare_neighbor_data<Metavariables>(
             make_not_null(&ghost_data_mesh), box);
+    tci_decision = evolution::dg::subcell::get_tci_decision(*box);
   }
 
   for (const auto& [direction, neighbors] : element.neighbors()) {
@@ -594,7 +598,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       using SendData =
           std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
                      std::optional<std::vector<double>>,
-                     std::optional<std::vector<double>>, ::TimeStepId>;
+                     std::optional<std::vector<double>>, ::TimeStepId, int>;
       SendData data{};
 
       if (neighbor_count == total_neighbors) {
@@ -602,13 +606,15 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                         neighbor_boundary_data_on_mortar.first,
                         std::move(ghost_and_subcell_data),
                         {std::move(neighbor_boundary_data_on_mortar.second)},
-                        next_time_step_id};
+                        next_time_step_id,
+                        tci_decision};
       } else {
         data = SendData{ghost_data_mesh,
                         neighbor_boundary_data_on_mortar.first,
                         ghost_and_subcell_data,
                         {std::move(neighbor_boundary_data_on_mortar.second)},
-                        next_time_step_id};
+                        next_time_step_id,
+                        tci_decision};
       }
 
       // Send mortar data (the `std::tuple` named `data`) to neighbor

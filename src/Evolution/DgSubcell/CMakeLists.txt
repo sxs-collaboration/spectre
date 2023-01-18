@@ -14,11 +14,13 @@ spectre_target_headers(
   ComputeBoundaryTerms.hpp
   CorrectPackagedData.hpp
   DgSubcell.hpp
+  GetTciDecision.hpp
   GhostZoneLogicalCoordinates.hpp
   Matrices.hpp
   Mesh.hpp
   NeighborRdmpAndVolumeData.hpp
   NeighborReconstructedFaceSolution.hpp
+  NeighborTciDecision.hpp
   PerssonTci.hpp
   PrepareNeighborData.hpp
   Projection.hpp
@@ -60,6 +62,7 @@ target_link_libraries(
   Spectral
 
   INTERFACE
+  Boost::boost
   Events
   FunctionsOfTime
   Parallel

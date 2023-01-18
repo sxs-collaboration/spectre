@@ -14,11 +14,13 @@ set(LIBRARY_SOURCES
   Test_CartesianFluxDivergence.cpp
   Test_ComputeBoundaryTerms.cpp
   Test_CorrectPackagedData.cpp
+  Test_GetTciDecision.cpp
   Test_GhostZoneLogicalCoordinates.cpp
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_NeighborRdmpAndVolumeData.cpp
   Test_NeighborReconstructedFaceSolution.cpp
+  Test_NeighborTciDecision.cpp
   Test_PerssonTci.cpp
   Test_PrepareNeighborData.cpp
   Test_Projection.cpp
