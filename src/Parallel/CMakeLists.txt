@@ -46,6 +46,7 @@ spectre_target_headers(
   PhaseControlReductionHelpers.hpp
   PhaseDependentActionList.hpp
   Printf.hpp
+  PupBoost.hpp
   PupStlCpp11.hpp
   PupStlCpp17.hpp
   Reduction.hpp
