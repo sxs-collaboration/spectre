@@ -71,7 +71,8 @@ void test(const TestThis test_this) {
       persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-      false};
+      false,
+      std::nullopt};
 
   if (test_this == TestThis::PerssonEnergyDensity) {
     get(get<Pressure>(subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
@@ -97,7 +98,7 @@ void test(const TestThis test_this) {
       ::domain::Tags::Mesh<Dim>, ::evolution::dg::subcell::Tags::Mesh<Dim>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<false, 2>>>,
-      evolution::dg::subcell::Tags::SubcellOptions,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(
       subcell_cons, subcell_prim, dg_mesh, subcell_mesh, std::move(eos),
       subcell_options, evolution::dg::subcell::RdmpTciData{});

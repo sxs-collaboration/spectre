@@ -59,13 +59,13 @@ target_link_libraries(
   PUBLIC
   DataStructures
   Domain
+  Parallel
   Spectral
 
   INTERFACE
   Boost::boost
   Events
   FunctionsOfTime
-  Parallel
   Time
 
   PRIVATE

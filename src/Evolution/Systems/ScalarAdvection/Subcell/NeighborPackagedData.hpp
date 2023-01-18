@@ -95,7 +95,7 @@ struct NeighborPackagedData {
     const Mesh<Dim>& subcell_mesh =
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
     const auto& subcell_options =
-        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<Dim>>(box);
     const auto volume_vars_subcell = evolution::dg::subcell::fd::project(
         db::get<typename System<Dim>::variables_tag>(box), dg_mesh,
         subcell_mesh.extents());

@@ -109,7 +109,7 @@ struct TciOnFdGrid {
                  grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
                  domain::Tags::Mesh<3>, evolution::dg::subcell::Tags::Mesh<3>,
                  evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciOptions,
-                 evolution::dg::subcell::Tags::SubcellOptions>;
+                 evolution::dg::subcell::Tags::SubcellOptions<3>>;
   static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
       const Scalar<DataVector>& subcell_tilde_d,
       const Scalar<DataVector>& subcell_tilde_ye,

@@ -106,7 +106,7 @@ struct NeighborPackagedData {
         db::get<evolution::dg::subcell::Tags::Mesh<3>>(box);
     const Mesh<3>& dg_mesh = db::get<domain::Tags::Mesh<3>>(box);
     const auto& subcell_options =
-        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<3>>(box);
     const auto& evolved_vars = db::get<evolved_vars_tag>(box);
 
     const Variables<Tags::spacetime_reconstruction_tags> volume_spacetime_vars =

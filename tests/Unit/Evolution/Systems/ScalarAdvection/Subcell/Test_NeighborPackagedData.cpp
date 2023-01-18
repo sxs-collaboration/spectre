@@ -183,7 +183,7 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       subcell_velocity_field, subcell_faces_velocity_field,
       domain::Tags::MeshVelocity<Dim>,
       evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-      evolution::dg::subcell::Tags::SubcellOptions>>(
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>>>(
       element, dg_mesh, subcell_mesh, volume_vars_dg, neighbor_data,
       std::unique_ptr<fd::Reconstructor<Dim>>{
           std::make_unique<ReconstructionForTest>()},
@@ -203,7 +203,8 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
       normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          std::nullopt});
 
   // Compute face-centered velocity field and add it to the box. This action
   // needs to be called in prior since NeighborPackagedData::apply() internally

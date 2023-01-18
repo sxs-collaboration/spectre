@@ -3,14 +3,21 @@
 
 #pragma once
 
+#include <cstddef>
 #include <limits>
+#include <optional>
 #include <string>
+#include <vector>
 
 #include "Evolution/DgSubcell/ReconstructionMethod.hpp"
+#include "Options/Auto.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+template <size_t VolumeDim>
+class DomainCreator;
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -120,20 +127,48 @@ class SubcellOptions {
         "phenomenon."};
   };
 
+  /// \brief A list of block names on which to never do subcell.
+  ///
+  /// Set to `None` to allow subcell in all blocks.
+  struct OnlyDgBlocksAndGroups {
+    using type =
+        Options::Auto<std::vector<std::string>, Options::AutoLabel::None>;
+    static constexpr Options::String help = {
+        "A list of block and group names on which to never do subcell.\n"
+        "Set to 'None' to not restrict where FD can be used."};
+  };
+
   using options =
       tmpl::list<InitialDataRdmpDelta0, InitialDataRdmpEpsilon, RdmpDelta0,
                  RdmpEpsilon, InitialDataPerssonExponent, PerssonExponent,
-                 AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo>;
+                 AlwaysUseSubcells, SubcellToDgReconstructionMethod, UseHalo,
+                 OnlyDgBlocksAndGroups>;
 
   static constexpr Options::String help{
       "System-agnostic options for the DG-subcell method."};
 
   SubcellOptions() = default;
-  SubcellOptions(double initial_data_rdmp_delta0,
-                 double initial_data_rdmp_epsilon, double rdmp_delta0,
-                 double rdmp_epsilon, double initial_data_persson_exponent,
-                 double persson_exponent, bool always_use_subcells,
-                 fd::ReconstructionMethod recons_method, bool use_halo);
+  SubcellOptions(
+      double initial_data_rdmp_delta0, double initial_data_rdmp_epsilon,
+      double rdmp_delta0, double rdmp_epsilon,
+      double initial_data_persson_exponent, double persson_exponent,
+      bool always_use_subcells, fd::ReconstructionMethod recons_method,
+      bool use_halo,
+      std::optional<std::vector<std::string>> only_dg_block_and_group_names);
+
+  /// \brief Given an existing SubcellOptions that was created from block and
+  /// group names, create one that stores block IDs.
+  ///
+  /// The `DomainCreator` is used to convert block and group names into IDs
+  /// and also to check that all listed block names and groups are in the
+  /// domain.
+  ///
+  /// \note This is a workaround since our option parser does not allow us to
+  /// retrieve options specified somewhere completely different in the input
+  /// file.
+  template <size_t Dim>
+  SubcellOptions(const SubcellOptions& subcell_options_with_block_names,
+                 const DomainCreator<Dim>& domain_creator);
 
   void pup(PUP::er& p);
 
@@ -161,7 +196,16 @@ class SubcellOptions {
 
   bool use_halo() const { return use_halo_; }
 
+  const std::vector<size_t>& only_dg_block_ids() const {
+    ASSERT(only_dg_block_ids_.has_value(),
+           "The block IDs on which we are only allowed to do DG have not been "
+           "set.");
+    return only_dg_block_ids_.value();
+  }
+
  private:
+  friend bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
+
   double initial_data_rdmp_delta0_ =
       std::numeric_limits<double>::signaling_NaN();
   double initial_data_rdmp_epsilon_ =
@@ -175,9 +219,9 @@ class SubcellOptions {
   fd::ReconstructionMethod reconstruction_method_ =
       fd::ReconstructionMethod::AllDimsAtOnce;
   bool use_halo_{false};
+  std::optional<std::vector<std::string>> only_dg_block_and_group_names_{};
+  std::optional<std::vector<size_t>> only_dg_block_ids_{};
 };
-
-bool operator==(const SubcellOptions& lhs, const SubcellOptions& rhs);
 
 bool operator!=(const SubcellOptions& lhs, const SubcellOptions& rhs);
 }  // namespace evolution::dg::subcell

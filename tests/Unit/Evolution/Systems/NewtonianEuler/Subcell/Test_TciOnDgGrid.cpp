@@ -87,14 +87,15 @@ void test(const TestThis test_this) {
       persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-      false};
+      false,
+      std::nullopt};
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<cons_tags>, ::Tags::Variables<prim_tags>,
       ::domain::Tags::Mesh<Dim>, ::evolution::dg::subcell::Tags::Mesh<Dim>,
       hydro::Tags::EquationOfState<
           std::unique_ptr<EquationsOfState::EquationOfState<false, 2>>>,
-      evolution::dg::subcell::Tags::SubcellOptions,
+      evolution::dg::subcell::Tags::SubcellOptions<Dim>,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(
       ConsVars{dg_mesh.number_of_grid_points()}, dg_prims, dg_mesh,
       subcell_mesh, std::move(eos), subcell_options,

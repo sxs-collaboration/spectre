@@ -19,6 +19,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
@@ -121,7 +125,7 @@ struct Metavariables {
   using system = System<Dim, HasPrims>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
-      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions>;
+      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;
@@ -148,7 +152,7 @@ struct Metavariables {
         tmpl::list<Tags::Variables<tmpl::list<Var1>>, domain::Tags::Mesh<Dim>,
                    evolution::dg::subcell::Tags::Mesh<Dim>,
                    evolution::dg::subcell::Tags::DataForRdmpTci,
-                   evolution::dg::subcell::Tags::SubcellOptions>;
+                   evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
     static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
         const Variables<tmpl::list<Var1>>& dg_vars, const Mesh<Dim>& dg_mesh,
@@ -206,11 +210,33 @@ Element<Dim> create_element(const bool with_neighbors) {
   return Element<Dim>{ElementId<Dim>{0, {}}, neighbors};
 }
 
+template <size_t Dim>
+class TestCreator : public DomainCreator<Dim> {
+  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    return {};
+  }
+
+  std::vector<std::string> block_names() const override { return {"Block0"}; }
+
+  std::vector<std::array<size_t, Dim>> initial_extents() const override {
+    return {};
+  }
+
+  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
+      const override {
+    return {};
+  }
+};
+
 template <size_t Dim, bool HasPrims>
 void test_impl(const bool rdmp_fails, const bool tci_fails,
                const bool always_use_subcell, const bool self_starting,
                const bool with_neighbors, const bool use_halo,
-               const bool neighbor_is_troubled) {
+               const bool neighbor_is_troubled,
+               const bool disable_subcell_in_block) {
   CAPTURE(Dim);
   CAPTURE(rdmp_fails);
   CAPTURE(tci_fails);
@@ -219,6 +245,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   CAPTURE(with_neighbors);
   CAPTURE(use_halo);
   CAPTURE(neighbor_is_troubled);
+  CAPTURE(disable_subcell_in_block);
 
   using metavars = Metavariables<Dim, HasPrims>;
   metavars::rdmp_fails = rdmp_fails;
@@ -228,8 +255,13 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
-      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, use_halo}}};
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 5.0, 4.0, always_use_subcell,
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, use_halo,
+          disable_subcell_in_block
+              ? std::optional{std::vector<std::string>{"Block0"}}
+              : std::optional<std::vector<std::string>>{}},
+      TestCreator<Dim>{}}}};
 
   const TimeStepId time_step_id{true, self_starting ? -1 : 1,
                                 Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -364,8 +396,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
           runner, 0));
 
   const bool expected_rollback =
-      with_neighbors and (always_use_subcell or rdmp_fails or tci_fails or
-                          (use_halo and neighbor_is_troubled));
+      with_neighbors and ((always_use_subcell or rdmp_fails or tci_fails or
+                           (use_halo and neighbor_is_troubled)) and
+                          not disable_subcell_in_block);
 
   if (expected_rollback) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
@@ -496,12 +529,16 @@ void test() {
           for (const bool have_neighbors : {false, true}) {
             for (const bool use_halo : {false, true}) {
               for (const bool neighbor_is_troubled : {false, true}) {
-                test_impl<Dim, true>(rdmp_fails, tci_fails, always_use_subcell,
-                                     self_starting, have_neighbors, use_halo,
-                                     neighbor_is_troubled);
-                test_impl<Dim, false>(rdmp_fails, tci_fails, always_use_subcell,
-                                      self_starting, have_neighbors, use_halo,
-                                      neighbor_is_troubled);
+                for (const bool disable_subcell_in_block : {false, true}) {
+                  test_impl<Dim, true>(
+                      rdmp_fails, tci_fails, always_use_subcell, self_starting,
+                      have_neighbors, use_halo, neighbor_is_troubled,
+                      disable_subcell_in_block);
+                  test_impl<Dim, false>(
+                      rdmp_fails, tci_fails, always_use_subcell, self_starting,
+                      have_neighbors, use_halo, neighbor_is_troubled,
+                      disable_subcell_in_block);
+                }
               }
             }
           }
@@ -511,6 +548,7 @@ void test() {
   }
 }
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndRollback",
                   "[Evolution][Unit]") {
   // We test the following cases:

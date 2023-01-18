@@ -73,7 +73,8 @@ void test(const TestThis& test_this) {
       persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-      false};
+      false,
+      std::nullopt};
 
   const std::tuple<bool, evolution::dg::subcell::RdmpTciData> result =
       ScalarAdvection::subcell::TciOnFdGrid<Dim>::apply(

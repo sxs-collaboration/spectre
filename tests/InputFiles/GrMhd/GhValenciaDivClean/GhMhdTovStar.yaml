@@ -106,6 +106,7 @@ SpatialDiscretization:
       AlwaysUseSubcells: true
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: false
+      OnlyDgBlocksAndGroups: None
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20
