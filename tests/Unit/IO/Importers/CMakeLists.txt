@@ -51,6 +51,8 @@ function(add_algorithm_test TEST_NAME DIM)
     ${EXECUTABLE_NAME}
     PRIVATE
     DataStructures
+    Domain
+    DomainCreators
     DomainStructure
     ErrorHandling
     Importers

@@ -1,15 +1,34 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+SourceDomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [4]
+    IsPeriodicIn: [False]
+    InitialRefinement: [2]
+    InitialGridPoints: [8]
+    TimeDependence:
+      None
+
+TargetDomainCreator:
+  Interval:
+    LowerBound: [-1]
+    UpperBound: [3]
+    IsPeriodicIn: [False]
+    InitialRefinement: [1]
+    InitialGridPoints: [6]
+    TimeDependence:
+      UniformTranslation:
+        InitialTime: 0.
+        Velocity: [1.]
+
 Importers:
-  FineVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm1D_fine_data.h5"
-    Subgroup: "test_data"
-    ObservationValue: 3.
-  CoarseVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm1D_coarse_data.h5"
-    Subgroup: "test_data"
-    ObservationValue: 2.
+  VolumeData:
+    FileGlob: "Test_DataImporterAlgorithm1D.h5"
+    Subgroup: "TestData"
+    ObservationValue: 1.
+    Interpolate: True
 
 ResourceInfo:
   AvoidGlobalProc0: false

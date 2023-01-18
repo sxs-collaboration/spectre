@@ -675,7 +675,7 @@ TaggedTuple<OutputTags...> reorder_impl(TaggedTuple<InputTags...>&& input,
           std::is_same_v<tmpl::list_difference<tmpl::list<InputTags...>,
                                                tmpl::list<OutputTags...>>,
                          tmpl::list<>>,
-      "The input and output TaggedTuples must be the same except"
+      "The input and output TaggedTuples must be the same except "
       "for ordering.");
   return TaggedTuple<OutputTags...>(std::move(get<OutputTags>(input))...);
 }

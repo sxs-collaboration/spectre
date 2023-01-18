@@ -47,13 +47,11 @@ struct RegisterWithElementDataReader {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static Parallel::iterable_action_return_t apply(
-      db::DataBox<DbTagsList>& /*box*/,
+      db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::GlobalCache<Metavariables>& cache,
       const ElementId<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const std::string element_name = MakeString{}
-                                     << ElementId<Dim>(array_index);
     auto& local_reader_component = *Parallel::local_branch(
         Parallel::get_parallel_component<
             importers::ElementDataReader<Metavariables>>(cache));
@@ -62,7 +60,7 @@ struct RegisterWithElementDataReader {
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementId<Dim>>(array_index)),
-        element_name);
+        db::get<domain::Tags::Coordinates<Dim, Frame::Inertial>>(box));
     return {Parallel::AlgorithmExecution::Continue, std::nullopt};
   }
 };
@@ -79,20 +77,21 @@ struct RegisterWithElementDataReader {
  */
 struct RegisterElementWithSelf {
   template <typename ParallelComponent, typename DbTagsList,
-            typename Metavariables, typename ArrayIndex,
-            typename DataBox = db::DataBox<DbTagsList>>
-  static void apply(db::DataBox<DbTagsList>& box,
-                    const Parallel::GlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ArrayComponentId& array_component_id,
-                    const std::string& grid_name) {
-    db::mutate<Tags::RegisteredElements>(
+            typename Metavariables, typename ArrayIndex, size_t Dim>
+  static void apply(
+      db::DataBox<DbTagsList>& box,
+      const Parallel::GlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/,
+      const observers::ArrayComponentId& array_component_id,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords) {
+    db::mutate<Tags::RegisteredElements<Dim>>(
         make_not_null(&box),
-        [&array_component_id, &grid_name](
+        [&array_component_id, &inertial_coords](
             const gsl::not_null<
-                std::unordered_map<observers::ArrayComponentId, std::string>*>
+                std::unordered_map<observers::ArrayComponentId,
+                                   tnsr::I<DataVector, Dim, Frame::Inertial>>*>
                 registered_elements) {
-          (*registered_elements)[array_component_id] = grid_name;
+          (*registered_elements)[array_component_id] = inertial_coords;
         });
   }
 };

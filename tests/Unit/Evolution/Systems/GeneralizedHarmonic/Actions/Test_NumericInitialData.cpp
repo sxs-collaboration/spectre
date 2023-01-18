@@ -134,12 +134,13 @@ struct MockVolumeDataReader {
       Parallel::PhaseActions<Parallel::Phase::Initialization, tmpl::list<>>>;
   using replace_these_simple_actions =
       tmpl::list<importers::Actions::ReadAllVolumeDataAndDistribute<
-          TestOptionGroup, detail::all_numeric_vars,
+          metavariables::volume_dim, TestOptionGroup, detail::all_numeric_vars,
           MockElementArray<Metavariables>>>;
   using with_these_simple_actions = tmpl::list<MockReadVolumeData>;
 };
 
 struct Metavariables {
+  static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<MockElementArray<Metavariables>,
                                     MockVolumeDataReader<Metavariables>>;
 };
@@ -159,8 +160,9 @@ void test_numeric_initial_data(
       importers::Tags::FileGlob<TestOptionGroup>,
       importers::Tags::Subgroup<TestOptionGroup>,
       importers::Tags::ObservationValue<TestOptionGroup>,
+      importers::Tags::EnableInterpolation<TestOptionGroup>,
       detail::Tags::NumericInitialDataVariables<TestOptionGroup>>{
-      "TestInitialData.h5", "VolumeData", 0., selected_vars}};
+      "TestInitialData.h5", "VolumeData", 0., false, selected_vars}};
 
   // Setup mock data file reader
   ActionTesting::emplace_nodegroup_component<reader_component>(

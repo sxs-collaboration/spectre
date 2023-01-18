@@ -1,15 +1,62 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+SourceDomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.45
+      OuterRadius: 4.
+      XCoord: &x_right 7.683
+      ExciseInterior: True
+      UseLogarithmicMap: True
+    ObjectB:
+      InnerRadius: 0.45
+      OuterRadius: 4.
+      XCoord: &x_left -7.683
+      ExciseInterior: True
+      UseLogarithmicMap: True
+    EnvelopingCube:
+      Radius: 60.
+      UseProjectiveMap: True
+      Sphericity: 1.
+    OuterShell:
+      InnerRadius: Auto
+      OuterRadius: 350.
+      RadialDistribution: Inverse
+    InitialRefinement: 1
+    InitialGridPoints: 7
+
+TargetDomainCreator:
+  BinaryCompactObject:
+    ObjectA:
+      InnerRadius: 0.46
+      OuterRadius: 6.
+      XCoord: *x_right
+      ExciseInterior: True
+      UseLogarithmicMap: true
+    ObjectB:
+      InnerRadius: 0.46
+      OuterRadius: 6.
+      XCoord: *x_left
+      ExciseInterior: True
+      UseLogarithmicMap: true
+    EnvelopingCube:
+      Radius: 100.
+      UseProjectiveMap: true
+      Sphericity: 1.
+    OuterShell:
+      InnerRadius: Auto
+      OuterRadius: 300.
+      RadialDistribution: Linear
+    InitialRefinement: 0
+    InitialGridPoints: 3
+
 Importers:
-  FineVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm3D_shared.h5"
-    Subgroup: "fine_data"
+  VolumeData:
+    FileGlob: "Test_DataImporterAlgorithm3D.h5"
+    Subgroup: "TestData"
     ObservationValue: 3.
-  CoarseVolumeData:
-    FileGlob: "Test_DataImporterAlgorithm3D_shared.h5"
-    Subgroup: "coarse_data"
-    ObservationValue: 2.
+    Interpolate: True
 
 ResourceInfo:
   AvoidGlobalProc0: false

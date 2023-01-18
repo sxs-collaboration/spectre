@@ -31,6 +31,7 @@ target_link_libraries(
   DataStructures
   DomainStructure
   Initialization
+  Interpolation
   Parallel
   Utilities
   )

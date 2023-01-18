@@ -4,8 +4,10 @@
 #include "IO/H5/VolumeData.hpp"
 
 #include <algorithm>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <cstddef>
 #include <hdf5.h>
 #include <memory>
 #include <optional>
@@ -26,9 +28,11 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/ErrorHandling/Error.hpp"
 #include "Utilities/ErrorHandling/ExpectsAndEnsures.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -704,5 +708,52 @@ std::optional<std::vector<char>> VolumeData::get_functions_of_time(
   return h5::read_data<1, std::vector<char>>(observation_group.id(),
                                              "functions_of_time");
 }
+
+template <size_t Dim>
+Mesh<Dim> mesh_for_grid(
+    const std::string& grid_name,
+    const std::vector<std::string>& all_grid_names,
+    const std::vector<std::vector<size_t>>& all_extents,
+    const std::vector<std::vector<Spectral::Basis>>& all_bases,
+    const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures) {
+  const auto found_grid_name = alg::find(all_grid_names, grid_name);
+  if (found_grid_name == all_grid_names.end()) {
+    ERROR("Found no grid named '" + grid_name + "'.");
+  } else {
+    const auto element_index =
+        std::distance(all_grid_names.begin(), found_grid_name);
+    const auto& extents = gsl::at(all_extents, element_index);
+    const auto& bases = gsl::at(all_bases, element_index);
+    const auto& quadratures = gsl::at(all_quadratures, element_index);
+    ASSERT(extents.size() == Dim, "Extents in " << Dim << "D should have size "
+                                                << Dim << ", but found size "
+                                                << extents.size() << ".");
+    ASSERT(bases.size() == Dim, "Bases in " << Dim << "D should have size "
+                                            << Dim << ", but found size "
+                                            << bases.size() << ".");
+    ASSERT(quadratures.size() == Dim, "Quadratures in "
+                                          << Dim << "D should have size " << Dim
+                                          << ", but found size "
+                                          << quadratures.size() << ".");
+    return Mesh<Dim>{make_array<size_t, Dim>(extents),
+                     make_array<Spectral::Basis, Dim>(bases),
+                     make_array<Spectral::Quadrature, Dim>(quadratures)};
+  }
+}
+
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                      \
+  template Mesh<DIM(data)> mesh_for_grid(                         \
+      const std::string& grid_name,                               \
+      const std::vector<std::string>& all_grid_names,             \
+      const std::vector<std::vector<size_t>>& all_extents,        \
+      const std::vector<std::vector<Spectral::Basis>>& all_bases, \
+      const std::vector<std::vector<Spectral::Quadrature>>& all_quadratures);
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
 
 }  // namespace h5

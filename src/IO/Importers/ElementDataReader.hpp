@@ -19,6 +19,7 @@
 namespace importers {
 
 namespace detail {
+template <size_t Dim>
 struct InitializeElementDataReader;
 }  // namespace detail
 
@@ -38,11 +39,13 @@ struct InitializeElementDataReader;
  */
 template <typename Metavariables>
 struct ElementDataReader {
+  static constexpr size_t Dim = Metavariables::volume_dim;
+
   using chare_type = Parallel::Algorithms::Nodegroup;
   using metavariables = Metavariables;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<Parallel::Phase::Initialization,
-                             tmpl::list<detail::InitializeElementDataReader>>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Parallel::Phase::Initialization,
+      tmpl::list<detail::InitializeElementDataReader<Dim>>>>;
   using simple_tags_from_options = Parallel::get_simple_tags_from_options<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
@@ -59,9 +62,10 @@ struct ElementDataReader {
 };
 
 namespace detail {
+template <size_t Dim>
 struct InitializeElementDataReader {
   using simple_tags =
-      tmpl::list<Tags::RegisteredElements, Tags::ElementDataAlreadyRead>;
+      tmpl::list<Tags::RegisteredElements<Dim>, Tags::ElementDataAlreadyRead>;
   using compute_tags = tmpl::list<>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
