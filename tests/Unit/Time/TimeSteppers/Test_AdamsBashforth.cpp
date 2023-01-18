@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforth", "[Unit][Time]") {
           stepper, start_points + 1, start_points, -1.0, large_step_epsilon, 20,
           1.0e-4);
     }
-    TimeStepperTestUtils::check_convergence_order(stepper);
+    TimeStepperTestUtils::check_convergence_order(stepper, {10, 30});
     for(size_t history_order = 1; history_order <= order; ++history_order){
       CAPTURE(history_order);
       TimeStepperTestUtils::check_dense_output(stepper, history_order);

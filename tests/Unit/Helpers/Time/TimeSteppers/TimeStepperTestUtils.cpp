@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <fstream>
 #include <limits>
 #include <type_traits>
 
@@ -395,8 +396,19 @@ void equal_rate_boundary(const LtsTimeStepper& stepper, const size_t order,
   CHECK(boundary_history.remote_size() < 20);
 }
 
-void check_convergence_order(const TimeStepper& stepper) {
-  const auto do_integral = [&stepper](const int32_t num_steps) {
+void check_convergence_order(const TimeStepper& stepper,
+                             const std::pair<int32_t, int32_t>& step_range,
+                             const bool output) {
+  // Make sure testing code is not left enabled.
+  CHECK(not output);
+
+  std::ofstream output_stream{};
+  if (output) {
+    output_stream.open("convergence.dat");
+    output_stream.precision(18);
+  }
+  const auto do_integral = [&output, &output_stream,
+                            &stepper](const int32_t num_steps) {
     const Slab slab(0., 1.);
     const TimeDelta step_size = slab.duration() / num_steps;
 
@@ -410,12 +422,13 @@ void check_convergence_order(const TimeStepper& stepper) {
     while (time < slab.end()) {
       take_step(&time, &y, &history, stepper, rhs, step_size);
     }
-    return abs(y - exp(1.));
+    const double result = abs(y - exp(1.));
+    if (output) {
+      output_stream << num_steps << "\t" << result << std::endl;
+    }
+    return result;
   };
-  const int32_t large_steps = 10;
-  // The high-order solvers have round-off error around here
-  const int32_t small_steps = 30;
-  CHECK(convergence_rate(large_steps, small_steps, do_integral) ==
+  CHECK(convergence_rate(step_range.first, step_range.second, do_integral) ==
         approx(stepper.order()).margin(0.4));
 }
 
