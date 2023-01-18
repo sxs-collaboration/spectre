@@ -193,6 +193,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Double, Double, Double, Double]
+          OverrideObservationValue: None
   - - Slabs:
         Specified:
           Values: [3]

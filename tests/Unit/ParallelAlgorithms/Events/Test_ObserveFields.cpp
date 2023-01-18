@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <catch.hpp>
 #include <cstddef>
 #include <memory>
 #include <numeric>
@@ -98,6 +99,7 @@ void test_observe(
     const std::unique_ptr<ObserveEvent> observe,
     const std::optional<Mesh<System::volume_dim>>& interpolating_mesh,
     const bool has_analytic_solutions,
+    const std::optional<double> override_observation_time = std::nullopt,
     const std::optional<std::string>& section = std::nullopt) {
   using metavariables = Metavariables<System, false>;
   constexpr size_t volume_dim = System::volume_dim;
@@ -113,6 +115,9 @@ void test_observe(
 
   const intrp::RegularGrid interpolant(mesh, interpolating_mesh.value_or(mesh));
   const double observation_time = 2.0;
+  const double expected_observation_time =
+      override_observation_time.value_or(observation_time);
+  CAPTURE(expected_observation_time);
   Variables<typename System::variables_tag::tags_list> vars(
       mesh.number_of_grid_points());
   Variables<tmpl::list<coordinates_tag>> coordinate_vars(
@@ -208,7 +213,7 @@ void test_observe(
   CHECK(runner.template is_simple_action_queue_empty<observer_component>(0));
 
   const auto& results = MockContributeVolumeData::results;
-  CHECK(results.observation_id.value() == observation_time);
+  CHECK(results.observation_id.value() == expected_observation_time);
   CHECK(results.observation_id.observation_key() ==
         expected_observation_key_for_reg);
   CHECK(results.subfile_name == expected_subfile_name);
@@ -316,18 +321,34 @@ void test_system(
   test_observe<System, ArraySectionIdTag>(
       std::make_unique<typename System::ObserveEvent>(
           System::make_test_object(interpolating_mesh)),
-      interpolating_mesh, has_analytic_solutions, section);
+      interpolating_mesh, has_analytic_solutions, std::nullopt, section);
   INFO("create/serialize");
   Parallel::register_factory_classes_with_charm<metavariables>();
-  const std::string creation_string =
-      System::creation_string_for_test + mesh_creation_string;
-  const auto factory_event =
-      TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
-          creation_string);
-  auto serialized_event = serialize_and_deserialize(factory_event);
-  test_observe<System, ArraySectionIdTag>(std::move(serialized_event),
-                                          interpolating_mesh,
-                                          has_analytic_solutions, section);
+  {
+    const std::string creation_string = System::creation_string_for_test +
+                                        mesh_creation_string +
+                                        "\n  OverrideObservationValue: None\n";
+    const auto factory_event =
+        TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
+            creation_string);
+    auto serialized_event = serialize_and_deserialize(factory_event);
+    test_observe<System, ArraySectionIdTag>(
+        std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
+        std::nullopt, section);
+  }
+  {
+    const std::string creation_string = System::creation_string_for_test +
+                                        mesh_creation_string +
+                                        "\n  OverrideObservationValue: 3.0\n";
+    const auto factory_event =
+        TestHelpers::test_creation<std::unique_ptr<Event>, metavariables>(
+            creation_string);
+    auto serialized_event = serialize_and_deserialize(factory_event);
+    test_observe<System, ArraySectionIdTag>(
+        std::move(serialized_event), interpolating_mesh, has_analytic_solutions,
+        3.0, section);
+  }
+
 }
 }  // namespace
 
@@ -455,30 +476,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
                 interpolating_mesh)),
         interpolating_mesh, true);
   }
-}
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
+          "SubfileName: VolumeData\n"
+          "CoordinatesFloatingPointType: Double\n"
+          "VariablesToObserve: [NotAVar]\n"
+          "FloatingPointTypes: [Double]\n"
+          "InterpolateToMesh: None\n"
+          "OverrideObservationValue: None\n"),
+      Catch::Matchers::Contains("NotAVar is not an available variable"));
 
-// [[OutputRegex, NotAVar is not an available variable.*Scalar]]
-SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
-                  "[Unit][Evolution]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
-      "SubfileName: VolumeData\n"
-      "CoordinatesFloatingPointType: Double\n"
-      "VariablesToObserve: [NotAVar]\n"
-      "FloatingPointTypes: [Double]\n"
-      "InterpolateToMesh: None\n");
-}
-
-// [[OutputRegex, Scalar specified multiple times]]
-SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
-                  "[Unit][Evolution]") {
-  ERROR_TEST();
-  TestHelpers::test_creation<
-      typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
-      "SubfileName: VolumeData\n"
-      "CoordinatesFloatingPointType: Double\n"
-      "VariablesToObserve: [Scalar, Scalar]\n"
-      "FloatingPointTypes: [Double]\n"
-      "InterpolateToMesh: None\n");
+  CHECK_THROWS_WITH(
+      TestHelpers::test_creation<
+          typename ScalarSystem<dg::Events::ObserveFields>::ObserveEvent>(
+          "SubfileName: VolumeData\n"
+          "CoordinatesFloatingPointType: Double\n"
+          "VariablesToObserve: [Scalar, Scalar]\n"
+          "FloatingPointTypes: [Double]\n"
+          "InterpolateToMesh: None\n"
+          "OverrideObservationValue: None\n"),
+      Catch::Matchers::Contains("Scalar specified multiple times"));
 }
