@@ -44,44 +44,47 @@ void check_exact() {
   const Enthalpy<Spectral>& eos =
       dynamic_cast<const Enthalpy<Spectral>&>(*eos_pointer);
   TestHelpers::EquationsOfState::test_get_clone(eos);
+  // Test comparison operators
+  {
+    const auto other_eos = Enthalpy<Spectral>{
+        1.0,
+        2.0,
+        1.5,
+        1.0,
+        std::vector<double>{1.0, 1.0},
+        std::vector<double>{0.1},
+        std::vector<double>{0.1},
+        Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
+        0.0};
+    const auto other_low_eos =
+        Enthalpy<PolytropicFluid<true>>{1.0,
+                                        2.0,
+                                        1.5,
+                                        1.0,
+                                        std::vector<double>{1.0, 1.0},
+                                        std::vector<double>{0.1},
+                                        std::vector<double>{0.1},
+                                        PolytropicFluid<true>{100.0, 2.0},
+                                        0.0};
+    const auto other_hi_eos = Enthalpy<Spectral>{
+        1.0,
+        2.0,
+        1.5,
+        1.0,
+        std::vector<double>{1.0, .95},
+        std::vector<double>{0.05},
+        std::vector<double>{0.05},
+        Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
+        0.0};
+    const auto other_type_eos = PolytropicFluid<true>{100.0, 2.0};
 
-  const auto other_eos = Enthalpy<Spectral>{
-      1.0,
-      2.0,
-      1.5,
-      1.0,
-      std::vector<double>{1.0, 1.0},
-      std::vector<double>{0.1},
-      std::vector<double>{0.1},
-      Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
-      0.0};
-  const auto other_low_eos =
-      Enthalpy<PolytropicFluid<true>>{1.0,
-                                      2.0,
-                                      1.5,
-                                      1.0,
-                                      std::vector<double>{1.0, 1.0},
-                                      std::vector<double>{0.1},
-                                      std::vector<double>{0.1},
-                                      PolytropicFluid<true>{100.0, 2.0},
-                                      0.0};
-  const auto other_hi_eos = Enthalpy<Spectral>{
-      1.0,
-      2.0,
-      1.5,
-      1.0,
-      std::vector<double>{1.0, .95},
-      std::vector<double>{0.05},
-      std::vector<double>{0.05},
-      Spectral{.5, .3, std::vector<double>{1.4, 0.0, 0.0}, 1.0},
-      0.0};
-  const auto other_type_eos = PolytropicFluid<true>{100.0, 2.0};
-  CHECK(eos == eos);
-  CHECK(other_eos != other_low_eos);
-  CHECK(other_eos != other_hi_eos);
-  CHECK(eos != other_eos);
-  CHECK(eos != other_type_eos);
-  CHECK(other_low_eos != other_type_eos);
+    CHECK(eos == eos);
+    CHECK(other_eos != other_low_eos);
+    CHECK(other_eos != other_hi_eos);
+    CHECK(eos != other_eos);
+    CHECK(eos != other_type_eos);
+    CHECK(other_low_eos != other_type_eos);
+  }
   // Test DataVector functions
   {
     const Scalar<DataVector> rho{DataVector{1.5 * exp(1.0), 1.5 * exp(2.0),
@@ -160,27 +163,35 @@ void check_exact() {
     CHECK(get(rho) == approx(get(rho_from_enthalpy)));
   }
   {
-    // Guarantee that the root find has the correct bracket by explicitly
-    // nonsensical there, so if the correct braket
-    const auto oscillating_eos = Enthalpy<Spectral>{
-      0.5,
-      2.0,
-      1.0,
-      M_PI/log(2.0),
-      std::vector<double>{3.5},
-      std::vector<double>{0.0},
-      std::vector<double>{0.5},
-      Spectral{.5, .25, std::vector<double>{2.0}, 1.0},
-      0.0};
-    //cos(pi)) = -1, so the enthalpy is just 1 at z=log(2.0),
-    // which is rho =1.0
-    // If the rootfinder had the wrong braket z in [0, log(4)] it would
-    // not find the root bracketed, as cos(0) = 1, cos(log(4)*pi/log(2)) =
-    // cos(2*pi) = 1, so at these bounds h = 2.0 > 1.25
+    // Guarantee that the root find has the correct bracket:
+    // the risk being that if it does not have the correct bracket,
+    // a call to rho(h) evaluates the enthalpy EoS in the low-density region
+    // where it generically does not effectively represent the EoS
+    // We therefore make the EoS nonsensical in the low density region,
+    // such that the root finder would fail if the wrong bracket were used
+    const auto oscillating_eos =
+        Enthalpy<Spectral>{0.5,
+                           2.0,
+                           1.0,
+                           M_PI / log(2.0),
+                           std::vector<double>{3.5},
+                           std::vector<double>{0.0},
+                           std::vector<double>{0.5},
+                           Spectral{.5, .25, std::vector<double>{2.0}, 1.0},
+                           0.0};
+    // h(z) = 3.5 + .5 * cos(pi/log(2) * z)
+    // cos(pi)) = -1, so the enthalpy is 3 at z=log(2.0),
+    // which is rho = 1.0
     const Scalar<double> target_enthalpy{3.25};
-    const Scalar<double> target_rho{pow(2.0, 1.0/3.0)};
+    // If the rootfinder had the wrong bracket e.g. z in [0, log(4)]
+    // then because h(z=0) = 3.5 + .5 = 4.0, by IVT there's some root between
+    // z=0 and z = log(2).  Also h(z=log(4) = 2log(2)) = 4.0, so there's a
+    // second root between log(2) and log(4).  This will cause a bracketing to
+    // rootfinder to fail (because the function is not monotonic)
+    const Scalar<double> target_rho{pow(2.0, 1.0 / 3.0)};
     const auto rho_from_enthalpy =
         oscillating_eos.rest_mass_density_from_enthalpy(target_enthalpy);
+    // We check to make sure the root find also found the correct value
     CHECK(get(target_rho) == approx(get(rho_from_enthalpy)));
   }
   // Test bounds
