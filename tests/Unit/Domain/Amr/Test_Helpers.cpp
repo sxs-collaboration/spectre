@@ -142,35 +142,23 @@ void test_has_potential_sibling() {
   CHECK_FALSE(amr::domain::has_potential_sibling(element_id_3d,
                                                  Direction<3>::upper_zeta()));
 }
+
+void test_assertions() {
+#ifdef SPECTRE_DEBUG
+  CHECK_THROWS_WITH(amr::domain::desired_refinement_levels(
+                        ElementId<1>{0}, {{amr::domain::Flag::Undefined}}),
+                    Catch::Contains("Undefined Flag in dimension"));
+  CHECK_THROWS_WITH(amr::domain::desired_refinement_levels_of_neighbor(
+                        ElementId<1>{0}, {{amr::domain::Flag::Undefined}},
+                        OrientationMap<1>{{{Direction<1>::lower_xi()}}}),
+                    Catch::Contains("Undefined Flag in dimension"));
+#endif
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers", "[Domain][Unit]") {
   test_desired_refinement_levels();
   test_desired_refinement_levels_of_neighbor();
   test_has_potential_sibling();
-}
-
-// [[OutputRegex, Undefined Flag in dimension]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers.BadFlag",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto bad_flag = amr::domain::desired_refinement_levels(
-      ElementId<1>{0}, {{amr::domain::Flag::Undefined}});
-  static_cast<void>(bad_flag);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Undefined Flag in dimension]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers.BadFlag2",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto bad_flag = amr::domain::desired_refinement_levels_of_neighbor(
-      ElementId<1>{0}, {{amr::domain::Flag::Undefined}},
-      OrientationMap<1>{{{Direction<1>::lower_xi()}}});
-  static_cast<void>(bad_flag);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  test_assertions();
 }
