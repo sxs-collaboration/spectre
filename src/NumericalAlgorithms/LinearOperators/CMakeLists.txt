@@ -16,6 +16,7 @@ spectre_target_sources(
   Linearize.cpp
   PartialDerivatives.cpp
   MeanValue.cpp
+  PowerMonitors.cpp
   )
 
 spectre_target_headers(
@@ -33,6 +34,7 @@ spectre_target_headers(
   MeanValue.hpp
   PartialDerivatives.hpp
   PartialDerivatives.tpp
+  PowerMonitors.hpp
   Tags.hpp
   WeakDivergence.hpp
   )

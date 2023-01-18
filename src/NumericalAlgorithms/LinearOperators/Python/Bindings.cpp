@@ -5,6 +5,7 @@
 
 #include "NumericalAlgorithms/LinearOperators/Python/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/LinearOperators/Python/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/Python/PowerMonitors.hpp"
 
 namespace py = pybind11;
 
@@ -14,4 +15,5 @@ PYBIND11_MODULE(_PyLinearOperators, m) {  // NOLINT
   py::module_::import("spectre.Spectral");
   py_bindings::bind_definite_integral(m);
   py_bindings::bind_partial_derivatives(m);
+  PowerMonitors::py_bindings::bind_power_monitors(m);
 }
