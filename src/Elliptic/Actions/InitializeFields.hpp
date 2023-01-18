@@ -46,6 +46,7 @@ struct InitializeFields {
  public:
   using simple_tags = tmpl::list<fields_tag>;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<InitialGuessTag>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>

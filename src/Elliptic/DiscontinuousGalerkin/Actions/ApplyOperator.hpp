@@ -94,6 +94,9 @@ struct InitializeFacesMortarsAndBackground {
                           typename InitializeBackground::return_tags,
                           tmpl::list<>>>;
   using compute_tags = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::conditional_t<has_background_fields, tmpl::list<BackgroundTag>,
+                          tmpl::list<>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
