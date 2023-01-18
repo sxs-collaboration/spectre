@@ -11,6 +11,7 @@
 #include "Time/TimeSteppers/Rk3Owren.hpp"
 #include "Time/TimeSteppers/Rk4Owren.hpp"
 #include "Time/TimeSteppers/Rk5Owren.hpp"
+#include "Time/TimeSteppers/Rk5Tsitouras.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace TimeSteppers {
@@ -19,7 +20,8 @@ using time_steppers =
     tmpl::list<TimeSteppers::AdamsBashforth, TimeSteppers::ClassicalRungeKutta4,
                TimeSteppers::DormandPrince5, TimeSteppers::Heun2,
                TimeSteppers::Rk3HesthavenSsp, TimeSteppers::Rk3Owren,
-               TimeSteppers::Rk4Owren, TimeSteppers::Rk5Owren>;
+               TimeSteppers::Rk4Owren, TimeSteppers::Rk5Owren,
+               TimeSteppers::Rk5Tsitouras>;
 
 /// Typelist of available LtsTimeSteppers
 using lts_time_steppers = tmpl::list<TimeSteppers::AdamsBashforth>;
