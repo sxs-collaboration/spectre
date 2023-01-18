@@ -3,10 +3,15 @@
 
 #include "Domain/Amr/Helpers.hpp"
 
-#include "Domain/Structure/Direction.hpp"       // IWYU pragma: keep
-#include "Domain/Structure/ElementId.hpp"       // IWYU pragma: keep
-#include "Domain/Structure/OrientationMap.hpp"  // IWYU pragma: keep
-#include "Domain/Structure/SegmentId.hpp"       // IWYU pragma: keep
+#include <array>
+#include <boost/rational.hpp>
+#include <cstddef>
+
+#include "Domain/Amr/Flag.hpp"
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
+#include "Domain/Structure/OrientationMap.hpp"
+#include "Domain/Structure/SegmentId.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -54,6 +59,17 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
 }
 
 template <size_t VolumeDim>
+boost::rational<size_t> fraction_of_block_volume(
+    const ElementId<VolumeDim>& element_id) {
+  const auto& segment_ids = element_id.segment_ids();
+  size_t sum_of_refinement_levels = 0;
+  for (const auto& segment_id : segment_ids) {
+    sum_of_refinement_levels += segment_id.refinement_level();
+  }
+  return {1, two_to_the(sum_of_refinement_levels)};
+}
+
+template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
                            const Direction<VolumeDim>& direction) {
   return direction.side() ==
@@ -64,13 +80,13 @@ bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
 
 #define INSTANTIATE(_, data)                                                   \
   template std::array<size_t, DIM(data)> desired_refinement_levels<DIM(data)>( \
-      const ElementId<DIM(data)>&,                                             \
-      const std::array<Flag, DIM(data)>&);                                     \
+      const ElementId<DIM(data)>&, const std::array<Flag, DIM(data)>&);        \
   template std::array<size_t, DIM(data)>                                       \
   desired_refinement_levels_of_neighbor<DIM(data)>(                            \
-      const ElementId<DIM(data)>&,                                             \
-      const std::array<Flag, DIM(data)>&,                                      \
+      const ElementId<DIM(data)>&, const std::array<Flag, DIM(data)>&,         \
       const OrientationMap<DIM(data)>&);                                       \
+  template boost::rational<size_t> fraction_of_block_volume<DIM(data)>(        \
+      const ElementId<DIM(data)>& element_id);                                 \
   template bool has_potential_sibling(const ElementId<DIM(data)>& element_id,  \
                                       const Direction<DIM(data)>& direction);
 

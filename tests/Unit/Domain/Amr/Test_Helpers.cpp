@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <array>
+#include <boost/rational.hpp>
 #include <cstddef>
 
 #include "Domain/Amr/Flag.hpp"
@@ -110,6 +111,19 @@ void test_desired_refinement_levels_of_neighbor() {
                         amr::domain::Flag::Split}});
 }
 
+void test_fraction_of_block_volume() {
+  ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
+  CHECK(fraction_of_block_volume(element_id_1d) ==
+        boost::rational<size_t>(1, 4));
+  ElementId<2> element_id_2d{0, {{SegmentId(3, 0), SegmentId{1, 1}}}};
+  CHECK(fraction_of_block_volume(element_id_2d) ==
+        boost::rational<size_t>(1, 16));
+  ElementId<3> element_id_3d{
+      7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(4, 15)}}};
+  CHECK(fraction_of_block_volume(element_id_3d) ==
+        boost::rational<size_t>(1, 2048));
+}
+
 void test_has_potential_sibling() {
   ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
   CHECK(amr::domain::has_potential_sibling(element_id_1d,
@@ -159,6 +173,7 @@ void test_assertions() {
 SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers", "[Domain][Unit]") {
   test_desired_refinement_levels();
   test_desired_refinement_levels_of_neighbor();
+  test_fraction_of_block_volume();
   test_has_potential_sibling();
   test_assertions();
 }

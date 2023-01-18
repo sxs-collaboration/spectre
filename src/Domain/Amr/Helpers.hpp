@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <boost/rational.hpp>
 #include <cstddef>
 
 #include "Domain/Amr/Flag.hpp"
@@ -42,6 +43,14 @@ std::array<size_t, VolumeDim> desired_refinement_levels_of_neighbor(
     const ElementId<VolumeDim>& neighbor_id,
     const std::array<Flag, VolumeDim>& neighbor_flags,
     const OrientationMap<VolumeDim>& orientation);
+
+/// \ingroup AmrGroup
+/// Fraction of the logical volume of a block covered by an element
+///
+/// \note The sum of this over all the elements of a block should be one
+template <size_t VolumeDim>
+boost::rational<size_t> fraction_of_block_volume(
+    const ElementId<VolumeDim>& element_id);
 
 /// \ingroup AmrGroup
 /// \brief Whether or not the Element with `element_id` can have a sibling
