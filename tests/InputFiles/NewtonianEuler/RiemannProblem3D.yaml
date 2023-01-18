@@ -40,6 +40,7 @@ SpatialDiscretization:
       PerssonExponent: 4.0
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
+      UseHalo: false
   SubcellSolver:
     Reconstructor:
       MonotonisedCentralPrim:

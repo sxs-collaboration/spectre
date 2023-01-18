@@ -57,21 +57,29 @@ namespace grmhd::ValenciaDivClean::subcell {
  * `tci_options.atmosphere_density`.
  * <td> `+3`
  *
- * <tr><td> apply the RDMP TCI to `TildeD`
+ * <tr><td> apply the Persson TCI to \f$\tilde{Y}_e\f$ if the maximum of rest
+ * mass density on FD grid is greater than `tci_options.atmosphere_density`.
  * <td> `+4`
  *
- * <tr><td> apply the RDMP TCI to `TildeYe`
- * <td> `+5`
+ * <tr><td> apply the Persson TCI to pressure if the maximum of rest mass
+ * density on FD grid is greater than `tci_options.atmosphere_density`. <td>
+ * `+5`
  *
- * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <tr><td> apply the RDMP TCI to `TildeD`
  * <td> `+6`
  *
- * <tr><td> apply the RDMP TCI to `TildeB`
+ * <tr><td> apply the RDMP TCI to `TildeYe`
  * <td> `+7`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <td> `+8`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `+9`
  *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
  * its magnitude is greater than `tci_options.magnetic_field_cutoff`.
- * <td> `+8`
+ * <td> `+10`
  *
  * </table>
  *
@@ -113,6 +121,6 @@ struct TciOnFdGrid {
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const TciOptions& tci_options,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      double persson_exponent);
+      double persson_exponent, bool need_rdmp_data_only);
 };
 }  // namespace grmhd::ValenciaDivClean::subcell

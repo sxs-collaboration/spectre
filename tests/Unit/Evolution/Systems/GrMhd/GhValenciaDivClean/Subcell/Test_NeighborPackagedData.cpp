@@ -318,15 +318,14 @@ double test(const size_t num_dg_pts) {
           std::make_unique<GeneralizedHarmonic::ConstraintDamping::
                                GaussianPlusConstant<3, Frame::Grid>>(
               0.01, 0.09 * 1.0 / 1.4, 5.5 * 1.4, std::array{0.0, 0.0, 0.0})),
-      gamma1->get_clone(),
-      gamma2->get_clone(),
+      gamma1->get_clone(), gamma2->get_clone(),
       std::unique_ptr<GeneralizedHarmonic::gauges::GaugeCondition>(
           std::make_unique<GeneralizedHarmonic::gauges::AnalyticChristoffel>(
               soln.get_clone())),
       grmhd::GhValenciaDivClean::fd::FilterOptions{0.001},
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
 
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));
@@ -350,6 +349,7 @@ double test(const size_t num_dg_pts) {
   double max_rel_error = 0.0;
   for (const auto& [direction_and_id, data] : all_packaged_data) {
     const auto& direction = direction_and_id.first;
+    const Mesh<2> dg_interface_mesh = dg_mesh.slice_away(direction.dimension());
 
     using dg_package_field_tags =
         typename BoundaryCorrection::dg_package_field_tags;
@@ -385,6 +385,64 @@ double test(const size_t num_dg_pts) {
     const auto& packaged_data_spacetime_metric =
         get<GeneralizedHarmonic::Tags::VSpacetimeMetric<3, Frame::Inertial>>(
             packaged_data);
+
+    const auto spatial_metric = gr::spatial_metric(sliced_spacetime_metric);
+    const auto [det_spatial_metric, inverse_spatial_metric] =
+        determinant_and_inverse(spatial_metric);
+    const auto shift =
+        gr::shift(sliced_spacetime_metric, inverse_spatial_metric);
+    const auto lapse = gr::lapse(shift, sliced_spacetime_metric);
+    // Need normal vector...
+    tnsr::i<DataVector, 3, Frame::Inertial> normal_covector(get(lapse).size(),
+                                                            0.0);
+    normal_covector.get(direction.dimension()) = direction.sign();
+    const auto normal_magnitude =
+        magnitude(normal_covector, inverse_spatial_metric);
+    normal_covector.get(direction.dimension()) /= get(normal_magnitude);
+    tnsr::I<DataVector, 3, Frame::Inertial> normal_vector(get(lapse).size(),
+                                                          0.0);
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        normal_vector.get(i) +=
+            inverse_spatial_metric.get(i, j) * normal_covector.get(j);
+      }
+    }
+
+    const auto dg_interface_grid_coords =
+        db::get<domain::Tags::ElementMap<3, Frame::Grid>>(box)(
+            interface_logical_coordinates(dg_interface_mesh, direction));
+    Scalar<DataVector> gamma2_sdv{dg_interface_mesh.number_of_grid_points()};
+    (*gamma2)(make_not_null(&gamma2_sdv), dg_interface_grid_coords, 0.0, {});
+
+    const auto& pi = get<GeneralizedHarmonic::Tags::Pi<3>>(sliced_vars);
+    const auto& phi = get<GeneralizedHarmonic::Tags::Phi<3>>(sliced_vars);
+    tnsr::aa<DataVector, 3> v_plus_times_lambda_plus = pi;
+    tnsr::aa<DataVector, 3> v_minus_times_lambda_minus = pi;
+    for (size_t a = 0; a < 4; ++a) {
+      for (size_t b = a; b < 4; ++b) {
+        for (size_t i = 0; i < 3; ++i) {
+          v_plus_times_lambda_plus.get(a, b) +=
+              normal_vector.get(i) * phi.get(i, a, b);
+          v_minus_times_lambda_minus.get(a, b) -=
+              normal_vector.get(i) * phi.get(i, a, b);
+        }
+        v_plus_times_lambda_plus.get(a, b) -=
+            get(gamma2_sdv) * sliced_spacetime_metric.get(a, b);
+        v_minus_times_lambda_minus.get(a, b) -=
+            get(gamma2_sdv) * sliced_spacetime_metric.get(a, b);
+
+        // Multiply by char speed. Note that shift is zero in TOV
+        v_plus_times_lambda_plus.get(a, b) *= get(lapse);
+        v_minus_times_lambda_minus.get(a, b) *= -get(lapse);
+      }
+    }
+
+    const auto& packaged_data_v_plus_times_lambda_plus =
+        get<GeneralizedHarmonic::Tags::VPlus<3, Frame::Inertial>>(
+            packaged_data);
+    const auto& packaged_data_v_minus_times_lambda_minus =
+        get<GeneralizedHarmonic::Tags::VMinus<3, Frame::Inertial>>(
+            packaged_data);
     for (size_t tensor_index = 0; tensor_index < sliced_spacetime_metric.size();
          ++tensor_index) {
       max_rel_error = std::max(
@@ -397,6 +455,34 @@ double test(const size_t num_dg_pts) {
               std::max({max(abs(sliced_spacetime_metric[tensor_index])),
                         max(abs(packaged_data_spacetime_metric[tensor_index])),
                         1.0e-17}));
+      max_rel_error = std::max(
+          max_rel_error,
+          max(abs((direction.side() == Side::Upper ? -1.0 : 1.0) *
+                      (direction.side() == Side::Upper
+                           ? v_minus_times_lambda_minus[tensor_index]
+                           : v_plus_times_lambda_plus[tensor_index]) -
+                  packaged_data_v_plus_times_lambda_plus[tensor_index])) /
+              std::max(
+                  {max(abs((direction.side() == Side::Upper
+                                ? v_minus_times_lambda_minus[tensor_index]
+                                : v_plus_times_lambda_plus[tensor_index]))),
+                   max(abs(
+                       packaged_data_v_plus_times_lambda_plus[tensor_index])),
+                   1.0e-17}));
+      max_rel_error = std::max(
+          max_rel_error,
+          max(abs((direction.side() == Side::Lower ? 1.0 : -1.0) *
+                      (direction.side() == Side::Lower
+                           ? v_minus_times_lambda_minus[tensor_index]
+                           : v_plus_times_lambda_plus[tensor_index]) -
+                  packaged_data_v_minus_times_lambda_minus[tensor_index])) /
+              std::max(
+                  {max(abs((direction.side() == Side::Lower
+                                ? v_minus_times_lambda_minus[tensor_index]
+                                : v_plus_times_lambda_plus[tensor_index]))),
+                   max(abs(
+                       packaged_data_v_minus_times_lambda_minus[tensor_index])),
+                   1.0e-17}));
     }
   }
   return max_rel_error;

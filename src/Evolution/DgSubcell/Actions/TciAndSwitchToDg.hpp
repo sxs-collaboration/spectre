@@ -150,52 +150,71 @@ struct TciAndSwitchToDg {
         "Must have the TciAndSwitchToDg action exactly once in the action list "
         "of a phase.");
 
-    if (UNLIKELY(db::get<subcell::Tags::DidRollback>(box))) {
-      db::mutate<subcell::Tags::DidRollback>(
-          make_not_null(&box), [](const gsl::not_null<bool*> did_rollback) {
-            *did_rollback = false;
-          });
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-
-    const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
-    const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
-    if (time_step_id.substep() != 0 or
-        UNLIKELY(time_step_id.slab_number() < 0) or
-        UNLIKELY(subcell_options.always_use_subcells())) {
-      // The first condition is that for substep time integrators we only allow
-      // switching back to DG on step boundaries. This is the easiest way to
-      // avoid having a shock in the time stepper history, since there is no
-      // history at step boundaries.
-      //
-      // The second condition is that if we are in the self-start procedure of
-      // the time stepper, and we don't want to switch from subcell back to DG
-      // during self-start since we integrate over the same temporal region at
-      // increasingly higher order.
-      //
-      // The third condition is that the user has requested we always do
-      // subcell, so effectively a finite difference/volume code.
-      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
-    }
-
     using variables_tag = typename Metavariables::system::variables_tag;
 
     ASSERT(db::get<Tags::ActiveGrid>(box) == ActiveGrid::Subcell,
            "Must be using subcells when calling TciAndSwitchToDg action.");
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
+    const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
+    const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
+
+    // The first condition is that for substep time integrators we only allow
+    // switching back to DG on step boundaries. This is the easiest way to
+    // avoid having a shock in the time stepper history, since there is no
+    // history at step boundaries.
+    //
+    // The second condition is that if we are in the self-start procedure of
+    // the time stepper, and we don't want to switch from subcell back to DG
+    // during self-start since we integrate over the same temporal region at
+    // increasingly higher order.
+    //
+    // The third condition is that the user has requested we always do
+    // subcell, so effectively a finite difference/volume code.
+    const bool only_need_rdmp_data =
+        db::get<subcell::Tags::DidRollback>(box) or
+        (time_step_id.substep() != 0 or time_step_id.slab_number() < 0);
+    if (UNLIKELY(db::get<subcell::Tags::DidRollback>(box))) {
+      db::mutate<subcell::Tags::DidRollback>(
+          make_not_null(&box), [](const gsl::not_null<bool*> did_rollback) {
+            *did_rollback = false;
+          });
+    }
+
+    if (subcell_options.always_use_subcells()) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
 
     std::tuple<int, evolution::dg::subcell::RdmpTciData> tci_result =
         db::mutate_apply<TciMutator>(make_not_null(&box),
-                                     subcell_options.persson_exponent() + 1.0);
-    const int tci_decision = std::get<0>(tci_result);
-    const bool cell_is_troubled = tci_decision != 0;
+                                     subcell_options.persson_exponent() + 1.0,
+                                     only_need_rdmp_data);
 
-    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci, Tags::TciDecision>(
-        make_not_null(&box), [&tci_decision, &tci_result](
-                                 const auto rdmp_data_ptr,
-                                 const gsl::not_null<int*> tci_decision_ptr) {
+    db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(
+        make_not_null(&box), [&tci_result](const auto rdmp_data_ptr) {
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
+        });
+
+    if (only_need_rdmp_data) {
+      return {Parallel::AlgorithmExecution::Continue, std::nullopt};
+    }
+
+    const int tci_decision = std::get<0>(tci_result);
+    const bool cell_is_troubled =
+        tci_decision != 0 or (subcell_options.use_halo() and [&box]() -> bool {
+          for (const auto& [_, neighbor_decision] :
+               db::get<evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+                   box)) {
+            if (neighbor_decision != 0) {
+              return true;
+            }
+          }
+          return false;
+        }());
+
+    db::mutate<Tags::TciDecision>(
+        make_not_null(&box),
+        [&tci_decision](const gsl::not_null<int*> tci_decision_ptr) {
           *tci_decision_ptr = tci_decision;
         });
 

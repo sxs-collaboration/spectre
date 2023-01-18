@@ -86,7 +86,8 @@ void test(const TestThis test_this) {
       persson_exponent,
       persson_exponent,
       false,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      false};
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Variables<cons_tags>, ::Tags::Variables<prim_tags>,

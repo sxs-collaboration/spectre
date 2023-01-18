@@ -70,7 +70,8 @@ void test(const TestThis test_this) {
       persson_exponent,
       persson_exponent,
       false,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      false};
 
   if (test_this == TestThis::PerssonEnergyDensity) {
     get(get<Pressure>(subcell_prim))[subcell_mesh.number_of_grid_points() / 2] =
@@ -153,7 +154,7 @@ void test(const TestThis test_this) {
 
   const auto result =
       db::mutate_apply<NewtonianEuler::subcell::TciOnFdGrid<Dim>>(
-          make_not_null(&box), persson_exponent);
+          make_not_null(&box), persson_exponent, false);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
 
   if (test_this == TestThis::AllGood) {

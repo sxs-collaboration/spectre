@@ -45,6 +45,7 @@ struct TciOnFdGrid {
       const Mesh<Dim>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      const TciOptions& tci_options, double persson_exponent);
+      const TciOptions& tci_options, double persson_exponent,
+      bool need_rdmp_data_only);
 };
 }  // namespace ScalarAdvection::subcell

@@ -88,22 +88,27 @@ namespace grmhd::ValenciaDivClean::subcell {
  * magnetic field is still freely evolved.
  * <td> `0`
  *
- * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$,
- * \f$\tilde{Y}_e^{n+1}\f$, and pressure \f$p^{n+1}\f$
+ * <tr><td> apply the Persson TCI to \f$\tilde{D}^{n+1}\f$
  * <td> `-5`
+ *
+ * <tr><td> apply the Persson TCI to \f$\tilde{Y}_e^{n+1}\f$
+ * <td> `-6`
+ *
+ * <tr><td> apply the Persson TCI to pressure \f$p^{n+1}\f$
+ * <td> `-7`
  *
  * <tr><td> apply the Persson TCI to the magnitude of \f$\tilde{B}^{n+1}\f$ if
  * its magnitude is greater than `tci_options.magnetic_field_cutoff`
- * <td> `-6`
- *
- * <tr><td> apply the RDMP TCI to `TildeD`
- * <td> `-7`
- *
- * <tr><td> apply the RDMP TCI to `TildeTau`
  * <td> `-8`
  *
- * <tr><td> apply the RDMP TCI to `TildeB`
+ * <tr><td> apply the RDMP TCI to `TildeD`
  * <td> `-9`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeTau`
+ * <td> `-10`
+ *
+ * <tr><td> apply the RDMP TCI to `TildeB`
+ * <td> `-11`
  *
  * </table>
  *

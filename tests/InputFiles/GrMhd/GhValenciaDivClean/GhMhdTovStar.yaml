@@ -105,6 +105,7 @@ SpatialDiscretization:
         PerssonExponent: 4.0
       AlwaysUseSubcells: true
       SubcellToDgReconstructionMethod: DimByDim
+      UseHalo: false
     TciOptions:
       MinimumValueOfD: 1.0e-20
       MinimumValueOfYe: 1.0e-20
@@ -117,6 +118,13 @@ SpatialDiscretization:
       MonotonisedCentralPrim:
     FilterOptions:
       SpacetimeDissipation: 0.1
+
+Filtering:
+  ExpFilter0:
+    Alpha: 36
+    HalfPower: 64
+    DisableForDebugging: false
+
 
 EventsAndTriggers:
   - - Slabs:

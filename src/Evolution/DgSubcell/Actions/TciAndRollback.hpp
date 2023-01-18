@@ -114,7 +114,18 @@ struct TciAndRollback {
     const Mesh<Dim>& subcell_mesh = db::get<Tags::Mesh<Dim>>(box);
 
     const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
-    bool cell_is_troubled = subcell_options.always_use_subcells();
+    bool cell_is_troubled =
+        subcell_options.always_use_subcells() or
+        (subcell_options.use_halo() and [&box]() -> bool {
+          for (const auto& [_, neighbor_decision] :
+               db::get<evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
+                   box)) {
+            if (neighbor_decision != 0) {
+              return true;
+            }
+          }
+          return false;
+        }());
 
     // The reason we pass in the persson_exponent explicitly instead of
     // leaving it to the user is because the value of the exponent that

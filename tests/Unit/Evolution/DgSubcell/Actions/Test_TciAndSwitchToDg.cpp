@@ -84,7 +84,8 @@ struct component {
       evolution::dg::subcell::Tags::TciGridHistory,
       Tags::Variables<tmpl::list<Var1>>,
       Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
-      Tags::TimeStepper<TimeStepper>>;
+      Tags::TimeStepper<TimeStepper>,
+      evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -108,6 +109,8 @@ struct Metavariables {
   static bool tci_fails;
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool tci_invoked;
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+  static bool tci_rdmp_data_only;
 
   struct TciOnSubcellGrid {
     using return_tags = tmpl::list<>;
@@ -120,9 +123,10 @@ struct Metavariables {
         const Variables<tmpl::list<Var1>>& subcell_vars,
         const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
         const evolution::dg::subcell::SubcellOptions& subcell_options,
-        const double persson_exponent) {
+        const double persson_exponent, const bool need_rdmp_data_only) {
       CHECK(approx(persson_exponent) == 5.0);  // Should be subcell_opts + 1
       tci_invoked = true;
+      tci_rdmp_data_only = need_rdmp_data_only;
 
       evolution::dg::subcell::RdmpTciData rdmp_data{};
       rdmp_data.max_variables_values =
@@ -138,7 +142,8 @@ struct Metavariables {
                 subcell_options.rdmp_delta0(),
                 subcell_options.rdmp_epsilon()) == rdmp_fails);
 
-      return {tci_fails or rdmp_fails, rdmp_data};
+      const int decision = rdmp_fails ? -10 : (tci_fails ? -5 : 0);
+      return {decision, rdmp_data};
     }
   };
 };
@@ -152,6 +157,9 @@ bool Metavariables<Dim>::tci_fails = false;
 template <size_t Dim>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim>::tci_invoked = false;
+template <size_t Dim>
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+bool Metavariables<Dim>::tci_rdmp_data_only = false;
 
 std::unique_ptr<TimeStepper> make_time_stepper(
     const bool multistep_time_stepper) {
@@ -168,7 +176,8 @@ void test_impl(
     const bool tci_fails, const bool did_rollback,
     const bool always_use_subcell, const bool self_starting,
     const bool in_substep,
-    const evolution::dg::subcell::fd::ReconstructionMethod recons_method) {
+    const evolution::dg::subcell::fd::ReconstructionMethod recons_method,
+    const bool use_halo, const bool neighbor_is_troubled) {
   CAPTURE(Dim);
   CAPTURE(multistep_time_stepper);
   CAPTURE(rdmp_fails);
@@ -178,6 +187,8 @@ void test_impl(
   CAPTURE(self_starting);
   CAPTURE(in_substep);
   CAPTURE(recons_method);
+  CAPTURE(use_halo);
+  CAPTURE(neighbor_is_troubled);
   if (in_substep and multistep_time_stepper) {
     ERROR("Can't both be taking a substep and using a multistep time stepper");
   }
@@ -186,12 +197,13 @@ void test_impl(
   metavars::rdmp_fails = rdmp_fails;
   metavars::tci_fails = tci_fails;
   metavars::tci_invoked = false;
+  metavars::tci_rdmp_data_only = true;
 
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
       1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell,
-      recons_method}}};
+      recons_method, use_halo}}};
 
   TimeStepId time_step_id{true, self_starting ? -1 : 1,
                           Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -214,7 +226,7 @@ void test_impl(
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
 
-  const int tci_decision{static_cast<int>(tci_fails)};
+  const int tci_decision{-1};  // default value
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
@@ -249,12 +261,18 @@ void test_impl(
   get(get<Var1>(vars)) =
       (time_stepper->order() + 1.0) * get<0>(logical_coordinates(subcell_mesh));
 
+  typename evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>::type
+      neighbor_decisions{};
+  neighbor_decisions.insert(
+      std::pair{std::pair{Direction<Dim>::lower_xi(), ElementId<Dim>{10}},
+                neighbor_is_troubled ? 10 : 0});
+
   ActionTesting::emplace_array_component_and_initialize<comp>(
       &runner, ActionTesting::NodeId{0}, ActionTesting::LocalCoreId{0}, 0,
       {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
        neighbor_data, tci_decision, rdmp_tci_data, tci_grid_history,
        evolved_vars, time_stepper_history,
-       make_time_stepper(multistep_time_stepper)});
+       make_time_stepper(multistep_time_stepper), neighbor_decisions});
 
   // Invoke the TciAndSwitchToDg action on the runner
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
@@ -274,24 +292,28 @@ void test_impl(
 
   // true if the TCI wasn't invoked at all because we are always using subcell,
   // doing self-start, took a substep, or already did rollback from DG to FD.
-  const bool avoid_tci = always_use_subcell or self_starting or
-                         time_step_id.substep() != 0 or did_rollback;
+  const bool avoid_tci = always_use_subcell;
+  const bool avoid_switch_to_dg =
+      avoid_tci or self_starting or time_step_id.substep() != 0 or did_rollback;
 
   CHECK_FALSE(ActionTesting::get_databox_tag<
               comp, evolution::dg::subcell::Tags::DidRollback>(runner, 0));
+
+  CHECK(metavars::tci_rdmp_data_only == avoid_switch_to_dg);
 
   if (avoid_tci) {
     CHECK_FALSE(metavars::tci_invoked);
   }
 
   // Check ActiveGrid
-  if (avoid_tci or rdmp_fails or tci_fails) {
+  if (avoid_switch_to_dg or rdmp_fails or tci_fails or
+      (use_halo and neighbor_is_troubled)) {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Subcell);
   } else {
     CHECK(active_grid_from_box == evolution::dg::subcell::ActiveGrid::Dg);
   }
 
-  if (not avoid_tci) {
+  if (not avoid_switch_to_dg) {
     Variables<tmpl::list<Var1>> reconstructed_dg_vars{
         dg_mesh.number_of_grid_points()};
     evolution::dg::subcell::fd::reconstruct(
@@ -325,7 +347,7 @@ void test_impl(
       CHECK(expected_it.time_step_id() == box_it.time_step_id());
       CHECK(*expected_it == *box_it);
     }
-    if (avoid_tci) {
+    if (avoid_switch_to_dg) {
       CHECK(tci_grid_history_from_box.front() ==
             evolution::dg::subcell::ActiveGrid::Dg);
     } else if (multistep_time_stepper) {
@@ -341,6 +363,9 @@ void test_impl(
       CHECK(tci_grid_history_from_box.size() == time_stepper->order());
     }
   }
+  CHECK(ActionTesting::get_databox_tag<
+            comp, evolution::dg::subcell::Tags::TciDecision>(runner, 0) ==
+        (avoid_switch_to_dg ? -1 : (rdmp_fails ? -10 : (tci_fails ? -5 : 0))));
 }
 
 template <size_t Dim>
@@ -351,18 +376,24 @@ void test() {
         for (const bool did_rollback : {true, false}) {
           for (const bool always_use_subcell : {false, true}) {
             for (const bool self_starting : {false, true}) {
-              for (const auto recons_method :
-                   {evolution::dg::subcell::fd::ReconstructionMethod::
-                        AllDimsAtOnce,
-                    evolution::dg::subcell::fd::ReconstructionMethod::
-                        DimByDim}) {
-                test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
-                               tci_fails, did_rollback, always_use_subcell,
-                               self_starting, false, recons_method);
-                if (not use_multistep_time_stepper) {
-                  test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
-                                 tci_fails, did_rollback, always_use_subcell,
-                                 self_starting, true, recons_method);
+              for (const bool use_halo : {false, true}) {
+                for (const bool neighbor_is_troubled : {false, true}) {
+                  for (const auto recons_method :
+                       {evolution::dg::subcell::fd::ReconstructionMethod::
+                            AllDimsAtOnce,
+                        evolution::dg::subcell::fd::ReconstructionMethod::
+                            DimByDim}) {
+                    test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
+                                   tci_fails, did_rollback, always_use_subcell,
+                                   self_starting, false, recons_method,
+                                   use_halo, neighbor_is_troubled);
+                    if (not use_multistep_time_stepper) {
+                      test_impl<Dim>(
+                          use_multistep_time_stepper, rdmp_fails, tci_fails,
+                          did_rollback, always_use_subcell, self_starting, true,
+                          recons_method, use_halo, neighbor_is_troubled);
+                    }
+                  }
                 }
               }
             }

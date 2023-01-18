@@ -63,7 +63,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       persson_exponent,
       persson_exponent,
       false,
-      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim};
+      evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+      false};
 
   auto box = db::create<db::AddSimpleTags<
       grmhd::ValenciaDivClean::Tags::TildeD,
@@ -219,7 +220,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
 
   const std::tuple<int, evolution::dg::subcell::RdmpTciData> result =
       db::mutate_apply<grmhd::ValenciaDivClean::subcell::TciOnFdGrid>(
-          make_not_null(&box), persson_exponent);
+          make_not_null(&box), persson_exponent, false);
   CHECK(get<1>(result) == expected_rdmp_tci_data);
 
   if (test_this == TestThis::AllGood) {
@@ -239,11 +240,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ValenciaDivClean.Subcell.TciOnFdGrid",
   test(TestThis::NegativeTildeTau, 1);
   test(TestThis::NeededFixing, 2);
   test(TestThis::PerssonTildeD, 3);
-  test(TestThis::PerssonTildeYe, 3);
-  test(TestThis::PerssonPressure, 3);
-  test(TestThis::RdmpTildeD, 4);
-  test(TestThis::RdmpTildeYe, 5);
-  test(TestThis::RdmpTildeTau, 6);
-  test(TestThis::RdmpMagnitudeTildeB, 7);
-  test(TestThis::PerssonTildeB, 8);
+  test(TestThis::PerssonTildeYe, 4);
+  test(TestThis::PerssonPressure, 5);
+  test(TestThis::RdmpTildeD, 6);
+  test(TestThis::RdmpTildeYe, 7);
+  test(TestThis::RdmpTildeTau, 8);
+  test(TestThis::RdmpMagnitudeTildeB, 9);
+  test(TestThis::PerssonTildeB, 10);
 }

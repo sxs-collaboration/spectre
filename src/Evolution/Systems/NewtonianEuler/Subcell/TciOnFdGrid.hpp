@@ -92,6 +92,6 @@ class TciOnFdGrid {
       const Mesh<Dim>& dg_mesh, const Mesh<Dim>& subcell_mesh,
       const evolution::dg::subcell::RdmpTciData& past_rdmp_tci_data,
       const evolution::dg::subcell::SubcellOptions& subcell_options,
-      double persson_exponent);
+      double persson_exponentconst, bool need_rdmp_data_only);
 };
 }  // namespace NewtonianEuler::subcell
