@@ -23,7 +23,7 @@
 namespace fd::reconstruction {
 namespace {
 template <size_t Dim, typename FallbackReconstructor, bool PositivityPreserving,
-          bool Use9thOrder, bool Use7thOrder>
+          bool Use9thOrder, bool Use7thOrder, bool UseExteriorCell>
 void test_function_pointers(const FallbackReconstructorType fallback_recons) {
   const auto function_ptrs = fd::reconstruction::
       positivity_preserving_adaptive_order_function_pointers<Dim>(
@@ -44,7 +44,7 @@ void test_function_pointers(const FallbackReconstructorType fallback_recons) {
                     PositivityPreservingAdaptiveOrderReconstructor<
                         FallbackReconstructor, PositivityPreserving,
                         Use9thOrder, Use7thOrder>,
-                Dim>));
+                UseExteriorCell, Dim>));
   CHECK(get<2>(function_ptrs) ==
         static_cast<function_type>(
             &reconstruct_neighbor<
@@ -53,7 +53,7 @@ void test_function_pointers(const FallbackReconstructorType fallback_recons) {
                     PositivityPreservingAdaptiveOrderReconstructor<
                         FallbackReconstructor, PositivityPreserving,
                         Use9thOrder, Use7thOrder>,
-                Dim>));
+                UseExteriorCell, Dim>));
 }
 
 template <size_t Dim, class FallbackReconstructor, bool PositivityPreserving,
@@ -120,6 +120,31 @@ void test_impl(const FallbackReconstructorType fallback_recons) {
     TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
         Dim>(Recons::stencil_width() - 1, num_points, Recons::stencil_width(),
              recons, recons_neighbor_data);
+    const auto recons_neighbor_data_interior_cell =
+        [&four_to_the_alpha_5, &six_to_the_alpha_7, &eight_to_the_alpha_9](
+            const gsl::not_null<DataVector*> face_data,
+            const DataVector& volume_data, const DataVector& neighbor_data,
+            const Index<Dim>& volume_extents,
+            const Index<Dim>& ghost_data_extents,
+            const Direction<Dim>& direction_to_reconstruct) {
+          if (direction_to_reconstruct.side() == Side::Upper) {
+            fd::reconstruction::reconstruct_neighbor<Side::Upper, Recons,
+                                                     false>(
+                face_data, volume_data, neighbor_data, volume_extents,
+                ghost_data_extents, direction_to_reconstruct,
+                four_to_the_alpha_5, six_to_the_alpha_7, eight_to_the_alpha_9);
+          }
+          if (direction_to_reconstruct.side() == Side::Lower) {
+            fd::reconstruction::reconstruct_neighbor<Side::Lower, Recons,
+                                                     false>(
+                face_data, volume_data, neighbor_data, volume_extents,
+                ghost_data_extents, direction_to_reconstruct,
+                four_to_the_alpha_5, six_to_the_alpha_7, eight_to_the_alpha_9);
+          }
+        };
+    TestHelpers::fd::reconstruction::test_reconstruction_is_exact_if_in_basis<
+        Dim>(Recons::stencil_width() - 1, num_points, Recons::stencil_width(),
+             recons, recons_neighbor_data_interior_cell);
   }
 
   four_to_the_alpha_5 = pow(4.0, 4.0);
@@ -148,7 +173,7 @@ void test_impl(const FallbackReconstructorType fallback_recons) {
   }
 
   test_function_pointers<Dim, FallbackReconstructor, PositivityPreserving,
-                         Use9thOrder, Use7thOrder>(fallback_recons);
+                         Use9thOrder, Use7thOrder, true>(fallback_recons);
 }
 
 template <class FallbackReconstructor>

@@ -46,12 +46,12 @@ pointer_return_type<Dim> function_pointer() {
               Side::Lower,
               ::fd::reconstruction::detail::Wcns5zReconstructor<
                   NonlinearWeightExponent, Reconstructor>,
-              Dim>,
+              true, Dim>,
           &::fd::reconstruction::reconstruct_neighbor<
               Side::Upper,
               ::fd::reconstruction::detail::Wcns5zReconstructor<
                   NonlinearWeightExponent, Reconstructor>,
-              Dim>};
+              true, Dim>};
 }
 
 // wrapper of the `function_pointer()` template, checking
@@ -152,11 +152,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2),
 #undef INSTANTIATION
 
 #define SIDE(data) BOOST_PP_TUPLE_ELEM(3, data)
+#define EXTERIOR_CELL(data) BOOST_PP_TUPLE_ELEM(4, data)
 
 #define INSTANTIATION(r, data)                                                 \
   template void reconstruct_neighbor<                                          \
-      SIDE(data), detail::Wcns5zReconstructor<NONLINEAR_WEIGHT_EXPONENT(data), \
-                                              FALLBACK_RECONSTRUCTOR(data)>>(  \
+      SIDE(data),                                                              \
+      detail::Wcns5zReconstructor<NONLINEAR_WEIGHT_EXPONENT(data),             \
+                                  FALLBACK_RECONSTRUCTOR(data)>,               \
+      EXTERIOR_CELL(data)>(                                                    \
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
@@ -166,7 +169,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2),
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2),
                         (void, detail::MinmodReconstructor,
                          detail::MonotonisedCentralReconstructor),
-                        (Side::Upper, Side::Lower))
+                        (Side::Upper, Side::Lower), (true, false))
 
 #undef INSTANTIATION
 #undef SIDE

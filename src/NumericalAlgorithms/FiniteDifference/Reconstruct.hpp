@@ -122,8 +122,10 @@ void reconstruct(
  *            Reconstruct to right/+ side of the interface
  * ```
  */
-template <Side LowerOrUpperSide, typename Reconstructor, size_t Dim,
-          typename... ArgsForReconstructor>
+template <Side LowerOrUpperSide, typename Reconstructor,
+          bool UseExteriorCell = true,
+          size_t NumberOfGhostPoints = (Reconstructor::stencil_width() / 2 + 1),
+          size_t Dim, typename... ArgsForReconstructor>
 void reconstruct_neighbor(
     gsl::not_null<DataVector*> face_data, const DataVector& volume_data,
     const DataVector& neighbor_data, const Index<Dim>& volume_extents,

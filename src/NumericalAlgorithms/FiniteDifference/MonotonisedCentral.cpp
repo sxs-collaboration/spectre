@@ -30,16 +30,19 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 #undef INSTANTIATION
 
 #define SIDE(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define EXTERIOR_CELL(data) BOOST_PP_TUPLE_ELEM(2, data)
 
 #define INSTANTIATION(r, data)                                                 \
   template void                                                                \
-  reconstruct_neighbor<SIDE(data), detail::MonotonisedCentralReconstructor>(   \
+  reconstruct_neighbor<SIDE(data), detail::MonotonisedCentralReconstructor,    \
+                       EXTERIOR_CELL(data)>(                                   \
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
       const Direction<DIM(data)>& direction_to_reconstruct);
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (Side::Upper, Side::Lower))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (Side::Upper, Side::Lower),
+                        (true, false))
 
 #undef INSTANTIATION
 #undef SIDE

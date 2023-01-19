@@ -29,52 +29,62 @@ aoweno_53_function_pointers(const size_t nonlinear_weight_exponent) {
       return {&aoweno_53<2, Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Lower,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<2>, Dim>,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<2>, true,
+                  Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Upper,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<2>, Dim>};
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<2>, true,
+                  Dim>};
     case 4:
       return {&aoweno_53<4, Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Lower,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<4>, Dim>,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<4>, true,
+                  Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Upper,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<4>, Dim>};
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<4>, true,
+                  Dim>};
     case 6:
       return {&aoweno_53<6, Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Lower,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<6>, Dim>,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<6>, true,
+                  Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Upper,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<6>, Dim>};
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<6>, true,
+                  Dim>};
     case 8:
       return {&aoweno_53<8, Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Lower,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<8>, Dim>,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<8>, true,
+                  Dim>,
               &::fd::reconstruction::reconstruct_neighbor<
                   Side::Upper,
-                  ::fd::reconstruction::detail::AoWeno53Reconstructor<8>, Dim>};
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<8>, true,
+                  Dim>};
     case 10:
-      return {
-          &aoweno_53<10, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Lower,
-              ::fd::reconstruction::detail::AoWeno53Reconstructor<10>, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Upper,
-              ::fd::reconstruction::detail::AoWeno53Reconstructor<10>, Dim>};
+      return {&aoweno_53<10, Dim>,
+              &::fd::reconstruction::reconstruct_neighbor<
+                  Side::Lower,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<10>, true,
+                  Dim>,
+              &::fd::reconstruction::reconstruct_neighbor<
+                  Side::Upper,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<10>, true,
+                  Dim>};
     case 12:
-      return {
-          &aoweno_53<12, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Lower,
-              ::fd::reconstruction::detail::AoWeno53Reconstructor<12>, Dim>,
-          &::fd::reconstruction::reconstruct_neighbor<
-              Side::Upper,
-              ::fd::reconstruction::detail::AoWeno53Reconstructor<12>, Dim>};
+      return {&aoweno_53<12, Dim>,
+              &::fd::reconstruction::reconstruct_neighbor<
+                  Side::Lower,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<12>, true,
+                  Dim>,
+              &::fd::reconstruction::reconstruct_neighbor<
+                  Side::Upper,
+                  ::fd::reconstruction::detail::AoWeno53Reconstructor<12>, true,
+                  Dim>};
     default:
       ERROR("Unsupported nonlinear weight exponent "
             << nonlinear_weight_exponent << " only have 2,4,6,8,10,12 allowed");
@@ -126,11 +136,13 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12))
 #undef INSTANTIATION
 
 #define SIDE(data) BOOST_PP_TUPLE_ELEM(2, data)
+#define EXTERIOR_CELL(data) BOOST_PP_TUPLE_ELEM(3, data)
 
 #define INSTANTIATION(r, data)                                                 \
   template void reconstruct_neighbor<                                          \
       SIDE(data),                                                              \
-      detail::AoWeno53Reconstructor<NONLINEAR_WEIGHT_EXPONENT(data)>>(         \
+      detail::AoWeno53Reconstructor<NONLINEAR_WEIGHT_EXPONENT(data)>,          \
+      EXTERIOR_CELL(data)>(                                                    \
       gsl::not_null<DataVector*> face_data, const DataVector& volume_data,     \
       const DataVector& neighbor_data, const Index<DIM(data)>& volume_extents, \
       const Index<DIM(data)>& ghost_data_extents,                              \
@@ -138,7 +150,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12))
       const double& gamma_hi, const double& gamma_lo, const double& epsilon);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (2, 4, 6, 8, 10, 12),
-                        (Side::Upper, Side::Lower))
+                        (Side::Upper, Side::Lower), (true, false))
 
 #undef INSTANTIATION
 #undef SIDE

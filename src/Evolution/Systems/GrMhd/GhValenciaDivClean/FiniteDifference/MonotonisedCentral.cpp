@@ -31,6 +31,7 @@
 #include "NumericalAlgorithms/FiniteDifference/MonotonisedCentral.hpp"
 #include "NumericalAlgorithms/FiniteDifference/NeighborDataAsVariables.hpp"
 #include "NumericalAlgorithms/FiniteDifference/Unlimited.hpp"
+#include "NumericalAlgorithms/FiniteDifference/Wcns5z.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Lapse.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Shift.hpp"
@@ -172,10 +173,10 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Lower,
-            ::fd::reconstruction::detail::UnlimitedReconstructor<2>>(
-            tensor_component_on_face_ptr, tensor_component_volume,
-            tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct);
+            ::fd::reconstruction::detail::Wcns5zReconstructor<2, void>, false,
+            2>(tensor_component_on_face_ptr, tensor_component_volume,
+               tensor_component_neighbor, subcell_extents, ghost_data_extents,
+               local_direction_to_reconstruct, 1.0e-17, 0_st);
       },
       [](const auto tensor_component_on_face_ptr,
          const auto& tensor_component_volume,
@@ -198,10 +199,10 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
          const Direction<dim>& local_direction_to_reconstruct) {
         ::fd::reconstruction::reconstruct_neighbor<
             Side::Upper,
-            ::fd::reconstruction::detail::UnlimitedReconstructor<2>>(
-            tensor_component_on_face_ptr, tensor_component_volume,
-            tensor_component_neighbor, subcell_extents, ghost_data_extents,
-            local_direction_to_reconstruct);
+            ::fd::reconstruction::detail::Wcns5zReconstructor<2, void>, false,
+            2>(tensor_component_on_face_ptr, tensor_component_volume,
+               tensor_component_neighbor, subcell_extents, ghost_data_extents,
+               local_direction_to_reconstruct, 1.0e-17, 0_st);
       },
       [](const auto vars_on_face_ptr) {
         const auto& spacetime_metric =
