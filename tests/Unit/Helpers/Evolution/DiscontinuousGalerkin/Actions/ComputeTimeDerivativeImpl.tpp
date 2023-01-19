@@ -1015,6 +1015,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   CAPTURE(UseMovingMesh);
   CAPTURE(Dim);
   CAPTURE(system_type);
+  CAPTURE(HasPrims);
+  CAPTURE(PassVariables);
   CAPTURE(quadrature);
   CAPTURE(dg_formulation);
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
