@@ -6,6 +6,7 @@ set(LIBRARY "Test_CoordinateMaps")
 set(LIBRARY_SOURCES
   Test_Affine.cpp
   Test_BulgedCube.cpp
+  Test_Composition.cpp
   Test_CoordinateMap.cpp
   Test_CylindricalEndcap.cpp
   Test_CylindricalFlatEndcap.cpp
