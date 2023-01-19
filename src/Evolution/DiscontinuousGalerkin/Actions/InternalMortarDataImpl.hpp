@@ -227,7 +227,7 @@ void internal_mortar_data_impl(
 
       Variables<mortar_tags_list> packaged_data{
           face_mesh.number_of_grid_points()};
-      // The DataBox is passed in for retrieving the `volume_tags`
+
       const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
           make_not_null(&packaged_data), boundary_correction, fields_on_face,
           get<evolution::dg::Tags::NormalCovector<Dim>>(
