@@ -15,6 +15,7 @@
 #include "Utilities/ErrorHandling/Assert.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace amr::domain {
 template <size_t VolumeDim>
@@ -76,6 +77,24 @@ bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
          element_id.segment_id(direction.dimension()).side_of_sibling();
 }
 
+template <size_t VolumeDim>
+ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
+                                  const std::array<Flag, VolumeDim>& flags) {
+  using ::operator<<;
+  ASSERT(alg::count(flags, Flag::Join) > 0,
+         "Element " << element_id << " is not joining given flags " << flags);
+  ASSERT(alg::count(flags, Flag::Split) == 0,
+         "Splitting and joining an Element is not supported");
+  auto segment_ids = element_id.segment_ids();
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    if (gsl::at(flags, d) == Flag::Join) {
+      gsl::at(segment_ids, d) = element_id.segment_id(d).id_of_parent();
+    }
+  }
+  return {element_id.block_id(), std::move(segment_ids),
+          element_id.grid_index()};
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -88,7 +107,10 @@ bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
   template boost::rational<size_t> fraction_of_block_volume<DIM(data)>(        \
       const ElementId<DIM(data)>& element_id);                                 \
   template bool has_potential_sibling(const ElementId<DIM(data)>& element_id,  \
-                                      const Direction<DIM(data)>& direction);
+                                      const Direction<DIM(data)>& direction);  \
+  template ElementId<DIM(data)> id_of_parent(                                  \
+      const ElementId<DIM(data)>& element_id,                                  \
+      const std::array<amr::domain::Flag, DIM(data)>& flags);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

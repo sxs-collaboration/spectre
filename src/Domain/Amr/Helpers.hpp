@@ -58,4 +58,17 @@ boost::rational<size_t> fraction_of_block_volume(
 template <size_t VolumeDim>
 bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
                            const Direction<VolumeDim>& direction);
+
+/// \ingroup AmrGroup
+/// \brief Returns the ElementId of the parent of the Element with `element_id`
+/// using the refinement `flags` associated with `element_id`
+///
+/// \details Note that at least one flag of `flags` must be Flag::Join and
+/// none of the `flags` can be Flag::Split.  The parent ElementId is computed
+/// by looping over the SegmentId%s of `element_id` and using either the
+/// SegmentId or its parent depending upon whether or not the corresponding Flag
+/// is Flag::Join.
+template <size_t VolumeDim>
+ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
+                                  const std::array<Flag, VolumeDim>& flags);
 }  // namespace amr::domain
