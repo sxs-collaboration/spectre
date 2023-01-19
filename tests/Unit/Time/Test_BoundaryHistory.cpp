@@ -225,6 +225,31 @@ void test_boundary_history() {
 
   CHECK(check_boundary_state<EvaluatorOwnsCoupling>(history) == 2);
 
+  std::string expected_output = MakeString{} << "Integration order: 2\n"
+                                             << "Local Data:\n"
+                                             << "Time: Slab[-1,-0.5]:0/1\n"
+                                             << "Data: -1\n"
+                                             << "Time: Slab[0,0.5]:0/1\n"
+                                             << "Data: 0\n"
+                                             << "Time: Slab[1,1.5]:0/1\n"
+                                             << "Data: 1\n"
+                                             << "Time: Slab[2,2.5]:0/1\n"
+                                             << "Data: 2\n"
+                                             << "Remote Data:\n"
+                                             << "Time: Slab[-2,-1.5]:0/1\n"
+                                             << "Data: (-2)\n"
+                                             << "Time: Slab[-1,-0.5]:0/1\n"
+                                             << "Data: (-1)\n"
+                                             << "Time: Slab[0,0.5]:0/1\n"
+                                             << "Data: (0)\n"
+                                             << "Time: Slab[1,1.5]:0/1\n"
+                                             << "Data: (1)\n"
+                                             << "Time: Slab[2,2.5]:0/1\n"
+                                             << "Data: (2)\n"
+                                             << "Time: Slab[3,3.5]:0/1\n"
+                                             << "Data: (3)\n";
+  CHECK(get_output(history) == expected_output);
+
   // We check this later, to make sure we don't somehow depend on the
   // original object.
   auto copy = serialize_and_deserialize(history);
