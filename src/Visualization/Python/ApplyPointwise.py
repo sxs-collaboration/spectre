@@ -9,7 +9,8 @@ import numpy as np
 import re
 import spectre.IO.H5 as spectre_h5
 from pydoc import locate
-from typing import Union, Iterable, Dict, Optional, Sequence, List
+from spectre.DataStructures.Tensor import Tensor
+from typing import Union, Iterable, Dict, Optional, Sequence, List, Type
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def parse_pybind11_signature(callable) -> inspect.Signature:
 
 
 def get_tensor_component_names(tensor_name: str,
-                               tensor_type: type) -> List[str]:
+                               tensor_type: Type[Tensor]) -> List[str]:
     """Lists all independent components like 'Vector_x', 'Vector_y', etc."""
     # Pybind11 doesn't support class methods, so `component_suffix` is a member
     # function. Construct a proxy object to call it.

@@ -57,3 +57,10 @@ class JacobianMeta(TensorMeta):
 Scalar = {DataVector: ScalarDV, float: ScalarD}
 Jacobian = JacobianMeta(inverse=False)
 InverseJacobian = JacobianMeta(inverse=True)
+
+# Define a type annotation that means "any tensor". This should really be a
+# common superclass of all Tensor types, but we currently don't have that in C++
+# so we use a type alias to `typing.Any` as a workaround.
+from typing import Any
+
+Tensor = Any
