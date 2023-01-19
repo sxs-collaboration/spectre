@@ -221,6 +221,121 @@ void test_id_of_parent() {
       ElementId<3>{7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(3, 7)}}});
 }
 
+void test_ids_of_children() {
+  const ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
+  CHECK(amr::domain::ids_of_children(element_id_1d,
+                                     std::array{amr::domain::Flag::Split}) ==
+        std::vector{ElementId<1>{0, {{SegmentId(3, 6)}}},
+                    ElementId<1>{0, {{SegmentId(3, 7)}}}});
+  const ElementId<2> element_id_2d{0, {{SegmentId(3, 0), SegmentId{1, 1}}}};
+  CHECK(amr::domain::ids_of_children(
+            element_id_2d,
+            std::array{amr::domain::Flag::Split, amr::domain::Flag::Split}) ==
+        std::vector{ElementId<2>{0, {{SegmentId(4, 0), SegmentId(2, 2)}}},
+                    ElementId<2>{0, {{SegmentId(4, 0), SegmentId(2, 3)}}},
+                    ElementId<2>{0, {{SegmentId(4, 1), SegmentId(2, 2)}}},
+                    ElementId<2>{0, {{SegmentId(4, 1), SegmentId(2, 3)}}}});
+  CHECK(amr::domain::ids_of_children(element_id_2d,
+                                     std::array{amr::domain::Flag::DoNothing,
+                                                amr::domain::Flag::Split}) ==
+        std::vector{ElementId<2>{0, {{SegmentId(3, 0), SegmentId(2, 2)}}},
+                    ElementId<2>{0, {{SegmentId(3, 0), SegmentId(2, 3)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_2d, std::array{amr::domain::Flag::Split,
+                                      amr::domain::Flag::DoNothing}) ==
+        std::vector{ElementId<2>{0, {{SegmentId(4, 0), SegmentId(1, 1)}}},
+                    ElementId<2>{0, {{SegmentId(4, 1), SegmentId(1, 1)}}}});
+  const ElementId<3> element_id_3d{
+      7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(4, 15)}}};
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::Split, amr::domain::Flag::Split,
+                       amr::domain::Flag::Split}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 0), SegmentId(5, 31)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 1), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 1), SegmentId(5, 31)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 0), SegmentId(5, 31)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 1), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 1), SegmentId(5, 31)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::Split, amr::domain::Flag::Split,
+                       amr::domain::Flag::DoNothing}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 0), SegmentId(4, 15)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(3, 1), SegmentId(4, 15)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 0), SegmentId(4, 15)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(3, 1), SegmentId(4, 15)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing,
+                       amr::domain::Flag::Split}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(2, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(2, 0), SegmentId(5, 31)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(2, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(2, 0), SegmentId(5, 31)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split,
+                       amr::domain::Flag::Split}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 0), SegmentId(5, 31)}}},
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 1), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 1), SegmentId(5, 31)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::Split, amr::domain::Flag::DoNothing,
+                       amr::domain::Flag::DoNothing}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(6, 62), SegmentId(2, 0), SegmentId(4, 15)}}},
+            ElementId<3>{
+                7, {{SegmentId(6, 63), SegmentId(2, 0), SegmentId(4, 15)}}}});
+  CHECK(amr::domain::ids_of_children(
+            element_id_3d,
+            std::array{amr::domain::Flag::DoNothing, amr::domain::Flag::Split,
+                       amr::domain::Flag::DoNothing}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 0), SegmentId(4, 15)}}},
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(3, 1), SegmentId(4, 15)}}}});
+  CHECK(amr::domain::ids_of_children(element_id_3d,
+                                     std::array{amr::domain::Flag::DoNothing,
+                                                amr::domain::Flag::DoNothing,
+                                                amr::domain::Flag::Split}) ==
+        std::vector{
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(5, 30)}}},
+            ElementId<3>{
+                7, {{SegmentId(5, 31), SegmentId(2, 0), SegmentId(5, 31)}}}});
+}
+
 void test_assertions() {
 #ifdef SPECTRE_DEBUG
   const ElementId<1> element_id_1d{0, {{SegmentId(2, 3)}}};
@@ -230,6 +345,8 @@ void test_assertions() {
   const std::array flags_1d_undefined{amr::domain::Flag::Undefined};
   const std::array flags_2d_no_join{amr::domain::Flag::DoNothing,
                                     amr::domain::Flag::Split};
+  const std::array flags_2d_no_split{amr::domain::Flag::DoNothing,
+                                     amr::domain::Flag::DoNothing};
   const std::array flags_3d_split_join{amr::domain::Flag::DoNothing,
                                        amr::domain::Flag::Split,
                                        amr::domain::Flag::Join};
@@ -245,6 +362,12 @@ void test_assertions() {
   CHECK_THROWS_WITH(
       amr::domain::id_of_parent(element_id_3d, flags_3d_split_join),
       Catch::Contains("Splitting and joining an Element is not supported"));
+  CHECK_THROWS_WITH(
+      amr::domain::ids_of_children(element_id_2d, flags_2d_no_split),
+      Catch::Contains("has no children given flags"));
+  CHECK_THROWS_WITH(
+      amr::domain::ids_of_children(element_id_3d, flags_3d_split_join),
+      Catch::Contains("Splitting and joining an Element is not supported"));
 #endif
 }
 }  // namespace
@@ -255,5 +378,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Amr.Helpers", "[Domain][Unit]") {
   test_fraction_of_block_volume();
   test_has_potential_sibling();
   test_id_of_parent();
+  test_ids_of_children();
   test_assertions();
 }

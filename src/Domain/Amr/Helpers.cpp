@@ -95,6 +95,56 @@ ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
           element_id.grid_index()};
 }
 
+template <size_t VolumeDim>
+std::vector<ElementId<VolumeDim>> ids_of_children(
+    const ElementId<VolumeDim>& element_id,
+    const std::array<amr::domain::Flag, VolumeDim>& flags) {
+  using ::operator<<;
+  ASSERT(alg::count(flags, Flag::Split) > 0,
+         "Element " << element_id << " has no children given flags " << flags);
+  ASSERT(alg::count(flags, Flag::Join) == 0,
+         "Splitting and joining an Element is not supported");
+  const size_t block_id = element_id.block_id();
+  const size_t grid_index = element_id.grid_index();
+  if constexpr (VolumeDim == 1) {
+    return {{block_id,
+             {{element_id.segment_id(0).id_of_child(Side::Lower)}},
+             grid_index},
+            {block_id,
+             {{element_id.segment_id(0).id_of_child(Side::Upper)}},
+             grid_index}};
+  } else {
+    const auto segment_ids = element_id.segment_ids();
+    std::array<std::vector<SegmentId>, VolumeDim> child_segment_ids;
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      const SegmentId& segment_id = gsl::at(segment_ids, d);
+      gsl::at(child_segment_ids, d) =
+          gsl::at(flags, d) == Flag::Split
+              ? std::vector{segment_id.id_of_child(Side::Lower),
+                            segment_id.id_of_child(Side::Upper)}
+              : std::vector{segment_id};
+    }
+
+    std::vector<ElementId<VolumeDim>> result{};
+    for (const auto segment_id_xi : child_segment_ids[0]) {
+      for (const auto segment_id_eta : child_segment_ids[1]) {
+        if constexpr (VolumeDim == 2) {
+          result.emplace_back(
+              block_id, std::array{segment_id_xi, segment_id_eta}, grid_index);
+        } else {
+          for (const auto segment_id_zeta : child_segment_ids[2]) {
+            result.emplace_back(
+                block_id,
+                std::array{segment_id_xi, segment_id_eta, segment_id_zeta},
+                grid_index);
+          }
+        }
+      }
+    }
+    return result;
+  }
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -109,6 +159,9 @@ ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
   template bool has_potential_sibling(const ElementId<DIM(data)>& element_id,  \
                                       const Direction<DIM(data)>& direction);  \
   template ElementId<DIM(data)> id_of_parent(                                  \
+      const ElementId<DIM(data)>& element_id,                                  \
+      const std::array<amr::domain::Flag, DIM(data)>& flags);                  \
+  template std::vector<ElementId<DIM(data)>> ids_of_children(                  \
       const ElementId<DIM(data)>& element_id,                                  \
       const std::array<amr::domain::Flag, DIM(data)>& flags);
 

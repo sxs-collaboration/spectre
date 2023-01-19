@@ -9,6 +9,7 @@
 #include <array>
 #include <boost/rational.hpp>
 #include <cstddef>
+#include <vector>
 
 #include "Domain/Amr/Flag.hpp"
 
@@ -71,4 +72,18 @@ bool has_potential_sibling(const ElementId<VolumeDim>& element_id,
 template <size_t VolumeDim>
 ElementId<VolumeDim> id_of_parent(const ElementId<VolumeDim>& element_id,
                                   const std::array<Flag, VolumeDim>& flags);
+
+/// \ingroup AmrGroup
+/// \brief Returns the ElementIds of the children of the Element with
+/// `element_id` using the refinement `flags` associated with `element_id`
+///
+/// \details Note that at least one flag of `flags` must be Flag::Split and
+/// none of the `flags` can be Flag::Join.  The child ElementId%s are computed
+/// by looping over the SegmentId%s of `element_id` and using either the
+/// SegmentId or its children depending upon whether or not the corresponding
+/// flag is Flag::Split.
+template <size_t VolumeDim>
+std::vector<ElementId<VolumeDim>> ids_of_children(
+    const ElementId<VolumeDim>& element_id,
+    const std::array<Flag, VolumeDim>& flags);
 }  // namespace amr::domain
