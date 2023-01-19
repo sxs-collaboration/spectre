@@ -9,6 +9,7 @@
 #include <array>
 #include <boost/rational.hpp>
 #include <cstddef>
+#include <deque>
 #include <vector>
 
 #include "Domain/Amr/Flag.hpp"
@@ -16,6 +17,9 @@
 /// \cond
 template <size_t VolumeDim>
 class Direction;
+
+template <size_t VolumeDim>
+class Element;
 
 template <size_t VolumeDim>
 class ElementId;
@@ -86,4 +90,25 @@ template <size_t VolumeDim>
 std::vector<ElementId<VolumeDim>> ids_of_children(
     const ElementId<VolumeDim>& element_id,
     const std::array<Flag, VolumeDim>& flags);
+
+/// \ingroup AmrGroup
+/// \brief The ElementIds of the neighbors of `element` that will join with it
+/// given refinement `flags`
+///
+/// \note This function only returns the face neighbors of `element` that will
+/// join with it, and not the joining corner neighbors
+template <size_t VolumeDim>
+std::deque<ElementId<VolumeDim>> ids_of_joining_neighbors(
+    const Element<VolumeDim>& element,
+    const std::array<Flag, VolumeDim>& flags);
+
+/// \ingroup AmrGroup
+/// \brief Whether or not the Element is the child that should create the parent
+/// Element when joining elements
+///
+/// \details This returns true if the Element is the lower sibling segment in
+/// all dimensions that are joining
+template <size_t VolumeDim>
+bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
+                                  const std::array<Flag, VolumeDim>& flags);
 }  // namespace amr::domain

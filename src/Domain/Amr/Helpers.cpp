@@ -6,9 +6,11 @@
 #include <array>
 #include <boost/rational.hpp>
 #include <cstddef>
+#include <deque>
 
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/Element.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/OrientationMap.hpp"
 #include "Domain/Structure/SegmentId.hpp"
@@ -145,6 +147,47 @@ std::vector<ElementId<VolumeDim>> ids_of_children(
   }
 }
 
+template <size_t VolumeDim>
+std::deque<ElementId<VolumeDim>> ids_of_joining_neighbors(
+    const Element<VolumeDim>& element,
+    const std::array<Flag, VolumeDim>& flags) {
+  using ::operator<<;
+  ASSERT(alg::count(flags, Flag::Join) > 0,
+         "Element " << element.id() << " is not joining given flags " << flags);
+  ASSERT(alg::count(flags, Flag::Split) == 0,
+         "Splitting and joining an Element is not supported");
+  std::deque<ElementId<VolumeDim>> result;
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    if (gsl::at(flags, d) == Flag::Join) {
+      const Direction<VolumeDim> sibling_direction{
+          d, element.id().segment_id(d).side_of_sibling()};
+      const auto& neighbor_sibling_ids_in_this_dim =
+          element.neighbors().at(sibling_direction).ids();
+      for (auto sibling_id : neighbor_sibling_ids_in_this_dim) {
+        result.emplace_back(sibling_id);
+      }
+    }
+  }
+  return result;
+}
+
+template <size_t VolumeDim>
+bool is_child_that_creates_parent(const ElementId<VolumeDim>& element_id,
+                                  const std::array<Flag, VolumeDim>& flags) {
+  using ::operator<<;
+  ASSERT(alg::count(flags, Flag::Join) > 0,
+         "Element " << element_id << " is not joining given flags " << flags);
+  ASSERT(alg::count(flags, Flag::Split) == 0,
+         "Splitting and joining an Element is not supported");
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    if (gsl::at(flags, d) == Flag::Join and
+        element_id.segment_id(d).index() % 2 == 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
@@ -163,7 +206,13 @@ std::vector<ElementId<VolumeDim>> ids_of_children(
       const std::array<amr::domain::Flag, DIM(data)>& flags);                  \
   template std::vector<ElementId<DIM(data)>> ids_of_children(                  \
       const ElementId<DIM(data)>& element_id,                                  \
-      const std::array<amr::domain::Flag, DIM(data)>& flags);
+      const std::array<amr::domain::Flag, DIM(data)>& flags);                  \
+  template std::deque<ElementId<DIM(data)>> ids_of_joining_neighbors(          \
+      const Element<DIM(data)>& element,                                       \
+      const std::array<Flag, DIM(data)>& flags);                               \
+  template bool is_child_that_creates_parent(                                  \
+      const ElementId<DIM(data)>& element_id,                                  \
+      const std::array<Flag, DIM(data)>& flags);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
