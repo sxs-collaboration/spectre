@@ -10,6 +10,7 @@ import numpy as np
 import numpy.testing as npt
 import os
 import unittest
+from dataclasses import FrozenInstanceError
 from spectre.Informer import unit_test_src_path
 from spectre.Domain import ElementId, deserialize_functions_of_time
 from spectre.Spectral import Mesh, Basis, Quadrature, logical_coordinates
@@ -31,6 +32,7 @@ class TestIterElements(unittest.TestCase):
 
             elements = list(iter_elements(volfile, obs_id=obs_id))
             self.assertEqual(len(elements), 2)
+            self.assertEqual(elements[0].dim, 3)
             self.assertEqual(elements[0].id,
                              ElementId[3]("[B0,(L1I1,L0I0,L0I0)]"))
             self.assertEqual(
@@ -41,6 +43,10 @@ class TestIterElements(unittest.TestCase):
             self.assertEqual(
                 elements[1].mesh, Mesh[3](4, Basis.Legendre,
                                           Quadrature.GaussLobatto))
+
+            # Make sure we can't mutate properties, in particular the time
+            with self.assertRaises(FrozenInstanceError):
+                elements[0].time = 2.
 
             # Test fetching data, enumerating in a loop, determinism of
             # iteration order, list of volfiles
@@ -59,10 +65,25 @@ class TestIterElements(unittest.TestCase):
                 self.assertEqual(element.mesh, elements[i].mesh)
                 self.assertEqual(data.shape, (len(tensor_components), 4**3))
                 # Test coordinates
-                logical_coords = logical_coordinates(element.mesh)
-                inertial_coords = element.map(logical_coords, time,
-                                              functions_of_time)
-                npt.assert_allclose(np.asarray(inertial_coords), data[:3])
+                npt.assert_allclose(element.inertial_coordinates, data[:3])
+                # Test Jacobians. Domain is [0, 2 pi]^3 split in half along
+                # first dimension, so elements have size (pi, 2 pi, 2 pi).
+                # Logical size is 2, so Jacobian is diag(0.5, 1, 1) * pi.
+                npt.assert_allclose(element.jacobian.get(0, 0) / np.pi, 0.5)
+                npt.assert_allclose(element.jacobian.get(1, 1) / np.pi, 1.)
+                npt.assert_allclose(element.jacobian.get(2, 2) / np.pi, 1.)
+                npt.assert_allclose(element.inv_jacobian.get(0, 0) * np.pi, 2.)
+                npt.assert_allclose(element.inv_jacobian.get(1, 1) * np.pi, 1.)
+                npt.assert_allclose(element.inv_jacobian.get(2, 2) * np.pi, 1.)
+                npt.assert_allclose(element.det_jacobian.get() / np.pi**3, 0.5)
+                for j in range(3):
+                    for k in range(j):
+                        npt.assert_allclose(element.jacobian.get(j, k),
+                                            0.,
+                                            atol=1e-14)
+                        npt.assert_allclose(element.inv_jacobian.get(j, k),
+                                            0.,
+                                            atol=1e-14)
 
 
 if __name__ == '__main__':
