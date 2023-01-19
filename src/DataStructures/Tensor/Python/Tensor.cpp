@@ -218,7 +218,7 @@ void bind_tensor(py::module& m) {
 
   GENERATE_INSTANTIATIONS(INSTANTIATE_TNSR, (double, DataVector), (1, 2, 3),
                           (Frame::ElementLogical, Frame::Inertial),
-                          (i, I, ij, ii, II, ijj))
+                          (i, I, ij, iJ, ii, II, ijj))
   GENERATE_INSTANTIATIONS(INSTANTIATE_JAC, (double, DataVector), (1, 2, 3),
                           (Frame::Inertial))
 
