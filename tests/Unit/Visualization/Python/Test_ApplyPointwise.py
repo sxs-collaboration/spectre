@@ -16,8 +16,10 @@ import unittest
 from click.testing import CliRunner
 from spectre.Informer import unit_test_src_path, unit_test_build_path
 from spectre.DataStructures import DataVector
-from spectre.DataStructures.Tensor import Scalar, tnsr
+from spectre.DataStructures.Tensor import Scalar, tnsr, InverseJacobian
+from spectre.NumericalAlgorithms.LinearOperators import partial_derivative
 from spectre.PointwiseFunctions.Punctures import adm_mass_integrand
+from spectre.Spectral import Mesh
 
 
 def adm_mass_integrand_signature(
@@ -34,6 +36,14 @@ def coordinate_radius(
         inertial_coordinates: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
     return Scalar[DataVector](np.linalg.norm(np.array(inertial_coordinates),
                                              axis=0))
+
+
+def deriv_coords(
+    inertial_coords: tnsr.I[DataVector, 3], mesh: Mesh[3],
+    inv_jacobian: InverseJacobian[DataVector, 3]
+) -> tnsr.iJ[DataVector, 3]:
+    # This should be delta_ij
+    return partial_derivative(inertial_coords, mesh, inv_jacobian)
 
 
 class TestApplyPointwise(unittest.TestCase):
@@ -63,7 +73,14 @@ class TestApplyPointwise(unittest.TestCase):
             h5file.get_vol("/element_data") for h5file in open_h5_files
         ]
 
-        kernels = [Kernel(psi_squared), Kernel(coordinate_radius)]
+        kernels = [
+            Kernel(psi_squared),
+            Kernel(coordinate_radius),
+            Kernel(coordinate_radius,
+                   elementwise=True,
+                   output_name="CoordinateRadiusElementwise"),
+            Kernel(deriv_coords),
+        ]
 
         apply_pointwise(volfiles=open_volfiles, kernels=kernels)
 
@@ -72,15 +89,26 @@ class TestApplyPointwise(unittest.TestCase):
             obs_id, "PsiSquared").data
         result_radius = open_volfiles[0].get_tensor_component(
             obs_id, "CoordinateRadius").data
+        result_radius_elementwise = open_volfiles[0].get_tensor_component(
+            obs_id, "CoordinateRadiusElementwise").data
         psi = open_volfiles[0].get_tensor_component(obs_id, "Psi").data
         x, y, z = [
             np.array(open_volfiles[0].get_tensor_component(
                 obs_id, "InertialCoordinates" + xyz).data)
             for xyz in ["_x", "_y", "_z"]
         ]
+        radius = np.sqrt(x**2 + y**2 + z**2)
         npt.assert_allclose(np.array(result_psisq), np.array(psi)**2)
-        npt.assert_allclose(np.array(result_radius),
-                            np.sqrt(x**2 + y**2 + z**2))
+        npt.assert_allclose(np.array(result_radius), radius)
+        npt.assert_allclose(np.array(result_radius_elementwise), radius)
+        for i in range(3):
+            result_deriv_coords = open_volfiles[0].get_tensor_component(
+                obs_id, "DerivCoords_" + "xyz"[i] + "xyz"[i]).data
+            npt.assert_allclose(result_deriv_coords, 1.)
+            for j in range(i):
+                result_deriv_coords = open_volfiles[0].get_tensor_component(
+                    obs_id, "DerivCoords_" + "xyz"[i] + "xyz"[j]).data
+                npt.assert_allclose(result_deriv_coords, 0., atol=1e-14)
 
 
 if __name__ == '__main__':
