@@ -43,6 +43,7 @@
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/SetNumberOfGridPoints.hpp"
+#include "Utilities/Simd/Simd.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -108,15 +109,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
           std::is_same_v<X, ComplexModalVector> or
           std::is_same_v<X, DataVector> or std::is_same_v<X, ModalVector> or
           is_spin_weighted_of_v<ComplexDataVector, X> or
-          is_spin_weighted_of_v<ComplexModalVector, X>,
-      "Only a Tensor<std::complex<double>>, Tensor<double>, "
-      "Tensor<ComplexDataVector>, Tensor<ComplexModalVector>, "
-      "Tensor<DataVector>, Tensor<ModalVector>, "
-      "Tensor<SpinWeighted<ComplexDataVector, N>>, "
-      "or Tensor<SpinWeighted<ComplexModalVector, N>> is currently "
-      "allowed. While other types are technically possible it is not "
-      "clear that Tensor is the correct container for them. Please "
-      "seek advice on the topic by discussing with the SpECTRE developers.");
+          is_spin_weighted_of_v<ComplexModalVector, X> or
+          simd::is_batch<X>::value,
+      "Unsupported type. While other types are technically possible it is not "
+      "clear that Tensor is the correct container for them. Please seek advice "
+      "on the topic by discussing with the SpECTRE developers.");
 
  public:
   /// The type of the sequence that holds the data
