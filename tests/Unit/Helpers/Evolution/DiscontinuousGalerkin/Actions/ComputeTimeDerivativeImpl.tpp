@@ -1276,9 +1276,7 @@ void test_impl(const Spectral::Quadrature quadrature,
   const Slab time_slab{0.2, 3.4};
   const TimeDelta time_step{time_slab, {4, 100}};
   const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 100}}};
-  const TimeStepId next_time_step_id{time_step_id.time_runs_forward(),
-                                     time_step_id.slab_number(),
-                                     time_step_id.step_time() + time_step};
+  const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
   // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
   // separately), but we need the FunctionsOfTime tag for boundary conditions.
   // When checking boundary conditions we just test that the boundary condition

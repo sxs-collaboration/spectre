@@ -53,11 +53,9 @@ TimeStepId next_time_id_from_substeps(
     ERROR("In substep should be less than the number of steps, not "
           << substep << "/" << number_of_substeps);
   } else if (substep == number_of_substeps - 1) {
-    return {current_id.time_runs_forward(), current_id.slab_number(),
-            step_time + time_step};
+    return current_id.next_step(time_step);
   } else {
-    return {current_id.time_runs_forward(), current_id.slab_number(), step_time,
-            substep + 1, step_time + substep_times[substep] * time_step};
+    return current_id.next_substep(time_step, substep_times[substep]);
   }
 }
 }  // namespace

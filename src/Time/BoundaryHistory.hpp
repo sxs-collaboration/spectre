@@ -136,10 +136,12 @@ class BoundaryHistory {
   /// Add a new value to the end of the history of the indicated side.
   /// @{
   void local_insert(const TimeStepId& time_id, LocalVars vars) {
+    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
     local_data_.first.emplace_back(time_id.substep_time());
     local_data_.second.emplace_back(std::move(vars));
   }
   void remote_insert(const TimeStepId& time_id, RemoteVars vars) {
+    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
     remote_data_.first.emplace_back(time_id.substep_time());
     remote_data_.second.emplace_back(std::move(vars));
   }
@@ -149,10 +151,12 @@ class BoundaryHistory {
   /// side.  This is often convenient for setting initial data.
   /// @{
   void local_insert_initial(const TimeStepId& time_id, LocalVars vars) {
+    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
     local_data_.first.emplace_front(time_id.substep_time());
     local_data_.second.emplace_front(std::move(vars));
   }
   void remote_insert_initial(const TimeStepId& time_id, RemoteVars vars) {
+    ASSERT(time_id.substep() == 0, "Substeps not supported in LTS");
     remote_data_.first.emplace_front(time_id.substep_time());
     remote_data_.second.emplace_front(std::move(vars));
   }

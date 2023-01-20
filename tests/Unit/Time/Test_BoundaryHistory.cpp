@@ -24,12 +24,7 @@ using BoundaryHistoryType =
 
 Time make_time(const double t) { return Slab(t, t + 0.5).start(); }
 
-TimeStepId make_time_id(const double t) {
-  constexpr size_t substeps = 2;
-  return {true, 0, make_time(substeps * std::floor(t / substeps)),
-          static_cast<size_t>(std::fmod(t, substeps) + substeps) % substeps,
-          make_time(t)};
-}
+TimeStepId make_time_id(const double t) { return {true, 0, make_time(t)}; }
 
 // Requires `it` to point at 0. in the sequence of times -1., 0., 1., 2.
 template <typename Iterator>

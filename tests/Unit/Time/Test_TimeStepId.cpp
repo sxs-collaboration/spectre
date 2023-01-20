@@ -29,9 +29,9 @@ void check(const bool time_runs_forward) {
   CHECK_FALSE(
       TimeStepId(time_runs_forward, 4, start + step / 3, 2, start + step / 2)
           .is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start + step / 3, 2, start)
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, start)
                   .is_at_slab_boundary());
-  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start + step / 3, 2, end)
+  CHECK_FALSE(TimeStepId(time_runs_forward, 4, start, 2, end)
                   .is_at_slab_boundary());
   CHECK_FALSE(
       TimeStepId(time_runs_forward, 4, start + step / 3, 0, start + step / 3)
@@ -48,6 +48,18 @@ void check(const bool time_runs_forward) {
   CHECK(TimeStepId(time_runs_forward, 5, end).slab_number() == 6);
   CHECK(TimeStepId(time_runs_forward, 5, end).substep_time().slab() ==
         slab.advance_towards(step));
+
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 2, step / 4,
+                   {1, 3}) == TimeStepId(time_runs_forward, 4, start + step / 2,
+                                         2, start + step * 7 / 12));
+
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, end)
+            .next_step(step / 4) ==
+        TimeStepId(time_runs_forward, 4, start + step * 3 / 4));
+  CHECK(TimeStepId(time_runs_forward, 4, start + step / 2, 1, end)
+            .next_substep(step / 4, {1, 3}) ==
+        TimeStepId(time_runs_forward, 4, start + step / 2, 2,
+                   start + step * 7 / 12));
 
   const TimeStepId id(time_runs_forward, 4, start + step / 3, 2,
                       start + step / 2);
@@ -70,15 +82,15 @@ void check(const bool time_runs_forward) {
   };
 
   check_comparisons(1, 0 * step, 0, 0 * step);
-  check_comparisons(0, step / 2, 0, 0 * step);
+  check_comparisons(0, step / 8, 0, 0 * step);
   check_comparisons(0, 0 * step, 1, 0 * step);
 
   check_comparisons(1, -step / 4, 0, 0 * step);
   check_comparisons(1, 0 * step, -1, 0 * step);
-  check_comparisons(1, 0 * step, 0, -step / 4);
-  check_comparisons(0, step / 2, -1, 0 * step);
-  check_comparisons(0, step / 2, 0, -step / 4);
-  check_comparisons(0, 0 * step, 1, -step / 4);
+  check_comparisons(1, 0 * step, 0, -step / 8);
+  check_comparisons(0, step / 8, -1, 0 * step);
+  check_comparisons(0, step / 16, 0, -step / 16);
+  check_comparisons(0, 0 * step, 1, -step / 8);
 
   test_serialization(id);
 

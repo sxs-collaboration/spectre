@@ -12,7 +12,6 @@
 #include <iosfwd>
 
 #include "Time/Time.hpp"
-#include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace PUP {
 class er;
@@ -28,28 +27,16 @@ class TimeStepId {
   /// Create a TimeStepId at the start of a step.  If that step is at the
   /// (evolution-defined) end of the slab the TimeStepId will be advanced
   /// to the next slab.
-  TimeStepId(const bool time_runs_forward, const int64_t slab_number,
-             const Time& time)
-      : time_runs_forward_(time_runs_forward),
-        slab_number_(slab_number),
-        step_time_(time),
-        substep_time_(time) {
-    canonicalize();
-  }
+  TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& time);
   /// Create a TimeStepId at a substep at time `substep_time` in a step
   /// starting at time `step_time`.
-  TimeStepId(const bool time_runs_forward, const int64_t slab_number,
-             const Time& step_time, const uint64_t substep,
-             const Time& substep_time)
-      : time_runs_forward_(time_runs_forward),
-        slab_number_(slab_number),
-        step_time_(step_time),
-        substep_(substep),
-        substep_time_(substep_time) {
-    ASSERT(substep_ != 0 or step_time_ == substep_time_,
-           "Initial substep must align with the step.");
-    canonicalize();
-  }
+  TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
+             uint64_t substep, const Time& substep_time);
+  /// Create a TimeStepId at a substep, given the relative location of
+  /// the substep within the step.
+  TimeStepId(bool time_runs_forward, int64_t slab_number, const Time& step_time,
+             uint64_t substep, const TimeDelta& step_size,
+             const Time::rational_t& step_fraction);
 
   bool time_runs_forward() const { return time_runs_forward_; }
   int64_t slab_number() const { return slab_number_; }
@@ -59,9 +46,15 @@ class TimeStepId {
   /// Time of the current substep
   const Time& substep_time() const { return substep_time_; }
 
-  bool is_at_slab_boundary() const {
-    return substep_ == 0 and substep_time_.is_at_slab_boundary();
-  }
+  bool is_at_slab_boundary() const;
+
+  /// Returns a new TimeStepId representing the start of the next step.
+  TimeStepId next_step(const TimeDelta& step_size) const;
+
+  /// Returns a new TimeStepId representing the next substep, given
+  /// the position of the substep within the step.
+  TimeStepId next_substep(const TimeDelta& step_size,
+                          const Time::rational_t& step_fraction) const;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
