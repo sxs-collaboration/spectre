@@ -64,6 +64,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+          OverrideObservationValue: None
       - ObserveNorms:
           SubfileName: Errors
           TensorsToObserve:

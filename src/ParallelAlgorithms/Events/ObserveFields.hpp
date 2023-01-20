@@ -155,9 +155,26 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     using type = FloatingPointType;
   };
 
-  using options =
-      tmpl::list<SubfileName, CoordinatesFloatingPointType, FloatingPointTypes,
-                 VariablesToObserve, InterpolateToMesh>;
+  /// \brief Override the observation value in the ObservationBox.
+  ///
+  /// Set to 'None' if you want to use the value in the ObservationBox.
+  /// Overwriting is useful when dumping data on failure so that all elements
+  /// have the 'same' observation value even though their boxes are in different
+  /// states.
+  struct OverrideObservationValue {
+    static constexpr Options::String help =
+        "Override the observation value in the ObservationBox. Set to 'None' "
+        "if you want to use the value in the ObservationBox. Overwriting is "
+        "useful when dumping data on failure so that all elements have the "
+        "'same' observation value even though their boxes are in different "
+        "states.";
+    using type = Options::Auto<typename ObservationValueTag::type,
+                               Options::AutoLabel::None>;
+  };
+
+  using options = tmpl::list<SubfileName, CoordinatesFloatingPointType,
+                             FloatingPointTypes, VariablesToObserve,
+                             InterpolateToMesh, OverrideObservationValue>;
 
   static constexpr Options::String help =
       "Observe volume tensor fields.\n"
@@ -173,6 +190,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                 const std::vector<FloatingPointType>& floating_point_types,
                 const std::vector<std::string>& variables_to_observe,
                 std::optional<Mesh<VolumeDim>> interpolation_mesh = {},
+                std::optional<typename ObservationValueTag::type>
+                    override_observation_value = {},
                 const Options::Context& context = {});
 
   using compute_tags_for_observation_box =
@@ -197,8 +216,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     }
     call_operator_impl(subfile_path_ + *section_observation_key,
                        variables_to_observe_, interpolation_mesh_,
-                       observation_value, mesh, box, cache, array_index,
-                       component);
+                       override_observation_value_.value_or(observation_value),
+                       mesh, box, cache, array_index, component);
   }
 
   // We factor out the work into a static member function so it can  be shared
@@ -320,6 +339,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     p | subfile_path_;
     p | variables_to_observe_;
     p | interpolation_mesh_;
+    p | override_observation_value_;
   }
 
  private:
@@ -338,6 +358,8 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   std::string subfile_path_;
   std::unordered_map<std::string, FloatingPointType> variables_to_observe_{};
   std::optional<Mesh<VolumeDim>> interpolation_mesh_{};
+  std::optional<typename ObservationValueTag::type>
+      override_observation_value_{};
 };
 
 template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
@@ -349,6 +371,8 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                   const std::vector<FloatingPointType>& floating_point_types,
                   const std::vector<std::string>& variables_to_observe,
                   std::optional<Mesh<VolumeDim>> interpolation_mesh,
+                  std::optional<typename ObservationValueTag::type>
+                      override_observation_value,
                   const Options::Context& context)
     : subfile_path_("/" + subfile_name),
       variables_to_observe_([&context, &floating_point_types,
@@ -376,7 +400,8 @@ ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         }
         return result;
       }()),
-      interpolation_mesh_(interpolation_mesh) {
+      interpolation_mesh_(interpolation_mesh),
+      override_observation_value_(std::move(override_observation_value)) {
   using ::operator<<;
   const std::unordered_set<std::string> valid_tensors{
       db::tag_name<Tensors>()...};

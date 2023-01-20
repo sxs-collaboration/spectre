@@ -97,6 +97,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double, Float, Float]
+          OverrideObservationValue: None
 # [observe_event_trigger]
 
 Observers:

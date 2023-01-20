@@ -87,6 +87,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+          OverrideObservationValue: None
   - - Slabs:
         EvenlySpaced:
           Interval: 10
@@ -101,6 +102,7 @@ EventsAndTriggers:
           InterpolateToMesh: None
           CoordinatesFloatingPointType: Double
           FloatingPointTypes: [Double]
+          OverrideObservationValue: None
   - - Slabs:
         EvenlySpaced:
           Interval: 10
