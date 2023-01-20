@@ -300,7 +300,7 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
         return
 
     if subfile_name.endswith(".vol"):
-        subfile_name = subfile_name.rstrip(".vol")
+        subfile_name = subfile_name[:-4]
     if not subfile_name.startswith("/"):
         subfile_name = "/" + subfile_name
 

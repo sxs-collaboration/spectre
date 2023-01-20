@@ -71,8 +71,10 @@ def interpolate_to_mesh(source_file_path,
         will only take every `obs_stride` observation
     """
 
-    source_volume_data = source_volume_data.rstrip(".vol")
-    target_volume_data = target_volume_data.rstrip(".vol")
+    if source_volume_data.endswith(".vol"):
+        source_volume_data = source_volume_data[:-4]
+    if target_volume_data.endswith(".vol"):
+        target_volume_data = target_volume_data[:-4]
     if not source_volume_data.startswith("/"):
         source_volume_data = "/" + source_volume_data
     if not target_volume_data.startswith("/"):
