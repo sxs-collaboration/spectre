@@ -364,7 +364,7 @@ def parse_input_names(ctx, param, all_values):
 def parse_kernels(kernels, exec_files, map_input_names):
     # Load kernels from 'exec_files'
     for exec_file in exec_files:
-        exec(exec_file.read())
+        exec(exec_file.read(), globals(), globals())
     # Look up all kernels
     for kernel in kernels:
         if "." in kernel:
@@ -375,8 +375,8 @@ def parse_kernels(kernels, exec_files, map_input_names):
             yield Kernel(getattr(kernel_module, kernel_function),
                          map_input_names)
         else:
-            # Only a function name was specified. Look up in 'locals()'.
-            yield Kernel(locals()[kernel], map_input_names)
+            # Only a function name was specified. Look up in 'globals()'.
+            yield Kernel(globals()[kernel], map_input_names)
 
 
 @click.command()
@@ -476,12 +476,26 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
 
     # Apply!
     import rich.progress
-    progress = rich.progress.Progress(
-        rich.progress.TextColumn("[progress.description]{task.description}"),
-        rich.progress.BarColumn(),
-        rich.progress.MofNCompleteColumn(),
-        rich.progress.TimeRemainingColumn(),
-        disable=(len(volfiles) == 1))
+    try:
+        progress_cols = (
+            rich.progress.TextColumn(
+                "[progress.description]{task.description}"),
+            rich.progress.BarColumn(),
+            # Added in rich v12.0
+            rich.progress.MofNCompleteColumn(),
+            rich.progress.TimeRemainingColumn(),
+        )
+    except AttributeError:
+        progress_cols = (
+            rich.progress.TextColumn(
+                "[progress.description]{task.description}"),
+            rich.progress.BarColumn(),
+            rich.progress.TextColumn(
+                "[progress.percentage]{task.percentage:>3.0f}%"),
+            rich.progress.TimeRemainingColumn(),
+        )
+    progress = rich.progress.Progress(*progress_cols,
+                                      disable=(len(volfiles) == 1))
     task_id = progress.add_task("Applying to files")
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:

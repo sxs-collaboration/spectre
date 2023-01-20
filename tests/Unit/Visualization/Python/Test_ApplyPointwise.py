@@ -110,6 +110,42 @@ class TestApplyPointwise(unittest.TestCase):
                     obs_id, "DerivCoords_" + "xyz"[i] + "xyz"[j]).data
                 npt.assert_allclose(result_deriv_coords, 0., atol=1e-14)
 
+    def test_cli(self):
+        runner = CliRunner()
+        cli_flags = [
+            self.h5_filename,
+            "-d",
+            "element_data.vol",
+            "-e",
+            __file__,
+        ]
+        result = runner.invoke(apply_pointwise_command,
+                               cli_flags + [
+                                   "-k",
+                                   "psi_squared",
+                                   "-k",
+                                   "coordinate_radius",
+                               ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        with spectre_h5.H5File(self.h5_filename, "r") as open_h5_file:
+            volfile = open_h5_file.get_vol("/element_data")
+            obs_id = volfile.list_observation_ids()[0]
+            psi = volfile.get_tensor_component(obs_id, "Psi").data
+            result_psisq = volfile.get_tensor_component(obs_id,
+                                                        "PsiSquared").data
+            npt.assert_allclose(np.array(result_psisq), np.array(psi)**2)
+            x, y, z = [
+                np.array(
+                    volfile.get_tensor_component(
+                        obs_id, "InertialCoordinates" + xyz).data)
+                for xyz in ["_x", "_y", "_z"]
+            ]
+            radius = np.sqrt(x**2 + y**2 + z**2)
+            result_radius = volfile.get_tensor_component(
+                obs_id, "CoordinateRadius").data
+            npt.assert_allclose(np.array(result_radius), radius)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
