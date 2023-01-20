@@ -388,6 +388,16 @@ std::vector<double> orient_variables(
 }
 
 template <size_t VolumeDim>
+DataVector orient_variables(
+    const DataVector& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
+  DataVector oriented_variables{variables.size()};
+  orient_variables(make_not_null(&oriented_variables), variables, extents,
+                   orientation_of_neighbor);
+  return oriented_variables;
+}
+
+template <size_t VolumeDim>
 std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
@@ -400,6 +410,18 @@ std::vector<double> orient_variables_on_slice(
       DataVector(const_cast<double*>(variables_on_slice.data()),
                  variables_on_slice.size()),
       slice_extents, sliced_dim, orientation_of_neighbor);
+  return oriented_variables;
+}
+
+template <size_t VolumeDim>
+DataVector orient_variables_on_slice(
+    const DataVector& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, const size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) {
+  DataVector oriented_variables{variables_on_slice.size()};
+  orient_variables_on_slice(make_not_null(&oriented_variables),
+                            variables_on_slice, slice_extents, sliced_dim,
+                            orientation_of_neighbor);
   return oriented_variables;
 }
 
@@ -418,9 +440,16 @@ std::vector<double> orient_variables_on_slice(
   template std::vector<double> orient_variables<DIM(data)>(                  \
       const std::vector<double>& variables, const Index<DIM(data)>& extents, \
       const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
+  template DataVector orient_variables<DIM(data)>(                           \
+      const DataVector& variables, const Index<DIM(data)>& extents,          \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
   template std::vector<double> orient_variables_on_slice<DIM(data)>(         \
       const std::vector<double>& variables,                                  \
       const Index<DIM(data) - 1>& extents, size_t sliced_dim,                \
+      const OrientationMap<DIM(data)>& orientation_of_neighbor);             \
+  template DataVector orient_variables_on_slice<DIM(data)>(                  \
+      const DataVector& variables, const Index<DIM(data) - 1>& extents,      \
+      size_t sliced_dim,                                                     \
       const OrientationMap<DIM(data)>& orientation_of_neighbor);
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
