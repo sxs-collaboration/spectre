@@ -218,13 +218,11 @@ class DistributedObject<ParallelComponent,
       tuples::TaggedTuple<InitializationTags...> initialization_items);
 
   /// Constructor used to dynamically add a new element of an array
-  /// Multiple elements can be added by passing them as `other_ids_to_create`
-  /// The `callback` is executed after all elements are created.
+  /// The `callback` is executed after the element is created.
   DistributedObject(
       const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
       Parallel::Phase current_phase,
-      const std::unique_ptr<Parallel::Callback>& callback,
-      std::deque<array_index> other_ids_to_create);
+      const std::unique_ptr<Parallel::Callback>& callback);
 
   /// Charm++ migration constructor, used after a chare is migrated
   explicit DistributedObject(CkMigrateMessage* /*msg*/);
@@ -531,8 +529,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     DistributedObject(
         const Parallel::CProxy_GlobalCache<metavariables>& global_cache_proxy,
         Parallel::Phase current_phase,
-        const std::unique_ptr<Parallel::Callback>& callback,
-        std::deque<array_index> other_ids_to_create)
+        const std::unique_ptr<Parallel::Callback>& callback)
     : DistributedObject() {
   static_assert(Parallel::is_array_proxy<cproxy_type>::value,
                 "Can only dynamically add elements to an array component");
@@ -550,18 +547,7 @@ DistributedObject<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     ::Initialization::mutate_assign<
         tmpl::list<Tags::ArrayIndex, Tags::GlobalCacheProxy<metavariables>>>(
         make_not_null(&box_), array_index_, global_cache_proxy_);
-    // The callback in invoked only on the last element to be created.
-    // We create elements one at a time to ensure that they are all constructed
-    // before receiving any messages from any actions executed by the callback
-    if (other_ids_to_create.empty()) {
-      callback->invoke();
-    } else {
-      auto id_to_create = other_ids_to_create.front();
-      other_ids_to_create.pop_front();
-      this->thisProxy[id_to_create].insert(global_cache_proxy_, phase_,
-                                           std::move(callback),
-                                           other_ids_to_create);
-    }
+    callback->invoke();
   } catch (const std::exception& exception) {
     initiate_shutdown(exception);
   }
