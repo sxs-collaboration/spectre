@@ -46,6 +46,13 @@ def deriv_coords(
     return partial_derivative(inertial_coords, mesh, inv_jacobian)
 
 
+def sinusoid(x: tnsr.I[DataVector, 3]) -> Scalar[DataVector]:
+    # The integral over [2 pi]^3 of this integrand is 4**3=64
+    return Scalar[DataVector](np.expand_dims(np.prod(np.sin(0.5 * np.array(x)),
+                                                     axis=0),
+                                             axis=0))
+
+
 class TestApplyPointwise(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.join(unit_test_build_path(),
@@ -110,6 +117,25 @@ class TestApplyPointwise(unittest.TestCase):
                     obs_id, "DerivCoords_" + "xyz"[i] + "xyz"[j]).data
                 npt.assert_allclose(result_deriv_coords, 0., atol=1e-14)
 
+    def test_integrate(self):
+        open_h5_files = [spectre_h5.H5File(self.h5_filename, "a")]
+        open_volfiles = [
+            h5file.get_vol("/element_data") for h5file in open_h5_files
+        ]
+
+        kernels = [
+            Kernel(sinusoid),
+        ]
+
+        integrals = apply_pointwise(volfiles=open_volfiles,
+                                    kernels=kernels,
+                                    integrate=True)
+
+        npt.assert_allclose(integrals["Volume"], (2 * np.pi)**3)
+        # The domain has pretty low resolution so the integral is not
+        # particularly precise
+        npt.assert_allclose(integrals["Sinusoid"], 64., rtol=1e-2)
+
     def test_cli(self):
         runner = CliRunner()
         cli_flags = [
@@ -145,6 +171,38 @@ class TestApplyPointwise(unittest.TestCase):
             result_radius = volfile.get_tensor_component(
                 obs_id, "CoordinateRadius").data
             npt.assert_allclose(np.array(result_radius), radius)
+
+        # Test integrals
+        result = runner.invoke(apply_pointwise_command,
+                               cli_flags + [
+                                   "-k",
+                                   "sinusoid",
+                                   "--integrate",
+                               ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("63.88", result.output)
+
+        output_filename = os.path.join(self.test_dir, "integrals.h5")
+        result = runner.invoke(apply_pointwise_command,
+                               cli_flags + [
+                                   "-k",
+                                   "sinusoid",
+                                   "--integrate",
+                                   "--output",
+                                   output_filename,
+                                   "--output-subfile",
+                                   "integrals",
+                               ],
+                               catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+        with spectre_h5.H5File(output_filename, "r") as open_h5_file:
+            datfile = open_h5_file.get_dat("/integrals")
+            self.assertEqual(datfile.get_legend(),
+                             ["Time", "Volume", "Sinusoid"])
+            npt.assert_allclose(datfile.get_data(),
+                                [[0.04, (2. * np.pi)**3, 64.]],
+                                rtol=1e-2)
 
 
 if __name__ == '__main__':

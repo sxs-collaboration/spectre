@@ -16,6 +16,7 @@ from spectre.DataStructures import DataVector
 from spectre.DataStructures.Tensor import (Frame, InverseJacobian, Jacobian,
                                            Tensor, tnsr)
 from spectre.IO.H5.IterElements import Element, iter_elements
+from spectre.NumericalAlgorithms.LinearOperators import definite_integral
 from spectre.Spectral import Mesh
 
 # functools.cached_property was added in Py 3.8. Fall back to a plain
@@ -271,9 +272,10 @@ class Kernel:
         return output
 
 
-def apply_pointwise(volfiles: Union[spectre_h5.H5Vol,
-                                    Iterable[spectre_h5.H5Vol]],
-                    kernels: Sequence[Kernel]):
+def apply_pointwise(
+        volfiles: Union[spectre_h5.H5Vol, Iterable[spectre_h5.H5Vol]],
+        kernels: Sequence[Kernel],
+        integrate: bool = False) -> Union[None, Dict[str, Sequence[float]]]:
     """Apply pointwise functions to data in the 'volfiles'
 
     Arguments:
@@ -283,6 +285,16 @@ def apply_pointwise(volfiles: Union[spectre_h5.H5Vol,
         files will be transformed.
       kernels: List of pointwise transformations to apply to the volume data
         in the form of 'Kernel' objects.
+      integrate: Compute the volume integral over the kernels instead of
+        writing them back into the volume files. The integral is computed in
+        inertial coordinates for every tensor component of all kernels and over
+        all observations in the volume files. For example, if a kernel returns a
+        vector named 'Shift' then this function returns integrals named
+        'Shift(_x,_y,_z)'. In addition, the corresponding observation values are
+        returned (named 'Time'), and the inertial volume (named 'Volume').
+
+    Returns:
+      None, or the volume integrals if 'integrate' is True.
     """
     # Collect all tensor components that we need to apply the kernels
     all_tensors: Dict[str, TensorArg] = {}
@@ -302,14 +314,27 @@ def apply_pointwise(volfiles: Union[spectre_h5.H5Vol,
             else:
                 all_tensors[tensor_name] = tensor_arg
     logger.debug("Input datasets: " + str(list(all_tensors.keys())))
-    logger.info("Output datasets: " +
-                str([kernel.output_name for kernel in kernels]))
+    # Logging output datasets as INFO when they are written back into the volume
+    # files so the user can find them
+    logger.log(
+        logging.DEBUG if integrate else logging.INFO,
+        "Output datasets: " + str([kernel.output_name for kernel in kernels]))
+
+    # We collect integrals in this dict and return it
+    if integrate:
+        integrals: Dict[str, Sequence[float]] = {}
 
     if isinstance(volfiles, spectre_h5.H5Vol):
         volfiles = [volfiles]
     for volfile in volfiles:
         all_observation_ids = volfile.list_observation_ids()
         num_obs = len(all_observation_ids)
+        if integrate and "Time" not in integrals:
+            integrals["Time"] = [
+                volfile.get_observation_value(obs_id)
+                for obs_id in all_observation_ids
+            ]
+
         for i_obs, obs_id in enumerate(all_observation_ids):
             # Load tensor data for all kernels
             all_tensor_data = {
@@ -323,6 +348,29 @@ def apply_pointwise(volfiles: Union[spectre_h5.H5Vol,
             }
             total_num_points = np.sum(
                 np.prod(volfile.get_extents(obs_id), axis=1))
+
+            # For integrals we call the kernels elementwise, take the integral
+            # over the elements, and sum up the contributions. We then skip
+            # ahead to the next observation because we're not writing anything
+            # back to disk.
+            if integrate:
+                for element in iter_elements(volfile, obs_id):
+                    # Integrate volume
+                    volume = integrals.setdefault("Volume", np.zeros(num_obs))
+                    volume[i_obs] += definite_integral(
+                        element.det_jacobian.get(), element.mesh)
+                    # Integrate kernels
+                    for kernel in kernels:
+                        transformed_tensor = kernel(all_tensor_data, element)
+                        for i, component in enumerate(transformed_tensor):
+                            component_integral = integrals.setdefault(
+                                kernel.output_name +
+                                transformed_tensor.component_suffix(i),
+                                np.zeros(num_obs))
+                            component_integral[i_obs] += definite_integral(
+                                element.det_jacobian.get() * component,
+                                element.mesh)
+                continue
 
             # Apply kernels
             for kernel in kernels:
@@ -349,6 +397,8 @@ def apply_pointwise(volfiles: Union[spectre_h5.H5Vol,
                             kernel.output_name +
                             transformed_tensor.component_suffix(i)),
                         contiguous_tensor_data=component)
+    if integrate:
+        return integrals
 
 
 def parse_input_names(ctx, param, all_values):
@@ -417,8 +467,25 @@ def parse_kernels(kernels, exec_files, map_input_names):
                     "in the volume data file. Specify key-value pairs "
                     "like 'spatial_metric=SpatialMetric'. If unspecified, "
                     "the argument name is transformed to CamelCase."))
+@click.option("--integrate",
+              is_flag=True,
+              help=("Compute the volume integral over the kernels instead of "
+                    "writing them back into the data files. "
+                    "Specify '--output' / '-o' to write the integrals to "
+                    "a file."))
+@click.option("--output",
+              "-o",
+              type=click.Path(writable=True),
+              help=("Output file for integrals. Either a '.txt' file "
+                    "or a '.h5' file. Also requires the '--output-subfile' "
+                    "option if a '.h5' file is used. "
+                    "Only used if the '--integrate' flag is set."))
+@click.option("--output-subfile",
+              help=("Subfile name in the '--output' / '-o' file, if it is "
+                    "an H5 file."))
 def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
-                            map_input_names, **kwargs):
+                            map_input_names, integrate, output, output_subfile,
+                            **kwargs):
     """Apply pointwise functions to volume data
 
     Run pointwise functions (kernels) over all volume data in the 'H5FILES' and
@@ -456,7 +523,10 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
     if not h5files:
         return
 
-    open_h5_files = [spectre_h5.H5File(filename, "a") for filename in h5files]
+    open_h5_files = [
+        spectre_h5.H5File(filename, "r" if integrate else "a")
+        for filename in h5files
+    ]
 
     # Print available subfile names and exit
     if not subfile_name:
@@ -499,8 +569,40 @@ def apply_pointwise_command(h5files, subfile_name, kernels, exec_files,
     task_id = progress.add_task("Applying to files")
     volfiles_progress = progress.track(volfiles, task_id=task_id)
     with progress:
-        apply_pointwise(volfiles_progress, kernels=kernels, **kwargs)
+        integrals = apply_pointwise(volfiles_progress,
+                                    kernels=kernels,
+                                    integrate=integrate,
+                                    **kwargs)
         progress.update(task_id, completed=len(volfiles))
+
+    # Write integrals to output file or print to terminal
+    if integrate:
+        integral_values = np.stack(list(integrals.values())).T
+        integral_names = list(integrals.keys())
+        if output:
+            if output.endswith(".h5"):
+                if not output_subfile:
+                    raise click.UsageError(
+                        "The '--output-subfile' option is required "
+                        "when writing to H5 files.")
+                if not output_subfile.startswith("/"):
+                    output_subfile = "/" + output_subfile
+                if output_subfile.endswith(".dat"):
+                    output_subfile = output_subfile[:-4]
+                with spectre_h5.H5File(output, "a") as open_output_file:
+                    integrals_file = open_output_file.insert_dat(
+                        output_subfile, legend=integral_names, version=1)
+                    integrals_file.append(integral_values)
+            else:
+                np.savetxt(output,
+                           integral_values,
+                           header=",".join(integral_names))
+        else:
+            import rich.table
+            table = rich.table.Table(*integral_names, box=None)
+            for i in range(len(integral_values)):
+                table.add_row(*[f"{v:g}" for v in integral_values[i]])
+            rich.print(table)
 
 
 if __name__ == "__main__":
