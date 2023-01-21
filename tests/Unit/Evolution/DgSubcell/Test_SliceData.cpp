@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <numeric>
-#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -38,7 +37,7 @@ void check_slice(
     const Direction<Dim>& direction, const size_t fixed_index,
     const size_t ghost_slice, const size_t component_index,
     const Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>& volume_vars,
-    const DirectionMap<Dim, std::vector<double>>& sliced_data) {
+    const DirectionMap<Dim, DataVector>& sliced_data) {
   const size_t volume_offset = component_index * volume_extents.product();
   const size_t slice_offset = component_index * slice_extents.product();
   CAPTURE(volume_offset);
@@ -60,7 +59,7 @@ void check_slice<1>(
     const Direction<1>& direction, const size_t fixed_index,
     const size_t ghost_slice, const size_t component_index,
     const Variables<tmpl::list<Tags::Scalar, Tags::Vector<1>>>& volume_vars,
-    const DirectionMap<1, std::vector<double>>& sliced_data) {
+    const DirectionMap<1, DataVector>& sliced_data) {
   const size_t volume_offset = component_index * volume_extents.product();
   const size_t slice_offset = component_index * slice_extents.product();
   CAPTURE(volume_offset);
@@ -110,15 +109,11 @@ void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
           Index<Dim> subcell_slice_extents = extents;
           subcell_slice_extents[direction.dimension()] = number_of_ghost_points;
           CAPTURE(subcell_slice_extents);
-          CHECK(sliced_data.at(direction).capacity() ==
+          CHECK(sliced_data.at(direction).size() ==
                 subcell_slice_extents.product() *
                         Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>::
                             number_of_independent_components +
                     additional_buffer_size);
-          CHECK(sliced_data.at(direction).size() ==
-                subcell_slice_extents.product() *
-                    Variables<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>::
-                        number_of_independent_components);
 
           for (size_t component_index = 0;
                component_index < volume_vars.number_of_independent_components;
@@ -138,7 +133,11 @@ void test_slice_data(const std::optional<size_t> do_not_slice_in_direction) {
               CAPTURE(fixed_index);
               CAPTURE(volume_vars);
               CAPTURE(subcell_slice_extents);
+              // The additional buffer for the sliced data is filled with NaNs
+              // in Debug mode so we can't capture them here
+#ifndef SPECTRE_DEBUG
               CAPTURE(sliced_data.at(direction));
+#endif
               check_slice(extents, subcell_slice_extents, direction,
                           fixed_index, ghost_slice, component_index,
                           volume_vars, sliced_data);

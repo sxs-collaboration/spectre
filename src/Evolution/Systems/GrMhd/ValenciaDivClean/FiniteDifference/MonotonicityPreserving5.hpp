@@ -9,7 +9,6 @@
 #include <limits>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -129,7 +128,7 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
       const Mesh<dim>& subcell_mesh) const;
@@ -142,7 +141,7 @@ class MonotonicityPreserving5Prim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
       const Mesh<dim>& subcell_mesh,

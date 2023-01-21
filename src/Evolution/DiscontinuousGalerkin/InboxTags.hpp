@@ -95,8 +95,8 @@ namespace evolution::dg::Tags {
 template <size_t Dim>
 struct BoundaryCorrectionAndGhostCellsInbox {
   using stored_type =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId, int>;
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                 std::optional<DataVector>, ::TimeStepId, int>;
 
  public:
   using temporal_id = TimeStepId;

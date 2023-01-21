@@ -4,16 +4,16 @@
 #include "Evolution/DgSubcell/RdmpTci.hpp"
 
 #include <cstddef>
-#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/ErrorHandling/Assert.hpp"
 
 namespace evolution::dg::subcell {
-int rdmp_tci(const std::vector<double>& max_of_current_variables,
-             const std::vector<double>& min_of_current_variables,
-             const std::vector<double>& max_of_past_variables,
-             const std::vector<double>& min_of_past_variables,
-             const double rdmp_delta0, const double rdmp_epsilon) {
+int rdmp_tci(const DataVector& max_of_current_variables,
+             const DataVector& min_of_current_variables,
+             const DataVector& max_of_past_variables,
+             const DataVector& min_of_past_variables, const double rdmp_delta0,
+             const double rdmp_epsilon) {
   const size_t number_of_vars = max_of_current_variables.size();
   ASSERT(min_of_current_variables.size() == number_of_vars and
              max_of_past_variables.size() == number_of_vars and

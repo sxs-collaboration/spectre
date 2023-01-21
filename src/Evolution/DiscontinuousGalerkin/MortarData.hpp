@@ -8,17 +8,13 @@
 #include <optional>
 #include <pup.h>
 #include <utility>
-#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Parallel/PupStlCpp17.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
-
-/// \cond
-class DataVector;
-/// \endcond
 
 namespace evolution::dg {
 /*!
@@ -68,10 +64,10 @@ class MortarData {
   /// @{
   void insert_local_mortar_data(TimeStepId time_step_id,
                                 Mesh<Dim - 1> local_interface_mesh,
-                                std::vector<double> local_mortar_vars);
+                                DataVector local_mortar_vars);
   void insert_neighbor_mortar_data(TimeStepId time_step_id,
                                    Mesh<Dim - 1> neighbor_interface_mesh,
-                                   std::vector<double> neighbor_mortar_vars);
+                                   DataVector neighbor_mortar_vars);
   /// @}
 
   /*!
@@ -144,18 +140,18 @@ class MortarData {
   ///
   /// The first element is the local data while the second element is the
   /// neighbor data.
-  auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, std::vector<double>>,
-                              std::pair<Mesh<Dim - 1>, std::vector<double>>>;
+  auto extract() -> std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
+                              std::pair<Mesh<Dim - 1>, DataVector>>;
 
   const TimeStepId& time_step_id() const { return time_step_id_; }
 
   auto local_mortar_data() const
-      -> const std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>& {
+      -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
     return local_mortar_data_;
   }
 
   auto neighbor_mortar_data() const
-      -> const std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>& {
+      -> const std::optional<std::pair<Mesh<Dim - 1>, DataVector>>& {
     return neighbor_mortar_data_;
   }
 
@@ -169,11 +165,9 @@ class MortarData {
                          const MortarData<LocalDim>& rhs);
 
   TimeStepId time_step_id_{};
-  std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>
-      local_mortar_data_{};
-  std::optional<std::pair<Mesh<Dim - 1>, std::vector<double>>>
-      neighbor_mortar_data_{};
-  std::vector<double> local_geometric_quantities_{};
+  std::optional<std::pair<Mesh<Dim - 1>, DataVector>> local_mortar_data_{};
+  std::optional<std::pair<Mesh<Dim - 1>, DataVector>> neighbor_mortar_data_{};
+  DataVector local_geometric_quantities_{};
   bool using_volume_and_face_jacobians_{false};
   bool using_only_face_normal_magnitude_{false};
 };

@@ -317,7 +317,6 @@ void test_3d() {
         custom4.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
 }
 
-}  // namespace
 
 void test_errors() {
 #ifdef SPECTRE_DEBUG
@@ -451,6 +450,7 @@ void test_reference_wrapper() {
   CHECK(test_points[1] == y_points_proof);
   CHECK(test_points[2] == z_points_proof);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
   test_1d();

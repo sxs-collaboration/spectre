@@ -39,15 +39,15 @@ void test_global_time_stepping_usage() {
 
   const Mesh<Dim - 1> local_mesh{4, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
-  std::vector<double> local_data(mortar_mesh.number_of_grid_points() *
-                                 number_of_components);
+  DataVector local_data{
+      mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
   const Mesh<Dim - 1> neighbor_mesh{3, Spectral::Basis::Legendre,
                                     Spectral::Quadrature::Gauss};
-  std::vector<double> neighbor_data(mortar_mesh.number_of_grid_points() *
-                                    number_of_components);
+  DataVector neighbor_data{
+      mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 
@@ -104,8 +104,8 @@ void test_local_time_stepping_usage(const bool use_gauss_points) {
 
   const Mesh<Dim - 1> local_mesh{4, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto};
-  std::vector<double> local_data(mortar_mesh.number_of_grid_points() *
-                                 number_of_components);
+  DataVector local_data{
+      mortar_mesh.number_of_grid_points() * number_of_components, 0.0};
   fill_with_random_values(make_not_null(&local_data), make_not_null(&gen),
                           make_not_null(&dist));
 

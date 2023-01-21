@@ -7,9 +7,9 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -192,9 +192,10 @@ void BoundaryConditionGhostData::apply(
 
     // Put the computed ghost data into neighbor data with {direction,
     // ElementId::external_boundary_id()} as the mortar_id key
-    std::vector<double> boundary_ghost_data{
-        ghost_data_vars.data(),
-        ghost_data_vars.data() + ghost_data_vars.size()};
+    DataVector boundary_ghost_data{ghost_data_vars.size()};
+    std::copy(get(get<Burgers::Tags::U>(ghost_data_vars)).begin(),
+              get(get<Burgers::Tags::U>(ghost_data_vars)).end(),
+              boundary_ghost_data.begin());
     const std::pair mortar_id{direction, ElementId<1>::external_boundary_id()};
 
     db::mutate<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(

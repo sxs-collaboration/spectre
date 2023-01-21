@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -50,7 +49,7 @@ SPECTRE_TEST_CASE(
       TestHelpers::grmhd::GhValenciaDivClean::fd::detail::set_element();
 
   const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                     std::pair<Direction<3>, ElementId<3>>, DataVector,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data_for_reconstruction =
           TestHelpers::grmhd::GhValenciaDivClean::fd::detail::
@@ -158,12 +157,12 @@ SPECTRE_TEST_CASE(
     const std::pair directional_element_id{
         direction, *element.neighbors().at(direction).begin()};
     FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                 std::pair<Direction<3>, ElementId<3>>, DataVector,
                  boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         bad_neighbor_data_for_reconstruction = neighbor_data_for_reconstruction;
     auto& neighbor_data =
         bad_neighbor_data_for_reconstruction.at(directional_element_id);
-    neighbor_data.resize(2);
+    neighbor_data = DataVector{2};
     const std::string match_string{
         MakeString{}
         << "Amount of reconstruction data sent (" << neighbor_data.size()

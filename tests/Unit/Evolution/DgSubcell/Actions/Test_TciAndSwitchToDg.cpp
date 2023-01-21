@@ -9,7 +9,6 @@
 #include <deque>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -136,9 +135,9 @@ struct Metavariables {
 
       evolution::dg::subcell::RdmpTciData rdmp_data{};
       rdmp_data.max_variables_values =
-          std::vector<double>{max(get(get<Var1>(subcell_vars)))};
+          DataVector{max(get(get<Var1>(subcell_vars)))};
       rdmp_data.min_variables_values =
-          std::vector<double>{min(get(get<Var1>(subcell_vars)))};
+          DataVector{min(get(get<Var1>(subcell_vars)))};
 
       // Now do RDMP check, reconstruct to DG solution, then check.
       CHECK(evolution::dg::subcell::rdmp_tci(
@@ -256,17 +255,15 @@ void test_impl(
       make_time_stepper(multistep_time_stepper);
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
 
   const int tci_decision{-1};  // default value
 
-  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
-  rdmp_tci_data.max_variables_values.push_back(2.0);
-  rdmp_tci_data.min_variables_values.push_back(-2.0);
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{{2.0}, {-2.0}};
   std::deque<evolution::dg::subcell::ActiveGrid> tci_grid_history{};
   for (size_t i = 0; i < time_stepper->order(); ++i) {
     tci_grid_history.push_back(evolution::dg::subcell::ActiveGrid::Dg);

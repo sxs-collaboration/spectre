@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -25,6 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim>
 class Direction;
 template <size_t Dim>
@@ -93,7 +93,7 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       const Element<Dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+          std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh) const;
@@ -105,7 +105,7 @@ class MonotonisedCentral : public Reconstructor<Dim> {
       const Element<Dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(Dim),
-          std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+          std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
           boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
           neighbor_data,
       const Mesh<Dim>& subcell_mesh,

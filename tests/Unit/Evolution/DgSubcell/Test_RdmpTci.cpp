@@ -7,7 +7,6 @@
 #include <limits>
 #include <random>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -49,11 +48,10 @@ DataVector soln(const tnsr::I<DataVector, Dim, Frame::ElementLogical>& coords) {
 }
 
 template <size_t Dim>
-void test_rdmp_impl(const std::vector<double>& past_max_values,
-                    const std::vector<double>& past_min_values,
-                    const double rdmp_delta0, const double rdmp_epsilon,
-                    const size_t num_pts_1d, const double rescale_dg_by,
-                    const double rescale_subcell_by,
+void test_rdmp_impl(const DataVector& past_max_values,
+                    const DataVector& past_min_values, const double rdmp_delta0,
+                    const double rdmp_epsilon, const size_t num_pts_1d,
+                    const double rescale_dg_by, const double rescale_subcell_by,
                     const int expected_tci_triggered) {
   CAPTURE(Dim);
   CAPTURE(num_pts_1d);
@@ -95,9 +93,9 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
             dg_vars, subcell_vars, past_max_values, past_min_values,
             rdmp_delta0, rdmp_epsilon) == expected_tci_triggered);
 
-  // Check with only std::vector implementation
-  std::vector<double> current_max_values(past_max_values.size());
-  std::vector<double> current_min_values(current_max_values.size());
+  // Check with only DataVector implementation
+  DataVector current_max_values{past_max_values.size()};
+  DataVector current_min_values{current_max_values.size()};
   size_t component_index = 0;
   tmpl::for_each<tmpl::list<Tags::Scalar, Tags::Vector<Dim>>>(
       [&component_index, &current_max_values, &current_min_values, &dg_vars,
@@ -130,8 +128,8 @@ void test_rdmp_impl(const std::vector<double>& past_max_values,
 
 template <size_t Dim>
 void test_rdmp() {
-  const std::vector<double> past_max_values(Dim + 1, static_cast<double>(Dim));
-  const std::vector<double> past_min_values(Dim + 1, -static_cast<double>(Dim));
+  const DataVector past_max_values{Dim + 1, static_cast<double>(Dim)};
+  const DataVector past_min_values{Dim + 1, -static_cast<double>(Dim)};
 
   // We lower the maximum number of 1d points in 3d in order to reduce total
   // test runtime.

@@ -48,7 +48,7 @@ namespace TestHelpers::grmhd::GhValenciaDivClean::fd {
 namespace detail {
 template <typename F>
 FixedHashMap<maximum_number_of_neighbors(3),
-             std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+             std::pair<Direction<3>, ElementId<3>>, DataVector,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
     const Mesh<3>& subcell_mesh,
@@ -56,7 +56,7 @@ compute_neighbor_data(
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+               std::pair<Direction<3>, ElementId<3>>, DataVector,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -219,7 +219,7 @@ void test_prim_reconstructor_impl(
   neighbors_for_data[gsl::at(Direction<3>::all_directions(), 5)] =
       Neighbors<3>{{ElementId<3>::external_boundary_id()}, {}};
   const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                     std::pair<Direction<3>, ElementId<3>>, DataVector,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, neighbors_for_data,

@@ -8,9 +8,9 @@
 #include <numeric>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Variables.hpp"
@@ -103,16 +103,16 @@ void test() {
     const size_t dg_number_of_independent_components =
         Vars::number_of_independent_components;
     const auto upper_neighbor_data = [&dg_face_mesh, &upper_packaged_data]() {
-      std::vector<double> result(dg_number_of_independent_components *
-                                 dg_face_mesh.number_of_grid_points());
+      DataVector result{dg_number_of_independent_components *
+                        dg_face_mesh.number_of_grid_points()};
       std::iota(result.begin(), result.end(),
                 1.0 + 2.0 * upper_packaged_data.size());
       return result;
     }();
     const auto lower_neighbor_data = [&dg_face_mesh, &upper_packaged_data,
                                       &upper_neighbor_data]() {
-      std::vector<double> result(dg_number_of_independent_components *
-                                 dg_face_mesh.number_of_grid_points());
+      DataVector result{dg_number_of_independent_components *
+                        dg_face_mesh.number_of_grid_points()};
       std::iota(
           result.begin(), result.end(),
           1.0 + 2.0 * upper_packaged_data.size() + upper_neighbor_data.size());
@@ -220,13 +220,11 @@ void test() {
     set_volume_data();
 
     {
-      std::vector<double> upper_local_data(
-          dg_number_of_independent_components *
-          dg_face_mesh.number_of_grid_points());
+      DataVector upper_local_data{dg_number_of_independent_components *
+                                  dg_face_mesh.number_of_grid_points()};
       std::iota(upper_local_data.begin(), upper_local_data.end(), 1.0e6);
-      std::vector<double> lower_local_data(
-          dg_number_of_independent_components *
-          dg_face_mesh.number_of_grid_points());
+      DataVector lower_local_data{dg_number_of_independent_components *
+                                  dg_face_mesh.number_of_grid_points()};
       std::iota(lower_local_data.begin(), lower_local_data.end(), 1.0e7);
       upper_mortar_data.insert_local_mortar_data(time_step_id, dg_face_mesh,
                                                  upper_local_data);

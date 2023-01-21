@@ -8,9 +8,9 @@
 #include <optional>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -27,8 +27,8 @@ void test() {
   using Type = typename tag::type;
   auto box = db::create<db::AddSimpleTags<tag>>(Type{});
   using StorageType =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId, int>;
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                 std::optional<DataVector>, ::TimeStepId, int>;
   std::pair<
       const TimeStepId,
       FixedHashMap<maximum_number_of_neighbors(Dim),

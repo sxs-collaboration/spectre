@@ -7,7 +7,6 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -39,7 +38,7 @@ namespace TestHelpers {
 namespace Burgers::fd {
 template <typename F>
 FixedHashMap<maximum_number_of_neighbors(1),
-             std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
+             std::pair<Direction<1>, ElementId<1>>, DataVector,
              boost::hash<std::pair<Direction<1>, ElementId<1>>>>
 compute_neighbor_data(
     const Mesh<1>& subcell_mesh,
@@ -47,7 +46,7 @@ compute_neighbor_data(
     const DirectionMap<1, Neighbors<1>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(1),
-               std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
+               std::pair<Direction<1>, ElementId<1>>, DataVector,
                boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -108,7 +107,7 @@ void test_reconstructor(const size_t num_pts,
                              Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
   const FixedHashMap<maximum_number_of_neighbors(1),
-                     std::pair<Direction<1>, ElementId<1>>, std::vector<double>,
+                     std::pair<Direction<1>, ElementId<1>>, DataVector,
                      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),

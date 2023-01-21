@@ -67,9 +67,9 @@ namespace grmhd::ValenciaDivClean::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<
-      maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-      std::vector<double>, boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  static FixedHashMap<maximum_number_of_neighbors(3),
+                      std::pair<Direction<3>, ElementId<3>>, DataVector,
+                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
   apply(const db::DataBox<DbTagsList>& box,
         const std::vector<std::pair<Direction<3>, ElementId<3>>>&
             mortars_to_reconstruct_to) {
@@ -89,7 +89,7 @@ struct NeighborPackagedData {
            "re-slicing/projecting.");
 
     FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                 std::pair<Direction<3>, ElementId<3>>, DataVector,
                  boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
@@ -165,21 +165,21 @@ struct NeighborPackagedData {
               gr::Tags::SpatialMetric<3>,
               gr::Tags::SqrtDetSpatialMetric<DataVector>,
               gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
-          tmpl::for_each<spacetime_vars_to_copy>([
-            &direction, &extents, &vars_on_face,
-            &spacetime_vars_on_faces =
-                db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
-                    typename System::flux_spacetime_variables_tag, 3>>(box)
-          ](auto tag_v) {
-            using tag = tmpl::type_from<decltype(tag_v)>;
-            data_on_slice(make_not_null(&get<tag>(vars_on_face)),
-                          get<tag>(gsl::at(spacetime_vars_on_faces,
-                                           direction.dimension())),
-                          extents, direction.dimension(),
-                          direction.side() == Side::Lower
-                              ? 0
-                              : extents[direction.dimension()] - 1);
-          });
+          tmpl::for_each<spacetime_vars_to_copy>(
+              [&direction, &extents, &vars_on_face,
+               &spacetime_vars_on_faces =
+                   db::get<evolution::dg::subcell::Tags::OnSubcellFaces<
+                       typename System::flux_spacetime_variables_tag, 3>>(box)](
+                  auto tag_v) {
+                using tag = tmpl::type_from<decltype(tag_v)>;
+                data_on_slice(make_not_null(&get<tag>(vars_on_face)),
+                              get<tag>(gsl::at(spacetime_vars_on_faces,
+                                               direction.dimension())),
+                              extents, direction.dimension(),
+                              direction.side() == Side::Lower
+                                  ? 0
+                                  : extents[direction.dimension()] - 1);
+              });
 
           call_with_dynamic_type<void, typename grmhd::ValenciaDivClean::fd::
                                            Reconstructor::creatable_classes>(
@@ -238,9 +238,13 @@ struct NeighborPackagedData {
               packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
               subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
               subcell_options.reconstruction_method());
-          neighbor_package_data[mortar_id] = std::vector<double>{
-              dg_packaged_data.data(),
-              dg_packaged_data.data() + dg_packaged_data.size()};
+          // Make a view so we can use iterators with std::copy
+          DataVector dg_packaged_data_view{dg_packaged_data.data(),
+                                           dg_packaged_data.size()};
+          neighbor_package_data[mortar_id] =
+              DataVector{dg_packaged_data.size()};
+          std::copy(dg_packaged_data_view.begin(), dg_packaged_data_view.end(),
+                    neighbor_package_data[mortar_id].begin());
         }
       }
     });

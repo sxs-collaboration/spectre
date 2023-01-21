@@ -6,8 +6,8 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -33,12 +33,12 @@ namespace evolution::dg::subcell {
  */
 template <bool InsertIntoMap, size_t Dim>
 void insert_or_update_neighbor_volume_data(
-    gsl::not_null<FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+    gsl::not_null<
+        FixedHashMap<maximum_number_of_neighbors(Dim),
+                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
         neighbor_data_ptr,
-    const std::vector<double>& neighbor_subcell_data,
+    const DataVector& neighbor_subcell_data,
     const size_t number_of_rdmp_vars_in_buffer,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,
@@ -53,12 +53,12 @@ void insert_or_update_neighbor_volume_data(
 template <size_t Dim>
 void insert_neighbor_rdmp_and_volume_data(
     gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,
-    gsl::not_null<FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
+    gsl::not_null<
+        FixedHashMap<maximum_number_of_neighbors(Dim),
+                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                     boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
         neighbor_data_ptr,
-    const std::vector<double>& received_neighbor_subcell_data,
+    const DataVector& received_neighbor_subcell_data,
     size_t number_of_rdmp_vars,
     const std::pair<Direction<Dim>, ElementId<Dim>>& directional_element_id,
     const Mesh<Dim>& neighbor_mesh, const Element<Dim>& element,

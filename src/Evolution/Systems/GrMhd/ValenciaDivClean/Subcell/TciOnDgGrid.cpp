@@ -92,15 +92,15 @@ TciOnDgGrid<RecoveryScheme>::apply(
   const double max_mag_tilde_b = max(get(mag_tilde_b));
 
   rdmp_tci_data.max_variables_values =
-      std::vector{max(max(get(subcell_tilde_d)), max(get(tilde_d))),
-                  max(max(get(subcell_tilde_ye)), max(get(tilde_ye))),
-                  max(max(get(subcell_tilde_tau)), max(get(tilde_tau))),
-                  max(max(get(subcell_mag_tilde_b)), max_mag_tilde_b)};
+      DataVector{max(max(get(subcell_tilde_d)), max(get(tilde_d))),
+                 max(max(get(subcell_tilde_ye)), max(get(tilde_ye))),
+                 max(max(get(subcell_tilde_tau)), max(get(tilde_tau))),
+                 max(max(get(subcell_mag_tilde_b)), max_mag_tilde_b)};
   rdmp_tci_data.min_variables_values =
-      std::vector{min(min(get(subcell_tilde_d)), min(get(tilde_d))),
-                  min(min(get(subcell_tilde_ye)), min(get(tilde_ye))),
-                  min(min(get(subcell_tilde_tau)), min(get(tilde_tau))),
-                  min(min(get(subcell_mag_tilde_b)), min(get(mag_tilde_b)))};
+      DataVector{min(min(get(subcell_tilde_d)), min(get(tilde_d))),
+                 min(min(get(subcell_tilde_ye)), min(get(tilde_ye))),
+                 min(min(get(subcell_tilde_tau)), min(get(tilde_tau))),
+                 min(min(get(subcell_mag_tilde_b)), min(get(mag_tilde_b)))};
 
   const double average_sqrt_det_spatial_metric =
       l1Norm(get(sqrt_det_spatial_metric));

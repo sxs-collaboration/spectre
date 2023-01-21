@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -74,14 +73,13 @@ void test(const gsl::not_null<std::mt19937*> generator,
         }
       };
 
-  std::vector<double> volume_vars(mesh.number_of_grid_points() * number_of_vars,
-                                  0.0);
+  DataVector volume_vars{mesh.number_of_grid_points() * number_of_vars, 0.0};
   DataVector var1(volume_vars.data(), mesh.number_of_grid_points());
   DataVector var2(volume_vars.data() + mesh.number_of_grid_points(),  // NOLINT
                   mesh.number_of_grid_points());
   set_polynomial(&var1, &var2, logical_coords);
 
-  std::vector<double> expected_deriv(Dim * volume_vars.size());
+  DataVector expected_deriv{Dim * volume_vars.size()};
   std::array<DataVector, Dim> expected_d_var1{};
   std::array<DataVector, Dim> expected_d_var2{};
   for (size_t i = 0; i < Dim; ++i) {
@@ -100,13 +98,13 @@ void test(const gsl::not_null<std::mt19937*> generator,
   //
   // We do this by computing the solution in our entire neighbor, then using
   // slice_data to get the subset of points that are needed.
-  DirectionMap<Dim, std::vector<double>> neighbor_data{};
+  DirectionMap<Dim, DataVector> neighbor_data{};
   for (const auto& direction : Direction<Dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coords;
     neighbor_logical_coords.get(direction.dimension()) +=
         direction.sign() * 2.0;
-    std::vector<double> neighbor_vars(
-        mesh.number_of_grid_points() * number_of_vars, 0.0);
+    DataVector neighbor_vars{mesh.number_of_grid_points() * number_of_vars,
+                             0.0};
     DataVector neighbor_var1(neighbor_vars.data(),
                              mesh.number_of_grid_points());
     DataVector neighbor_var2(
@@ -117,8 +115,8 @@ void test(const gsl::not_null<std::mt19937*> generator,
     DirectionMap<Dim, bool> directions_to_slice{};
     directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
-        gsl::make_span(neighbor_vars), mesh.extents(),
-        (stencil_width - 1) / 2 + 1, directions_to_slice, 0);
+        gsl::make_span(neighbor_vars.data(), neighbor_vars.size()),
+        mesh.extents(), (stencil_width - 1) / 2 + 1, directions_to_slice, 0);
     CAPTURE((stencil_width - 1) / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
@@ -129,7 +127,7 @@ void test(const gsl::not_null<std::mt19937*> generator,
   }
 
   // Note: reconstructed_num_pts assumes isotropic extents
-  std::vector<double> logical_derivative_buffer(volume_vars.size() * Dim);
+  DataVector logical_derivative_buffer{volume_vars.size() * Dim};
   std::array<gsl::span<double>, Dim> logical_derivative_view{};
   for (size_t i = 0; i < Dim; ++i) {
     gsl::at(logical_derivative_view, i) = gsl::make_span(
@@ -142,8 +140,9 @@ void test(const gsl::not_null<std::mt19937*> generator,
   }
 
   ::fd::logical_partial_derivatives(
-      make_not_null(&logical_derivative_view), gsl::make_span(volume_vars),
-      ghost_cell_vars, mesh, number_of_vars, fd_order);
+      make_not_null(&logical_derivative_view),
+      gsl::make_span(volume_vars.data(), volume_vars.size()), ghost_cell_vars,
+      mesh, number_of_vars, fd_order);
 
   // Scale to volume_vars since that sets the subtraction error threshold.
   Approx custom_approx = Approx::custom().epsilon(1.0e-14).scale(
@@ -181,8 +180,9 @@ void test(const gsl::not_null<std::mt19937*> generator,
                              Frame::Inertial>>
       partial_derivatives{mesh.number_of_grid_points()};
   ::fd::partial_derivatives<derivative_tags>(
-      make_not_null(&partial_derivatives), gsl::make_span(volume_vars),
-      ghost_cell_vars, mesh, number_of_vars, fd_order, inverse_jacobian);
+      make_not_null(&partial_derivatives),
+      gsl::make_span(volume_vars.data(), volume_vars.size()), ghost_cell_vars,
+      mesh, number_of_vars, fd_order, inverse_jacobian);
 
   std::array<const double*, Dim> expected_logical_derivs_ptrs{};
   for (size_t i = 0; i < Dim; ++i) {

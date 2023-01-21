@@ -4,12 +4,12 @@
 #pragma once
 
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/Variables.hpp"
 #include "Utilities/Gsl.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim, typename T>
 class DirectionMap;
 template <size_t Dim>
@@ -19,7 +19,7 @@ class Index;
 namespace evolution::dg::subcell {
 namespace detail {
 template <size_t Dim>
-DirectionMap<Dim, std::vector<double>> slice_data_impl(
+DirectionMap<Dim, DataVector> slice_data_impl(
     const gsl::span<const double>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, size_t number_of_ghost_points,
     const DirectionMap<Dim, bool>& directions_to_slice,
@@ -47,7 +47,7 @@ DirectionMap<Dim, std::vector<double>> slice_data_impl(
  * expensive data copying.
  */
 template <size_t Dim, typename TagList>
-DirectionMap<Dim, std::vector<double>> slice_data(
+DirectionMap<Dim, DataVector> slice_data(
     const Variables<TagList>& volume_subcell_vars,
     const Index<Dim>& subcell_extents, const size_t number_of_ghost_points,
     const DirectionMap<Dim, bool>& directions_to_slice,

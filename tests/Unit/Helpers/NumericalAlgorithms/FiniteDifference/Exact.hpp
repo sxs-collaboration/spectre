@@ -7,7 +7,6 @@
 
 #include <array>
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
@@ -72,8 +71,7 @@ void test_reconstruction_is_exact_if_in_basis(
       }
     }
   };
-  std::vector<double> volume_vars(mesh.number_of_grid_points() * number_of_vars,
-                                  0.0);
+  DataVector volume_vars{mesh.number_of_grid_points() * number_of_vars, 0.0};
   DataVector var1(volume_vars.data(), mesh.number_of_grid_points());
   DataVector var2(volume_vars.data() + mesh.number_of_grid_points(),  // NOLINT
                   mesh.number_of_grid_points());
@@ -84,13 +82,13 @@ void test_reconstruction_is_exact_if_in_basis(
   //
   // We do this by computing the solution in our entire neighbor, then using
   // slice_data to get the subset of points that are needed.
-  DirectionMap<Dim, std::vector<double>> neighbor_data{};
+  DirectionMap<Dim, DataVector> neighbor_data{};
   for (const auto& direction : Direction<Dim>::all_directions()) {
     auto neighbor_logical_coords = logical_coords;
     neighbor_logical_coords.get(direction.dimension()) +=
         direction.sign() * 2.0;
-    std::vector<double> neighbor_vars(
-        mesh.number_of_grid_points() * number_of_vars, 0.0);
+    DataVector neighbor_vars{mesh.number_of_grid_points() * number_of_vars,
+                             0.0};
     DataVector neighbor_var1(neighbor_vars.data(),
                              mesh.number_of_grid_points());
     DataVector neighbor_var2(
@@ -111,12 +109,10 @@ void test_reconstruction_is_exact_if_in_basis(
   // Note: reconstructed_num_pts assumes isotropic extents
   const size_t reconstructed_num_pts =
       (mesh.extents(0) + 1) * mesh.slice_away(0).number_of_grid_points();
-  std::array<std::vector<double>, Dim> reconstructed_upper_side_of_face_vars =
-      make_array<Dim>(
-          std::vector<double>(reconstructed_num_pts * number_of_vars));
-  std::array<std::vector<double>, Dim> reconstructed_lower_side_of_face_vars =
-      make_array<Dim>(
-          std::vector<double>(reconstructed_num_pts * number_of_vars));
+  std::array<DataVector, Dim> reconstructed_upper_side_of_face_vars =
+      make_array<Dim>(DataVector{reconstructed_num_pts * number_of_vars});
+  std::array<DataVector, Dim> reconstructed_lower_side_of_face_vars =
+      make_array<Dim>(DataVector{reconstructed_num_pts * number_of_vars});
 
   std::array<gsl::span<double>, Dim> recons_upper_side_of_face{};
   std::array<gsl::span<double>, Dim> recons_lower_side_of_face{};
@@ -161,8 +157,8 @@ void test_reconstruction_is_exact_if_in_basis(
           logical_coords_face_centered.get(i) + 4.0 * i;
     }
 
-    std::vector<double> expected_volume_vars(
-        face_centered_mesh.number_of_grid_points() * number_of_vars, 0.0);
+    DataVector expected_volume_vars{
+        face_centered_mesh.number_of_grid_points() * number_of_vars, 0.0};
     DataVector expected_var1(expected_volume_vars.data(),
                              face_centered_mesh.number_of_grid_points());
     DataVector expected_var2(

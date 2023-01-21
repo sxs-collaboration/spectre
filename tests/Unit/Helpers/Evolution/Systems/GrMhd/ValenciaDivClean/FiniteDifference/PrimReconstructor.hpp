@@ -8,7 +8,6 @@
 #include <array>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -46,7 +45,7 @@ namespace TestHelpers::grmhd::ValenciaDivClean::fd {
 namespace detail {
 template <typename F>
 FixedHashMap<maximum_number_of_neighbors(3),
-             std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+             std::pair<Direction<3>, ElementId<3>>, DataVector,
              boost::hash<std::pair<Direction<3>, ElementId<3>>>>
 compute_neighbor_data(
     const Mesh<3>& subcell_mesh,
@@ -54,7 +53,7 @@ compute_neighbor_data(
     const DirectionMap<3, Neighbors<3>>& neighbors,
     const size_t ghost_zone_size, const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+               std::pair<Direction<3>, ElementId<3>>, DataVector,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -153,7 +152,7 @@ void test_prim_reconstructor_impl(
   };
 
   const FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                     std::pair<Direction<3>, ElementId<3>>, DataVector,
                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),

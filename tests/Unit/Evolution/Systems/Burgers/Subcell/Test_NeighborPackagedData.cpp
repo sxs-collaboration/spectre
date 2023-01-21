@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
@@ -221,10 +222,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Burgers.Subcell.NeighborPackagedData",
         typename BoundaryCorrectionUsedForTest::dg_package_data_volume_tags{},
         dg_package_data_argument_tags{});
 
-    std::vector<double> vector_to_check{
+    const DataVector vector_to_check{
         expected_fd_packaged_data_on_mortar.data(),
-        expected_fd_packaged_data_on_mortar.data() +
-            expected_fd_packaged_data_on_mortar.size()};
+        expected_fd_packaged_data_on_mortar.size()};
 
     CHECK_ITERABLE_APPROX(vector_to_check, packaged_data.at(mortar_id));
   }

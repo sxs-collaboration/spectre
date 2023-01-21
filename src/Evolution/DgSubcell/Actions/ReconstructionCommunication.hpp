@@ -13,7 +13,6 @@
 #include <optional>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -67,7 +66,7 @@ namespace evolution::dg::subcell::Actions {
  * 2. Slice the variables provided by GhostDataMutator to send to our neighbors
  *    for ghost zones
  * 3. Send the ghost zone data, appending the max/min for the TCI at the end of
- *    the `std::vector<double>` we are sending.
+ *    the `DataVector` we are sending.
  *
  * \warning This assumes the RDMP TCI data in the DataBox has been set, it does
  * not calculate it automatically. The reason is this way we can only calculate
@@ -141,7 +140,7 @@ struct SendDataForReconstruction {
     }
     // Optimization note: could save a copy+allocation if we moved
     // all_sliced_data when possible before sending.
-    const DirectionMap<Dim, std::vector<double>> all_sliced_data = slice_data(
+    const DirectionMap<Dim, DataVector> all_sliced_data = slice_data(
         db::mutate_apply(GhostDataMutator{}, make_not_null(&box)),
         subcell_mesh.extents(), ghost_zone_size, directions_to_slice, 0);
 
@@ -170,7 +169,12 @@ struct SendDataForReconstruction {
              "evolution is using DG without any changes to subcell.");
 
       for (const ElementId<Dim>& neighbor : neighbors_in_direction) {
-        std::vector<double> subcell_data_to_send{};
+        const size_t rdmp_size = rdmp_tci_data.max_variables_values.size() +
+                                 rdmp_tci_data.min_variables_values.size();
+        const auto& sliced_data_in_direction = all_sliced_data.at(direction);
+        // Allocate with subcell data and rdmp data
+        DataVector subcell_data_to_send{sliced_data_in_direction.size() +
+                                        rdmp_size};
         if (not orientation.is_aligned()) {
           std::array<size_t, Dim> slice_extents{};
           for (size_t d = 0; d < Dim; ++d) {
@@ -178,21 +182,32 @@ struct SendDataForReconstruction {
           }
           gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
 
-          subcell_data_to_send =
-              orient_variables(all_sliced_data.at(direction),
-                               Index<Dim>{slice_extents}, orientation);
-        } else {
-          subcell_data_to_send = all_sliced_data.at(direction);
-        }
-        subcell_data_to_send.insert(subcell_data_to_send.end(),
-                                    rdmp_tci_data.max_variables_values.cbegin(),
-                                    rdmp_tci_data.max_variables_values.cend());
-        subcell_data_to_send.insert(subcell_data_to_send.end(),
-                                    rdmp_tci_data.min_variables_values.cbegin(),
-                                    rdmp_tci_data.min_variables_values.cend());
+          // Need a view so we only get the subcell data and not the rdmp data
+          DataVector subcell_data_to_send_view{
+              subcell_data_to_send.data(),
+              subcell_data_to_send.size() - rdmp_size};
 
-        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                   std::optional<std::vector<double>>, ::TimeStepId, int>
+          orient_variables(make_not_null(&subcell_data_to_send_view),
+                           sliced_data_in_direction, Index<Dim>{slice_extents},
+                           orientation);
+        } else {
+          std::copy(sliced_data_in_direction.begin(),
+                    sliced_data_in_direction.end(),
+                    subcell_data_to_send.begin());
+        }
+        // Copy rdmp data to end of subcell_data_to_send
+        std::copy(
+            rdmp_tci_data.max_variables_values.cbegin(),
+            rdmp_tci_data.max_variables_values.cend(),
+            std::prev(subcell_data_to_send.end(), static_cast<int>(rdmp_size)));
+        std::copy(rdmp_tci_data.min_variables_values.cbegin(),
+                  rdmp_tci_data.min_variables_values.cend(),
+                  std::prev(subcell_data_to_send.end(),
+                            static_cast<int>(
+                                rdmp_tci_data.min_variables_values.size())));
+
+        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                   std::optional<DataVector>, ::TimeStepId, int>
             data{subcell_mesh,
                  dg_mesh.slice_away(direction.dimension()),
                  std::move(subcell_data_to_send),
@@ -268,12 +283,11 @@ struct ReceiveDataForReconstruction {
     using Key = std::pair<Direction<Dim>, ElementId<Dim>>;
     const auto& current_time_step_id = db::get<::Tags::TimeStepId>(box);
     std::map<TimeStepId,
-             FixedHashMap<maximum_number_of_neighbors(Dim), Key,
-                          std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                                     std::optional<std::vector<double>>,
-                                     std::optional<std::vector<double>>,
-                                     ::TimeStepId, int>,
-                          boost::hash<Key>>>& inbox =
+             FixedHashMap<
+                 maximum_number_of_neighbors(Dim), Key,
+                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                            std::optional<DataVector>, ::TimeStepId, int>,
+                 boost::hash<Key>>>& inbox =
         tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
             Metavariables::volume_dim>>(inboxes);
     const auto& received = inbox.find(current_time_step_id);
@@ -285,11 +299,10 @@ struct ReceiveDataForReconstruction {
     }
 
     // Now that we have received all the data, copy it over as needed.
-    FixedHashMap<
-        maximum_number_of_neighbors(Dim), Key,
-        std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                   std::optional<std::vector<double>>, ::TimeStepId, int>,
-        boost::hash<Key>>
+    FixedHashMap<maximum_number_of_neighbors(Dim), Key,
+                 std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                            std::optional<DataVector>, ::TimeStepId, int>,
+                 boost::hash<Key>>
         received_data = std::move(inbox[current_time_step_id]);
     inbox.erase(current_time_step_id);
 
@@ -306,7 +319,7 @@ struct ReceiveDataForReconstruction {
          &received_data, &subcell_mesh](
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
                 neighbor_data_ptr,
             const gsl::not_null<RdmpTciData*> rdmp_tci_data_ptr,

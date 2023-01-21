@@ -67,10 +67,10 @@ void MonotonisedCentralPrim::reconstruct(
         volume_spacetime_and_cons_vars,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(dim),
-        std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(dim),
+                       std::pair<Direction<dim>, ElementId<dim>>, DataVector,
+                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
+        neighbor_data,
     const Mesh<dim>& subcell_mesh) const {
   using prim_tags_for_reconstruction =
       grmhd::GhValenciaDivClean::Tags::primitive_grmhd_reconstruction_tags;
@@ -138,10 +138,10 @@ void MonotonisedCentralPrim::reconstruct_fd_neighbor(
         subcell_volume_spacetime_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(dim),
-        std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(dim),
+                       std::pair<Direction<dim>, ElementId<dim>>, DataVector,
+                       boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
+        neighbor_data,
     const Mesh<dim>& subcell_mesh,
     const Direction<dim> direction_to_reconstruct) const {
   using prim_tags_for_reconstruction =
@@ -325,10 +325,10 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
           volume_spacetime_and_cons_vars,                                      \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(3),                                      \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,          \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,  \
+      const FixedHashMap<maximum_number_of_neighbors(3),                       \
+                         std::pair<Direction<3>, ElementId<3>>, DataVector,    \
+                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
+          neighbor_data,                                                       \
       const Mesh<3>& subcell_mesh) const;                                      \
   template void MonotonisedCentralPrim::reconstruct_fd_neighbor(               \
       gsl::not_null<Variables<TAGS_LIST_DG_FD_INTERFACE(data)>*> vars_on_face, \
@@ -338,10 +338,10 @@ bool operator!=(const MonotonisedCentralPrim& lhs,
           subcell_volume_spacetime_metric,                                     \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,    \
       const Element<3>& element,                                               \
-      const FixedHashMap<                                                      \
-          maximum_number_of_neighbors(3),                                      \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,          \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,  \
+      const FixedHashMap<maximum_number_of_neighbors(3),                       \
+                         std::pair<Direction<3>, ElementId<3>>, DataVector,    \
+                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>&  \
+          neighbor_data,                                                       \
       const Mesh<3>& subcell_mesh,                                             \
       const Direction<3> direction_to_reconstruct) const;
 

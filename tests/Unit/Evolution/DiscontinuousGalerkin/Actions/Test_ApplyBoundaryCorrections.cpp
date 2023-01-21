@@ -210,9 +210,10 @@ struct SetLocalMortarData {
         const Mesh<Metavariables::volume_dim - 1>& mortar_mesh =
             mortar_meshes.at(mortar_id);
 
-        std::vector<double> type_erased_boundary_data_on_mortar(
+        DataVector type_erased_boundary_data_on_mortar{
             mortar_mesh.number_of_grid_points() *
-            number_of_dg_package_tags_components);
+                number_of_dg_package_tags_components,
+            0.0};
         alg::iota(type_erased_boundary_data_on_mortar,
                   direction.dimension() +
                       10 * static_cast<unsigned long>(direction.side()) +
@@ -244,7 +245,7 @@ struct SetLocalMortarData {
               });
           // We also need to set the local history one step back to get to 2nd
           // order in time.
-          type_erased_boundary_data_on_mortar.resize(
+          type_erased_boundary_data_on_mortar.destructive_resize(
               mortar_mesh.number_of_grid_points() *
               number_of_dg_package_tags_components);
           alg::iota(type_erased_boundary_data_on_mortar,
@@ -653,14 +654,15 @@ void test_impl(const Spectral::Quadrature quadrature,
       std::pair mortar_id{direction, neighbor_id};
       const Mesh<Dim - 1>& mortar_mesh = mortar_meshes.at(mortar_id);
 
-      std::vector<double> flux_data(mortar_mesh.number_of_grid_points() *
-                                    number_of_dg_package_tags_components);
+      DataVector flux_data{mortar_mesh.number_of_grid_points() *
+                               number_of_dg_package_tags_components,
+                           0.0};
       alg::iota(flux_data,
                 direction.dimension() +
                     10 * static_cast<unsigned long>(direction.side()) +
                     100 * count);
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId, int>
+      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                 std::optional<DataVector>, ::TimeStepId, int>
           data{
               mesh,    face_mesh, {}, {flux_data}, {neighbor_next_time_step_id},
               decision};
@@ -781,10 +783,10 @@ void test_impl(const Spectral::Quadrature quadrature,
         mortar_mesh.number_of_grid_points()};
     Variables<mortar_tags_list> neighbor_data_on_mortar{
         mortar_mesh.number_of_grid_points()};
-    const std::pair<Mesh<Dim - 1>, std::vector<double>>& local_mesh_and_data =
+    const std::pair<Mesh<Dim - 1>, DataVector>& local_mesh_and_data =
         *local_mortar_data.local_mortar_data();
-    const std::pair<Mesh<Dim - 1>, std::vector<double>>&
-        neighbor_mesh_and_data = *neighbor_mortar_data.neighbor_mortar_data();
+    const std::pair<Mesh<Dim - 1>, DataVector>& neighbor_mesh_and_data =
+        *neighbor_mortar_data.neighbor_mortar_data();
     std::copy(std::get<1>(local_mesh_and_data).begin(),
               std::get<1>(local_mesh_and_data).end(),
               local_data_on_mortar.data());

@@ -8,7 +8,6 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -61,7 +60,7 @@ namespace evolution::dg::subcell {
 template <typename Metavariables, typename DbTagsList, size_t Dim>
 auto prepare_neighbor_data(gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
                            gsl::not_null<db::DataBox<DbTagsList>*> box)
-    -> DirectionMap<Metavariables::volume_dim, std::vector<double>>;
+    -> DirectionMap<Metavariables::volume_dim, DataVector>;
 template <typename DbTagsList>
 int get_tci_decision(const db::DataBox<DbTagsList>& box);
 }  // namespace evolution::dg::subcell
@@ -534,7 +533,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       db::get<evolution::dg::Tags::MortarData<Dim>>(*box);
   const auto& mortar_meshes = get<evolution::dg::Tags::MortarMesh<Dim>>(*box);
 
-  std::optional<DirectionMap<Dim, std::vector<double>>>
+  std::optional<DirectionMap<Dim, DataVector>>
       all_neighbor_data_for_reconstruction = std::nullopt;
   int tci_decision = 0;
   // Set ghost_cell_mesh to the DG mesh, then update it below if we did a
@@ -551,7 +550,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     const auto& orientation = neighbors.orientation();
     const auto direction_from_neighbor = orientation(direction.opposite());
 
-    std::vector<double> ghost_and_subcell_data{};
+    DataVector ghost_and_subcell_data{};
     if constexpr (using_subcell_v<Metavariables>) {
       ASSERT(all_neighbor_data_for_reconstruction.has_value(),
              "Trying to do DG-subcell but the ghost and subcell data for the "
@@ -565,8 +564,7 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
     for (const auto& neighbor : neighbors) {
       const std::pair mortar_id{direction, neighbor};
 
-      std::pair<Mesh<Dim - 1>, std::vector<double>>
-          neighbor_boundary_data_on_mortar{};
+      std::pair<Mesh<Dim - 1>, DataVector> neighbor_boundary_data_on_mortar{};
       ASSERT(time_step_id == all_mortar_data.at(mortar_id).time_step_id(),
              "The current time step id of the volume is "
                  << time_step_id
@@ -574,7 +572,6 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
                  << mortar_id << " is "
                  << all_mortar_data.at(mortar_id).time_step_id());
 
-      // Reorient the data to the neighbor orientation if necessary
       if (LIKELY(orientation.is_aligned())) {
         neighbor_boundary_data_on_mortar =
             *all_mortar_data.at(mortar_id).local_mortar_data();
@@ -596,9 +593,8 @@ void ComputeTimeDerivative<Dim, EvolutionSystem, DgStepChoosers,
       }();
 
       using SendData =
-          std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                     std::optional<std::vector<double>>,
-                     std::optional<std::vector<double>>, ::TimeStepId, int>;
+          std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                     std::optional<DataVector>, ::TimeStepId, int>;
       SendData data{};
 
       if (neighbor_count == total_neighbors) {

@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -215,7 +214,7 @@ void test(const BoundaryConditionType& boundary_condition) {
     const auto direction = Direction<1>::upper_xi();
     const std::pair mortar_id = {direction,
                                  ElementId<1>::external_boundary_id()};
-    const std::vector<double>& fd_ghost_data =
+    const DataVector& fd_ghost_data =
         get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<1>>(box)
             .at(mortar_id);
 
@@ -223,7 +222,7 @@ void test(const BoundaryConditionType& boundary_condition) {
 
     if (typeid(BoundaryConditionType) ==
         typeid(Burgers::BoundaryConditions::Dirichlet)) {
-      const std::vector<double> expected_ghost_u(fd_ghost_data.size(), 0.3);
+      const DataVector expected_ghost_u{fd_ghost_data.size(), 0.3};
       CHECK_ITERABLE_APPROX(expected_ghost_u, fd_ghost_data);
     }
 
@@ -240,9 +239,9 @@ void test(const BoundaryConditionType& boundary_condition) {
 
       const auto solution_py = pypp::call<Scalar<DataVector>>(
           "Linear", "u", ghost_inertial_coords, time);
-      std::vector<double> expected_ghost_u{
-          get(solution_py).data(),
-          get(solution_py).data() + get(solution_py).size()};
+      DataVector expected_ghost_u{get(solution_py).size()};
+      std::copy(get(solution_py).begin(), get(solution_py).end(),
+                expected_ghost_u.begin());
 
       CHECK_ITERABLE_APPROX(expected_ghost_u, fd_ghost_data);
     }
@@ -253,8 +252,7 @@ void test(const BoundaryConditionType& boundary_condition) {
       // will not throw any error. Here we just check if
       // `Burgers::fd::BoundaryConditionGhostData::apply()` has correctly filled
       // out `fd_ghost_data` with the outermost value.
-      const std::vector<double> expected_ghost_u(fd_ghost_data.size(),
-                                                 volume_u_val);
+      const DataVector expected_ghost_u{fd_ghost_data.size(), volume_u_val};
       CHECK_ITERABLE_APPROX(expected_ghost_u, fd_ghost_data);
 
       // Test when U=-1.0, which will raise ERROR by violating the

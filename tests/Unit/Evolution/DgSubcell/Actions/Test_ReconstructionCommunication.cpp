@@ -9,7 +9,6 @@
 #include <iterator>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -207,8 +206,7 @@ void test() {
 
   using NeighborDataMap =
       FixedHashMap<maximum_number_of_neighbors(Dim),
-                   std::pair<Direction<Dim>, ElementId<Dim>>,
-                   std::vector<double>,
+                   std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                    boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
   NeighborDataMap neighbor_data{};
   const std::pair east_neighbor_id{Direction<Dim>::upper_xi(), east_id};
@@ -302,22 +300,30 @@ void test() {
     }
   }
   const size_t ghost_zone_size = 2;
-  const DirectionMap<Dim, std::vector<double>> all_sliced_data =
+  const size_t rdmp_size = rdmp_tci_data.max_variables_values.size() +
+                           rdmp_tci_data.min_variables_values.size();
+  const DirectionMap<Dim, DataVector> all_sliced_data =
       evolution::dg::subcell::slice_data(evolved_vars, subcell_mesh.extents(),
                                          ghost_zone_size, directions_to_slice,
                                          0);
   {
-    std::vector<double> expected_east_data =
+    const auto& east_sliced_neighbor_data =
         all_sliced_data.at(east_neighbor_id.first);
-    for (double& value : expected_east_data) {
-      value *= 2.0;
+    DataVector expected_east_data{east_sliced_neighbor_data.size() + rdmp_size};
+    std::copy(east_sliced_neighbor_data.begin(),
+              east_sliced_neighbor_data.end(), expected_east_data.begin());
+    for (size_t i = 0; i < east_sliced_neighbor_data.size(); i++) {
+      expected_east_data[i] *= 2.0;
     }
-    expected_east_data.insert(expected_east_data.end(),
-                              rdmp_tci_data.max_variables_values.cbegin(),
-                              rdmp_tci_data.max_variables_values.cend());
-    expected_east_data.insert(expected_east_data.end(),
-                              rdmp_tci_data.min_variables_values.cbegin(),
-                              rdmp_tci_data.min_variables_values.cend());
+    std::copy(rdmp_tci_data.max_variables_values.cbegin(),
+              rdmp_tci_data.max_variables_values.cend(),
+              std::prev(expected_east_data.end(), static_cast<int>(rdmp_size)));
+    std::copy(
+        rdmp_tci_data.min_variables_values.cbegin(),
+        rdmp_tci_data.min_variables_values.cend(),
+        std::prev(expected_east_data.end(),
+                  static_cast<int>(rdmp_tci_data.min_variables_values.size())));
+
     const auto& east_data = ActionTesting::get_inbox_tag<
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
         runner, east_id);
@@ -338,17 +344,27 @@ void test() {
     }
     gsl::at(slice_extents, direction.dimension()) = ghost_zone_size;
 
-    std::vector<double> expected_south_data = orient_variables(
-        all_sliced_data.at(direction), Index<Dim>{slice_extents}, orientation);
-    for (double& value : expected_south_data) {
+    const auto& south_sliced_neighbor_data = all_sliced_data.at(direction);
+
+    DataVector expected_south_data{south_sliced_neighbor_data.size() +
+                                   rdmp_size};
+    DataVector expected_south_data_view{expected_south_data.data(),
+                                        south_sliced_neighbor_data.size()};
+    orient_variables(make_not_null(&expected_south_data_view),
+                     all_sliced_data.at(direction), Index<Dim>{slice_extents},
+                     orientation);
+    for (double& value : expected_south_data_view) {
       value *= 2.0;
     }
-    expected_south_data.insert(expected_south_data.end(),
-                               rdmp_tci_data.max_variables_values.cbegin(),
-                               rdmp_tci_data.max_variables_values.cend());
-    expected_south_data.insert(expected_south_data.end(),
-                               rdmp_tci_data.min_variables_values.cbegin(),
-                               rdmp_tci_data.min_variables_values.cend());
+    std::copy(
+        rdmp_tci_data.max_variables_values.cbegin(),
+        rdmp_tci_data.max_variables_values.cend(),
+        std::prev(expected_south_data.end(), static_cast<int>(rdmp_size)));
+    std::copy(
+        rdmp_tci_data.min_variables_values.cbegin(),
+        rdmp_tci_data.min_variables_values.cend(),
+        std::prev(expected_south_data.end(),
+                  static_cast<int>(rdmp_tci_data.min_variables_values.size())));
 
     const auto& south_data = ActionTesting::get_inbox_tag<
         comp, evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>>(
@@ -371,17 +387,15 @@ void test() {
   REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
       make_not_null(&runner), self_id));
 
-  const size_t rdmp_max_min_total_number = 2;
   // Send data from east neighbor
-  std::vector<double> east_ghost_cells_and_rdmp{};
+  DataVector east_ghost_cells_and_rdmp{};
   {
     const auto face_mesh = dg_mesh.slice_away(0);
-    east_ghost_cells_and_rdmp.resize(
+    east_ghost_cells_and_rdmp = DataVector{
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size +
-        rdmp_max_min_total_number);
+        rdmp_size};
     alg::iota(east_ghost_cells_and_rdmp, 0.0);
-    std::vector<double> boundary_data(face_mesh.number_of_grid_points() *
-                                      (2 + Dim));
+    DataVector boundary_data{face_mesh.number_of_grid_points() * (2 + Dim)};
     alg::iota(boundary_data, 1000.0);
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
         insert_into_inbox(
@@ -393,15 +407,15 @@ void test() {
                            subcell_mesh, face_mesh, east_ghost_cells_and_rdmp,
                            boundary_data, next_time_step_id, -10}});
   }
-  [[maybe_unused]] std::vector<double> south_ghost_cells_and_rdmp{};
+  [[maybe_unused]] DataVector south_ghost_cells_and_rdmp{};
   if constexpr (Dim > 1) {
     REQUIRE_FALSE(ActionTesting::next_action_if_ready<comp>(
         make_not_null(&runner), self_id));
 
     const auto face_mesh = subcell_mesh.slice_away(1);
-    south_ghost_cells_and_rdmp.resize(
+    south_ghost_cells_and_rdmp = DataVector{
         subcell_mesh.slice_away(0).number_of_grid_points() * ghost_zone_size +
-        rdmp_max_min_total_number);
+        rdmp_size};
     alg::iota(south_ghost_cells_and_rdmp, 10000.0);
     *std::prev(south_ghost_cells_and_rdmp.end()) = -10.0;
     evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>::
@@ -434,10 +448,11 @@ void test() {
 
   REQUIRE(neighbor_data_from_box.find(east_neighbor_id) !=
           neighbor_data_from_box.end());
-  east_ghost_cells_and_rdmp.pop_back();
-  east_ghost_cells_and_rdmp.pop_back();
+  const DataVector east_ghost_cells_and_rdmp_view{
+      east_ghost_cells_and_rdmp.data(),
+      east_ghost_cells_and_rdmp.size() - rdmp_size};
   CHECK(neighbor_data_from_box.find(east_neighbor_id)->second ==
-        east_ghost_cells_and_rdmp);
+        east_ghost_cells_and_rdmp_view);
   CHECK(
       get_databox_tag<comp,
                       evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
@@ -447,10 +462,11 @@ void test() {
     const std::pair south_neighbor_id{Direction<Dim>::lower_eta(), south_id};
     REQUIRE(neighbor_data_from_box.find(south_neighbor_id) !=
             neighbor_data_from_box.end());
-    south_ghost_cells_and_rdmp.pop_back();
-    south_ghost_cells_and_rdmp.pop_back();
+    const DataVector south_ghost_cells_and_rdmp_view{
+        south_ghost_cells_and_rdmp.data(),
+        south_ghost_cells_and_rdmp.size() - rdmp_size};
     CHECK(neighbor_data_from_box.find(south_neighbor_id)->second ==
-          south_ghost_cells_and_rdmp);
+          south_ghost_cells_and_rdmp_view);
     CHECK(get_databox_tag<
               comp, evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>(
               runner, self_id)

@@ -8,7 +8,6 @@
 #include <deque>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -169,9 +168,9 @@ struct Metavariables {
       using std::max;
       using std::min;
       evolution::dg::subcell::RdmpTciData rdmp_data{};
-      rdmp_data.max_variables_values = std::vector{max(
+      rdmp_data.max_variables_values = DataVector{max(
           max(get(get<Var1>(dg_vars))), max(get(get<Var1>(projected_vars))))};
-      rdmp_data.min_variables_values = std::vector{min(
+      rdmp_data.min_variables_values = DataVector{min(
           min(get(get<Var1>(dg_vars))), min(get(get<Var1>(projected_vars))))};
 
       CHECK(approx(persson_exponent) == 4.0);
@@ -273,7 +272,7 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
       evolution::dg::subcell::ActiveGrid::Dg;
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
 
@@ -288,14 +287,14 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
         (direction.side() == Side::Lower and direction.dimension() % 2 != 0)) {
       neighbor_meshes[directional_element_id] = dg_mesh;
       neighbor_data[directional_element_id] =
-          std::vector<double>(dg_mesh.number_of_grid_points());
+          DataVector{dg_mesh.number_of_grid_points()};
       alg::iota(neighbor_data[directional_element_id],
                 subcell_mesh.number_of_grid_points() *
                     (2.0 * direction.dimension() + 1.0));
     } else {
       neighbor_meshes[directional_element_id] = subcell_mesh;
       neighbor_data[directional_element_id] =
-          std::vector<double>(dg_mesh.number_of_grid_points());
+          DataVector{dg_mesh.number_of_grid_points()};
       alg::iota(neighbor_data[directional_element_id],
                 subcell_mesh.number_of_grid_points() *
                     (2.0 * direction.dimension() + 1.0));
@@ -304,11 +303,9 @@ void test_impl(const bool rdmp_fails, const bool tci_fails,
 
   const int tci_decision{-1};
 
-  evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   // max and min of +-2 at last time level means reconstructed vars will be in
   // limit
-  rdmp_tci_data.max_variables_values.push_back(2.0);
-  rdmp_tci_data.min_variables_values.push_back(-2.0);
+  evolution::dg::subcell::RdmpTciData rdmp_tci_data{{2.0}, {-2.0}};
   // Make a copy of the RDMP data because in the case where the TCI fails the
   // RDMP TCI data in the DataBox shouldn't have changed.
   const evolution::dg::subcell::RdmpTciData initial_rdmp_tci_data =

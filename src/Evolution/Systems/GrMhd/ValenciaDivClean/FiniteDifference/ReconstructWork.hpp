@@ -7,13 +7,13 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 
 /// \cond
+class DataVector;
 template <typename TagsList>
 class Variables;
 namespace gsl {
@@ -87,10 +87,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(3),
+                       std::pair<Direction<3>, ElementId<3>>, DataVector,
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, bool compute_conservatives);
 }  // namespace grmhd::ValenciaDivClean::fd
