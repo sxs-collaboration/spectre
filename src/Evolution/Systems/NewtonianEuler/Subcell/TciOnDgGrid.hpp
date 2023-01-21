@@ -73,7 +73,7 @@ class TciOnDgGrid {
                  hydro::Tags::EquationOfStateBase, domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions>;
+                 evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   template <size_t ThermodynamicDim>
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(

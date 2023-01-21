@@ -13,10 +13,14 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/Tags.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Domain/Structure/Element.hpp"
@@ -167,20 +171,49 @@ template <size_t Dim, bool TciFails>
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
+template <size_t Dim>
+class TestCreator : public DomainCreator<Dim> {
+  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    return {};
+  }
+
+  std::vector<std::string> block_names() const override { return {"Block0"}; }
+
+  std::vector<std::array<size_t, Dim>> initial_extents() const override {
+    return {};
+  }
+
+  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
+      const override {
+    return {};
+  }
+};
+
 template <size_t Dim, bool TciFails>
-void test(const bool always_use_subcell, const bool interior_element) {
+void test(const bool always_use_subcell, const bool interior_element,
+          const bool allow_subcell_in_block) {
   CAPTURE(Dim);
   CAPTURE(TciFails);
   CAPTURE(always_use_subcell);
   CAPTURE(interior_element);
+  CAPTURE(allow_subcell_in_block);
   using metavars = Metavariables<Dim, TciFails>;
   using comp = Component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{
       {SystemAnalyticSolution{},
        evolution::dg::subcell::SubcellOptions{
-           1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, always_use_subcell,
-           evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false}}};
+           evolution::dg::subcell::SubcellOptions{
+               1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.1, always_use_subcell,
+               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
+               false,
+               allow_subcell_in_block
+                   ? std::optional<std::vector<std::string>>{}
+                   : std::optional{std::vector<std::string>{"Block0"}}},
+           TestCreator<Dim>{}}}};
   Metavariables<Dim, TciFails>::DgInitialDataTci::invoked = false;
 
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
@@ -238,7 +271,8 @@ void test(const bool always_use_subcell, const bool interior_element) {
   CHECK(
       ActionTesting::get_databox_tag<comp,
                                      evolution::dg::subcell::Tags::ActiveGrid>(
-          runner, 0) == ((TciFails or always_use_subcell) and interior_element
+          runner, 0) == ((TciFails or always_use_subcell) and
+                                 interior_element and allow_subcell_in_block
                              ? evolution::dg::subcell::ActiveGrid::Subcell
                              : evolution::dg::subcell::ActiveGrid::Dg));
   const Mesh<Dim> subcell_mesh = evolution::dg::subcell::fd::mesh(dg_mesh);
@@ -246,7 +280,8 @@ void test(const bool always_use_subcell, const bool interior_element) {
                                        evolution::dg::subcell::Tags::Mesh<Dim>>(
             runner, 0) == subcell_mesh);
 
-  if ((TciFails or always_use_subcell) and interior_element) {
+  if ((TciFails or always_use_subcell) and interior_element and
+      allow_subcell_in_block) {
     Variables<tmpl::list<Var1>> subcell_vars{
         subcell_mesh.number_of_grid_points()};
     evolution::dg::subcell::fd::project(make_not_null(&subcell_vars), var,
@@ -327,8 +362,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.Initialize",
                             domain::CoordinateMaps::Identity<3>>>();
   for (const bool always_use_subcell : {false, true}) {
     for (const bool interior_element : {false, true}) {
-      test<1, true>(always_use_subcell, interior_element);
-      test<1, false>(always_use_subcell, interior_element);
+      for (const bool allow_subcell_in_block : {false, true}) {
+        test<1, true>(always_use_subcell, interior_element,
+                      allow_subcell_in_block);
+        test<1, false>(always_use_subcell, interior_element,
+                       allow_subcell_in_block);
+      }
     }
   }
 }

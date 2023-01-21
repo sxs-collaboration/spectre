@@ -277,7 +277,7 @@ double test(const size_t num_dg_pts) {
               3, Frame::Grid>,
           ::GeneralizedHarmonic::gauges::Tags::GaugeCondition,
           grmhd::GhValenciaDivClean::fd::Tags::FilterOptions,
-          evolution::dg::subcell::Tags::SubcellOptions>,
+          evolution::dg::subcell::Tags::SubcellOptions<3>>,
       db::AddComputeTags<
           ::domain::Tags::LogicalCoordinates<3>,
           ::domain::Tags::MappedCoordinates<
@@ -325,7 +325,8 @@ double test(const size_t num_dg_pts) {
       grmhd::GhValenciaDivClean::fd::FilterOptions{0.001},
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          std::nullopt});
 
   db::mutate_apply<ValenciaDivClean::ConservativeFromPrimitive>(
       make_not_null(&box));

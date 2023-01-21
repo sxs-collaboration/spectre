@@ -50,6 +50,8 @@ struct Var2 : db::SimpleTag {
 
 template <size_t Dim>
 void test(const bool moving_mesh) {
+  TestHelpers::db::test_simple_tag<subcell::Tags::SubcellOptions<Dim>>(
+      "SubcellOptions");
   TestHelpers::db::test_simple_tag<subcell::Tags::Mesh<Dim>>("Subcell(Mesh)");
   TestHelpers::db::test_compute_tag<subcell::Tags::MeshCompute<Dim>>(
       "Subcell(Mesh)");
@@ -314,8 +316,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Tags", "[Evolution][Unit]") {
   TestHelpers::db::test_simple_tag<
       subcell::Tags::OnSubcells<::Tags::Variables<tmpl::list<Var1, Var2>>>>(
       "Variables(OnSubcells(Var1),OnSubcells(Var2))");
-  TestHelpers::db::test_simple_tag<subcell::Tags::SubcellOptions>(
-      "SubcellOptions");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciGridHistory>(
       "TciGridHistory");
   TestHelpers::db::test_simple_tag<subcell::Tags::TciStatus>("TciStatus");

@@ -4,6 +4,7 @@
 #include "Framework/TestingFramework.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <catch.hpp>
 #include <cstddef>
 #include <deque>
 #include <memory>
@@ -19,6 +20,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesTag.hpp"
+#include "Domain/Block.hpp"
+#include "Domain/BoundaryConditions/BoundaryCondition.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Domain.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
@@ -85,7 +90,8 @@ struct component {
       Tags::Variables<tmpl::list<Var1>>,
       Tags::HistoryEvolvedVariables<Tags::Variables<tmpl::list<Var1>>>,
       Tags::TimeStepper<TimeStepper>,
-      evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>>;
+      evolution::dg::subcell::Tags::NeighborTciDecisions<Dim>,
+      domain::Tags::Element<Dim>>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Parallel::Phase::Initialization,
@@ -101,7 +107,7 @@ struct Metavariables {
   using system = System<Dim>;
   using analytic_variables_tags = typename system::variables_tag::tags_list;
   using const_global_cache_tags =
-      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions>;
+      tmpl::list<evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
   static bool rdmp_fails;
@@ -117,7 +123,7 @@ struct Metavariables {
     using argument_tags =
         tmpl::list<Tags::Variables<tmpl::list<Var1>>,
                    evolution::dg::subcell::Tags::DataForRdmpTci,
-                   evolution::dg::subcell::Tags::SubcellOptions>;
+                   evolution::dg::subcell::Tags::SubcellOptions<Dim>>;
 
     static std::tuple<int, evolution::dg::subcell::RdmpTciData> apply(
         const Variables<tmpl::list<Var1>>& subcell_vars,
@@ -171,13 +177,35 @@ std::unique_ptr<TimeStepper> make_time_stepper(
 }
 
 template <size_t Dim>
+class TestCreator : public DomainCreator<Dim> {
+  Domain<Dim> create_domain() const override { return Domain<Dim>{}; }
+  std::vector<DirectionMap<
+      Dim, std::unique_ptr<domain::BoundaryConditions::BoundaryCondition>>>
+  external_boundary_conditions() const override {
+    return {};
+  }
+
+  std::vector<std::string> block_names() const override { return {"Block0"}; }
+
+  std::vector<std::array<size_t, Dim>> initial_extents() const override {
+    return {};
+  }
+
+  std::vector<std::array<size_t, Dim>> initial_refinement_levels()
+      const override {
+    return {};
+  }
+};
+
+template <size_t Dim>
 void test_impl(
     const bool multistep_time_stepper, const bool rdmp_fails,
     const bool tci_fails, const bool did_rollback,
     const bool always_use_subcell, const bool self_starting,
     const bool in_substep,
     const evolution::dg::subcell::fd::ReconstructionMethod recons_method,
-    const bool use_halo, const bool neighbor_is_troubled) {
+    const bool use_halo, const bool neighbor_is_troubled,
+    const bool test_block_id_assert) {
   CAPTURE(Dim);
   CAPTURE(multistep_time_stepper);
   CAPTURE(rdmp_fails);
@@ -189,6 +217,7 @@ void test_impl(
   CAPTURE(recons_method);
   CAPTURE(use_halo);
   CAPTURE(neighbor_is_troubled);
+  CAPTURE(test_block_id_assert);
   if (in_substep and multistep_time_stepper) {
     ERROR("Can't both be taking a substep and using a multistep time stepper");
   }
@@ -202,8 +231,13 @@ void test_impl(
   using comp = component<Dim, metavars>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   MockRuntimeSystem runner{{evolution::dg::subcell::SubcellOptions{
-      1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell,
-      recons_method, use_halo}}};
+      evolution::dg::subcell::SubcellOptions{
+          1.0e-3, 1.0e-4, 2.0e-3, 2.0e-4, 4.0, 4.0, always_use_subcell,
+          recons_method, use_halo,
+          test_block_id_assert
+              ? std::optional{std::vector<std::string>{"Block0"}}
+              : std::optional<std::vector<std::string>>{}},
+      TestCreator<Dim>{}}}};
 
   TimeStepId time_step_id{true, self_starting ? -1 : 1,
                           Time{Slab{1.0, 2.0}, {0, 10}}};
@@ -272,9 +306,16 @@ void test_impl(
       {time_step_id, dg_mesh, subcell_mesh, active_grid, did_rollback,
        neighbor_data, tci_decision, rdmp_tci_data, tci_grid_history,
        evolved_vars, time_stepper_history,
-       make_time_stepper(multistep_time_stepper), neighbor_decisions});
+       make_time_stepper(multistep_time_stepper), neighbor_decisions,
+       Element<Dim>{ElementId<Dim>{0}, {}}});
 
   // Invoke the TciAndSwitchToDg action on the runner
+  if (test_block_id_assert) {
+    CHECK_THROWS_WITH(
+        ActionTesting::next_action<comp>(make_not_null(&runner), 0),
+        Catch::Matchers::Contains("Should never use subcell on element "));
+    return;
+  }
   ActionTesting::next_action<comp>(make_not_null(&runner), 0);
 
   const auto active_grid_from_box =
@@ -370,6 +411,9 @@ void test_impl(
 
 template <size_t Dim>
 void test() {
+#ifdef SPECTRE_DEBUG
+  bool tested_block_id_assert = false;
+#endif
   for (const bool use_multistep_time_stepper : {true, false}) {
     for (const bool rdmp_fails : {true, false}) {
       for (const bool tci_fails : {false, true}) {
@@ -386,13 +430,23 @@ void test() {
                     test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
                                    tci_fails, did_rollback, always_use_subcell,
                                    self_starting, false, recons_method,
-                                   use_halo, neighbor_is_troubled);
+                                   use_halo, neighbor_is_troubled, false);
                     if (not use_multistep_time_stepper) {
                       test_impl<Dim>(
                           use_multistep_time_stepper, rdmp_fails, tci_fails,
                           did_rollback, always_use_subcell, self_starting, true,
-                          recons_method, use_halo, neighbor_is_troubled);
+                          recons_method, use_halo, neighbor_is_troubled, false);
                     }
+#ifdef SPECTRE_DEBUG
+                    if (not tested_block_id_assert) {
+                      test_impl<Dim>(use_multistep_time_stepper, rdmp_fails,
+                                     tci_fails, did_rollback,
+                                     always_use_subcell, self_starting, false,
+                                     recons_method, use_halo,
+                                     neighbor_is_troubled, true);
+                      tested_block_id_assert = true;
+                    }
+#endif
                   }
                 }
               }
@@ -404,6 +458,7 @@ void test() {
   }
 }
 
+// [[TimeOut, 10]]
 SPECTRE_TEST_CASE("Unit.Evolution.Subcell.Actions.TciAndSwitchToDg",
                   "[Evolution][Unit]") {
   // 1. check that if we are in self-start nothing happens.

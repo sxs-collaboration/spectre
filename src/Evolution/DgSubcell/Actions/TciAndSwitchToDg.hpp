@@ -156,8 +156,18 @@ struct TciAndSwitchToDg {
            "Must be using subcells when calling TciAndSwitchToDg action.");
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
-    const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
+    const SubcellOptions& subcell_options =
+        db::get<Tags::SubcellOptions<Dim>>(box);
     const TimeStepId& time_step_id = db::get<::Tags::TimeStepId>(box);
+
+    // This should never be run if we are prohibited from using subcell on this
+    // element.
+    ASSERT(not std::binary_search(
+               subcell_options.only_dg_block_ids().begin(),
+               subcell_options.only_dg_block_ids().end(),
+               db::get<domain::Tags::Element<Dim>>(box).id().block_id()),
+           "Should never use subcell on element "
+               << db::get<domain::Tags::Element<Dim>>(box).id());
 
     // The first condition is that for substep time integrators we only allow
     // switching back to DG on step boundaries. This is the easiest way to

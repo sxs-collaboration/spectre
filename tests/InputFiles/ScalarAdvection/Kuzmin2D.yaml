@@ -42,6 +42,7 @@ SpatialDiscretization:
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: false
+      OnlyDgBlocksAndGroups: None
     TciOptions:
       UCutoff: 1.0e-10
   SubcellSolver:

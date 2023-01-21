@@ -41,6 +41,7 @@ SpatialDiscretization:
       AlwaysUseSubcells: false
       SubcellToDgReconstructionMethod: DimByDim
       UseHalo: false
+      OnlyDgBlocksAndGroups: None
   SubcellSolver:
     Reconstructor:
       MonotonisedCentralPrim:

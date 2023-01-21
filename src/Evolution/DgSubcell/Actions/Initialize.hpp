@@ -91,7 +91,7 @@ namespace evolution::dg::subcell::Actions {
  */
 template <size_t Dim, typename System, typename TciMutator>
 struct Initialize {
-  using const_global_cache_tags = tmpl::list<Tags::SubcellOptions>;
+  using const_global_cache_tags = tmpl::list<Tags::SubcellOptions<Dim>>;
 
   using simple_tags =
       tmpl::list<Tags::ActiveGrid, Tags::DidRollback,
@@ -120,11 +120,15 @@ struct Initialize {
       const Parallel::GlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
-    const SubcellOptions& subcell_options = db::get<Tags::SubcellOptions>(box);
+    const SubcellOptions& subcell_options =
+        db::get<Tags::SubcellOptions<Dim>>(box);
     const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& subcell_mesh = db::get<subcell::Tags::Mesh<Dim>>(box);
     const Element<Dim>& element = db::get<::domain::Tags::Element<Dim>>(box);
 
+    const bool subcell_allowed_in_block = not std::binary_search(
+        subcell_options.only_dg_block_ids().begin(),
+        subcell_options.only_dg_block_ids().end(), element.id().block_id());
     const bool cell_is_not_on_external_boundary =
         db::get<::domain::Tags::Element<Dim>>(box)
             .external_boundaries()
@@ -135,7 +139,8 @@ struct Initialize {
 
     bool cell_is_troubled = subcell_options.always_use_subcells() and
                             (cell_is_not_on_external_boundary or
-                             subcell_enabled_at_external_boundary);
+                             subcell_enabled_at_external_boundary) and
+                            subcell_allowed_in_block;
 
     db::mutate<Tags::NeighborTciDecisions<Dim>>(
         make_not_null(&box), [&element](const auto neighbor_decisions_ptr) {
@@ -155,7 +160,7 @@ struct Initialize {
                    subcell::Tags::DataForRdmpTci>,
         typename TciMutator::argument_tags>(
         [&cell_is_troubled, &cell_is_not_on_external_boundary, &dg_mesh,
-         &subcell_mesh, &subcell_options](
+         subcell_allowed_in_block, &subcell_mesh, &subcell_options](
             const gsl::not_null<ActiveGrid*> active_grid_ptr,
             const gsl::not_null<bool*> did_rollback_ptr,
             const auto active_vars_ptr,
@@ -179,7 +184,8 @@ struct Initialize {
               subcell_options.initial_data_persson_exponent(), args_for_tci...);
           *rdmp_data_ptr = std::move(std::get<1>(std::move(tci_result)));
           *tci_decision_ptr = std::get<0>(tci_result);
-          const bool tci_flagged = *tci_decision_ptr != 0;
+          const bool tci_flagged =
+              *tci_decision_ptr != 0 and subcell_allowed_in_block;
 
           if ((cell_is_not_on_external_boundary or
                subcell_enabled_at_external_boundary) and

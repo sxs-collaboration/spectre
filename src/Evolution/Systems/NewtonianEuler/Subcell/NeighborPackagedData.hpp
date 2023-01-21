@@ -103,7 +103,7 @@ struct NeighborPackagedData {
         db::get<evolution::dg::subcell::Tags::Mesh<Dim>>(box);
     const Mesh<Dim>& dg_mesh = db::get<domain::Tags::Mesh<Dim>>(box);
     const auto& subcell_options =
-        db::get<evolution::dg::subcell::Tags::SubcellOptions>(box);
+        db::get<evolution::dg::subcell::Tags::SubcellOptions<Dim>>(box);
 
     // Note: we need to compare if projecting the entire mesh or only ghost
     // zones needed is faster. This probably depends on the number of neighbors

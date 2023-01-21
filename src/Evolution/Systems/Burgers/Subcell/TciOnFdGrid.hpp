@@ -34,7 +34,7 @@ struct TciOnFdGrid {
       tmpl::list<Burgers::Tags::U, ::domain::Tags::Mesh<1>,
                  evolution::dg::subcell::Tags::Mesh<1>,
                  evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions>;
+                 evolution::dg::subcell::Tags::SubcellOptions<1>>;
 
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(
       const Scalar<DataVector>& subcell_u, const Mesh<1>& dg_mesh,

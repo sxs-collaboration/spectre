@@ -3,7 +3,10 @@
 
 #pragma once
 
+#include <memory>
+
 #include "DataStructures/DataBox/Tag.hpp"
+#include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/SubcellOptions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags/OptionsGroup.hpp"
 #include "Options/Options.hpp"
@@ -23,13 +26,17 @@ struct SubcellOptions {
 
 namespace Tags {
 /// System-agnostic options for DG-subcell
+template <size_t Dim>
 struct SubcellOptions : db::SimpleTag {
   using type = evolution::dg::subcell::SubcellOptions;
 
-  using option_tags = tmpl::list<OptionTags::SubcellOptions>;
+  using option_tags = tmpl::list<OptionTags::SubcellOptions,
+                                 ::domain::OptionTags::DomainCreator<Dim>>;
   static constexpr bool pass_metavariables = false;
-  static type create_from_options(const type& subcell_options) {
-    return subcell_options;
+  static type create_from_options(
+      const type& subcell_options,
+      const std::unique_ptr<DomainCreator<Dim>>& domain_creator) {
+    return {subcell_options, *domain_creator};
   }
 };
 }  // namespace Tags

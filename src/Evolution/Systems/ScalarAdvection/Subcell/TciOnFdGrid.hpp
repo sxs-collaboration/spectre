@@ -37,7 +37,7 @@ struct TciOnFdGrid {
       tmpl::list<ScalarAdvection::Tags::U, ::domain::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::Mesh<Dim>,
                  evolution::dg::subcell::Tags::DataForRdmpTci,
-                 evolution::dg::subcell::Tags::SubcellOptions,
+                 evolution::dg::subcell::Tags::SubcellOptions<Dim>,
                  Tags::TciOptions>;
 
   static std::tuple<bool, evolution::dg::subcell::RdmpTciData> apply(

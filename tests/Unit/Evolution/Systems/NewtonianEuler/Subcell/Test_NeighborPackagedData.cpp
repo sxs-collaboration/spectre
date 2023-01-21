@@ -239,7 +239,7 @@ double test(const size_t num_dg_pts) {
           evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
           evolution::dg::Tags::MortarData<Dim>, domain::Tags::MeshVelocity<Dim>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<Dim>,
-          evolution::dg::subcell::Tags::SubcellOptions>,
+          evolution::dg::subcell::Tags::SubcellOptions<Dim>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<Dim>>>(
       MetaVars<Dim>{}, element, dg_mesh, subcell_mesh,
@@ -255,7 +255,8 @@ double test(const size_t num_dg_pts) {
       normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          std::nullopt});
 
   db::mutate_apply<NewtonianEuler::ConservativeFromPrimitive<Dim>>(
       make_not_null(&box));

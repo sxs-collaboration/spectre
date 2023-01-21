@@ -64,7 +64,8 @@ void test(const TestThis test_this, const int expected_tci_status) {
       persson_exponent,
       false,
       evolution::dg::subcell::fd::ReconstructionMethod::DimByDim,
-      false};
+      false,
+      std::nullopt};
 
   auto box = db::create<db::AddSimpleTags<
       grmhd::ValenciaDivClean::Tags::TildeD,
@@ -76,7 +77,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
       grmhd::ValenciaDivClean::Tags::VariablesNeededFixing,
       domain::Tags::Mesh<3>, ::evolution::dg::subcell::Tags::Mesh<3>,
       grmhd::ValenciaDivClean::subcell::Tags::TciOptions,
-      evolution::dg::subcell::Tags::SubcellOptions,
+      evolution::dg::subcell::Tags::SubcellOptions<3>,
       evolution::dg::subcell::Tags::DataForRdmpTci>>(
       Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 1.0),
       Scalar<DataVector>(subcell_mesh.number_of_grid_points(), 0.1),

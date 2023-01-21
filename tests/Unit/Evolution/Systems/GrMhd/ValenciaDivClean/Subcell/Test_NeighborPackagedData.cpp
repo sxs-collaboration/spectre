@@ -253,7 +253,7 @@ double test(const size_t num_dg_pts) {
           Tags::ConstraintDampingParameter, evolution::dg::Tags::MortarData<3>,
           domain::Tags::MeshVelocity<3>,
           evolution::dg::Tags::NormalCovectorAndMagnitude<3>,
-          evolution::dg::subcell::Tags::SubcellOptions>,
+          evolution::dg::subcell::Tags::SubcellOptions<3>>,
       db::AddComputeTags<
           evolution::dg::subcell::Tags::LogicalCoordinatesCompute<3>>>(
       element, dg_mesh, subcell_mesh,
@@ -272,7 +272,8 @@ double test(const size_t num_dg_pts) {
       std::optional<tnsr::I<DataVector, 3, Frame::Inertial>>{}, normal_vectors,
       evolution::dg::subcell::SubcellOptions{
           1.0e-3, 1.0e-4, 1.0e-3, 1.0e-4, 4.0, 4.0, false,
-          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false});
+          evolution::dg::subcell::fd::ReconstructionMethod::DimByDim, false,
+          std::nullopt});
   db::mutate_apply<ConservativeFromPrimitive>(make_not_null(&box));
 
   std::vector<std::pair<Direction<3>, ElementId<3>>>
