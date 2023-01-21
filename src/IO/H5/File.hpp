@@ -77,9 +77,23 @@ class H5File {
    * formatted). Defaults to an empty string; when writing, specify the provided
    * yaml input options (if any) to write them to the output file's
    * `InputSource.yaml` attribute.
+   * @param use_file_locking Toggle file locking (default false).
+   * HDF5 file locking is explained here:
+   * https://github.com/HDFGroup/hdf5/blob/develop/doc/file-locking.md.
+   * This toggle only has an effect if the HDF5 library supports
+   * 'H5Pset_file_locking'. Otherwise, file locking is enabled if the HDF5
+   * library was built with it, which it probably was. If file locking is
+   * enabled, simulations may crash when the file they try to access is being
+   * read by another process (like an analysis tool). We could make this more
+   * resilient in the future by waiting to acquire the file lock with a timeout,
+   * and/or retrying IO operations after progressively longer wait times (e.g.
+   * first try again right away, then also print to terminal after some retries,
+   * then eventually abort to avoid wasting compute time on a run that can't do
+   * IO).
    */
   explicit H5File(std::string file_name, bool append_to_file = false,
-                  const std::string& input_source = ""s);
+                  const std::string& input_source = ""s,
+                  bool use_file_locking = false);
 
   /// \cond HIDDEN_SYMBOLS
   ~H5File();
