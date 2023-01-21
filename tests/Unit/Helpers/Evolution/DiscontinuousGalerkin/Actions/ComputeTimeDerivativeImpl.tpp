@@ -64,8 +64,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/StepControllers/SplitRemaining.hpp"
-#include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
@@ -905,8 +903,7 @@ struct component {
       ::Tags::IsUsingTimeSteppingErrorControl,
       tmpl::conditional_t<
           Metavariables::local_time_stepping,
-          tmpl::list<::Tags::StepController, ::Tags::StepChoosers,
-                     ::Tags::TimeStepper<LtsTimeStepper>,
+          tmpl::list<::Tags::StepChoosers, ::Tags::TimeStepper<LtsTimeStepper>,
                      ::Tags::RollbackValue<variables_tag>>,
           tmpl::list<::Tags::TimeStepper<TimeStepper>>>>>;
   using common_compute_tags = tmpl::list<
@@ -1020,7 +1017,6 @@ void test_impl(const Spectral::Quadrature quadrature,
   using metavars = Metavariables<Dim, system_type, LocalTimeStepping,
                                  UseMovingMesh, HasPrims, PassVariables>;
   Parallel::register_classes_with_charm<TimeSteppers::AdamsBashforth>();
-  Parallel::register_classes_with_charm<StepControllers::SplitRemaining>();
   Parallel::register_factory_classes_with_charm<metavars>();
 
   using system = typename metavars::system;
@@ -1274,8 +1270,8 @@ void test_impl(const Spectral::Quadrature quadrature,
   }();
 
   const Slab time_slab{0.2, 3.4};
-  const TimeDelta time_step{time_slab, {4, 100}};
-  const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 100}}};
+  const TimeDelta time_step{time_slab, {4, 128}};
+  const TimeStepId time_step_id{true, 3, Time{time_slab, {3, 128}}};
   const TimeStepId next_time_step_id = time_step_id.next_step(time_step);
   // Our moving mesh map doesn't actually move (we set a mesh velocity, etc.
   // separately), but we need the FunctionsOfTime tag for boundary conditions.
@@ -1317,10 +1313,7 @@ void test_impl(const Spectral::Quadrature quadrature,
              self_id,
              domain::make_coordinate_map_base<Frame::BlockLogical, Frame::Grid>(
                  domain::CoordinateMaps::Identity<Dim>{})},
-         false,
-         static_cast<std::unique_ptr<StepController>>(
-             std::make_unique<StepControllers::SplitRemaining>()),
-         std::move(step_choosers),
+         false, std::move(step_choosers),
          static_cast<std::unique_ptr<LtsTimeStepper>>(
              std::make_unique<TimeSteppers::AdamsBashforth>(5)),
          typename ::Tags::RollbackValue<variables_tag>::type{}});
@@ -1352,10 +1345,7 @@ void test_impl(const Spectral::Quadrature quadrature,
                  domain::make_coordinate_map_base<Frame::BlockLogical,
                                                   Frame::Grid>(
                      domain::CoordinateMaps::Identity<Dim>{})},
-             false,
-             static_cast<std::unique_ptr<StepController>>(
-                 std::make_unique<StepControllers::SplitRemaining>()),
-             std::move(step_choosers),
+             false, std::move(step_choosers),
              static_cast<std::unique_ptr<LtsTimeStepper>>(
                  std::make_unique<TimeSteppers::AdamsBashforth>(5)),
              typename ::Tags::RollbackValue<variables_tag>::type{}});

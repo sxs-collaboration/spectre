@@ -20,6 +20,7 @@
 #include "Parallel/AlgorithmExecution.hpp"
 #include "Parallel/GlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MutateAssign.hpp"
+#include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -77,11 +78,9 @@ struct TimeStepping {
   using mutable_global_cache_tags = tmpl::list<>;
 
   /// Tags for items fetched by the DataBox and passed to the apply function
-  using argument_tags = tmpl::flatten<tmpl::list<
-      ::Tags::Time, Tags::InitialTimeDelta, Tags::InitialSlabSize<UsingLts>,
-      ::Tags::TimeStepper<TimeStepperType>,
-      tmpl::conditional_t<UsingLts, tmpl::list<::Tags::StepController>,
-                          tmpl::list<>>>>;
+  using argument_tags = tmpl::list<::Tags::Time, Tags::InitialTimeDelta,
+                                   Tags::InitialSlabSize<UsingLts>,
+                                   ::Tags::TimeStepper<TimeStepperType>>;
 
   /// Tags for simple DataBox items that are initialized from input file options
   using simple_tags_from_options = tmpl::flatten<
@@ -116,14 +115,13 @@ struct TimeStepping {
                     const double initial_time_value,
                     const double initial_dt_value,
                     const double initial_slab_size,
-                    const LtsTimeStepper& time_stepper,
-                    const StepController& step_controller) {
+                    const LtsTimeStepper& time_stepper) {
     const bool time_runs_forward = initial_dt_value > 0.0;
     const Time initial_time = detail::initial_time(
         time_runs_forward, initial_time_value, initial_slab_size);
     detail::set_next_time_step_id(next_time_step_id, initial_time,
                                   time_runs_forward, time_stepper);
-    *time_step = step_controller.choose_step(initial_time, initial_dt_value);
+    *time_step = choose_lts_step_size(initial_time, initial_dt_value);
     *next_time_step = *time_step;
   }
 

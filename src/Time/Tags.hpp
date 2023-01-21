@@ -21,7 +21,6 @@
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
-#include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,14 +49,6 @@ struct StepChoosers {
   using type =
       std::vector<std::unique_ptr<::StepChooser<StepChooserUse::LtsStep>>>;
   static size_t lower_bound_on_size() { return 1; }
-  using group = evolution::OptionTags::Group;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-struct StepController {
-  static constexpr Options::String help{"The LTS step controller"};
-  using type = std::unique_ptr<::StepController>;
   using group = evolution::OptionTags::Group;
 };
 
@@ -270,20 +261,6 @@ struct StepChoosers : db::SimpleTag {
   static constexpr bool pass_metavariables = false;
   static type create_from_options(const type& step_choosers) {
     return deserialize<type>(serialize<type>(step_choosers).data());
-  }
-};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
-/// \brief Tag for a ::StepController
-struct StepController : db::SimpleTag {
-  using type = std::unique_ptr<::StepController>;
-  using option_tags = tmpl::list<::OptionTags::StepController>;
-
-  static constexpr bool pass_metavariables = false;
-  static std::unique_ptr<::StepController> create_from_options(
-      const std::unique_ptr<::StepController>& step_controller) {
-    return deserialize<type>(serialize<type>(step_controller).data());
   }
 };
 

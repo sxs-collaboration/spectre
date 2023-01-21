@@ -9,9 +9,9 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Options/Protocols/FactoryCreation.hpp"
+#include "Time/ChooseLtsStepSize.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Increase.hpp"
-#include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/AdamsBashforth.hpp"
@@ -66,8 +66,6 @@ void test_lts() {
   const double initial_slab_size = 4.5;
   std::unique_ptr<LtsTimeStepper> lts_time_stepper =
       std::make_unique<TimeSteppers::AdamsBashforth>(5);
-  std::unique_ptr<StepController> step_controller =
-      std::make_unique<StepControllers::BinaryFraction>();
 
   const Slab initial_slab =
       Slab::with_duration_from_start(initial_time, initial_slab_size);
@@ -75,18 +73,16 @@ void test_lts() {
   const TimeStepId expected_next_time_step_id = TimeStepId(
       true, -static_cast<int64_t>(lts_time_stepper->number_of_past_steps()),
       time);
-  const TimeDelta expected_time_step =
-      step_controller->choose_step(time, initial_dt);
+  const TimeDelta expected_time_step = choose_lts_step_size(time, initial_dt);
   const TimeDelta expected_next_time_step = expected_time_step;
 
   auto box = db::create<db::AddSimpleTags<
       ::Tags::Time, Initialization::Tags::InitialTimeDelta,
       Initialization::Tags::InitialSlabSize<true>,
-      ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::StepController,
-      ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-      ::Tags::Next<::Tags::TimeStep>>>(
+      ::Tags::TimeStepper<LtsTimeStepper>, ::Tags::Next<::Tags::TimeStepId>,
+      ::Tags::TimeStep, ::Tags::Next<::Tags::TimeStep>>>(
       initial_time, initial_dt, initial_slab_size, std::move(lts_time_stepper),
-      std::move(step_controller), TimeStepId{}, TimeDelta{}, TimeDelta{});
+      TimeStepId{}, TimeDelta{}, TimeDelta{});
 
   db::mutate_apply<Initialization::TimeStepping<TestMetavariables, true>>(
       make_not_null(&box));

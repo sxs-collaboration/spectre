@@ -17,8 +17,7 @@ Evolution:
   TimeStepper:
     AdamsBashforth:
       Order: 3
-  # StepController and StepChoosers are needed only for local time stepping
-  # StepController: BinaryFraction
+  # StepChoosers are needed only for local time stepping
   # StepChoosers:
   #   - Constant: 0.05
   #   - Increase:
