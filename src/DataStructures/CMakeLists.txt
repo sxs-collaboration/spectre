@@ -37,7 +37,6 @@ spectre_target_headers(
   DynamicVector.hpp
   FixedHashMap.hpp
   FloatingPointType.hpp
-  GeneralIndexIterator.hpp
   IdPair.hpp
   Index.hpp
   IndexIterator.hpp
