@@ -14,19 +14,26 @@ namespace evolution::dg {
 template <size_t Dim>
 BoundaryMessage<Dim>::BoundaryMessage(
     const size_t subcell_ghost_data_size_in, const size_t dg_flux_data_size_in,
-    const bool sent_across_nodes_in, const size_t sender_node_in,
-    const size_t sender_core_in, const ::TimeStepId& current_time_step_id_in,
+    const bool sent_across_nodes_in, const bool enable_if_disabled_in,
+    const size_t sender_node_in, const size_t sender_core_in,
+    const int tci_status_in, const ::TimeStepId& current_time_step_id_in,
     const ::TimeStepId& next_time_step_id_in,
+    const Direction<Dim>& neighbor_direction_in,
+    const ElementId<Dim>& element_id_in,
     const Mesh<Dim>& volume_or_ghost_mesh_in,
     const Mesh<Dim - 1>& interface_mesh_in, double* subcell_ghost_data_in,
     double* dg_flux_data_in)
     : subcell_ghost_data_size(subcell_ghost_data_size_in),
       dg_flux_data_size(dg_flux_data_size_in),
       sent_across_nodes(sent_across_nodes_in),
+      enable_if_disabled(enable_if_disabled_in),
       sender_node(sender_node_in),
       sender_core(sender_core_in),
+      tci_status(tci_status_in),
       current_time_step_id(current_time_step_id_in),
       next_time_step_id(next_time_step_id_in),
+      neighbor_direction(neighbor_direction_in),
+      element_id(element_id_in),
       volume_or_ghost_mesh(volume_or_ghost_mesh_in),
       interface_mesh(interface_mesh_in),
       subcell_ghost_data(subcell_ghost_data_in),
@@ -133,10 +140,14 @@ bool operator==(const BoundaryMessage<Dim>& lhs,
   return lhs.subcell_ghost_data_size == rhs.subcell_ghost_data_size and
          lhs.dg_flux_data_size == rhs.dg_flux_data_size and
          lhs.sent_across_nodes == rhs.sent_across_nodes and
+         lhs.enable_if_disabled == rhs.enable_if_disabled and
          lhs.sender_node == rhs.sender_node and
          lhs.sender_core == rhs.sender_core and
+         lhs.tci_status == rhs.tci_status and
          lhs.current_time_step_id == rhs.current_time_step_id and
          lhs.next_time_step_id == rhs.next_time_step_id and
+         lhs.neighbor_direction == rhs.neighbor_direction and
+         lhs.element_id == rhs.element_id and
          lhs.volume_or_ghost_mesh == rhs.volume_or_ghost_mesh and
          lhs.interface_mesh == rhs.interface_mesh and
          // We are guaranteed that lhs.subcell_size == rhs.subcell_size and
@@ -166,10 +177,15 @@ std::ostream& operator<<(std::ostream& os,
   os << "dg_flux_data_size = " << message.dg_flux_data_size << "\n";
   os << "sent_across_nodes = " << std::boolalpha << message.sent_across_nodes
      << "\n";
+  os << "enable_if_disabled = " << std::boolalpha << message.enable_if_disabled
+     << "\n";
   os << "sender_node = " << message.sender_node << "\n";
   os << "sender_core = " << message.sender_core << "\n";
+  os << "tci_status = " << message.tci_status << "\n";
   os << "current_time_ste_id = " << message.current_time_step_id << "\n";
   os << "next_time_ste_id = " << message.next_time_step_id << "\n";
+  os << "neighbor_direction = " << message.neighbor_direction << "\n";
+  os << "element_id = " << message.element_id << "\n";
   os << "volume_or_ghost_mesh = " << message.volume_or_ghost_mesh << "\n";
   os << "interface_mesh = " << message.interface_mesh << "\n";
 
