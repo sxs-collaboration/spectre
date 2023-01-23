@@ -62,7 +62,6 @@ RUN apt-get update -y \
                           gdb git ninja-build autoconf automake \
                           bison flex \
                           libopenblas-dev liblapack-dev \
-                          libhdf5-dev hdf5-tools \
                           libgsl0-dev \
                           clang-10 clang-format-10 clang-tidy-10 \
                           lld \
@@ -153,6 +152,15 @@ RUN wget https://github.com/doxygen/doxygen/archive/Release_1_9_3.tar.gz -O doxy
     && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd ../.. && rm -rf doxygen*
+# - HDF5
+RUN wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.9/src/hdf5-1.10.9.tar.gz -O hdf5.tar.gz \
+    && tar -xzf hdf5.tar.gz \
+    && mv hdf5-* hdf5 \
+    && cd hdf5 \
+    && ./configure --prefix=/usr/local \
+    && make $PARALLEL_MAKE_ARG \
+    && make install \
+    && cd .. && rm -rf hdf5*
 # - Libsharp
 RUN wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
     && tar -xzf libsharp.tar.gz \
@@ -193,8 +201,7 @@ RUN wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yam
     && make install \
     && cd ../.. \
     && rm -rf yaml-cpp*
-
-# Install xsimd https://github.com/xtensor-stack/xsimd
+# - xsimd https://github.com/xtensor-stack/xsimd
 RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
     && tar -xzf 8.1.0.tar.gz \
     && cd ./xsimd-8.1.0  \
@@ -205,6 +212,9 @@ RUN wget http://github.com/xtensor-stack/xsimd/archive/refs/tags/8.1.0.tar.gz \
     && make install \
     && cd ../.. \
     && rm -rf /work/8.1.0.tar.gz /work/xsimd-8.1.0
+
+# Update ld cache to find shared libs in /usr/local/lib/
+RUN ldconfig
 
 WORKDIR /work
 # Charm doesn't support compiling with clang without symbolic links
