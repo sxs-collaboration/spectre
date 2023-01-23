@@ -557,6 +557,18 @@ void test_gauss_points_boundary_interpolation_and_lifting() {
     }
   }
 }
+void test_double_instantiation() {
+  // generate an interpolation matrix using a double and a std::vector of size
+  // 1, and compare.
+  const Mesh<1> mesh1d{
+      {{4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+  const double interpolation_target = 0.2;
+  const auto double_matrix =
+      Spectral::interpolation_matrix(mesh1d, interpolation_target);
+  const auto vector_matrix = Spectral::interpolation_matrix(
+      mesh1d, std::vector<double>{interpolation_target});
+  CHECK_MATRIX_APPROX(double_matrix, vector_matrix);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
@@ -570,4 +582,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral",
   test_quadrature_weights();
   test_spectral_quantities_for_mesh();
   test_gauss_points_boundary_interpolation_and_lifting();
+  test_double_instantiation();
 }
