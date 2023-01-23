@@ -1415,6 +1415,9 @@ template class domain::CoordinateMaps::ProductOf2Maps<
 template class domain::CoordinateMaps::ProductOf3Maps<
     domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
     domain::CoordinateMaps::Affine>;
+template class domain::CoordinateMaps::ProductOf2Maps<
+    domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular>;
+
 template class domain::CoordinateMaps::ProductOf3Maps<
     domain::CoordinateMaps::Equiangular, domain::CoordinateMaps::Equiangular,
     domain::CoordinateMaps::Equiangular>;
