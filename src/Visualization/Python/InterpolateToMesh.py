@@ -98,14 +98,14 @@ def interpolate_to_mesh(source_file_path,
         if obs_start <= source_vol.get_observation_value(obs) <= obs_end
     ][::obs_stride]
 
-    source_file.close()
+    source_file.close_current_object()
     target_file.insert_vol(target_volume_data, version)
-    target_file.close()
+    target_file.close_current_object()
 
     for obs in observations:
         # the vols memory address may shift as we write to file,
         # so we need to get them every iteration
-        source_file.close()
+        source_file.close_current_object()
         source_vol = source_file.get_vol(source_volume_data)
         extents = source_vol.get_extents(obs)
         bases = source_vol.get_bases(obs)
@@ -126,7 +126,7 @@ def interpolate_to_mesh(source_file_path,
                      copy=False) for name in tensor_names
         ]
 
-        source_file.close()
+        source_file.close_current_object()
 
         volume_data = []
         # iterate over elements
@@ -157,7 +157,7 @@ def interpolate_to_mesh(source_file_path,
                                   extents=target_mesh.extents(),
                                   basis=target_mesh.basis(),
                                   quadrature=target_mesh.quadrature()))
-        target_file.close()
+        target_file.close_current_object()
         target_vol = target_file.get_vol(target_volume_data)
         target_vol.write_volume_data(obs, obs_value, volume_data)
 
