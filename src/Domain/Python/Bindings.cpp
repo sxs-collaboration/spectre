@@ -3,6 +3,7 @@
 
 #include <pybind11/pybind11.h>
 
+#include "Domain/Python/Block.hpp"
 #include "Domain/Python/BlockLogicalCoordinates.hpp"
 #include "Domain/Python/Domain.hpp"
 #include "Domain/Python/ElementId.hpp"
@@ -19,6 +20,7 @@ PYBIND11_MODULE(_PyDomain, m) {  // NOLINT
   py::module_::import("spectre.DataStructures");
   py::module_::import("spectre.DataStructures.Tensor");
   py::module_::import("spectre.Domain.CoordinateMaps");
+  py_bindings::bind_block(m);
   py_bindings::bind_block_logical_coordinates(m);
   py_bindings::bind_domain(m);
   py_bindings::bind_element_id(m);

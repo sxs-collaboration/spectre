@@ -23,7 +23,9 @@ namespace {
 template <size_t Dim>
 void bind_domain_impl(py::module& m) {  // NOLINT
   py::class_<Domain<Dim>>(m, ("Domain" + get_output(Dim) + "D").c_str())
-      .def("is_time_dependent", &Domain<Dim>::is_time_dependent);
+      .def("is_time_dependent", &Domain<Dim>::is_time_dependent)
+      .def_property_readonly("blocks", &Domain<Dim>::blocks)
+      .def_property_readonly("block_groups", &Domain<Dim>::block_groups);
   m.def(("deserialize_domain_" + get_output(Dim) + "d").c_str(),
         [](const std::vector<char>& serialized_domain) {
           return deserialize<Domain<Dim>>(serialized_domain.data());
