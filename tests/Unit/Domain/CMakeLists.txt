@@ -23,13 +23,14 @@ set(LIBRARY_SOURCES
   Test_InterfaceHelpers.cpp
   Test_InterfaceItems.cpp
   Test_InterfaceLogicalCoordinates.cpp
+  Test_JacobianDiagnostic.cpp
   Test_MinimumGridSpacing.cpp
   Test_Protocols.cpp
   Test_SizeOfElement.cpp
   Test_Tags.cpp
   Test_TagsCharacteristicSpeeds.cpp
   Test_TagsTimeDependent.cpp
-  )
+)
 
 add_subdirectory(Amr)
 add_subdirectory(BoundaryConditions)

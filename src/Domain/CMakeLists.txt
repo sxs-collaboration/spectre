@@ -19,11 +19,12 @@ spectre_target_sources(
   ElementToBlockLogicalMap.cpp
   FaceNormal.cpp
   InterfaceLogicalCoordinates.cpp
+  JacobianDiagnostic.cpp
   MinimumGridSpacing.cpp
   SizeOfElement.cpp
   Tags.cpp
   TagsTimeDependent.cpp
-  )
+)
 
 spectre_target_headers(
   ${LIBRARY}
@@ -43,13 +44,14 @@ spectre_target_headers(
   InterfaceComputeTags.hpp
   InterfaceHelpers.hpp
   InterfaceLogicalCoordinates.hpp
+  JacobianDiagnostic.hpp
   MinimumGridSpacing.hpp
   OptionTags.hpp
   SizeOfElement.hpp
   Tags.hpp
   TagsCharacteristicSpeeds.hpp
   TagsTimeDependent.hpp
-  )
+)
 
 target_link_libraries(
   ${LIBRARY}
@@ -61,13 +63,15 @@ target_link_libraries(
   DomainStructure
   ErrorHandling
   Options
+  Spectral
   Utilities
+  PRIVATE
+  LinearOperators
   INTERFACE
   FunctionsOfTime
   Time
   DomainCreators
-  Spectral
-  )
+)
 
 add_subdirectory(Amr)
 add_subdirectory(BoundaryConditions)
