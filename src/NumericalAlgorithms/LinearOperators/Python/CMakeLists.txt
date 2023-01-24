@@ -11,6 +11,7 @@ spectre_python_add_module(
   Bindings.cpp
   DefiniteIntegral.cpp
   PartialDerivatives.cpp
+  PowerMonitors.cpp
   PYTHON_FILES
   __init__.py
   )
@@ -21,6 +22,7 @@ spectre_python_headers(
   HEADERS
   DefiniteIntegral.hpp
   PartialDerivatives.hpp
+  PowerMonitors.hpp
   )
 
 spectre_python_link_libraries(

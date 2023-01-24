@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Linearize.cpp
   Test_MeanValue.cpp
   Test_PartialDerivatives.cpp
+  Test_PowerMonitors.cpp
   Test_WeakDivergence.cpp
   )
 

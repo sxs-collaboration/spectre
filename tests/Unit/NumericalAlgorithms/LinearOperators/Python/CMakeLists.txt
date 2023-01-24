@@ -13,3 +13,9 @@ spectre_add_python_bindings_test(
   Test_PartialDerivatives.py
   "Unit;LinearOperators;Python"
   PyLinearOperators)
+
+spectre_add_python_bindings_test(
+  "Unit.LinearOperators.Python.PowerMonitors"
+  Test_PowerMonitors.py
+  "Unit;LinearOperators;Python"
+  PyLinearOperators)
