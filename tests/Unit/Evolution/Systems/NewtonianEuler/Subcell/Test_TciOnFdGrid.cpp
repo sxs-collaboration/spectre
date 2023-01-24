@@ -110,7 +110,7 @@ void test(const TestThis test_this) {
   using std::min;
   evolution::dg::subcell::RdmpTciData past_rdmp_tci_data{};
 
-  past_rdmp_tci_data.max_variables_values = std::vector<double>{
+  past_rdmp_tci_data.max_variables_values = DataVector{
       max(max(get(db::get<MassDensityCons>(box))),
           max(evolution::dg::subcell::fd::reconstruct(
               get(db::get<MassDensityCons>(box)), dg_mesh,
@@ -120,7 +120,7 @@ void test(const TestThis test_this) {
           max(evolution::dg::subcell::fd::reconstruct(
               get(db::get<EnergyDensity>(box)), dg_mesh, subcell_mesh.extents(),
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim)))};
-  past_rdmp_tci_data.min_variables_values = std::vector<double>{
+  past_rdmp_tci_data.min_variables_values = DataVector{
       min(min(get(db::get<MassDensityCons>(box))),
           min(evolution::dg::subcell::fd::reconstruct(
               get(db::get<MassDensityCons>(box)), dg_mesh,
@@ -133,11 +133,11 @@ void test(const TestThis test_this) {
 
   evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data{};
   expected_rdmp_tci_data.max_variables_values =
-      std::vector<double>{max(get(db::get<MassDensityCons>(box))),
-                          max(get(db::get<EnergyDensity>(box)))};
+      DataVector{max(get(db::get<MassDensityCons>(box))),
+                 max(get(db::get<EnergyDensity>(box)))};
   expected_rdmp_tci_data.min_variables_values =
-      std::vector<double>{min(get(db::get<MassDensityCons>(box))),
-                          min(get(db::get<EnergyDensity>(box)))};
+      DataVector{min(get(db::get<MassDensityCons>(box))),
+                 min(get(db::get<EnergyDensity>(box)))};
 
   // Modify past data if we are expected an RDMP TCI failure.
   db::mutate<evolution::dg::subcell::Tags::DataForRdmpTci>(

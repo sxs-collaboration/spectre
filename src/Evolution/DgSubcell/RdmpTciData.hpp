@@ -5,8 +5,8 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
 
@@ -20,8 +20,8 @@ namespace evolution::dg::subcell {
 /// Holds data needed for the relaxed discrete maximum principle
 /// troubled-cell indicator.
 struct RdmpTciData {
-  std::vector<double> max_variables_values{};
-  std::vector<double> min_variables_values{};
+  DataVector max_variables_values{};
+  DataVector min_variables_values{};
 };
 
 void pup(PUP::er& p, RdmpTciData& rdmp_tci_data);  // NOLINT

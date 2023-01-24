@@ -145,6 +145,12 @@ void test_2d_orient_variables_simple_case_by_hand() {
   const std::vector<double> expected_vars_vector(
       expected_vars.data(), expected_vars.data() + expected_vars.size());
   CHECK(oriented_vars_vector == expected_vars_vector);
+
+  const DataVector vars_dv(vars.data(), vars.size());
+  const DataVector oriented_vars_dv =
+      orient_variables(vars_dv, extents, orientation_map);
+  const DataVector expected_vars_dv(expected_vars.data(), expected_vars.size());
+  CHECK(oriented_vars_dv == expected_vars_dv);
 }
 
 // Test orient_variables using a general orientation.
@@ -189,6 +195,12 @@ void test_2d_with_orientation(const OrientationMap<2>& orientation_map) {
   const std::vector<double> expected_vars_vector(
       expected_vars.data(), expected_vars.data() + expected_vars.size());
   CHECK(oriented_vars_vector == expected_vars_vector);
+
+  const DataVector vars_dv(vars.data(), vars.size());
+  const DataVector oriented_vars_dv =
+      orient_variables(vars_dv, extents, orientation_map);
+  const DataVector expected_vars_dv(expected_vars.data(), expected_vars.size());
+  CHECK(oriented_vars_dv == expected_vars_dv);
 
 #ifdef SPECTRE_DEBUG
   {
@@ -261,6 +273,12 @@ void test_3d_orient_variables_simple_case_by_hand() {
   const std::vector<double> expected_vars_vector(
       expected_vars.data(), expected_vars.data() + expected_vars.size());
   CHECK(oriented_vars_vector == expected_vars_vector);
+
+  const DataVector vars_dv(vars.data(), vars.size());
+  const DataVector oriented_vars_dv =
+      orient_variables(vars_dv, extents, orientation_map);
+  const DataVector expected_vars_dv(expected_vars.data(), expected_vars.size());
+  CHECK(oriented_vars_dv == expected_vars_dv);
 }
 
 // Test orient_variables using a general orientation.
@@ -361,6 +379,13 @@ void check_vector(const Variables<TagsList>& vars,
       // NOLINTNEXTLINE
       expected_vars.data(), expected_vars.data() + expected_vars.size()};
   CHECK(oriented_vars_vector == expected_vars_vector);
+
+  const DataVector vars_dv(const_cast<double*>(vars.data()), vars.size());
+  const DataVector oriented_vars_dv = orient_variables_on_slice(
+      vars_dv, slice_extents, sliced_dim, orientation_map);
+  const DataVector expected_vars_dv(const_cast<double*>(expected_vars.data()),
+                                    expected_vars.size());
+  CHECK(oriented_vars_dv == expected_vars_dv);
 }
 
 // Test 0D slice of a 1D element

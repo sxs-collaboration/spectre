@@ -65,15 +65,14 @@ namespace ScalarAdvection::subcell {
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
   static FixedHashMap<maximum_number_of_neighbors(Dim),
-                      std::pair<Direction<Dim>, ElementId<Dim>>,
-                      std::vector<double>,
+                      std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
   apply(const db::DataBox<DbTagsList>& box,
         const std::vector<std::pair<Direction<Dim>, ElementId<Dim>>>&
             mortars_to_reconstruct_to) {
     // The object to return
     FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
@@ -201,9 +200,12 @@ struct NeighborPackagedData {
               typename derived_correction::dg_package_data_volume_tags{},
               dg_package_data_argument_tags{});
 
-          neighbor_package_data[mortar_id] =
-              std::vector<double>{packaged_data.data(),
-                                  packaged_data.data() + packaged_data.size()};
+          // Make a view so we can use iterators with std::copy
+          DataVector packaged_data_view{packaged_data.data(),
+                                        packaged_data.size()};
+          neighbor_package_data[mortar_id] = DataVector{packaged_data.size()};
+          std::copy(packaged_data_view.begin(), packaged_data_view.end(),
+                    neighbor_package_data[mortar_id].begin());
 
           // Note : need to reconstruct from FD to DG grid in 2D
           if constexpr (Dim > 1) {
@@ -214,9 +216,15 @@ struct NeighborPackagedData {
                     subcell_mesh.extents().slice_away(
                         mortar_id.first.dimension()),
                     subcell_options.reconstruction_method());
-            neighbor_package_data[mortar_id] = std::vector<double>{
-                dg_packaged_data.data(),
-                dg_packaged_data.data() + dg_packaged_data.size()};
+            // Make a view so we can use iterators with std::copy
+            DataVector dg_packaged_data_view{
+                const_cast<double*>(dg_packaged_data.data()),
+                dg_packaged_data.size()};
+            neighbor_package_data[mortar_id] =
+                DataVector{dg_packaged_data.size()};
+            std::copy(dg_packaged_data_view.begin(),
+                      dg_packaged_data_view.end(),
+                      neighbor_package_data[mortar_id].begin());
           }
         }
       }

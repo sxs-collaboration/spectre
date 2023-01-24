@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -25,6 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
 template <size_t Dim>
 class Direction;
 template <size_t Dim>
@@ -91,19 +91,19 @@ class MonotonisedCentral : public Reconstructor {
           vars_on_upper_face,
       const Variables<tmpl::list<Burgers::Tags::U>>& volume_vars,
       const Element<1>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-          std::vector<double>,
-          boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
+      const FixedHashMap<maximum_number_of_neighbors(1),
+                         std::pair<Direction<1>, ElementId<1>>, DataVector,
+                         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
+          neighbor_data,
       const Mesh<1>& subcell_mesh) const;
 
   void reconstruct_fd_neighbor(
       gsl::not_null<Variables<face_vars_tags>*> vars_on_face,
       const Variables<volume_vars_tags>& volume_vars, const Element<1>& element,
-      const FixedHashMap<
-          maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-          std::vector<double>,
-          boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
+      const FixedHashMap<maximum_number_of_neighbors(1),
+                         std::pair<Direction<1>, ElementId<1>>, DataVector,
+                         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
+          neighbor_data,
       const Mesh<1>& subcell_mesh,
       const Direction<1> direction_to_reconstruct) const;
 };

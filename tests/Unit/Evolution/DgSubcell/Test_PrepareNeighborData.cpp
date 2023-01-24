@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <iterator>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -136,6 +135,7 @@ compute_neighbor_meshes(const Element<Dim>& element, const bool all_dg,
 template <size_t Dim>
 void test(const bool all_neighbors_are_doing_dg) {
   CAPTURE(all_neighbors_are_doing_dg);
+  CAPTURE(Dim);
   using variables_tag = ::Tags::Variables<tmpl::list<Var1>>;
   const Mesh<Dim> dg_mesh{5, Spectral::Basis::Legendre,
                           Spectral::Quadrature::GaussLobatto};
@@ -167,19 +167,18 @@ void test(const bool all_neighbors_are_doing_dg) {
 
   const auto& rdmp_tci_data =
       db::get<evolution::dg::subcell::Tags::DataForRdmpTci>(box);
-  CHECK_ITERABLE_APPROX(rdmp_tci_data.min_variables_values,
-                        std::vector<double>{-1.0});
-  CHECK_ITERABLE_APPROX(rdmp_tci_data.max_variables_values,
-                        std::vector<double>{1.0});
+  CHECK_ITERABLE_APPROX(rdmp_tci_data.min_variables_values, DataVector{-1.0});
+  CHECK_ITERABLE_APPROX(rdmp_tci_data.max_variables_values, DataVector{1.0});
 
   Variables<tmpl::list<Var1>> expected_vars = vars;
   get(get<Var1>(expected_vars)) *= 2.0;
 
-  DirectionMap<Dim, std::vector<double>> expected_neighbor_data{};
+  DirectionMap<Dim, DataVector> expected_neighbor_data{};
 
   if (all_neighbors_are_doing_dg) {
-    const std::vector<double> data{expected_vars.data(),
-                                   expected_vars.data() + expected_vars.size()};
+    DataVector data{expected_vars.size()};
+    std::copy(get(get<Var1>(expected_vars)).begin(),
+              get(get<Var1>(expected_vars)).end(), data.begin());
     for (const auto& direction : expected_neighbor_directions<Dim>()) {
       expected_neighbor_data.insert(std::pair{direction, data});
     }
@@ -220,8 +219,8 @@ void test(const bool all_neighbors_are_doing_dg) {
     const auto& data_in_direction = data_for_neighbors.at(direction);
     CHECK_ITERABLE_APPROX(
         expected_neighbor_data.at(direction),
-        std::vector<double>(data_in_direction.begin(),
-                            std::prev(data_in_direction.end(), 2)));
+        (DataVector{const_cast<double*>(data_in_direction.data()),
+                    data_in_direction.size() - 2}));
     CHECK(*std::prev(data_in_direction.end(), 2) == approx(1.0));
     CHECK(*std::prev(data_in_direction.end(), 1) == approx(-1.0));
   }

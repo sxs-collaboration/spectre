@@ -48,11 +48,11 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
   rdmp_tci_data.max_variables_values =
-      std::vector{max(get(subcell_tilde_d)), max(get(subcell_tilde_ye)),
-                  max(get(subcell_tilde_tau)), max(get(subcell_mag_tilde_b))};
+      DataVector{max(get(subcell_tilde_d)), max(get(subcell_tilde_ye)),
+                 max(get(subcell_tilde_tau)), max(get(subcell_mag_tilde_b))};
   rdmp_tci_data.min_variables_values =
-      std::vector{min(get(subcell_tilde_d)), min(get(subcell_tilde_ye)),
-                  min(get(subcell_tilde_tau)), min(get(subcell_mag_tilde_b))};
+      DataVector{min(get(subcell_tilde_d)), min(get(subcell_tilde_ye)),
+                 min(get(subcell_tilde_tau)), min(get(subcell_mag_tilde_b))};
 
   if (need_rdmp_data_only) {
     return {false, rdmp_tci_data};
@@ -128,12 +128,12 @@ std::tuple<int, evolution::dg::subcell::RdmpTciData> TciOnFdGrid::apply(
   using std::max;
   using std::min;
   evolution::dg::subcell::RdmpTciData rdmp_tci_data_for_check{};
-  rdmp_tci_data_for_check.max_variables_values = std::vector{
+  rdmp_tci_data_for_check.max_variables_values = DataVector{
       max(max(get(dg_tilde_d)), rdmp_tci_data.max_variables_values[0]),
       max(max(get(dg_tilde_ye)), rdmp_tci_data.max_variables_values[1]),
       max(max(get(dg_tilde_tau)), rdmp_tci_data.max_variables_values[2]),
       max(max(get(dg_mag_tilde_b)), rdmp_tci_data.max_variables_values[3])};
-  rdmp_tci_data_for_check.min_variables_values = std::vector{
+  rdmp_tci_data_for_check.min_variables_values = DataVector{
       min(min(get(dg_tilde_d)), rdmp_tci_data.min_variables_values[0]),
       min(min(get(dg_tilde_ye)), rdmp_tci_data.min_variables_values[1]),
       min(min(get(dg_tilde_tau)), rdmp_tci_data.min_variables_values[2]),

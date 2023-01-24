@@ -9,7 +9,6 @@
 #include <functional>
 #include <limits>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/ApplyMatrices.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -79,61 +78,60 @@ void test() {
     neighbors.insert(std::pair{Direction<Dim>::upper_zeta(),
                                Neighbors<Dim>{{ElementId<Dim>{5}}, {}}});
   }
-  std::vector<double> received_fd_data(subcell_mesh.number_of_grid_points() +
-                                       2 * number_of_rdmp_vars);
+  DataVector received_fd_data{subcell_mesh.number_of_grid_points() +
+                              2 * number_of_rdmp_vars};
   alg::iota(received_fd_data, 0.0);
-  std::vector<double> received_dg_data(dg_mesh.number_of_grid_points() +
-                                       2 * number_of_rdmp_vars);
-  alg::iota(received_dg_data, received_fd_data.back() + 1.0);
+  DataVector received_dg_data{dg_mesh.number_of_grid_points() +
+                              2 * number_of_rdmp_vars};
+  alg::iota(received_dg_data, *std::prev(received_fd_data.end()) + 1.0);
 
   const Element<Dim> element{ElementId<Dim>{0}, neighbors};
 
-  const std::vector<double> expected_neighbor_data_from_upper_xi{
-      received_fd_data.begin(),
-      std::prev(received_fd_data.end(), 2 * number_of_rdmp_vars)};
-  const std::vector<double> expected_neighbor_data_from_lower_xi =
-      [&dg_mesh, &neighbors, &number_of_rdmp_vars, &received_dg_data,
-       &subcell_mesh]() {
-        (void)number_of_rdmp_vars;  // workaround clang bug unused warning
-        const DataVector view_received_data(
-            received_dg_data.data(),
-            received_dg_data.size() - 2 * number_of_rdmp_vars);
-        DataVector oriented_data(view_received_data.size());
-        orient_variables(make_not_null(&oriented_data), view_received_data,
-                         dg_mesh.extents(),
-                         neighbors.at(Direction<Dim>::lower_xi())
-                             .orientation()
-                             .inverse_map());
-        // We've now got the data in the local orientation, so now we need to
-        // project it to the ghost cells.
-        // Note: assume isotropic meshes
-        auto projection_matrices = make_array<Dim>(
-            std::cref(evolution::dg::subcell::fd::projection_matrix(
-                dg_mesh.slice_through(0), subcell_mesh.extents(0))));
-        projection_matrices[0] =
-            std::cref(evolution::dg::subcell::fd::projection_matrix(
-                dg_mesh.slice_through(0), subcell_mesh.extents(0),
-                number_of_ghost_zones, Side::Upper));
+  DataVector expected_neighbor_data_from_upper_xi{received_fd_data.size() -
+                                                  2 * number_of_rdmp_vars};
+  std::copy(received_fd_data.begin(),
+            std::prev(received_fd_data.end(), 2 * number_of_rdmp_vars),
+            expected_neighbor_data_from_upper_xi.begin());
+  const DataVector expected_neighbor_data_from_lower_xi = [&dg_mesh, &neighbors,
+                                                           &number_of_rdmp_vars,
+                                                           &received_dg_data,
+                                                           &subcell_mesh]() {
+    (void)number_of_rdmp_vars;  // workaround clang bug unused warning
+    // Need the view so the size is correct
+    const DataVector view_received_data(
+        received_dg_data.data(),
+        received_dg_data.size() - 2 * number_of_rdmp_vars);
+    DataVector oriented_data{view_received_data.size()};
+    orient_variables(
+        make_not_null(&oriented_data), view_received_data, dg_mesh.extents(),
+        neighbors.at(Direction<Dim>::lower_xi()).orientation().inverse_map());
+    // We've now got the data in the local orientation, so now we need to
+    // project it to the ghost cells.
+    // Note: assume isotropic meshes
+    auto projection_matrices =
+        make_array<Dim>(std::cref(evolution::dg::subcell::fd::projection_matrix(
+            dg_mesh.slice_through(0), subcell_mesh.extents(0))));
+    projection_matrices[0] =
+        std::cref(evolution::dg::subcell::fd::projection_matrix(
+            dg_mesh.slice_through(0), subcell_mesh.extents(0),
+            number_of_ghost_zones, Side::Upper));
 
-        std::vector<double> expected_data(
-            subcell_mesh.extents().slice_away(0).product() *
-            number_of_ghost_zones);
-        DataVector expected_data_view{expected_data.data(),
-                                      expected_data.size()};
-        apply_matrices(make_not_null(&expected_data_view), projection_matrices,
-                       oriented_data, dg_mesh.extents());
-        return expected_data;
-      }();
+    DataVector expected_data{subcell_mesh.extents().slice_away(0).product() *
+                             number_of_ghost_zones};
+    apply_matrices(make_not_null(&expected_data), projection_matrices,
+                   oriented_data, dg_mesh.extents());
+    return expected_data;
+  }();
 
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{
-      std::vector{std::numeric_limits<double>::min(),
-                  std::numeric_limits<double>::min()},
-      std::vector{std::numeric_limits<double>::max(),
-                  std::numeric_limits<double>::max()}};
+      DataVector{std::numeric_limits<double>::min(),
+                 std::numeric_limits<double>::min()},
+      DataVector{std::numeric_limits<double>::max(),
+                 std::numeric_limits<double>::max()}};
   // Do upper-xi neighbor first. This is just aligned FD
   evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
       make_not_null(&rdmp_tci_data), make_not_null(&neighbor_data),
@@ -142,12 +140,13 @@ void test() {
                      // doing subcell
       element, subcell_mesh, number_of_ghost_zones);
   {
-    const std::vector<double> expected_max_rdmp_tci_data{
-        std::prev(received_fd_data.end(), 2 * number_of_rdmp_vars),
-        std::prev(received_fd_data.end(), number_of_rdmp_vars)};
-    const std::vector<double> expected_min_rdmp_tci_data{
-        std::prev(received_fd_data.end(), number_of_rdmp_vars),
-        received_fd_data.end()};
+    DataVector expected_max_rdmp_tci_data{number_of_rdmp_vars};
+    DataVector expected_min_rdmp_tci_data{number_of_rdmp_vars};
+    std::copy(std::prev(received_fd_data.end(), 2 * number_of_rdmp_vars),
+              std::prev(received_fd_data.end(), number_of_rdmp_vars),
+              expected_max_rdmp_tci_data.begin());
+    std::copy(std::prev(received_fd_data.end(), number_of_rdmp_vars),
+              received_fd_data.end(), expected_min_rdmp_tci_data.begin());
     CHECK(rdmp_tci_data.max_variables_values == expected_max_rdmp_tci_data);
     CHECK(rdmp_tci_data.min_variables_values == expected_min_rdmp_tci_data);
 
@@ -164,12 +163,13 @@ void test() {
       subcell_mesh, number_of_ghost_zones);
 
   {
-    const std::vector<double> expected_max_rdmp_tci_data{
-        std::prev(received_dg_data.end(), 2 * number_of_rdmp_vars),
-        std::prev(received_dg_data.end(), number_of_rdmp_vars)};
-    const std::vector<double> expected_min_rdmp_tci_data{
-        std::prev(received_fd_data.end(), number_of_rdmp_vars),
-        received_fd_data.end()};
+    DataVector expected_max_rdmp_tci_data{number_of_rdmp_vars};
+    DataVector expected_min_rdmp_tci_data{number_of_rdmp_vars};
+    std::copy(std::prev(received_dg_data.end(), 2 * number_of_rdmp_vars),
+              std::prev(received_dg_data.end(), number_of_rdmp_vars),
+              expected_max_rdmp_tci_data.begin());
+    std::copy(std::prev(received_fd_data.end(), number_of_rdmp_vars),
+              received_fd_data.end(), expected_min_rdmp_tci_data.begin());
     CHECK(rdmp_tci_data.max_variables_values == expected_max_rdmp_tci_data);
     CHECK(rdmp_tci_data.min_variables_values == expected_min_rdmp_tci_data);
 
@@ -187,20 +187,23 @@ void test() {
     const std::pair upper_eta_id{Direction<Dim>::upper_eta(),
                                  ElementId<Dim>{3}};
 
-    std::vector<double> aligned_received_dg_data(
-        dg_mesh.number_of_grid_points() + 2 * number_of_rdmp_vars);
-    alg::iota(aligned_received_dg_data, received_dg_data.back() + 1.0);
+    DataVector aligned_received_dg_data{dg_mesh.number_of_grid_points() +
+                                        2 * number_of_rdmp_vars};
+    alg::iota(aligned_received_dg_data,
+              *std::prev(received_dg_data.end()) + 1.0);
     evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
         make_not_null(&rdmp_tci_data), make_not_null(&neighbor_data),
         aligned_received_dg_data, number_of_rdmp_vars, upper_eta_id, dg_mesh,
         element, subcell_mesh, number_of_ghost_zones);
 
-    const std::vector<double> expected_max_rdmp_tci_data{
+    DataVector expected_max_rdmp_tci_data{number_of_rdmp_vars};
+    DataVector expected_min_rdmp_tci_data{number_of_rdmp_vars};
+    std::copy(
         std::prev(aligned_received_dg_data.end(), 2 * number_of_rdmp_vars),
-        std::prev(aligned_received_dg_data.end(), number_of_rdmp_vars)};
-    const std::vector<double> expected_min_rdmp_tci_data{
-        std::prev(received_fd_data.end(), number_of_rdmp_vars),
-        received_fd_data.end()};
+        std::prev(aligned_received_dg_data.end(), number_of_rdmp_vars),
+        expected_max_rdmp_tci_data.begin());
+    std::copy(std::prev(received_fd_data.end(), number_of_rdmp_vars),
+              received_fd_data.end(), expected_min_rdmp_tci_data.begin());
     CHECK(rdmp_tci_data.max_variables_values == expected_max_rdmp_tci_data);
     CHECK(rdmp_tci_data.min_variables_values == expected_min_rdmp_tci_data);
 
@@ -223,10 +226,9 @@ void test() {
 
     DataVector view_aligned_received_dg_data(aligned_received_dg_data.data(),
                                              dg_mesh.number_of_grid_points());
-    std::vector<double> expected_data(
-        subcell_mesh.extents().slice_away(0).product() * number_of_ghost_zones);
-    DataVector expected_data_view{expected_data.data(), expected_data.size()};
-    apply_matrices(make_not_null(&expected_data_view), projection_matrices,
+    DataVector expected_data{subcell_mesh.extents().slice_away(0).product() *
+                             number_of_ghost_zones};
+    apply_matrices(make_not_null(&expected_data), projection_matrices,
                    view_aligned_received_dg_data, dg_mesh.extents());
     CHECK(neighbor_data.at(upper_eta_id) == expected_data);
   }
@@ -249,9 +251,9 @@ void test() {
     // Do upper-zeta neighbor. This is aligned DG.
     const std::pair upper_zeta_id{Direction<Dim>::upper_zeta(),
                                   ElementId<Dim>{5}};
-    std::vector<double> aligned_received_dg_data(
-        dg_mesh.number_of_grid_points());
-    alg::iota(aligned_received_dg_data, received_dg_data.back() + 1.0);
+    DataVector aligned_received_dg_data{dg_mesh.number_of_grid_points()};
+    alg::iota(aligned_received_dg_data,
+              *std::prev(received_dg_data.end()) + 1.0);
     neighbor_data.insert(std::pair{upper_zeta_id, aligned_received_dg_data});
     evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
         make_not_null(&neighbor_data), neighbor_data.at(upper_zeta_id), 0,
@@ -265,22 +267,18 @@ void test() {
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
             number_of_ghost_zones, Side::Lower));
 
-    DataVector view_aligned_received_dg_data(aligned_received_dg_data.data(),
-                                             dg_mesh.number_of_grid_points());
-    std::vector<double> expected_data(
-        subcell_mesh.extents().slice_away(0).product() * number_of_ghost_zones);
-    DataVector expected_data_view{expected_data.data(), expected_data.size()};
-    apply_matrices(make_not_null(&expected_data_view), projection_matrices,
-                   view_aligned_received_dg_data, dg_mesh.extents());
+    DataVector expected_data{subcell_mesh.extents().slice_away(0).product() *
+                             number_of_ghost_zones};
+    apply_matrices(make_not_null(&expected_data), projection_matrices,
+                   aligned_received_dg_data, dg_mesh.extents());
     CHECK(neighbor_data.at(upper_zeta_id) == expected_data);
 
     // Do lower-zeta neighbor. This is unaligned DG.
     const std::pair lower_zeta_id{Direction<Dim>::lower_zeta(),
                                   ElementId<Dim>{4}};
-    std::vector<double> unaligned_received_dg_data(
-        dg_mesh.number_of_grid_points());
+    DataVector unaligned_received_dg_data{dg_mesh.number_of_grid_points()};
     alg::iota(unaligned_received_dg_data,
-              aligned_received_dg_data.back() + 1.0);
+              *std::prev(aligned_received_dg_data.end()) + 1.0);
     neighbor_data.insert(std::pair{lower_zeta_id, unaligned_received_dg_data});
     evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
         make_not_null(&neighbor_data), neighbor_data.at(lower_zeta_id), 0,
@@ -291,16 +289,12 @@ void test() {
             dg_mesh.slice_through(0), subcell_mesh.extents(0),
             number_of_ghost_zones, Side::Upper));
 
-    DataVector view_received_data(unaligned_received_dg_data.data(),
-                                  unaligned_received_dg_data.size());
-    DataVector oriented_data(view_received_data.size());
+    DataVector oriented_data{unaligned_received_dg_data.size()};
     orient_variables(
-        make_not_null(&oriented_data), view_received_data, dg_mesh.extents(),
+        make_not_null(&oriented_data), unaligned_received_dg_data,
+        dg_mesh.extents(),
         neighbors.at(Direction<Dim>::lower_zeta()).orientation().inverse_map());
-    expected_data.resize(subcell_mesh.extents().slice_away(0).product() *
-                         number_of_ghost_zones);
-    expected_data_view.set_data_ref(expected_data.data(), expected_data.size());
-    apply_matrices(make_not_null(&expected_data_view), projection_matrices,
+    apply_matrices(make_not_null(&expected_data), projection_matrices,
                    oriented_data, dg_mesh.extents());
     CHECK(neighbor_data.at(lower_zeta_id) == expected_data);
   }
@@ -310,7 +304,7 @@ void test() {
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_neighbor_rdmp_and_volume_data(
           make_not_null(&rdmp_tci_data), make_not_null(&neighbor_data),
-          std::vector<double>{}, number_of_rdmp_vars,
+          DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains(
@@ -318,15 +312,13 @@ void test() {
 
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
-          make_not_null(&neighbor_data), std::vector<double>{},
-          number_of_rdmp_vars,
+          make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains("neighbor_subcell_data must be non-empty"));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
-          make_not_null(&neighbor_data), std::vector<double>{},
-          number_of_rdmp_vars,
+          make_not_null(&neighbor_data), DataVector{}, number_of_rdmp_vars,
           std::pair{Direction<Dim>::upper_xi(), ElementId<Dim>{1}},
           subcell_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains("neighbor_subcell_data must be non-empty"));
@@ -372,17 +364,15 @@ void test() {
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<true>(
           make_not_null(&neighbor_data),
-          std::vector<double>(2 * number_of_rdmp_vars + 1, 0.0),
-          number_of_rdmp_vars, lower_xi_id, dg_mesh, element, subcell_mesh,
-          number_of_ghost_zones),
+          DataVector{2 * number_of_rdmp_vars + 1, 0.0}, number_of_rdmp_vars,
+          lower_xi_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains(
           "The number of DG volume grid points times the number of variables"));
   CHECK_THROWS_WITH(
       evolution::dg::subcell::insert_or_update_neighbor_volume_data<false>(
           make_not_null(&neighbor_data),
-          std::vector<double>(2 * number_of_rdmp_vars + 1, 0.0),
-          number_of_rdmp_vars, lower_xi_id, dg_mesh, element, subcell_mesh,
-          number_of_ghost_zones),
+          DataVector{2 * number_of_rdmp_vars + 1, 0.0}, number_of_rdmp_vars,
+          lower_xi_id, dg_mesh, element, subcell_mesh, number_of_ghost_zones),
       Catch::Matchers::Contains(
           "The number of DG volume grid points times the number of variables"));
 

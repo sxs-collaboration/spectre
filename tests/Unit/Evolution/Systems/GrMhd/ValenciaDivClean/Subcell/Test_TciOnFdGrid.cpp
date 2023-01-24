@@ -146,7 +146,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const auto magnitude_tilde_b =
       magnitude(db::get<grmhd::ValenciaDivClean::Tags::TildeB<>>(box));
 
-  past_rdmp_tci_data.max_variables_values = std::vector<double>{
+  past_rdmp_tci_data.max_variables_values = DataVector{
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           max(evolution::dg::subcell::fd::reconstruct(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
@@ -166,7 +166,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
           max(evolution::dg::subcell::fd::reconstruct(
               get(magnitude_tilde_b), mesh, subcell_mesh.extents(),
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim)))};
-  past_rdmp_tci_data.min_variables_values = std::vector<double>{
+  past_rdmp_tci_data.min_variables_values = DataVector{
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           min(evolution::dg::subcell::fd::reconstruct(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
@@ -188,12 +188,12 @@ void test(const TestThis test_this, const int expected_tci_status) {
               evolution::dg::subcell::fd::ReconstructionMethod::DimByDim)))};
 
   evolution::dg::subcell::RdmpTciData expected_rdmp_tci_data{};
-  expected_rdmp_tci_data.max_variables_values = std::vector<double>{
+  expected_rdmp_tci_data.max_variables_values = DataVector{
       max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
       max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
       max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),
       max(get(magnitude_tilde_b))};
-  expected_rdmp_tci_data.min_variables_values = std::vector<double>{
+  expected_rdmp_tci_data.min_variables_values = DataVector{
       min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
       min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeYe>(box))),
       min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeTau>(box))),

@@ -298,10 +298,9 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
 
     if constexpr (Dim == 1) {
       // no need to reconstruct back to DG grid for 1D
-      std::vector<double> vector_to_check{
+      const DataVector vector_to_check{
           expected_fd_packaged_data_on_mortar.data(),
-          expected_fd_packaged_data_on_mortar.data() +
-              expected_fd_packaged_data_on_mortar.size()};
+          expected_fd_packaged_data_on_mortar.size()};
 
       CHECK_ITERABLE_APPROX(vector_to_check, packaged_data.at(mortar_id));
     } else {
@@ -313,9 +312,9 @@ void test_neighbor_packaged_data(const size_t num_dg_pts_per_dimension,
               subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
               evolution::dg::subcell::fd::ReconstructionMethod::AllDimsAtOnce);
 
-      std::vector<double> vector_to_check{
-          expected_dg_packaged_data.data(),
-          expected_dg_packaged_data.data() + expected_dg_packaged_data.size()};
+      const DataVector vector_to_check{
+          const_cast<double*>(expected_dg_packaged_data.data()),
+          expected_dg_packaged_data.size()};
 
       CHECK_ITERABLE_APPROX(vector_to_check, packaged_data.at(mortar_id));
     }

@@ -8,7 +8,6 @@
 #include <limits>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/VariablesTag.hpp"
@@ -162,7 +161,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
       const Mesh<dim>& subcell_mesh) const;
@@ -175,7 +174,7 @@ class PositivityPreservingAdaptiveOrderPrim : public Reconstructor {
       const Element<dim>& element,
       const FixedHashMap<
           maximum_number_of_neighbors(dim),
-          std::pair<Direction<dim>, ElementId<dim>>, std::vector<double>,
+          std::pair<Direction<dim>, ElementId<dim>>, DataVector,
           boost::hash<std::pair<Direction<dim>, ElementId<dim>>>>&
           neighbor_data,
       const Mesh<dim>& subcell_mesh,

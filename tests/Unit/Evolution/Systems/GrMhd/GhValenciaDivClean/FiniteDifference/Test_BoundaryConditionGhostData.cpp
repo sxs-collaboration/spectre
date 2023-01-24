@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -255,7 +254,7 @@ void test(const BoundaryConditionType& boundary_condition) {
                                         ReconstructorForTest{});
   const auto direction = Direction<3>::upper_xi();
   const std::pair mortar_id = {direction, ElementId<3>::external_boundary_id()};
-  const std::vector<double>& fd_ghost_data =
+  const DataVector& fd_ghost_data =
       get<evolution::dg::subcell::Tags::NeighborDataForReconstruction<3>>(box)
           .at(mortar_id);
 

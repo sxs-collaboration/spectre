@@ -202,13 +202,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.ComputeTimeDerivative",
   // - compute flux divergence and add to the time derivative.
   // - compute mortar data for internal boundaries.
   //
-  // The action supports conservative systems, and nonconservative systems
-  // (mixed conservative-nonconservative systems will be added in the future).
+  // The action supports conservative systems, nonconservative systems, and
+  // mixed conservative-nonconservative systems.
   //
   // To test the action thoroughly we need to test a lot of different
   // combinations:
   //
-  // - system type (conservative/nonconservative), using the enum SystemType
+  // - system type (conservative/nonconservative/mixed) with the enum SystemType
   // - 1d, 2d, 3d
   // - whether the mesh is moving or not
   //

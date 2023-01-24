@@ -9,7 +9,6 @@
 #include <memory>
 #include <pup.h>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -57,10 +56,10 @@ void MonotonisedCentral<Dim>::reconstruct(
         vars_on_upper_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh) const {
   reconstruct_work(
       vars_on_lower_face, vars_on_upper_face,
@@ -80,10 +79,10 @@ void MonotonisedCentral<Dim>::reconstruct_fd_neighbor(
     const gsl::not_null<Variables<TagsList>*> vars_on_face,
     const Variables<tmpl::list<Tags::U>>& volume_vars,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work(
@@ -156,8 +155,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
           maximum_number_of_neighbors(DIM(data)),                              \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          std::vector<double>,                                                 \
+          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, DataVector,   \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh) const;                              \
@@ -167,8 +165,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
       const Element<DIM(data)>& element,                                       \
       const FixedHashMap<                                                      \
           maximum_number_of_neighbors(DIM(data)),                              \
-          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,               \
-          std::vector<double>,                                                 \
+          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>, DataVector,   \
           boost::hash<std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>& \
           neighbor_data,                                                       \
       const Mesh<DIM(data)>& subcell_mesh,                                     \

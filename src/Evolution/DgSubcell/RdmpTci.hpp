@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -80,9 +79,9 @@ int rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
                  active_grid_candidate_evolved_vars,
              const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
                  inactive_grid_candidate_evolved_vars,
-             const std::vector<double>& max_of_past_variables,
-             const std::vector<double>& min_of_past_variables,
-             const double rdmp_delta0, const double rdmp_epsilon) {
+             const DataVector& max_of_past_variables,
+             const DataVector& min_of_past_variables, const double rdmp_delta0,
+             const double rdmp_epsilon) {
   bool cell_is_troubled = false;
   int rdmp_tci_status = 0;
   size_t component_index = 0;
@@ -144,17 +143,17 @@ int rdmp_tci(const Variables<tmpl::list<EvolvedVarsTags...>>&
  * `active_grid_evolved_vars` for each component is returned.
  */
 template <typename... EvolvedVarsTags>
-std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
+std::pair<DataVector, DataVector> rdmp_max_min(
     const Variables<tmpl::list<EvolvedVarsTags...>>& active_grid_evolved_vars,
     const Variables<tmpl::list<Tags::Inactive<EvolvedVarsTags>...>>&
         inactive_grid_evolved_vars,
     const bool include_inactive_grid) {
-  std::vector<double> max_of_vars(
+  DataVector max_of_vars{
       active_grid_evolved_vars.number_of_independent_components,
-      std::numeric_limits<double>::min());
-  std::vector<double> min_of_vars(
+      std::numeric_limits<double>::min()};
+  DataVector min_of_vars{
       active_grid_evolved_vars.number_of_independent_components,
-      std::numeric_limits<double>::max());
+      std::numeric_limits<double>::max()};
   size_t component_index = 0;
   tmpl::for_each<tmpl::list<EvolvedVarsTags...>>(
       [&active_grid_evolved_vars, &component_index, &inactive_grid_evolved_vars,
@@ -234,7 +233,7 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
  *
  * If all checks are passed and cell is not troubled, returns an integer `0`.
  * Otherwise returns an 1-based index of the element in the input
- * `std::vector<double>` that fails the check.
+ * `DataVector` that fails the check.
  *
  * e.g. Suppose we have three variables to check RDMP so that
  * `max_of_current_variables.size() == 3`. If RDMP TCI flags
@@ -247,9 +246,9 @@ std::pair<std::vector<double>, std::vector<double>> rdmp_max_min(
  * `[2]` is skipped.
  *
  */
-int rdmp_tci(const std::vector<double>& max_of_current_variables,
-             const std::vector<double>& min_of_current_variables,
-             const std::vector<double>& max_of_past_variables,
-             const std::vector<double>& min_of_past_variables,
-             double rdmp_delta0, double rdmp_epsilon);
+int rdmp_tci(const DataVector& max_of_current_variables,
+             const DataVector& min_of_current_variables,
+             const DataVector& max_of_past_variables,
+             const DataVector& min_of_past_variables, double rdmp_delta0,
+             double rdmp_epsilon);
 }  // namespace evolution::dg::subcell

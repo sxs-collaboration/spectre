@@ -109,7 +109,7 @@ void correct_package_data(
           const gsl::not_null<Variables<DgPackageFieldTags>*>
               subcell_packaged_data,
           const size_t subcell_index, const Mesh<Dim - 1>& neighbor_face_mesh,
-          const std::vector<double>& neighbor_data) {
+          const DataVector& neighbor_data) {
         const size_t dg_variables_offset_size =
             variables_to_offset_in_dg_grid *
             neighbor_face_mesh.number_of_grid_points();
@@ -118,11 +118,11 @@ void correct_package_data(
             neighbor_data.data() + dg_variables_offset_size;
         // Warning: projected_data can't be inside the `if constexpr` since that
         // would lead to a dangling pointer.
-        std::vector<double> projected_data{};
+        DataVector projected_data{};
         if constexpr (Dim > 1) {
-          projected_data.resize(
+          projected_data = DataVector{
               Variables<DgPackageFieldTags>::number_of_independent_components *
-              subcell_face_mesh.number_of_grid_points());
+              subcell_face_mesh.number_of_grid_points()};
           evolution::dg::subcell::fd::detail::project_impl(
               gsl::make_span(projected_data.data(), projected_data.size()),
               gsl::make_span(

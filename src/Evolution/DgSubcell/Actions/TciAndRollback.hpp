@@ -15,6 +15,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "Domain/Structure/Element.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/DgSubcell/Actions/Labels.hpp"
@@ -187,7 +188,7 @@ struct TciAndRollback {
             const gsl::not_null<bool*> did_rollback_ptr,
             const gsl::not_null<FixedHashMap<
                 maximum_number_of_neighbors(Dim),
-                std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                 boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>*>
                 neighbor_data_ptr,
             const typename variables_tag::type& rollback_value,

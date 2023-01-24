@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -35,15 +35,15 @@ void slice_variable(
   }
 
   // Slice volume variables. Note that the return type of the
-  // `slice_data_impl()` function is std::vector<double>.
+  // `slice_data_impl()` function is DataVector.
   DirectionMap<Dim, bool> directions_to_slice{};
   directions_to_slice[direction] = true;
 
-  const std::vector<double> sliced_data{detail::slice_data_impl(
+  const DataVector sliced_data{detail::slice_data_impl(
       gsl::make_span(volume_subcell_vars.data(), volume_subcell_vars.size()),
       subcell_extents, ghost_zone_size, directions_to_slice, 0)[direction]};
 
-  // copy the returned std::vector<double> data into sliced variables
+  // copy the returned DataVector data into sliced variables
   std::copy(sliced_data.begin(), sliced_data.end(),
             sliced_subcell_vars->data());
 }

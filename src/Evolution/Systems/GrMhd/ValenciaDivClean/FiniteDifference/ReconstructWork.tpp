@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <iterator>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -232,7 +231,7 @@ void reconstruct_fd_neighbor_work(
     const Element<3>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
+        DataVector,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
     const Mesh<3>& subcell_mesh, const Direction<3>& direction_to_reconstruct,
     const size_t ghost_zone_size, const bool compute_conservatives) {

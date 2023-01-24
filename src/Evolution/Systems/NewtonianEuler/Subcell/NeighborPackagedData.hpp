@@ -68,15 +68,13 @@ namespace NewtonianEuler::subcell {
 struct NeighborPackagedData {
   template <size_t Dim, typename DbTagsList>
   static FixedHashMap<maximum_number_of_neighbors(Dim),
-                      std::pair<Direction<Dim>, ElementId<Dim>>,
-                      std::vector<double>,
+                      std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
   apply(const db::DataBox<DbTagsList>& box,
         const std::vector<std::pair<Direction<Dim>, ElementId<Dim>>>&
             mortars_to_reconstruct_to) {
-    using system =
-        typename std::decay_t<decltype(db::get<Parallel::Tags::Metavariables>(
-            box))>::system;
+    using system = typename std::decay_t<decltype(
+        db::get<Parallel::Tags::Metavariables>(box))>::system;
     using evolved_vars_tag = typename system::variables_tag;
     using evolved_vars_tags = typename evolved_vars_tag::tags_list;
     using prim_tags = typename system::primitive_variables_tag::tags_list;
@@ -90,7 +88,7 @@ struct NeighborPackagedData {
            "re-slicing/projecting.");
 
     FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
@@ -203,9 +201,12 @@ struct NeighborPackagedData {
           if constexpr (Dim == 1) {
             (void)dg_mesh;
             (void)subcell_options;
-            neighbor_package_data[mortar_id] = std::vector<double>{
-                packaged_data.data(),
-                packaged_data.data() + packaged_data.size()};
+            // Make a view so we can use iterators with std::copy
+            DataVector packaged_data_view{packaged_data.data(),
+                                          packaged_data.size()};
+            neighbor_package_data[mortar_id] = DataVector{packaged_data.size()};
+            std::copy(packaged_data_view.begin(), packaged_data_view.end(),
+                      neighbor_package_data[mortar_id].begin());
           } else {
             // Reconstruct the DG solution.
             // Really we should be solving the boundary correction and
@@ -215,9 +216,14 @@ struct NeighborPackagedData {
                 packaged_data, dg_mesh.slice_away(mortar_id.first.dimension()),
                 subcell_mesh.extents().slice_away(mortar_id.first.dimension()),
                 subcell_options.reconstruction_method());
-            neighbor_package_data[mortar_id] = std::vector<double>{
-                dg_packaged_data.data(),
-                dg_packaged_data.data() + dg_packaged_data.size()};
+            // Make a view so we can use iterators with std::copy
+            DataVector dg_packaged_data_view{dg_packaged_data.data(),
+                                             dg_packaged_data.size()};
+            neighbor_package_data[mortar_id] =
+                DataVector{dg_packaged_data.size()};
+            std::copy(dg_packaged_data_view.begin(),
+                      dg_packaged_data_view.end(),
+                      neighbor_package_data[mortar_id].begin());
           }
         }
       }

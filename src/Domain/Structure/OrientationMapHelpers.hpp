@@ -102,8 +102,8 @@ Variables<TagsList> orient_variables_on_slice(
 
 /// @{
 /// \ingroup ComputationalDomainGroup
-/// Orient data in a `std::vector<double>` representing one or more tensor
-/// components.
+/// Orient data in a `std::vector<double>` or `DataVector` representing one or
+/// more tensor components.
 ///
 /// In most cases the `Variables` version of `orient_variables` should be
 /// called. However, in some cases the tags and thus the type of the data being
@@ -118,8 +118,19 @@ std::vector<double> orient_variables(
     const OrientationMap<VolumeDim>& orientation_of_neighbor);
 
 template <size_t VolumeDim>
+DataVector orient_variables(
+    const DataVector& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
+
+template <size_t VolumeDim>
 std::vector<double> orient_variables_on_slice(
     const std::vector<double>& variables_on_slice,
+    const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor);
+
+template <size_t VolumeDim>
+DataVector orient_variables_on_slice(
+    const DataVector& variables_on_slice,
     const Index<VolumeDim - 1>& slice_extents, size_t sliced_dim,
     const OrientationMap<VolumeDim>& orientation_of_neighbor);
 /// @}

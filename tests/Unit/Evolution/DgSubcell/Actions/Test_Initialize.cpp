@@ -156,11 +156,11 @@ struct Metavariables {
       using std::max;
       using std::min;
       rdmp_data.max_variables_values =
-          std::vector<double>{max(max(get(get<Var1>(dg_vars))),
-                                  max(get(get<Var1>(projected_dg_vars))))};
+          DataVector{max(max(get(get<Var1>(dg_vars))),
+                         max(get(get<Var1>(projected_dg_vars))))};
       rdmp_data.min_variables_values =
-          std::vector<double>{min(min(get(get<Var1>(dg_vars))),
-                                  min(get(get<Var1>(projected_dg_vars))))};
+          DataVector{min(min(get(get<Var1>(dg_vars))),
+                         min(get(get<Var1>(projected_dg_vars))))};
       invoked = true;
       return {static_cast<int>(TciFails), std::move(rdmp_data)};
     }

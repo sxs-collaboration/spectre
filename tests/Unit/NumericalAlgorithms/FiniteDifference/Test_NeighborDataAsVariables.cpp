@@ -6,7 +6,6 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -44,15 +43,14 @@ void test() {
   const size_t neighbor_mesh_size =
       ghost_zone_size * subcell_mesh.extents().slice_away(0).product();
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
   for (size_t i = 0; i < Direction<Dim>::all_directions().size(); ++i) {
     neighbor_data[std::pair{gsl::at(Direction<Dim>::all_directions(), i),
                             ElementId<Dim>{i}}] =
-        std::vector<double>(
-            Vars::number_of_independent_components * neighbor_mesh_size,
-            square(i + 1.0));
+        DataVector{Vars::number_of_independent_components * neighbor_mesh_size,
+                   square(i + 1.0)};
   }
   FixedHashMap<maximum_number_of_neighbors(Dim),
                std::pair<Direction<Dim>, ElementId<Dim>>, Vars,

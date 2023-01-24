@@ -7,12 +7,12 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/MaxNumberOfNeighbors.hpp"
 
 /// \cond
+class DataVector;
 template <typename TagsList>
 class Variables;
 namespace gsl {
@@ -47,10 +47,10 @@ void reconstruct_prims_work(
     const F& reconstruct, const Variables<PrimsTags>& volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh, size_t ghost_zone_size);
 
 /*!
@@ -69,10 +69,10 @@ void reconstruct_fd_neighbor_work(
     const Variables<PrimsTags>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>& eos,
     const Element<Dim>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
-        boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(Dim),
+                       std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
+                       boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>&
+        neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct, size_t ghost_zone_size);
 }  // namespace NewtonianEuler::fd

@@ -187,7 +187,7 @@ double test(const size_t num_dg_pts) {
     // Slice data so we can add it to the element's neighbor data
     DirectionMap<Dim, bool> directions_to_slice{};
     directions_to_slice[direction.opposite()] = true;
-    std::vector<double> neighbor_data_in_direction =
+    DataVector neighbor_data_in_direction =
         evolution::dg::subcell::slice_data(
             prims_to_reconstruct, subcell_mesh.extents(),
             NewtonianEuler::fd::MonotonisedCentralPrim<Dim>{}.ghost_zone_size(),

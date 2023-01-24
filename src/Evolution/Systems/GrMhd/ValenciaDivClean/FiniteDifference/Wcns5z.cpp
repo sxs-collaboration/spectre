@@ -10,7 +10,6 @@
 #include <pup.h>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -83,10 +82,10 @@ void Wcns5zPrim::reconstruct(
     const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(3),
+                       std::pair<Direction<3>, ElementId<3>>, DataVector,
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh) const {
   FixedHashMap<maximum_number_of_neighbors(dim),
                std::pair<Direction<dim>, ElementId<dim>>,
@@ -116,10 +115,10 @@ void Wcns5zPrim::reconstruct_fd_neighbor(
     const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>& eos,
     const Element<3>& element,
-    const FixedHashMap<
-        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-        std::vector<double>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data,
+    const FixedHashMap<maximum_number_of_neighbors(3),
+                       std::pair<Direction<3>, ElementId<3>>, DataVector,
+                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
+        neighbor_data,
     const Mesh<3>& subcell_mesh,
     const Direction<3> direction_to_reconstruct) const {
   reconstruct_fd_neighbor_work<prims_to_reconstruct_tags,
@@ -202,20 +201,20 @@ bool operator!=(const Wcns5zPrim& lhs, const Wcns5zPrim& rhs) {
       const Variables<hydro::grmhd_tags<DataVector>>& volume_prims,           \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
-      const FixedHashMap<                                                     \
-          maximum_number_of_neighbors(3),                                     \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
+      const FixedHashMap<maximum_number_of_neighbors(3),                      \
+                         std::pair<Direction<3>, ElementId<3>>, DataVector,   \
+                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
+          neighbor_data,                                                      \
       const Mesh<3>& subcell_mesh) const;                                     \
   template void Wcns5zPrim::reconstruct_fd_neighbor(                          \
       gsl::not_null<Variables<TAGS_LIST(data)>*> vars_on_face,                \
       const Variables<hydro::grmhd_tags<DataVector>>& subcell_volume_prims,   \
       const EquationsOfState::EquationOfState<true, THERMO_DIM(data)>& eos,   \
       const Element<3>& element,                                              \
-      const FixedHashMap<                                                     \
-          maximum_number_of_neighbors(3),                                     \
-          std::pair<Direction<3>, ElementId<3>>, std::vector<double>,         \
-          boost::hash<std::pair<Direction<3>, ElementId<3>>>>& neighbor_data, \
+      const FixedHashMap<maximum_number_of_neighbors(3),                      \
+                         std::pair<Direction<3>, ElementId<3>>, DataVector,   \
+                         boost::hash<std::pair<Direction<3>, ElementId<3>>>>& \
+          neighbor_data,                                                      \
       const Mesh<3>& subcell_mesh,                                            \
       const Direction<3> direction_to_reconstruct) const;
 

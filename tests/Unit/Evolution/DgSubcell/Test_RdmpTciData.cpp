@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <random>
 #include <string>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -21,8 +20,8 @@ namespace {
 void test() {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> dist{-100.0, 100.0};
-  std::vector<double> max_vars(10);
-  std::vector<double> min_vars(10);
+  DataVector max_vars{10};
+  DataVector min_vars{10};
   fill_with_random_values(make_not_null(&max_vars), make_not_null(&gen),
                           make_not_null(&dist));
   fill_with_random_values(make_not_null(&min_vars), make_not_null(&gen),

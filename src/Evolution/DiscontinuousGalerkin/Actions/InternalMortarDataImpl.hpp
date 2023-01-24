@@ -9,7 +9,6 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -225,9 +224,14 @@ void internal_mortar_data_impl(
              "have been. Direction: "
                  << local_direction);
 
-      Variables<mortar_tags_list> packaged_data{
-          face_mesh.number_of_grid_points()};
-      // The DataBox is passed in for retrieving the `volume_tags`
+      // We point the Variables inside the DataVector because the DataVector
+      // will be moved later on so we want it owning its data
+      DataVector packaged_data_buffer{
+          face_mesh.number_of_grid_points() *
+          Variables<mortar_tags_list>::number_of_independent_components};
+      Variables<mortar_tags_list> packaged_data{packaged_data_buffer.data(),
+                                                packaged_data_buffer.size()};
+
       const double max_abs_char_speed_on_face = detail::dg_package_data<System>(
           make_not_null(&packaged_data), boundary_correction, fields_on_face,
           get<evolution::dg::Tags::NormalCovector<Dim>>(
@@ -244,33 +248,35 @@ void internal_mortar_data_impl(
         const auto& mortar_mesh = mortar_meshes.at(mortar_id);
         const auto& mortar_size = mortar_sizes.at(mortar_id);
 
-        // Project the data from the face to the mortar.
-        // Where no projection is necessary we `std::move` the data
-        // directly to avoid a copy. We can't move the data or modify it
-        // in-place when projecting, because in that case the face may
-        // touch two mortars so we need to keep the data around.
-        auto boundary_data_on_mortar =
-            Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)
-                // NOLINTNEXTLINE(bugprone-use-after-move)
-                ? ::dg::project_to_mortar(packaged_data, face_mesh, mortar_mesh,
-                                          mortar_size)
-                : std::move(packaged_data);
+        // Project the data from the face to the mortar if necessary.
+        // We can't move the data or modify it in-place when projecting, because
+        // in that case the face may touch two mortars so we need to keep the
+        // data around.
+        DataVector boundary_data_on_mortar{};
+        if (Spectral::needs_projection(face_mesh, mortar_mesh, mortar_size)) {
+          boundary_data_on_mortar = DataVector{
+              mortar_mesh.number_of_grid_points() *
+              Variables<mortar_tags_list>::number_of_independent_components};
+          Variables<mortar_tags_list> projected_packaged_data{
+              boundary_data_on_mortar.data(), boundary_data_on_mortar.size()};
+          // Since projected_packaged_data is non-owning, if we tried to
+          // move-assign it with the result of ::dg::project_to_mortar, it would
+          // then become owning and the buffer it previously pointed to wouldn't
+          // be filled (and we want it to be filled). So instead force a
+          // copy-assign by having an intermediary, data_to_copy.
+          const auto data_to_copy = ::dg::project_to_mortar(
+              packaged_data, face_mesh, mortar_mesh, mortar_size);
+          projected_packaged_data = data_to_copy;
 
-        // Store the boundary data on this side of the mortar in a way
-        // that is agnostic to the type of boundary correction used. This
-        // currently requires an additional allocation that could be
-        // eliminated either by:
-        //
-        // 1. Having non-owning Variables
-        //
-        // 2. Allow stealing the allocation out of a Variables (and
-        //    inserting an allocation).
-        std::vector<double> type_erased_boundary_data_on_mortar{
-            boundary_data_on_mortar.data(),
-            boundary_data_on_mortar.data() + boundary_data_on_mortar.size()};
+        } else {
+          ASSERT(neighbors_in_local_direction.size() == 1,
+                 "Expected only 1 neighbor in the local direction but got "
+                     << neighbors_in_local_direction.size() << "instead");
+          boundary_data_on_mortar = std::move(packaged_data_buffer);
+        }
+
         mortar_data_ptr->at(mortar_id).insert_local_mortar_data(
-            temporal_id, face_mesh,
-            std::move(type_erased_boundary_data_on_mortar));
+            temporal_id, face_mesh, std::move(boundary_data_on_mortar));
       }
     };
 

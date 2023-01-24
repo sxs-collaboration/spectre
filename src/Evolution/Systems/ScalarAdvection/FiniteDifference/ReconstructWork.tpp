@@ -7,9 +7,9 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -35,7 +35,7 @@ void reconstruct_work(
     const Element<Dim>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // check if subcell mesh is isotropic
@@ -78,9 +78,9 @@ void reconstruct_work(
            "got "
                << neighbors_in_direction.size() << " in direction "
                << direction);
-    ASSERT(not neighbor_data
+    ASSERT(neighbor_data
                    .at(std::pair{direction, *neighbors_in_direction.begin()})
-                   .empty(),
+                   .size() != 0,
            "The neighber data is empty in direction "
                << direction << " on element id " << element.id());
 
@@ -111,7 +111,7 @@ void reconstruct_fd_neighbor_work(
     const Element<Dim>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,

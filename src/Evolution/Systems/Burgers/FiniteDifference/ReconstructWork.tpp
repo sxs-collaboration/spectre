@@ -7,9 +7,9 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/FixedHashMap.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Structure/Direction.hpp"
@@ -32,7 +32,7 @@ void reconstruct_work(
     const Variables<tmpl::list<Tags::U>> volume_vars, const Element<1>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        std::vector<double>,
+        DataVector,
         boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
     const Mesh<1>& subcell_mesh, const size_t ghost_zone_size) {
   const size_t volume_num_pts = subcell_mesh.number_of_grid_points();
@@ -67,9 +67,9 @@ void reconstruct_work(
              "got "
                  << neighbors_in_direction.size() << " in direction "
                  << direction);
-      ASSERT(not neighbor_data
+      ASSERT(neighbor_data
                      .at(std::pair{direction, *neighbors_in_direction.begin()})
-                     .empty(),
+                     .size() != 0,
              "The neighber data is empty in direction "
                  << direction << " on element id " << element.id());
 
@@ -106,7 +106,7 @@ void reconstruct_fd_neighbor_work(
     const Element<1>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(1), std::pair<Direction<1>, ElementId<1>>,
-        std::vector<double>,
+        DataVector,
         boost::hash<std::pair<Direction<1>, ElementId<1>>>>& neighbor_data,
     const Mesh<1>& subcell_mesh, const Direction<1>& direction_to_reconstruct,
     const size_t ghost_zone_size) {

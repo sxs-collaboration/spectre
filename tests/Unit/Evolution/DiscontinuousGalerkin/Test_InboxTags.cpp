@@ -27,9 +27,8 @@ template <size_t Dim>
 void test_no_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
-  using Type =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId, int>;
+  using Type = std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                          std::optional<DataVector>, ::TimeStepId, int>;
   using Inbox = typename bc_tag::type;
 
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
@@ -49,8 +48,8 @@ void test_no_ghost_cells() {
                              Spectral::Quadrature::GaussLobatto};
   get<0>(send_data_a) = volume_mesh_a;
   get<1>(send_data_a) = mesh_a;
-  get<3>(send_data_a) = std::vector<double>(mesh_a.number_of_grid_points() *
-                                            number_of_components);
+  get<3>(send_data_a) =
+      DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
   get<4>(send_data_a) = time_step_id_a;
   get<5>(send_data_a) = 5;
   fill_with_random_values(make_not_null(&*get<3>(send_data_a)),
@@ -69,8 +68,8 @@ void test_no_ghost_cells() {
   get<0>(send_data_b) = volume_mesh_b;
   get<1>(send_data_b) = mesh_b;
 
-  get<3>(send_data_b) = std::vector<double>(mesh_b.number_of_grid_points() *
-                                            number_of_components);
+  get<3>(send_data_b) =
+      DataVector{mesh_b.number_of_grid_points() * number_of_components, 0.0};
   // Set the future time step to make sure the implementation doesn't mix the
   // receive time ID and the validity range time ID
   get<4>(send_data_b) = time_step_id_c;
@@ -96,9 +95,8 @@ template <size_t Dim>
 void test_with_ghost_cells() {
   static constexpr size_t number_of_components = 1 + Dim;
   using bc_tag = Tags::BoundaryCorrectionAndGhostCellsInbox<Dim>;
-  using Type =
-      std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-                 std::optional<std::vector<double>>, ::TimeStepId, int>;
+  using Type = std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                          std::optional<DataVector>, ::TimeStepId, int>;
   using Inbox = typename bc_tag::type;
 
   std::uniform_real_distribution<double> dist(-1.0, 2.3);
@@ -119,8 +117,8 @@ void test_with_ghost_cells() {
                              Spectral::Quadrature::GaussLobatto};
   get<0>(send_data_a) = volume_mesh_a;
   get<1>(send_data_a) = mesh_a;
-  get<2>(send_data_a) = std::vector<double>(mesh_a.number_of_grid_points() *
-                                            number_of_components);
+  get<2>(send_data_a) =
+      DataVector{mesh_a.number_of_grid_points() * number_of_components, 0.0};
   get<4>(send_data_a) = time_step_id_a;
   get<5>(send_data_a) = 5;
   fill_with_random_values(make_not_null(&*get<2>(send_data_a)),
@@ -138,8 +136,8 @@ void test_with_ghost_cells() {
                              Spectral::Quadrature::GaussLobatto};
   get<0>(send_data_b) = volume_mesh_b;
   get<1>(send_data_b) = mesh_b;
-  get<2>(send_data_b) = std::vector<double>(
-      get<1>(send_data_b).number_of_grid_points() * number_of_components);
+  get<2>(send_data_b) = DataVector{
+      get<1>(send_data_b).number_of_grid_points() * number_of_components, 0.0};
   get<4>(send_data_b) = time_step_id_b;
   get<5>(send_data_b) = 6;
   fill_with_random_values(make_not_null(&*get<2>(send_data_b)),
@@ -164,8 +162,8 @@ void test_with_ghost_cells() {
   Type send_flux_data_a;
   get<0>(send_flux_data_a) = get<0>(send_data_a);
   get<1>(send_flux_data_a) = get<1>(send_data_a);
-  get<3>(send_flux_data_a) = std::vector<double>(
-      get<1>(send_data_a).number_of_grid_points() * number_of_components);
+  get<3>(send_flux_data_a) = DataVector{
+      get<1>(send_data_a).number_of_grid_points() * number_of_components, 0.0};
   // Verify that when we update the fluxes the validity of the fluxes is also
   // updated correctly
   get<4>(send_flux_data_a) = time_step_id_c;
@@ -185,8 +183,9 @@ void test_with_ghost_cells() {
   // Check sending both ghost and flux data at once
   Type send_all_data_b = send_data_b;
   get<3>(send_all_data_b) =
-      std::vector<double>(2 * get<1>(send_all_data_b).number_of_grid_points() *
-                          number_of_components);
+      DataVector{2 * get<1>(send_all_data_b).number_of_grid_points() *
+                     number_of_components,
+                 0.0};
   get<4>(send_all_data_b) = time_step_id_c;
   get<5>(send_data_a) = 6;
   fill_with_random_values(make_not_null(&*get<3>(send_all_data_b)),

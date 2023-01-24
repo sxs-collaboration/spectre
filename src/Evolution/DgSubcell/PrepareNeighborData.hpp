@@ -6,9 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/DirectionMap.hpp"
@@ -55,7 +55,7 @@ namespace evolution::dg::subcell {
 template <typename Metavariables, typename DbTagsList, size_t Dim>
 auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
                            const gsl::not_null<db::DataBox<DbTagsList>*> box)
-    -> DirectionMap<Metavariables::volume_dim, std::vector<double>> {
+    -> DirectionMap<Metavariables::volume_dim, DataVector> {
   const Mesh<Dim>& dg_mesh = db::get<::domain::Tags::Mesh<Dim>>(*box);
   const Mesh<Dim>& subcell_mesh =
       db::get<::evolution::dg::subcell::Tags::Mesh<Dim>>(*box);
@@ -79,7 +79,8 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
   const auto ghost_variables = db::mutate_apply(
       typename Metavariables::SubcellOptions::GhostVariables{}, box);
 
-  DirectionMap<Dim, std::vector<double>> all_neighbor_data_for_reconstruction{};
+  DirectionMap<Dim, DataVector> all_neighbor_data_for_reconstruction{};
+  const size_t ghost_plus_rdmp_size = ghost_variables.size() + rdmp_size;
   if (alg::all_of(neighbor_meshes,
                   [](const auto& directional_element_id_and_mesh) {
                     ASSERT(directional_element_id_and_mesh.second.basis(0) !=
@@ -91,9 +92,7 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
     *ghost_data_mesh = dg_mesh;
     for (const auto& [direction, slice] : directions_to_slice) {
       if (slice) {
-        std::vector<double> data{};
-        data.reserve(ghost_variables.size() + rdmp_size);
-        data.resize(ghost_variables.size());
+        DataVector data{ghost_plus_rdmp_size};
         std::copy(ghost_variables.data(),
                   ghost_variables.data() + ghost_variables.size(),
                   data.begin());
@@ -132,10 +131,15 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
         // Only hash the direction once.
         auto& neighbor_data =
             all_neighbor_data_for_reconstruction.at(direction);
-        DataVector local_orientation_data(neighbor_data.size());
-        std::copy(neighbor_data.begin(), neighbor_data.end(),
+        DataVector local_orientation_data(neighbor_data.size() - rdmp_size);
+        std::copy(neighbor_data.begin(),
+                  std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)),
                   local_orientation_data.data());
-        DataVector oriented_data(neighbor_data.data(), neighbor_data.size());
+        // Orient variables expects only the neighbor data, not neighbor data +
+        // rdmp data, so create a non-owning DataVector to just the neighbor
+        // data
+        DataVector oriented_data{neighbor_data.data(),
+                                 neighbor_data.size() - rdmp_size};
         orient_variables(make_not_null(&oriented_data), local_orientation_data,
                          Index<Dim>{slice_extents}, orientation);
       }
@@ -149,19 +153,16 @@ auto prepare_neighbor_data(const gsl::not_null<Mesh<Dim>*> ghost_data_mesh,
     // Add the RDMP TCI data to what we will be sending.
     // Note that this is added _after_ the reconstruction data has been
     // re-oriented (in the case where we have neighbors doing FD).
-    std::vector<double>& neighbor_data =
+    DataVector& neighbor_data =
         all_neighbor_data_for_reconstruction.at(direction);
-    ASSERT(
-        neighbor_data.capacity() == neighbor_data.size() + rdmp_size,
-        "Neighbor data capacity does not account for RDMP data. RDMP size is "
-            << rdmp_size << " capacity is " << neighbor_data.capacity()
-            << " size is " << neighbor_data.size());
-    neighbor_data.insert(neighbor_data.end(),
-                         rdmp_data.max_variables_values.begin(),
-                         rdmp_data.max_variables_values.end());
-    neighbor_data.insert(neighbor_data.end(),
-                         rdmp_data.min_variables_values.begin(),
-                         rdmp_data.min_variables_values.end());
+    std::copy(rdmp_data.max_variables_values.begin(),
+              rdmp_data.max_variables_values.end(),
+              std::prev(neighbor_data.end(), static_cast<int>(rdmp_size)));
+    std::copy(
+        rdmp_data.min_variables_values.begin(),
+        rdmp_data.min_variables_values.end(),
+        std::prev(neighbor_data.end(),
+                  static_cast<int>(rdmp_data.min_variables_values.size())));
   }
 
   return all_neighbor_data_for_reconstruction;

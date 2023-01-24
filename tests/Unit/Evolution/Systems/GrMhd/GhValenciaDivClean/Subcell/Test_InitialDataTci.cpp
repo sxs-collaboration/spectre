@@ -56,18 +56,18 @@ SPECTRE_TEST_CASE(
         get<grmhd::ValenciaDivClean::Tags::TildeTau>(subcell_vars);
     const auto subcell_tilde_b_magnitude =
         magnitude(get<grmhd::ValenciaDivClean::Tags::TildeB<>>(subcell_vars));
-    rdmp_tci_data.max_variables_values = std::vector<double>{
-        max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
-        max(max(get(dg_tilde_ye)), max(get(subcell_tilde_ye))),
-        max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
-        max(max(get(dg_tilde_b_magnitude)),
-            max(get(subcell_tilde_b_magnitude)))};
-    rdmp_tci_data.min_variables_values = std::vector<double>{
-        min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
-        min(min(get(dg_tilde_ye)), min(get(subcell_tilde_ye))),
-        min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
-        min(min(get(dg_tilde_b_magnitude)),
-            min(get(subcell_tilde_b_magnitude)))};
+    rdmp_tci_data.max_variables_values =
+        DataVector{max(max(get(dg_tilde_d)), max(get(subcell_tilde_d))),
+                   max(max(get(dg_tilde_ye)), max(get(subcell_tilde_ye))),
+                   max(max(get(dg_tilde_tau)), max(get(subcell_tilde_tau))),
+                   max(max(get(dg_tilde_b_magnitude)),
+                       max(get(subcell_tilde_b_magnitude)))};
+    rdmp_tci_data.min_variables_values =
+        DataVector{min(min(get(dg_tilde_d)), min(get(subcell_tilde_d))),
+                   min(min(get(dg_tilde_ye)), min(get(subcell_tilde_ye))),
+                   min(min(get(dg_tilde_tau)), min(get(subcell_tilde_tau))),
+                   min(min(get(dg_tilde_b_magnitude)),
+                       min(get(subcell_tilde_b_magnitude)))};
     return rdmp_tci_data;
   };
 

@@ -7,7 +7,6 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
@@ -39,7 +38,7 @@ void reconstruct_prims_work(
     const Element<Dim>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh, const size_t ghost_zone_size) {
   // Conservative vars tags
@@ -98,9 +97,9 @@ void reconstruct_prims_work(
                      << neighbors_in_direction.size() << " in direction "
                      << direction);
           ASSERT(
-              not neighbor_data
+              neighbor_data
                       .at(std::pair{direction, *neighbors_in_direction.begin()})
-                      .empty(),
+                      .size() != 0,
               "The neighber data is empty in direction "
                   << direction << " on element id " << element.id());
           ghost_cell_vars[direction] = gsl::make_span(
@@ -167,7 +166,7 @@ void reconstruct_fd_neighbor_work(
     const Element<Dim>& element,
     const FixedHashMap<
         maximum_number_of_neighbors(Dim),
-        std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+        std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
         boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>& neighbor_data,
     const Mesh<Dim>& subcell_mesh,
     const Direction<Dim>& direction_to_reconstruct,

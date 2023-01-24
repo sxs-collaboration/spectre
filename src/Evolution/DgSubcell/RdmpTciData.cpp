@@ -7,8 +7,6 @@
 #include <pup.h>
 #include <pup_stl.h>
 
-#include "Utilities/StdHelpers.hpp"
-
 namespace evolution::dg::subcell {
 void pup(PUP::er& p, RdmpTciData& rdmp_tci_data) {  // NOLINT
   p | rdmp_tci_data.max_variables_values;

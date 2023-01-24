@@ -44,10 +44,9 @@ void set_solution(
     const gsl::not_null<Variables<
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>*>
         volume_vars,
-    const gsl::not_null<
-        FixedHashMap<maximum_number_of_neighbors(3),
-                     std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>*>
+    const gsl::not_null<FixedHashMap<
+        maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
+        DataVector, boost::hash<std::pair<Direction<3>, ElementId<3>>>>*>
         neighbor_data,
     const Mesh<3>& mesh,
     const tnsr::I<DataVector, 3, Frame::ElementLogical>& logical_coords,
@@ -114,7 +113,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.GhValenciaDivClean.Fd.Filters",
       volume_evolved_variables{subcell_mesh.number_of_grid_points()};
 
   FixedHashMap<maximum_number_of_neighbors(3),
-               std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+               std::pair<Direction<3>, ElementId<3>>, DataVector,
                boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data_for_reconstruction{};
 

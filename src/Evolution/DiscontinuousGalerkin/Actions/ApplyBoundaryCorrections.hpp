@@ -67,8 +67,8 @@ void neighbor_reconstructed_face_solution(
                       ElementId<Metavariables::volume_dim>>,
             std::tuple<Mesh<Metavariables::volume_dim>,
                        Mesh<Metavariables::volume_dim - 1>,
-                       std::optional<std::vector<double>>,
-                       std::optional<std::vector<double>>, ::TimeStepId, int>,
+                       std::optional<DataVector>, std::optional<DataVector>,
+                       ::TimeStepId, int>,
             boost::hash<std::pair<Direction<Metavariables::volume_dim>,
                                   ElementId<Metavariables::volume_dim>>>>>*>
         received_temporal_id_and_data);
@@ -80,9 +80,8 @@ void neighbor_tci_decision(
         FixedHashMap<
             maximum_number_of_neighbors(Dim),
             std::pair<Direction<Dim>, ElementId<Dim>>,
-            std::tuple<Mesh<Dim>, Mesh<Dim - 1>,
-                       std::optional<std::vector<double>>,
-                       std::optional<std::vector<double>>, ::TimeStepId, int>,
+            std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+                       std::optional<DataVector>, ::TimeStepId, int>,
             boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>>&
         received_temporal_id_and_data);
 }  // namespace evolution::dg::subcell
@@ -99,13 +98,13 @@ bool receive_boundary_data_global_time_stepping(
 
   const TimeStepId& temporal_id = get<::Tags::TimeStepId>(*box);
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
-  std::map<TimeStepId,
-           FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
-                        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                                   std::optional<std::vector<double>>,
-                                   std::optional<std::vector<double>>,
-                                   ::TimeStepId, int>,
-                        boost::hash<Key>>>& inbox =
+  std::map<
+      TimeStepId,
+      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                              std::optional<DataVector>,
+                              std::optional<DataVector>, ::TimeStepId, int>,
+                   boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
   const auto received_temporal_id_and_data = inbox.find(temporal_id);
@@ -203,13 +202,13 @@ bool receive_boundary_data_local_time_stepping(
   // returned quantity is more a `dt` quantity than a
   // `NormalDotNormalDotFlux` since it's been lifted to the volume.
   using Key = std::pair<Direction<volume_dim>, ElementId<volume_dim>>;
-  std::map<TimeStepId,
-           FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
-                        std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
-                                   std::optional<std::vector<double>>,
-                                   std::optional<std::vector<double>>,
-                                   ::TimeStepId, int>,
-                        boost::hash<Key>>>& inbox =
+  std::map<
+      TimeStepId,
+      FixedHashMap<maximum_number_of_neighbors(volume_dim), Key,
+                   std::tuple<Mesh<volume_dim>, Mesh<volume_dim - 1>,
+                              std::optional<DataVector>,
+                              std::optional<DataVector>, ::TimeStepId, int>,
+                   boost::hash<Key>>>& inbox =
       tuples::get<evolution::dg::Tags::BoundaryCorrectionAndGhostCellsInbox<
           volume_dim>>(*inboxes);
 
@@ -553,9 +552,9 @@ struct ApplyBoundaryCorrections {
 
               // Extract local and neighbor data, copy into Variables because
               // we store them in a std::vector for type erasure.
-              const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
+              const std::pair<Mesh<volume_dim - 1>, DataVector>&
                   local_mesh_and_data = *local_mortar_data.local_mortar_data();
-              const std::pair<Mesh<volume_dim - 1>, std::vector<double>>&
+              const std::pair<Mesh<volume_dim - 1>, DataVector>&
                   neighbor_mesh_and_data =
                       *neighbor_mortar_data.neighbor_mortar_data();
               local_data_on_mortar.set_data_ref(

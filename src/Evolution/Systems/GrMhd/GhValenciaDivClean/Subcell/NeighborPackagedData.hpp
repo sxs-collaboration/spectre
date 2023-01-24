@@ -69,9 +69,9 @@ namespace grmhd::GhValenciaDivClean::subcell {
  */
 struct NeighborPackagedData {
   template <typename DbTagsList>
-  static FixedHashMap<
-      maximum_number_of_neighbors(3), std::pair<Direction<3>, ElementId<3>>,
-      std::vector<double>, boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  static FixedHashMap<maximum_number_of_neighbors(3),
+                      std::pair<Direction<3>, ElementId<3>>, DataVector,
+                      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
   apply(const db::DataBox<DbTagsList>& box,
         const std::vector<std::pair<Direction<3>, ElementId<3>>>&
             mortars_to_reconstruct_to) {
@@ -92,7 +92,7 @@ struct NeighborPackagedData {
            "re-slicing/projecting.");
 
     FixedHashMap<maximum_number_of_neighbors(3),
-                 std::pair<Direction<3>, ElementId<3>>, std::vector<double>,
+                 std::pair<Direction<3>, ElementId<3>>, DataVector,
                  boost::hash<std::pair<Direction<3>, ElementId<3>>>>
         neighbor_package_data{};
     if (mortars_to_reconstruct_to.empty()) {
@@ -133,8 +133,8 @@ struct NeighborPackagedData {
         db::get<grmhd::GhValenciaDivClean::fd::Tags::Reconstructor>(box);
     const auto& base_boundary_correction =
         db::get<evolution::Tags::BoundaryCorrection<System>>(box);
-    using derived_boundary_corrections = typename std::decay_t<
-        decltype(base_boundary_correction)>::creatable_classes;
+    using derived_boundary_corrections = typename std::decay_t<decltype(
+        base_boundary_correction)>::creatable_classes;
     call_with_dynamic_type<void, derived_boundary_corrections>(
         &base_boundary_correction,
         [&box, &dg_mesh, &mortars_to_reconstruct_to, &neighbor_package_data,
@@ -284,10 +284,10 @@ struct NeighborPackagedData {
             // Really we should be solving the boundary correction and
             // then reconstructing, but away from a shock this doesn't
             // matter.
-            std::vector<double> dg_data(
+            DataVector dg_data{
                 Variables<
                     dg_package_field_tags>::number_of_independent_components *
-                dg_face_mesh.number_of_grid_points());
+                dg_face_mesh.number_of_grid_points()};
             Variables<dg_package_field_tags> dg_packaged_data{dg_data.data(),
                                                               dg_data.size()};
             evolution::dg::subcell::fd::reconstruct(

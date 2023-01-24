@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "Domain/Structure/Direction.hpp"
 #include "Domain/Structure/ElementId.hpp"
@@ -34,18 +35,18 @@ struct VolumeDouble : db::SimpleTag {
 template <size_t Dim>
 using NeighborDataMap =
     FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 template <size_t Dim>
 using NeighborReconstructionMap =
     FixedHashMap<maximum_number_of_neighbors(Dim),
-                 std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+                 std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                  boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>;
 
 template <size_t Dim>
 using MortarData =
-    std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<std::vector<double>>,
-               std::optional<std::vector<double>>, ::TimeStepId, int>;
+    std::tuple<Mesh<Dim>, Mesh<Dim - 1>, std::optional<DataVector>,
+               std::optional<DataVector>, ::TimeStepId, int>;
 
 template <size_t Dim>
 using MortarDataMap =
@@ -90,8 +91,8 @@ void test() {
                           ElementId<Dim>::external_boundary_id()};
 
   evolution::dg::subcell::RdmpTciData rdmp_tci_data{};
-  rdmp_tci_data.max_variables_values = std::vector<double>{1.0, 2.0};
-  rdmp_tci_data.min_variables_values = std::vector<double>{-2.0, 0.1};
+  rdmp_tci_data.max_variables_values = DataVector{1.0, 2.0};
+  rdmp_tci_data.min_variables_values = DataVector{-2.0, 0.1};
   NeighborDataMap<Dim> neighbor_data_map{};
   auto box = db::create<tmpl::list<
       evolution::dg::subcell::Tags::NeighborDataForReconstruction<Dim>,
@@ -110,15 +111,15 @@ void test() {
     const Mesh<Dim - 1> fd_face_mesh{2 + 2 * Dim + 1,
                                      Spectral::Basis::FiniteDifference,
                                      Spectral::Quadrature::CellCentered};
-    std::vector<double> fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
-    std::vector<double> dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
+    DataVector fd_recons_and_rdmp_data(2 * Dim + 1 + 4, 4.0);
+    DataVector dg_recons_and_rdmp_data(2 * Dim + 1 + 4, 7.0);
     for (size_t i = 0; i < 4; ++i) {
       dg_recons_and_rdmp_data[2 * Dim + 1 + i] =
           (i > 1 ? -1.0 : 1.0) * (d + 1.0) * 7.0 * (i + 5.0);
       fd_recons_and_rdmp_data[2 * Dim + 1 + i] =
           (i > 1 ? -1.0 : 1.0) * (d + 1.0) * 7.0 * (i + 50.0);
     }
-    std::vector<double> dg_flux_data(2 * Dim + 1);
+    DataVector dg_flux_data(2 * Dim + 1);
     if (d % 2 == 0) {
       mortar_data_from_neighbors.second[std::pair{
           Direction<Dim>{d, Side::Upper}, ElementId<Dim>{2 * d}}] =
@@ -151,11 +152,10 @@ void test() {
     REQUIRE(std::get<2>(mortar_data_from_neighbors.second.at(id)).has_value());
     REQUIRE(std::get<3>(mortar_data_from_neighbors.second.at(id)).has_value());
     CHECK(*std::get<3>(mortar_data_from_neighbors.second.at(id)) ==
-          std::vector<double>{
-              std::get<2>(mortar_data_from_neighbors.second.at(id))->begin(),
-              std::prev(
-                  std::get<2>(mortar_data_from_neighbors.second.at(id))->end(),
-                  4)});
+          (DataVector{
+              std::get<2>(mortar_data_from_neighbors.second.at(id))->data(),
+              std::get<2>(mortar_data_from_neighbors.second.at(id))->size() -
+                  4}));
     if (d_is_odd) {
       CHECK(std::get<5>(mortar_data_from_neighbors.second.at(id)) == 4);
     } else {

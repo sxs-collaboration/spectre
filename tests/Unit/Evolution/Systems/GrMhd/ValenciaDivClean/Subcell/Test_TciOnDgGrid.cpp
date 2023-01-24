@@ -218,7 +218,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
   const auto magnitude_tilde_b =
       magnitude(db::get<grmhd::ValenciaDivClean::Tags::TildeB<>>(box));
 
-  past_rdmp_tci_data.max_variables_values = std::vector<double>{
+  past_rdmp_tci_data.max_variables_values = DataVector{
       max(max(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           max(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,
@@ -234,7 +234,7 @@ void test(const TestThis test_this, const int expected_tci_status) {
       max(max(get(magnitude_tilde_b)),
           max(evolution::dg::subcell::fd::project(get(magnitude_tilde_b), mesh,
                                                   subcell_mesh.extents())))};
-  past_rdmp_tci_data.min_variables_values = std::vector<double>{
+  past_rdmp_tci_data.min_variables_values = DataVector{
       min(min(get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box))),
           min(evolution::dg::subcell::fd::project(
               get(db::get<grmhd::ValenciaDivClean::Tags::TildeD>(box)), mesh,

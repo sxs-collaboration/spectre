@@ -23,7 +23,7 @@ template <size_t Dim>
 void MortarData<Dim>::insert_local_mortar_data(
     TimeStepId time_step_id, Mesh<Dim - 1> local_interface_mesh,
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    std::vector<double> local_mortar_vars) {
+    DataVector local_mortar_vars) {
   // clang-tidy can't figure out that `vars` is moved below
   ASSERT(not local_mortar_data_, "Already received local data at "
                                      << time_step_id << " with interface mesh "
@@ -42,7 +42,7 @@ template <size_t Dim>
 void MortarData<Dim>::insert_neighbor_mortar_data(
     TimeStepId time_step_id, Mesh<Dim - 1> neighbor_interface_mesh,
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    std::vector<double> neighbor_mortar_vars) {
+    DataVector neighbor_mortar_vars) {
   // clang-tidy can't figure out that `vars` is moved below
   ASSERT(not neighbor_mortar_data_, "Already received neighbor data at "
                                         << time_step_id
@@ -87,9 +87,8 @@ void MortarData<Dim>::insert_local_geometric_quantities(
   using_volume_and_face_jacobians_ = true;
   const size_t required_storage_size = local_volume_det_inv_jacobian[0].size() +
                                        2 * local_face_det_jacobian[0].size();
-  if (local_geometric_quantities_.size() != required_storage_size) {
-    local_geometric_quantities_.resize(required_storage_size);
-  }
+  local_geometric_quantities_.destructive_resize(required_storage_size);
+
   std::copy(local_volume_det_inv_jacobian[0].begin(),
             local_volume_det_inv_jacobian[0].end(),
             local_geometric_quantities_.begin());
@@ -116,9 +115,8 @@ void MortarData<Dim>::insert_local_face_normal_magnitude(
          "are being used.");
   using_only_face_normal_magnitude_ = true;
   const size_t required_storage_size = local_face_normal_magnitude[0].size();
-  if (local_geometric_quantities_.size() != required_storage_size) {
-    local_geometric_quantities_.resize(required_storage_size);
-  }
+  local_geometric_quantities_.destructive_resize(required_storage_size);
+
   std::copy(local_face_normal_magnitude[0].begin(),
             local_face_normal_magnitude[0].end(),
             local_geometric_quantities_.begin());
@@ -204,14 +202,13 @@ void MortarData<Dim>::get_local_face_normal_magnitude(
 }
 
 template <size_t Dim>
-std::pair<std::pair<Mesh<Dim - 1>, std::vector<double>>,
-          std::pair<Mesh<Dim - 1>, std::vector<double>>>
+std::pair<std::pair<Mesh<Dim - 1>, DataVector>,
+          std::pair<Mesh<Dim - 1>, DataVector>>
 MortarData<Dim>::extract() {
   ASSERT(local_mortar_data_ and neighbor_mortar_data_,
          "Tried to extract boundary data, but do not have "
-             << (local_mortar_data_      ? "neighbor"
-                 : neighbor_mortar_data_ ? "local"
-                                         : "any")
+             << (local_mortar_data_ ? "neighbor"
+                                    : neighbor_mortar_data_ ? "local" : "any")
              << " data.");
   auto result = std::pair{std::move(*local_mortar_data_),
                           std::move(*neighbor_mortar_data_)};

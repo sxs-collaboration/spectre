@@ -8,7 +8,6 @@
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -122,8 +121,8 @@ void BoundaryConditionGhostData::apply(
 
     // Allocate a vector to store the computed FD ghost data and assign a
     // non-owning Variables on it.
-    std::vector<double> boundary_ghost_data(num_prims_tensor_components *
-                                            ghost_zone_size * num_face_pts);
+    DataVector boundary_ghost_data{num_prims_tensor_components *
+                                   ghost_zone_size * num_face_pts};
     Variables<prims_for_reconstruction> ghost_data_vars{
         boundary_ghost_data.data(), boundary_ghost_data.size()};
 

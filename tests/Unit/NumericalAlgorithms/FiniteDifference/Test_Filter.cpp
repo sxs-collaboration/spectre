@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
-#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tags/TempTensor.hpp"
@@ -40,14 +39,14 @@ void set_polynomial(
 
 template <size_t Dim>
 void set_solution(
-    const gsl::not_null<std::vector<double>*> volume_vars,
-    const gsl::not_null<DirectionMap<Dim, std::vector<double>>*> neighbor_data,
+    const gsl::not_null<DataVector*> volume_vars,
+    const gsl::not_null<DirectionMap<Dim, DataVector>*> neighbor_data,
     const gsl::not_null<DirectionMap<Dim, gsl::span<const double>>*>
         ghost_cell_vars,
     const Mesh<Dim>& mesh, const size_t number_of_vars,
     const tnsr::I<DataVector, Dim, Frame::ElementLogical>& logical_coords,
     const size_t deriv_order, const size_t degree) {
-  volume_vars->resize(mesh.number_of_grid_points() * number_of_vars, 0.0);
+  *volume_vars = DataVector{mesh.number_of_grid_points() * number_of_vars, 0.0};
   DataVector var1(volume_vars->data(), mesh.number_of_grid_points());
   DataVector var2(
       std::next(volume_vars->data(),
@@ -59,8 +58,8 @@ void set_solution(
     auto neighbor_logical_coords = logical_coords;
     neighbor_logical_coords.get(direction.dimension()) +=
         direction.sign() * 2.0;
-    std::vector<double> neighbor_vars(
-        mesh.number_of_grid_points() * number_of_vars, 0.0);
+    DataVector neighbor_vars{mesh.number_of_grid_points() * number_of_vars,
+                             0.0};
     DataVector neighbor_var1(neighbor_vars.data(),
                              mesh.number_of_grid_points());
     DataVector neighbor_var2(
@@ -72,8 +71,8 @@ void set_solution(
     DirectionMap<Dim, bool> directions_to_slice{};
     directions_to_slice[direction.opposite()] = true;
     const auto sliced_data = evolution::dg::subcell::detail::slice_data_impl(
-        gsl::make_span(neighbor_vars), mesh.extents(), deriv_order / 2 + 1,
-        directions_to_slice, 0);
+        gsl::make_span(neighbor_vars.data(), neighbor_vars.size()),
+        mesh.extents(), deriv_order / 2 + 1, directions_to_slice, 0);
     CAPTURE(deriv_order / 2 + 1);
     REQUIRE(sliced_data.size() == 1);
     REQUIRE(sliced_data.contains(direction.opposite()));
@@ -102,15 +101,15 @@ void test_ko_dissipation() {
 
   for (size_t deriv_order = 2; deriv_order < 12; deriv_order += 2) {
     CAPTURE(deriv_order);
-    std::vector<double> volume_vars{};
-    DirectionMap<Dim, std::vector<double>> neighbor_data{};
+    DataVector volume_vars{};
+    DirectionMap<Dim, DataVector> neighbor_data{};
     DirectionMap<Dim, gsl::span<const double>> ghost_cell_vars{};
     set_solution(make_not_null(&volume_vars), make_not_null(&neighbor_data),
                  make_not_null(&ghost_cell_vars), mesh, number_of_vars,
                  logical_coords, deriv_order, deriv_order - 1);
 
-    std::vector<double> filtered_vars(
-        mesh.number_of_grid_points() * number_of_vars, 0.0);
+    DataVector filtered_vars{mesh.number_of_grid_points() * number_of_vars,
+                             0.0};
     auto filtered_vars_span =
         gsl::make_span(filtered_vars.data(), filtered_vars.size());
     fd::kreiss_oliger_filter(
@@ -159,15 +158,15 @@ void test_low_pass_filter() {
     CAPTURE(deriv_order);
     for (size_t degree = 0; degree < deriv_order; ++degree) {
       CAPTURE(degree);
-      std::vector<double> volume_vars{};
-      DirectionMap<Dim, std::vector<double>> neighbor_data{};
+      DataVector volume_vars{};
+      DirectionMap<Dim, DataVector> neighbor_data{};
       DirectionMap<Dim, gsl::span<const double>> ghost_cell_vars{};
       set_solution(make_not_null(&volume_vars), make_not_null(&neighbor_data),
                    make_not_null(&ghost_cell_vars), mesh, number_of_vars,
                    logical_coords, deriv_order, degree);
 
-      std::vector<double> filtered_vars(
-          mesh.number_of_grid_points() * number_of_vars, 0.0);
+      DataVector filtered_vars{mesh.number_of_grid_points() * number_of_vars,
+                               0.0};
       auto filtered_vars_span =
           gsl::make_span(filtered_vars.data(), filtered_vars.size());
 

@@ -38,7 +38,7 @@ namespace TestHelpers {
 namespace ScalarAdvection::fd {
 template <size_t Dim, typename F>
 FixedHashMap<maximum_number_of_neighbors(Dim),
-             std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+             std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
              boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
 compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
                       const tnsr::I<DataVector, Dim, Frame::ElementLogical>&
@@ -47,7 +47,7 @@ compute_neighbor_data(const Mesh<Dim>& subcell_mesh,
                       const size_t ghost_zone_size,
                       const F& compute_variables_of_neighbor_data) {
   FixedHashMap<maximum_number_of_neighbors(Dim),
-               std::pair<Direction<Dim>, ElementId<Dim>>, std::vector<double>,
+               std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data{};
   for (const auto& [direction, neighbors_in_direction] : neighbors) {
@@ -116,8 +116,7 @@ void test_reconstructor(const size_t points_per_dimension,
                                Spectral::Quadrature::CellCentered};
   auto logical_coords = logical_coordinates(subcell_mesh);
   const FixedHashMap<maximum_number_of_neighbors(Dim),
-                     std::pair<Direction<Dim>, ElementId<Dim>>,
-                     std::vector<double>,
+                     std::pair<Direction<Dim>, ElementId<Dim>>, DataVector,
                      boost::hash<std::pair<Direction<Dim>, ElementId<Dim>>>>
       neighbor_data = compute_neighbor_data(
           subcell_mesh, logical_coords, element.neighbors(),

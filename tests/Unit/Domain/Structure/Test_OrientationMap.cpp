@@ -317,66 +317,38 @@ void test_3d() {
         custom4.permute_from_neighbor(std::array<int, 3>{{4, -8, 12}}));
 }
 
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
-  test_1d();
-  test_2d();
-  test_3d();
-}
-
-// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap.Bijective",
-                               "[Domain][Unit]") {
-  ASSERTION_TEST();
+void test_errors() {
 #ifdef SPECTRE_DEBUG
-  auto failed_orientationmap = OrientationMap<2>{std::array<Direction<2>, 2>{
-      {Direction<2>::upper_xi(), Direction<2>::lower_xi()}}};
-  static_cast<void>(failed_orientationmap);
+  CHECK_THROWS_WITH(
+      OrientationMap<2>(std::array<Direction<2>, 2>{
+          {Direction<2>::upper_xi(), Direction<2>::lower_xi()}}),
+      Catch::Contains(
+          "This OrientationMap fails to map Directions one-to-one."));
 
-  ERROR("Failed to trigger ASSERT in an assertion test");
+  CHECK_THROWS_WITH(
+      OrientationMap<2>(
+          std::array<Direction<2>, 2>{
+              {Direction<2>::upper_xi(), Direction<2>::lower_xi()}},
+          std::array<Direction<2>, 2>{
+              {Direction<2>::upper_xi(), Direction<2>::upper_eta()}}),
+      Catch::Contains(
+          "This OrientationMap fails to map Directions one-to-one."));
+
+  CHECK_THROWS_WITH(
+      OrientationMap<3>(
+          std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                       Direction<3>::lower_eta(),
+                                       Direction<3>::lower_zeta()}},
+          std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
+                                       Direction<3>::upper_eta(),
+                                       Direction<3>::lower_eta()}}),
+      Catch::Contains(
+          "This OrientationMap fails to map Directions one-to-one."));
 #endif
 }
 
-// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Structure.OrientationMap.BijectiveHost", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_orientationmap = OrientationMap<2>{
-      std::array<Direction<2>, 2>{
-          {Direction<2>::upper_xi(), Direction<2>::lower_xi()}},
-      std::array<Direction<2>, 2>{
-          {Direction<2>::upper_xi(), Direction<2>::upper_eta()}},
-  };
-  static_cast<void>(failed_orientationmap);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, This OrientationMap fails to map Directions one-to-one.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.Structure.OrientationMap.BijectiveNeighbor",
-    "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto failed_orientationmap = OrientationMap<3>{
-      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                   Direction<3>::lower_eta(),
-                                   Direction<3>::lower_zeta()}},
-      std::array<Direction<3>, 3>{{Direction<3>::upper_xi(),
-                                   Direction<3>::upper_eta(),
-                                   Direction<3>::lower_eta()}},
-  };
-  static_cast<void>(failed_orientationmap);
-
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.AllOrientations",
-                  "[Domain][Unit]") {
+void test_all_orientations() {
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     const std::array<double, 2> original_point{{0.5, -2.0}};
     const std::array<double, 2> new_point =
@@ -401,8 +373,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.AllOrientations",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.Rotation",
-                  "[Domain][Unit]") {
+void test_rotation() {
   const OrientationMap<1> rotation1(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
   const std::array<DataVector, 1> test_points1{
@@ -437,8 +408,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.Rotation",
         std::array<double, 3>{{0.5, -1.0, 1.0}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.ReferenceWrapper",
-                  "[Domain][Unit]") {
+void test_reference_wrapper() {
   const OrientationMap<3> rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
        Direction<3>::lower_xi()}});
@@ -479,4 +449,17 @@ SPECTRE_TEST_CASE("Unit.Domain.Structure.DiscreteRotation.ReferenceWrapper",
   CHECK(test_points[0] == x_points_proof);
   CHECK(test_points[1] == y_points_proof);
   CHECK(test_points[2] == z_points_proof);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Structure.OrientationMap", "[Domain][Unit]") {
+  test_1d();
+  test_2d();
+  test_3d();
+
+  test_all_orientations();
+  test_rotation();
+  test_reference_wrapper();
+
+  test_errors();
 }

@@ -34,8 +34,7 @@ void spacetime_derivatives(
         typename grmhd::GhValenciaDivClean::System::variables_tag::tags_list>&
         volume_evolved_variables,
     const FixedHashMap<maximum_number_of_neighbors(3),
-                       std::pair<Direction<3>, ElementId<3>>,
-                       std::vector<double>,
+                       std::pair<Direction<3>, ElementId<3>>, DataVector,
                        boost::hash<std::pair<Direction<3>, ElementId<3>>>>&
         neighbor_data_for_reconstruction,
     const Mesh<3>& volume_mesh,
