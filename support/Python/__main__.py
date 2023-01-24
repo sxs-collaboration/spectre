@@ -6,6 +6,8 @@ import logging
 import rich.logging
 import rich.traceback
 
+logger = logging.getLogger(__name__)
+
 SPECTRE_VERSION = "@SPECTRE_VERSION@"
 
 
@@ -74,9 +76,28 @@ class Cli(click.MultiCommand):
              help=f"SpECTRE version: {SPECTRE_VERSION}",
              cls=Cli)
 @click.version_option(version=SPECTRE_VERSION, message="%(version)s")
-@click.option('--debug', 'log_level', flag_value=logging.DEBUG)
-@click.option('--silent', 'log_level', flag_value=logging.CRITICAL)
-def cli(log_level):
+@click.option('--debug',
+              'log_level',
+              flag_value=logging.DEBUG,
+              help=("Enable debug logging."))
+@click.option('--silent',
+              'log_level',
+              flag_value=logging.CRITICAL,
+              help=("Disable all logging."))
+@click.option('--profile',
+              is_flag=True,
+              help=("Enable profiling. "
+                    "Expect slower execution due to profiling overhead. "
+                    "A summary of the results is printed to the terminal. "
+                    "Use the '--output-profile' option to write the results "
+                    "to a file."))
+@click.option('--output-profile',
+              type=click.Path(writable=True),
+              help=("Write profiling results to a file. "
+                    "The file can be opened by profiling visualization tools "
+                    "such as 'pstats' or 'gprof2dot'. "
+                    "See the Python 'cProfile' docs for details."))
+def cli(log_level, profile, output_profile):
     if log_level is None:
         log_level = logging.INFO
     # Configure logging
@@ -90,6 +111,40 @@ def cli(log_level):
         show_locals=log_level <= logging.DEBUG,
         extra_lines=(3 if log_level <= logging.DEBUG else 0),
         suppress=[click])
+
+    # Configure profiling
+    if profile:
+        import atexit
+        import cProfile
+        import pstats
+        from io import StringIO
+
+        logger.info("Profiling is enabled. Expect slower execution due to "
+                    "profiling overhead.")
+        profiler = cProfile.Profile()
+        profiler.enable()
+
+        # Output profiling result at exit
+        def complete_profiling():
+            profiler.disable()
+            if output_profile:
+                # Write to file
+                profiler.dump_stats(output_profile)
+            else:
+                # Print to terminal
+                import rich.console
+                console = rich.console.Console()
+                console.rule("[bold]Profiling Result",
+                             style="black",
+                             align="center")
+                profile_report = StringIO()
+                stats = pstats.Stats(profiler,
+                                     stream=profile_report).sort_stats(
+                                         pstats.SortKey.TIME)
+                stats.print_stats(20)
+                console.print(profile_report.getvalue())
+
+        atexit.register(complete_profiling)
 
 
 if __name__ == "__main__":
