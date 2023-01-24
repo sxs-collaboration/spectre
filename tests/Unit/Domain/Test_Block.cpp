@@ -40,7 +40,7 @@ void test_block_time_independent() {
                                        CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
 
-  Block<Dim> original_block(identity_map.get_clone(), 7, {});
+  Block<Dim> original_block(identity_map.get_clone(), 7, {}, "Identity");
   CHECK_FALSE(original_block.is_time_dependent());
 
   const auto check_block = [](const Block<Dim>& block) {
@@ -52,6 +52,7 @@ void test_block_time_independent() {
 
     // Test id:
     CHECK((block.id()) == 7);
+    CHECK(block.name() == "Identity");
 
     // Test that the block's coordinate_map is Identity:
     const auto& map = block.stationary_map();
@@ -68,7 +69,7 @@ void test_block_time_independent() {
   test_serialization(original_block);
 
   // Test move semantics:
-  const Block<Dim> block_copy(identity_map.get_clone(), 7, {});
+  const Block<Dim> block_copy(identity_map.get_clone(), 7, {}, "Identity");
   test_move_semantics(std::move(original_block), block_copy);
 }
 
@@ -309,13 +310,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   const BlockNeighbor<2> block_neighbor2(
       2, OrientationMap<2>(std::array<Direction<2>, 2>{
              {Direction<2>::lower_xi(), Direction<2>::upper_eta()}}));
-  DirectionMap<2, BlockNeighbor<2>> neighbors = {
+  const DirectionMap<2, BlockNeighbor<2>> neighbors{
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
   using coordinate_map = CoordinateMap<Frame::BlockLogical, Frame::Inertial,
                                        CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
-  const Block<2> block(identity_map.get_clone(), 3, std::move(neighbors));
+  const Block<2> block(identity_map.get_clone(), 3, neighbors, "Identity");
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);
@@ -325,10 +326,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
 
   // Test id:
   CHECK((block.id()) == 3);
+  CHECK(block.name() == "Identity");
 
   // Test output:
   CHECK(get_output(block) ==
-        "Block 3:\n"
+        "Block 3 (Identity):\n"
         "Neighbors: "
         "([+0,Id = 1; orientation = (+0, +1)],"
         "[-1,Id = 2; orientation = (-0, +1)])\n"
@@ -336,9 +338,18 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
         "Is time dependent: false");
 
   // Test comparison:
-  const Block<2> neighborless_block(identity_map.get_clone(), 7, {});
   CHECK(block == block);
-  CHECK(block != neighborless_block);
-  CHECK(neighborless_block == neighborless_block);
+  {
+    const Block<2> rhs(identity_map.get_clone(), 3, {}, "Identity");
+    CHECK(block != rhs);
+  }
+  {
+    const Block<2> rhs(identity_map.get_clone(), 3, neighbors, "BlockyBlock");
+    CHECK(block != rhs);
+  }
+  {
+    const Block<2> rhs(identity_map.get_clone(), 0, neighbors, "Identity");
+    CHECK(block != rhs);
+  }
 }
 }  // namespace domain

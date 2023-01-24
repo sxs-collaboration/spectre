@@ -801,7 +801,10 @@ Domain<3> CylindricalBinaryCompactObject::create_domain() const {
         CoordinateMaps::DiscreteRotation<3>(rotate_to_minus_x_axis));
   }
 
-  Domain<3> domain{std::move(coordinate_maps)};
+  std::unordered_map<std::string, ExcisionSphere<3>> excision_spheres{};
+
+  Domain<3> domain{std::move(coordinate_maps), std::move(excision_spheres),
+                   block_names_, block_groups_};
 
   if (is_time_dependent_) {
     // Same map for all the blocks for now.

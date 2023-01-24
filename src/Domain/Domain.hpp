@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "Domain/Block.hpp"  // IWYU pragma: keep
@@ -61,11 +62,15 @@ class Domain {
    * determined. For more information on setting up domains, see the
    * [domain creation tutorial](\ref tutorial_domain_creation).
    */
-  explicit Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
-                      Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
-                      maps,
-                  std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
-                      excision_spheres = {});
+  explicit Domain(
+      std::vector<std::unique_ptr<domain::CoordinateMapBase<
+          Frame::BlockLogical, Frame::Inertial, VolumeDim>>>
+          maps,
+      std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
+          excision_spheres = {},
+      std::vector<std::string> block_names = {},
+      std::unordered_map<std::string, std::unordered_set<std::string>>
+          block_groups = {});
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -91,7 +96,10 @@ class Domain {
              corners_of_all_blocks,
          const std::vector<PairOfFaces>& identifications = {},
          std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
-             excision_spheres = {});
+             excision_spheres = {},
+         std::vector<std::string> block_names = {},
+         std::unordered_map<std::string, std::unordered_set<std::string>>
+             block_groups = {});
 
   Domain() = default;
   ~Domain() = default;
@@ -121,6 +129,11 @@ class Domain {
     return excision_spheres_;
   }
 
+  const std::unordered_map<std::string, std::unordered_set<std::string>>&
+  block_groups() const {
+    return block_groups_;
+  }
+
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p);
 
@@ -128,6 +141,8 @@ class Domain {
   std::vector<Block<VolumeDim>> blocks_{};
   std::unordered_map<std::string, ExcisionSphere<VolumeDim>>
       excision_spheres_{};
+  std::unordered_map<std::string, std::unordered_set<std::string>>
+      block_groups_{};
 };
 
 template <size_t VolumeDim>

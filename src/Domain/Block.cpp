@@ -23,10 +23,12 @@ Block<VolumeDim>::Block(
     std::unique_ptr<domain::CoordinateMapBase<
         Frame::BlockLogical, Frame::Inertial, VolumeDim>>&& stationary_map,
     const size_t id,
-    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors)
+    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors,
+    std::string name)
     : stationary_map_(std::move(stationary_map)),
       id_(id),
-      neighbors_(std::move(neighbors)) {
+      neighbors_(std::move(neighbors)),
+      name_(std::move(name)) {
   // Loop over Directions to search which Directions were not set to neighbors_,
   // set these Directions to external_boundaries_.
   for (const auto& direction : Direction<VolumeDim>::all_directions()) {
@@ -116,7 +118,7 @@ void Block<VolumeDim>::inject_time_dependent_map(
 
 template <size_t VolumeDim>
 void Block<VolumeDim>::pup(PUP::er& p) {
-  size_t version = 0;
+  size_t version = 1;
   p | version;
   // Remember to increment the version number when making changes to this
   // function. Retain support for unpacking data written by previous versions
@@ -131,11 +133,14 @@ void Block<VolumeDim>::pup(PUP::er& p) {
     p | neighbors_;
     p | external_boundaries_;
   }
+  if (version >= 1) {
+    p | name_;
+  }
 }
 
 template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os, const Block<VolumeDim>& block) {
-  os << "Block " << block.id() << ":\n";
+  os << "Block " << block.id() << " (" << block.name() << "):\n";
   os << "Neighbors: " << block.neighbors() << '\n';
   os << "External boundaries: " << block.external_boundaries() << '\n';
   os << "Is time dependent: " << std::boolalpha << block.is_time_dependent();
@@ -147,6 +152,7 @@ bool operator==(const Block<VolumeDim>& lhs, const Block<VolumeDim>& rhs) {
   bool blocks_are_equal =
       (lhs.id() == rhs.id() and lhs.neighbors() == rhs.neighbors() and
        lhs.external_boundaries() == rhs.external_boundaries() and
+       lhs.name() == rhs.name() and
        lhs.is_time_dependent() == rhs.is_time_dependent());
 
   if (lhs.is_time_dependent() and not lhs.has_distorted_frame()) {
