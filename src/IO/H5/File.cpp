@@ -131,6 +131,18 @@ H5File<Access_t>::~H5File() {
     }
   }
 }
+
+template <AccessType Access_t>
+void H5File<Access_t>::close() const {
+  // Need to close current object because `H5Fclose` keeps the file open
+  // internally until all objects are closed
+  close_current_object();
+  if (file_id_ != -1) {
+    CHECK_H5(H5Fclose(file_id_), "Failed to close the file.");
+    file_id_ = -1;
+  }
+}
+
 template <AccessType Access_t>
 std::string H5File<Access_t>::input_source() const {
   return h5::read_value_attribute<std::string>(file_id_, "InputSource.yaml"s);

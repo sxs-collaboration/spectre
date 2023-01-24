@@ -181,6 +181,12 @@ class H5File {
    */
   void close_current_object() const { current_object_ = nullptr; }
 
+  /*!
+   * \effects Closes the H5 file. No H5 operations are permitted after this
+   * operation.
+   */
+  void close() const;
+
   template <typename ObjectType>
   bool exists(const std::string& path) const {
     auto exists_group_name = check_if_object_exists<ObjectType>(path);
@@ -206,7 +212,8 @@ class H5File {
       const std::string& path) const;
 
   std::string file_name_;
-  hid_t file_id_{-1};
+  // NOLINTNEXTLINE(spectre-mutable)
+  mutable hid_t file_id_{-1};
   // NOLINTNEXTLINE(spectre-mutable)
   mutable std::unique_ptr<h5::Object> current_object_{nullptr};
   std::vector<std::string> h5_groups_;
