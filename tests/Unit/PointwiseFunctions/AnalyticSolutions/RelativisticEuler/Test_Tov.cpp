@@ -39,6 +39,10 @@ void test_tov(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
     const double central_mass_density, const size_t num_pts,
     const size_t current_iteration, const bool newtonian_limit) {
+  CAPTURE(central_mass_density);
+  CAPTURE(num_pts);
+  CAPTURE(current_iteration);
+  CAPTURE(newtonian_limit);
   Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
   const double initial_log_enthalpy =
       std::log(get(hydro::relativistic_specific_enthalpy(
@@ -122,6 +126,7 @@ void test_tov(
 }
 
 void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
+  INFO("dp/dr");
   const double central_rest_mass_density = 1.0e-3;
   const RelativisticEuler::Solutions::TovSolution radial_tov_solution{
       eos, central_rest_mass_density};
@@ -181,6 +186,7 @@ void test_tov_dp_dr(const EquationsOfState::EquationOfState<true, 1>& eos) {
 }
 
 void test_baumgarte_shapiro() {
+  INFO("BaumgarteShapiro");
   // Reproduces Fig. 1.2 in BaumgarteShapiro, as suggested in footnote 25 on p.
   // 18, and as listed in Table 14.1
   // We use the polytropic scaling relations to prevent
@@ -206,6 +212,7 @@ void test_baumgarte_shapiro() {
 
 void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,
                         const double central_mass_density) {
+  INFO("Isotropic");
   const RelativisticEuler::Solutions::TovSolution tov_areal{
       eos, central_mass_density,
       RelativisticEuler::Solutions::TovCoordinates::Schwarzschild};
@@ -235,6 +242,7 @@ void test_tov_isotropic(const EquationsOfState::EquationOfState<true, 1>& eos,
 }
 
 void test_rueter() {
+  INFO("Rueter");
   // Reproduces the values in Sec. V.C and Fig. 8 in
   // https://arxiv.org/abs/1708.07358
   const EquationsOfState::PolytropicFluid<true> eos{123.6489, 2};
