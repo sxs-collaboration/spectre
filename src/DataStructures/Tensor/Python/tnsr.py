@@ -16,6 +16,7 @@ from spectre.DataStructures.Tensor import TensorMeta
 i = TensorMeta("i")
 I = TensorMeta("I")
 ij = TensorMeta("ij")
+iJ = TensorMeta("iJ")
 ii = TensorMeta("ii")
 II = TensorMeta("II")
 ijj = TensorMeta("ijj")

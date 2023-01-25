@@ -12,8 +12,8 @@ spectre_python_add_module(
   Domain.cpp
   ElementId.cpp
   ElementLogicalCoordinates.cpp
+  ElementMap.cpp
   FunctionsOfTime.cpp
-  InertialCoordinates.cpp
   SegmentId.cpp
   PYTHON_FILES
   __init__.py
@@ -27,14 +27,15 @@ spectre_python_headers(
   Domain.hpp
   ElementId.hpp
   ElementLogicalCoordinates.hpp
+  ElementMap.hpp
   FunctionsOfTime.hpp
-  InertialCoordinates.hpp
   SegmentId.hpp
   )
 
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
+  CoordinateMaps
   DataStructures
   Domain
   DomainCreators
@@ -42,4 +43,11 @@ spectre_python_link_libraries(
   FunctionsOfTime
   pybind11::module
   Utilities
+  )
+
+spectre_python_add_dependencies(
+  ${LIBRARY}
+  PyCoordinateMaps
+  PyDataStructures
+  PyTensor
   )

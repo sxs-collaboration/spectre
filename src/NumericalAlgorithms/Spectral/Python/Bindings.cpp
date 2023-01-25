@@ -7,7 +7,11 @@
 #include "NumericalAlgorithms/Spectral/Python/Mesh.hpp"
 #include "NumericalAlgorithms/Spectral/Python/Spectral.hpp"
 
+namespace py = pybind11;
+
 PYBIND11_MODULE(_PySpectral, m) {  // NOLINT
+  py::module_::import("spectre.DataStructures");
+  py::module_::import("spectre.DataStructures.Tensor");
   Spectral::py_bindings::bind_basis(m);
   Spectral::py_bindings::bind_quadrature(m);
   Spectral::py_bindings::bind_logical_coordinates(m);

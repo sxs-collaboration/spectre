@@ -1,36 +1,33 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "PySpectral")
+set(LIBRARY "PyCoordinateMaps")
 
 spectre_python_add_module(
-  Spectral
+  CoordinateMaps
   LIBRARY_NAME ${LIBRARY}
+  MODULE_PATH "Domain"
   SOURCES
   Bindings.cpp
-  LogicalCoordinates.cpp
-  Mesh.cpp
-  Spectral.cpp
+  CoordinateMap.cpp
   PYTHON_FILES
   __init__.py
-)
+  )
 
 spectre_python_headers(
   ${LIBRARY}
   INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
   HEADERS
-  LogicalCoordinates.hpp
-  Mesh.hpp
-  Spectral.hpp
+  CoordinateMap.hpp
   )
 
 spectre_python_link_libraries(
   ${LIBRARY}
   PRIVATE
   DataStructures
-  Spectral
+  CoordinateMaps
   pybind11::module
-)
+  )
 
 spectre_python_add_dependencies(
   ${LIBRARY}

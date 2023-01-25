@@ -7,5 +7,5 @@
 
 namespace domain::py_bindings {
 // NOLINTNEXTLINE(google-runtime-references)
-void bind_inertial_coordinates(pybind11::module& m);
+void bind_coordinate_map(pybind11::module& m);
 }  // namespace domain::py_bindings
