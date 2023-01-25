@@ -7,6 +7,8 @@
 #include <ostream>
 #include <type_traits>
 
+#include "Domain/Structure/Direction.hpp"
+#include "Domain/Structure/ElementId.hpp"
 #include "NumericalAlgorithms/Spectral/Mesh.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -31,10 +33,14 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
   size_t subcell_ghost_data_size;
   size_t dg_flux_data_size;
   bool sent_across_nodes;
+  bool enable_if_disabled;
   size_t sender_node;
   size_t sender_core;
+  int tci_status;
   ::TimeStepId current_time_step_id;
   ::TimeStepId next_time_step_id;
+  Direction<Dim> neighbor_direction;
+  ElementId<Dim> element_id;
   Mesh<Dim> volume_or_ghost_mesh;
   Mesh<Dim - 1> interface_mesh;
 
@@ -46,10 +52,13 @@ struct BoundaryMessage : public CMessage_BoundaryMessage<Dim> {
 
   BoundaryMessage(const size_t subcell_ghost_data_size_in,
                   const size_t dg_flux_data_size_in,
-                  const bool sent_across_nodes_in, const size_t sender_node_in,
-                  const size_t sender_core_in,
+                  const bool sent_across_nodes_in,
+                  const bool enable_if_disabled_in, const size_t sender_node_in,
+                  const size_t sender_core_in, const int tci_status_in,
                   const ::TimeStepId& current_time_step_id_in,
                   const ::TimeStepId& next_time_step_id_in,
+                  const Direction<Dim>& neighbor_direction_in,
+                  const ElementId<Dim>& element_id_in,
                   const Mesh<Dim>& volume_or_ghost_mesh_in,
                   const Mesh<Dim - 1>& interface_mesh_in,
                   double* subcell_ghost_data_in, double* dg_flux_data_in);
