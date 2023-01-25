@@ -133,7 +133,7 @@ class TovSolution {
       double central_mass_density,
       const TovCoordinates coordinate_system = TovCoordinates::Schwarzschild,
       double log_enthalpy_at_outer_radius = 0.0,
-      double absolute_tolerance = 1.0e-14, double relative_tolerance = 1.0e-14);
+      double absolute_tolerance = 1.e-18, double relative_tolerance = 1.0e-14);
 
   TovSolution() = default;
   TovSolution(const TovSolution& /*rhs*/) = default;
