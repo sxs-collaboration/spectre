@@ -109,6 +109,17 @@ Domain<Dim> test_domain_creator(const DomainCreator<Dim>& domain_creator,
     CHECK(all_boundary_conditions.empty());
   }
 
+  // Check that every direction in every excision_sphere is also an
+  // external boundary of the correct Block.
+  for (const auto& excision_sphere_map_element : domain.excision_spheres()) {
+    for (const auto& [block_index, direction] :
+         excision_sphere_map_element.second.abutting_directions()) {
+      const auto& external_boundaries =
+          domain.blocks()[block_index].external_boundaries();
+      CHECK(external_boundaries.find(direction) != external_boundaries.end());
+    }
+  }
+
   return domain;
 }
 
