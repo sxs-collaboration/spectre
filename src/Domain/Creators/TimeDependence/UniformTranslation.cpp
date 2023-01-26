@@ -30,12 +30,29 @@ namespace creators::time_dependence {
 template <size_t MeshDim, size_t Index>
 UniformTranslation<MeshDim, Index>::UniformTranslation(
     const double initial_time, const std::array<double, MeshDim>& velocity)
-    : initial_time_(initial_time), velocity_(velocity) {}
+    : initial_time_(initial_time), velocity_grid_to_distorted_(velocity) {}
+
+template <size_t MeshDim, size_t Index>
+UniformTranslation<MeshDim, Index>::UniformTranslation(
+    const double initial_time,
+    const std::array<double, MeshDim>& velocity_grid_to_distorted,
+    const std::array<double, MeshDim>& velocity_distorted_to_inertial)
+    : initial_time_(initial_time),
+      velocity_grid_to_distorted_(velocity_grid_to_distorted),
+      velocity_distorted_to_inertial_(velocity_distorted_to_inertial),
+      distorted_and_inertial_frames_are_equal_(false) {}
 
 template <size_t MeshDim, size_t Index>
 std::unique_ptr<TimeDependence<MeshDim>>
 UniformTranslation<MeshDim, Index>::get_clone() const {
-  return std::make_unique<UniformTranslation>(initial_time_, velocity_);
+  if(distorted_and_inertial_frames_are_equal_) {
+    return std::make_unique<UniformTranslation>(initial_time_,
+                                                velocity_grid_to_distorted_);
+  } else {
+    return std::make_unique<UniformTranslation>(
+        initial_time_, velocity_grid_to_distorted_,
+        velocity_distorted_to_inertial_);
+  }
 }
 
 template <size_t MeshDim, size_t Index>
@@ -47,9 +64,53 @@ UniformTranslation<MeshDim, Index>::block_maps_grid_to_inertial(
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, MeshDim>>>
       result{number_of_blocks};
-  result[0] = std::make_unique<GridToInertialMap>(grid_to_inertial_map());
+  if (distorted_and_inertial_frames_are_equal_) {
+    result[0] = std::make_unique<GridToInertialMapSimple>(
+        grid_to_inertial_map_simple());
+  } else {
+    result[0] = std::make_unique<GridToInertialMapCombined>(
+        grid_to_inertial_map_combined());
+  }
   for (size_t i = 1; i < number_of_blocks; ++i) {
     result[i] = result[0]->get_clone();
+  }
+  return result;
+}
+
+template <size_t MeshDim, size_t Index>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>>>
+UniformTranslation<MeshDim, Index>::block_maps_grid_to_distorted(
+    const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
+  using ptr_type =
+      domain::CoordinateMapBase<Frame::Grid, Frame::Distorted, MeshDim>;
+  std::vector<std::unique_ptr<ptr_type>> result{number_of_blocks};
+
+  if (not distorted_and_inertial_frames_are_equal_) {
+    result[0] = std::make_unique<GridToDistortedMap>(grid_to_distorted_map());
+    for (size_t i = 1; i < number_of_blocks; ++i) {
+      result[i] = result[0]->get_clone();
+    }
+  }
+  return result;
+}
+
+template <size_t MeshDim, size_t Index>
+std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>>>
+UniformTranslation<MeshDim, Index>::block_maps_distorted_to_inertial(
+    const size_t number_of_blocks) const {
+  ASSERT(number_of_blocks > 0, "Must have at least one block to create.");
+  using ptr_type =
+      domain::CoordinateMapBase<Frame::Distorted, Frame::Inertial, MeshDim>;
+  std::vector<std::unique_ptr<ptr_type>> result{number_of_blocks};
+  if (not distorted_and_inertial_frames_are_equal_) {
+    result[0] =
+        std::make_unique<DistortedToInertialMap>(distorted_to_inertial_map());
+    for (size_t i = 1; i < number_of_blocks; ++i) {
+      result[i] = result[0]->get_clone();
+    }
   }
   return result;
 }
@@ -66,41 +127,101 @@ UniformTranslation<MeshDim, Index>::functions_of_time(
 
   // We use a `PiecewisePolynomial` with 2 derivs since some transformations
   // between different frames for moving meshes can require Hessians.
-  DataVector velocity{MeshDim, 0.0};
+  DataVector velocity_grid_to_distorted{MeshDim, 0.0};
   for (size_t i = 0; i < MeshDim; i++) {
-    velocity[i] = gsl::at(velocity_, i);
+    velocity_grid_to_distorted[i] = gsl::at(velocity_grid_to_distorted_, i);
   }
 
   // Functions of time don't expire by default
-  double expiration_time = std::numeric_limits<double>::infinity();
+  double expiration_time_grid_to_distorted =
+      std::numeric_limits<double>::infinity();
 
   // If we have control systems, overwrite the expiration time with the one
   // supplied by the control system
-  if (initial_expiration_times.count(function_of_time_name_) == 1) {
-    expiration_time = initial_expiration_times.at(function_of_time_name_);
+  if (initial_expiration_times.count(
+          function_of_time_name_grid_to_distorted_) == 1) {
+    expiration_time_grid_to_distorted =
+        initial_expiration_times.at(function_of_time_name_grid_to_distorted_);
   }
 
-  result[function_of_time_name_] =
+  result[function_of_time_name_grid_to_distorted_] =
       std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
           initial_time_,
-          std::array<DataVector, 3>{{{MeshDim, 0.0}, velocity, {MeshDim, 0.0}}},
-          expiration_time);
+          std::array<DataVector, 3>{
+              {{MeshDim, 0.0}, velocity_grid_to_distorted, {MeshDim, 0.0}}},
+          expiration_time_grid_to_distorted);
+
+  if (not distorted_and_inertial_frames_are_equal_) {
+    DataVector velocity_distorted_to_inertial{MeshDim, 0.0};
+    for (size_t i = 0; i < MeshDim; i++) {
+      velocity_distorted_to_inertial[i] =
+          gsl::at(velocity_distorted_to_inertial_, i);
+    }
+    double expiration_time_distorted_to_inertial =
+        std::numeric_limits<double>::infinity();
+    if (initial_expiration_times.count(
+            function_of_time_name_distorted_to_inertial_) == 1) {
+      expiration_time_distorted_to_inertial = initial_expiration_times.at(
+          function_of_time_name_distorted_to_inertial_);
+    }
+
+    result[function_of_time_name_distorted_to_inertial_] =
+        std::make_unique<FunctionsOfTime::PiecewisePolynomial<2>>(
+            initial_time_,
+            std::array<DataVector, 3>{{{MeshDim, 0.0},
+                                       velocity_distorted_to_inertial,
+                                       {MeshDim, 0.0}}},
+            expiration_time_distorted_to_inertial);
+  }
   return result;
 }
 
 template <size_t MeshDim, size_t Index>
-auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map() const
-    -> GridToInertialMap {
-  return GridToInertialMap{
+auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map_simple() const
+    -> GridToInertialMapSimple {
+  return GridToInertialMapSimple{
       domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
-          function_of_time_name_}};
+          function_of_time_name_grid_to_distorted_}};
+}
+
+template <size_t MeshDim, size_t Index>
+auto UniformTranslation<MeshDim, Index>::grid_to_distorted_map() const
+    -> GridToDistortedMap {
+  return GridToDistortedMap{
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
+          function_of_time_name_grid_to_distorted_}};
+}
+
+template <size_t MeshDim, size_t Index>
+auto UniformTranslation<MeshDim, Index>::distorted_to_inertial_map() const
+    -> DistortedToInertialMap {
+  return DistortedToInertialMap{
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
+          function_of_time_name_distorted_to_inertial_}};
+}
+
+template <size_t MeshDim, size_t Index>
+auto UniformTranslation<MeshDim, Index>::grid_to_inertial_map_combined() const
+    -> GridToInertialMapCombined {
+  return GridToInertialMapCombined{
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
+          function_of_time_name_grid_to_distorted_},
+      domain::CoordinateMaps::TimeDependent::Translation<MeshDim>{
+          function_of_time_name_distorted_to_inertial_}};
 }
 
 template <size_t Dim, size_t Index>
 bool operator==(const UniformTranslation<Dim, Index>& lhs,
                 const UniformTranslation<Dim, Index>& rhs) {
+  // If distorted_and_inertial_frames_are_equal_, we short-circuit
+  // evaluating velocity_distorted_to_inertial_ below.
   return lhs.initial_time_ == rhs.initial_time_ and
-         lhs.velocity_ == rhs.velocity_;
+         lhs.velocity_grid_to_distorted_ == rhs.velocity_grid_to_distorted_ and
+         lhs.distorted_and_inertial_frames_are_equal_ ==
+             rhs.distorted_and_inertial_frames_are_equal_ and
+         (lhs.distorted_and_inertial_frames_are_equal_ or
+          lhs.velocity_distorted_to_inertial_ ==
+              rhs.velocity_distorted_to_inertial_);
 }
 
 template <size_t Dim, size_t Index>
