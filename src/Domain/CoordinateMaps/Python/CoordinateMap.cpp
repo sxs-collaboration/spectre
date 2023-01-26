@@ -17,6 +17,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/GetOutput.hpp"
 
 namespace py = pybind11;
@@ -114,8 +115,23 @@ void bind_coordinate_map_impl(py::module& m) {  // NOLINT
 }  // namespace
 
 void bind_coordinate_map(py::module& m) {  // NOLINT
-  bind_coordinate_map_impl<Frame::ElementLogical, Frame::Inertial, 1>(m);
-  bind_coordinate_map_impl<Frame::ElementLogical, Frame::Inertial, 2>(m);
-  bind_coordinate_map_impl<Frame::ElementLogical, Frame::Inertial, 3>(m);
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                                   \
+  bind_coordinate_map_impl<Frame::ElementLogical, Frame::BlockLogical,         \
+                           DIM(data)>(m);                                      \
+  bind_coordinate_map_impl<Frame::ElementLogical, Frame::Inertial, DIM(data)>( \
+      m);                                                                      \
+  bind_coordinate_map_impl<Frame::BlockLogical, Frame::Grid, DIM(data)>(m);    \
+  bind_coordinate_map_impl<Frame::BlockLogical, Frame::Inertial, DIM(data)>(   \
+      m);                                                                      \
+  bind_coordinate_map_impl<Frame::Grid, Frame::Distorted, DIM(data)>(m);       \
+  bind_coordinate_map_impl<Frame::Grid, Frame::Inertial, DIM(data)>(m);        \
+  bind_coordinate_map_impl<Frame::Distorted, Frame::Inertial, DIM(data)>(m);
+
+  GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+#undef DIM
 }
 }  // namespace domain::py_bindings
